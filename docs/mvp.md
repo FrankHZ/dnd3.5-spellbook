@@ -97,7 +97,38 @@ If legacy rows contain BLOBs, they are decoded at read time.
 
 ## 5. Filtering Model (Core MVP Decision)
 
-### Top-level scope (required)
+The MVP supports **two distinct search modes**, each with its own filtering rules.
+This separation is intentional and avoids ambiguous semantics.
+
+---
+
+### A. Global Name Search (MVP)
+
+**Purpose:** quick spell lookup by name (e.g. search bar).
+
+#### Required
+
+* **Name (`q`)**
+
+  * Case-insensitive substring match
+  * Minimum length enforced (e.g. 2 characters)
+
+#### Optional
+
+* **Rulebooks**
+
+  * Multi-select
+  * Default: **all 3.5 rulebooks**
+
+> Class, level, and advanced filters are **not applicable** in name search for MVP.
+
+---
+
+### B. Class + Level Spell Browsing (MVP)
+
+**Purpose:** structured spell list browsing (e.g. “Wizard level 3 spells”).
+
+#### Top-level scope (required)
 
 1. **Rulebooks**
 
@@ -108,35 +139,86 @@ If legacy rows contain BLOBs, they are decoded at read time.
 2. **Classes**
 
    * Multi-select
-   * Default: none
-   * Optional toggle: exclude prestige classes (default ON)
+   * **Required**
+   * Prestige classes included by default (toggle may be added later)
 
-> Advanced filters are disabled until **at least one rulebook and one class** are selected.
+3. **Spell Level**
 
-### Optional but recommended
+   * **Required**
+   * Integer `0–9`
 
-* Spell level (0–9), enabled once class is selected
+> In MVP, **class-level browsing always requires a fixed spell level**.
+> Cross-level grouping is explicitly deferred.
 
-### Advanced filters (enabled after scope)
+---
+
+### Advanced filters (post-MVP)
+
+The following filters are **disabled in MVP** and will be enabled only after
+the core search behavior is stable:
 
 * School / Subschool
 * Descriptors
 * Components
 * Saving throw
 * Spell resistance
-* Name search
+* Combined name + class filtering
 
 ---
 
 ## 6. Result Semantics
 
+### A. Name Search Results
+
 A spell is included if:
 
 * it belongs to one of the selected rulebooks
-* AND it has at least one class-level entry matching selected class(es)
-* AND (if level is selected) the level matches
+* AND its name contains the query string (case-insensitive)
 
-Descriptor and component filters use **AND semantics**.
+Result list characteristics:
+
+* One row per spell
+* No class-level data included
+* Sorted by:
+
+  ```
+  spell.name ASC, spell.id ASC
+  ```
+
+---
+
+### B. Class + Level List Results
+
+A spell is included if:
+
+* it belongs to one of the selected rulebooks
+* AND it has **at least one** class-level entry where:
+
+  * `class ∈ selected classes`
+  * `level = selected level`
+
+Result list characteristics:
+
+* One row per spell (deduplicated)
+* If a spell matches multiple selected classes at the same level:
+
+  * it appears once
+  * with multiple entries in `matchedClassLevels`
+* Sorting:
+
+  ```
+  spell.name ASC, spell.id ASC
+  ```
+* Pagination operates on **spells**, not class-level rows
+
+---
+
+### Explicit MVP Constraints
+
+* Descriptor and component filters are **not active** in MVP
+* No cross-level grouping or minimum-level inference
+* Domain spell levels are excluded from list results
+* Full-text search over descriptions is out of scope
 
 ---
 
