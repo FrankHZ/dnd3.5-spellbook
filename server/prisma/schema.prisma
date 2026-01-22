@@ -1,0 +1,996 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Rulebook {
+  id                Int                 @id @map("id")
+  dndEditionId      Int                 @map("dnd_edition_id")
+  name              String              @map("name")
+  abbr              String              @map("abbr")
+  description       String              @map("description")
+  year              String?             @map("year")
+  officialUrl       String              @map("official_url")
+  slug              String              @map("slug")
+  image             String?             @map("image")
+  published         DateTime?           @map("published")
+  edition           Edition             @relation(fields: [dndEditionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  spells         Spell[]
+  dndFeats          dnd_feat[]          @ignore
+  dndItems          dnd_item[]          @ignore
+  dndDomainvariants dnd_domainvariant[] @ignore
+  dndRaces          dnd_race[]          @ignore
+  dndMonsters       dnd_monster[]       @ignore
+  dndRules          dnd_rule[]          @ignore
+  dndSkillvariants  dnd_skillvariant[]  @ignore
+
+  dndCharacterclassvariants dnd_characterclassvariant[] @ignore
+
+  @@index([name], map: "dnd_rulebook_dnd_rulebook_name")
+  @@index([slug], map: "dnd_rulebook_dnd_rulebook_a951d5d6")
+  @@index([dndEditionId], map: "dnd_rulebook_dnd_rulebook_66a88bda")
+  @@index([slug], map: "dnd_rulebook_dnd_rulebook_slug_uniq")
+  @@map("dnd_rulebook")
+}
+
+model Edition {
+  id        Int        @id @map("id")
+  name      String     @map("name")
+  system    String     @map("system")
+  slug      String     @map("slug")
+  core      Boolean    @map("core")
+  rulebooks Rulebook[]
+
+  @@index([name], map: "dnd_dndedition_dnd_dndedition_name")
+  @@index([slug], map: "dnd_dndedition_dnd_dndedition_a951d5d6")
+  @@index([slug], map: "dnd_dndedition_dnd_dndedition_slug_uniq")
+  @@map("dnd_dndedition")
+}
+
+model CharacterClass {
+  id                            Int                             @id
+  name                          String
+  slug                          String
+  prestige                      Boolean                             @default(dbgenerated("'0'"))
+  short_description             String
+  short_description_html        String
+  dnd_characterclassvariant     dnd_characterclassvariant[]     @ignore
+  dnd_racefavoredcharacterclass dnd_racefavoredcharacterclass[] @ignore
+  spellClasslevels           SpellClasslevel[]
+
+  @@index([name], map: "dnd_characterclass_dnd_characterclass_name")
+  @@index([slug], map: "dnd_characterclass_dnd_characterclass_a951d5d6")
+  @@index([slug], map: "dnd_characterclass_dnd_characterclass_slug_uniq")
+  @@map("dnd_characterclass")
+}
+
+model dnd_characterclassvariant {
+  id                                     Int                                      @id
+  character_class_id                     Int
+  rulebook_id                            Int
+  page                                   Int?
+  advancement                            String
+  advancement_html                       String
+  class_features                         String
+  skill_points                           Int?
+  hit_die                                Int?
+  alignment                              String
+  class_features_html                    String
+  requirements                           String
+  requirements_html                      String
+  required_bab                           Int?
+  starting_gold                          String
+  dnd_rulebook                           Rulebook                                 @relation(fields: [rulebook_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_characterclass                     CharacterClass                       @relation(fields: [character_class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_characterclassvariant_class_skills dnd_characterclassvariant_class_skills[]
+  dnd_characterclassvariantrequiresfeat  dnd_characterclassvariantrequiresfeat[]
+  dnd_characterclassvariantrequiresrace  dnd_characterclassvariantrequiresrace[]
+  dnd_characterclassvariantrequiresskill dnd_characterclassvariantrequiresskill[]
+
+  @@index([rulebook_id], map: "dnd_characterclassvariant_dnd_characterclassvariant_51956a35")
+  @@index([character_class_id], map: "dnd_characterclassvariant_dnd_characterclassvariant_4d1287f7")
+  @@index([rulebook_id, character_class_id], map: "dnd_characterclassvariant_dnd_characterclassvariant_rulebook_id_69a6fb11587c030e_uniq")
+  @@ignore
+}
+
+model dnd_characterclassvariant_class_skills {
+  id                        Int                       @id
+  characterclassvariant_id  Int
+  skill_id                  Int
+  dnd_skill                 dnd_skill                 @relation(fields: [skill_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_characterclassvariant dnd_characterclassvariant @relation(fields: [characterclassvariant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([skill_id], map: "dnd_characterclassvariant_class_skills_dnd_characterclassvariant_class_skills_30f70346")
+  @@index([characterclassvariant_id], map: "dnd_characterclassvariant_class_skills_dnd_characterclassvariant_class_skills_62519975")
+  @@index([characterclassvariant_id, skill_id], map: "dnd_characterclassvariant_class_skills_dnd_charactercla_characterclassvariant_id_594218372f051506_uniq")
+  @@ignore
+}
+
+model dnd_characterclassvariantrequiresfeat {
+  id                         Int                       @id
+  character_class_variant_id Int
+  feat_id                    Int
+  extra                      String
+  text_before                String
+  text_after                 String
+  remove_comma               Boolean
+  dnd_feat                   dnd_feat                  @relation(fields: [feat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_characterclassvariant  dnd_characterclassvariant @relation(fields: [character_class_variant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([feat_id], map: "dnd_characterclassvariantrequiresfeat_dnd_characterclassvariantrequiresfeat_2f59e7d8")
+  @@index([character_class_variant_id], map: "dnd_characterclassvariantrequiresfeat_dnd_characterclassvariantrequiresfeat_433a4f0b")
+  @@ignore
+}
+
+model dnd_characterclassvariantrequiresrace {
+  id                         Int                       @id
+  character_class_variant_id Int
+  race_id                    Int
+  extra                      String
+  text_before                String
+  text_after                 String
+  remove_comma               Boolean
+  dnd_race                   dnd_race                  @relation(fields: [race_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_characterclassvariant  dnd_characterclassvariant @relation(fields: [character_class_variant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([race_id], map: "dnd_characterclassvariantrequiresrace_dnd_characterclassvariantrequiresrace_3548c065")
+  @@index([character_class_variant_id], map: "dnd_characterclassvariantrequiresrace_dnd_characterclassvariantrequiresrace_433a4f0b")
+  @@ignore
+}
+
+model dnd_characterclassvariantrequiresskill {
+  id                         Int                       @id
+  character_class_variant_id Int
+  skill_id                   Int
+  ranks                      Int
+  extra                      String
+  text_before                String
+  text_after                 String
+  remove_comma               Boolean
+  dnd_skill                  dnd_skill                 @relation(fields: [skill_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_characterclassvariant  dnd_characterclassvariant @relation(fields: [character_class_variant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([skill_id], map: "dnd_characterclassvariantrequiresskill_dnd_characterclassvariantrequiresskill_30f70346")
+  @@index([character_class_variant_id], map: "dnd_characterclassvariantrequiresskill_dnd_characterclassvariantrequiresskill_433a4f0b")
+  @@ignore
+}
+
+model dnd_deity {
+  id                              Int                               @id
+  name                            String
+  slug                            String
+  description                     String
+  description_html                String
+  alignment                       String
+  favored_weapon_id               Int?
+  dnd_item                        dnd_item?                         @relation(fields: [favored_weapon_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_domainvariant_deities       dnd_domainvariant_deities[]
+  dnd_domainvariant_other_deities dnd_domainvariant_other_deities[]
+
+  @@index([favored_weapon_id], map: "dnd_deity_dnd_deity_42d3ba94")
+  @@index([slug], map: "dnd_deity_slug")
+  @@index([name], map: "dnd_deity_name")
+  @@ignore
+}
+
+model Domain {
+  id                   Int                    @id
+  name                 String
+  slug                 String
+  dnd_domainvariant    dnd_domainvariant[]    @ignore
+  spellDomainLevels SpellDomainLevel[]
+
+  @@index([slug], map: "dnd_domain_dnd_domain_a951d5d6")
+  @@index([name], map: "dnd_domain_dnd_domain_name_uniq")
+  @@index([slug], map: "dnd_domain_dnd_domain_slug_uniq")
+	@@map("dnd_domain")
+}
+
+model dnd_domainvariant {
+  id                              Int                               @id
+  domain_id                       Int
+  rulebook_id                     Int
+  page                            Int?
+  requirement                     String
+  granted_power                   String
+  granted_power_html              String
+  granted_power_type              String
+  deities_text                    String
+  dnd_rulebook                    Rulebook                          @relation(fields: [rulebook_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_domain                      Domain                        @relation(fields: [domain_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_domainvariant_deities       dnd_domainvariant_deities[]
+  dnd_domainvariant_other_deities dnd_domainvariant_other_deities[]
+
+  @@index([rulebook_id], map: "dnd_domainvariant_dnd_domainvariant_51956a35")
+  @@index([domain_id], map: "dnd_domainvariant_dnd_domainvariant_a2431ea")
+  @@ignore
+}
+
+model dnd_domainvariant_deities {
+  id                Int               @id
+  domainvariant_id  Int
+  deity_id          Int
+  dnd_domainvariant dnd_domainvariant @relation(fields: [domainvariant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_deity         dnd_deity         @relation(fields: [deity_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([deity_id], map: "dnd_domainvariant_deities_dnd_domainvariant_deities_27307746")
+  @@index([domainvariant_id], map: "dnd_domainvariant_deities_dnd_domainvariant_deities_226d9ee2")
+  @@index([domainvariant_id, deity_id], map: "dnd_domainvariant_deities_dnd_domainvariant_deities_domainvariant_id_e102dfb14ee5c6d_uniq")
+  @@ignore
+}
+
+model dnd_domainvariant_other_deities {
+  id                Int               @id
+  domainvariant_id  Int
+  deity_id          Int
+  dnd_domainvariant dnd_domainvariant @relation(fields: [domainvariant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_deity         dnd_deity         @relation(fields: [deity_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([deity_id], map: "dnd_domainvariant_other_deities_dnd_domainvariant_other_deities_27307746")
+  @@index([domainvariant_id], map: "dnd_domainvariant_other_deities_dnd_domainvariant_other_deities_226d9ee2")
+  @@index([domainvariant_id, deity_id], map: "dnd_domainvariant_other_deities_dnd_domainvariant_other_d_domainvariant_id_a674a18dfab6630_uniq")
+  @@ignore
+}
+
+model dnd_feat {
+  id                                                                   Int                                     @id
+  rulebook_id                                                          Int
+  name                                                                 String
+  description                                                          String
+  benefit                                                              String
+  special                                                              String
+  normal                                                               String
+  page                                                                 Int?
+  slug                                                                 String
+  description_html                                                     String
+  benefit_html                                                         String
+  special_html                                                         String
+  normal_html                                                          String
+  dnd_characterclassvariantrequiresfeat                                dnd_characterclassvariantrequiresfeat[]
+  dnd_rulebook                                                         Rulebook                                @relation(fields: [rulebook_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_feat_feat_categories                                             dnd_feat_feat_categories[]
+  dnd_featrequiresfeat_dnd_featrequiresfeat_source_feat_idTodnd_feat   dnd_featrequiresfeat[]                  @relation("dnd_featrequiresfeat_source_feat_idTodnd_feat")
+  dnd_featrequiresfeat_dnd_featrequiresfeat_required_feat_idTodnd_feat dnd_featrequiresfeat[]                  @relation("dnd_featrequiresfeat_required_feat_idTodnd_feat")
+  dnd_featrequiresskill                                                dnd_featrequiresskill[]
+  dnd_featspecialfeatprerequisite                                      dnd_featspecialfeatprerequisite[]
+  dnd_item_required_feats                                              dnd_item_required_feats[]
+  dnd_monsterhasfeat                                                   dnd_monsterhasfeat[]
+  dnd_textfeatprerequisite                                             dnd_textfeatprerequisite[]
+
+  @@index([name], map: "dnd_feat_dnd_feat_name")
+  @@index([slug], map: "dnd_feat_dnd_feat_a951d5d6")
+  @@index([rulebook_id], map: "dnd_feat_dnd_feat_51956a35")
+  @@ignore
+}
+
+model dnd_feat_feat_categories {
+  id               Int              @id
+  feat_id          Int
+  featcategory_id  Int
+  dnd_feat         dnd_feat         @relation(fields: [feat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_featcategory dnd_featcategory @relation(fields: [featcategory_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([featcategory_id], map: "dnd_feat_feat_categories_dnd_feat_feat_categories_5509d08")
+  @@index([feat_id], map: "dnd_feat_feat_categories_dnd_feat_feat_categories_2f59e7d8")
+  @@index([feat_id, featcategory_id], map: "dnd_feat_feat_categories_dnd_feat_feat_categories_feat_id_3a0b9d0392305885_uniq")
+  @@ignore
+}
+
+model dnd_featcategory {
+  id                       Int                        @id
+  name                     String
+  slug                     String
+  dnd_feat_feat_categories dnd_feat_feat_categories[]
+
+  @@index([slug], map: "dnd_featcategory_dnd_featcategory_a951d5d6")
+  @@index([slug], map: "dnd_featcategory_dnd_featcategory_slug_uniq")
+  @@index([name], map: "dnd_featcategory_dnd_featcategory_name_uniq")
+  @@ignore
+}
+
+model dnd_featrequiresfeat {
+  id                                                       Int      @id
+  source_feat_id                                           Int
+  required_feat_id                                         Int
+  additional_text                                          String
+  dnd_feat_dnd_featrequiresfeat_source_feat_idTodnd_feat   dnd_feat @relation("dnd_featrequiresfeat_source_feat_idTodnd_feat", fields: [source_feat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_feat_dnd_featrequiresfeat_required_feat_idTodnd_feat dnd_feat @relation("dnd_featrequiresfeat_required_feat_idTodnd_feat", fields: [required_feat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([required_feat_id], map: "dnd_featrequiresfeat_dnd_featrequiresfeat_8238d861")
+  @@index([source_feat_id], map: "dnd_featrequiresfeat_dnd_featrequiresfeat_dc102e93")
+  @@ignore
+}
+
+model dnd_featrequiresskill {
+  id        Int       @id
+  feat_id   Int
+  skill_id  Int
+  min_rank  Int
+  extra     String
+  dnd_skill dnd_skill @relation(fields: [skill_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_feat  dnd_feat  @relation(fields: [feat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([skill_id], map: "dnd_featrequiresskill_dnd_featrequiresskill_30f70346")
+  @@index([feat_id], map: "dnd_featrequiresskill_dnd_featrequiresskill_2f59e7d8")
+  @@ignore
+}
+
+model dnd_featspecialfeatprerequisite {
+  id                           Int                         @id
+  feat_id                      Int
+  special_feat_prerequisite_id Int
+  value_1                      String
+  value_2                      String
+  dnd_specialfeatprerequisite  dnd_specialfeatprerequisite @relation(fields: [special_feat_prerequisite_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_feat                     dnd_feat                    @relation(fields: [feat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([special_feat_prerequisite_id], map: "dnd_featspecialfeatprerequisite_dnd_featspecialfeatprerequisite_c2048d74")
+  @@index([feat_id], map: "dnd_featspecialfeatprerequisite_dnd_featspecialfeatprerequisite_2f59e7d8")
+  @@ignore
+}
+
+model dnd_item {
+  id                       Int                        @id
+  name                     String
+  slug                     String
+  rulebook_id              Int
+  page                     Int?
+  price_gp                 Unsupported("int(10)")?
+  price_bonus              Int?
+  item_level               Int?
+  body_slot_id             Int?
+  caster_level             Int?
+  aura_id                  Int?
+  aura_dc                  String
+  activation_id            Int?
+  weight                   Float?
+  visual_description       String
+  description              String
+  description_html         String
+  type                     String
+  property_id              Int?
+  cost_to_create           String
+  synergy_prerequisite_id  Int?
+  required_extra           String
+  dnd_deity                dnd_deity[]
+  dnd_item                 dnd_item?                  @relation("dnd_itemTodnd_item", fields: [synergy_prerequisite_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_dnd_item           dnd_item[]                 @relation("dnd_itemTodnd_item")
+  dnd_rulebook             Rulebook                   @relation(fields: [rulebook_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_itemproperty         dnd_itemproperty?          @relation(fields: [property_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_itemslot             dnd_itemslot?              @relation(fields: [body_slot_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_itemauratype         dnd_itemauratype?          @relation(fields: [aura_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_itemactivationtype   dnd_itemactivationtype?    @relation(fields: [activation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_item_aura_schools    dnd_item_aura_schools[]
+  dnd_item_required_feats  dnd_item_required_feats[]
+  dnd_item_required_spells dnd_item_required_spells[]
+
+  @@index([synergy_prerequisite_id], map: "dnd_item_dnd_item_ed720ca8")
+  @@index([property_id], map: "dnd_item_dnd_item_6a812853")
+  @@index([activation_id], map: "dnd_item_dnd_item_a7ff055e")
+  @@index([aura_id], map: "dnd_item_dnd_item_c181fb11")
+  @@index([body_slot_id], map: "dnd_item_dnd_item_35a44c52")
+  @@index([rulebook_id], map: "dnd_item_dnd_item_51956a35")
+  @@index([name], map: "dnd_item_dnd_item_52094d6e")
+  @@index([slug], map: "dnd_item_slug")
+  @@ignore
+}
+
+model dnd_item_aura_schools {
+  id              Int             @id
+  item_id         Int
+  spellschool_id  Int
+  dnd_spellschool SpellSchool @relation(fields: [spellschool_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_item        dnd_item        @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([spellschool_id], map: "dnd_item_aura_schools_dnd_item_aura_schools_a7db21ef")
+  @@index([item_id], map: "dnd_item_aura_schools_dnd_item_aura_schools_67b70d25")
+  @@index([item_id, spellschool_id], map: "dnd_item_aura_schools_dnd_item_aura_schools_item_id_345bdf3601d7f155_uniq")
+  @@ignore
+}
+
+model dnd_item_required_feats {
+  id       Int      @id
+  item_id  Int
+  feat_id  Int
+  dnd_item dnd_item @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_feat dnd_feat @relation(fields: [feat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([feat_id], map: "dnd_item_required_feats_dnd_item_required_feats_2f59e7d8")
+  @@index([item_id], map: "dnd_item_required_feats_dnd_item_required_feats_67b70d25")
+  @@index([item_id, feat_id], map: "dnd_item_required_feats_dnd_item_required_feats_item_id_86ffea90e89a0f2_uniq")
+  @@ignore
+}
+
+model dnd_item_required_spells {
+  id        Int       @id
+  item_id   Int
+  spell_id  Int
+  dnd_spell Spell @relation(fields: [spell_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_item  dnd_item  @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([spell_id], map: "dnd_item_required_spells_dnd_item_required_spells_a091809d")
+  @@index([item_id], map: "dnd_item_required_spells_dnd_item_required_spells_67b70d25")
+  @@index([item_id, spell_id], map: "dnd_item_required_spells_dnd_item_required_spells_item_id_4420551901ef62b4_uniq")
+  @@ignore
+}
+
+model dnd_itemactivationtype {
+  id       Int        @id
+  name     String
+  slug     String
+  dnd_item dnd_item[]
+
+  @@index([name], map: "dnd_itemactivationtype_dnd_itemactivationtype_52094d6e")
+  @@index([slug], map: "dnd_itemactivationtype_slug")
+  @@ignore
+}
+
+model dnd_itemauratype {
+  id       Int        @id
+  name     String
+  slug     String
+  dnd_item dnd_item[]
+
+  @@index([name], map: "dnd_itemauratype_dnd_itemauratype_52094d6e")
+  @@index([slug], map: "dnd_itemauratype_slug")
+  @@ignore
+}
+
+model dnd_itemproperty {
+  id       Int        @id
+  name     String
+  slug     String
+  dnd_item dnd_item[]
+
+  @@index([name], map: "dnd_itemproperty_dnd_itemproperty_52094d6e")
+  @@index([slug], map: "dnd_itemproperty_slug")
+  @@ignore
+}
+
+model dnd_itemslot {
+  id       Int        @id
+  name     String
+  slug     String
+  dnd_item dnd_item[]
+
+  @@index([name], map: "dnd_itemslot_dnd_itemslot_52094d6e")
+  @@index([slug], map: "dnd_itemslot_slug")
+  @@ignore
+}
+
+model dnd_language {
+  id                           Int                            @id
+  name                         String
+  slug                         String
+  description                  String
+  description_html             String
+  dnd_race_automatic_languages dnd_race_automatic_languages[]
+  dnd_race_bonus_languages     dnd_race_bonus_languages[]
+
+  @@index([slug], map: "dnd_language_slug")
+  @@ignore
+}
+
+model dnd_monster {
+  id                      Int                         @id
+  rulebook_id             Int
+  name                    String
+  slug                    String
+  page                    Int?
+  size_id                 Int?
+  type_id                 Int
+  hit_dice                String
+  initiative              Unsupported("smallint(6)")
+  armor_class             String                      @default("32 (–1 size, +4 Dex, +19 natural)")
+  touch_armor_class       Unsupported("smallint(6)")?
+  flat_footed_armor_class Unsupported("smallint(6)")?
+  base_attack             Unsupported("smallint(6)")
+  grapple                 Unsupported("smallint(6)")
+  attack                  String                      @default("+3 greatsword +23 melee (3d6+13/19–20) or slam +20 melee (2d8+10)")
+  full_attack             String                      @default("+3 greatsword +23/+18/+13 melee (3d6+13/19–20) or slam +20 melee (2d8+10)")
+  space                   Int
+  reach                   Int
+  special_attacks         String
+  special_qualities       String
+  fort_save               Unsupported("smallint(6)")
+  fort_save_extra         String
+  reflex_save             Unsupported("smallint(6)")
+  reflex_save_extra       String
+  will_save               Unsupported("smallint(6)")
+  will_save_extra         String
+  str                     Unsupported("smallint(6)")
+  dex                     Unsupported("smallint(6)")
+  con                     Unsupported("smallint(6)")?
+  int                     Unsupported("smallint(6)")
+  wis                     Unsupported("smallint(6)")
+  cha                     Unsupported("smallint(6)")
+  environment             String
+  organization            String
+  challenge_rating        Int
+  treasure                String
+  alignment               String
+  advancement             String
+  level_adjustment        Unsupported("smallint(6)")?
+  description             String
+  description_html        String
+  combat                  String
+  combat_html             String
+  dnd_monstertype         dnd_monstertype             @relation(fields: [type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_racesize            dnd_racesize?               @relation(fields: [size_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_rulebook            Rulebook                    @relation(fields: [rulebook_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_monster_subtypes    dnd_monster_subtypes[]
+  dnd_monsterhasfeat      dnd_monsterhasfeat[]
+  dnd_monsterhasskill     dnd_monsterhasskill[]
+  dnd_monsterspeed        dnd_monsterspeed[]
+
+  @@index([type_id], map: "dnd_monster_dnd_monster_777d41c8")
+  @@index([size_id], map: "dnd_monster_dnd_monster_6154b20f")
+  @@index([slug], map: "dnd_monster_dnd_monster_a951d5d6")
+  @@index([name], map: "dnd_monster_dnd_monster_52094d6e")
+  @@index([rulebook_id], map: "dnd_monster_dnd_monster_51956a35")
+  @@index([name, rulebook_id], map: "dnd_monster_dnd_monster_name_5810a781de09be1f_uniq")
+  @@ignore
+}
+
+model dnd_monster_subtypes {
+  id                 Int                @id
+  monster_id         Int
+  monstersubtype_id  Int
+  dnd_monster        dnd_monster        @relation(fields: [monster_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_monstersubtype dnd_monstersubtype @relation(fields: [monstersubtype_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([monstersubtype_id], map: "dnd_monster_subtypes_dnd_monster_subtypes_3c3013de")
+  @@index([monster_id], map: "dnd_monster_subtypes_dnd_monster_subtypes_6608660b")
+  @@index([monster_id, monstersubtype_id], map: "dnd_monster_subtypes_dnd_monster_subtypes_monster_id_7716d36de2720dc0_uniq")
+  @@ignore
+}
+
+model dnd_monsterhasfeat {
+  id          Int         @id
+  monster_id  Int
+  feat_id     Int
+  extra       String
+  dnd_monster dnd_monster @relation(fields: [monster_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_feat    dnd_feat    @relation(fields: [feat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([feat_id], map: "dnd_monsterhasfeat_dnd_monsterhasfeat_2f59e7d8")
+  @@index([monster_id], map: "dnd_monsterhasfeat_dnd_monsterhasfeat_6608660b")
+  @@ignore
+}
+
+model dnd_monsterhasskill {
+  id          Int         @id
+  monster_id  Int
+  skill_id    Int
+  ranks       Int
+  extra       String
+  dnd_skill   dnd_skill   @relation(fields: [skill_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_monster dnd_monster @relation(fields: [monster_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([skill_id], map: "dnd_monsterhasskill_dnd_monsterhasskill_30f70346")
+  @@index([monster_id], map: "dnd_monsterhasskill_dnd_monsterhasskill_6608660b")
+  @@ignore
+}
+
+model dnd_monsterspeed {
+  id                Int               @id
+  race_id           Int
+  type_id           Int
+  speed             Int
+  dnd_racespeedtype dnd_racespeedtype @relation(fields: [type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_monster       dnd_monster       @relation(fields: [race_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([type_id], map: "dnd_monsterspeed_dnd_monsterspeed_777d41c8")
+  @@index([race_id], map: "dnd_monsterspeed_dnd_monsterspeed_3548c065")
+  @@ignore
+}
+
+model dnd_monstersubtype {
+  id                   Int                    @id
+  name                 String
+  slug                 String
+  dnd_monster_subtypes dnd_monster_subtypes[]
+
+  @@index([slug], map: "dnd_monstersubtype_dnd_monstersubtype_a951d5d6")
+  @@index([name], map: "dnd_monstersubtype_dnd_monstersubtype_52094d6e")
+  @@index([slug], map: "dnd_monstersubtype_dnd_monstersubtype_slug_uniq")
+  @@ignore
+}
+
+model dnd_monstertype {
+  id          Int           @id
+  name        String
+  slug        String
+  dnd_monster dnd_monster[]
+
+  @@index([slug], map: "dnd_monstertype_dnd_monstertype_a951d5d6")
+  @@index([name], map: "dnd_monstertype_dnd_monstertype_52094d6e")
+  @@index([slug], map: "dnd_monstertype_dnd_monstertype_slug_uniq")
+  @@ignore
+}
+
+model dnd_newsentry {
+  id        Int      @id
+  published DateTime
+  title     String
+  body      String
+  body_html String
+  enabled   Boolean
+
+  @@ignore
+}
+
+model dnd_race {
+  id                                    Int                                     @id
+  rulebook_id                           Int
+  name                                  String
+  slug                                  String
+  page                                  Int?
+  str                                   Unsupported("smallint(6)")
+  dex                                   Unsupported("smallint(6)")
+  con                                   Unsupported("smallint(6)")?
+  int                                   Unsupported("smallint(6)")
+  wis                                   Unsupported("smallint(6)")
+  cha                                   Unsupported("smallint(6)")
+  level_adjustment                      Unsupported("smallint(6)")              @default(dbgenerated("'0'"))
+  size_id                               Int                                     @default(dbgenerated("'5'"))
+  space                                 Int                                     @default(dbgenerated("'5'"))
+  reach                                 Int                                     @default(dbgenerated("'5'"))
+  combat                                String
+  description                           String
+  racial_traits                         String
+  description_html                      String
+  combat_html                           String
+  racial_traits_html                    String
+  natural_armor                         Unsupported("smallint(6)")?
+  image                                 String?
+  race_type_id                          Int?
+  racial_hit_dice_count                 Int?
+  dnd_characterclassvariantrequiresrace dnd_characterclassvariantrequiresrace[]
+  dnd_racesize                          dnd_racesize                            @relation(fields: [size_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_rulebook                          Rulebook                                @relation(fields: [rulebook_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_racetype                          dnd_racetype?                           @relation(fields: [race_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_race_automatic_languages          dnd_race_automatic_languages[]
+  dnd_race_bonus_languages              dnd_race_bonus_languages[]
+  dnd_racefavoredcharacterclass         dnd_racefavoredcharacterclass[]
+  dnd_racespeed                         dnd_racespeed[]
+
+  @@index([race_type_id], map: "dnd_race_dnd_race_34628d95")
+  @@index([size_id], map: "dnd_race_dnd_race_6154b20f")
+  @@index([slug], map: "dnd_race_dnd_race_a951d5d6")
+  @@index([name], map: "dnd_race_dnd_race_52094d6e")
+  @@index([rulebook_id], map: "dnd_race_dnd_race_51956a35")
+  @@index([name, rulebook_id], map: "dnd_race_dnd_race_name_64b932b074325211_uniq")
+  @@ignore
+}
+
+model dnd_race_automatic_languages {
+  id           Int          @id
+  race_id      Int
+  language_id  Int
+  dnd_race     dnd_race     @relation(fields: [race_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_language dnd_language @relation(fields: [language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([language_id], map: "dnd_race_automatic_languages_dnd_race_automatic_languages_7ab48146")
+  @@index([race_id], map: "dnd_race_automatic_languages_dnd_race_automatic_languages_3548c065")
+  @@index([race_id, language_id], map: "dnd_race_automatic_languages_dnd_race_automatic_languages_race_id_4ef05d055298a9df_uniq")
+  @@ignore
+}
+
+model dnd_race_bonus_languages {
+  id           Int          @id
+  race_id      Int
+  language_id  Int
+  dnd_race     dnd_race     @relation(fields: [race_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_language dnd_language @relation(fields: [language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([language_id], map: "dnd_race_bonus_languages_dnd_race_bonus_languages_7ab48146")
+  @@index([race_id], map: "dnd_race_bonus_languages_dnd_race_bonus_languages_3548c065")
+  @@index([race_id, language_id], map: "dnd_race_bonus_languages_dnd_race_bonus_languages_race_id_1922bed42ad1b62b_uniq")
+  @@ignore
+}
+
+model dnd_racefavoredcharacterclass {
+  id                 Int                @id
+  race_id            Int
+  character_class_id Int
+  extra              String
+  dnd_race           dnd_race           @relation(fields: [race_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_characterclass CharacterClass @relation(fields: [character_class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([character_class_id], map: "dnd_racefavoredcharacterclass_dnd_racefavoredcharacterclass_4d1287f7")
+  @@index([race_id], map: "dnd_racefavoredcharacterclass_dnd_racefavoredcharacterclass_3548c065")
+  @@ignore
+}
+
+model dnd_racesize {
+  id          Int           @id
+  name        String
+  order       Int
+  description String
+  dnd_monster dnd_monster[]
+  dnd_race    dnd_race[]
+
+  @@index([name], map: "dnd_racesize_dnd_racesize_52094d6e")
+  @@ignore
+}
+
+model dnd_racespeed {
+  id                Int               @id
+  type_id           Int
+  speed             Int
+  race_id           Int
+  dnd_racespeedtype dnd_racespeedtype @relation(fields: [type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_race          dnd_race          @relation(fields: [race_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([race_id], map: "dnd_racespeed_dnd_racespeed_3548c065")
+  @@index([type_id], map: "dnd_racespeed_dnd_racespeed_777d41c8")
+  @@ignore
+}
+
+model dnd_racespeedtype {
+  id               Int                @id
+  name             String
+  extra            String?
+  dnd_monsterspeed dnd_monsterspeed[]
+  dnd_racespeed    dnd_racespeed[]
+
+  @@index([name], map: "dnd_racespeedtype_dnd_racespeedtype_52094d6e")
+  @@ignore
+}
+
+model dnd_racetype {
+  id                    Int        @id
+  name                  String
+  slug                  String
+  hit_die_size          Int
+  base_attack_type      String
+  base_fort_save_type   String
+  base_reflex_save_type String
+  base_will_save_type   String
+  dnd_race              dnd_race[]
+
+  @@index([name], map: "dnd_racetype_dnd_racetype_52094d6e")
+  @@index([slug], map: "dnd_racetype_slug")
+  @@ignore
+}
+
+model dnd_rule {
+  id           Int      @id
+  name         String
+  slug         String
+  body         String
+  body_html    String
+  rulebook_id  Int
+  page_from    Int?
+  page_to      Int?
+  dnd_rulebook Rulebook @relation(fields: [rulebook_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([rulebook_id], map: "dnd_rule_dnd_rule_51956a35")
+  @@index([name], map: "dnd_rule_dnd_rule_52094d6e")
+  @@index([slug], map: "dnd_rule_slug")
+  @@ignore
+}
+
+model dnd_rules_conditions {
+  id          Unsupported("")?
+  name        Unsupported("")?
+  description Unsupported("")?
+
+  @@ignore
+}
+
+model dnd_skill {
+  id                                     Int                                      @id
+  name                                   String
+  base_skill                             String
+  trained_only                           Boolean                                      @default(dbgenerated("'0'"))
+  armor_check_penalty                    Boolean                                      @default(dbgenerated("'0'"))
+  slug                                   String
+  dnd_characterclassvariant_class_skills dnd_characterclassvariant_class_skills[]
+  dnd_characterclassvariantrequiresskill dnd_characterclassvariantrequiresskill[]
+  dnd_featrequiresskill                  dnd_featrequiresskill[]
+  dnd_monsterhasskill                    dnd_monsterhasskill[]
+  dnd_skillvariant                       dnd_skillvariant[]
+
+  @@index([slug], map: "dnd_skill_dnd_skill_a951d5d6")
+  @@index([slug], map: "dnd_skill_dnd_skill_slug_uniq")
+  @@index([name], map: "dnd_skill_dnd_skill_name_uniq")
+  @@ignore
+}
+
+model dnd_skillvariant {
+  id               Int       @id
+  skill_id         Int
+  rulebook_id      Int
+  page             Int?
+  description      String
+  check            String
+  action           String
+  try_again        String
+  special          String
+  synergy          String
+  untrained        String
+  description_html String
+  check_html       String
+  action_html      String
+  try_again_html   String
+  special_html     String
+  synergy_html     String
+  untrained_html   String
+  restriction      String
+  restriction_html String
+  dnd_skill        dnd_skill @relation(fields: [skill_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_rulebook     Rulebook  @relation(fields: [rulebook_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([rulebook_id], map: "dnd_skillvariant_dnd_skillvariant_51956a35")
+  @@index([skill_id], map: "dnd_skillvariant_dnd_skillvariant_30f70346")
+  @@index([skill_id, rulebook_id], map: "dnd_skillvariant_dnd_skillvariant_skill_id_65a2ff28b87f4e1e_uniq")
+  @@ignore
+}
+
+model dnd_specialfeatprerequisite {
+  id                              Int                               @id
+  name                            String
+  print_format                    String
+  dnd_featspecialfeatprerequisite dnd_featspecialfeatprerequisite[]
+
+  @@index([name], map: "dnd_specialfeatprerequisite_name")
+  @@ignore
+}
+
+model Spell {
+  id                     Int                        @id
+  added                  DateTime
+  rulebook_id            Int
+  page                   Int?
+  name                   String
+  school_id              Int
+  sub_school_id          Int?
+  verbal_component       Boolean                        @default(dbgenerated("'0'"))
+  somatic_component      Boolean                        @default(dbgenerated("'0'"))
+  material_component     Boolean                        @default(dbgenerated("'0'"))
+  arcane_focus_component Boolean                        @default(dbgenerated("'0'"))
+  divine_focus_component Boolean                        @default(dbgenerated("'0'"))
+  xp_component           Boolean                        @default(dbgenerated("'0'"))
+  casting_time           String?
+  range                  String?
+  target                 String?
+  effect                 String?
+  area                   String?
+  duration               String?
+  saving_throw           String?
+  spell_resistance       String?
+  description            String
+  slug                   String
+  meta_breath_component  Boolean
+  true_name_component    Boolean
+  extra_components       String?
+  description_html       String
+  corrupt_component      Boolean
+  corrupt_level          Int?
+  verified               Boolean
+  verified_author_id     Int?
+  verified_time          DateTime?
+  spellSubschool     SpellSubschool?        @relation(fields: [sub_school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  spellSchool        SpellSchool            @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  rulebook           Rulebook                   @relation(fields: [rulebook_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  spellDescriptors  SpellDescriptors[]
+  spellClassLevels    SpellClasslevel[]
+  spellDomainLevels   SpellDomainLevel[]
+  dndItemRequiredSpells  dnd_item_required_spells[] @ignore
+
+  @@index([verified_author_id], map: "dnd_spell_dnd_spell_63f7f931")
+  @@index([name], map: "dnd_spell_dnd_spell_name")
+  @@index([slug], map: "dnd_spell_dnd_spell_a951d5d6")
+  @@index([sub_school_id], map: "dnd_spell_dnd_spell_20f50c5d")
+  @@index([school_id], map: "dnd_spell_dnd_spell_1ebdc00a")
+  @@index([rulebook_id], map: "dnd_spell_dnd_spell_51956a35")
+  @@index([name, rulebook_id], map: "dnd_spell_dnd_spell_name_496ee28f7dbb33a7_uniq")
+  @@map("dnd_spell")
+}
+
+model SpellDescriptors {
+  id                  Int                 @id
+  spell_id            Int
+  spelldescriptor_id  Int
+  spell           Spell           @relation(fields: [spell_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  spellDescriptor SpellDescriptor @relation(fields: [spelldescriptor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([spelldescriptor_id], map: "dnd_spell_descriptors_dnd_spell_descriptors_30529786")
+  @@index([spell_id], map: "dnd_spell_descriptors_dnd_spell_descriptors_a091809d")
+  @@index([spell_id, spelldescriptor_id], map: "dnd_spell_descriptors_dnd_spell_descriptors_spell_id_dbd1aa136fb353e_uniq")
+  @@map("dnd_spell_descriptors")
+}
+
+model SpellClasslevel {
+  id                 Int                @id
+  character_class_id Int
+  spell_id           Int
+  level              Int
+  extra              String
+  spell          Spell          @relation(fields: [spell_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  characterClass CharacterClass @relation(fields: [character_class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([spell_id], map: "dnd_spellclasslevel_dnd_spellclasslevel_a091809d")
+  @@index([character_class_id], map: "dnd_spellclasslevel_dnd_spellclasslevel_4d1287f7")
+  @@index([character_class_id, spell_id], map: "dnd_spellclasslevel_dnd_spellclasslevel_character_class_id_3ae23c8563a83798_uniq")
+  @@map("dnd_spellclasslevel")
+}
+
+model SpellDescriptor {
+  id                    Int                     @id
+  name                  String
+  slug                  String
+  spellDescriptors SpellDescriptors[]
+
+  @@index([name], map: "dnd_spelldescriptor_dnd_spelldescriptor_name")
+  @@index([slug], map: "dnd_spelldescriptor_dnd_spelldescriptor_a951d5d6")
+  @@index([slug], map: "dnd_spelldescriptor_dnd_spelldescriptor_slug_uniq")
+  @@index([name], map: "dnd_spelldescriptor_name")
+  @@map("dnd_spelldescriptor")
+}
+
+model SpellDomainLevel {
+  id         Int        @id
+  domain_id  Int
+  spell_id   Int
+  level      Int
+  extra      String
+  spell  Spell  @relation(fields: [spell_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  domain Domain @relation(fields: [domain_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([spell_id], map: "dnd_spelldomainlevel_dnd_spelldomainlevel_a091809d")
+  @@index([domain_id], map: "dnd_spelldomainlevel_dnd_spelldomainlevel_a2431ea")
+  @@index([domain_id, spell_id], map: "dnd_spelldomainlevel_dnd_spelldomainlevel_domain_id_e7bf8594e3b6bda_uniq")
+	@@map("dnd_spelldomainlevel")
+}
+
+model SpellSchool {
+  id                    Int                     @id
+  name                  String
+  slug                  String
+  dnd_item_aura_schools dnd_item_aura_schools[] @ignore
+  spell             Spell[]
+
+  @@index([slug], map: "dnd_spellschool_dnd_spellschool_a951d5d6")
+  @@index([slug], map: "dnd_spellschool_dnd_spellschool_slug_uniq")
+  @@index([name], map: "dnd_spellschool_name")
+	@@map("dnd_spellschool")
+}
+
+model SpellSubschool {
+  id        Int         @id
+  name      String
+  slug      String
+  spell Spell[]
+
+  @@index([slug], map: "dnd_spellsubschool_dnd_spellsubschool_a951d5d6")
+  @@index([slug], map: "dnd_spellsubschool_dnd_spellsubschool_slug_uniq")
+  @@index([name], map: "dnd_spellsubschool_name")
+	@@map("dnd_spellsubschool")
+}
+
+model dnd_staticpage {
+  id        Int    @id
+  name      String
+  body      String
+  body_html String
+
+  @@index([name], map: "dnd_staticpage_name")
+  @@ignore
+}
+
+model dnd_textfeatprerequisite {
+  id       Int      @id
+  text     String
+  feat_id  Int
+  dnd_feat dnd_feat @relation(fields: [feat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([feat_id], map: "dnd_textfeatprerequisite_dnd_textfeatprerequisite_2f59e7d8")
+  @@ignore
+}
