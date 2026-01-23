@@ -1,17 +1,7 @@
-import "dotenv/config";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import { PrismaClient } from "../generated/prisma/client";
-
-const connectionString = `${process.env.DATABASE_URL}`;
-
-const adapter = new PrismaBetterSqlite3({ url: connectionString });
-const prisma = new PrismaClient({ adapter });
-
-export { prisma };
+import { prisma } from "../src/prisma";
 
 async function main() {
-  // Option A: pick a known spell by slug (recommended if you know one)
-  const slug = "fireball"; // change to any spell slug you know exists
+  const slug = process.argv[2] ?? "fireball";
 
   const spell = await prisma.spell.findFirst({
     where: { slug },
@@ -73,10 +63,10 @@ async function main() {
 
 main()
   .then(async () => {
-    await prisma.$disconnect()
+    await prisma.$disconnect();
   })
   .catch(async (e) => {
-    console.error(e)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });

@@ -10,39 +10,42 @@ This MVP focuses on **spell discovery and reference**, not rules automation.
 
 ## 2. Data Sources
 
-### Rules Data
+### Rules Data (Read-only)
 
-* Source: `dnd.sqlite` (legacy dndtool database)
-* Treated as **authoritative and read-only**
-* Contains:
+- Source: `dnd.sqlite` (legacy dndtool database)
+- Treated as **authoritative and immutable**
+- Contains:
+  - spells
+  - classes
+  - domains
+  - descriptors
+  - schools / subschools
+  - rulebooks
+  - editions
 
-  * spells
-  * classes
-  * domains
-  * descriptors
-  * schools / subschools
-  * rulebooks
-  * editions
+No canonical spell data is modified or duplicated.
 
-### App Data
+### App Data (Out of scope for backend MVP)
 
-* Separate app DB (SQLite or MongoDB)
-* Stores **user-owned data only**:
+- Separate app database (SQLite or MongoDB)
+- Stores **user-owned data only**:
+  - favorites
+  - spell notes
+  - spellbook entries
+  - prepared spells
 
-  * favorites
-  * spell notes
-  * spellbook entries
-  * prepared spells
-
-No canonical spell data is duplicated into the app DB.
+All spell references use `dnd_spell.id`.
 
 ---
 
-## 3. Edition Scope
+## 3. Edition Scope (MVP)
 
-* MVP targets **D&D 3.5 only**
-* Edition is determined by `dnd_dndedition`
-* Default filter: edition = 3.5
+- MVP targets **D&D 3.5 only**
+- Edition is identified by `Edition.slug`
+- Default edition slug: **`core-35`**
+
+Unless explicitly overridden, backend queries default to all rulebooks
+belonging to edition `core-35`.
 
 ---
 
@@ -52,203 +55,294 @@ A spell is represented conceptually as:
 
 ### Identity & Source
 
-* `id`, `slug`, `name`
-* `rulebook` (id, abbr, name)
-* `page`
+- `id`, `slug`, `name`
+- `rulebook` (id, abbr, name, slug)
+- `page`
 
 ### Classification
 
-* `school`
-* `subschool` (optional)
-* `descriptors[]`
+- `school`
+- `subschool` (optional)
+- `descriptors[]`
 
 ### Levels
 
-* `levels.byClass[]` → class + level (+ optional extra text)
-* `levels.byDomain[]` → domain + level (+ optional extra text)
+- `levels.byClass[]` → class + level (+ optional extra text)
+- `levels.byDomain[]` → domain + level (+ optional extra text)
 
 ### Components
 
-* Boolean flags:
-
-  * V, S, M, AF, DF, XP
-  * metabreath, truename, corrupt
-* `extraComponentsText` (display only)
-* `corruptLevel` (if applicable)
+- Boolean flags:
+  - V, S, M, AF, DF, XP
+  - metabreath, truename, corrupt
+- `extraComponentsText`
+- `corruptLevel` (if applicable)
 
 ### Mechanics (string-based in MVP)
 
-* casting time
-* range
-* target / effect / area
-* duration
-* saving throw
-* spell resistance
+- casting time
+- range
+- target / effect / area
+- duration
+- saving throw
+- spell resistance
 
 ### Text
 
-* `descriptionHtml`
-* `descriptionText`
+- `descriptionHtml`
+- `descriptionText`
 
-**Guarantee:** text fields are always UTF-8 strings.
-If legacy rows contain BLOBs, they are decoded at read time.
+**Guarantee:**  
+All text fields are returned as UTF-8 strings.  
+Legacy BLOBs are decoded at read time.
 
 ---
 
-## 5. Filtering Model (Core MVP Decision)
+## 5. Search Model (Core MVP Decision)
 
-The MVP supports **two distinct search modes**, each with its own filtering rules.
-This separation is intentional and avoids ambiguous semantics.
+The MVP intentionally supports **two separate search modes**.
+They are implemented as **distinct endpoints** with different semantics.
+
+This avoids ambiguous combinations and keeps behavior predictable.
 
 ---
 
 ### A. Global Name Search (MVP)
 
-**Purpose:** quick spell lookup by name (e.g. search bar).
+**Purpose:** quick spell lookup by name (search bar UX).
+
+#### Endpoint
+
+```
+
+GET /api/spells/search
+
+```
 
 #### Required
 
-* **Name (`q`)**
-
-  * Case-insensitive substring match
-  * Minimum length enforced (e.g. 2 characters)
+- **Name (`q`)**
+  - Case-insensitive substring match
+  - Minimum length enforced (≥ 2 characters)
 
 #### Optional
 
-* **Rulebooks**
-
-  * Multi-select
-  * Default: **all 3.5 rulebooks**
+- **Rulebooks**
+  - `rulebookIds` (CSV)
+  - Default: all rulebooks in edition `core-35`
+- Pagination (`page`, `pageSize`)
 
 > Class, level, and advanced filters are **not applicable** in name search for MVP.
+
+#### Eligibility Rules
+
+A spell is included if:
+
+- it belongs to one of the selected rulebooks
+- AND its name contains the query string (case-insensitive)
+
+#### Result Semantics
+
+- One row per spell
+- No class-level data included
+- Sorting:
+
+```
+
+spell.name ASC, spell.id ASC
+
+```
+
+---
+
+### SQLite Case-Insensitive Note (MVP)
+
+SQLite + Prisma does not reliably support
+`mode: 'insensitive'` without schema collation changes.
+
+For MVP, name search is implemented using **raw SQL**:
+
+```
+
+LOWER(spell.name) LIKE '%<lower(q)>%'
+
+```
+
+Implementation pattern:
+
+1. Raw SQL `COUNT(*)`
+2. Raw SQL query for ordered spell IDs
+3. Prisma `findMany` by IDs (relations included)
+4. Reordering to preserve SQL order
+
+This avoids schema migrations during MVP.
 
 ---
 
 ### B. Class + Level Spell Browsing (MVP)
 
-**Purpose:** structured spell list browsing (e.g. “Wizard level 3 spells”).
+**Purpose:** structured browsing such as
 
-#### Top-level scope (required)
+> “Show me all Wizard level 3 spells”.
 
-1. **Rulebooks**
+#### Endpoint
 
-   * Multi-select
-   * Default: **all 3.5 rulebooks**
-   * Some books (e.g. setting-specific) may be excluded later
+```
 
-2. **Classes**
+GET /api/spells/by-class-level
 
-   * Multi-select
-   * **Required**
-   * Prestige classes included by default (toggle may be added later)
+```
 
-3. **Spell Level**
+#### Required
 
-   * **Required**
-   * Integer `0–9`
+1. **Classes**
+   - `classIds` (CSV)
+   - Non-empty
+2. **Spell Level**
+   - Integer `0–9`
 
-> In MVP, **class-level browsing always requires a fixed spell level**.
+#### Optional
+
+- **Rulebooks**
+  - `rulebookIds` (CSV)
+  - Default: all rulebooks in edition `core-35`
+- Pagination (`page`, `pageSize`)
+
+> In MVP, class-level browsing **always requires a fixed level**.
 > Cross-level grouping is explicitly deferred.
 
----
-
-### Advanced filters (post-MVP)
-
-The following filters are **disabled in MVP** and will be enabled only after
-the core search behavior is stable:
-
-* School / Subschool
-* Descriptors
-* Components
-* Saving throw
-* Spell resistance
-* Combined name + class filtering
-
----
-
-## 6. Result Semantics
-
-### A. Name Search Results
+#### Eligibility Rules
 
 A spell is included if:
 
-* it belongs to one of the selected rulebooks
-* AND its name contains the query string (case-insensitive)
+- it belongs to one of the selected rulebooks
+- AND it has **at least one** class-level entry where:
+  - `class ∈ selected classes`
+  - `level = selected level`
 
-Result list characteristics:
+(OR semantics across classes.)
 
-* One row per spell
-* No class-level data included
-* Sorted by:
+#### Deduplication
 
-  ```
-  spell.name ASC, spell.id ASC
-  ```
+- One row per spell
+- If multiple classes match:
+  - the spell appears once
+  - with multiple entries in `matchedClassLevels`
 
----
+#### Sorting
 
-### B. Class + Level List Results
+```
 
-A spell is included if:
+spell.name ASC, spell.id ASC
 
-* it belongs to one of the selected rulebooks
-* AND it has **at least one** class-level entry where:
+```
 
-  * `class ∈ selected classes`
-  * `level = selected level`
-
-Result list characteristics:
-
-* One row per spell (deduplicated)
-* If a spell matches multiple selected classes at the same level:
-
-  * it appears once
-  * with multiple entries in `matchedClassLevels`
-* Sorting:
-
-  ```
-  spell.name ASC, spell.id ASC
-  ```
-* Pagination operates on **spells**, not class-level rows
+Pagination operates on **spells**, not class-level rows.
 
 ---
 
-### Explicit MVP Constraints
+## 6. Spell Detail (MVP)
 
-* Descriptor and component filters are **not active** in MVP
-* No cross-level grouping or minimum-level inference
-* Domain spell levels are excluded from list results
-* Full-text search over descriptions is out of scope
+### Purpose
+
+Fetch all information required to render a spell page.
+
+### Endpoint
+
+```
+
+GET /api/spells/:id
+
+```
+
+### Behavior
+
+Returns:
+
+- core spell info
+- rulebook + edition
+- school / subschool
+- descriptors
+- all components
+- mechanics fields
+- description (text + HTML)
+- all class levels
+- all domain levels
+- verification metadata
+
+Errors:
+
+- invalid id → **400**
+- not found → **404**
 
 ---
 
-## 7. Spellbook Features (MVP)
+## 7. Bootstrapping Endpoints (MVP)
 
-* Favorite spells
-* Personal notes per spell
-* Simple spellbook list
-* Prepared spell sets (spell + level + notes)
+These endpoints support initial UI rendering.
 
-All spell references use `dnd_spell.id`.
+### Rulebooks
+
+```
+
+GET /api/rulebooks
+
+```
+
+- Returns all rulebooks (optionally filtered to those containing spells)
+
+```
+
+GET /api/rulebooks/editions
+
+```
+
+- Returns all editions
+
+### Classes
+
+```
+
+GET /api/classes?includePrestige=false
+
+```
+
+- Default: exclude prestige classes
 
 ---
 
-## 8. Explicit Non-Goals (MVP)
+## 8. Spellbook Features (Frontend MVP)
 
-* No rules engine
-* No metamagic automation
-* No material / XP cost parsing
-* No errata or version tracking
-* No homebrew editing
-* No character sheet integration
+- Favorite spells
+- Personal notes per spell
+- Simple spellbook list
+- Prepared spell sets (spell + level + notes)
+
+Backend storage is **out of scope** for search MVP.
 
 ---
 
-## 9. Future (Out of MVP)
+## 9. Explicit Non-Goals (MVP)
 
-* Chinese spell text import
-* Rulebook categorization (core / setting / magazine)
-* Descriptor normalization
-* Performance tuning (indexes, caching)
-* Multi-edition support
+- No rules engine
+- No metamagic automation
+- No material / XP cost parsing
+- No errata or version tracking
+- No homebrew editing
+- No character sheet integration
+- No advanced combined filters
 
+---
+
+## 10. Post-MVP (Future)
+
+- Advanced filters (school, descriptors, components)
+- Full-text search (SQLite FTS or migration)
+- Rulebook categorization (core / setting / magazine)
+- Payload slimming via lookup tables
+- Multi-edition support
+- Chinese spell text import
+
+```
+
+```
