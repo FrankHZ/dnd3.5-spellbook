@@ -34,7 +34,7 @@ export async function queryByName(
         LIMIT ${pageSize} OFFSET ${offset}
       `,
   );
-  console.log(idRows);
+
   const ids = idRows.map((r) => Number(r.id));
   if (ids.length === 0) {
     return { total: 0, spellsInOrder: [] };
@@ -63,7 +63,6 @@ export async function queryByName(
   const order = new Map<number, number>();
   ids.forEach((id, idx) => order.set(id, idx));
   spellRows.sort((a, b) => order.get(a.id)! - order.get(b.id)!);
-  console.log(spellRows);
 
   return { total, spellsInOrder: spellRows };
 }

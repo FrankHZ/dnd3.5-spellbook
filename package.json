@@ -1,0 +1,12 @@
+{
+  "name": "dnd-spellbook",
+  "private": true,
+  "workspaces": [
+    "server",
+    "web",
+    "contracts"
+  ],
+  "scripts": {
+    "build:contracts": "npm run -w @dnd/contracts build"
+  }
+}

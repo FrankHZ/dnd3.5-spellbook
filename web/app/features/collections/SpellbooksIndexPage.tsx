@@ -1,0 +1,32 @@
+import { Link } from "react-router";
+import { useCollections } from "~/state/collections-state";
+
+export default function SpellbooksIndexPage() {
+  const { collections } = useCollections();
+
+  return (
+    <div className="p-4 space-y-4 max-w-3xl mx-auto">
+      <div className="space-y-1">
+        <h1 className="text-lg font-semibold">Spellbooks</h1>
+        <div className="text-sm text-muted-foreground">
+          Local-only collections (MVP).
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        {collections.books.map((b) => (
+          <Link
+            key={b.id}
+            to={`/spellbooks/${b.id}`}
+            className="rounded-md border p-4 hover:bg-muted/40"
+          >
+            <div className="font-medium">{b.name}</div>
+            <div className="mt-1 text-sm text-muted-foreground">
+              {b.spellIds.length} spell(s)
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}

@@ -1,10 +1,11 @@
+import type {
+  SpellByClassLevelItem,
+  SpellByClassLevelResponse,
+  SpellDetail,
+  SpellNameSearchResponse,
+} from "@dnd/contracts";
 import { getDefaultRulebookIds } from "../rulebooks.service";
-import {
-  mapSpellCore,
-  type SpellByClassLevelItemDTO,
-  type SpellByClassLevelResponseDTO,
-  type SpellDetailDTO,
-} from "./spells.mapper";
+import { mapSpellCore } from "./spells.mapper";
 import {
   queryByClassLevel,
   queryByName,
@@ -17,7 +18,7 @@ export const spellsService = {
     rulebookIds?: number[] | undefined;
     page: number;
     pageSize: number;
-  }) {
+  }): Promise<SpellNameSearchResponse> {
     const rulebookIds =
       input.rulebookIds && input.rulebookIds.length > 0
         ? input.rulebookIds
@@ -45,7 +46,7 @@ export const spellsService = {
     rulebookIds?: number[] | undefined;
     page: number;
     pageSize: number;
-  }): Promise<SpellByClassLevelResponseDTO> {
+  }): Promise<SpellByClassLevelResponse> {
     const rulebookIds =
       input.rulebookIds && input.rulebookIds.length > 0
         ? input.rulebookIds
@@ -59,7 +60,7 @@ export const spellsService = {
       input.pageSize,
     );
 
-    const items: SpellByClassLevelItemDTO[] = spellsInOrder.map((s: any) => {
+    const items: SpellByClassLevelItem[] = spellsInOrder.map((s: any) => {
       const core = mapSpellCore(s);
       const matchedClassLevels = (s.spellClassLevels ?? []).map((cl: any) => ({
         classId: cl.characterClass.id,
@@ -83,7 +84,7 @@ export const spellsService = {
       items,
     };
   },
-  async getSpellDetail(input: { id: number }): Promise<SpellDetailDTO | null> {
+  async getSpellDetail(input: { id: number }): Promise<SpellDetail | null> {
     const spell = await querySpellDetail(input.id);
     if (!spell) {
       return null;
@@ -127,7 +128,7 @@ export const spellsService = {
           a.domainId - b.domainId,
       );
 
-    const detail: SpellDetailDTO = {
+    const detail: SpellDetail = {
       id: spell.id,
       slug: spell.slug,
       name: spell.name,

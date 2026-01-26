@@ -1,24 +1,9 @@
+import type { Edition, Rulebook } from "@dnd/contracts";
 import { DEFAULT_DND_EDITION_SLUG, DND_SYSTEM } from "../config/constant";
 import { prisma } from "../prisma";
 
-let cachedRulebooksPromise: Promise<RulebookListItemDTO[]> | null = null;
-let cachedEditionsPromise: Promise<RulebookEditionDTO[]> | null = null;
-
-export type RulebookListItemDTO = {
-  id: number;
-  name: string;
-  abbr: string;
-  slug: string;
-  edition: RulebookEditionDTO;
-};
-
-export type RulebookEditionDTO = {
-  id: number;
-  name: string;
-  system: string;
-  slug: string;
-  core: boolean;
-};
+let cachedRulebooksPromise: Promise<Rulebook[]> | null = null;
+let cachedEditionsPromise: Promise<Edition[]> | null = null;
 
 async function loadRulebooks() {
   if (!cachedRulebooksPromise) {
@@ -40,7 +25,7 @@ async function loadRulebooks() {
             },
           },
         },
-        orderBy: [{ abbr: "asc" }, { name: "asc" }, { id: "asc" }],
+        orderBy: [{ id: "asc" }],
       })
       .catch((err) => {
         cachedRulebooksPromise = null;
@@ -59,10 +44,10 @@ export async function getDefaultRulebookIds(): Promise<number[]> {
 }
 
 export const rulebooksService = {
-  async listRulebooks(): Promise<RulebookListItemDTO[]> {
+  async listRulebooks(): Promise<Rulebook[]> {
     return loadRulebooks();
   },
-  async listRulebookEditions(): Promise<RulebookEditionDTO[]> {
+  async listRulebookEditions(): Promise<Edition[]> {
     if (!cachedEditionsPromise) {
       cachedEditionsPromise = prisma.edition
         .findMany({

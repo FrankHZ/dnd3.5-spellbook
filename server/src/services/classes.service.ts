@@ -1,14 +1,10 @@
-import { prisma } from '../prisma';
-
-export type ClassListItemDTO = {
-  id: number;
-  slug: string;
-  name: string;
-  prestige: boolean;
-};
+import { prisma } from "../prisma";
+import { type Class } from "@dnd/contracts";
 
 export const classesService = {
-  async listClasses(input: { includePrestige: boolean }): Promise<ClassListItemDTO[]> {
+  async listClasses(input: {
+    includePrestige: boolean;
+  }): Promise<Class[]> {
     const where = input.includePrestige ? {} : { prestige: false };
 
     const classes = await prisma.characterClass.findMany({
@@ -19,7 +15,7 @@ export const classesService = {
         name: true,
         prestige: true,
       },
-      orderBy: [{ prestige: 'asc' }, { name: 'asc' }, { id: 'asc' }],
+      orderBy: [{ prestige: "asc" }, { name: "asc" }, { id: "asc" }],
     });
 
     return classes;
