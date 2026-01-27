@@ -1,29 +1,42 @@
-import { type Request, type Response, type NextFunction } from 'express';
-import { ApiError } from '../utils/errors';
+import { type Request, type Response, type NextFunction } from "express";
+import { ApiError } from "../utils/errors";
 import {
   clampInt,
   normalizeString,
   parseCsvNumberList,
   parseIntOrDefault,
-} from '../utils/parse';
-import { spellsService } from '../services/spells/spells.service';
+} from "../utils/parse";
+import { spellsService } from "../services/spells/spells.service";
+import { getDefaultRulebookIds } from "../services/rulebooks.service";
+import type { SpellBatchRequest } from "../../../contracts/dist/dto/spell";
 
-export async function searchSpellsByName(req: Request, res: Response, next: NextFunction) {
+export async function searchSpellsByName(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const q = normalizeString(req.query.q);
     if (!q || q.length < 2) {
-      next(new ApiError(400, 'Invalid request', 'q must be at least 2 characters'));
+      next(
+        new ApiError(400, "Invalid request", "q must be at least 2 characters"),
+      );
       return;
     }
 
-    const rulebookIds = parseCsvNumberList(req.query.rulebookIds);
+    let rulebookIds = parseCsvNumberList(req.query.rulebookIds);
+    if (rulebookIds.length === 0) rulebookIds = await getDefaultRulebookIds();
 
     const page = clampInt(parseIntOrDefault(req.query.page, 1), 1, 1_000_000);
-    const pageSize = clampInt(parseIntOrDefault(req.query.pageSize, 20), 1, 100);
+    const pageSize = clampInt(
+      parseIntOrDefault(req.query.pageSize, 20),
+      1,
+      100,
+    );
 
     const result = await spellsService.searchByName({
       q,
-      rulebookIds: rulebookIds.length ? rulebookIds : undefined,
+      rulebookIds,
       page,
       pageSize,
     });
@@ -36,34 +49,54 @@ export async function searchSpellsByName(req: Request, res: Response, next: Next
   }
 }
 
-export async function listSpellsByClassLevel(req: Request, res: Response, next: NextFunction) {
+export async function listSpellsByClassAndDomainLevel(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const classIds = parseCsvNumberList(req.query.classIds);
-    if (classIds.length === 0) {
-      next(new ApiError(400, 'Invalid request', 'classIds is required'));
+    const domainIds = parseCsvNumberList(req.query.domainIds);
+
+    if (classIds.length === 0 && domainIds.length === 0) {
+      next(
+        new ApiError(
+          400,
+          "Invalid request",
+          "At least one classId or domainId is required",
+        ),
+      );
       return;
     }
 
     const levelRaw = normalizeString(req.query.level);
     if (!levelRaw) {
-      next(new ApiError(400, 'Invalid request', 'level is required (0-9)'));
+      next(new ApiError(400, "Invalid request", "level is required (0-9)"));
       return;
     }
     const level = Number(levelRaw);
     if (!Number.isInteger(level) || level < 0 || level > 9) {
-      next(new ApiError(400, 'Invalid request', 'level must be an integer 0-9'));
+      next(
+        new ApiError(400, "Invalid request", "level must be an integer 0-9"),
+      );
       return;
     }
 
-    const rulebookIds = parseCsvNumberList(req.query.rulebookIds);
+    let rulebookIds = parseCsvNumberList(req.query.rulebookIds);
+    if (rulebookIds.length === 0) rulebookIds = await getDefaultRulebookIds();
 
     const page = clampInt(parseIntOrDefault(req.query.page, 1), 1, 1_000_000);
-    const pageSize = clampInt(parseIntOrDefault(req.query.pageSize, 20), 1, 100);
+    const pageSize = clampInt(
+      parseIntOrDefault(req.query.pageSize, 20),
+      1,
+      100,
+    );
 
-    const result = await spellsService.listByClassLevel({
+    const result = await spellsService.listByClassAndDomainLevel({
       classIds,
+      domainIds,
       level,
-      rulebookIds: rulebookIds.length ? rulebookIds : undefined,
+      rulebookIds,
       page,
       pageSize,
     });
@@ -76,29 +109,83 @@ export async function listSpellsByClassLevel(req: Request, res: Response, next: 
   }
 }
 
-
-export async function getSpellDetail(req: Request, res: Response, next: NextFunction) {
+export async function getSpellDetail(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const idRaw = normalizeString(req.params.id);
     if (!idRaw) {
-      next(new ApiError(400, 'Invalid request', 'id is required'));
+      next(new ApiError(400, "Invalid request", "id is required"));
       return;
     }
 
     const id = Number(idRaw);
     if (!Number.isInteger(id) || id <= 0) {
-      next(new ApiError(400, 'Invalid request', 'id must be a positive integer'));
+      next(
+        new ApiError(400, "Invalid request", "id must be a positive integer"),
+      );
       return;
     }
 
     const spell = await spellsService.getSpellDetail({ id });
 
     if (!spell) {
-      next(new ApiError(404, 'Not found', `Spell ${id} not found`));
+      next(new ApiError(404, "Not found", `Spell ${id} not found`));
       return;
     }
 
     res.status(200).json(spell);
+    return;
+  } catch (err) {
+    next(err);
+    return;
+  }
+}
+
+const MAX_BATCH_IDS = 100;
+
+export async function batchSpells(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const body = req.body as Partial<SpellBatchRequest>;
+
+    if (!body || !Array.isArray(body.ids)) {
+      next(
+        new ApiError(400, "Invalid request", "ids must be an array of numbers"),
+      );
+      return;
+    }
+
+    // sanitize
+    const ids = body.ids
+      .map((x) => Number(x))
+      .filter((n) => Number.isInteger(n) && n > 0);
+
+    if (ids.length === 0) {
+      next(
+        new ApiError(
+          400,
+          "Invalid request",
+          "ids must contain at least one positive integer",
+        ),
+      );
+      return;
+    }
+    if (ids.length > MAX_BATCH_IDS) {
+      next(
+        new ApiError(400, "Invalid request", `ids must be <= ${MAX_BATCH_IDS}`),
+      );
+      return;
+    }
+
+    const response = await spellsService.batch({ ids });
+
+    res.status(200).json(response);
     return;
   } catch (err) {
     next(err);

@@ -1,20 +1,18 @@
 import { type Request, type Response, type NextFunction } from "express";
-import { classesService } from "../services/classes.service";
-import { parseBoolean, parseCsvNumberList } from "../utils/parse";
+import { parseCsvNumberList } from "../utils/parse";
 import { getDefaultRulebookIds } from "../services/rulebooks.service";
+import { domainsService } from "../services/domains.service";
 
-export async function listClasses(
+export async function listDomains(
   req: Request,
   res: Response,
   next: NextFunction,
 ) {
   try {
-    const includePrestige = parseBoolean(req.query.includePrestige, false);
     let rulebookIds = parseCsvNumberList(req.query.rulebookIds);
     if (rulebookIds.length === 0) rulebookIds = await getDefaultRulebookIds();
 
-    const result = await classesService.listClasses({
-      includePrestige,
+    const result = await domainsService.listDomains({
       rulebookIds,
     });
     res.status(200).json(result);

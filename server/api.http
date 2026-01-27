@@ -6,11 +6,28 @@ GET http://localhost:3000/api/rulebooks/editions
 ### Classes
 GET http://localhost:3000/api/classes
 
+### Classes + prestige + rulebook filter
+GET http://localhost:3000/api/classes?includePrestige=true&rulebookIds=4,6
+
+### Domains
+GET http://localhost:3000/api/domains
+
 ### Name search
 GET http://localhost:3000/api/spells/search?q=fire
+
+### Name search + rulebook filter
+GET http://localhost:3000/api/spells/search?q=fire&rulebookIds=4,6
 
 ### Class + level
 GET http://localhost:3000/api/spells/by-class-level?classIds=1&level=3
 
 ### Spell detail
 GET http://localhost:3000/api/spells/42
+
+### Spell detail
+POST http://localhost:3000/api/spells/batch
+Content-Type: application/json
+
+{
+  "ids": [1, 2, 2603, 2612]
+}

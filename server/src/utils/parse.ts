@@ -1,10 +1,12 @@
+import { error } from "node:console";
+
 export function parseCsvNumberList(value: unknown): number[] {
   if (value === undefined || value === null) return [];
   const s = String(value).trim();
   if (!s) return [];
 
   const nums = s
-    .split(',')
+    .split(",")
     .map((x) => x.trim())
     .filter(Boolean)
     .map((x) => Number(x))
@@ -14,7 +16,10 @@ export function parseCsvNumberList(value: unknown): number[] {
   return Array.from(new Set(nums)).sort((a, b) => a - b);
 }
 
-export function parseIntOrDefault(value: unknown, defaultValue: number): number {
+export function parseIntOrDefault(
+  value: unknown,
+  defaultValue: number,
+): number {
   if (value === undefined || value === null) return defaultValue;
   const n = Number(value);
   if (!Number.isFinite(n)) return defaultValue;
@@ -34,7 +39,7 @@ export function normalizeString(value: unknown): string | undefined {
 export function parseBoolean(value: unknown, defaultValue: boolean): boolean {
   if (value === undefined || value === null) return defaultValue;
   const s = String(value).trim().toLowerCase();
-  if (['true', '1', 'yes', 'y', 'on'].includes(s)) return true;
-  if (['false', '0', 'no', 'n', 'off'].includes(s)) return false;
+  if (["true", "1", "yes", "y", "on"].includes(s)) return true;
+  if (["false", "0", "no", "n", "off"].includes(s)) return false;
   return defaultValue;
 }

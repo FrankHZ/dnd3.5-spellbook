@@ -19,7 +19,7 @@ model Rulebook {
   image             String?             @map("image")
   published         DateTime?           @map("published")
   edition           Edition             @relation(fields: [dndEditionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  spells         Spell[]
+  spells            Spell[]
   dndFeats          dnd_feat[]          @ignore
   dndItems          dnd_item[]          @ignore
   dndDomainvariants dnd_domainvariant[] @ignore
@@ -29,6 +29,8 @@ model Rulebook {
   dndSkillvariants  dnd_skillvariant[]  @ignore
 
   dndCharacterclassvariants dnd_characterclassvariant[] @ignore
+  spellClassIndexes         SpellClassIndex[]
+  spellDomainIndexes        SpellDomainIndex[]
 
   @@index([name], map: "dnd_rulebook_dnd_rulebook_name")
   @@index([slug], map: "dnd_rulebook_dnd_rulebook_a951d5d6")
@@ -38,12 +40,14 @@ model Rulebook {
 }
 
 model Edition {
-  id        Int        @id @map("id")
-  name      String     @map("name")
-  system    String     @map("system")
-  slug      String     @map("slug")
-  core      Boolean    @map("core")
-  rulebooks Rulebook[]
+  id                 Int                @id @map("id")
+  name               String             @map("name")
+  system             String             @map("system")
+  slug               String             @map("slug")
+  core               Boolean            @map("core")
+  rulebooks          Rulebook[]
+  spellClassIndexes  SpellClassIndex[]
+  spellDomainIndexes SpellDomainIndex[]
 
   @@index([name], map: "dnd_dndedition_dnd_dndedition_name")
   @@index([slug], map: "dnd_dndedition_dnd_dndedition_a951d5d6")
@@ -55,12 +59,13 @@ model CharacterClass {
   id                            Int                             @id
   name                          String
   slug                          String
-  prestige                      Boolean                             @default(dbgenerated("'0'"))
+  prestige                      Boolean                         @default(dbgenerated("'0'"))
   short_description             String
   short_description_html        String
   dnd_characterclassvariant     dnd_characterclassvariant[]     @ignore
   dnd_racefavoredcharacterclass dnd_racefavoredcharacterclass[] @ignore
-  spellClasslevels           SpellClasslevel[]
+  spellClasslevels              SpellClasslevel[]
+  spellClassIndexes             SpellClassIndex[]
 
   @@index([name], map: "dnd_characterclass_dnd_characterclass_name")
   @@index([slug], map: "dnd_characterclass_dnd_characterclass_a951d5d6")
@@ -85,7 +90,7 @@ model dnd_characterclassvariant {
   required_bab                           Int?
   starting_gold                          String
   dnd_rulebook                           Rulebook                                 @relation(fields: [rulebook_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  dnd_characterclass                     CharacterClass                       @relation(fields: [character_class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_characterclass                     CharacterClass                           @relation(fields: [character_class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   dnd_characterclassvariant_class_skills dnd_characterclassvariant_class_skills[]
   dnd_characterclassvariantrequiresfeat  dnd_characterclassvariantrequiresfeat[]
   dnd_characterclassvariantrequiresrace  dnd_characterclassvariantrequiresrace[]
@@ -178,16 +183,17 @@ model dnd_deity {
 }
 
 model Domain {
-  id                   Int                    @id
-  name                 String
-  slug                 String
-  dnd_domainvariant    dnd_domainvariant[]    @ignore
-  spellDomainLevels SpellDomainLevel[]
+  id                 Int                 @id
+  name               String
+  slug               String
+  dnd_domainvariant  dnd_domainvariant[] @ignore
+  spellDomainLevels  SpellDomainLevel[]
+  spellDomainIndexes SpellDomainIndex[]
 
   @@index([slug], map: "dnd_domain_dnd_domain_a951d5d6")
   @@index([name], map: "dnd_domain_dnd_domain_name_uniq")
   @@index([slug], map: "dnd_domain_dnd_domain_slug_uniq")
-	@@map("dnd_domain")
+  @@map("dnd_domain")
 }
 
 model dnd_domainvariant {
@@ -201,7 +207,7 @@ model dnd_domainvariant {
   granted_power_type              String
   deities_text                    String
   dnd_rulebook                    Rulebook                          @relation(fields: [rulebook_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  dnd_domain                      Domain                        @relation(fields: [domain_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_domain                      Domain                            @relation(fields: [domain_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   dnd_domainvariant_deities       dnd_domainvariant_deities[]
   dnd_domainvariant_other_deities dnd_domainvariant_other_deities[]
 
@@ -380,11 +386,11 @@ model dnd_item {
 }
 
 model dnd_item_aura_schools {
-  id              Int             @id
+  id              Int         @id
   item_id         Int
   spellschool_id  Int
   dnd_spellschool SpellSchool @relation(fields: [spellschool_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  dnd_item        dnd_item        @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_item        dnd_item    @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([spellschool_id], map: "dnd_item_aura_schools_dnd_item_aura_schools_a7db21ef")
   @@index([item_id], map: "dnd_item_aura_schools_dnd_item_aura_schools_67b70d25")
@@ -406,11 +412,11 @@ model dnd_item_required_feats {
 }
 
 model dnd_item_required_spells {
-  id        Int       @id
+  id        Int      @id
   item_id   Int
   spell_id  Int
-  dnd_spell Spell @relation(fields: [spell_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  dnd_item  dnd_item  @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_spell Spell    @relation(fields: [spell_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_item  dnd_item @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([spell_id], map: "dnd_item_required_spells_dnd_item_required_spells_a091809d")
   @@index([item_id], map: "dnd_item_required_spells_dnd_item_required_spells_67b70d25")
@@ -695,11 +701,11 @@ model dnd_race_bonus_languages {
 }
 
 model dnd_racefavoredcharacterclass {
-  id                 Int                @id
+  id                 Int            @id
   race_id            Int
   character_class_id Int
   extra              String
-  dnd_race           dnd_race           @relation(fields: [race_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dnd_race           dnd_race       @relation(fields: [race_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   dnd_characterclass CharacterClass @relation(fields: [character_class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([character_class_id], map: "dnd_racefavoredcharacterclass_dnd_racefavoredcharacterclass_4d1287f7")
@@ -788,8 +794,8 @@ model dnd_skill {
   id                                     Int                                      @id
   name                                   String
   base_skill                             String
-  trained_only                           Boolean                                      @default(dbgenerated("'0'"))
-  armor_check_penalty                    Boolean                                      @default(dbgenerated("'0'"))
+  trained_only                           Boolean                                  @default(dbgenerated("'0'"))
+  armor_check_penalty                    Boolean                                  @default(dbgenerated("'0'"))
   slug                                   String
   dnd_characterclassvariant_class_skills dnd_characterclassvariant_class_skills[]
   dnd_characterclassvariantrequiresskill dnd_characterclassvariantrequiresskill[]
@@ -851,12 +857,12 @@ model Spell {
   name                   String
   school_id              Int
   sub_school_id          Int?
-  verbal_component       Boolean                        @default(dbgenerated("'0'"))
-  somatic_component      Boolean                        @default(dbgenerated("'0'"))
-  material_component     Boolean                        @default(dbgenerated("'0'"))
-  arcane_focus_component Boolean                        @default(dbgenerated("'0'"))
-  divine_focus_component Boolean                        @default(dbgenerated("'0'"))
-  xp_component           Boolean                        @default(dbgenerated("'0'"))
+  verbal_component       Boolean                    @default(dbgenerated("'0'"))
+  somatic_component      Boolean                    @default(dbgenerated("'0'"))
+  material_component     Boolean                    @default(dbgenerated("'0'"))
+  arcane_focus_component Boolean                    @default(dbgenerated("'0'"))
+  divine_focus_component Boolean                    @default(dbgenerated("'0'"))
+  xp_component           Boolean                    @default(dbgenerated("'0'"))
   casting_time           String?
   range                  String?
   target                 String?
@@ -876,13 +882,15 @@ model Spell {
   verified               Boolean
   verified_author_id     Int?
   verified_time          DateTime?
-  spellSubschool     SpellSubschool?        @relation(fields: [sub_school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  spellSchool        SpellSchool            @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  rulebook           Rulebook                   @relation(fields: [rulebook_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  spellDescriptors  SpellDescriptors[]
-  spellClassLevels    SpellClasslevel[]
-  spellDomainLevels   SpellDomainLevel[]
+  spellSubschool         SpellSubschool?            @relation(fields: [sub_school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  spellSchool            SpellSchool                @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  rulebook               Rulebook                   @relation(fields: [rulebook_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  spellDescriptors       SpellDescriptors[]
+  spellClassLevels       SpellClasslevel[]
+  spellDomainLevels      SpellDomainLevel[]
   dndItemRequiredSpells  dnd_item_required_spells[] @ignore
+  spellClassIndexes      SpellClassIndex[]
+  spellDomainIndexes     SpellDomainIndex[]
 
   @@index([verified_author_id], map: "dnd_spell_dnd_spell_63f7f931")
   @@index([name], map: "dnd_spell_dnd_spell_name")
@@ -895,11 +903,11 @@ model Spell {
 }
 
 model SpellDescriptors {
-  id                  Int                 @id
-  spell_id            Int
-  spelldescriptor_id  Int
-  spell           Spell           @relation(fields: [spell_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  spellDescriptor SpellDescriptor @relation(fields: [spelldescriptor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                 Int             @id
+  spell_id           Int
+  spelldescriptor_id Int
+  spell              Spell           @relation(fields: [spell_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  spellDescriptor    SpellDescriptor @relation(fields: [spelldescriptor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([spelldescriptor_id], map: "dnd_spell_descriptors_dnd_spell_descriptors_30529786")
   @@index([spell_id], map: "dnd_spell_descriptors_dnd_spell_descriptors_a091809d")
@@ -908,13 +916,13 @@ model SpellDescriptors {
 }
 
 model SpellClasslevel {
-  id                 Int                @id
+  id                 Int            @id
   character_class_id Int
   spell_id           Int
   level              Int
   extra              String
-  spell          Spell          @relation(fields: [spell_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  characterClass CharacterClass @relation(fields: [character_class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  spell              Spell          @relation(fields: [spell_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  characterClass     CharacterClass @relation(fields: [character_class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([spell_id], map: "dnd_spellclasslevel_dnd_spellclasslevel_a091809d")
   @@index([character_class_id], map: "dnd_spellclasslevel_dnd_spellclasslevel_4d1287f7")
@@ -923,9 +931,9 @@ model SpellClasslevel {
 }
 
 model SpellDescriptor {
-  id                    Int                     @id
-  name                  String
-  slug                  String
+  id               Int                @id
+  name             String
+  slug             String
   spellDescriptors SpellDescriptors[]
 
   @@index([name], map: "dnd_spelldescriptor_dnd_spelldescriptor_name")
@@ -936,18 +944,18 @@ model SpellDescriptor {
 }
 
 model SpellDomainLevel {
-  id         Int        @id
-  domain_id  Int
-  spell_id   Int
-  level      Int
-  extra      String
-  spell  Spell  @relation(fields: [spell_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  domain Domain @relation(fields: [domain_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id        Int    @id
+  domain_id Int
+  spell_id  Int
+  level     Int
+  extra     String
+  spell     Spell  @relation(fields: [spell_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  domain    Domain @relation(fields: [domain_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([spell_id], map: "dnd_spelldomainlevel_dnd_spelldomainlevel_a091809d")
   @@index([domain_id], map: "dnd_spelldomainlevel_dnd_spelldomainlevel_a2431ea")
   @@index([domain_id, spell_id], map: "dnd_spelldomainlevel_dnd_spelldomainlevel_domain_id_e7bf8594e3b6bda_uniq")
-	@@map("dnd_spelldomainlevel")
+  @@map("dnd_spelldomainlevel")
 }
 
 model SpellSchool {
@@ -955,24 +963,24 @@ model SpellSchool {
   name                  String
   slug                  String
   dnd_item_aura_schools dnd_item_aura_schools[] @ignore
-  spell             Spell[]
+  spell                 Spell[]
 
   @@index([slug], map: "dnd_spellschool_dnd_spellschool_a951d5d6")
   @@index([slug], map: "dnd_spellschool_dnd_spellschool_slug_uniq")
   @@index([name], map: "dnd_spellschool_name")
-	@@map("dnd_spellschool")
+  @@map("dnd_spellschool")
 }
 
 model SpellSubschool {
-  id        Int         @id
-  name      String
-  slug      String
+  id    Int     @id
+  name  String
+  slug  String
   spell Spell[]
 
   @@index([slug], map: "dnd_spellsubschool_dnd_spellsubschool_a951d5d6")
   @@index([slug], map: "dnd_spellsubschool_dnd_spellsubschool_slug_uniq")
   @@index([name], map: "dnd_spellsubschool_name")
-	@@map("dnd_spellsubschool")
+  @@map("dnd_spellsubschool")
 }
 
 model dnd_staticpage {
@@ -993,4 +1001,38 @@ model dnd_textfeatprerequisite {
 
   @@index([feat_id], map: "dnd_textfeatprerequisite_dnd_textfeatprerequisite_2f59e7d8")
   @@ignore
+}
+
+model SpellClassIndex {
+  spellId    Int    @map("spell_id")
+  classId    Int    @map("class_id")
+  level      Int
+  rulebookId Int    @map("rulebook_id")
+  editionId  Int    @map("edition_id")
+  extra      String @default("")
+
+  spell          Spell          @relation(fields: [spellId], references: [id])
+  rulebook       Rulebook       @relation(fields: [rulebookId], references: [id])
+  edition        Edition        @relation(fields: [editionId], references: [id])
+  characterClass CharacterClass @relation(fields: [classId], references: [id])
+
+  @@id([spellId, classId, level, rulebookId, extra])
+  @@map("idx_spell_class_level")
+}
+
+model SpellDomainIndex {
+  spellId    Int    @map("spell_id")
+  domainId   Int    @map("domain_id")
+  level      Int
+  rulebookId Int    @map("rulebook_id")
+  editionId  Int    @map("edition_id")
+  extra      String @default("")
+
+  spell    Spell    @relation(fields: [spellId], references: [id])
+  rulebook Rulebook @relation(fields: [rulebookId], references: [id])
+  edition  Edition  @relation(fields: [editionId], references: [id])
+  domain   Domain   @relation(fields: [domainId], references: [id])
+
+  @@id([spellId, domainId, level, rulebookId, extra])
+  @@map("idx_spell_domain_level")
 }

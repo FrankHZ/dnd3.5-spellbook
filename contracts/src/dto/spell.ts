@@ -1,12 +1,24 @@
-export type SpellCoreItem = {
+export type SpellItem = {
   id: number;
   slug: string;
   name: string;
+
+  rulebook: { id: number; abbr: string; name: string; slug: string };
   page: number | null;
-  rulebook: { id: number; abbr: string };
+
   school: { id: number; name: string; slug: string } | null;
   subSchool: { id: number; name: string; slug: string } | null;
   descriptors: Array<{ id: number; name: string; slug: string }>;
+  components: SpellComponents;
+
+  matchedClassLevels: Array<ClassLevel>;
+  matchedDomainLevels: Array<DomainLevel>;
+
+  casting: SpellCasting;
+
+  corrupt?: {
+    level?: number | null;
+  };
 };
 
 export type SpellNameSearchResponse = {
@@ -15,18 +27,7 @@ export type SpellNameSearchResponse = {
   total: number;
   q: string;
   rulebookIds: number[];
-  items: SpellCoreItem[];
-};
-
-export type SpellByClassLevelItem = SpellCoreItem & {
-  matchedClassLevels: Array<{
-    classId: number;
-    classSlug: string;
-    className: string;
-    prestige: boolean;
-    level: number;
-    extra: string;
-  }>;
+  items: SpellItem[];
 };
 
 export type SpellByClassLevelResponse = {
@@ -36,7 +37,7 @@ export type SpellByClassLevelResponse = {
   level: number;
   classIds: number[];
   rulebookIds: number[];
-  items: SpellByClassLevelItem[];
+  items: SpellItem[];
 };
 
 export type SpellComponents = {
@@ -63,7 +64,7 @@ export type SpellCasting = {
   spellResistance?: string | null;
 };
 
-export type SpellClassLevel = {
+export type ClassLevel = {
   classId: number;
   classSlug: string;
   className: string;
@@ -72,7 +73,7 @@ export type SpellClassLevel = {
   extra: string;
 };
 
-export type SpellDomainLevel = {
+export type DomainLevel = {
   domainId: number;
   domainSlug: string;
   domainName: string;
@@ -80,40 +81,26 @@ export type SpellDomainLevel = {
   extra: string;
 };
 
-export type SpellDetail = {
-  id: number;
-  slug: string;
-  name: string;
-  added: string; // ISO
-
-  rulebook: { id: number; abbr: string; name: string; slug: string };
-  page: number | null;
-
-  school: { id: number; name: string; slug: string } | null;
-  subSchool: { id: number; name: string; slug: string } | null;
-
-  descriptors: Array<{ id: number; name: string; slug: string }>;
-
-  components: SpellComponents;
-
-  casting: SpellCasting;
+export type SpellDetail = SpellItem & {
+  added: string; // ISO date
 
   description: {
     text: string;
     html: string;
   };
-
-  classLevels: Array<SpellClassLevel>;
-
-  domainLevels: Array<SpellDomainLevel>;
-
   verified: {
     verified: boolean;
     verifiedAuthorId?: number | null;
     verifiedTime?: string | null; // ISO
   };
+};
 
-  corrupt?: {
-    level?: number | null;
-  };
+export type SpellBatchRequest = {
+  ids: number[];
+};
+
+export type SpellBatchResponse = {
+  ids: number[];
+  items: SpellItem[];
+  missingIds: number[];
 };

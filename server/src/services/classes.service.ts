@@ -1,23 +1,41 @@
 import { prisma } from "../prisma";
-import { type Class } from "@dnd/contracts";
+import { type ClassListResponse } from "@dnd/contracts";
 
 export const classesService = {
   async listClasses(input: {
     includePrestige: boolean;
-  }): Promise<Class[]> {
-    const where = input.includePrestige ? {} : { prestige: false };
+    rulebookIds: number[];
+  }): Promise<ClassListResponse> {
+    const indexRows = await prisma.spellClassIndex.findMany({
+      distinct: ["classId"],
+      where: {
+        rulebookId: { in: input.rulebookIds },
+      },
+      select: {
+        classId: true,
+      },
+    });
+    if (indexRows.length === 0) {
+      return {
+        includePrestige: input.includePrestige,
+        rulebookIds: input.rulebookIds,
+        items: [],
+      };
+    }
+    const classIds = indexRows.map((r) => r.classId);
 
     const classes = await prisma.characterClass.findMany({
-      where,
-      select: {
-        id: true,
-        slug: true,
-        name: true,
-        prestige: true,
+      where: {
+        id: { in: classIds },
+        ...(input.includePrestige ? {} : { prestige: false }),
       },
       orderBy: [{ prestige: "asc" }, { name: "asc" }, { id: "asc" }],
     });
 
-    return classes;
+    return {
+      includePrestige: input.includePrestige,
+      rulebookIds: input.rulebookIds,
+      items: classes,
+    };
   },
 };

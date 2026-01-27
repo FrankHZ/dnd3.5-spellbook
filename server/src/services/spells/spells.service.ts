@@ -1,78 +1,123 @@
 import type {
-  SpellByClassLevelItem,
+  SpellBatchResponse,
+  SpellItem,
   SpellByClassLevelResponse,
   SpellDetail,
   SpellNameSearchResponse,
 } from "@dnd/contracts";
-import { getDefaultRulebookIds } from "../rulebooks.service";
-import { mapSpellCore } from "./spells.mapper";
+
+import { mapSpellItem, mapSpellDetail } from "./spells.mapper";
 import {
-  queryByClassLevel,
+  queryByClassAndDomainLevels as queryByClassAndDomainLevel,
   queryByName,
   querySpellDetail,
+  querySpellsByIds,
 } from "./spells.repo";
+
+type FilterFunction<T> = (item: T) => boolean;
+
+function filterByRulebookId(
+  rulebookIds: Set<number>,
+): FilterFunction<{ rulebookId: number }> {
+  return (classOrDomain: { rulebookId: number }) =>
+    rulebookIds.has(classOrDomain.rulebookId);
+}
+
+function filterByDomainIdAndLevel(
+  ids: Set<number>,
+  level: number,
+): FilterFunction<{ domainId: number; level: number }> {
+  return (classOrDomain: { domainId: number; level: number }) =>
+    ids.has(classOrDomain.domainId) && classOrDomain.level === level;
+}
+
+function filterByClassIdAndLevel(
+  ids: Set<number>,
+  level: number,
+): FilterFunction<{ classId: number; level: number }> {
+  return (classOrDomain: { classId: number; level: number }) =>
+    ids.has(classOrDomain.classId) && classOrDomain.level === level;
+}
+
+function filterSpellIndexes(
+  spell: any,
+  rulebookIds: Set<number>,
+  classIds: Set<number> | null,
+  domainIds: Set<number> | null,
+  level: number | null,
+) {
+  spell.spellClassIndexes = spell.spellClassIndexes.filter(
+    filterByRulebookId(rulebookIds),
+  );
+  if (classIds && level !== null)
+    spell.spellClassIndexes = spell.spellClassIndexes.filter(
+      filterByClassIdAndLevel(classIds, level),
+    );
+
+  spell.spellDomainIndexes = spell.spellDomainIndexes.filter(
+    filterByRulebookId(rulebookIds),
+  );
+  if (domainIds && level !== null)
+    spell.spellDomainIndexes = spell.spellDomainIndexes.filter(
+      filterByDomainIdAndLevel(domainIds, level),
+    );
+}
 
 export const spellsService = {
   async searchByName(input: {
     q: string;
-    rulebookIds?: number[] | undefined;
+    rulebookIds: number[];
     page: number;
     pageSize: number;
   }): Promise<SpellNameSearchResponse> {
-    const rulebookIds =
-      input.rulebookIds && input.rulebookIds.length > 0
-        ? input.rulebookIds
-        : await getDefaultRulebookIds();
-
     const { total, spellsInOrder } = await queryByName(
       input.q,
-      rulebookIds,
+      input.rulebookIds,
       input.page,
       input.pageSize,
     );
+
+    spellsInOrder.forEach((spell) => {
+      filterSpellIndexes(spell, new Set(input.rulebookIds), null, null, null);
+    });
 
     return {
       page: input.page,
       pageSize: input.pageSize,
       total,
       q: input.q,
-      rulebookIds,
-      items: spellsInOrder.map(mapSpellCore),
+      rulebookIds: input.rulebookIds,
+      items: spellsInOrder.map(mapSpellItem),
     };
   },
-  async listByClassLevel(input: {
+
+  async listByClassAndDomainLevel(input: {
     classIds: number[];
+    domainIds: number[];
     level: number;
-    rulebookIds?: number[] | undefined;
+    rulebookIds: number[];
     page: number;
     pageSize: number;
   }): Promise<SpellByClassLevelResponse> {
-    const rulebookIds =
-      input.rulebookIds && input.rulebookIds.length > 0
-        ? input.rulebookIds
-        : await getDefaultRulebookIds();
-
-    const { total, spellsInOrder } = await queryByClassLevel(
+    const { total, spellsInOrder } = await queryByClassAndDomainLevel(
       input.classIds,
+      input.domainIds,
       input.level,
-      rulebookIds,
+      input.rulebookIds,
       input.page,
       input.pageSize,
     );
 
-    const items: SpellByClassLevelItem[] = spellsInOrder.map((s: any) => {
-      const core = mapSpellCore(s);
-      const matchedClassLevels = (s.spellClassLevels ?? []).map((cl: any) => ({
-        classId: cl.characterClass.id,
-        classSlug: cl.characterClass.slug,
-        className: cl.characterClass.name,
-        prestige: !!cl.characterClass.prestige,
-        level: cl.level,
-        extra: cl.extra,
-      }));
-
-      return { ...core, matchedClassLevels };
+    spellsInOrder.forEach((spell) => {
+      filterSpellIndexes(
+        spell,
+        new Set(input.rulebookIds),
+        input.classIds.length == 0 ? null : new Set(input.classIds),
+        input.domainIds.length == 0 ? null : new Set(input.domainIds),
+        input.level,
+      );
     });
+    const items: SpellItem[] = spellsInOrder.map(mapSpellItem);
 
     return {
       page: input.page,
@@ -80,125 +125,49 @@ export const spellsService = {
       total,
       level: input.level,
       classIds: input.classIds,
-      rulebookIds,
+      rulebookIds: input.rulebookIds,
       items,
     };
   },
+
   async getSpellDetail(input: { id: number }): Promise<SpellDetail | null> {
     const spell = await querySpellDetail(input.id);
     if (!spell) {
       return null;
     }
 
-    const descriptors = (spell.spellDescriptors ?? [])
-      .map((sd: any) => sd.spellDescriptor)
-      .filter(Boolean)
-      .map((d: any) => ({ id: d.id, name: d.name, slug: d.slug }))
-      .sort((a: any, b: any) => a.name.localeCompare(b.name) || a.id - b.id);
+    return mapSpellDetail(spell);
+  },
 
-    const classLevels = (spell.spellClassLevels ?? [])
-      .map((cl: any) => ({
-        classId: cl.characterClass.id,
-        classSlug: cl.characterClass.slug,
-        className: cl.characterClass.name,
-        prestige: !!cl.characterClass.prestige,
-        level: cl.level,
-        extra: cl.extra,
-      }))
-      .sort(
-        (a: any, b: any) =>
-          a.level - b.level ||
-          a.prestige - b.prestige ||
-          a.className.localeCompare(b.className) ||
-          a.classId - b.classId,
-      );
+  async batch(input: { ids: number[] }): Promise<SpellBatchResponse> {
+    const inputIds = input.ids;
 
-    const domainLevels = (spell.spellDomainLevels ?? [])
-      .map((dl: any) => ({
-        domainId: dl.domain.id,
-        domainSlug: dl.domain.slug,
-        domainName: dl.domain.name,
-        level: dl.level,
-        extra: dl.extra,
-      }))
-      .sort(
-        (a: any, b: any) =>
-          a.level - b.level ||
-          a.domainName.localeCompare(b.domainName) ||
-          a.domainId - b.domainId,
-      );
+    // Dedupe for querying, but preserve original order for output
+    const uniqueIds: number[] = [];
+    const seen = new Set<number>();
+    for (const id of inputIds) {
+      if (!seen.has(id)) {
+        seen.add(id);
+        uniqueIds.push(id);
+      }
+    }
 
-    const detail: SpellDetail = {
-      id: spell.id,
-      slug: spell.slug,
-      name: spell.name,
-      added: spell.added.toISOString(),
+    const rows = await querySpellsByIds(uniqueIds);
 
-      rulebook: spell.rulebook,
-      page: spell.page ?? null,
+    const byId = new Map<number, (typeof rows)[number]>();
+    for (const r of rows) byId.set(r.id, r);
 
-      school: spell.spellSchool
-        ? {
-            id: spell.spellSchool.id,
-            name: spell.spellSchool.name,
-            slug: spell.spellSchool.slug,
-          }
-        : null,
-      subSchool: spell.spellSubschool
-        ? {
-            id: spell.spellSubschool.id,
-            name: spell.spellSubschool.name,
-            slug: spell.spellSubschool.slug,
-          }
-        : null,
+    const items = inputIds
+      .map((id) => byId.get(id))
+      .filter((x): x is NonNullable<typeof x> => !!x)
+      .map(mapSpellItem);
 
-      descriptors,
+    const missingIds = inputIds.filter((id) => !byId.has(id));
 
-      components: {
-        V: !!spell.verbal_component,
-        S: !!spell.somatic_component,
-        M: !!spell.material_component,
-        AF: !!spell.arcane_focus_component,
-        DF: !!spell.divine_focus_component,
-        XP: !!spell.xp_component,
-        metabreath: !!spell.meta_breath_component,
-        truename: !!spell.true_name_component,
-        corrupt: !!spell.corrupt_component,
-        extra: spell.extra_components ?? null,
-      },
-
-      casting: {
-        castingTime: spell.casting_time ?? null,
-        range: spell.range ?? null,
-        target: spell.target ?? null,
-        effect: spell.effect ?? null,
-        area: spell.area ?? null,
-        duration: spell.duration ?? null,
-        savingThrow: spell.saving_throw ?? null,
-        spellResistance: spell.spell_resistance ?? null,
-      },
-
-      description: {
-        text: spell.description,
-        html: spell.description_html,
-      },
-
-      classLevels,
-      domainLevels,
-
-      verified: {
-        verified: !!spell.verified,
-        verifiedAuthorId: spell.verified_author_id ?? null,
-        verifiedTime: spell.verified_time
-          ? spell.verified_time.toISOString()
-          : null,
-      },
-
-      corrupt: {
-        level: spell.corrupt_level ?? null,
-      },
+    return {
+      ids: inputIds,
+      items,
+      missingIds,
     };
-
-    return detail;
   },
 };

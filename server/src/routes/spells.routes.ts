@@ -1,14 +1,16 @@
-import { Router } from 'express';
+import { Router } from "express";
 import {
   searchSpellsByName,
-  listSpellsByClassLevel,
+  listSpellsByClassAndDomainLevel,
   getSpellDetail,
-} from '../controllers/spells.controller';
+  batchSpells,
+} from "../controllers/spells.controller";
 
 const spellsRouter = Router();
 
-spellsRouter.get('/search', searchSpellsByName);
-spellsRouter.get('/by-class-level', listSpellsByClassLevel);
+spellsRouter.get("/search", searchSpellsByName);
+spellsRouter.get("/by-level", listSpellsByClassAndDomainLevel);
+spellsRouter.post("/batch", batchSpells);
 
-spellsRouter.get('/:id', getSpellDetail);
+spellsRouter.get("/:id", getSpellDetail);
 export { spellsRouter };

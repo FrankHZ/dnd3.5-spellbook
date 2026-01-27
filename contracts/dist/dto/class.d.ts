@@ -6,5 +6,6 @@ export type Class = {
 };
 export type ClassListResponse = {
     includePrestige: boolean;
+    rulebookIds: number[];
     items: Class[];
 };

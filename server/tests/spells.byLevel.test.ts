@@ -1,7 +1,7 @@
 import request from "supertest";
 import { app } from "../src/app";
 
-describe("GET /api/spells/by-class-level", () => {
+describe("GET /api/spells/by--level", () => {
   it("lists spells for class + level", async () => {
     const res = await request(app)
       .get("/api/spells/by-class-level")

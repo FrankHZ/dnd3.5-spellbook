@@ -8,6 +8,7 @@ import { rulebooksRouter } from "./routes/rulebooks.routes";
 import { classesRouter } from "./routes/classes.routes";
 import { pinoHttp } from "pino-http";
 import { logger } from "./logger";
+import { domainsRouter } from "./routes/domains.routes";
 
 const app: Application = express();
 
@@ -31,6 +32,7 @@ app.get("/health", (_req, res) => {
 app.use("/api/spells", spellsRouter);
 app.use("/api/rulebooks", rulebooksRouter);
 app.use("/api/classes", classesRouter);
+app.use("/api/domains", domainsRouter);
 
 // 404 + error handler (must be last)
 app.use(notFoundMiddleware);
