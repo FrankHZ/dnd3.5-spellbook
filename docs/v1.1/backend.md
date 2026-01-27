@@ -57,6 +57,10 @@ Stable sort where applicable:
 - **Descriptions are excluded from list/batch/search items**
 - **Descriptions are only returned by detail endpoint**
 
+### Typing
+
+The typings of request responses are defined in `/contracts/` package.
+
 ---
 
 ## 1. Rulebooks & Editions
@@ -209,7 +213,7 @@ SpellByLevelResponse {
   page: number;
   pageSize: number;
   total: number;
-  items: SpellItemByLevel[];
+  items: SpellItem[];
 }
 ```
 
