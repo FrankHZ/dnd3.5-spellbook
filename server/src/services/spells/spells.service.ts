@@ -49,18 +49,19 @@ function filterSpellIndexes(
   spell.spellClassIndexes = spell.spellClassIndexes.filter(
     filterByRulebookId(rulebookIds),
   );
-  if (classIds && level !== null)
-    spell.spellClassIndexes = spell.spellClassIndexes.filter(
-      filterByClassIdAndLevel(classIds, level),
-    );
-
   spell.spellDomainIndexes = spell.spellDomainIndexes.filter(
     filterByRulebookId(rulebookIds),
   );
-  if (domainIds && level !== null)
-    spell.spellDomainIndexes = spell.spellDomainIndexes.filter(
-      filterByDomainIdAndLevel(domainIds, level),
-    );
+  if (level !== null) {
+    spell.spellClassIndexes = classIds
+      ? spell.spellClassIndexes.filter(filterByClassIdAndLevel(classIds, level))
+      : [];
+    spell.spellDomainIndexes = domainIds
+      ? spell.spellDomainIndexes.filter(
+          filterByDomainIdAndLevel(domainIds, level),
+        )
+      : [];
+  }
 }
 
 export const spellsService = {
