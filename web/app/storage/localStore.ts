@@ -4,8 +4,9 @@ import { type PersistedState, STORAGE_VERSION } from "./schema";
 export const DEFAULT_STATE: PersistedState = {
   storageVersion: STORAGE_VERSION,
   includePrestige: false,
-  selectedRulebookIds: [],
+  selectedRulebookIds: [4, 6],
   browseClassIds: [],
+  browseDomainIds: [],
   browseLevel: null,
   uiPrefs: {},
 };

@@ -1,14 +1,11 @@
 import { Link, useParams } from "react-router";
 import { useMemo } from "react";
-import { useQueries } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 
 import { useCollections } from "~/state/collections-state";
-import { getSpellDetail } from "~/api/spells";
+import { getSpellDetail, getSpellsBatch } from "~/api/spells";
 import { Separator } from "~/components/ui/separator";
 import { SpellCard } from "~/components/SpellCard";
-import type { SpellDetail } from "@dnd/contracts";
-
-const MAX_LOAD = 100;
 
 export default function SpellbookDetailPage() {
   const { id } = useParams();
@@ -31,29 +28,18 @@ export default function SpellbookDetailPage() {
     );
   }
 
-  // Guard: avoid too many parallel requests
-  const spellIdsToLoad = book.spellIds.slice(0, MAX_LOAD);
-  const truncated = book.spellIds.length > MAX_LOAD;
-
-  const queries = useQueries({
-    queries: spellIdsToLoad.map((spellId) => ({
-      queryKey: ["spellDetail", spellId],
-      queryFn: ({ signal }: { signal: AbortSignal }) =>
-        getSpellDetail(spellId, signal),
-      staleTime: 5 * 60 * 1000,
-    })),
+  const ids = book.spellIds;
+  const batchQuery = useQuery({
+    queryKey: ["spellbook-batch", bookId, ids.join(",")],
+    queryFn: ({ signal }) => getSpellsBatch(ids, signal),
+    enabled: ids.length > 0,
   });
 
-  const isLoading = queries.some((q) => q.isLoading);
-  const hasError = queries.some((q) => q.isError);
+  const isLoading = batchQuery.isLoading;
+  const hasError = batchQuery.isError;
 
-  const spells = useMemo(() => {
-    // keep only successful ones, stable sort by name for nicer UX
-    const items = queries
-      .map((q) => q.data)
-      .filter(Boolean) as Array<SpellDetail>;
-    return items.sort((a, b) => a.name.localeCompare(b.name));
-  }, [queries]);
+  const spells = batchQuery.data?.items ?? [];
+  const missingIds = batchQuery.data?.missingIds ?? [];
 
   function removeFromThisBook(spellId: number) {
     // MVP: only default + prepared exist; toggle is remove if present
@@ -69,7 +55,6 @@ export default function SpellbookDetailPage() {
           <h1 className="text-lg font-semibold">{book.name}</h1>
           <div className="text-sm text-muted-foreground">
             {book.spellIds.length} spell(s)
-            {truncated ? ` (showing first ${MAX_LOAD})` : ""}
           </div>
         </div>
 
@@ -93,14 +78,19 @@ export default function SpellbookDetailPage() {
               Loading spells…
             </div>
           )}
-
           {hasError && (
             <div className="rounded-md border p-3">
               <div className="font-medium">Some spells failed to load</div>
               <div className="mt-1 text-sm text-muted-foreground">
-                You can still open loaded spells. (This will be solved post-MVP
-                with batch fetch.)
+                Please try again later.
               </div>
+            </div>
+          )}
+
+          {missingIds.length > 0 && (
+            <div className="rounded-md border p-3 text-sm">
+              Some spells are missing (deleted or unavailable):{" "}
+              {missingIds.join(", ")}
             </div>
           )}
 
@@ -109,13 +99,6 @@ export default function SpellbookDetailPage() {
               <SpellCard key={sp.id} spell={sp} showActions={true} />
             ))}
           </div>
-
-          {truncated && (
-            <div className="text-xs text-muted-foreground">
-              Too many spells to load individually in MVP. Post-MVP we’ll use a
-              batch endpoint.
-            </div>
-          )}
         </>
       )}
     </div>

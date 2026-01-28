@@ -39,26 +39,28 @@ function TopBarSeacrch() {
 
 export default function TopBar() {
   return (
-    <div className="flex items-center gap-3 px-4 py-3 border-b">
-      <div className="font-bold whitespace-nowrap">D&amp;D 3.5 Spellbook</div>
-      <TopBarSeacrch />
-      <nav className="flex gap-3 text-sm">
-        <NavLink className="hover:underline" to="/browse">
-          Browse
-        </NavLink>
-        <NavLink className="hover:underline" to="/spellbooks/default">
-          Favorites
-        </NavLink>
-        <NavLink className="hover:underline" to="/spellbooks/prepared">
-          Prepared
-        </NavLink>
-        <NavLink className="hover:underline" to="/spellbooks">
-          Spellbooks
-        </NavLink>
-        <NavLink className="hover:underline" to="/settings">
-          Settings
-        </NavLink>
-      </nav>
-    </div>
+    <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur">
+      <div className="flex items-center gap-3 px-4 py-3">
+        <div className="font-bold whitespace-nowrap">D&amp;D 3.5 Spellbook</div>
+        <TopBarSeacrch />
+        <nav className="flex gap-3 text-sm">
+          <NavLink className="hover:underline" to="/browse">
+            Browse
+          </NavLink>
+          <NavLink className="hover:underline" to="/spellbooks/default">
+            Favorites
+          </NavLink>
+          <NavLink className="hover:underline" to="/spellbooks/prepared">
+            Prepared
+          </NavLink>
+          <NavLink className="hover:underline" to="/spellbooks">
+            Spellbooks
+          </NavLink>
+          <NavLink className="hover:underline" to="/settings">
+            Settings
+          </NavLink>
+        </nav>
+      </div>
+    </header>
   );
 }

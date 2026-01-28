@@ -53,9 +53,9 @@ export default function App() {
               <div className="flex flex-col min-h-screen">
                 <TopBar />
                 <BootstrapBanner />
-                <div className="flex-1 overflow-auto">
+                <main className="flex-1">
                   <Outlet />
-                </div>
+                </main>
               </div>
             </CollectionsProvider>
           </PersistedStateProvider>

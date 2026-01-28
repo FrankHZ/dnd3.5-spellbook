@@ -1,24 +1,15 @@
-// app/components/SpellCard.tsx
-import type { SpellByClassLevelItem, SpellCoreItem } from "@dnd/contracts";
+import type { SpellItem } from "@dnd/contracts";
 import { Heart } from "lucide-react";
 import { Link } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { useCollections } from "~/state/collections-state";
 
-type SpellCardSpell = SpellByClassLevelItem | SpellCoreItem;
-
-function hasMatchedClassLevels(
-  spell: SpellCardSpell,
-): spell is SpellByClassLevelItem {
-  return "matchedClassLevels" in spell;
-}
-
 export function SpellCard({
   spell,
   showActions = false,
 }: {
-  spell: SpellCardSpell;
+  spell: SpellItem;
   showActions?: boolean;
 }) {
   const { toggleDefault, togglePrepared, isInDefault, isInPrepared } =
@@ -47,18 +38,25 @@ export function SpellCard({
             {spell.subSchool ? ` (${spell.subSchool.name})` : ""}
           </div>
 
-          {hasMatchedClassLevels(spell) && (
-            <div className="mt-1 text-xs text-muted-foreground">
-              {spell.matchedClassLevels
-                .map(
-                  (mcl) =>
-                    `${mcl.className} ${mcl.level}` +
-                    (mcl.extra ? ` (${mcl.extra})` : "") +
-                    (mcl.prestige ? ` (P)` : ""),
-                )
-                .join(", ")}
-            </div>
-          )}
+          <div className="mt-1 text-xs text-muted-foreground">
+            {spell.classLevels
+              .map(
+                (mcl) =>
+                  `${mcl.className} ${mcl.level}` +
+                  (mcl.extra ? ` (${mcl.extra})` : "") +
+                  (mcl.prestige ? ` (P)` : ""),
+              )
+              .join(", ")}
+          </div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            {spell.domainLevels
+              .map(
+                (mdl) =>
+                  `${mdl.domainName} ${mdl.level}` +
+                  (mdl.extra ? ` (${mdl.extra})` : ""),
+              )
+              .join(", ")}
+          </div>
 
           {spell.descriptors?.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1">

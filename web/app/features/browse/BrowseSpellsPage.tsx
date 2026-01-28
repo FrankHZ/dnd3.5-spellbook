@@ -3,7 +3,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import { usePersistedState } from "~/state/persisted-state";
 import { useBootstrap } from "~/bootstrap/useBootstrap";
-import { getSpellsByClassLevel } from "~/api/spells";
+import { getSpellsByLevel } from "~/api/spells";
 import { ApiError } from "~/api/http";
 
 import { Checkbox } from "~/components/ui/checkbox";
@@ -18,82 +18,90 @@ import { Separator } from "~/components/ui/separator";
 import Pager from "~/components/Pager";
 import type { Class } from "../../../../contracts/dist/dto/class";
 import { SpellCard } from "../../components/SpellCard";
+import type { Domain } from "@dnd/contracts";
+import {
+  MultiSelectPicker,
+  type PickerItem,
+} from "~/components/MultiSelectPicker";
+import { Button } from "~/components/ui/button";
+import { cn } from "~/lib/utils";
 
 const PAGE_SIZE = 25;
 
-function LevelSelector() {
+export function LevelSelector() {
   const { state, setState } = usePersistedState();
   const level = state.browseLevel;
+
+  function setLevel(next: number) {
+    setState((s) => ({ ...s, browseLevel: next }));
+  }
+
   return (
     <div className="rounded-md border p-3 space-y-2">
       <div className="font-medium">Level</div>
-      <Select
-        value={level === null ? "" : String(level)}
-        onValueChange={(v) =>
-          setState((s) => ({
-            ...s,
-            browseLevel: v === "" ? null : Number(v),
-          }))
-        }
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="Select level (0-9)" />
-        </SelectTrigger>
-        <SelectContent>
-          {Array.from({ length: 10 }, (_, i) => (
-            <SelectItem key={i} value={String(i)}>
-              {String(i)}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+
+      <div className="grid grid-cols-5 gap-2">
+        {Array.from({ length: 10 }, (_, i) => (
+          <Button
+            key={i}
+            type="button"
+            variant={level === i ? "default" : "outline"}
+            size="sm"
+            onClick={() => setLevel(i)}
+            className={cn("justify-center")}
+          >
+            {i}
+          </Button>
+        ))}
+      </div>
 
       {level === null && (
         <div className="text-sm text-destructive">
-          Select a spell level (0-9).
+          Select a spell level (0–9).
         </div>
       )}
     </div>
   );
 }
 
-function ClassSelector({ classes }: { classes: Class[] }) {
+function ClassAndDomainSelector() {
   const { state, setState } = usePersistedState();
-  const classIds = state.browseClassIds;
-  const selectedClassSet = useMemo(() => new Set(classIds), [classIds]);
+  const boot = useBootstrap(state.includePrestige);
+  const classes = boot.classes.data?.items ?? [];
+  const domains = boot.domains.data?.items ?? [];
 
-  function toggleClass(id: number, checked: boolean) {
-    setState((s) => {
-      const next = new Set(s.browseClassIds);
-      if (checked) next.add(id);
-      else next.delete(id);
-      return { ...s, browseClassIds: Array.from(next) };
-    });
-  }
+  const classItems: PickerItem[] = classes.map((c) => ({
+    id: c.id,
+    name: c.name,
+    group: c.prestige ? "Prestige Classes" : "Base Classes",
+  }));
+
+  const domainItems: PickerItem[] = domains.map((d) => ({
+    id: d.id,
+    name: d.name,
+  }));
+
   return (
     <div className="rounded-md border p-3 space-y-2">
-      <div className="font-medium">Classes</div>
-      <div className="text-xs text-muted-foreground">
-        Multi-select. Prestige classes are controlled by the Settings toggle.
-      </div>
+      <MultiSelectPicker
+        title="Classes"
+        placeholder="Filter classes…"
+        items={classItems}
+        selectedIds={state.browseClassIds}
+        onChange={(nextIds) =>
+          setState((s) => ({ ...s, browseClassIds: nextIds }))
+        }
+      />
 
-      <div className="max-h-64 overflow-auto pr-1 space-y-2">
-        {classes.map((c) => {
-          const checked = selectedClassSet.has(c.id);
-          return (
-            <label key={c.id} className="flex items-center gap-2 text-sm">
-              <Checkbox
-                checked={checked}
-                onCheckedChange={(v) => toggleClass(c.id, Boolean(v))}
-              />
-              <span>{c.name}</span>
-            </label>
-          );
-        })}
-      </div>
-      <div className="text-sm text-muted-foreground">
-        {state.browseClassIds.length} class(es) selected
-      </div>
+      <MultiSelectPicker
+        title="Domains"
+        placeholder="Filter domains…"
+        items={domainItems}
+        selectedIds={state.browseDomainIds}
+        onChange={(nextIds) =>
+          setState((s) => ({ ...s, browseDomainIds: nextIds }))
+        }
+      />
     </div>
   );
 }
@@ -106,23 +114,26 @@ export default function BrowsePage() {
 
   const level = state.browseLevel;
   const classIds = state.browseClassIds;
-  const rulebookIds = state.selectedRulebookIds; // optional selector in this page
+  const domainIds = state.browseDomainIds;
+  const rulebookIds = state.selectedRulebookIds;
 
-  const hasValidSelection = classIds.length > 0 && level !== null;
+  const hasValidSelection =
+    (classIds.length > 0 || domainIds.length > 0) && level !== null;
 
   useEffect(() => {
     setPage(1);
-  }, [classIds, level, rulebookIds]);
+  }, [classIds, domainIds, level, rulebookIds]);
 
   const browseQuery = useQuery({
     queryKey: [
       "browse",
-      { classIds, level, rulebookIds, page, pageSize: PAGE_SIZE },
+      { classIds, domainIds, level, rulebookIds, page, pageSize: PAGE_SIZE },
     ],
     enabled: hasValidSelection,
     queryFn: ({ signal }) =>
-      getSpellsByClassLevel({
+      getSpellsByLevel({
         classIds,
+        domainIds,
         level: level!, // safe because enabled guards it
         rulebookIds: rulebookIds.length ? rulebookIds : undefined,
         page,
@@ -132,11 +143,9 @@ export default function BrowsePage() {
     placeholderData: keepPreviousData,
   });
 
-  const classes = boot.classes.data?.items ?? [];
-
   const validationMessages: string[] = [];
-  if (classIds.length === 0)
-    validationMessages.push("Select at least one class.");
+  if (classIds.length === 0 && domainIds.length === 0)
+    validationMessages.push("Select at least one class or domain.");
   if (level === null) validationMessages.push("Select a spell level (0-9).");
 
   const errorMessage = useMemo(() => {
@@ -154,7 +163,7 @@ export default function BrowsePage() {
     <div className="p-4 space-y-4 max-w-6xl mx-auto">
       <div className="grid gap-4 md:grid-cols-[320px_1fr]">
         <div className="space-y-3">
-          <ClassSelector classes={classes} />
+          <ClassAndDomainSelector />
           <LevelSelector />
         </div>
         <div className="space-y-3">

@@ -17,7 +17,7 @@ export async function apiGet<T>(
   path: string,
   signal?: AbortSignal,
 ): Promise<T> {
-  console.log(`Fetching API endpoint: ${path}`);
+  console.log(`Fetching API endpoint: GET ${path}`);
 
   const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
   const res = await fetch(url, { method: "GET", signal });
@@ -26,4 +26,25 @@ export async function apiGet<T>(
 
   if (!res.ok) throw new ApiError(res.status, data);
   return data as T;
+}
+
+export async function apiPost<ResponseT, BodyT>(
+  path: string,
+  body: BodyT,
+  signal?: AbortSignal,
+): Promise<ResponseT> {
+  console.log(`Fetching API endpoint: POST ${path}`);
+
+  const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    signal,
+  });
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+
+  if (!res.ok) throw new ApiError(res.status, data);
+  return data as ResponseT;
 }

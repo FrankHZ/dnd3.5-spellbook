@@ -1,7 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { getClasses, getEditions, getRulebooks } from "~/api/bootstrap";
+import {
+  getClasses,
+  getDomains,
+  getEditions,
+  getRulebooks,
+} from "~/api/bootstrap";
+import { usePersistedState } from "~/state/persisted-state";
 
 export function useBootstrap(includePrestige: boolean) {
+  const { state } = usePersistedState();
+
   const editions = useQuery({
     queryKey: ["bootstrap", "editions"],
     queryFn: ({ signal }) => getEditions(signal),
@@ -15,8 +23,20 @@ export function useBootstrap(includePrestige: boolean) {
   });
 
   const classes = useQuery({
-    queryKey: ["bootstrap", "classes", includePrestige],
-    queryFn: ({ signal }) => getClasses(includePrestige, signal),
+    queryKey: [
+      "bootstrap",
+      "classes",
+      includePrestige,
+      state.selectedRulebookIds,
+    ],
+    queryFn: ({ signal }) =>
+      getClasses(includePrestige, state.selectedRulebookIds, signal),
+    staleTime: Infinity,
+  });
+
+  const domains = useQuery({
+    queryKey: ["bootstrap", "domains", state.selectedRulebookIds],
+    queryFn: ({ signal }) => getDomains(state.selectedRulebookIds, signal),
     staleTime: Infinity,
   });
 
@@ -24,6 +44,7 @@ export function useBootstrap(includePrestige: boolean) {
     editions,
     rulebooks,
     classes,
+    domains,
     isLoading: editions.isLoading || rulebooks.isLoading || classes.isLoading,
     error: editions.error || rulebooks.error || classes.error,
   };
