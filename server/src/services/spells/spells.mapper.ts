@@ -65,8 +65,8 @@ export function mapSpellItem(spell: any): SpellItem {
         }
       : null,
     descriptors,
-    matchedClassLevels: classLevels,
-    matchedDomainLevels: domainLevels,
+    classLevels: classLevels,
+    domainLevels: domainLevels,
     components: {
       V: !!spell.verbal_component,
       S: !!spell.somatic_component,

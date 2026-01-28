@@ -25,8 +25,8 @@ export type SpellItem = {
         slug: string;
     }>;
     components: SpellComponents;
-    matchedClassLevels: Array<ClassLevel>;
-    matchedDomainLevels: Array<DomainLevel>;
+    classLevels: Array<ClassLevel>;
+    domainLevels: Array<DomainLevel>;
     casting: SpellCasting;
     corrupt?: {
         level?: number | null;
