@@ -1,3 +1,4 @@
+
 # D&D 3.5 Spellbook SPA — Frontend v1.1
 
 This document describes the **Frontend v1.1** state of the D&D 3.5 Spellbook SPA.
@@ -9,16 +10,14 @@ while intentionally avoiding scope creep.
 ## 1. Scope & Goals
 
 ### In scope
-
 - Updated **Browse** flow using new backend endpoints
 - Domain + Class unified browsing
 - Improved selector UX (combobox + quick level selector)
 - Stable, sticky layout polish
-- Frontend-only collections (Favorites / Prepared)
+- Frontend-only collections (see batch lookup below)
 - API contract alignment with backend v1.1
 
 ### Out of scope (intentionally)
-
 - Advanced combined search (name + class + level)
 - Notes, tagging, or metadata editing
 - Virtualized lists / infinite scroll
@@ -43,7 +42,6 @@ Routing remains CSR-only.
 ## 3. Global Layout
 
 ### Root layout (`root.tsx`)
-
 ```tsx
 <div className="flex flex-col min-h-screen">
   <TopBar />
@@ -55,11 +53,9 @@ Routing remains CSR-only.
 ```
 
 ### Layout behavior
-
 - Window scroll (no nested scroll containers)
 - Sticky top bar
 - Stable scrollbar to prevent layout shift:
-
 ```css
 html {
   scrollbar-gutter: stable;
@@ -71,11 +67,15 @@ html {
 ## 4. State Management
 
 ### Persisted state (localStorage)
-
 - Selected rulebook IDs
 - Include prestige toggle
-- Browse scope (class IDs, domain IDs, level)
-- Favorites / Prepared collections
+- Browse scope:
+  - selected class IDs
+  - selected domain IDs
+  - selected spell level
+- Frontend collections:
+  - favorites
+  - prepared
 
 ```ts
 export function usePersistedState() {
@@ -85,110 +85,125 @@ export function usePersistedState() {
 }
 ```
 
-No global Redux or Context is used for app state.
-Only localized context is used where necessary (settings composition).
+No global Redux is used.
+Context is applied only for local composition (e.g. Settings).
 
 ---
 
 ## 5. Data Fetching
 
 ### Library
-
 - **@tanstack/react-query v5**
 
 ### Principles
-
 - Backend APIs treated as fixed contracts
-- Query keys reflect full scope (class/domain/level/rulebooks)
-- Queries re-run when scope changes
-- No `keepPreviousData` (v5 cache handles this)
+- Query keys fully encode scope (classes / domains / level / rulebooks / page)
+- Queries automatically re-run when scope changes
+- No `keepPreviousData` (v5 cache behavior is sufficient)
 
 ---
 
 ## 6. Browse Page (Core Feature)
 
-### Scope
+### Endpoint
+- `GET /api/spells/by-level`
 
-- Class + Domain + Level browsing only
-- No name search here (strict separation)
+This endpoint replaces the MVP-era class-level endpoint and supports:
+- multiple classes
+- multiple domains
+- optional rulebook scoping
+- pagination
+
+### Scope rules
+- Browse is **structured only**:
+  - class + domain + level
+- Name search is intentionally excluded
 
 ### Selectors
 
 #### Classes & Domains
-
-- Base UI **Combobox (multiple, controlled)**
-- Chips show selected items
-- “View all” button opens grouped list
+- Base UI **Combobox** (multiple, fully controlled)
+- Chips display current selection
+- “View all” button opens grouped list:
   - Classes grouped into Base / Prestige
-  - Prestige group only shown if enabled in settings
+  - Prestige group shown **only if enabled in Settings**
 
 #### Level selector
-
 - Fixed grid buttons (0–9)
 - Immediate feedback, no dropdown
 
-### Pagination
+### Settings interaction (important)
+- **Include prestige classes**:
+  - Affects bootstrap class list
+  - Enables prestige group in class selector
+- **Selected rulebooks**:
+  - Restrict available classes and domains at bootstrap
+  - Scope browse queries
+  - Affect both Browse and Search pages
 
+### Pagination
 - Page-based
-- Page resets when scope changes
+- Page resets automatically when browse scope changes
 - Shared `Pager` component
 
 ---
 
 ## 7. Search Page
 
-### Behavior
+### Endpoint
+- `GET /api/spells/search`
 
+### Behavior
 - Name substring search only
 - Minimum length: 2 characters
-- No debounce (MVP decision)
+- No debounce (intentional for v1.1)
 - Page stored in URL (`?q=&page=`)
 
 ### UI
-
-- Uses same `SpellCard` as browse
+- Uses shared `SpellCard`
 - No class/domain filters shown
-- Clear separation from Browse UX
+- Clear UX separation from Browse
 
 ---
 
 ## 8. Spell Detail Page
 
 ### Data
-
-- Single `GET /api/spells/:id` call
+- `GET /api/spells/:id`
 - 400 → Invalid ID
 - 404 → Spell not found
 
 ### Sections
-
 - Header: name, rulebook, page
 - Classification: school, subschool, descriptors
-- Levels: classes + domains
-- Components: V/S/M/DF/XP/etc chips
-- Mechanics: casting, range, target, duration, save, SR
+- Levels:
+  - class levels
+  - domain levels
+- Components: V / S / M / DF / XP / etc. chips
+- Mechanics: casting time, range, target, effect, area, duration, save, SR
 - Description:
-  - `description.html` sanitized via DOMPurify
+  - `descriptionHtml` sanitized via DOMPurify
   - fallback to text if needed
 
 ### Actions
-
 - Add / Remove from **Favorites**
 - Add to **Prepared**
 
 ---
 
-## 9. Collections Model (Frontend-only)
+## 9. Collections Model (Frontend + Batch Lookup)
 
-### Books
+### Storage
+Collections are stored locally as **spell ID lists**:
+- `favorites`
+- `prepared`
 
-- `favorites` (default)
-- `prepared` (default)
+### Rendering
+- Collection pages use backend **batch lookup endpoint**
+- Spell data is always rendered from backend responses
+- Frontend never stores full spell objects
 
-Both are simple spell ID collections stored locally.
-No rename / clone / custom books in v1.1.
-
-Future backend batch lookup is planned.
+This avoids data drift and aligns with future server persistence.
 
 ---
 
@@ -208,7 +223,7 @@ Future backend batch lookup is planned.
 - Tailwind CSS
 - shadcn/ui components
 - No custom theme tokens beyond defaults
-- Page-level padding applied per route (no global wrapper class)
+- Page-level padding applied per route
 
 ---
 
@@ -218,7 +233,7 @@ Future backend batch lookup is planned.
 - No skeleton loaders
 - No keyboard shortcut polish
 - No SSR / SEO support
-- No server persistence
+- No server persistence for collections
 
 All deferred items are intentional and tracked for post-1.1.
 
@@ -227,9 +242,9 @@ All deferred items are intentional and tracked for post-1.1.
 ## 13. Status
 
 ✅ Feature-complete for Frontend v1.1  
-✅ Backend contract aligned  
-✅ UX stable and usable  
-⏭ Ready for Chinese localization & backend batch APIs
+✅ Backend 1.1 endpoints fully adopted  
+✅ Batch lookup integrated and in use  
+⏭ Ready for localization and post-1.1 features
 
 ---
 
