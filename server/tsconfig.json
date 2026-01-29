@@ -8,6 +8,7 @@
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "commonjs",
+    "moduleResolution": "node",
     "target": "esnext",
     "esModuleInterop": true,
     "types": ["vitest/globals"],
@@ -42,6 +43,6 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts", "prisma/**/*.ts", ".env"],
+  "include": ["src/**/*.ts", "prisma/**/*.ts"],
   "exclude": ["node_modules", "dist", "tests"]
 }

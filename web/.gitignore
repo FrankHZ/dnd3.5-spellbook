@@ -5,3 +5,7 @@
 # React Router
 /.react-router/
 /build/
+
+# Vite env files
+.env.local
+.env.production.local

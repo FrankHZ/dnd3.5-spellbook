@@ -1,7 +1,5 @@
 export type ApiErrorPayload = { message?: string; error?: unknown };
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
-
 export class ApiError extends Error {
   status: number;
   payload?: ApiErrorPayload;
@@ -19,7 +17,7 @@ export async function apiGet<T>(
 ): Promise<T> {
   console.log(`Fetching API endpoint: GET ${path}`);
 
-  const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
+  const url = path.startsWith("http") ? path : `${path}`;
   const res = await fetch(url, { method: "GET", signal });
   const text = await res.text();
   const data = text ? JSON.parse(text) : null;
@@ -35,7 +33,7 @@ export async function apiPost<ResponseT, BodyT>(
 ): Promise<ResponseT> {
   console.log(`Fetching API endpoint: POST ${path}`);
 
-  const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
+  const url = path.startsWith("http") ? path : `${path}`;
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
