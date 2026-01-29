@@ -6,19 +6,10 @@ import { useBootstrap } from "~/bootstrap/useBootstrap";
 import { getSpellsByLevel } from "~/api/spells";
 import { ApiError } from "~/api/http";
 
-import { Checkbox } from "~/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
 import { Separator } from "~/components/ui/separator";
 import Pager from "~/components/Pager";
-import type { Class } from "../../../../contracts/dist/dto/class";
 import { SpellCard } from "../../components/SpellCard";
-import type { Domain } from "@dnd/contracts";
+
 import {
   MultiSelectPicker,
   type PickerItem,
@@ -26,7 +17,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 20;
 
 export function LevelSelector() {
   const { state, setState } = usePersistedState();
@@ -57,7 +48,7 @@ export function LevelSelector() {
 
       {level === null && (
         <div className="text-sm text-destructive">
-          Select a spell level (0–9).
+          Select a spell level (0-9).
         </div>
       )}
     </div>
@@ -190,7 +181,7 @@ export default function BrowsePage() {
 
               {errorMessage && (
                 <div className="rounded-md border p-3">
-                  <div className="font-medium">Couldn’t load spells</div>
+                  <div className="font-medium">Couldn't load spells</div>
                   <div className="mt-1 text-sm text-muted-foreground">
                     {errorMessage}
                   </div>
