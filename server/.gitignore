@@ -4,3 +4,9 @@ node_modules
 
 /generated/prisma
 /dist
+
+/out
+
+# For tool/zh-parser
+/data/chm-raw
+/data/chm-test

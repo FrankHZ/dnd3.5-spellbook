@@ -4,9 +4,6 @@
   "description": "A modern **Dungeons & Dragons 3.5 spellbook web application** built with a **React + Express** stack, powered by a legacy SQLite dataset and extended with **bilingual (English / Chinese) spell support**.",
   "main": "index.js",
   "type": "commonjs",
-  "directories": {
-    "doc": "docs"
-  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
@@ -14,7 +11,11 @@
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
     "test": "vitest",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "tool:parse:test": "tsx src/tools/zh-parser/cli.ts --input ./data/chm-test/ --outDir out/zh-parser/test",
+    "tool:parse": "tsx src/tools/zh-parser/cli.ts --input ./data/chm-clean/ --outDir out/zh-parser",
+    "tool:backcheck-zh": "tsx src/tools/zh-parser/scripts/zh-backcheck.ts ./out/zh-parser/matched.json ./out/zh-parser/missing-zh.json",
+    "tool:preprocess-zh": "tsx src/tools/zh-parser/scripts/preprocess-chm-html.ts --in ./data/chm-raw --out ./data/chm-clean"
   },
   "keywords": [],
   "author": "",
@@ -23,17 +24,21 @@
     "@dnd/contracts": "0.0.1",
     "@prisma/adapter-better-sqlite3": "^7.3.0",
     "@prisma/client": "^7.3.0",
+    "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "iconv-lite": "^0.7.2",
     "pino": "^10.3.0",
-    "pino-http": "^11.0.0"
+    "pino-http": "^11.0.0",
+    "sanitize-html": "^2.17.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.0.9",
+    "@types/sanitize-html": "^2.16.0",
     "@types/supertest": "^6.0.3",
     "cross-env": "^10.1.0",
     "nodemon": "^3.1.11",
@@ -41,6 +46,7 @@
     "prisma": "^7.3.0",
     "supertest": "^7.2.2",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   }
