@@ -1,4 +1,4 @@
-import { prisma } from "../prisma";
+import { rulesPrismaClient as prisma } from "~/lib/rules-prisma-client";
 import { type ClassListResponse } from "@dnd/contracts";
 
 export const classesService = {

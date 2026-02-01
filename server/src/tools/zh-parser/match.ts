@@ -1,5 +1,5 @@
-import { Prisma } from "../../../generated/prisma/client";
-import { prisma } from "../../prisma";
+import { Prisma } from "DB_RULES/client";
+import { rulesPrismaClient as prisma } from "~/lib/rules-prisma-client";
 import aliasMapGlobal from "DATA/enName-aliases-global.json";
 import aliasMapExtra from "DATA/enName-aliases-extra.json";
 import bookMap from "DATA/books-zh-mapping.json";

@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { prisma } from "../../prisma";
+import { prisma } from "../../lib/rules-prisma-client";
 
 /**
  * Input: your raw mapping text file (books-zh.txt)

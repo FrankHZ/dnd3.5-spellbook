@@ -2,7 +2,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { prisma } from "../../../prisma";
+import { prisma } from "../../../lib/rules-prisma-client";
 
 type MatchedEntry = {
   spellId: number | null;

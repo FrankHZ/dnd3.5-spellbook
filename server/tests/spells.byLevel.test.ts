@@ -4,8 +4,8 @@ import { app } from "../src/app";
 describe("GET /api/spells/by--level", () => {
   it("lists spells for class + level", async () => {
     const res = await request(app)
-      .get("/api/spells/by-class-level")
-      .query({ classIds: "1", level: 3 });
+      .get("/api/spells/by-level")
+      .query({ classIds: "1", level: 3, rulebookIds: "4,6" });
 
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body.items)).toBe(true);
@@ -13,7 +13,7 @@ describe("GET /api/spells/by--level", () => {
 
   it("rejects missing level", async () => {
     const res = await request(app)
-      .get("/api/spells/by-class-level")
+      .get("/api/spells/by-level")
       .query({ classIds: "1" });
 
     expect(res.status).toBe(400);

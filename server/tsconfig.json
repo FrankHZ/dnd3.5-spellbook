@@ -43,10 +43,13 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
     "resolveJsonModule": true,
+    "baseUrl": ".",
     "paths": {
-      "DATA/*": ["./data/*"]
+      "DATA/*": ["data/*"],
+      "~/*": ["src/*"],
+      "DB_RULES/*": ["prisma-rules-clean/rules-clean-db-types/*"]
     },
   },
-  "include": ["src/**/*.ts", "prisma/**/*.ts"],
-  "exclude": ["node_modules", "dist", "tests"]
+  "include": ["src/**/*.ts", "prisma-*/**/*.ts", "tests/**/*.ts", "dev-scripts/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }
