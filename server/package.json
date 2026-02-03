@@ -14,10 +14,10 @@
     "db:studio": "prisma studio",
     "test": "vitest",
     "test:watch": "vitest --watch",
-    "tool:parse:test": "tsx src/tools/zh-parser/cli.ts --input ./data/chm-test/ --outDir out/zh-parser/test",
-    "tool:parse": "tsx src/tools/zh-parser/cli.ts --input ./data/chm-clean/ --outDir out/zh-parser",
-    "tool:backcheck-zh": "tsx src/tools/zh-parser/scripts/zh-backcheck.ts ./out/zh-parser/matched.json ./out/zh-parser/missing-zh.json",
-    "tool:preprocess-zh": "tsx src/tools/zh-parser/scripts/preprocess-chm-html.ts --in ./data/chm-raw --out ./data/chm-clean"
+    "tool:parse:test": "tsx tools/zh-parser/cli.ts --input ./data/chm-test/ --outDir out/zh-parser/test",
+    "tool:parse": "tsx tools/zh-parser/cli.ts --input ./data/chm-clean/ --outDir out/zh-parser",
+    "tool:backcheck-zh": "tsx tools/zh-parser/scripts/zh-backcheck.ts ./out/zh-parser/matched.json ./out/zh-parser/missing-zh.json",
+    "tool:preprocess-zh": "tsx tools/zh-parser/scripts/preprocess-chm-html.ts --in ./data/chm-raw --out ./data/chm-clean"
   },
   "keywords": [],
   "author": "",
