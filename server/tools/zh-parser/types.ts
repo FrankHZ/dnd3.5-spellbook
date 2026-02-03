@@ -21,7 +21,7 @@ export interface ZhMatchedRecord {
   enName: string;
   zhDescriptionHtml: string;
 
-  confidence: number;
+  chmRulebookLabels: string[];
   matchMethod: string;
 }
 

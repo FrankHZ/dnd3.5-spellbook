@@ -1,12 +1,32 @@
-import { Prisma } from "DB_RULES/client";
-import { rulesPrismaClient as prisma } from "~/lib/rules-prisma-client";
-import aliasMapGlobal from "DATA/enName-aliases-global.json";
-import aliasMapExtra from "DATA/enName-aliases-extra.json";
-import bookMap from "DATA/books-zh-mapping.json";
+import { Prisma } from "prisma-rules-clean/generated/client";
+import { rulesPrisma as prisma } from "~/lib/rules-prisma-client";
+import aliasMapGlobal from "DATA/chm-mapping/enName-aliases-global.json";
+import aliasMapExtra from "DATA/chm-mapping/enName-aliases-extra.json";
+import bookMap from "DATA/chm-mapping/books-zh-chm-mapping.json";
 
 const ZH_BOOK_MAP: Record<string, string> = bookMap;
 const EN_ALIAS_MAP_GLOBAL: Record<string, string> = aliasMapGlobal;
 const EN_ALIAS_EXTRA: Record<string, string[]> = aliasMapExtra;
+
+function checkingMissLabel(opts: {
+  enName: string; // already normalized
+  bookLabels: string[];
+}): MatchResult[] {
+  const missingLabel = opts.bookLabels.filter(
+    (label) => ZH_BOOK_MAP[label] === undefined,
+  );
+  return missingLabel.map((label) => {
+    return {
+      spellId: null,
+      rulebookId: null,
+      rulebookAbbr: null,
+      chmRulebookLabels: opts.bookLabels,
+      matchMethod: `UnknownZhBookLabel:${label}`,
+      matchConfidence: 0,
+      failReason: "unknownBookLabel",
+    };
+  });
+}
 
 let rulebookIds: null | number[] = null;
 let rulebookAbbrMap: null | Map<number, string> = null;
@@ -36,7 +56,7 @@ export type MatchResult = {
   spellId: number | null;
   rulebookId: number | null;
   rulebookAbbr: string | null;
-  chmBookLabels: string[];
+  chmRulebookLabels: string[];
   matchMethod: string;
   matchConfidence: number;
   failReason?: FailReason;
@@ -47,6 +67,8 @@ export async function matchByEnNameAllBooks(opts: {
   bookLabels: string[];
 }): Promise<MatchResult[]> {
   const { rulebookIds, rulebookAbbrMap } = await load();
+
+  const missingLabels = checkingMissLabel(opts);
 
   let enName = opts.enName;
   if (EN_ALIAS_MAP_GLOBAL[enName])
@@ -65,11 +87,12 @@ export async function matchByEnNameAllBooks(opts: {
 
   if (rows.length === 0) {
     return [
+      ...missingLabels,
       {
         spellId: null,
         rulebookId: null,
         rulebookAbbr: null,
-        chmBookLabels: opts.bookLabels,
+        chmRulebookLabels: opts.bookLabels,
         matchMethod: `match:enExactCiAllBooksMiss`,
         matchConfidence: 0,
         failReason: "missingSpellInDb",
@@ -81,7 +104,7 @@ export async function matchByEnNameAllBooks(opts: {
     spellId: Number(r.id),
     rulebookId: Number(r.rulebook_id),
     rulebookAbbr: rulebookAbbrMap.get(Number(r.rulebook_id)) ?? null,
-    chmBookLabels: opts.bookLabels,
+    chmRulebookLabels: opts.bookLabels,
     matchMethod: `match:enExactCiAllBooks; expand:${rows.length}`,
     matchConfidence: 1.0,
     flags: ["MULTI_BOOK_BY_ENNAME"],
@@ -98,5 +121,5 @@ export async function matchByEnNameAllBooks(opts: {
     }
   }
 
-  return results;
+  return [...missingLabels, ...results];
 }

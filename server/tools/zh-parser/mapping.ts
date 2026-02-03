@@ -1,4 +1,4 @@
-import mapping from "DATA/books-zh-mapping.json";
+import mapping from "DATA/chm-mapping/books-zh-chm-mapping.json";
 /**
  * Map Chinese book labels (as they appear in headers) -> Rulebook.abbr in DB
  * Add new keys as we discover them in unmatched logs.

@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client"
-  output   = "../prisma-rules-clean/rules-clean-db-types"
+  output   = "../prisma-rules-clean/generated"
 }
 
 datasource db {

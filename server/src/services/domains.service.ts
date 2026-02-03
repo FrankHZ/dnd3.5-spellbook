@@ -1,4 +1,4 @@
-import { rulesPrismaClient as prisma } from "~/lib/rules-prisma-client";
+import { rulesPrisma as prisma } from "~/lib/rules-prisma-client";
 import { type DomainListResponse } from "@dnd/contracts";
 
 export const domainsService = {

@@ -1,5 +1,5 @@
-import { rulesPrismaClient as prisma } from "../../lib/rules-prisma-client";
-import { Prisma } from "DB_RULES/client";
+import { rulesPrisma as prisma } from "../../lib/rules-prisma-client";
+import { Prisma } from "prisma-rules-clean/generated/client";
 
 const SELECT_SPELL_MIN = {
   id: true,

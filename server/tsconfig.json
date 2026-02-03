@@ -47,9 +47,16 @@
     "paths": {
       "DATA/*": ["data/*"],
       "~/*": ["src/*"],
-      "DB_RULES/*": ["prisma-rules-clean/rules-clean-db-types/*"]
-    },
+      "DB_RULES/*": ["prisma-rules-clean/generated/*"],
+      "DB_APP/*": ["prisma-app/generated/*"]
+    }
   },
-  "include": ["src/**/*.ts", "prisma-*/**/*.ts", "tests/**/*.ts", "dev-scripts/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "prisma-*/**/*.ts",
+    "tools/**/*.ts",
+    "tests/**/*.ts",
+    "scripts/**/*.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }

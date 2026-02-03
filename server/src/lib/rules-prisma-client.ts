@@ -1,10 +1,10 @@
 import "dotenv/config";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import { PrismaClient } from "DB_RULES/client";
+import { PrismaClient } from "prisma-rules-clean/generated/client";
 
-const connectionString = `${process.env.RULES_CLEAN_DATABASE_URL}`;
+const connectionString = `${process.env.RULES_DATABASE_URL}`;
 
 const adapter = new PrismaBetterSqlite3({ url: connectionString });
-const rulesPrismaClient = new PrismaClient({ adapter });
+const rulesPrisma = new PrismaClient({ adapter });
 
-export { rulesPrismaClient };
+export { rulesPrisma };

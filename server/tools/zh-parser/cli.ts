@@ -5,7 +5,9 @@ import { segmentLetterPage } from "./segment";
 import { matchByEnNameAllBooks } from "./match";
 import { sanitizeDescription } from "./sanitize";
 import { ParserStats, ZhMatchedRecord } from "./types";
-import iconv from "iconv-lite";
+import bookMap from "DATA/chm-mapping/books-zh-chm-mapping.json";
+
+const ZH_BOOK_MAP: Record<string, string> = bookMap;
 
 function parseArgs(argv: string[]) {
   const args = new Map<string, string>();
@@ -42,7 +44,7 @@ function makeStats(): ParserStats {
 }
 
 function encodeKeyPart(s: string): string {
-  return encodeURIComponent(s).replace(/%20/g, "+");
+  return encodeURIComponent(s.toLowerCase()).replace(/%20/g, "+");
 }
 
 async function main() {
@@ -63,7 +65,7 @@ async function main() {
   fs.mkdirSync(outDir, { recursive: true });
 
   const stats = makeStats();
-  const matched: ZhMatchedRecord[] = [];
+  const matchedMap: Map<number, ZhMatchedRecord> = new Map();
   const unmatched: ZhMatchedRecord[] = [];
 
   for (const abs of files) {
@@ -87,6 +89,16 @@ async function main() {
           bookLabels: seg.bookLabels,
         });
 
+        let segRulebookAbbrs = seg.bookLabels
+          .map((label) => ZH_BOOK_MAP[label])
+          .filter((abbr) => abbr != undefined);
+
+        if (segRulebookAbbrs.length === 0) {
+          segRulebookAbbrs = [defaultBookAbbr];
+        }
+
+        const sanitized = sanitizeDescription(seg.segmentHtml);
+
         for (const m of matches) {
           const sourceKey = m.rulebookAbbr
             ? `${sourceKeyBase}@${m.rulebookAbbr}`
@@ -104,16 +116,19 @@ async function main() {
             rulebookAbbr: m.rulebookAbbr,
             sourceKey,
             file,
+            chmRulebookLabels: m.chmRulebookLabels,
             zhName: seg.zhName,
             enName: seg.enName,
-            zhDescriptionHtml: sanitizeDescription(seg.segmentHtml),
-            confidence: finalConfidence,
+            zhDescriptionHtml: sanitized,
             matchMethod,
           };
 
           if (m.spellId) {
-            stats.matched++;
-            matched.push(rec);
+            if (!matchedMap.has(m.spellId)) {
+              matchedMap.set(m.spellId, rec);
+            } else if (segRulebookAbbrs.includes(m.rulebookAbbr as string)) {
+              matchedMap.set(m.spellId, rec);
+            }
           } else {
             stats.unmatched++;
             if (m.failReason === "unknownBookLabel") stats.unknownBookLabel++;
@@ -130,6 +145,8 @@ async function main() {
     }
   }
 
+  stats.matched = matchedMap.size;
+
   fs.writeFileSync(
     path.join(outDir, "stats.json"),
     JSON.stringify(stats, null, 2),
@@ -137,7 +154,7 @@ async function main() {
   );
   fs.writeFileSync(
     path.join(outDir, "matched.json"),
-    JSON.stringify(matched, null, 2),
+    JSON.stringify([...matchedMap.values()], null, 2),
     "utf8",
   );
   fs.writeFileSync(

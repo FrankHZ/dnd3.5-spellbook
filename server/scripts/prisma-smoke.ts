@@ -1,4 +1,4 @@
-import { rulesPrismaClient as prisma } from "~/lib/rules-prisma-client";
+import { rulesPrisma as prisma } from "~/lib/rules-prisma-client";
 
 async function main() {
   const slug = process.argv[2] ?? "fireball";

@@ -1,0 +1,179 @@
+generator client {
+    provider = "prisma-client"
+    output   = "../prisma-app/generated"
+}
+
+datasource db {
+    provider = "sqlite"
+}
+
+model User {
+    id        String   @id @default(cuid())
+    email     String?  @unique
+    createdAt DateTime @default(now())
+
+    favorites FavoriteSpell[]
+    notes     SpellNote[]
+}
+
+model FavoriteSpell {
+    userId  String
+    spellId Int
+
+    createdAt DateTime @default(now())
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@id([userId, spellId])
+    @@index([spellId])
+}
+
+model SpellNote {
+    id      String @id @default(cuid())
+    userId  String
+    spellId Int
+
+    note      String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId, spellId])
+    @@index([spellId])
+}
+
+/// ---- v2 Chinese overlay (parallel language choices) ----
+/// lang examples: "zh-chm", "zh-ai"
+model I18nSpellText {
+    id      String @id @default(cuid())
+    spellId Int
+    lang    String
+    variant String @default("default")
+
+    name            String?
+    descriptionHtml String?
+    descriptionText String?
+
+    sourceKey String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([spellId, lang, variant])
+    @@index([lang, spellId])
+    @@index([spellId])
+}
+
+model I18nSpellNameAlias {
+    id        String  @id @default(cuid())
+    spellId   Int
+    lang      String
+    aliasName String
+    source    String  @default("import") // import | manual | ai
+    note      String?
+
+    createdAt DateTime @default(now())
+
+    @@unique([spellId, lang, aliasName])
+    @@index([lang, spellId])
+    @@index([spellId])
+}
+
+model I18nCharacterClassText {
+    id      String @id @default(cuid())
+    classId Int
+    lang    String // 'zh-chm', 'zh-ai', etc.
+    variant String @default("default")
+
+    name                 String?
+    shortDescriptionText String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([classId, lang, variant])
+    @@index([lang, classId])
+    @@index([classId])
+}
+
+model I18nDomainText {
+    id       String @id @default(cuid())
+    domainId Int
+    lang     String
+    variant  String @default("default")
+
+    name String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([domainId, lang, variant])
+    @@index([lang, domainId])
+    @@index([domainId])
+}
+
+model I18nSpellSchoolText {
+    id       String @id @default(cuid())
+    schoolId Int
+    lang     String
+    variant  String @default("default")
+
+    name String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([schoolId, lang, variant])
+    @@index([lang, schoolId])
+    @@index([schoolId])
+}
+
+model I18nSpellSubschoolText {
+    id          String @id @default(cuid())
+    subschoolId Int
+    lang        String
+    variant     String @default("default")
+
+    name String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([subschoolId, lang, variant])
+    @@index([lang, subschoolId])
+    @@index([subschoolId])
+}
+
+model I18nDescriptorText {
+    id           String @id @default(cuid())
+    descriptorId Int
+    lang         String
+    variant      String @default("default")
+
+    name String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([descriptorId, lang, variant])
+    @@index([lang, descriptorId])
+    @@index([descriptorId])
+}
+
+model I18nRulebookText {
+    id         String @id @default(cuid())
+    rulebookId Int
+    lang       String
+    variant    String @default("default")
+
+    name            String?
+    descriptionText String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([rulebookId, lang, variant])
+    @@index([lang, rulebookId])
+    @@index([rulebookId])
+}

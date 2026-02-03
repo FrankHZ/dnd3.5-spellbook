@@ -2,11 +2,11 @@ node_modules
 # Keep environment variables out of version control
 .env
 
-/prisma-rules-clean/rules-clean-db-types
+generated
 /dist
 
 /out
 
-# For tool/zh-parser
 /data/chm-raw
 /data/chm-test
+/data/txt-raw

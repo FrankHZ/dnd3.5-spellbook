@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { app } from "./app";
 import { logger } from "./logger";
-import { rulesPrismaClient } from "./lib/rules-prisma-client";
+import { rulesPrisma } from "./lib/rules-prisma-client";
 
 const port = Number(process.env.PORT ?? 3000);
 
@@ -13,6 +13,6 @@ app.listen(port, () => {
 
 process.on("SIGINT", async () => {
   logger.info("Shutting down...");
-  await rulesPrismaClient.$disconnect();
+  await rulesPrisma.$disconnect();
   process.exit(0);
 });
