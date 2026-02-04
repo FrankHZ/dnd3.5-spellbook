@@ -8,7 +8,10 @@ export const DEFAULT_STATE: PersistedState = {
   browseClassIds: [],
   browseDomainIds: [],
   browseLevel: null,
-  uiPrefs: {},
+  uiPrefs: {
+    lang: "en",
+    zhVariant: "chm",
+  },
 };
 
 export function loadState(): PersistedState {

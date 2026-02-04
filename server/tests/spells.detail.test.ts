@@ -13,4 +13,12 @@ describe("GET /api/spells/:id", () => {
     const res = await request(app).get("/api/spells/9999999");
     expect(res.status).toBe(404);
   });
+
+  it("returns spell detail with chm zh", async () => {
+    const res = await request(app).get("/api/spells/887?lang=zh");
+    expect(res.status).toBe(200);
+    expect(res.body.id).toBe(887);
+    expect(res.body.name).toBeTruthy();
+    expect(res.body.i18n.name).toBe("独角兽之心");
+  });
 });

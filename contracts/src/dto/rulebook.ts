@@ -1,3 +1,5 @@
+import { I18nNameOverlay } from "../i18n";
+
 export type Edition = {
   id: number;
   name: string;
@@ -6,12 +8,19 @@ export type Edition = {
   core: boolean;
 };
 
-export type Rulebook = {
+export type RulebookMin = {
   id: number;
   abbr: string;
+};
+
+export type Rulebook = RulebookMin & {
   name: string;
   slug: string;
   edition: Edition;
+};
+
+export type RulebookView = Rulebook & {
+  i18n?: I18nNameOverlay | undefined;
 };
 
 export type EditionListResponse = {

@@ -1,15 +1,16 @@
 import { Link, useParams } from "react-router";
-import { useMemo } from "react";
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { useCollections } from "~/state/collections-state";
-import { getSpellDetail, getSpellsBatch } from "~/api/spells";
+import { getSpellsBatch } from "~/api/spells";
 import { Separator } from "~/components/ui/separator";
 import { SpellCard } from "~/components/SpellCard";
+import { useAppI18n } from "~/i18n/useAppI18n";
 
 export default function SpellbookDetailPage() {
   const { id } = useParams();
   const bookId = id ?? "";
+  const { queryKey } = useAppI18n();
 
   const { collections, toggleDefault, togglePrepared } = useCollections();
 
@@ -30,7 +31,7 @@ export default function SpellbookDetailPage() {
 
   const ids = book.spellIds;
   const batchQuery = useQuery({
-    queryKey: ["spellbook-batch", bookId, ids.join(",")],
+    queryKey: ["spellbook-batch", { bookId, ids: ids.join(","), ...queryKey }],
     queryFn: ({ signal }) => getSpellsBatch(ids, signal),
     enabled: ids.length > 0,
   });

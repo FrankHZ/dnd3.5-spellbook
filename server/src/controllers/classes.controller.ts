@@ -2,6 +2,7 @@ import { type Request, type Response, type NextFunction } from "express";
 import { classesService } from "../services/classes.service";
 import { parseBoolean, parseCsvNumberList } from "../utils/parse";
 import { getDefaultRulebookIds } from "../services/rulebooks.service";
+import { getI18nContext } from "~/utils/i18n";
 
 export async function listClasses(
   req: Request,
@@ -16,6 +17,7 @@ export async function listClasses(
     const result = await classesService.listClasses({
       includePrestige,
       rulebookIds,
+      i18n: getI18nContext(req),
     });
     res.status(200).json(result);
     return;

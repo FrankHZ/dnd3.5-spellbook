@@ -9,6 +9,7 @@ import {
 import { spellsService } from "../services/spells/spells.service";
 import { getDefaultRulebookIds } from "../services/rulebooks.service";
 import type { SpellBatchRequest } from "../../../contracts/dist/dto/spell";
+import { getI18nContext } from "~/utils/i18n";
 
 export async function searchSpellsByName(
   req: Request,
@@ -39,6 +40,7 @@ export async function searchSpellsByName(
       rulebookIds,
       page,
       pageSize,
+      i18n: getI18nContext(req),
     });
 
     res.status(200).json(result);
@@ -99,6 +101,7 @@ export async function listSpellsByClassAndDomainLevel(
       rulebookIds,
       page,
       pageSize,
+      i18n: getI18nContext(req),
     });
 
     res.status(200).json(result);
@@ -129,7 +132,10 @@ export async function getSpellDetail(
       return;
     }
 
-    const spell = await spellsService.getSpellDetail({ id });
+    const spell = await spellsService.getSpellDetail({
+      id,
+      i18n: getI18nContext(req),
+    });
 
     if (!spell) {
       next(new ApiError(404, "Not found", `Spell ${id} not found`));
@@ -152,6 +158,7 @@ export async function batchSpells(
   next: NextFunction,
 ) {
   try {
+    const { lang, variant } = req.i18n ?? { lang: "en" };
     const body = req.body as Partial<SpellBatchRequest>;
 
     if (!body || !Array.isArray(body.ids)) {
@@ -183,7 +190,10 @@ export async function batchSpells(
       return;
     }
 
-    const response = await spellsService.batch({ ids });
+    const response = await spellsService.batch({
+      ids,
+      i18n: getI18nContext(req),
+    });
 
     res.status(200).json(response);
     return;

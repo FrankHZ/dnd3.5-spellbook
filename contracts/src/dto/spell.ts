@@ -1,9 +1,14 @@
+import { I18nNameOverlay } from "../i18n";
+import { Class } from "./class";
+import { Domain } from "./domain";
+import { RulebookMin } from "./rulebook";
+
 export type SpellItem = {
   id: number;
   slug: string;
   name: string;
 
-  rulebook: { id: number; abbr: string; name: string; slug: string };
+  rulebook: RulebookMin;
   page: number | null;
 
   school: { id: number; name: string; slug: string } | null;
@@ -30,6 +35,10 @@ export type SpellNameSearchResponse = {
   items: SpellItem[];
 };
 
+export type SpellItemView = SpellItem & {
+  i18n?: I18nNameOverlay | undefined;
+};
+
 export type SpellByClassLevelResponse = {
   page: number;
   pageSize: number;
@@ -37,7 +46,7 @@ export type SpellByClassLevelResponse = {
   level: number;
   classIds: number[];
   rulebookIds: number[];
-  items: SpellItem[];
+  items: SpellItemView[];
 };
 
 export type SpellComponents = {
@@ -64,22 +73,14 @@ export type SpellCasting = {
   spellResistance?: string | null;
 };
 
-export type ClassLevel = {
-  classId: number;
-  classSlug: string;
-  className: string;
-  prestige: boolean;
+type SpellLevelBase = {
   level: number;
   extra: string;
 };
 
-export type DomainLevel = {
-  domainId: number;
-  domainSlug: string;
-  domainName: string;
-  level: number;
-  extra: string;
-};
+export type ClassLevel = Class & SpellLevelBase;
+
+export type DomainLevel = Domain & SpellLevelBase;
 
 export type SpellDetail = SpellItem & {
   added: string; // ISO date
@@ -95,12 +96,26 @@ export type SpellDetail = SpellItem & {
   };
 };
 
+export type I18nSpellDetailOverlay = I18nNameOverlay & {
+  sourceKey?: string | undefined;
+  description?:
+    | {
+        text?: string | undefined;
+        html?: string | undefined;
+      }
+    | undefined;
+};
+
+export type SpellDetailView = SpellDetail & {
+  i18n?: I18nSpellDetailOverlay | undefined;
+};
+
 export type SpellBatchRequest = {
   ids: number[];
 };
 
 export type SpellBatchResponse = {
   ids: number[];
-  items: SpellItem[];
+  items: SpellItemView[];
   missingIds: number[];
 };

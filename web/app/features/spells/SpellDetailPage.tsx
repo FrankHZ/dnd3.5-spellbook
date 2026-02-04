@@ -13,6 +13,9 @@ import LevelsSection from "./LevelsSection";
 import DescriptionSection from "./DescriptionSection";
 import { useCollections } from "~/state/collections-state";
 import { Heart } from "lucide-react";
+import { useAppI18n } from "~/i18n/useAppI18n";
+import { getSpellDescription } from "~/i18n/spellDetail";
+import { getDisplayNameWithEn } from "~/i18n/content";
 
 function SpellDetailSkeleton() {
   return (
@@ -29,6 +32,8 @@ function SpellDetailSkeleton() {
 
 export default function SpellDetailPage() {
   const { id } = useParams();
+  const { queryKey } = useAppI18n();
+  const { lang } = useAppI18n();
   const idNum = Number(id);
   const isValidId = Number.isInteger(idNum) && idNum > 0;
 
@@ -39,7 +44,7 @@ export default function SpellDetailPage() {
   const inPrepared = isInPrepared(idNum);
 
   const query = useQuery({
-    queryKey: ["spellDetail", idNum],
+    queryKey: ["spellDetail", { idNum, ...queryKey }],
     enabled: isValidId,
     queryFn: ({ signal }) => getSpellDetail(idNum, signal),
   });
@@ -122,7 +127,7 @@ export default function SpellDetailPage() {
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-2xl font-semibold leading-tight">
-              {spell.name}
+              {getDisplayNameWithEn(spell, lang)}
             </h1>
 
             <div className="mt-1 text-sm text-muted-foreground">
@@ -200,7 +205,7 @@ export default function SpellDetailPage() {
 
       <Separator />
 
-      <DescriptionSection description={spell.description} />
+      <DescriptionSection description={getSpellDescription(spell, lang)} />
     </div>
   );
 }

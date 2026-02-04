@@ -3,6 +3,8 @@ import { Heart } from "lucide-react";
 import { Link } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { getDisplayNameWithEn } from "~/i18n/content";
+import { useAppI18n } from "~/i18n/useAppI18n";
 import { useCollections } from "~/state/collections-state";
 
 export function SpellCard({
@@ -14,7 +16,7 @@ export function SpellCard({
 }) {
   const { toggleDefault, togglePrepared, isInDefault, isInPrepared } =
     useCollections();
-
+  const { lang } = useAppI18n();
   const inFav = isInDefault(spell.id);
   const inPrep = isInPrepared(spell.id);
 
@@ -26,7 +28,7 @@ export function SpellCard({
             to={`/spells/${spell.id}`}
             className="font-medium hover:underline"
           >
-            {spell.name}
+            {getDisplayNameWithEn(spell, lang)}
           </Link>
           <span className="p-2 text-xs text-muted-foreground space-y-2">
             <span className="p-1 font-mono">{spell.rulebook.abbr ?? "—"}</span>
@@ -42,7 +44,7 @@ export function SpellCard({
             {spell.classLevels
               .map(
                 (mcl) =>
-                  `${mcl.className} ${mcl.level}` +
+                  `${mcl.name} ${mcl.level}` +
                   (mcl.extra ? ` (${mcl.extra})` : "") +
                   (mcl.prestige ? ` (P)` : ""),
               )
@@ -52,7 +54,7 @@ export function SpellCard({
             {spell.domainLevels
               .map(
                 (mdl) =>
-                  `${mdl.domainName} ${mdl.level}` +
+                  `${mdl.name} ${mdl.level}` +
                   (mdl.extra ? ` (${mdl.extra})` : ""),
               )
               .join(", ")}

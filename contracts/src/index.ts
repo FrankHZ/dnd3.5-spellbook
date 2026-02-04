@@ -1,3 +1,4 @@
+export * from "./i18n";
 export * from "./http";
 export * from "./dto/rulebook";
 export * from "./dto/class";

@@ -1,3 +1,5 @@
+import { I18nNameOverlay } from "../i18n";
+
 export type Class = {
   id: number;
   slug: string;
@@ -5,8 +7,12 @@ export type Class = {
   prestige: boolean;
 };
 
+export type ClassView = Class & {
+  i18n?: I18nNameOverlay | undefined;
+};
+
 export type ClassListResponse = {
   includePrestige: boolean;
   rulebookIds: number[];
-  items: Class[];
+  items: ClassView[];
 };

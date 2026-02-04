@@ -1,6 +1,6 @@
-import type { SpellDetail } from "@dnd/contracts";
+import type { SpellDetail, SpellDetailView } from "@dnd/contracts";
 
-export default function LevelsSection({ spell }: { spell: SpellDetail }) {
+export default function LevelsSection({ spell }: { spell: SpellDetailView }) {
   return (
     <div className="space-y-3">
       <div className="font-medium">Levels</div>
@@ -12,8 +12,8 @@ export default function LevelsSection({ spell }: { spell: SpellDetail }) {
           <div className="text-sm">
             {spell.classLevels
               .map(
-                (mcl: any) =>
-                  `${mcl.className} ${mcl.level}` +
+                (mcl) =>
+                  `${mcl.name} ${mcl.level}` +
                   (mcl.extra ? ` (${mcl.extra})` : "") +
                   (mcl.prestige ? ` (P)` : ""),
               )
@@ -32,7 +32,7 @@ export default function LevelsSection({ spell }: { spell: SpellDetail }) {
           <div className="text-sm text-muted-foreground">Domains</div>
           <div className="text-sm">
             {spell.domainLevels
-              .map((dl: any) => `${dl.domainName} ${dl.level}`)
+              .map((dl) => `${dl.name} ${dl.level}`)
               .join(", ")}
           </div>
         </div>

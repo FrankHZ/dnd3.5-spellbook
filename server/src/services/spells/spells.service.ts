@@ -1,17 +1,21 @@
 import type {
   SpellBatchResponse,
-  SpellItem,
   SpellByClassLevelResponse,
-  SpellDetail,
   SpellNameSearchResponse,
+  I18nContext,
+  SpellDetailView,
+  SpellItemView,
 } from "@dnd/contracts";
-
+import { Prisma as AppPrisma } from "DB_APP/client";
 import { mapSpellItem, mapSpellDetail } from "./spells.mapper";
 import {
   queryByClassAndDomainLevels as queryByClassAndDomainLevel,
   queryByName,
   querySpellDetail,
+  querySpellI18nDetail,
+  querySpellI18nNamesByIds,
   querySpellsByIds,
+  SELECT_SPELL_I18N_MIN,
 } from "./spells.repo";
 
 type FilterFunction<T> = (item: T) => boolean;
@@ -64,12 +68,31 @@ function filterSpellIndexes(
   }
 }
 
+async function getI18nMap(spellIds: number[], i18n: I18nContext) {
+  const i18nMap = new Map<
+    number,
+    AppPrisma.I18nSpellTextGetPayload<{
+      select: typeof SELECT_SPELL_I18N_MIN;
+    }>
+  >();
+  if (i18n.lang != "en") {
+    const spellI18n = await querySpellI18nNamesByIds(
+      spellIds,
+      i18n.lang,
+      i18n.variant,
+    );
+    spellI18n.forEach((s) => i18nMap.set(s.spellId, s));
+  }
+  return i18nMap;
+}
+
 export const spellsService = {
   async searchByName(input: {
     q: string;
     rulebookIds: number[];
     page: number;
     pageSize: number;
+    i18n: I18nContext;
   }): Promise<SpellNameSearchResponse> {
     const { total, spellsInOrder } = await queryByName(
       input.q,
@@ -78,9 +101,16 @@ export const spellsService = {
       input.pageSize,
     );
 
+    const rulebooks = new Set(input.rulebookIds);
+
     spellsInOrder.forEach((spell) => {
-      filterSpellIndexes(spell, new Set(input.rulebookIds), null, null, null);
+      filterSpellIndexes(spell, rulebooks, null, null, null);
     });
+
+    const i18nMap = await getI18nMap(
+      spellsInOrder.map((s) => s.id),
+      input.i18n,
+    );
 
     return {
       page: input.page,
@@ -88,7 +118,9 @@ export const spellsService = {
       total,
       q: input.q,
       rulebookIds: input.rulebookIds,
-      items: spellsInOrder.map(mapSpellItem),
+      items: spellsInOrder.map((s) =>
+        mapSpellItem(s, i18nMap.has(s.id) ? i18nMap.get(s.id)! : null),
+      ),
     };
   },
 
@@ -99,6 +131,7 @@ export const spellsService = {
     rulebookIds: number[];
     page: number;
     pageSize: number;
+    i18n: I18nContext;
   }): Promise<SpellByClassLevelResponse> {
     const { total, spellsInOrder } = await queryByClassAndDomainLevel(
       input.classIds,
@@ -109,16 +142,26 @@ export const spellsService = {
       input.pageSize,
     );
 
+    const rulebooks = new Set(input.rulebookIds);
+
     spellsInOrder.forEach((spell) => {
       filterSpellIndexes(
         spell,
-        new Set(input.rulebookIds),
+        rulebooks,
         input.classIds.length == 0 ? null : new Set(input.classIds),
         input.domainIds.length == 0 ? null : new Set(input.domainIds),
         input.level,
       );
     });
-    const items: SpellItem[] = spellsInOrder.map(mapSpellItem);
+
+    const i18nMap = await getI18nMap(
+      spellsInOrder.map((s) => s.id),
+      input.i18n,
+    );
+
+    const items: SpellItemView[] = spellsInOrder.map((s) =>
+      mapSpellItem(s, i18nMap.has(s.id) ? i18nMap.get(s.id)! : null),
+    );
 
     return {
       page: input.page,
@@ -131,16 +174,32 @@ export const spellsService = {
     };
   },
 
-  async getSpellDetail(input: { id: number }): Promise<SpellDetail | null> {
-    const spell = await querySpellDetail(input.id);
+  async getSpellDetail(input: {
+    id: number;
+    i18n: I18nContext;
+  }): Promise<SpellDetailView | null> {
+    const spellPromise = querySpellDetail(input.id);
+
+    const spellI18nPromise =
+      input.i18n.lang != "en"
+        ? querySpellI18nDetail(input.id, input.i18n.lang, input.i18n.variant)
+        : null;
+
+    const [spell, spellI18n] = await Promise.all([
+      spellPromise,
+      spellI18nPromise,
+    ]);
     if (!spell) {
       return null;
     }
 
-    return mapSpellDetail(spell);
+    return mapSpellDetail(spell, spellI18n);
   },
 
-  async batch(input: { ids: number[] }): Promise<SpellBatchResponse> {
+  async batch(input: {
+    ids: number[];
+    i18n: I18nContext;
+  }): Promise<SpellBatchResponse> {
     const inputIds = input.ids;
 
     // Dedupe for querying, but preserve original order for output
@@ -153,7 +212,10 @@ export const spellsService = {
       }
     }
 
-    const rows = await querySpellsByIds(uniqueIds);
+    const [rows, i18nMap] = await Promise.all([
+      querySpellsByIds(uniqueIds),
+      getI18nMap(uniqueIds, input.i18n),
+    ]);
 
     const byId = new Map<number, (typeof rows)[number]>();
     for (const r of rows) byId.set(r.id, r);
@@ -161,7 +223,9 @@ export const spellsService = {
     const items = inputIds
       .map((id) => byId.get(id))
       .filter((x): x is NonNullable<typeof x> => !!x)
-      .map(mapSpellItem);
+      .map((s) =>
+        mapSpellItem(s, i18nMap.has(s.id) ? i18nMap.get(s.id)! : null),
+      );
 
     const missingIds = inputIds.filter((id) => !byId.has(id));
 

@@ -1,8 +1,11 @@
+import type { Lang } from "@dnd/contracts";
+
 export const STORAGE_VERSION = 1;
 
 export type UiPrefs = {
   theme?: "light" | "dark";
-  language?: string;
+  lang: Lang;
+  zhVariant?: string;
 };
 
 export type PersistedStateV1 = {

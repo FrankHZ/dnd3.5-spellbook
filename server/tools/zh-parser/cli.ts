@@ -98,12 +98,9 @@ async function main() {
         }
 
         const sanitized = sanitizeDescription(seg.segmentHtml);
+        const sourceKey = `${sourceKeyBase}@${segRulebookAbbrs.join(",")}`;
 
         for (const m of matches) {
-          const sourceKey = m.rulebookAbbr
-            ? `${sourceKeyBase}@${m.rulebookAbbr}`
-            : sourceKeyBase;
-
           const finalConfidence = Math.min(seg.confidence, m.matchConfidence);
           const matchMethod = `${extractMethod}; ${m.matchMethod}`;
 

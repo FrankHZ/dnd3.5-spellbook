@@ -1,13 +1,14 @@
-import { rulesPrisma as prisma } from "../../lib/rules-prisma-client";
+import { appPrisma } from "~/lib/app-prisma-client";
+import { rulesPrisma } from "../../lib/rules-prisma-client";
 import { Prisma } from "prisma-rules-clean/generated/client";
 
-const SELECT_SPELL_MIN = {
+export const SELECT_SPELL_MIN = {
   id: true,
   slug: true,
   name: true,
 } satisfies Prisma.SpellSelect;
 
-const SELECT_SPELL_LIST = {
+export const SELECT_SPELL_LIST = {
   ...SELECT_SPELL_MIN,
 
   page: true,
@@ -69,7 +70,7 @@ const SELECT_SPELL_LIST = {
   },
 } satisfies Prisma.SpellSelect;
 
-const SELECT_SPELL_DETAIL = {
+export const SELECT_SPELL_DETAIL = {
   ...SELECT_SPELL_LIST,
   added: true,
   description: true,
@@ -85,7 +86,7 @@ export async function fetchSpellsInOrder<T extends Prisma.SpellSelect>(
 ) {
   if (ids.length === 0) return [];
 
-  const rows = (await prisma.spell.findMany({
+  const rows = (await rulesPrisma.spell.findMany({
     where: { id: { in: ids } },
     select,
   })) as (Prisma.SpellGetPayload<{ select: T }> & { id: number })[]; // Prisma cannot infer `id` on generic selects; safe cast for reorder logic
@@ -108,7 +109,7 @@ export async function queryByName(
   const offset = (page - 1) * pageSize;
 
   // COUNT (spells only)
-  const countRows = await prisma.$queryRaw<Array<{ cnt: number }>>(
+  const countRows = await rulesPrisma.$queryRaw<Array<{ cnt: number }>>(
     Prisma.sql`
         SELECT COUNT(*) as cnt
         FROM dnd_spell s
@@ -120,7 +121,7 @@ export async function queryByName(
   const total = Number(countRows[0]?.cnt ?? 0);
 
   // PAGE of spell ids in stable order
-  const idRows = await prisma.$queryRaw<Array<{ id: number }>>(
+  const idRows = await rulesPrisma.$queryRaw<Array<{ id: number }>>(
     Prisma.sql`
         SELECT s.id
         FROM dnd_spell s
@@ -148,7 +149,7 @@ export async function queryByClassAndDomainLevels(
   domainIds = domainIds.length > 0 ? domainIds : [-1];
   classIds = classIds.length > 0 ? classIds : [-1];
   // ---- 1) total = count distinct spells from idx table (spell-based pagination semantics)
-  const countRows = await prisma.$queryRaw<Array<{ cnt: number }>>(
+  const countRows = await rulesPrisma.$queryRaw<Array<{ cnt: number }>>(
     Prisma.sql`
       SELECT COUNT(*) AS cnt
       FROM (
@@ -171,7 +172,7 @@ export async function queryByClassAndDomainLevels(
   // ---- 2) page spell ids in stable order by Spell.name, Spell.id
   const offset = (page - 1) * pageSize;
 
-  const idRows = await prisma.$queryRaw<Array<{ id: number }>>(
+  const idRows = await rulesPrisma.$queryRaw<Array<{ id: number }>>(
     Prisma.sql`
       SELECT s.id AS id
       FROM (
@@ -199,7 +200,7 @@ export async function queryByClassAndDomainLevels(
 }
 
 export async function querySpellDetail(id: number) {
-  const s = await prisma.spell.findUnique({
+  const s = await rulesPrisma.spell.findUnique({
     where: { id },
     select: SELECT_SPELL_DETAIL,
   });
@@ -210,8 +211,58 @@ export async function querySpellDetail(id: number) {
 export async function querySpellsByIds(ids: number[]) {
   if (ids.length === 0) return [];
 
-  return prisma.spell.findMany({
+  return rulesPrisma.spell.findMany({
     where: { id: { in: ids } },
     select: SELECT_SPELL_LIST,
   });
+}
+
+export const SELECT_SPELL_I18N_MIN = {
+  spellId: true,
+  lang: true,
+  variant: true,
+  name: true,
+};
+
+export const SELECT_SPELL_I18N_DETAIL = {
+  ...SELECT_SPELL_I18N_MIN,
+  descriptionHtml: true,
+  descriptionText: true,
+  sourceKey: true,
+};
+
+export async function querySpellI18nDetail(
+  id: number,
+  lang: "zh",
+  variant?: string,
+) {
+  const s = await appPrisma.i18nSpellText.findUnique({
+    where: {
+      spellId_lang_variant: {
+        spellId: id,
+        lang,
+        ...(variant ? { variant } : { variant: "chm" }),
+      },
+    },
+    select: SELECT_SPELL_I18N_DETAIL,
+  });
+
+  return s ? s : null;
+}
+
+export async function querySpellI18nNamesByIds(
+  ids: number[],
+  lang: "zh",
+  variant?: string,
+) {
+  const s = await appPrisma.i18nSpellText.findMany({
+    where: {
+      spellId: { in: ids },
+      lang,
+      ...(variant ? { variant } : { variant: "chm" }),
+    },
+    select: SELECT_SPELL_I18N_MIN,
+  });
+
+  return s;
 }

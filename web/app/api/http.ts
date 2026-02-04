@@ -1,3 +1,5 @@
+import { getI18nFromStorage } from "~/i18n/i18n-storage";
+
 export type ApiErrorPayload = { message?: string; error?: unknown };
 
 export class ApiError extends Error {
@@ -11,13 +13,39 @@ export class ApiError extends Error {
   }
 }
 
+function shouldSendVariant(pathname: string) {
+  // v2 rule: variant only for spell endpoints
+  return pathname.startsWith("/api/spells");
+}
+
+function withI18nParams(urlStr: string): string {
+  const base =
+    typeof window !== "undefined" ? window.location.origin : "http://localhost";
+  const url = new URL(urlStr, base);
+
+  const { lang, variant } = getI18nFromStorage();
+
+  if (!url.searchParams.has("lang")) url.searchParams.set("lang", lang);
+
+  if (lang === "zh" && variant && shouldSendVariant(url.pathname)) {
+    if (!url.searchParams.has("variant"))
+      url.searchParams.set("variant", variant);
+  }
+
+  // return relative if input was relative
+  if (urlStr.startsWith("/"))
+    return url.pathname + (url.search ? url.search : "");
+  return url.toString();
+}
+
 export async function apiGet<T>(
   path: string,
   signal?: AbortSignal,
 ): Promise<T> {
-  console.log(`Fetching API endpoint: GET ${path}`);
+  const url = withI18nParams(path);
 
-  const url = path.startsWith("http") ? path : `${path}`;
+  console.log(`Fetching API endpoint: GET ${url}`);
+
   const res = await fetch(url, { method: "GET", signal });
   const text = await res.text();
   const data = text ? JSON.parse(text) : null;
@@ -31,9 +59,9 @@ export async function apiPost<ResponseT, BodyT>(
   body: BodyT,
   signal?: AbortSignal,
 ): Promise<ResponseT> {
-  console.log(`Fetching API endpoint: POST ${path}`);
+  const url = withI18nParams(path);
 
-  const url = path.startsWith("http") ? path : `${path}`;
+  console.log(`Fetching API endpoint: POST ${url}`);
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

@@ -1,9 +1,12 @@
-import { type Request, type Response, type NextFunction } from 'express';
-import { ApiError } from '../utils/errors';
-import { rulebooksService } from '../services/rulebooks.service';
-import type { EditionListResponse, RulebookListResponse } from '@dnd/contracts';
+import { type Request, type Response, type NextFunction } from "express";
+import { rulebooksService } from "../services/rulebooks.service";
+import type { EditionListResponse, RulebookListResponse } from "@dnd/contracts";
 
-export async function listRulebooks(req: Request, res: Response, next: NextFunction) {
+export async function listRulebooks(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const items = await rulebooksService.listRulebooks();
 
@@ -15,7 +18,11 @@ export async function listRulebooks(req: Request, res: Response, next: NextFunct
   }
 }
 
-export async function listRulebookEditions(req: Request, res: Response, next: NextFunction) {
+export async function listRulebookEditions(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const items = await rulebooksService.listRulebookEditions();
 

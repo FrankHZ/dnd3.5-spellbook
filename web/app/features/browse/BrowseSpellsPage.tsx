@@ -16,11 +16,14 @@ import {
 } from "~/components/MultiSelectPicker";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
+import { useAppI18n } from "~/i18n/useAppI18n";
+import { getDisplayNameWithEn } from "~/i18n/content";
 
 const PAGE_SIZE = 20;
 
 export function LevelSelector() {
   const { state, setState } = usePersistedState();
+
   const level = state.browseLevel;
 
   function setLevel(next: number) {
@@ -58,12 +61,13 @@ export function LevelSelector() {
 function ClassAndDomainSelector() {
   const { state, setState } = usePersistedState();
   const boot = useBootstrap(state.includePrestige);
+  const { lang } = useAppI18n();
   const classes = boot.classes.data?.items ?? [];
   const domains = boot.domains.data?.items ?? [];
 
   const classItems: PickerItem[] = classes.map((c) => ({
     id: c.id,
-    name: c.name,
+    name: getDisplayNameWithEn(c, lang),
     group: c.prestige ? "Prestige Classes" : "Base Classes",
   }));
 
@@ -99,7 +103,7 @@ function ClassAndDomainSelector() {
 
 export default function BrowsePage() {
   const { state } = usePersistedState();
-  const boot = useBootstrap(state.includePrestige);
+  const { queryKey } = useAppI18n();
 
   const [page, setPage] = useState(1);
 
@@ -113,12 +117,27 @@ export default function BrowsePage() {
 
   useEffect(() => {
     setPage(1);
-  }, [classIds, domainIds, level, rulebookIds]);
+  }, [
+    classIds,
+    domainIds,
+    level,
+    rulebookIds,
+    queryKey.lang,
+    queryKey.variant,
+  ]);
 
   const browseQuery = useQuery({
     queryKey: [
       "browse",
-      { classIds, domainIds, level, rulebookIds, page, pageSize: PAGE_SIZE },
+      {
+        classIds,
+        domainIds,
+        level,
+        rulebookIds,
+        page,
+        pageSize: PAGE_SIZE,
+        ...queryKey,
+      },
     ],
     enabled: hasValidSelection,
     queryFn: ({ signal }) =>

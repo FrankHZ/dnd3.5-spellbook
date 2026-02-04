@@ -9,12 +9,14 @@ import { classesRouter } from "./routes/classes.routes";
 import { pinoHttp } from "pino-http";
 import { logger } from "./logger";
 import { domainsRouter } from "./routes/domains.routes";
+import { i18nQuery } from "./middlewares/i18nQuery";
 
 const app: Application = express();
 
 // Middleware
 app.use(cors()); // ok for MVP; tighten later
 app.use(express.json());
+app.use(i18nQuery);
 
 app.use(
   pinoHttp({

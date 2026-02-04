@@ -1,6 +1,24 @@
-import type { SpellItem, SpellDetail } from "@dnd/contracts";
+import type {
+  SpellItemView,
+  SpellDetailView,
+  I18nNameOverlay,
+  I18nSpellDetailOverlay,
+} from "@dnd/contracts";
+import { Prisma as RulesPrisma } from "DB_RULES/client";
+import { Prisma as AppPrisma } from "DB_APP/client";
+import {
+  SELECT_SPELL_DETAIL,
+  SELECT_SPELL_I18N_DETAIL,
+  SELECT_SPELL_I18N_MIN,
+  SELECT_SPELL_LIST,
+} from "./spells.repo";
 
-export function mapSpellItem(spell: any): SpellItem {
+export function mapSpellItem(
+  spell: RulesPrisma.SpellGetPayload<{ select: typeof SELECT_SPELL_LIST }>,
+  spellI18n: AppPrisma.I18nSpellTextGetPayload<{
+    select: typeof SELECT_SPELL_I18N_MIN;
+  }> | null,
+): SpellItemView {
   const descriptors = (spell.spellDescriptors ?? [])
     .map((sd: any) => sd.spellDescriptor)
     .filter(Boolean)
@@ -8,36 +26,42 @@ export function mapSpellItem(spell: any): SpellItem {
     .sort((a: any, b: any) => a.name.localeCompare(b.name) || a.id - b.id);
 
   const classLevels = (spell.spellClassIndexes ?? [])
-    .map((cl: any) => ({
-      classId: cl.characterClass.id,
-      classSlug: cl.characterClass.slug,
-      className: cl.characterClass.name,
+    .map((cl) => ({
+      id: cl.characterClass.id,
+      slug: cl.characterClass.slug,
+      name: cl.characterClass.name,
       prestige: !!cl.characterClass.prestige,
       level: cl.level,
       extra: cl.extra,
     }))
     .sort(
-      (a: any, b: any) =>
+      (a, b) =>
         a.level - b.level ||
-        a.prestige - b.prestige ||
-        a.className.localeCompare(b.className) ||
-        a.classId - b.classId,
+        Number(a.prestige) - Number(b.prestige) ||
+        a.name.localeCompare(b.name) ||
+        a.id - b.id,
     );
 
   const domainLevels = (spell.spellDomainIndexes ?? [])
-    .map((dl: any) => ({
-      domainId: dl.domain.id,
-      domainSlug: dl.domain.slug,
-      domainName: dl.domain.name,
+    .map((dl) => ({
+      id: dl.domain.id,
+      slug: dl.domain.slug,
+      name: dl.domain.name,
       level: dl.level,
       extra: dl.extra,
     }))
     .sort(
-      (a: any, b: any) =>
-        a.level - b.level ||
-        a.domainName.localeCompare(b.domainName) ||
-        a.domainId - b.domainId,
+      (a, b) =>
+        a.level - b.level || a.name.localeCompare(b.name) || a.id - b.id,
     );
+
+  const i18n: I18nNameOverlay | undefined = spellI18n
+    ? {
+        lang: "zh",
+        name: spellI18n.name ?? undefined,
+        variant: spellI18n.variant ?? undefined,
+      }
+    : undefined;
 
   return {
     id: spell.id,
@@ -47,8 +71,6 @@ export function mapSpellItem(spell: any): SpellItem {
     rulebook: {
       id: spell.rulebook.id,
       abbr: spell.rulebook.abbr,
-      name: spell.rulebook.name,
-      slug: spell.rulebook.slug,
     },
     school: spell.spellSchool
       ? {
@@ -92,12 +114,31 @@ export function mapSpellItem(spell: any): SpellItem {
     corrupt: {
       level: spell.corrupt_level ?? null,
     },
+    i18n,
   };
 }
 
-export function mapSpellDetail(spell: any): SpellDetail {
-  const detail: SpellDetail = {
-    ...mapSpellItem(spell),
+export function mapSpellDetail(
+  spell: RulesPrisma.SpellGetPayload<{ select: typeof SELECT_SPELL_DETAIL }>,
+  spellDetailI18n: AppPrisma.I18nSpellTextGetPayload<{
+    select: typeof SELECT_SPELL_I18N_DETAIL;
+  }> | null,
+): SpellDetailView {
+  const i18n: I18nSpellDetailOverlay | undefined = spellDetailI18n
+    ? {
+        lang: "zh",
+        name: spellDetailI18n.name ?? undefined,
+        variant: spellDetailI18n.variant ?? undefined,
+        sourceKey: spellDetailI18n.sourceKey ?? undefined,
+        description: {
+          html: spellDetailI18n.descriptionHtml ?? undefined,
+          text: spellDetailI18n.descriptionText ?? undefined,
+        },
+      }
+    : undefined;
+
+  const detail: SpellDetailView = {
+    ...mapSpellItem(spell, spellDetailI18n),
     added: spell.added.toISOString(),
     description: {
       text: spell.description,
@@ -112,5 +153,8 @@ export function mapSpellDetail(spell: any): SpellDetail {
         : null,
     },
   };
+
+  detail.i18n = i18n;
+
   return detail;
 }

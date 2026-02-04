@@ -9,13 +9,14 @@ import { usePersistedState } from "~/state/persisted-state";
 import Pager from "~/components/Pager";
 import { SpellCard } from "~/components/SpellCard";
 import { Separator } from "~/components/ui/separator";
+import { useAppI18n } from "~/i18n/useAppI18n";
 
 const PAGE_SIZE = 20; // backend default is 20; keep consistent
 
 export default function SearchSpellsPage() {
   const { state } = usePersistedState();
   const rulebookIds = state.selectedRulebookIds;
-
+  const { queryKey } = useAppI18n();
   const [params, setParams] = useSearchParams();
   const qParam = (params.get("q") ?? "").trim();
 
@@ -25,7 +26,10 @@ export default function SearchSpellsPage() {
   const page = Math.max(1, Number(params.get("page") ?? "1") || 1);
 
   const query = useQuery({
-    queryKey: ["search", { q: qParam, rulebookIds, page, pageSize: PAGE_SIZE }],
+    queryKey: [
+      "search",
+      { q: qParam, rulebookIds, page, pageSize: PAGE_SIZE, ...queryKey },
+    ],
     enabled: qParam.length >= 2, // enforce backend contract
     queryFn: ({ signal }) =>
       searchSpellsByName({
