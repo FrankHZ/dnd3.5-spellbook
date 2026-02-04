@@ -11,6 +11,7 @@ function TopBarSeacrch() {
   const q = params.get("q") || "";
   const [text, setText] = useState(q);
   const [error, setError] = useState(null as string | null);
+  const { t } = useTranslation("topbar");
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (text.trim().length < 2) {
@@ -31,7 +32,7 @@ function TopBarSeacrch() {
           placeholder="Search spells by name..."
         />
         <Button type="submit" variant="outline">
-          Search
+          {t("Search")}
         </Button>
       </form>
       {error && <div className="mt-1 text-xs text-destructive">{error}</div>}
@@ -63,34 +64,37 @@ function LangToggle() {
           setState((s) => ({ ...s, uiPrefs: { ...s.uiPrefs, lang: "zh" } }))
         }
       >
-        ZH
+        中
       </Button>
     </div>
   );
 }
 
 export default function TopBar() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("topbar");
   return (
     <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur">
       <div className="flex items-center gap-3 px-4 py-3">
-        <div className="font-bold whitespace-nowrap">{t("topbar.title")}</div>
+        <NavLink to="/browse" className="font-bold whitespace-nowrap">
+          {t("D&D 3.5 Spellbook")}
+        </NavLink>
+
         <TopBarSeacrch />
         <nav className="flex gap-3 text-sm">
           <NavLink className="hover:underline" to="/browse">
-            Browse
+            {t("Browse")}
           </NavLink>
           <NavLink className="hover:underline" to="/spellbooks/default">
-            Favorites
+            {t("Favorites")}
           </NavLink>
           <NavLink className="hover:underline" to="/spellbooks/prepared">
-            Prepared
+            {t("Prepared")}
           </NavLink>
           <NavLink className="hover:underline" to="/spellbooks">
-            Spellbooks
+            {t("Spellbooks")}
           </NavLink>
           <NavLink className="hover:underline" to="/settings">
-            Settings
+            {t("Settings")}
           </NavLink>
         </nav>
         <LangToggle />

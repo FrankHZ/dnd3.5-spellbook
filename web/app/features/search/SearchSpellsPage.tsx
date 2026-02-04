@@ -10,6 +10,7 @@ import Pager from "~/components/Pager";
 import { SpellCard } from "~/components/SpellCard";
 import { Separator } from "~/components/ui/separator";
 import { useAppI18n } from "~/i18n/useAppI18n";
+import { useTranslation } from "react-i18next";
 
 const PAGE_SIZE = 20; // backend default is 20; keep consistent
 
@@ -17,6 +18,7 @@ export default function SearchSpellsPage() {
   const { state } = usePersistedState();
   const rulebookIds = state.selectedRulebookIds;
   const { queryKey } = useAppI18n();
+  const { t } = useTranslation("search-spell");
   const [params, setParams] = useSearchParams();
   const qParam = (params.get("q") ?? "").trim();
 
@@ -65,11 +67,11 @@ export default function SearchSpellsPage() {
       <div className="space-y-1">
         <h1 className="text-lg font-semibold">Search</h1>
         <div className="text-sm text-muted-foreground">
-          Global name search. Browsing by class/level lives in Browse.
+          {t("Global name search. Browsing by class/level lives in Browse.")}
         </div>
         {rulebookIds.length > 0 && (
           <div className="text-xs text-muted-foreground">
-            Rulebook filter is active (from Settings).
+            {t("Rulebook filter is active (from Settings).")}
           </div>
         )}
       </div>
@@ -77,7 +79,7 @@ export default function SearchSpellsPage() {
       {!isValid && (
         <div className="rounded-md border p-3">
           <div className="text-sm text-muted-foreground">
-            Enter at least 2 characters to run a search.
+            {t("Enter at least 2 characters to run a search.")}
           </div>
         </div>
       )}

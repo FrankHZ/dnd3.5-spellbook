@@ -115,11 +115,6 @@ export default function SpellDetailPage() {
 
   const spell = query.data!;
 
-  const descriptorNames = (spell.descriptors ?? [])
-    .slice(0, 3)
-    .map((d: any) => d.name);
-  const showHeaderDescriptors = descriptorNames.length > 0;
-
   return (
     <div className="p-4 space-y-4 max-w-4xl mx-auto">
       {/* Header */}
@@ -134,16 +129,6 @@ export default function SpellDetailPage() {
               <span className="font-mono">{spell.rulebook?.abbr ?? "—"}</span>
               {spell.page ? <span> • p. {spell.page}</span> : null}
             </div>
-
-            {showHeaderDescriptors && (
-              <div className="mt-2 flex flex-wrap gap-1">
-                {descriptorNames.map((n: string) => (
-                  <Badge key={n} variant="secondary" className="text-xs">
-                    {n}
-                  </Badge>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Actions (MVP: spellbook + prepared only) */}

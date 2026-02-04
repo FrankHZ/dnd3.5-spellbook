@@ -18,12 +18,13 @@ import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { useAppI18n } from "~/i18n/useAppI18n";
 import { getDisplayNameWithEn } from "~/i18n/content";
+import { useTranslation } from "react-i18next";
 
 const PAGE_SIZE = 20;
 
 export function LevelSelector() {
   const { state, setState } = usePersistedState();
-
+  const { t } = useTranslation("browse-spell");
   const level = state.browseLevel;
 
   function setLevel(next: number) {
@@ -32,7 +33,7 @@ export function LevelSelector() {
 
   return (
     <div className="rounded-md border p-3 space-y-2">
-      <div className="font-medium">Level</div>
+      <div className="font-medium">{t("Level")}</div>
 
       <div className="grid grid-cols-5 gap-2">
         {Array.from({ length: 10 }, (_, i) => (
@@ -51,7 +52,7 @@ export function LevelSelector() {
 
       {level === null && (
         <div className="text-sm text-destructive">
-          Select a spell level (0-9).
+          {t("Select a spell level (0-9).")}
         </div>
       )}
     </div>
@@ -62,13 +63,15 @@ function ClassAndDomainSelector() {
   const { state, setState } = usePersistedState();
   const boot = useBootstrap(state.includePrestige);
   const { lang } = useAppI18n();
+  const { t } = useTranslation("browse-spell");
+
   const classes = boot.classes.data?.items ?? [];
   const domains = boot.domains.data?.items ?? [];
 
   const classItems: PickerItem[] = classes.map((c) => ({
     id: c.id,
     name: getDisplayNameWithEn(c, lang),
-    group: c.prestige ? "Prestige Classes" : "Base Classes",
+    group: c.prestige ? t("Prestige Classes") : t("Base Classes"),
   }));
 
   const domainItems: PickerItem[] = domains.map((d) => ({
@@ -79,8 +82,8 @@ function ClassAndDomainSelector() {
   return (
     <div className="rounded-md border p-3 space-y-2">
       <MultiSelectPicker
-        title="Classes"
-        placeholder="Filter classes…"
+        title={t("Classes")}
+        placeholder={t("Filter classes…")}
         items={classItems}
         selectedIds={state.browseClassIds}
         onChange={(nextIds) =>
@@ -89,8 +92,8 @@ function ClassAndDomainSelector() {
       />
 
       <MultiSelectPicker
-        title="Domains"
-        placeholder="Filter domains…"
+        title={t("Domains")}
+        placeholder={t("Filter domains…")}
         items={domainItems}
         selectedIds={state.browseDomainIds}
         onChange={(nextIds) =>
@@ -104,6 +107,7 @@ function ClassAndDomainSelector() {
 export default function BrowsePage() {
   const { state } = usePersistedState();
   const { queryKey } = useAppI18n();
+  const { t } = useTranslation();
 
   const [page, setPage] = useState(1);
 
@@ -213,7 +217,10 @@ export default function BrowsePage() {
                   <div className="rounded-md border p-3">
                     <div className="font-medium">No spells found</div>
                     <div className="mt-1 text-sm text-muted-foreground">
-                      No spells found for selected classes at level {level}.
+                      {t(
+                        "No spells found for selected classes at level {{level}}.",
+                        { level },
+                      )}
                     </div>
                   </div>
                 )}

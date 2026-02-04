@@ -1,3 +1,5 @@
+import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 import { Button } from "~/components/ui/button";
 
 type PagerProps = {
@@ -13,11 +15,16 @@ type PagerProps = {
   showRangeText?: boolean;
 };
 
-function rangeText(page: number, pageSize: number, total: number) {
-  if (total <= 0) return "Showing 0 of 0";
+function rangeText(
+  t: TFunction<"pager", undefined>,
+  page: number,
+  pageSize: number,
+  total: number,
+) {
+  if (total <= 0) return t("Showing 0 of 0");
   const start = (page - 1) * pageSize + 1;
   const end = Math.min(page * pageSize, total);
-  return `Showing ${start}-${end} of ${total}`;
+  return t("Showing {{start}}-{{end}} of {{total}}", { start, end, total });
 }
 
 export default function Pager({
@@ -31,12 +38,13 @@ export default function Pager({
 }: PagerProps) {
   const hasPrev = page > 1;
   const hasNext = page * pageSize < total;
+  const { t } = useTranslation("pager");
 
   return (
     <div className={`flex items-center justify-between gap-3 ${className}`}>
       {showRangeText ? (
         <div className="text-sm text-muted-foreground">
-          {rangeText(page, pageSize, total)}
+          {rangeText(t, page, pageSize, total)}
         </div>
       ) : (
         <div />

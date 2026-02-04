@@ -8,5 +8,8 @@
   ],
   "scripts": {
     "build:contracts": "npm run -w @dnd/contracts build"
+  },
+  "dependencies": {
+    "i18next-http-backend": "^3.0.2"
   }
 }

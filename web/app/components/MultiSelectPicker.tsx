@@ -1,16 +1,21 @@
+import { X } from "lucide-react";
 import * as React from "react";
-import { X, ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
-import { Input } from "~/components/ui/input";
+
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/components/ui/dialog";
+  Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxChipsInput,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxValue,
+  useComboboxAnchor,
+} from "~/components/ui/combobox";
 import {
   Command,
   CommandEmpty,
@@ -20,18 +25,12 @@ import {
   CommandList,
 } from "~/components/ui/command";
 import {
-  Combobox,
-  ComboboxChip,
-  ComboboxChips,
-  ComboboxChipsInput,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-  ComboboxValue,
-  useComboboxAnchor,
-} from "~/components/ui/combobox";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/components/ui/dialog";
 
 export type PickerItem = {
   id: number;
@@ -106,7 +105,7 @@ export function MultiSelectPicker(props: {
   }
 
   const anchor = useComboboxAnchor();
-
+  const { t } = useTranslation();
   return (
     <div className="rounded-md border p-3 space-y-3">
       <div className="flex items-center justify-between gap-2">
@@ -114,14 +113,14 @@ export function MultiSelectPicker(props: {
         <div className="flex items-center gap-2">
           {selectedIds.length > 0 && (
             <Button variant="ghost" size="sm" onClick={clearAll}>
-              Clear
+              {t("Clear")}
             </Button>
           )}
 
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
-                View All...
+                {t("View All...")}
               </Button>
             </DialogTrigger>
 
@@ -136,7 +135,7 @@ export function MultiSelectPicker(props: {
                   onValueChange={setFilter}
                 />
                 <CommandList className="max-h-[60vh]">
-                  <CommandEmpty>No matches.</CommandEmpty>
+                  <CommandEmpty>{t("No matches.")}</CommandEmpty>
 
                   {groups.map(([groupName, groupItems]) => (
                     <CommandGroup key={groupName} heading={groupName}>
@@ -151,7 +150,7 @@ export function MultiSelectPicker(props: {
                             <span className="truncate">{it.name}</span>
                             {checked && (
                               <span className="text-xs text-muted-foreground">
-                                Selected
+                                {t("Selected")}
                               </span>
                             )}
                           </CommandItem>
@@ -164,7 +163,7 @@ export function MultiSelectPicker(props: {
 
               <div className="pt-2 flex justify-end">
                 <Button variant="outline" onClick={() => setOpen(false)}>
-                  Done
+                  {t("Done")}
                 </Button>
               </div>
             </DialogContent>

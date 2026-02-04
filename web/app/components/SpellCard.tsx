@@ -1,5 +1,6 @@
 import type { SpellItem } from "@dnd/contracts";
 import { Heart } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -19,7 +20,7 @@ export function SpellCard({
   const { lang } = useAppI18n();
   const inFav = isInDefault(spell.id);
   const inPrep = isInPrepared(spell.id);
-
+  const { t } = useTranslation("spell-card");
   return (
     <div className="p-3 hover:bg-muted/40">
       <div className="flex items-start justify-between gap-3">
@@ -96,7 +97,7 @@ export function SpellCard({
                 variant={inPrep ? "default" : "outline"}
                 onClick={() => togglePrepared(spell.id)}
               >
-                {inPrep ? "Prepared" : "Prepare"}
+                {inPrep ? t("Prepared") : t("Prepare")}
               </Button>
             </div>
           )}
