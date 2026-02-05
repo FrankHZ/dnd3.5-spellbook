@@ -1,4 +1,6 @@
 {
+  "Next": "后一页",
+  "Prev": "前一页",
   "Showing {{start}}-{{end}} of {{total}}": "第{{start}}-{{end}}个，共{{total}}个",
   "Showing 0 of 0": "没东西显示"
 }

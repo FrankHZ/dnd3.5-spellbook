@@ -1,8 +1,17 @@
 {
+  "Base Classes": "",
+  "Classes": "",
   "Clear": "清空",
+  "Domains": "",
   "Done": "完成",
+  "Filter classes…": "",
+  "Filter domains…": "",
+  "Level": "",
   "No matches.": "没找到！",
   "No spells found for selected classes at level {{level}}.": "",
+  "Prestige Classes": "",
+  "Select a spell level (0-9).": "",
   "Selected": "已选择",
+  "Show details": "",
   "View All...": "列表..."
 }

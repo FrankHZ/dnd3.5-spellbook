@@ -1,4 +1,5 @@
 import type { SpellCasting } from "@dnd/contracts";
+import { useTranslation } from "react-i18next";
 
 function Field({ label, value }: { label: string; value?: string | null }) {
   return (
@@ -10,22 +11,21 @@ function Field({ label, value }: { label: string; value?: string | null }) {
 }
 
 export function MechanicsSection({ casting }: { casting: SpellCasting }) {
+  const { t } = useTranslation("spell-mechanics");
   return (
     <div className="space-y-2">
-      <div className="font-medium">Mechanics</div>
-
       <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="Casting Time" value={casting.castingTime} />
-        <Field label="Range" value={casting.range} />
+        <Field label={t("Casting Time")} value={casting.castingTime} />
+        <Field label={t("Range")} value={casting.range} />
 
-        <Field label="Target" value={casting.target} />
-        <Field label="Effect" value={casting.effect} />
+        <Field label={t("Target")} value={casting.target} />
+        <Field label={t("Effect")} value={casting.effect} />
 
-        <Field label="Area" value={casting.area} />
-        <Field label="Duration" value={casting.duration} />
+        <Field label={t("Area")} value={casting.area} />
+        <Field label={t("Duration")} value={casting.duration} />
 
-        <Field label="Saving Throw" value={casting.savingThrow} />
-        <Field label="Spell Resistance" value={casting.spellResistance} />
+        <Field label={t("Saving Throw")} value={casting.savingThrow} />
+        <Field label={t("Spell Resistance")} value={casting.spellResistance} />
       </div>
     </div>
   );

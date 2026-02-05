@@ -1,0 +1,87 @@
+[
+  { "id": 1, "name": "Good", "zh": "善良" },
+  { "id": 2, "name": "Air", "zh": "气" },
+  { "id": 3, "name": "Mind-Affecting", "zh": "影响心智" },
+  { "id": 4, "name": "Language-Dependent", "zh": "语言相关" },
+  { "id": 5, "name": "Light", "zh": "光明" },
+  { "id": 6, "name": "Force", "zh": "力场" },
+  { "id": 7, "name": "Sonic", "zh": "音波" },
+  { "id": 8, "name": "Electricity", "zh": "电击" },
+  { "id": 9, "name": "Fire", "zh": "火焰" },
+  { "id": 10, "name": "Death", "zh": "死亡" },
+  { "id": 11, "name": "Evil", "zh": "邪恶" },
+  { "id": 12, "name": "Darkness", "zh": "黑暗" },
+  { "id": 13, "name": "Chaos", "zh": "混乱" },
+  { "id": 14, "name": "Fear", "zh": "恐惧" },
+  { "id": 15, "name": "Acid", "zh": "强酸" },
+  { "id": 16, "name": "Shadow", "zh": "暗影" },
+  { "id": 17, "name": "Earth", "zh": "土" },
+  { "id": 18, "name": "Fire or Cold", "zh": "火焰或寒冷" },
+  { "id": 19, "name": "Cold", "zh": "寒冷" },
+  { "id": 20, "name": "Water", "zh": "水" },
+  { "id": 21, "name": "Pattern", "zh": "图纹" },
+
+  {
+    "id": 22,
+    "name": "see text for lesser spirit binding",
+    "zh": "参见文本（次级灵魂束缚）"
+  },
+  { "id": 23, "name": "see text", "zh": "参见文本" },
+  { "id": 24, "name": "Mind Affecting and Chaotic", "zh": "影响心智与混乱" },
+
+  { "id": 25, "name": "Lawful", "zh": "守序" },
+  { "id": 26, "name": "Chaotic", "zh": "混乱" },
+  { "id": 27, "name": "Good or Evil", "zh": "善良或邪恶" },
+
+  { "id": 28, "name": "Investiture", "zh": "灌注" },
+  { "id": 29, "name": "Teleportation", "zh": "传送" },
+  { "id": 30, "name": "Creation", "zh": "创造" },
+  { "id": 31, "name": "Ice", "zh": "寒冰" },
+  { "id": 32, "name": "Ectomancy", "zh": "灵质法术" },
+  { "id": 33, "name": "Incarnum", "zh": "魂能" },
+  { "id": 34, "name": "Compulsion", "zh": "强迫" },
+
+  {
+    "id": 35,
+    "name": "see text for align weapon",
+    "zh": "参见文本（阵营武器）"
+  },
+  { "id": 36, "name": "Law", "zh": "守序" },
+
+  {
+    "id": 37,
+    "name": "see text for lesser planar ally",
+    "zh": "参见文本（次级异界盟友）"
+  },
+  {
+    "id": 38,
+    "name": "see text for lesser planar binding",
+    "zh": "参见文本（次级异界束缚）"
+  },
+  {
+    "id": 39,
+    "name": "see text for summon monster I",
+    "zh": "参见文本（召唤怪物 I）"
+  },
+  {
+    "id": 40,
+    "name": "see text for lesser energy surge",
+    "zh": "参见文本（次级能量涌动）"
+  },
+
+  { "id": 41, "name": "Glamer", "zh": "魅影" },
+  { "id": 42, "name": "Summoning", "zh": "召唤" },
+
+  {
+    "id": 43,
+    "name": "see text for lesser energized shield",
+    "zh": "参见文本（次级能量护盾）"
+  },
+  {
+    "id": 44,
+    "name": "see text for lesser planar exchange",
+    "zh": "参见文本（次级位面交换）"
+  },
+
+  { "id": 45, "name": "Mindset", "zh": "心态" }
+]

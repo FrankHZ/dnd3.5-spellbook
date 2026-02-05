@@ -10,6 +10,7 @@ import { pinoHttp } from "pino-http";
 import { logger } from "./logger";
 import { domainsRouter } from "./routes/domains.routes";
 import { i18nQuery } from "./middlewares/i18nQuery";
+import { metaRouter } from "./routes/meta.routes";
 
 const app: Application = express();
 
@@ -35,6 +36,7 @@ app.use("/api/spells", spellsRouter);
 app.use("/api/rulebooks", rulebooksRouter);
 app.use("/api/classes", classesRouter);
 app.use("/api/domains", domainsRouter);
+app.use("/api/meta", metaRouter);
 
 // 404 + error handler (must be last)
 app.use(notFoundMiddleware);

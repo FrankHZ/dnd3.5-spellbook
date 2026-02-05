@@ -15,7 +15,8 @@ import { useCollections } from "~/state/collections-state";
 import { Heart } from "lucide-react";
 import { useAppI18n } from "~/i18n/useAppI18n";
 import { getSpellDescription } from "~/i18n/spellDetail";
-import { getDisplayNameWithEn } from "~/i18n/content";
+import { useMetaNames } from "~/i18n/useMetaNames";
+import { useTranslation } from "react-i18next";
 
 function SpellDetailSkeleton() {
   return (
@@ -33,7 +34,9 @@ function SpellDetailSkeleton() {
 export default function SpellDetailPage() {
   const { id } = useParams();
   const { queryKey } = useAppI18n();
-  const { lang } = useAppI18n();
+  const { lang, nameWithEn } = useAppI18n();
+  const { t } = useTranslation(["spell-detail", "collections"]);
+  const { metaName } = useMetaNames();
   const idNum = Number(id);
   const isValidId = Number.isInteger(idNum) && idNum > 0;
 
@@ -122,7 +125,7 @@ export default function SpellDetailPage() {
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-2xl font-semibold leading-tight">
-              {getDisplayNameWithEn(spell, lang)}
+              {nameWithEn(spell)}
             </h1>
 
             <div className="mt-1 text-sm text-muted-foreground">
@@ -152,13 +155,17 @@ export default function SpellDetailPage() {
               variant={inPrepared ? "default" : "outline"}
               onClick={() => togglePrepared(idNum)}
             >
-              {inPrepared ? "Prepared" : "Add to Prepared"}
+              {inPrepared
+                ? t("Prepared", { ns: "collections" })
+                : t("Prepare", { ns: "collections" })}
             </Button>
           </div>
         </div>
         <div className="text-sm text-muted-foreground">
-          {(spell.school?.name ?? "—") +
-            (spell.subSchool ? ` (${spell.subSchool.name})` : "")}
+          {(metaName("schools", spell.school) ?? "—") +
+            (spell.subSchool
+              ? ` (${metaName("subschools", spell.subSchool)})`
+              : "")}
         </div>
 
         {(spell.descriptors?.length ?? 0) > 0 && (
@@ -169,7 +176,7 @@ export default function SpellDetailPage() {
                 variant="secondary"
                 className="text-xs"
               >
-                {d.name}
+                {metaName("descriptors", d)}
               </Badge>
             ))}
           </div>

@@ -68,6 +68,7 @@ async function main() {
     appPrisma.i18nSpellText.createMany({
       data: matched.map((m) => ({
         spellId: m.spellId as number,
+        rulebookId: m.rulebookId as number,
         lang: LANG,
         variant: VARIANT,
 

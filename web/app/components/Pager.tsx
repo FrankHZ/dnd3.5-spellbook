@@ -57,7 +57,7 @@ export default function Pager({
           disabled={!hasPrev || isBusy}
           onClick={() => onPageChange(Math.max(1, page - 1))}
         >
-          Prev
+          {t("Prev")}
         </Button>
         <Button
           variant="outline"
@@ -65,7 +65,7 @@ export default function Pager({
           disabled={!hasNext || isBusy}
           onClick={() => onPageChange(page + 1)}
         >
-          Next
+          {t("Next")}
         </Button>
       </div>
     </div>

@@ -1,8 +1,10 @@
 import type { Edition, Rulebook } from "@dnd/contracts";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useBootstrap } from "~/bootstrap/useBootstrap";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Separator } from "~/components/ui/separator";
+import { useMetaNames } from "~/i18n/useMetaNames";
 import { usePersistedState } from "~/state/persisted-state";
 
 type EditionGroup = {
@@ -50,6 +52,8 @@ function getEditionCheckState(
 }
 
 export default function RulebookSelector() {
+  const { t } = useTranslation("settings");
+  const { metaName } = useMetaNames();
   const { state, setState } = usePersistedState();
   const boot = useBootstrap(state.includePrestige);
 
@@ -88,9 +92,9 @@ export default function RulebookSelector() {
 
   return (
     <div className="rounded-md border p-3 space-y-3">
-      <div className="font-medium">Rulebooks (optional)</div>
+      <div className="font-medium">{t("Rulebooks")}</div>
       <div className="text-xs text-muted-foreground">
-        Leave empty to rely on backend default edition rulebooks.
+        {t("Leave empty to rely on backend default edition rulebooks.")}
       </div>
 
       {groups.map((g) => {
@@ -117,7 +121,7 @@ export default function RulebookSelector() {
               </label>
 
               <div className="text-xs text-muted-foreground">
-                {st.count}/{st.total} selected
+                {st.count}/{st.total} {t("selected")}
               </div>
             </div>
 
@@ -136,7 +140,9 @@ export default function RulebookSelector() {
                       onCheckedChange={(v) => toggleRulebook(rb.id, Boolean(v))}
                     />
                     <span className="font-mono text-xs">{rb.abbr}</span>
-                    <span className="truncate">{rb.name}</span>
+                    <span className="truncate">
+                      {metaName("rulebooks", rb)}
+                    </span>
                   </label>
                 );
               })}

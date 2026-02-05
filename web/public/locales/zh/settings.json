@@ -1,0 +1,9 @@
+{
+  "Classes": "职业",
+  "Include prestige classes (affects Browse class list)": "在浏览页面显示进阶职业",
+  "Leave empty to rely on backend default edition rulebooks.": "什么都不选：3.5核心",
+  "Rulebooks": "规则书",
+  "selected": "已选择",
+  "Settings": "设置",
+  "Settings are stored locally (MVP).": "设置目前只存在本地！"
+}

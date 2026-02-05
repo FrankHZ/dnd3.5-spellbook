@@ -2,6 +2,14 @@ import "dotenv/config";
 import { appPrisma } from "~/lib/app-prisma-client";
 import { rulesPrisma } from "~/lib/rules-prisma-client";
 import zhClassJson from "DATA/i18n/classes-zh.json";
+import zhDomainJson from "DATA/i18n/domains-zh.json";
+import zhRulebookJson from "DATA/i18n/rulebooks-zh.json";
+import zhDescriptorJson from "DATA/i18n/descriptors-zh.json";
+import zhSchoolJson from "DATA/i18n/schools-zh.json";
+import zhSubschoolJson from "DATA/i18n/subschools-zh.json";
+import { PrismaPromise } from "@prisma/client/runtime/client";
+import { BatchPayload } from "DB_APP/internal/prismaNamespace";
+import { Prisma } from "DB_APP/client";
 
 type Entry = {
   id: number; // classId
@@ -11,47 +19,61 @@ type Entry = {
 
 const LANG = "zh";
 const VARIANT = "default";
-const zhClasses: Entry[] = zhClassJson;
 
 function norm(s: string | null | undefined): string {
   return (s ?? "").trim().toLowerCase();
 }
 
-async function importClasses() {
-  // Source of truth: what classes exist in scoped rules DB
-  const sourceClasses = await rulesPrisma.spellClassIndex.findMany({
-    select: {
-      classId: true,
-      characterClass: { select: { name: true } },
-    },
-    distinct: ["classId"],
-    orderBy: [{ classId: "asc" }],
-  });
+async function importEntityI18n<Row>(cfg: {
+  label: string;
+  lang: string;
+  variant: string;
 
-  const classMap = new Map<number, { name: string }>();
-  for (const c of sourceClasses) {
-    classMap.set(c.classId, { name: c.characterClass.name });
-  }
+  // json input
+  entries: Entry[];
+
+  // rules db: id -> english name
+  getSourceMap: () => Promise<Map<number, string>>;
+
+  // app db ops
+  deleteMany: (args: {
+    where: { lang: string; variant: string };
+  }) => PrismaPromise<BatchPayload>;
+  createMany: (args: { data: Row[] }) => PrismaPromise<BatchPayload>;
+
+  // mapping
+  makeRow: (e: Entry) => Row;
+}) {
+  const {
+    label,
+    lang,
+    variant,
+    entries,
+    getSourceMap,
+    deleteMany,
+    createMany,
+    makeRow,
+  } = cfg;
+
+  const sourceMap = await getSourceMap();
 
   // 1) Validate ids in JSON exist in rules DB
   const badIds: number[] = [];
-  for (const c of zhClasses) {
-    if (!classMap.has(c.id)) badIds.push(c.id);
-  }
+  for (const e of entries) if (!sourceMap.has(e.id)) badIds.push(e.id);
   if (badIds.length) {
     console.warn(
-      `[WARN] zhClasses contains ids not present in rules DB: ${badIds.join(", ")}`,
+      `[WARN] ${label}: JSON contains ids not present in rules DB: ${badIds.join(", ")}`,
     );
   }
 
-  // 2) Validate JSON coverage (optional but useful)
+  // 2) Validate JSON coverage (ids present in rules DB but missing in JSON)
   const missingIds: number[] = [];
-  for (const classId of classMap.keys()) {
-    if (!zhClasses.some((c) => c.id === classId)) missingIds.push(classId);
+  for (const id of sourceMap.keys()) {
+    if (!entries.some((e) => e.id === id)) missingIds.push(id);
   }
   if (missingIds.length) {
     console.warn(
-      `[WARN] rules DB has classIds missing from zh JSON: ${missingIds.slice(0, 30).join(", ")}${
+      `[WARN] ${label}: rules DB has ids missing from zh JSON: ${missingIds.slice(0, 30).join(", ")}${
         missingIds.length > 30 ? ` ... (+${missingIds.length - 30})` : ""
       }`,
     );
@@ -63,47 +85,220 @@ async function importClasses() {
     rulesName: string;
     jsonName: string;
   }> = [];
-  for (const c of zhClasses) {
-    const src = classMap.get(c.id);
-    if (!src) continue;
-    if (norm(src.name) !== norm(c.name)) {
-      nameMismatches.push({ id: c.id, rulesName: src.name, jsonName: c.name });
+  for (const e of entries) {
+    const rulesName = sourceMap.get(e.id);
+    if (!rulesName) continue;
+    if (norm(rulesName) !== norm(e.name)) {
+      nameMismatches.push({ id: e.id, rulesName, jsonName: e.name });
     }
   }
   if (nameMismatches.length) {
-    console.warn(`[WARN] English name mismatches (json may be stale):`);
+    console.warn(
+      `[WARN] ${label}: English name mismatches (json may be stale):`,
+    );
     for (const m of nameMismatches.slice(0, 20)) {
       console.warn(`  id=${m.id} rules="${m.rulesName}" json="${m.jsonName}"`);
     }
-    if (nameMismatches.length > 20) {
+    if (nameMismatches.length > 20)
       console.warn(`  ... (+${nameMismatches.length - 20} more)`);
-    }
   }
 
-  // 4) Import: wipe current lang+variant then insert
-  const rows = zhClasses.map((c) => ({
-    classId: c.id,
-    lang: LANG,
-    variant: VARIANT,
-    name: c.zh?.trim() ? c.zh.trim() : null,
-  }));
+  // 4) Import: wipe + insert
+  const rows: Row[] = entries.map(makeRow);
 
   await appPrisma.$transaction([
-    appPrisma.i18nCharacterClassText.deleteMany({
-      where: { lang: LANG, variant: VARIANT },
-    }),
-    appPrisma.i18nCharacterClassText.createMany({
-      data: rows,
-    }),
+    deleteMany({ where: { lang, variant } }),
+    createMany({ data: rows }),
   ]);
 
   console.log(
-    `[OK] Imported ${rows.length} I18nCharacterClassText rows for lang=${LANG} variant=${VARIANT}`,
+    `[OK] Imported ${rows.length} ${label} rows for lang=${lang} variant=${variant}`,
   );
+}
+
+async function importClasses() {
+  await importEntityI18n<Prisma.I18nCharacterClassTextCreateManyInput>({
+    label: "I18nCharacterClassText",
+    lang: LANG,
+    variant: VARIANT,
+    entries: zhClassJson,
+
+    getSourceMap: async () => {
+      const rows = await rulesPrisma.spellClassIndex.findMany({
+        select: { classId: true, characterClass: { select: { name: true } } },
+        distinct: ["classId"],
+        orderBy: [{ classId: "asc" }],
+      });
+      const m = new Map<number, string>();
+      for (const r of rows) m.set(r.classId, r.characterClass.name);
+      return m;
+    },
+
+    deleteMany: appPrisma.i18nCharacterClassText.deleteMany,
+    createMany: appPrisma.i18nCharacterClassText.createMany,
+
+    makeRow: (e) => ({
+      classId: e.id,
+      lang: LANG,
+      variant: VARIANT,
+      name: e.zh?.trim() ? e.zh.trim() : null,
+    }),
+  });
+}
+
+async function importDomains() {
+  await importEntityI18n<Prisma.I18nDomainTextCreateManyInput>({
+    label: "I18nDomainText",
+    lang: LANG,
+    variant: VARIANT,
+    entries: zhDomainJson,
+
+    getSourceMap: async () => {
+      const rows = await rulesPrisma.spellDomainIndex.findMany({
+        select: { domainId: true, domain: { select: { name: true } } },
+        distinct: ["domainId"],
+        orderBy: [{ domainId: "asc" }],
+      });
+      const m = new Map<number, string>();
+      for (const r of rows) m.set(r.domainId, r.domain.name);
+      return m;
+    },
+
+    deleteMany: appPrisma.i18nDomainText.deleteMany,
+    createMany: appPrisma.i18nDomainText.createMany,
+
+    makeRow: (e) => ({
+      domainId: e.id,
+      lang: LANG,
+      variant: VARIANT,
+      name: e.zh?.trim() ? e.zh.trim() : null,
+    }),
+  });
+}
+
+async function importRulebooks() {
+  await importEntityI18n<Prisma.I18nRulebookTextCreateManyInput>({
+    label: "I18nRulebookText",
+    lang: LANG,
+    variant: VARIANT,
+    entries: zhRulebookJson,
+
+    getSourceMap: async () => {
+      const rows = await rulesPrisma.rulebook.findMany({
+        select: { id: true, name: true },
+        orderBy: [{ id: "asc" }],
+      });
+      const m = new Map<number, string>();
+      for (const r of rows) m.set(r.id, r.name);
+      return m;
+    },
+
+    deleteMany: appPrisma.i18nRulebookText.deleteMany,
+    createMany: appPrisma.i18nRulebookText.createMany,
+
+    makeRow: (e) => ({
+      rulebookId: e.id,
+      lang: LANG,
+      variant: VARIANT,
+      name: e.zh?.trim() ? e.zh.trim() : null,
+    }),
+  });
+}
+
+async function importSchools() {
+  await importEntityI18n<Prisma.I18nSpellSchoolTextCreateManyInput>({
+    label: "I18nSpellSchoolText",
+    lang: LANG,
+    variant: VARIANT,
+    entries: zhSchoolJson,
+
+    getSourceMap: async () => {
+      const rows = await rulesPrisma.spellSchool.findMany({
+        select: { id: true, name: true },
+        orderBy: [{ id: "asc" }],
+      });
+      const m = new Map<number, string>();
+      for (const r of rows) m.set(r.id, r.name);
+      return m;
+    },
+
+    deleteMany: (args) => appPrisma.i18nSpellSchoolText.deleteMany(args),
+    createMany: (args) => appPrisma.i18nSpellSchoolText.createMany(args),
+
+    makeRow: (e) => ({
+      schoolId: e.id,
+      lang: LANG,
+      variant: VARIANT,
+      name: e.zh?.trim() ? e.zh.trim() : null,
+    }),
+  });
+}
+
+async function importSubschools() {
+  await importEntityI18n<Prisma.I18nSpellSubschoolTextCreateManyInput>({
+    label: "I18nSpellSubschoolText",
+    lang: LANG,
+    variant: VARIANT,
+    entries: zhSubschoolJson,
+
+    getSourceMap: async () => {
+      const rows = await rulesPrisma.spellSubschool.findMany({
+        select: { id: true, name: true },
+        orderBy: [{ id: "asc" }],
+      });
+      const m = new Map<number, string>();
+      for (const r of rows) m.set(r.id, r.name);
+      return m;
+    },
+
+    deleteMany: (args) => appPrisma.i18nSpellSubschoolText.deleteMany(args),
+    createMany: (args) => appPrisma.i18nSpellSubschoolText.createMany(args),
+
+    makeRow: (e) => ({
+      subschoolId: e.id,
+      lang: LANG,
+      variant: VARIANT,
+      name: e.zh?.trim() ? e.zh.trim() : null,
+    }),
+  });
+}
+
+async function importDescriptors() {
+  await importEntityI18n<Prisma.I18nDescriptorTextCreateManyInput>({
+    label: "I18nDescriptorText",
+    lang: LANG,
+    variant: VARIANT,
+    entries: zhDescriptorJson,
+
+    getSourceMap: async () => {
+      const rows = await rulesPrisma.spellDescriptor.findMany({
+        select: { id: true, name: true },
+        orderBy: [{ id: "asc" }],
+      });
+      const m = new Map<number, string>();
+      for (const r of rows) m.set(r.id, r.name);
+      return m;
+    },
+
+    deleteMany: (args) => appPrisma.i18nDescriptorText.deleteMany(args),
+    createMany: (args) => appPrisma.i18nDescriptorText.createMany(args),
+
+    makeRow: (e) => ({
+      descriptorId: e.id,
+      lang: LANG,
+      variant: VARIANT,
+      name: e.zh?.trim() ? e.zh.trim() : null,
+    }),
+  });
 }
 
 async function main() {
   await importClasses();
+  await importDomains();
+  await importRulebooks();
+  await importSchools();
+  await importSubschools();
+  await importDescriptors();
 }
 
 main()

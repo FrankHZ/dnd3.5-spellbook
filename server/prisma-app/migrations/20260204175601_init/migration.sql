@@ -30,6 +30,7 @@ CREATE TABLE "SpellNote" (
 CREATE TABLE "I18nSpellText" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "spellId" INTEGER NOT NULL,
+    "rulebookId" INTEGER NOT NULL,
     "lang" TEXT NOT NULL,
     "variant" TEXT NOT NULL DEFAULT 'default',
     "name" TEXT,
@@ -44,6 +45,7 @@ CREATE TABLE "I18nSpellText" (
 CREATE TABLE "I18nSpellNameAlias" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "spellId" INTEGER NOT NULL,
+    "rulebookId" INTEGER NOT NULL,
     "lang" TEXT NOT NULL,
     "aliasName" TEXT NOT NULL,
     "source" TEXT NOT NULL DEFAULT 'import',
@@ -107,6 +109,18 @@ CREATE TABLE "I18nDescriptorText" (
     "updatedAt" DATETIME NOT NULL
 );
 
+-- CreateTable
+CREATE TABLE "I18nRulebookText" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "rulebookId" INTEGER NOT NULL,
+    "lang" TEXT NOT NULL,
+    "variant" TEXT NOT NULL DEFAULT 'default',
+    "name" TEXT,
+    "descriptionText" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
@@ -120,19 +134,25 @@ CREATE INDEX "SpellNote_userId_spellId_idx" ON "SpellNote"("userId", "spellId");
 CREATE INDEX "SpellNote_spellId_idx" ON "SpellNote"("spellId");
 
 -- CreateIndex
-CREATE INDEX "I18nSpellText_lang_spellId_idx" ON "I18nSpellText"("lang", "spellId");
+CREATE INDEX "I18nSpellText_lang_variant_rulebookId_idx" ON "I18nSpellText"("lang", "variant", "rulebookId");
 
 -- CreateIndex
-CREATE INDEX "I18nSpellText_spellId_idx" ON "I18nSpellText"("spellId");
+CREATE INDEX "I18nSpellText_lang_rulebookId_idx" ON "I18nSpellText"("lang", "rulebookId");
+
+-- CreateIndex
+CREATE INDEX "I18nSpellText_rulebookId_spellId_idx" ON "I18nSpellText"("rulebookId", "spellId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "I18nSpellText_spellId_lang_variant_key" ON "I18nSpellText"("spellId", "lang", "variant");
 
 -- CreateIndex
-CREATE INDEX "I18nSpellNameAlias_lang_spellId_idx" ON "I18nSpellNameAlias"("lang", "spellId");
+CREATE INDEX "I18nSpellNameAlias_lang_rulebookId_idx" ON "I18nSpellNameAlias"("lang", "rulebookId");
 
 -- CreateIndex
-CREATE INDEX "I18nSpellNameAlias_spellId_idx" ON "I18nSpellNameAlias"("spellId");
+CREATE INDEX "I18nSpellNameAlias_lang_rulebookId_aliasName_idx" ON "I18nSpellNameAlias"("lang", "rulebookId", "aliasName");
+
+-- CreateIndex
+CREATE INDEX "I18nSpellNameAlias_rulebookId_spellId_idx" ON "I18nSpellNameAlias"("rulebookId", "spellId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "I18nSpellNameAlias_spellId_lang_aliasName_key" ON "I18nSpellNameAlias"("spellId", "lang", "aliasName");
@@ -181,3 +201,12 @@ CREATE INDEX "I18nDescriptorText_descriptorId_idx" ON "I18nDescriptorText"("desc
 
 -- CreateIndex
 CREATE UNIQUE INDEX "I18nDescriptorText_descriptorId_lang_variant_key" ON "I18nDescriptorText"("descriptorId", "lang", "variant");
+
+-- CreateIndex
+CREATE INDEX "I18nRulebookText_lang_rulebookId_idx" ON "I18nRulebookText"("lang", "rulebookId");
+
+-- CreateIndex
+CREATE INDEX "I18nRulebookText_rulebookId_idx" ON "I18nRulebookText"("rulebookId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "I18nRulebookText_rulebookId_lang_variant_key" ON "I18nRulebookText"("rulebookId", "lang", "variant");

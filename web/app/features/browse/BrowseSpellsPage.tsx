@@ -1,30 +1,32 @@
-import { useEffect, useMemo, useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
 
-import { usePersistedState } from "~/state/persisted-state";
-import { useBootstrap } from "~/bootstrap/useBootstrap";
-import { getSpellsByLevel } from "~/api/spells";
 import { ApiError } from "~/api/http";
+import { getSpellsByLevel } from "~/api/spells";
+import { useBootstrap } from "~/bootstrap/useBootstrap";
+import { usePersistedState } from "~/state/persisted-state";
 
-import { Separator } from "~/components/ui/separator";
 import Pager from "~/components/Pager";
+import { Separator } from "~/components/ui/separator";
 import { SpellCard } from "../../components/SpellCard";
 
+import { useTranslation } from "react-i18next";
 import {
   MultiSelectPicker,
   type PickerItem,
 } from "~/components/MultiSelectPicker";
 import { Button } from "~/components/ui/button";
-import { cn } from "~/lib/utils";
 import { useAppI18n } from "~/i18n/useAppI18n";
-import { getDisplayNameWithEn } from "~/i18n/content";
-import { useTranslation } from "react-i18next";
+import { cn } from "~/lib/utils";
+import { Switch } from "~/components/ui/switch";
 
 const PAGE_SIZE = 20;
 
+const T_NAMESPACE = "browse-spell";
+
 export function LevelSelector() {
   const { state, setState } = usePersistedState();
-  const { t } = useTranslation("browse-spell");
+  const { t } = useTranslation(T_NAMESPACE);
   const level = state.browseLevel;
 
   function setLevel(next: number) {
@@ -62,21 +64,21 @@ export function LevelSelector() {
 function ClassAndDomainSelector() {
   const { state, setState } = usePersistedState();
   const boot = useBootstrap(state.includePrestige);
-  const { lang } = useAppI18n();
-  const { t } = useTranslation("browse-spell");
+  const { nameWithEn } = useAppI18n();
+  const { t } = useTranslation(T_NAMESPACE);
 
   const classes = boot.classes.data?.items ?? [];
   const domains = boot.domains.data?.items ?? [];
 
   const classItems: PickerItem[] = classes.map((c) => ({
     id: c.id,
-    name: getDisplayNameWithEn(c, lang),
+    name: nameWithEn(c),
     group: c.prestige ? t("Prestige Classes") : t("Base Classes"),
   }));
 
   const domainItems: PickerItem[] = domains.map((d) => ({
     id: d.id,
-    name: d.name,
+    name: nameWithEn(d),
   }));
 
   return (
@@ -104,12 +106,38 @@ function ClassAndDomainSelector() {
   );
 }
 
+function CardViewToggle({
+  value,
+  onChange,
+}: {
+  value: CardViewMode;
+  onChange: (v: CardViewMode) => void;
+}) {
+  const showAll = value === "all";
+  const { t } = useTranslation(T_NAMESPACE);
+  return (
+    <div className="rounded-md border p-3 space-y-2">
+      <label className="flex items-center justify-between gap-3 text-sm">
+        <span className="text-muted-foreground">{t("Show details")}</span>
+        <Switch
+          checked={showAll}
+          onCheckedChange={(checked) => onChange(checked ? "all" : "simple")}
+        />
+      </label>
+    </div>
+  );
+}
+
+type CardViewMode = "simple" | "all";
+
 export default function BrowsePage() {
   const { state } = usePersistedState();
   const { queryKey } = useAppI18n();
   const { t } = useTranslation();
 
   const [page, setPage] = useState(1);
+
+  const [cardView, setCardView] = useState<CardViewMode>("simple");
 
   const level = state.browseLevel;
   const classIds = state.browseClassIds;
@@ -177,6 +205,7 @@ export default function BrowsePage() {
     <div className="p-4 space-y-4 max-w-6xl mx-auto">
       <div className="grid gap-4 md:grid-cols-[320px_1fr]">
         <div className="space-y-3">
+          <CardViewToggle value={cardView} onChange={setCardView} />
           <ClassAndDomainSelector />
           <LevelSelector />
         </div>
@@ -227,7 +256,12 @@ export default function BrowsePage() {
 
               <div className="divide-y rounded-md border">
                 {items.map((sp) => (
-                  <SpellCard key={sp.id} spell={sp} showActions />
+                  <SpellCard
+                    key={sp.id}
+                    spell={sp}
+                    showActions={cardView == "all"}
+                    showDetails={cardView == "all"}
+                  />
                 ))}
               </div>
 

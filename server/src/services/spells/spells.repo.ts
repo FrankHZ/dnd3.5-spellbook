@@ -1,6 +1,7 @@
 import { appPrisma } from "~/lib/app-prisma-client";
 import { rulesPrisma } from "../../lib/rules-prisma-client";
 import { Prisma } from "prisma-rules-clean/generated/client";
+import { Lang } from "@dnd/contracts";
 
 export const SELECT_SPELL_MIN = {
   id: true,
@@ -84,8 +85,6 @@ export async function fetchSpellsInOrder<T extends Prisma.SpellSelect>(
   ids: number[],
   select: T,
 ) {
-  if (ids.length === 0) return [];
-
   const rows = (await rulesPrisma.spell.findMany({
     where: { id: { in: ids } },
     select,
@@ -98,44 +97,53 @@ export async function fetchSpellsInOrder<T extends Prisma.SpellSelect>(
   return rows;
 }
 
-export async function queryByName(
+export async function queryIdsByName(
   name: string,
   rulebookIds: number[],
-  page: number,
-  pageSize: number,
+  maxCandidates: number,
 ) {
+  if (rulebookIds.length === 0) return [];
+
   const qLower = name.toLowerCase();
   const like = `%${qLower}%`;
-  const offset = (page - 1) * pageSize;
 
-  // COUNT (spells only)
-  const countRows = await rulesPrisma.$queryRaw<Array<{ cnt: number }>>(
-    Prisma.sql`
-        SELECT COUNT(*) as cnt
-        FROM dnd_spell s
-        WHERE s.rulebook_id IN (${Prisma.join(rulebookIds)})
-          AND LOWER(s.name) LIKE ${like}
-      `,
-  );
-
-  const total = Number(countRows[0]?.cnt ?? 0);
-
-  // PAGE of spell ids in stable order
   const idRows = await rulesPrisma.$queryRaw<Array<{ id: number }>>(
     Prisma.sql`
         SELECT s.id
         FROM dnd_spell s
         WHERE s.rulebook_id IN (${Prisma.join(rulebookIds)})
           AND LOWER(s.name) LIKE ${like}
-        ORDER BY s.name ASC, s.id ASC
-        LIMIT ${pageSize} OFFSET ${offset}
+        LIMIT ${maxCandidates}
       `,
   );
   const ids = idRows.map((r) => Number(r.id));
-  return {
-    total,
-    spellsInOrder: await fetchSpellsInOrder(ids, SELECT_SPELL_LIST),
-  };
+  return ids;
+}
+
+export async function queryIdsByI18nName(
+  lang: Lang,
+  name: string,
+  rulebookIds: number[],
+  maxCandidates: number,
+) {
+  if (rulebookIds.length === 0) return [];
+  const qLower = name.toLowerCase();
+  const like = `%${qLower}%`;
+
+  const idRows = await appPrisma.$queryRaw<Array<{ spellId: number }>>(
+    Prisma.sql`
+        SELECT s.spellId
+        FROM I18nSpellText s
+        WHERE s.rulebookId IN (${Prisma.join(rulebookIds)})
+          AND LOWER(s.name) LIKE ${like}
+          AND s.lang = ${lang}
+        LIMIT ${maxCandidates}
+      `,
+  );
+
+  const ids = idRows.map((r) => Number(r.spellId));
+
+  return ids;
 }
 
 export async function queryByClassAndDomainLevels(
@@ -146,6 +154,12 @@ export async function queryByClassAndDomainLevels(
   page: number,
   pageSize: number,
 ) {
+  if (rulebookIds.length === 0)
+    return {
+      total: 0,
+      spellsInOrder: [],
+    };
+
   domainIds = domainIds.length > 0 ? domainIds : [-1];
   classIds = classIds.length > 0 ? classIds : [-1];
   // ---- 1) total = count distinct spells from idx table (spell-based pagination semantics)

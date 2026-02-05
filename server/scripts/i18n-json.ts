@@ -61,6 +61,7 @@ async function main() {
         rulebook: { select: { name: true } },
       },
       orderBy: [{ rulebook_id: "asc" }],
+      distinct: ["rulebook_id"],
     })
   ).map((b) => ({ name: b.rulebook.name, id: b.rulebook_id }));
 

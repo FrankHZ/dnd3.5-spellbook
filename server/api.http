@@ -15,8 +15,14 @@ GET http://localhost:3000/api/classes?includePrestige=true&rulebookIds=4,6
 ### Domains
 GET http://localhost:3000/api/domains
 
+### Domains with zh
+GET http://localhost:3000/api/domains?lang=zh
+
 ### Name search
 GET http://localhost:3000/api/spells/search?q=fire
+
+### Name search zh
+GET http://localhost:3000/api/spells/search?q=火&lang=zh
 
 ### Name search + rulebook filter
 GET http://localhost:3000/api/spells/search?q=fire&rulebookIds=4,6
@@ -30,10 +36,13 @@ GET http://localhost:3000/api/spells/by-level?classIds=1&level=3&lang=zh
 ### Spell detail
 GET http://localhost:3000/api/spells/42
 
-### Spell bath
+### Spell batch
 POST http://localhost:3000/api/spells/batch
 Content-Type: application/json
 
 {
   "ids": [1, 2, 2603, 2612]
 }
+
+### meta
+GET http://localhost:3000/api/meta?lang=zh

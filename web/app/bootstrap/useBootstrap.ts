@@ -5,12 +5,14 @@ import {
   getEditions,
   getRulebooks,
 } from "~/api/bootstrap";
+import { getMetaI18n } from "~/api/meta";
 import { useAppI18n } from "~/i18n/useAppI18n";
 import { usePersistedState } from "~/state/persisted-state";
 
-export function useBootstrap(includePrestige: boolean) {
+export function useBootstrap(includePrestige?: boolean) {
   const { state } = usePersistedState();
-  const { queryKey } = useAppI18n();
+  includePrestige = includePrestige ?? state.includePrestige;
+  const { queryKey, lang } = useAppI18n();
   const rulebookKey = state.selectedRulebookIds.join(",");
 
   const editions = useQuery({
@@ -46,12 +48,30 @@ export function useBootstrap(includePrestige: boolean) {
     staleTime: Infinity,
   });
 
+  const metaI18n = useQuery({
+    queryKey: ["metaI18n", { rulebookKey, ...queryKey }],
+    enabled: lang === "zh", // meta is empty in en, skip network
+    queryFn: ({ signal }) => getMetaI18n(signal),
+    staleTime: 10 * 60 * 1000,
+  });
+
   return {
     editions,
     rulebooks,
     classes,
     domains,
-    isLoading: editions.isLoading || rulebooks.isLoading || classes.isLoading,
-    error: editions.error || rulebooks.error || classes.error,
+    metaI18n,
+    isLoading:
+      editions.isLoading ||
+      rulebooks.isLoading ||
+      classes.isLoading ||
+      domains.isLoading ||
+      metaI18n.isLoading,
+    error:
+      editions.error ||
+      rulebooks.error ||
+      classes.error ||
+      domains.error ||
+      metaI18n.error,
   };
 }

@@ -46,10 +46,11 @@ model SpellNote {
 /// ---- v2 Chinese overlay (parallel language choices) ----
 /// lang examples: "zh-chm", "zh-ai"
 model I18nSpellText {
-    id      String @id @default(cuid())
-    spellId Int
-    lang    String
-    variant String @default("default")
+    id         String @id @default(cuid())
+    spellId    Int
+    rulebookId Int
+    lang       String
+    variant    String @default("default")
 
     name            String?
     descriptionHtml String?
@@ -61,23 +62,26 @@ model I18nSpellText {
     updatedAt DateTime @updatedAt
 
     @@unique([spellId, lang, variant])
-    @@index([lang, spellId])
-    @@index([spellId])
+    @@index([lang, variant, rulebookId])
+    @@index([lang, rulebookId])
+    @@index([rulebookId, spellId])
 }
 
 model I18nSpellNameAlias {
-    id        String  @id @default(cuid())
-    spellId   Int
-    lang      String
-    aliasName String
-    source    String  @default("import") // import | manual | ai
-    note      String?
+    id         String  @id @default(cuid())
+    spellId    Int
+    rulebookId Int
+    lang       String
+    aliasName  String
+    source     String  @default("import") // import | manual | ai
+    note       String?
 
     createdAt DateTime @default(now())
 
     @@unique([spellId, lang, aliasName])
-    @@index([lang, spellId])
-    @@index([spellId])
+    @@index([lang, rulebookId])
+    @@index([lang, rulebookId, aliasName])
+    @@index([rulebookId, spellId])
 }
 
 model I18nCharacterClassText {

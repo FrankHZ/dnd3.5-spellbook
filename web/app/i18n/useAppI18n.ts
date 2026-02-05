@@ -1,4 +1,14 @@
+import { useBootstrap } from "~/bootstrap/useBootstrap";
 import { usePersistedState } from "~/state/persisted-state";
+import {
+  getDisplayName,
+  getDisplayNameWithEn,
+  getMetaDisplayName,
+  getMetaDisplayNameWithEn,
+  type MetaDict,
+  type WithI18nName,
+  type WithIdName,
+} from "./content";
 
 export function useAppI18n() {
   const { state } = usePersistedState();
@@ -12,5 +22,16 @@ export function useAppI18n() {
     variant: variant ?? "",
   };
 
-  return { lang, variant, queryKey };
+  const name = <T extends WithI18nName>(s: T) => getDisplayName(s, lang);
+
+  const nameWithEn = <T extends WithI18nName>(s: T) =>
+    getDisplayNameWithEn(s, lang);
+
+  return {
+    lang,
+    variant,
+    queryKey,
+    name,
+    nameWithEn,
+  };
 }

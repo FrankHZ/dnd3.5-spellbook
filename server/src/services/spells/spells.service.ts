@@ -9,23 +9,20 @@ import type {
 import { Prisma as AppPrisma } from "DB_APP/client";
 import { mapSpellItem, mapSpellDetail } from "./spells.mapper";
 import {
+  fetchSpellsInOrder,
   queryByClassAndDomainLevels as queryByClassAndDomainLevel,
-  queryByName,
+  queryIdsByI18nName,
+  queryIdsByName,
   querySpellDetail,
   querySpellI18nDetail,
   querySpellI18nNamesByIds,
   querySpellsByIds,
   SELECT_SPELL_I18N_MIN,
+  SELECT_SPELL_LIST,
 } from "./spells.repo";
+import { hasCjk } from "~/utils/i18n";
 
 type FilterFunction<T> = (item: T) => boolean;
-
-function filterByRulebookId(
-  rulebookIds: Set<number>,
-): FilterFunction<{ rulebookId: number }> {
-  return (classOrDomain: { rulebookId: number }) =>
-    rulebookIds.has(classOrDomain.rulebookId);
-}
 
 function filterByDomainIdAndLevel(
   ids: Set<number>,
@@ -45,17 +42,10 @@ function filterByClassIdAndLevel(
 
 function filterSpellIndexes(
   spell: any,
-  rulebookIds: Set<number>,
   classIds: Set<number> | null,
   domainIds: Set<number> | null,
   level: number | null,
 ) {
-  spell.spellClassIndexes = spell.spellClassIndexes.filter(
-    filterByRulebookId(rulebookIds),
-  );
-  spell.spellDomainIndexes = spell.spellDomainIndexes.filter(
-    filterByRulebookId(rulebookIds),
-  );
   if (level !== null) {
     spell.spellClassIndexes = classIds
       ? spell.spellClassIndexes.filter(filterByClassIdAndLevel(classIds, level))
@@ -94,21 +84,45 @@ export const spellsService = {
     pageSize: number;
     i18n: I18nContext;
   }): Promise<SpellNameSearchResponse> {
-    const { total, spellsInOrder } = await queryByName(
+    const doAppQuery = input.i18n.lang != "en";
+    const maxCandidates = Math.min(2000, input.page * input.pageSize * 20);
+
+    const idsEn = await queryIdsByName(
       input.q,
       input.rulebookIds,
-      input.page,
-      input.pageSize,
+      maxCandidates,
     );
+    const seen = new Set<number>();
+    const merged: number[] = [];
+    for (const id of idsEn)
+      if (!seen.has(id)) {
+        seen.add(id);
+        merged.push(id);
+      }
+    if (doAppQuery) {
+      const idsI18n = await queryIdsByI18nName(
+        input.i18n.lang,
+        input.q,
+        input.rulebookIds,
+        maxCandidates,
+      );
+      for (const id of idsI18n)
+        if (!seen.has(id)) {
+          seen.add(id);
+          merged.push(id);
+        }
+    }
 
-    const rulebooks = new Set(input.rulebookIds);
+    const total = merged.length; // capped
 
-    spellsInOrder.forEach((spell) => {
-      filterSpellIndexes(spell, rulebooks, null, null, null);
-    });
+    const spells = await fetchSpellsInOrder(merged, SELECT_SPELL_LIST);
+    spells.sort((a, b) => a.name.localeCompare(b.name) || a.id - b.id);
+
+    const offset = (input.page - 1) * input.pageSize;
+    const pagedSpells = spells.slice(offset, offset + input.pageSize);
 
     const i18nMap = await getI18nMap(
-      spellsInOrder.map((s) => s.id),
+      pagedSpells.map((s) => s.id),
       input.i18n,
     );
 
@@ -118,9 +132,7 @@ export const spellsService = {
       total,
       q: input.q,
       rulebookIds: input.rulebookIds,
-      items: spellsInOrder.map((s) =>
-        mapSpellItem(s, i18nMap.has(s.id) ? i18nMap.get(s.id)! : null),
-      ),
+      items: pagedSpells.map((s) => mapSpellItem(s, i18nMap.get(s.id) ?? null)),
     };
   },
 
@@ -142,12 +154,9 @@ export const spellsService = {
       input.pageSize,
     );
 
-    const rulebooks = new Set(input.rulebookIds);
-
     spellsInOrder.forEach((spell) => {
       filterSpellIndexes(
         spell,
-        rulebooks,
         input.classIds.length == 0 ? null : new Set(input.classIds),
         input.domainIds.length == 0 ? null : new Set(input.domainIds),
         input.level,

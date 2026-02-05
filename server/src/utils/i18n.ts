@@ -19,3 +19,7 @@ export function getI18nContext(req: Request): I18nContext {
 
   return { lang: i18n.lang, variant: i18n.variant };
 }
+
+export function hasCjk(s: string): boolean {
+  return /[\u3400-\u9FFF]/.test(s);
+}

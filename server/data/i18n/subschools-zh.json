@@ -1,0 +1,24 @@
+[
+  { "id": 1, "name": "Summoning", "zh": "召唤" },
+  { "id": 2, "name": "Creation", "zh": "创造" },
+  { "id": 3, "name": "Calling", "zh": "呼唤" },
+  { "id": 4, "name": "Healing", "zh": "治疗" },
+  { "id": 5, "name": "Compulsion", "zh": "强迫" },
+  { "id": 6, "name": "Phantasm", "zh": "幻象" },
+  { "id": 7, "name": "Glamer", "zh": "魅影" },
+  { "id": 8, "name": "Teleportation", "zh": "传送" },
+  { "id": 9, "name": "Shadow", "zh": "暗影" },
+  { "id": 10, "name": "Scrying", "zh": "探知" },
+  { "id": 11, "name": "Charm", "zh": "魅惑" },
+  { "id": 12, "name": "Figment", "zh": "虚像" },
+  { "id": 14, "name": "Pattern", "zh": "图纹" },
+  { "id": 16, "name": "Polymorph", "zh": "变形" },
+
+  { "id": 20, "name": "Creation or Calling", "zh": "创造或呼唤" },
+  { "id": 21, "name": "Figment and Glamer", "zh": "虚像与魅影" },
+
+  { "id": 22, "name": "Boost", "zh": "强化技" },
+  { "id": 23, "name": "Counter", "zh": "应对技" },
+  { "id": 24, "name": "Strike", "zh": "攻击技" },
+  { "id": 25, "name": "Stance", "zh": "架势技" }
+]

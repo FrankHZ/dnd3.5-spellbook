@@ -1,4 +1,5 @@
 import type { SpellComponents } from "@dnd/contracts";
+import { useTranslation } from "react-i18next";
 import { Badge } from "~/components/ui/badge";
 
 export default function ComponentsSection({
@@ -6,22 +7,21 @@ export default function ComponentsSection({
 }: {
   components: SpellComponents;
 }) {
+  const { t } = useTranslation("spell-components");
   const chips = [
-    components.V && "V",
-    components.S && "S",
-    components.M && "M",
-    components.AF && "AF",
-    components.DF && "DF",
-    components.XP && "XP",
-    components.metabreath && "Metabreath",
-    components.truename && "Truename",
-    components.corrupt && "Corrupt",
+    components.V && t("V"),
+    components.S && t("S"),
+    components.M && t("M"),
+    components.AF && t("AF"),
+    components.DF && t("DF"),
+    components.XP && t("XP"),
+    components.metabreath && t("Metabreath"),
+    components.truename && t("Truename"),
+    components.corrupt && t("Corrupt"),
   ].filter(Boolean) as string[];
 
   return (
     <div className="space-y-2">
-      <div className="font-medium">Components</div>
-
       {chips.length > 0 ? (
         <div className="flex flex-wrap gap-1">
           {chips.map((c) => (

@@ -1,0 +1,31 @@
+[
+  { "id": 1, "name": "Abjuration", "zh": "防护系" },
+  { "id": 2, "name": "Conjuration", "zh": "咒法系" },
+  { "id": 3, "name": "Divination", "zh": "预言系" },
+  { "id": 4, "name": "Enchantment", "zh": "附魔系" },
+  { "id": 5, "name": "Evocation", "zh": "塑能系" },
+  { "id": 6, "name": "Necromancy", "zh": "死灵系" },
+  { "id": 7, "name": "Transmutation", "zh": "变化系" },
+  { "id": 8, "name": "Illusion", "zh": "幻术系" },
+  { "id": 9, "name": "Universal", "zh": "通用系" },
+
+  { "id": 10, "name": "Conjuration/Evocation", "zh": "咒法系／塑能系" },
+  { "id": 11, "name": "Transmutation/Evocation", "zh": "变化系／塑能系" },
+  { "id": 12, "name": "Conjuration/Necromancy", "zh": "咒法系／死灵系" },
+  { "id": 13, "name": "Divination/Evocation", "zh": "预言系／塑能系" },
+  { "id": 14, "name": "Evocation/Transmutation", "zh": "塑能系／变化系" },
+  { "id": 15, "name": "Transmutation/Divination", "zh": "变化系／预言系" },
+  { "id": 16, "name": "Abjuration/Evocation", "zh": "防护系／塑能系" },
+
+  { "id": 17, "name": "Desert Wind", "zh": "漠风" },
+  { "id": 18, "name": "Devoted Spirit", "zh": "虔心" },
+  { "id": 19, "name": "Diamond Mind", "zh": "铁心" },
+  { "id": 20, "name": "Iron Heart", "zh": "铁心" },
+  { "id": 21, "name": "Setting Sun", "zh": "暮日" },
+  { "id": 22, "name": "Shadow Hand", "zh": "影手" },
+  { "id": 23, "name": "Stone Dragon", "zh": "石龙" },
+  { "id": 24, "name": "Tiger Claw", "zh": "虎爪" },
+  { "id": 25, "name": "White Raven", "zh": "白鸦" },
+
+  { "id": 26, "name": "varied", "zh": "多样" }
+]

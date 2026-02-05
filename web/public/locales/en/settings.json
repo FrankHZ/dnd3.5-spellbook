@@ -1,0 +1,9 @@
+{
+  "Classes": "Classes",
+  "Include prestige classes (affects Browse class list)": "Include prestige classes (affects Browse class list)",
+  "Leave empty to rely on backend default edition rulebooks.": "Leave empty to rely on backend default edition rulebooks.",
+  "Rulebooks": "Rulebooks",
+  "selected": "selected",
+  "Settings": "Settings",
+  "Settings are stored locally (MVP).": "Settings are stored locally (MVP)."
+}

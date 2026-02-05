@@ -1,15 +1,18 @@
 import { type Request, type Response, type NextFunction } from "express";
-import { ApiError } from "../utils/errors";
+import { ApiError } from "~/utils/errors";
 import {
   clampInt,
   normalizeString,
   parseCsvNumberList,
   parseIntOrDefault,
-} from "../utils/parse";
-import { spellsService } from "../services/spells/spells.service";
-import { getDefaultRulebookIds } from "../services/rulebooks.service";
-import type { SpellBatchRequest } from "../../../contracts/dist/dto/spell";
-import { getI18nContext } from "~/utils/i18n";
+} from "~/utils/parse";
+import { spellsService } from "~/services/spells/spells.service";
+import { getDefaultRulebookIds } from "~/services/rulebooks.service";
+import type {
+  SpellBatchRequest,
+  SpellNameSearchResponse,
+} from "@dnd/contracts/dist/dto/spell";
+import { getI18nContext, hasCjk } from "~/utils/i18n";
 
 export async function searchSpellsByName(
   req: Request,
@@ -18,9 +21,9 @@ export async function searchSpellsByName(
 ) {
   try {
     const q = normalizeString(req.query.q);
-    if (!q || q.length < 2) {
+    if (!q) {
       next(
-        new ApiError(400, "Invalid request", "q must be at least 2 characters"),
+        new ApiError(400, "Invalid request", "q must be a non-empty string"),
       );
       return;
     }
@@ -34,6 +37,19 @@ export async function searchSpellsByName(
       1,
       100,
     );
+
+    const minLen = hasCjk(q) ? 1 : 2;
+    if (q.length < minLen) {
+      res.status(200).json({
+        q,
+        rulebookIds,
+        page,
+        pageSize,
+        total: 0,
+        items: [],
+      } satisfies SpellNameSearchResponse);
+      return;
+    }
 
     const result = await spellsService.searchByName({
       q,

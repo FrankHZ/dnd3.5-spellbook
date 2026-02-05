@@ -4,23 +4,27 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { getDisplayNameWithEn } from "~/i18n/content";
 import { useAppI18n } from "~/i18n/useAppI18n";
+import { useMetaNames } from "~/i18n/useMetaNames";
 import { useCollections } from "~/state/collections-state";
 
 export function SpellCard({
   spell,
   showActions = false,
+  showDetails = false,
 }: {
   spell: SpellItem;
+  showDetails?: boolean;
   showActions?: boolean;
 }) {
   const { toggleDefault, togglePrepared, isInDefault, isInPrepared } =
     useCollections();
-  const { lang } = useAppI18n();
+
+  const { nameWithEn } = useAppI18n();
+  const { metaName } = useMetaNames();
   const inFav = isInDefault(spell.id);
   const inPrep = isInPrepared(spell.id);
-  const { t } = useTranslation("spell-card");
+  const { t } = useTranslation(["spellcard", "collections"]);
   return (
     <div className="p-3 hover:bg-muted/40">
       <div className="flex items-start justify-between gap-3">
@@ -29,46 +33,52 @@ export function SpellCard({
             to={`/spells/${spell.id}`}
             className="font-medium hover:underline"
           >
-            {getDisplayNameWithEn(spell, lang)}
+            {nameWithEn(spell)}
           </Link>
           <span className="p-2 text-xs text-muted-foreground space-y-2">
             <span className="p-1 font-mono">{spell.rulebook.abbr ?? "—"}</span>
             <span className="p-1">{spell.page ? `p. ${spell.page}` : ""}</span>
           </span>
 
-          <div className="mt-1 text-xs text-muted-foreground">
-            {spell.school?.name || "—"}
-            {spell.subSchool ? ` (${spell.subSchool.name})` : ""}
-          </div>
+          {showDetails && (
+            <>
+              <div className="mt-1 text-xs text-muted-foreground">
+                {metaName("schools", spell.school) || "—"}
+                {spell.subSchool
+                  ? ` (${metaName("subschools", spell.subSchool)})`
+                  : ""}
+              </div>
 
-          <div className="mt-1 text-xs text-muted-foreground">
-            {spell.classLevels
-              .map(
-                (mcl) =>
-                  `${mcl.name} ${mcl.level}` +
-                  (mcl.extra ? ` (${mcl.extra})` : "") +
-                  (mcl.prestige ? ` (P)` : ""),
-              )
-              .join(", ")}
-          </div>
-          <div className="mt-1 text-xs text-muted-foreground">
-            {spell.domainLevels
-              .map(
-                (mdl) =>
-                  `${mdl.name} ${mdl.level}` +
-                  (mdl.extra ? ` (${mdl.extra})` : ""),
-              )
-              .join(", ")}
-          </div>
+              <div className="mt-1 text-xs text-muted-foreground">
+                {spell.classLevels
+                  .map(
+                    (mcl) =>
+                      `${metaName("classes", mcl)} ${mcl.level}` +
+                      (mcl.extra ? ` (${mcl.extra})` : "") +
+                      (mcl.prestige ? ` (P)` : ""),
+                  )
+                  .join(", ")}
+              </div>
+              <div className="mt-1 text-xs text-muted-foreground">
+                {spell.domainLevels
+                  .map(
+                    (mdl) =>
+                      `${metaName("domains", mdl)} ${mdl.level}` +
+                      (mdl.extra ? ` (${mdl.extra})` : ""),
+                  )
+                  .join(", ")}
+              </div>
 
-          {spell.descriptors?.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1">
-              {spell.descriptors.map((d) => (
-                <Badge key={d.id} variant="secondary" className="text-xs">
-                  {d.name}
-                </Badge>
-              ))}
-            </div>
+              {spell.descriptors?.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {spell.descriptors.map((d) => (
+                    <Badge key={d.id} variant="secondary" className="text-xs">
+                      {metaName("descriptors", d)}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -97,7 +107,9 @@ export function SpellCard({
                 variant={inPrep ? "default" : "outline"}
                 onClick={() => togglePrepared(spell.id)}
               >
-                {inPrep ? t("Prepared") : t("Prepare")}
+                {inPrep
+                  ? t("Prepared", { ns: "collections" })
+                  : t("Prepare", { ns: "collections" })}
               </Button>
             </div>
           )}

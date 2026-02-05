@@ -11,6 +11,7 @@ import { SpellCard } from "~/components/SpellCard";
 import { Separator } from "~/components/ui/separator";
 import { useAppI18n } from "~/i18n/useAppI18n";
 import { useTranslation } from "react-i18next";
+import { isSearchQueryValid } from "./validation";
 
 const PAGE_SIZE = 20; // backend default is 20; keep consistent
 
@@ -20,9 +21,10 @@ export default function SearchSpellsPage() {
   const { queryKey } = useAppI18n();
   const { t } = useTranslation("search-spell");
   const [params, setParams] = useSearchParams();
-  const qParam = (params.get("q") ?? "").trim();
 
-  const isValid = qParam.length >= 2;
+  const { lang } = useAppI18n();
+  const qParam = (params.get("q") ?? "").trim();
+  const isValid = isSearchQueryValid(qParam, lang);
 
   // page is kept in URL (nice for sharing/back button)
   const page = Math.max(1, Number(params.get("page") ?? "1") || 1);
@@ -32,7 +34,7 @@ export default function SearchSpellsPage() {
       "search",
       { q: qParam, rulebookIds, page, pageSize: PAGE_SIZE, ...queryKey },
     ],
-    enabled: qParam.length >= 2, // enforce backend contract
+    enabled: isValid.ok, // enforce backend contract
     queryFn: ({ signal }) =>
       searchSpellsByName({
         q: qParam,
@@ -79,7 +81,9 @@ export default function SearchSpellsPage() {
       {!isValid && (
         <div className="rounded-md border p-3">
           <div className="text-sm text-muted-foreground">
-            {t("Enter at least 2 characters to run a search.")}
+            {lang === "zh"
+              ? t("Enter at least 2 characters, or type a Chinese character.")
+              : t("Enter at least 2 characters to run a search.")}
           </div>
         </div>
       )}

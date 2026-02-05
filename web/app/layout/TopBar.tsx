@@ -1,8 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useNavigate, useSearchParams } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { isSearchQueryValid } from "~/features/search/validation";
+import { useAppI18n } from "~/i18n/useAppI18n";
 import { usePersistedState } from "~/state/persisted-state";
 
 function TopBarSeacrch() {
@@ -11,11 +13,24 @@ function TopBarSeacrch() {
   const q = params.get("q") || "";
   const [text, setText] = useState(q);
   const [error, setError] = useState(null as string | null);
-  const { t } = useTranslation("topbar");
+  const { t } = useTranslation("search-spell");
+
+  const { lang } = useAppI18n();
+  const isValid = isSearchQueryValid(text, lang);
+
+  useEffect(() => {
+    setError(null);
+  }, [lang]);
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (text.trim().length < 2) {
-      setError("Type at least 2 characters.");
+    if (!isValid.ok) {
+      if (lang == "zh") {
+        setError(
+          t("Enter at least 2 characters, or type a Chinese character."),
+        );
+      } else {
+        setError(t("Enter at least 2 characters to run a search."));
+      }
       return;
     }
     setError(null);
@@ -29,7 +44,7 @@ function TopBarSeacrch() {
         <Input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Search spells by name..."
+          placeholder={t("Search spells by name...")}
         />
         <Button type="submit" variant="outline">
           {t("Search")}

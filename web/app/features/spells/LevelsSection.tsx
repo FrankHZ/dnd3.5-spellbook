@@ -1,19 +1,21 @@
-import type { SpellDetail, SpellDetailView } from "@dnd/contracts";
+import type { SpellDetailView } from "@dnd/contracts";
+import { useTranslation } from "react-i18next";
+import { useMetaNames } from "~/i18n/useMetaNames";
 
 export default function LevelsSection({ spell }: { spell: SpellDetailView }) {
+  const { metaName } = useMetaNames();
+  const { t } = useTranslation("spell-levels");
   return (
     <div className="space-y-3">
-      <div className="font-medium">Levels</div>
-
       {/* Class levels */}
       {(spell.classLevels?.length ?? 0) > 0 ? (
         <div className="space-y-1">
-          <div className="text-sm text-muted-foreground">Classes</div>
+          <div className="text-sm text-muted-foreground">{t("Classes")}</div>
           <div className="text-sm">
             {spell.classLevels
               .map(
                 (mcl) =>
-                  `${mcl.name} ${mcl.level}` +
+                  `${metaName("classes", mcl)} ${mcl.level}` +
                   (mcl.extra ? ` (${mcl.extra})` : "") +
                   (mcl.prestige ? ` (P)` : ""),
               )
@@ -22,17 +24,17 @@ export default function LevelsSection({ spell }: { spell: SpellDetailView }) {
         </div>
       ) : (
         <div className="text-sm text-muted-foreground">
-          No class levels listed.
+          {t("No class levels listed.")}
         </div>
       )}
 
       {/* Domain levels */}
       {(spell.domainLevels?.length ?? 0) > 0 && (
         <div className="space-y-1">
-          <div className="text-sm text-muted-foreground">Domains</div>
+          <div className="text-sm text-muted-foreground">{t("Domains")}</div>
           <div className="text-sm">
             {spell.domainLevels
-              .map((dl) => `${dl.name} ${dl.level}`)
+              .map((dl) => `${metaName("domains", dl)} ${dl.level}`)
               .join(", ")}
           </div>
         </div>
