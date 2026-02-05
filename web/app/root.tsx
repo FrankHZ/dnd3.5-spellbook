@@ -44,6 +44,7 @@ function BootstrapBanner() {
 export default function App() {
   return (
     <html lang="en">
+      <title>D&D 3.5 Spellbook</title>
       <head>
         <Meta />
         <Links />

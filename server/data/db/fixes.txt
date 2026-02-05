@@ -1,3 +1,4 @@
+Spell
 Detect Aberration 4912
 Desiccate 3164
 Hero's Blade 4887

@@ -1,219 +1,196 @@
-# v2.0 – Database Changes (App DB & i18n Overlay)
-
-## Overview
-
-v2.0 introduces a new **App Database (`app.sqlite`)** to support internationalization (i18n) and app-owned data, while keeping the legacy **rules database (`rules_clean.sqlite`) read-only and authoritative**.
-
-The App DB is managed via Prisma migrations under `/prisma-app`.
+> **Status:** MVP milestone document (not yet frozen).
+> This document may be updated until the MVP baseline is finalized.
 
 ---
 
-## Databases in v2.0
+# v2.0 – Database Changes (App DB + i18n Overlay)
+
+## Overview
+
+v2.0 adds an **App Database (`app.sqlite`)** for i18n overlays and app-owned data, while keeping the legacy **Rules Database (`rules_clean.sqlite`)** as the read-only source of truth for game rules.
+
+A key v2.0 constraint is **preserving existing API response contracts**. We do not redesign spell response shapes in v2.0; breaking/contract changes are deferred to v2.1.
+
+---
+
+## Databases
 
 ### 1) Rules DB (`rules_clean.sqlite`)
 
 - Read-only
-- Contains canonical D&D 3.5 rules data:
-  - spells
-  - rulebooks
-  - classes
-  - domains
-  - schools / subschools
-  - descriptors
-
-- IDs from this DB are used as **foreign references (by value)** in the App DB
-- No Prisma migrations are run against this DB
+- Canonical rules data (spells, rulebooks, classes, domains, schools/subschools, descriptors)
+- IDs from this DB are referenced by value in the App DB
+- No Prisma migrations against this DB
 
 ### 2) App DB (`app.sqlite`)
 
-- Owned by the application
-- Created and migrated via Prisma
+- Owned by the app
+- Managed by Prisma migrations under `/prisma-app`
 - Stores:
   - i18n text overlays
-  - user-related data (favorites, notes)
+  - user app state (favorites/notes)
 
-- No cross-database foreign keys (SQLite limitation)
+- No cross-DB foreign keys (SQLite limitation + operational simplicity)
 
 ---
 
 ## Design Principles
 
 - **Rules DB = structure + mechanics**
-- **App DB = language + user state**
-- i18n data is additive and replaceable
-- Multiple language variants are supported **in parallel**
-- Fallback to English (rules DB) is handled at runtime
+- **App DB = localized text + user state**
+- i18n is implemented as an **overlay** keyed by `(entityId, lang, variant)`
+- Runtime merge behavior:
+  - prefer i18n text if present
+  - fallback to English in rules DB if missing
+
+- v2.0 specifically avoids “hydrating” spell responses with new localized fields (contract preserved)
 
 ---
 
 ## Language Model
 
-All i18n tables use the same pattern:
+All i18n tables follow:
 
-- `lang`: UI-facing language key
-  Examples:
-  - `zh` (Chinese)
+- `lang`: natural language, e.g. `zh`
+- `variant`: version/source within the language, default `"default"`
 
-- `variant`: parallel versions within the same language
-  `chm` Spell translations extracted from chm
-  `ai-XXXX` AI translated spells (future plan)
-  Defaults to `"default"` for other entities like character class
+In v2.0:
 
-Uniqueness is enforced via `(entityId, lang, variant)`.
+- Spells may later use different `variant` values (e.g., `chm`, `ai`) but **the core DB model supports it now**.
+- Common entities currently use `lang="zh"`, `variant="default"`.
 
 ---
 
-## App DB Schema (Current)
+## App DB Schema Additions (v2.0)
 
 ### A) User & App State
 
-#### `User`
-
-Stores application users (auth details may expand later).
-
-#### `FavoriteSpell`
-
-Maps users to favorited spells (`spellId` from rules DB).
-
-#### `SpellNote`
-
-Free-form user notes per spell.
+- `User`
+- `FavoriteSpell` (user ↔ spellId)
+- `SpellNote` (user ↔ spellId + note content)
 
 ---
 
-### B) Spell i18n
+### B) Spell i18n (text overlay)
 
 #### `I18nSpellText`
 
-Localized spell name and description.
+Stores localized spell name + description (HTML + plain text).
 
-- Key: `UNIQUE(spellId, lang, variant)`
-- Fields:
+- Unique: `(spellId, lang, variant)`
+- Fields include:
   - `name`
   - `descriptionHtml`
   - `descriptionText`
-  - `sourceKey` (used for CHM provenance/debugging)
-
-This table is the **primary source of localized spell content**.
+  - `sourceKey` (provenance/debugging for CHM pipeline)
 
 #### `I18nSpellNameAlias`
 
-Stores alternative spell names per language.
+Stores alternative spell names in the same language.
 
-- Key: `UNIQUE(spellId, lang, aliasName)`
-- Used for:
-  - community variants
-  - legacy translations
-  - search support
+- Unique: `(spellId, lang, aliasName)`
+- Used for multiple community names (e.g., 牛之力量 / 蛮力术)
 
-Example:
-
-- 主名：牛之力量
-- 别名：蛮力术
+> Note: Spell mechanical fields (range, components, duration, etc.) remain in rules DB and are not duplicated into App DB.
 
 ---
 
-### C) Common Entity i18n (Dictionary-style)
+### C) Common entity i18n (dictionary overlay)
 
-These tables localize entity names that appear across the UI.
+v2.0 includes i18n overlay tables for common entities. These are primarily used by frontend mapping and future meta endpoints.
 
-#### `I18nCharacterClassText`
+- `I18nCharacterClassText`
+- `I18nDomainText`
+- `I18nRulebookText`
+- `I18nSpellSchoolText`
+- `I18nSpellSubschoolText`
+- `I18nDescriptorText`
 
-Localized character class names and short descriptions.
+All follow:
 
-- Key: `UNIQUE(classId, lang, variant)`
+- Unique: `(entityId, lang, variant)`
+- `name` is nullable and falls back to rules DB English name at runtime
 
-#### `I18nDomainText`
+---
 
-Localized domain names.
+## v2.0 API Contract Rule
 
-- Key: `UNIQUE(domainId, lang, variant)`
+### Spell responses remain unchanged
 
-#### `I18nSpellSchoolText`
+For v2.0, spell endpoints continue returning the same joined entity objects as before (e.g., `school`, `subschool`, `descriptors`), using the existing rules DB data.
 
-Localized spell school names.
+We **do not** add localized names into spell response payloads in v2.0 to avoid breaking changes.
 
-- Key: `UNIQUE(schoolId, lang, variant)`
+### New meta endpoint for i18n mapping
 
-#### `I18nSpellSubschoolText`
+To support Chinese display without changing spell response contracts, v2.0 introduces a new meta endpoint that provides i18n lookup maps for:
 
-Localized spell subschool names.
+- spell schools
+- spell subschools
+- spell descriptors
 
-- Key: `UNIQUE(subschoolId, lang, variant)`
+Frontend uses existing IDs returned in spell responses and maps them to zh names via this meta response, falling back to English if missing.
 
-#### `I18nDescriptorText`
+**Example usage**
 
-Localized spell descriptor names.
+- Spell response provides `school.id`, `subschool?.id`, `descriptors[].id`
+- Frontend calls meta once and renders:
+  - zh name if exists
+  - otherwise existing English name from spell response
 
-- Key: `UNIQUE(descriptorId, lang, variant)`
-
-#### `I18nRulebookText`
-
-Localized rulebook names and descriptions.
-
-- Key: `UNIQUE(rulebookId, lang, variant)`
-- Fields currently supported:
-  - `name`
-  - `descriptionText`
+This is the minimal, contract-preserving bridge for v2.0.
 
 ---
 
 ## Import & Data Lifecycle
 
-### CHM-derived Chinese (v2.0 baseline)
+### CHM-derived Chinese (baseline)
 
-- Parsed via external pipeline
-- Imported via dedicated scripts (not Prisma `seed.ts`)
-- Written into:
-  - `I18nSpellText (lang = 'zh-chm')`
-  - `I18nSpellNameAlias` (when multiple names exist)
-  - Corresponding i18n tables for classes, domains, etc.
+- Parser pipeline outputs matched spell entries with `spellId`, `rulebookId`, `zhName`, `zhDescriptionHtml`, `sourceKey`, etc.
+- Import scripts write into App DB:
+  - `I18nSpellText` (primary)
+  - `I18nSpellNameAlias` (optional)
+  - common entity i18n tables (classes/domains/rulebooks/schools/subschools/descriptors) as JSON-driven imports
 
 ### Future AI translations
 
-- Stored in parallel using:
-  - `lang = 'zh'`
-  - `variant = 'ai'` or `'ai-XXX'` if needed
+- Stored in parallel using the same tables:
+  - `lang="zh"`, different `variant` values (e.g., `ai_v1`)
 
-- No existing data is overwritten
-
----
-
-## Runtime Merge Behavior
-
-When serving data with a selected `lang`:
-
-1. Load base entity data from **rules DB**
-2. Load localized overlays from **app DB**
-3. Merge:
-   - use i18n name/description if present
-   - fallback to English from rules DB if missing
-
-Spell mechanical fields (range, components, duration, etc.) remain English in rules DB and are localized in the frontend when needed.
-
----
-
-## What Did Not Change
-
-- No schema changes to `rules_clean.sqlite`
-- No mechanical fields duplicated into App DB
-- No hard foreign keys between databases
+- No overwrites required; UI can switch variants later
 
 ---
 
 ## Operational Notes
 
-- App DB is migrated via:
+- App DB migrations:
 
   ```bash
-  npx prisma migrate dev --schema ./prisma-app/schema.prisma
+  npx prisma migrate dev --config ./prisma-app/prisma.config.ts
+  npx prisma generate --config ./prisma-app/prisma.config.ts
   ```
 
-- Import scripts use a shared Prisma client singleton
-- Environment variables use absolute SQLite paths to avoid path resolution issues
+- Import scripts:
+  - use shared Prisma client singletons from `src/lib`
+  - run as batch jobs (wipe+reinsert per lang/variant scope)
+
+- Environment variables:
+  - `RULES_DATABASE_URL`
+  - `APP_DATABASE_URL`
+  - scripts must load env (e.g., `import "dotenv/config"`)
 
 ---
 
-**Status:** Implemented (schema + import scripts)
+## What Did Not Change
+
+- No schema changes to `rules_clean.sqlite` in v2.0
+- No breaking changes to existing spell API response contracts
+- No mechanical-field duplication into App DB
+
+---
+
+**Status:** Implemented (schema + import scripts; meta endpoint planned/implemented depending on backend progress)
 **Version:** v2.0
-**Applies to:** `app.sqlite` (new), `rules_clean.sqlite` (unchanged)
+**Applies to:** `app.sqlite` (new/managed), `rules_clean.sqlite` (corrections, see appendix)
+
+---
