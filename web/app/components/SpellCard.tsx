@@ -11,7 +11,7 @@ import { useCollections } from "~/state/collections-state";
 export function SpellCard({
   spell,
   showActions = false,
-  showDetails = false,
+  showDetails = true,
 }: {
   spell: SpellItem;
   showDetails?: boolean;
