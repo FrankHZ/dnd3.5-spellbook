@@ -5,9 +5,11 @@ export const DEFAULT_STATE: PersistedState = {
   storageVersion: STORAGE_VERSION,
   includePrestige: false,
   selectedRulebookIds: [4, 6],
-  browseClassIds: [],
-  browseDomainIds: [],
-  browseLevel: null,
+  browseQuery: {
+    classIds: [],
+    domainIds: [],
+    level: null,
+  },
   uiPrefs: {
     lang: "en",
     zhVariant: "chm",

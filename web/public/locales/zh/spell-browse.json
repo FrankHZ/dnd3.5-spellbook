@@ -1,0 +1,14 @@
+{
+  "Base Classes": "基础职业",
+  "Classes": "职业",
+  "Domains": "领域",
+  "Filter classes…": "选择职业...",
+  "Filter domains…": "选择领域...",
+  "Level": "环数",
+  "No spells found for selected classes at level {{level}}.": "选择的职业/领域没有{{level}}环法术。",
+  "Prestige Classes": "",
+  "Select a spell level (0-9).": "选择法术环数",
+  "Show details": "显示更多",
+  "Using default rulebook scope: 3.5 core": "设定里没选规则书，现在只显示3.5核心法术",
+  "Using saved rulebook scope: {{bookCount}} selected": "选择了{{bookCount}}本规则书，见设置"
+}

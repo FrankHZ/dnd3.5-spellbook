@@ -4,7 +4,7 @@ import { useMetaNames } from "~/i18n/useMetaNames";
 
 export default function LevelsSection({ spell }: { spell: SpellDetailView }) {
   const { metaName } = useMetaNames();
-  const { t } = useTranslation("spell-levels");
+  const { t } = useTranslation("spell-detail");
   return (
     <div className="space-y-3">
       {/* Class levels */}

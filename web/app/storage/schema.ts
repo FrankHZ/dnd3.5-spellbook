@@ -8,13 +8,17 @@ export type UiPrefs = {
   zhVariant?: string;
 };
 
+export type BrowseQuery = {
+  classIds: number[];
+  domainIds: number[];
+  level: number | null;
+};
+
 export type PersistedStateV1 = {
   storageVersion: 1;
   includePrestige: boolean;
   selectedRulebookIds: number[];
-  browseClassIds: number[];
-  browseDomainIds: number[];
-  browseLevel: number | null;
+  browseQuery: BrowseQuery;
   uiPrefs: UiPrefs;
 };
 

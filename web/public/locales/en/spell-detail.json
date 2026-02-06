@@ -1,1 +1,22 @@
-{}
+{
+  "AF": "AF",
+  "Area": "Area",
+  "Casting Time": "Casting Time",
+  "Classes": "Classes",
+  "Corrupt": "Corrupt",
+  "DF": "DF",
+  "Domains": "Domains",
+  "Duration": "Duration",
+  "Effect": "Effect",
+  "M": "M",
+  "Metabreath": "Metabreath",
+  "No class levels listed.": "No class levels listed.",
+  "Range": "Range",
+  "S": "S",
+  "Saving Throw": "Saving Throw",
+  "Spell Resistance": "Spell Resistance",
+  "Target": "Target",
+  "Truename": "Truename",
+  "V": "V",
+  "XP": "XP"
+}

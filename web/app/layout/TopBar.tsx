@@ -13,7 +13,7 @@ function TopBarSeacrch() {
   const q = params.get("q") || "";
   const [text, setText] = useState(q);
   const [error, setError] = useState(null as string | null);
-  const { t } = useTranslation("search-spell");
+  const { t } = useTranslation("spell-search");
 
   const { lang } = useAppI18n();
   const isValid = isSearchQueryValid(text, lang);

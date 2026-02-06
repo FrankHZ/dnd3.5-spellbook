@@ -24,7 +24,7 @@ export function SpellCard({
   const { metaName } = useMetaNames();
   const inFav = isInDefault(spell.id);
   const inPrep = isInPrepared(spell.id);
-  const { t } = useTranslation(["spellcard", "collections"]);
+  const { t } = useTranslation();
   return (
     <div className="p-3 hover:bg-muted/40">
       <div className="flex items-start justify-between gap-3">

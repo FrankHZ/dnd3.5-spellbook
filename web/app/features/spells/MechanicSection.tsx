@@ -11,7 +11,7 @@ function Field({ label, value }: { label: string; value?: string | null }) {
 }
 
 export function MechanicsSection({ casting }: { casting: SpellCasting }) {
-  const { t } = useTranslation("spell-mechanics");
+  const { t } = useTranslation("spell-detail");
   return (
     <div className="space-y-2">
       <div className="grid gap-3 sm:grid-cols-2">

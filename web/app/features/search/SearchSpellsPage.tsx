@@ -12,14 +12,13 @@ import { Separator } from "~/components/ui/separator";
 import { useAppI18n } from "~/i18n/useAppI18n";
 import { useTranslation } from "react-i18next";
 import { isSearchQueryValid } from "./validation";
-
-const PAGE_SIZE = 20; // backend default is 20; keep consistent
+import { PAGE_SIZE } from "../constants";
 
 export default function SearchSpellsPage() {
   const { state } = usePersistedState();
   const rulebookIds = state.selectedRulebookIds;
   const { queryKey } = useAppI18n();
-  const { t } = useTranslation("search-spell");
+  const { t } = useTranslation("spell-search");
   const [params, setParams] = useSearchParams();
 
   const { lang } = useAppI18n();

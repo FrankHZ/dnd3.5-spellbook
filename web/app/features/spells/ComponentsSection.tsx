@@ -7,7 +7,7 @@ export default function ComponentsSection({
 }: {
   components: SpellComponents;
 }) {
-  const { t } = useTranslation("spell-components");
+  const { t } = useTranslation("spell-detail");
   const chips = [
     components.V && t("V"),
     components.S && t("S"),

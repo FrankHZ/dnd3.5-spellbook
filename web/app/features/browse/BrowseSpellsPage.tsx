@@ -1,110 +1,20 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { ApiError } from "~/api/http";
 import { getSpellsByLevel } from "~/api/spells";
-import { useBootstrap } from "~/bootstrap/useBootstrap";
-import { usePersistedState } from "~/state/persisted-state";
 
 import Pager from "~/components/Pager";
 import { Separator } from "~/components/ui/separator";
 import { SpellCard } from "../../components/SpellCard";
 
 import { useTranslation } from "react-i18next";
-import {
-  MultiSelectPicker,
-  type PickerItem,
-} from "~/components/MultiSelectPicker";
-import { Button } from "~/components/ui/button";
 import { useAppI18n } from "~/i18n/useAppI18n";
-import { cn } from "~/lib/utils";
 import { Switch } from "~/components/ui/switch";
-
-const PAGE_SIZE = 20;
-
-const T_NAMESPACE = "browse-spell";
-
-export function LevelSelector() {
-  const { state, setState } = usePersistedState();
-  const { t } = useTranslation(T_NAMESPACE);
-  const level = state.browseLevel;
-
-  function setLevel(next: number) {
-    setState((s) => ({ ...s, browseLevel: next }));
-  }
-
-  return (
-    <div className="rounded-md border p-3 space-y-2">
-      <div className="font-medium">{t("Level")}</div>
-
-      <div className="grid grid-cols-5 gap-2">
-        {Array.from({ length: 10 }, (_, i) => (
-          <Button
-            key={i}
-            type="button"
-            variant={level === i ? "default" : "outline"}
-            size="sm"
-            onClick={() => setLevel(i)}
-            className={cn("justify-center")}
-          >
-            {i}
-          </Button>
-        ))}
-      </div>
-
-      {level === null && (
-        <div className="text-sm text-destructive">
-          {t("Select a spell level (0-9).")}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ClassAndDomainSelector() {
-  const { state, setState } = usePersistedState();
-  const boot = useBootstrap(state.includePrestige);
-  const { nameWithEn } = useAppI18n();
-  const { t } = useTranslation(T_NAMESPACE);
-
-  const classes = boot.classes.data?.items ?? [];
-  const domains = boot.domains.data?.items ?? [];
-
-  const classItems: PickerItem[] = classes.map((c) => ({
-    id: c.id,
-    name: nameWithEn(c),
-    group: c.prestige ? t("Prestige Classes") : t("Base Classes"),
-  }));
-
-  const domainItems: PickerItem[] = domains.map((d) => ({
-    id: d.id,
-    name: nameWithEn(d),
-  }));
-
-  return (
-    <div className="rounded-md border p-3 space-y-2">
-      <MultiSelectPicker
-        title={t("Classes")}
-        placeholder={t("Filter classes…")}
-        items={classItems}
-        selectedIds={state.browseClassIds}
-        onChange={(nextIds) =>
-          setState((s) => ({ ...s, browseClassIds: nextIds }))
-        }
-      />
-
-      <MultiSelectPicker
-        title={t("Domains")}
-        placeholder={t("Filter domains…")}
-        items={domainItems}
-        selectedIds={state.browseDomainIds}
-        onChange={(nextIds) =>
-          setState((s) => ({ ...s, browseDomainIds: nextIds }))
-        }
-      />
-    </div>
-  );
-}
+import { LevelSelector } from "./LevelSelector";
+import { ClassAndDomainSelector } from "./ClassAndDomainSelector";
+import { useBrowseQueryState } from "./useBrowseQueryState";
+import { PAGE_SIZE } from "../constants";
 
 function CardViewToggle({
   value,
@@ -114,7 +24,7 @@ function CardViewToggle({
   onChange: (v: CardViewMode) => void;
 }) {
   const showAll = value === "all";
-  const { t } = useTranslation(T_NAMESPACE);
+  const { t } = useTranslation("spell-browse");
   return (
     <div className="rounded-md border p-3 space-y-2">
       <label className="flex items-center justify-between gap-3 text-sm">
@@ -131,32 +41,24 @@ function CardViewToggle({
 type CardViewMode = "simple" | "all";
 
 export default function BrowsePage() {
-  const { state } = usePersistedState();
   const { queryKey } = useAppI18n();
-  const { t } = useTranslation();
+  const { t } = useTranslation("spell-browse");
 
-  const [page, setPage] = useState(1);
-
-  const [cardView, setCardView] = useState<CardViewMode>("simple");
-
-  const level = state.browseLevel;
-  const classIds = state.browseClassIds;
-  const domainIds = state.browseDomainIds;
-  const rulebookIds = state.selectedRulebookIds;
-
-  const hasValidSelection =
-    (classIds.length > 0 || domainIds.length > 0) && level !== null;
-
-  useEffect(() => {
-    setPage(1);
-  }, [
+  const {
+    level,
     classIds,
     domainIds,
-    level,
+    page,
     rulebookIds,
-    queryKey.lang,
-    queryKey.variant,
-  ]);
+    setLevel,
+    setClassIds,
+    setDomainIds,
+    setPage,
+    hasValidSelection,
+  } = useBrowseQueryState();
+
+  const [cardView, setCardView] = useState<CardViewMode>("simple");
+  const pageSize = PAGE_SIZE;
 
   const browseQuery = useQuery({
     queryKey: [
@@ -165,9 +67,9 @@ export default function BrowsePage() {
         classIds,
         domainIds,
         level,
-        rulebookIds,
+        rulebookIds: rulebookIds.join(","),
         page,
-        pageSize: PAGE_SIZE,
+        pageSize,
         ...queryKey,
       },
     ],
@@ -179,7 +81,7 @@ export default function BrowsePage() {
         level: level!, // safe because enabled guards it
         rulebookIds: rulebookIds.length ? rulebookIds : undefined,
         page,
-        pageSize: PAGE_SIZE,
+        pageSize,
         signal,
       }),
     placeholderData: keepPreviousData,
@@ -198,16 +100,21 @@ export default function BrowsePage() {
   }, [browseQuery.error]);
 
   const total = browseQuery.data?.total ?? 0;
-  const pageSize = browseQuery.data?.pageSize ?? PAGE_SIZE;
   const items = browseQuery.data?.items ?? [];
+  const bookCount = rulebookIds.length;
 
   return (
     <div className="p-4 space-y-4 max-w-6xl mx-auto">
       <div className="grid gap-4 md:grid-cols-[320px_1fr]">
         <div className="space-y-3">
           <CardViewToggle value={cardView} onChange={setCardView} />
-          <ClassAndDomainSelector />
-          <LevelSelector />
+          <ClassAndDomainSelector
+            classIds={classIds}
+            domainIds={domainIds}
+            onChangeClasses={setClassIds}
+            onChangeDomains={setDomainIds}
+          />
+          <LevelSelector value={level} onChange={setLevel} />
         </div>
         <div className="space-y-3">
           {!hasValidSelection && (
@@ -220,13 +127,23 @@ export default function BrowsePage() {
               </ul>
             </div>
           )}
+          <div className="text-xs text-muted-foreground">
+            {bookCount !== 0
+              ? t("Using saved rulebook scope\: {{bookCount}} selected", {
+                  ns: "spell-browse",
+                  bookCount,
+                })
+              : t("Using default rulebook scope\: 3.5 core", {
+                  ns: "spell-browse",
+                })}
+          </div>
           {hasValidSelection && (
             <div className="space-y-3">
               <Pager
                 page={page}
                 pageSize={pageSize}
                 total={total}
-                onPageChange={(p) => setPage(p)}
+                onPageChange={setPage}
               />
 
               <Separator />
@@ -269,7 +186,7 @@ export default function BrowsePage() {
                 page={page}
                 pageSize={pageSize}
                 total={total}
-                onPageChange={(p) => setPage(p)}
+                onPageChange={setPage}
                 showRangeText={false}
               />
             </div>

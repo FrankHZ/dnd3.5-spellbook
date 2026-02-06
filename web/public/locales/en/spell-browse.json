@@ -1,0 +1,14 @@
+{
+  "Base Classes": "Base Classes",
+  "Classes": "Classes",
+  "Domains": "Domains",
+  "Filter classes…": "Filter classes…",
+  "Filter domains…": "Filter domains…",
+  "Level": "Level",
+  "No spells found for selected classes at level {{level}}.": "No spells found for selected classes at level {{level}}.",
+  "Prestige Classes": "Prestige Classes",
+  "Select a spell level (0-9).": "Select a spell level (0-9).",
+  "Show details": "Show details",
+  "Using default rulebook scope: 3.5 core": "Using default rulebook scope: 3.5 core",
+  "Using saved rulebook scope: {{bookCount}} selected": "Using saved rulebook scope: {{bookCount}} selected"
+}
