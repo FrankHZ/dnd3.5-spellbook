@@ -1,7 +1,8 @@
 import { appPrisma } from "~/lib/app-prisma-client";
 import { rulesPrisma } from "../../lib/rules-prisma-client";
 import { Prisma } from "prisma-rules-clean/generated/client";
-import { Lang } from "@dnd/contracts";
+import { Prisma as AppPrisma } from "prisma-app/generated/client";
+import { I18nContext, Lang } from "@dnd/contracts";
 
 export const SELECT_SPELL_MIN = {
   id: true,
@@ -81,6 +82,11 @@ export const SELECT_SPELL_DETAIL = {
   verified_time: true,
 } satisfies Prisma.SpellSelect;
 
+export type SpellRow<T extends Prisma.SpellSelect = typeof SELECT_SPELL_LIST> =
+  Prisma.SpellGetPayload<{
+    select: T;
+  }> & { id: number };
+
 export async function fetchSpellsInOrder<T extends Prisma.SpellSelect>(
   ids: number[],
   select: T,
@@ -88,7 +94,7 @@ export async function fetchSpellsInOrder<T extends Prisma.SpellSelect>(
   const rows = (await rulesPrisma.spell.findMany({
     where: { id: { in: ids } },
     select,
-  })) as (Prisma.SpellGetPayload<{ select: T }> & { id: number })[]; // Prisma cannot infer `id` on generic selects; safe cast for reorder logic
+  })) as SpellRow<T>[]; // Prisma cannot infer `id` on generic selects; safe cast for reorder logic
 
   const order = new Map<number, number>();
   ids.forEach((id, i) => order.set(id, i));
@@ -146,7 +152,7 @@ export async function queryIdsByI18nName(
   return ids;
 }
 
-export async function queryByClassAndDomainLevels(
+export async function queryByClassAndDomainWithLevel(
   classIds: number[],
   domainIds: number[],
   level: number,
@@ -213,6 +219,78 @@ export async function queryByClassAndDomainLevels(
   };
 }
 
+export async function queryByClassAndDomainAllLevels(
+  classIds: number[],
+  domainIds: number[],
+  rulebookIds: number[],
+  page: number,
+  pageSize: number,
+) {
+  if (rulebookIds.length === 0)
+    return {
+      total: 0,
+      spellsInOrder: [],
+      levelsInOrder: [], // parallel array to spellsInOrder
+    };
+
+  // use sentinel to avoid empty IN () for SQL
+  domainIds = domainIds.length > 0 ? domainIds : [-1];
+  classIds = classIds.length > 0 ? classIds : [-1];
+
+  // ---- 1) total = count distinct (spell_id, level) pairs
+  const countRows = await rulesPrisma.$queryRaw<Array<{ cnt: number }>>(
+    Prisma.sql`
+      SELECT COUNT(*) AS cnt
+      FROM (
+        SELECT i.spell_id, i.level
+        FROM idx_spell_class_level i
+        WHERE i.rulebook_id IN (${Prisma.join(rulebookIds)})
+          AND i.class_id IN (${Prisma.join(classIds)})
+        UNION
+        SELECT j.spell_id, j.level
+        FROM idx_spell_domain_level j
+        WHERE j.rulebook_id IN (${Prisma.join(rulebookIds)})
+          AND j.domain_id IN (${Prisma.join(domainIds)})
+      ) u
+    `,
+  );
+  const total = Number(countRows[0]?.cnt ?? 0);
+
+  // ---- 2) page (spell_id, level) rows in stable order by Spell.name, Spell.id, level
+  const offset = (page - 1) * pageSize;
+
+  const rowPairs = await rulesPrisma.$queryRaw<
+    Array<{ id: number; level: number }>
+  >(
+    Prisma.sql`
+      SELECT s.id AS id, u.level AS level
+      FROM (
+        SELECT i.spell_id, i.level
+        FROM idx_spell_class_level i
+        WHERE i.rulebook_id IN (${Prisma.join(rulebookIds)})
+          AND i.class_id IN (${Prisma.join(classIds)})
+        UNION
+        SELECT j.spell_id, j.level
+        FROM idx_spell_domain_level j
+        WHERE j.rulebook_id IN (${Prisma.join(rulebookIds)})
+          AND j.domain_id IN (${Prisma.join(domainIds)})
+      ) u
+      JOIN dnd_spell s ON s.id = u.spell_id
+      ORDER BY u.level ASC, s.name ASC, s.id ASC
+      LIMIT ${pageSize} OFFSET ${offset}
+    `,
+  );
+
+  const ids = rowPairs.map((r) => Number(r.id));
+  const levelsInOrder = rowPairs.map((r) => Number(r.level));
+
+  return {
+    total,
+    spellsInOrder: await fetchSpellsInOrder(ids, SELECT_SPELL_LIST),
+    levelsInOrder,
+  };
+}
+
 export async function querySpellDetail(id: number) {
   const s = await rulesPrisma.spell.findUnique({
     where: { id },
@@ -262,6 +340,24 @@ export async function querySpellI18nDetail(
   });
 
   return s ? s : null;
+}
+
+export async function queryI18nMap(spellIds: number[], i18n: I18nContext) {
+  const i18nMap = new Map<
+    number,
+    AppPrisma.I18nSpellTextGetPayload<{
+      select: typeof SELECT_SPELL_I18N_MIN;
+    }>
+  >();
+  if (i18n.lang != "en") {
+    const spellI18n = await querySpellI18nNamesByIds(
+      spellIds,
+      i18n.lang,
+      i18n.variant,
+    );
+    spellI18n.forEach((s) => i18nMap.set(s.spellId, s));
+  }
+  return i18nMap;
 }
 
 export async function querySpellI18nNamesByIds(

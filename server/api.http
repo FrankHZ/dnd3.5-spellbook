@@ -33,6 +33,9 @@ GET http://localhost:3000/api/spells/by-level?classIds=1&level=3
 ### Class + level + lang
 GET http://localhost:3000/api/spells/by-level?classIds=1&level=3&lang=zh
 
+### Class + level all + lang
+GET http://localhost:3000/api/spells/by-level?classIds=1&level=all&lang=zh
+
 ### Spell detail
 GET http://localhost:3000/api/spells/42
 

@@ -1,16 +1,18 @@
 import type {
   SpellBatchRequest,
   SpellBatchResponse,
-  SpellByClassLevelResponse,
+  SpellByLevelResponse,
   SpellDetail,
   SpellNameSearchResponse,
 } from "@dnd/contracts";
 import { apiGet, apiPost } from "./http";
 
+export type LevelParam = number | "all";
+
 export function getSpellsByLevel(params: {
   classIds: number[];
   domainIds: number[];
-  level: number;
+  level: LevelParam;
   rulebookIds?: number[]; // omit if empty to rely on backend default edition scope
   page: number;
   pageSize: number;
@@ -19,20 +21,20 @@ export function getSpellsByLevel(params: {
   const sp = new URLSearchParams();
 
   if (params.classIds.length > 0) {
-    sp.append("classIds", params.classIds.join(",")); // CSV ✅
+    sp.set("classIds", params.classIds.join(",")); // CSV ✅
   }
 
   if (params.domainIds.length > 0) {
-    sp.append("domainIds", params.domainIds.join(",")); // CSV ✅
+    sp.set("domainIds", params.domainIds.join(",")); // CSV ✅
   }
   sp.set("level", String(params.level));
   if (params.rulebookIds && params.rulebookIds.length > 0) {
-    sp.append("rulebookIds", params.rulebookIds.join(","));
+    sp.set("rulebookIds", params.rulebookIds.join(","));
   }
   sp.set("page", String(params.page));
   sp.set("pageSize", String(params.pageSize));
 
-  return apiGet<SpellByClassLevelResponse>(
+  return apiGet<SpellByLevelResponse>(
     `/api/spells/by-level?${sp.toString()}`,
     params.signal,
   );

@@ -11,7 +11,12 @@ export type UiPrefs = {
 export type BrowseQuery = {
   classIds: number[];
   domainIds: number[];
-  level: number | null;
+  level: number | "all";
+};
+
+export type BrowsePrefs = {
+  cardView: "simple" | "all";
+  groupMode: "flat" | "grouped";
 };
 
 export type PersistedStateV1 = {
@@ -19,6 +24,7 @@ export type PersistedStateV1 = {
   includePrestige: boolean;
   selectedRulebookIds: number[];
   browseQuery: BrowseQuery;
+  browsePrefs: BrowsePrefs;
   uiPrefs: UiPrefs;
 };
 

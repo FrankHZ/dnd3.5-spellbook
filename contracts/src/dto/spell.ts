@@ -39,14 +39,19 @@ export type SpellItemView = SpellItem & {
   i18n?: I18nNameOverlay | undefined;
 };
 
-export type SpellByClassLevelResponse = {
+export type SpellsByLevelGroup = {
+  level: number;
+  items: SpellItemView[];
+};
+
+export type SpellByLevelResponse = {
   page: number;
   pageSize: number;
   total: number;
-  level: number;
   classIds: number[];
+  domainIds: number[];
   rulebookIds: number[];
-  items: SpellItemView[];
+  groups: SpellsByLevelGroup[];
 };
 
 export type SpellComponents = {

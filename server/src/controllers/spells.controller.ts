@@ -13,6 +13,7 @@ import type {
   SpellNameSearchResponse,
 } from "@dnd/contracts/dist/dto/spell";
 import { getI18nContext, hasCjk } from "~/utils/i18n";
+import { LevelMode } from "~/services/spells/spells.service.by-level";
 
 export async function searchSpellsByName(
   req: Request,
@@ -73,6 +74,9 @@ export async function listSpellsByClassAndDomainLevel(
   next: NextFunction,
 ) {
   try {
+    let levelMode: LevelMode;
+    let levelNum: number | null = null;
+
     const classIds = parseCsvNumberList(req.query.classIds);
     const domainIds = parseCsvNumberList(req.query.domainIds);
 
@@ -92,12 +96,23 @@ export async function listSpellsByClassAndDomainLevel(
       next(new ApiError(400, "Invalid request", "level is required (0-9)"));
       return;
     }
-    const level = Number(levelRaw);
-    if (!Number.isInteger(level) || level < 0 || level > 9) {
-      next(
-        new ApiError(400, "Invalid request", "level must be an integer 0-9"),
-      );
-      return;
+
+    if (levelRaw === "all") {
+      levelMode = "all";
+    } else {
+      const n = Number(levelRaw);
+      if (!Number.isInteger(n) || n < 0 || n > 9) {
+        next(
+          new ApiError(
+            400,
+            "Invalid request",
+            "level must be either 'all' or integer 0-9",
+          ),
+        );
+        return;
+      }
+      levelMode = "single";
+      levelNum = n;
     }
 
     let rulebookIds = parseCsvNumberList(req.query.rulebookIds);
@@ -113,7 +128,8 @@ export async function listSpellsByClassAndDomainLevel(
     const result = await spellsService.listByClassAndDomainLevel({
       classIds,
       domainIds,
-      level,
+      levelMode,
+      level: levelNum,
       rulebookIds,
       page,
       pageSize,

@@ -7,7 +7,7 @@
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
-    "i18next:extract": "i18next-cli extract --watch"
+    "i18next:extract": "i18next-cli extract"
   },
   "dependencies": {
     "@base-ui/react": "^1.1.0",

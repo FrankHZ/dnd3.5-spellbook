@@ -10,35 +10,16 @@ import { SpellCard } from "../../components/SpellCard";
 
 import { useTranslation } from "react-i18next";
 import { useAppI18n } from "~/i18n/useAppI18n";
-import { Switch } from "~/components/ui/switch";
 import { LevelSelector } from "./LevelSelector";
 import { ClassAndDomainSelector } from "./ClassAndDomainSelector";
 import { useBrowseQueryState } from "./useBrowseQueryState";
 import { PAGE_SIZE } from "../constants";
-
-function CardViewToggle({
-  value,
-  onChange,
-}: {
-  value: CardViewMode;
-  onChange: (v: CardViewMode) => void;
-}) {
-  const showAll = value === "all";
-  const { t } = useTranslation("spell-browse");
-  return (
-    <div className="rounded-md border p-3 space-y-2">
-      <label className="flex items-center justify-between gap-3 text-sm">
-        <span className="text-muted-foreground">{t("Show details")}</span>
-        <Switch
-          checked={showAll}
-          onCheckedChange={(checked) => onChange(checked ? "all" : "simple")}
-        />
-      </label>
-    </div>
-  );
-}
-
-type CardViewMode = "simple" | "all";
+import {
+  BrowseOptionsToggle,
+  type CardViewMode,
+  type GroupMode,
+} from "./BrowseOptionsToggle";
+import { useBrowsePrefs } from "./useBrowsePref";
 
 export default function BrowsePage() {
   const { queryKey } = useAppI18n();
@@ -57,7 +38,7 @@ export default function BrowsePage() {
     hasValidSelection,
   } = useBrowseQueryState();
 
-  const [cardView, setCardView] = useState<CardViewMode>("simple");
+  const { cardView, setCardView, groupMode, setGroupMode } = useBrowsePrefs();
   const pageSize = PAGE_SIZE;
 
   const browseQuery = useQuery({
@@ -100,14 +81,20 @@ export default function BrowsePage() {
   }, [browseQuery.error]);
 
   const total = browseQuery.data?.total ?? 0;
-  const items = browseQuery.data?.items ?? [];
+  const groups = browseQuery.data?.groups;
   const bookCount = rulebookIds.length;
+  const hasSpellData = groups?.flatMap((g) => g.items).length !== 0;
 
   return (
     <div className="p-4 space-y-4 max-w-6xl mx-auto">
       <div className="grid gap-4 md:grid-cols-[320px_1fr]">
         <div className="space-y-3">
-          <CardViewToggle value={cardView} onChange={setCardView} />
+          <BrowseOptionsToggle
+            cardView={cardView}
+            onCardViewChange={setCardView}
+            groupMode={groupMode}
+            onGroupModeChange={setGroupMode}
+          />
           <ClassAndDomainSelector
             classIds={classIds}
             domainIds={domainIds}
@@ -157,30 +144,54 @@ export default function BrowsePage() {
                 </div>
               )}
 
-              {!errorMessage &&
-                !browseQuery.isLoading &&
-                items.length === 0 && (
-                  <div className="rounded-md border p-3">
-                    <div className="font-medium">No spells found</div>
-                    <div className="mt-1 text-sm text-muted-foreground">
-                      {t(
-                        "No spells found for selected classes at level {{level}}.",
-                        { level },
-                      )}
-                    </div>
+              {!errorMessage && !browseQuery.isLoading && !hasSpellData && (
+                <div className="rounded-md border p-3">
+                  <div className="font-medium">{t("No spells found")}</div>
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    {t(
+                      "No spells found for selected classes at level {{level}}.",
+                      { level },
+                    )}
                   </div>
-                )}
+                </div>
+              )}
 
-              <div className="divide-y rounded-md border">
-                {items.map((sp) => (
-                  <SpellCard
-                    key={sp.id}
-                    spell={sp}
-                    showActions={cardView == "all"}
-                    showDetails={cardView == "all"}
-                  />
-                ))}
-              </div>
+              {hasSpellData && (
+                <div className="divide-y rounded-md border">
+                  {groupMode === "grouped"
+                    ? groups?.map((g) => (
+                        <div key={g.level} className="divide-y">
+                          {/* Level header */}
+                          <div className="px-3 py-2 text-sm font-medium bg-muted/30 text-center tracking-wide">
+                            {t("Level {{level}}", {
+                              ns: "spell-browse",
+                              level: g.level,
+                            })}
+                          </div>
+
+                          {/* Items in this level */}
+                          {g.items.map((sp) => (
+                            <SpellCard
+                              key={`${g.level}-${sp.id}`}
+                              spell={sp}
+                              showActions={cardView === "all"}
+                              showDetails={cardView === "all"}
+                            />
+                          ))}
+                        </div>
+                      ))
+                    : groups
+                        ?.flatMap((g) => g.items)
+                        .map((sp) => (
+                          <SpellCard
+                            key={sp.id}
+                            spell={sp}
+                            showActions={cardView === "all"}
+                            showDetails={cardView === "all"}
+                          />
+                        ))}
+                </div>
+              )}
 
               <Pager
                 page={page}

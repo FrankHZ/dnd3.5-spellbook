@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router";
+import type { LevelParam } from "~/api/spells";
 import {
   normalizeIds,
   parseIdList,
@@ -9,7 +10,7 @@ import {
 import { usePersistedState } from "~/state/persisted-state";
 
 export type BrowseQueryState = {
-  level: number | null; // 0-9
+  level: LevelParam | null; // 0-9
   classIds: number[];
   domainIds: number[];
   page: number;
@@ -18,7 +19,7 @@ export type BrowseQueryState = {
   rulebookIds: number[];
 
   // setters (URL)
-  setLevel: (next: number | null) => void;
+  setLevel: (next: LevelParam | null) => void;
   setClassIds: (next: number[]) => void;
   setDomainIds: (next: number[]) => void;
   setPage: (next: number) => void;
@@ -26,6 +27,25 @@ export type BrowseQueryState = {
   // useful flags
   hasValidSelection: boolean;
 };
+
+function sanitizePersistedLevel(x: unknown): LevelParam {
+  if (x === "all") return "all";
+  if (typeof x === "number" && Number.isInteger(x) && x >= 0 && x <= 9)
+    return x;
+  return "all";
+}
+
+function parseLevelParam(raw: string | null): LevelParam | null {
+  if (raw == null) return null;
+  const s = raw.trim();
+  if (s === "") return null;
+  if (s === "all") return "all";
+
+  const n = Number(s);
+  if (!Number.isFinite(n) || !Number.isInteger(n)) return null;
+  if (n < 0 || n > 9) return null;
+  return n;
+}
 
 export function useBrowseQueryState(): BrowseQueryState {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -38,19 +58,11 @@ export function useBrowseQueryState(): BrowseQueryState {
   const persistedBrowse = state.browseQuery;
   const persistedClassIds = normalizeIds(persistedBrowse.classIds ?? []);
   const persistedDomainIds = normalizeIds(persistedBrowse.domainIds ?? []);
-  const persistedLevelRaw = persistedBrowse.level ?? null;
-  const persistedLevel =
-    persistedLevelRaw != null &&
-    persistedLevelRaw >= 0 &&
-    persistedLevelRaw <= 9
-      ? persistedLevelRaw
-      : null;
+  const persistedLevel = sanitizePersistedLevel(persistedBrowse.level);
 
   // -------- parse URL --------
   const parsed = useMemo(() => {
-    const levelRaw = parseIntParam(searchParams.get("level"));
-    const level =
-      levelRaw != null && levelRaw >= 0 && levelRaw <= 9 ? levelRaw : null;
+    const level = parseLevelParam(searchParams.get("level"));
 
     const classIds = parseIdList(searchParams.get("classIds"));
     const domainIds = parseIdList(searchParams.get("domainIds"));
@@ -80,7 +92,7 @@ export function useBrowseQueryState(): BrowseQueryState {
       next.set("domainIds", persistedDomainIds.join(","));
       changed = true;
     }
-    if (!hasLevel && persistedLevel != null) {
+    if (!hasLevel) {
       next.set("level", String(persistedLevel));
       changed = true;
     }
@@ -120,11 +132,13 @@ export function useBrowseQueryState(): BrowseQueryState {
 
   // -------- setters (URL-driven) --------
   const setLevel = useCallback(
-    (nextLevel: number | null) => {
-      const sanitized =
-        nextLevel != null && nextLevel >= 0 && nextLevel <= 9
-          ? nextLevel
-          : null;
+    (nextLevel: LevelParam | null) => {
+      const sanitized: LevelParam | null =
+        nextLevel === "all"
+          ? "all"
+          : nextLevel != null && nextLevel >= 0 && nextLevel <= 9
+            ? nextLevel
+            : null;
 
       updateParams((sp) => {
         setOrDelete(sp, "level", sanitized == null ? null : String(sanitized));
@@ -133,7 +147,7 @@ export function useBrowseQueryState(): BrowseQueryState {
 
       setState((s) => ({
         ...s,
-        browseQuery: { ...s.browseQuery, level: sanitized },
+        browseQuery: { ...s.browseQuery, level: sanitized ?? "all" },
       }));
     },
     [updateParams, setState],

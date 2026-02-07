@@ -8,7 +8,11 @@ export const DEFAULT_STATE: PersistedState = {
   browseQuery: {
     classIds: [],
     domainIds: [],
-    level: null,
+    level: "all",
+  },
+  browsePrefs: {
+    cardView: "simple",
+    groupMode: "grouped",
   },
   uiPrefs: {
     lang: "en",
