@@ -6,7 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
     "start": "node dist/src/index.js",
     "db:generate": "prisma generate --schema ./prisma-rules-clean/schema.prisma && prisma generate --schema ./prisma-app/schema.prisma",
     "db:app:reset": "prisma migrate dev --name init",
@@ -50,6 +50,7 @@
     "prisma": "^7.3.0",
     "supertest": "^7.2.2",
     "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.16",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vite-tsconfig-paths": "^5.1.4",
