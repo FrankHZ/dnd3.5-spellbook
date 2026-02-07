@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/src/index.js",
+    "start": "node -r tsconfig-paths/register dist/src/index.js",
     "db:generate": "prisma generate --schema ./prisma-rules-clean/schema.prisma && prisma generate --schema ./prisma-app/schema.prisma",
     "db:app:reset": "prisma migrate dev --name init",
     "db:app:seed": "prisma db seed --config ./prisma-app/prisma.config.ts",
@@ -35,7 +35,8 @@
     "iconv-lite": "^0.7.2",
     "pino": "^10.3.0",
     "pino-http": "^11.0.0",
-    "sanitize-html": "^2.17.0"
+    "sanitize-html": "^2.17.0",
+    "tsconfig-paths": "^4.2.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
