@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { createContext, useContext, useMemo, useState } from "react";
 import type { PersistedState } from "~/storage/schema";
 import { loadState, saveState } from "~/storage/localStore";
 
@@ -23,11 +17,18 @@ export function PersistedStateProvider({
   children: React.ReactNode;
 }) {
   // CSR: safe to read localStorage synchronously
-  const [state, setState] = useState<PersistedState>(() => loadState());
+  const [state, _setState] = useState<PersistedState>(() => loadState());
 
-  useEffect(() => {
-    saveState(state);
-  }, [state]);
+  const setState: React.Dispatch<React.SetStateAction<PersistedState>> = (
+    action,
+  ) => {
+    _setState((prev) => {
+      const next =
+        typeof action === "function" ? (action as any)(prev) : action;
+      saveState(next); // ✅ sync write so api/http.ts reads the newest values
+      return next;
+    });
+  };
 
   const value = useMemo(() => ({ state, setState }), [state]);
 

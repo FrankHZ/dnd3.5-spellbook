@@ -22,7 +22,16 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: appStyles },
 ];
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      retry: 1,
+    },
+  },
+});
 
 function BootstrapBanner() {
   const { state } = usePersistedState();
