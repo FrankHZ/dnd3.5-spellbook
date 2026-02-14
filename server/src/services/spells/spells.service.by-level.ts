@@ -4,12 +4,12 @@ import {
   SpellItemView,
 } from "@dnd/contracts";
 import {
-  queryI18nMap,
   queryByClassAndDomainAllLevels,
   queryByClassAndDomainWithLevel,
   SpellRow,
-} from "./spells.repo";
+} from "./spells.repo.rules";
 import { mapSpellItem } from "./spells.mapper";
+import { queryI18nMap } from "./spells.repo.app";
 
 type HasLevel = { level: number };
 type SpellClassIndex = SpellRow["spellClassIndexes"][number];

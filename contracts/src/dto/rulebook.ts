@@ -1,5 +1,7 @@
 import { I18nNameOverlay } from "../i18n";
 
+export type RulebookId = number;
+
 export type Edition = {
   id: number;
   name: string;
@@ -9,7 +11,7 @@ export type Edition = {
 };
 
 export type RulebookMin = {
-  id: number;
+  id: RulebookId;
   abbr: string;
 };
 

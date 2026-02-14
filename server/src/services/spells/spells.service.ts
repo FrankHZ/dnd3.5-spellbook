@@ -7,15 +7,18 @@ import type {
 import { mapSpellItem, mapSpellDetail } from "./spells.mapper";
 import {
   fetchSpellsInOrder,
-  queryI18nMap,
-  queryIdsByI18nName,
   queryIdsByName,
   querySpellDetail,
-  querySpellI18nDetail,
   querySpellsByIds,
   SELECT_SPELL_LIST,
-} from "./spells.repo";
+} from "./spells.repo.rules";
 import { listByClassAndDomainLevel } from "./spells.service.by-level";
+import {
+  queryI18nMap,
+  queryIdsByI18nName,
+  queryI18nDetail,
+} from "./spells.repo.app";
+import { resolveSpellNames } from "./spells.service.resolve";
 
 export const spellsService = {
   async searchByName(input: {
@@ -85,7 +88,7 @@ export const spellsService = {
 
     const spellI18nPromise =
       input.i18n.lang != "en"
-        ? querySpellI18nDetail(input.id, input.i18n.lang, input.i18n.variant)
+        ? queryI18nDetail(input.id, input.i18n.lang, input.i18n.variant)
         : null;
 
     const [spell, spellI18n] = await Promise.all([
@@ -138,4 +141,5 @@ export const spellsService = {
       missingIds,
     };
   },
+  resolveSpellNames,
 };

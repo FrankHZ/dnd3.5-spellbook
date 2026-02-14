@@ -1,8 +1,6 @@
-import { appPrisma } from "~/lib/app-prisma-client";
+import { RulebookId } from "@dnd/contracts";
 import { rulesPrisma } from "../../lib/rules-prisma-client";
 import { Prisma } from "prisma-rules-clean/generated/client";
-import { Prisma as AppPrisma } from "prisma-app/generated/client";
-import { I18nContext, Lang } from "@dnd/contracts";
 
 export const SELECT_SPELL_MIN = {
   id: true,
@@ -123,32 +121,6 @@ export async function queryIdsByName(
       `,
   );
   const ids = idRows.map((r) => Number(r.id));
-  return ids;
-}
-
-export async function queryIdsByI18nName(
-  lang: Lang,
-  name: string,
-  rulebookIds: number[],
-  maxCandidates: number,
-) {
-  if (rulebookIds.length === 0) return [];
-  const qLower = name.toLowerCase();
-  const like = `%${qLower}%`;
-
-  const idRows = await appPrisma.$queryRaw<Array<{ spellId: number }>>(
-    Prisma.sql`
-        SELECT s.spellId
-        FROM I18nSpellText s
-        WHERE s.rulebookId IN (${Prisma.join(rulebookIds)})
-          AND LOWER(s.name) LIKE ${like}
-          AND s.lang = ${lang}
-        LIMIT ${maxCandidates}
-      `,
-  );
-
-  const ids = idRows.map((r) => Number(r.spellId));
-
   return ids;
 }
 
@@ -300,7 +272,7 @@ export async function querySpellDetail(id: number) {
   return s ? s : null;
 }
 
-export async function querySpellsByIds(ids: number[]) {
+export async function querySpellsByIds(ids: number[]): Promise<SpellRow[]> {
   if (ids.length === 0) return [];
 
   return rulesPrisma.spell.findMany({
@@ -309,70 +281,16 @@ export async function querySpellsByIds(ids: number[]) {
   });
 }
 
-export const SELECT_SPELL_I18N_MIN = {
-  spellId: true,
-  lang: true,
-  variant: true,
-  name: true,
-};
+export async function queryByExactNames(
+  names: string[],
+  rulebookIds: RulebookId[],
+): Promise<SpellRow<typeof SELECT_SPELL_MIN>[]> {
+  if (names.length === 0) return [];
 
-export const SELECT_SPELL_I18N_DETAIL = {
-  ...SELECT_SPELL_I18N_MIN,
-  descriptionHtml: true,
-  descriptionText: true,
-  sourceKey: true,
-};
-
-export async function querySpellI18nDetail(
-  id: number,
-  lang: "zh",
-  variant?: string,
-) {
-  const s = await appPrisma.i18nSpellText.findUnique({
-    where: {
-      spellId_lang_variant: {
-        spellId: id,
-        lang,
-        ...(variant ? { variant } : { variant: "chm" }),
-      },
-    },
-    select: SELECT_SPELL_I18N_DETAIL,
+  const spells = await rulesPrisma.spell.findMany({
+    where: { name: { in: names }, rulebook_id: { in: rulebookIds } },
+    select: SELECT_SPELL_MIN,
   });
 
-  return s ? s : null;
-}
-
-export async function queryI18nMap(spellIds: number[], i18n: I18nContext) {
-  const i18nMap = new Map<
-    number,
-    AppPrisma.I18nSpellTextGetPayload<{
-      select: typeof SELECT_SPELL_I18N_MIN;
-    }>
-  >();
-  if (i18n.lang != "en") {
-    const spellI18n = await querySpellI18nNamesByIds(
-      spellIds,
-      i18n.lang,
-      i18n.variant,
-    );
-    spellI18n.forEach((s) => i18nMap.set(s.spellId, s));
-  }
-  return i18nMap;
-}
-
-export async function querySpellI18nNamesByIds(
-  ids: number[],
-  lang: "zh",
-  variant?: string,
-) {
-  const s = await appPrisma.i18nSpellText.findMany({
-    where: {
-      spellId: { in: ids },
-      lang,
-      ...(variant ? { variant } : { variant: "chm" }),
-    },
-    select: SELECT_SPELL_I18N_MIN,
-  });
-
-  return s;
+  return spells;
 }

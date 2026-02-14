@@ -14,6 +14,7 @@ import type {
 } from "@dnd/contracts/dist/dto/spell";
 import { getI18nContext, hasCjk } from "~/utils/i18n";
 import { LevelMode } from "~/services/spells/spells.service.by-level";
+import { ResolveSpellNamesRequest } from "@dnd/contracts";
 
 export async function searchSpellsByName(
   req: Request,
@@ -190,7 +191,6 @@ export async function batchSpells(
   next: NextFunction,
 ) {
   try {
-    const { lang, variant } = req.i18n ?? { lang: "en" };
     const body = req.body as Partial<SpellBatchRequest>;
 
     if (!body || !Array.isArray(body.ids)) {
@@ -225,6 +225,80 @@ export async function batchSpells(
     const response = await spellsService.batch({
       ids,
       i18n: getI18nContext(req),
+    });
+
+    res.status(200).json(response);
+    return;
+  } catch (err) {
+    next(err);
+    return;
+  }
+}
+
+const MAX_RESOLVE_NAMES = 200;
+
+export async function resolveSpellNames(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const body = req.body as Partial<ResolveSpellNamesRequest> | undefined;
+
+    if (!body || !Array.isArray(body.names)) {
+      next(
+        new ApiError(
+          400,
+          "Invalid request",
+          "names must be an array of strings",
+        ),
+      );
+      return;
+    }
+
+    let rulebookIds = Array.isArray(body.rulebookIds) ? body.rulebookIds : [];
+
+    rulebookIds = rulebookIds
+      .map((x) => Number(x))
+      .filter((n) => Number.isInteger(n) && n > 0);
+
+    rulebookIds = Array.from(new Set(rulebookIds));
+
+    if (rulebookIds.length === 0) {
+      rulebookIds = await getDefaultRulebookIds();
+    }
+
+    const names = body.names.map((x) =>
+      typeof x === "string" ? x : String(x).trim(),
+    );
+
+    const nonEmptyCount = names.filter((s) => s.length > 0).length;
+    if (nonEmptyCount === 0) {
+      next(
+        new ApiError(
+          400,
+          "Invalid request",
+          "names must contain at least one non-empty string",
+        ),
+      );
+      return;
+    }
+
+    if (names.length > MAX_RESOLVE_NAMES) {
+      next(
+        new ApiError(
+          400,
+          "Invalid request",
+          `names must be <= ${MAX_RESOLVE_NAMES}`,
+        ),
+      );
+      return;
+    }
+
+    const response = await spellsService.resolveSpellNames({
+      names,
+      i18n: getI18nContext(req),
+      rulebookIds,
     });
 
     res.status(200).json(response);

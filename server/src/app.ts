@@ -6,8 +6,7 @@ import { notFoundMiddleware } from "./middlewares/notfound.middleware";
 import { errorMiddleware } from "./middlewares/error.middleware";
 import { rulebooksRouter } from "./routes/rulebooks.routes";
 import { classesRouter } from "./routes/classes.routes";
-import { pinoHttp } from "pino-http";
-import { logger } from "./logger";
+import { httpLogger } from "./logger";
 import { domainsRouter } from "./routes/domains.routes";
 import { i18nQuery } from "./middlewares/i18nQuery";
 import { metaRouter } from "./routes/meta.routes";
@@ -19,12 +18,7 @@ app.use(cors()); // ok for MVP; tighten later
 app.use(express.json());
 app.use(i18nQuery);
 
-app.use(
-  pinoHttp({
-    logger,
-    autoLogging: true,
-  }),
-);
+app.use(httpLogger);
 
 // Health
 app.get("/health", (_req, res) => {

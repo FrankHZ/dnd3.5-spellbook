@@ -3,8 +3,10 @@ import { Class } from "./class";
 import { Domain } from "./domain";
 import { RulebookMin } from "./rulebook";
 
+export type SpellID = number;
+
 export type SpellItem = {
-  id: number;
+  id: SpellID;
   slug: string;
   name: string;
 

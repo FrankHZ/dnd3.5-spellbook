@@ -11,7 +11,7 @@ import {
   SELECT_SPELL_I18N_DETAIL,
   SELECT_SPELL_I18N_MIN,
   SELECT_SPELL_LIST,
-} from "./spells.repo";
+} from "./spells.repo.rules";
 
 export function mapSpellItem(
   spell: RulesPrisma.SpellGetPayload<{ select: typeof SELECT_SPELL_LIST }>,
