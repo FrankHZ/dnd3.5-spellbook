@@ -132,6 +132,8 @@ type PreparedEntry = {
 };
 ```
 
+Prepared entries do not store level; grouping is derived dynamically from current class/domain selection.
+
 Prepared book:
 
 ```ts
@@ -180,7 +182,7 @@ Priority:
 2. Selected domains
 3. Fallback to lowest available
 
-Level clamped to 0–9.
+Level is computed for display grouping only and not persisted.
 
 ---
 
@@ -257,10 +259,14 @@ No auto-add during resolve.
 - No splitting on comma
 - Empty cells filtered
 - Duplicate spell names allowed
+  - Two identical names → two prepared entries.
 
 ---
 
 # 5. Deterministic Rulebook Priority
+
+In v3.0, rulebook priority is derived from descending rulebookId.
+This assumes higher IDs represent later or preferred sources.
 
 Ambiguous candidates sorted by:
 
