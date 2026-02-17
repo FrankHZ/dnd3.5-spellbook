@@ -10,7 +10,7 @@ import { SpellItemView } from "./spell";
 export type ResolveSpellNamesRequest = {
   names: string[];
   rulebookIds?: RulebookId[] | undefined;
-  lang: Lang;
+  lang?: Lang;
 };
 
 // ---------- Response ----------

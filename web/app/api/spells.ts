@@ -1,4 +1,6 @@
 import type {
+  ResolveSpellNamesRequest,
+  ResolveSpellNamesResponse,
   SpellBatchRequest,
   SpellBatchResponse,
   SpellByLevelResponse,
@@ -111,5 +113,55 @@ export async function getSpellsBatch(
     ids: normalized,
     items: normalized.map((id) => itemById.get(id)).filter(Boolean) as any,
     missingIds: Array.from(missing),
+  };
+}
+
+const MAX_NAMES_PER_RESOLVE = 500;
+
+export async function resolveSpellNames(
+  names: string[],
+  rulebookIds?: number[],
+  signal?: AbortSignal,
+): Promise<ResolveSpellNamesResponse> {
+  // Keep order; normalize values to strings
+  const normalizedNames = names.map((x) =>
+    typeof x === "string" ? x : String(x),
+  );
+
+  // If the request is empty, return empty response
+  if (normalizedNames.length === 0) {
+    return { results: [], conflictRulebooks: [] };
+  }
+
+  const chunks = chunk(normalizedNames, MAX_NAMES_PER_RESOLVE);
+
+  const results = await Promise.all(
+    chunks.map((c) =>
+      apiPost<ResolveSpellNamesResponse, ResolveSpellNamesRequest>(
+        "/api/spells/resolve",
+        {
+          names: c,
+          // only include if non-empty; empty lets backend apply default
+          ...(rulebookIds && rulebookIds.length > 0
+            ? { rulebookIds: rulebookIds }
+            : {}),
+        },
+        signal,
+      ),
+    ),
+  );
+
+  // Merge in original order, preserving per-chunk order
+  const mergedResults = results.flatMap((r) => r.results);
+
+  // conflictRulebooks = union
+  const conflict = new Set<number>();
+  for (const r of results) {
+    for (const id of r.conflictRulebooks ?? []) conflict.add(id);
+  }
+
+  return {
+    results: mergedResults,
+    conflictRulebooks: Array.from(conflict).sort((a, b) => a - b),
   };
 }

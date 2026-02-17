@@ -17,13 +17,13 @@ export function SpellCard({
   showDetails?: boolean;
   showActions?: boolean;
 }) {
-  const { toggleDefault, togglePrepared, isInDefault, isInPrepared } =
+  const { toggleDefault, addPrepared, isInDefault, isInPrepared } =
     useCollections();
 
   const { nameWithEn } = useAppI18n();
   const { metaName } = useMetaNames();
   const inFav = isInDefault(spell.id);
-  const inPrep = isInPrepared(spell.id);
+
   const { t } = useTranslation();
   return (
     <div className="p-3 hover:bg-muted/40">
@@ -104,12 +104,10 @@ export function SpellCard({
 
               <Button
                 size="sm"
-                variant={inPrep ? "default" : "outline"}
-                onClick={() => togglePrepared(spell.id)}
+                variant="outline"
+                onClick={() => addPrepared(spell.id)}
               >
-                {inPrep
-                  ? t("Prepared", { ns: "collections" })
-                  : t("Prepare", { ns: "collections" })}
+                {t("Prepare", { ns: "collections" })}
               </Button>
             </div>
           )}

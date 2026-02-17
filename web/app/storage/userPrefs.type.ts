@@ -19,7 +19,7 @@ export type BrowsePrefs = {
   groupMode: "flat" | "grouped";
 };
 
-export type PersistedStateV1 = {
+export type UserPrefsStateV1 = {
   storageVersion: 1;
   includePrestige: boolean;
   selectedRulebookIds: number[];
@@ -28,4 +28,4 @@ export type PersistedStateV1 = {
   uiPrefs: UiPrefs;
 };
 
-export type PersistedState = PersistedStateV1;
+export type UserPrefsState = UserPrefsStateV1;

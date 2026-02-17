@@ -5,7 +5,7 @@ import { useBootstrap } from "~/bootstrap/useBootstrap";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Separator } from "~/components/ui/separator";
 import { useMetaNames } from "~/i18n/useMetaNames";
-import { usePersistedState } from "~/state/persisted-state";
+import { useUserPrefs } from "~/state/user-prefs-state";
 
 type EditionGroup = {
   edition: Edition;
@@ -54,7 +54,7 @@ function getEditionCheckState(
 export default function RulebookSelector() {
   const { t } = useTranslation("settings");
   const { metaName } = useMetaNames();
-  const { state, setState } = usePersistedState();
+  const { state, setState } = useUserPrefs();
   const boot = useBootstrap(state.includePrestige);
 
   const rulebooks = boot.rulebooks.data?.items ?? [];

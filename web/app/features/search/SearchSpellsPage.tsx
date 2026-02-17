@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router";
 
 import { ApiError } from "~/api/http";
 import { searchSpellsByName } from "~/api/spells";
-import { usePersistedState } from "~/state/persisted-state";
+import { useUserPrefs } from "~/state/user-prefs-state";
 
 import Pager from "~/components/Pager";
 import { SpellCard } from "~/components/SpellCard";
@@ -15,7 +15,7 @@ import { isSearchQueryValid } from "./validation";
 import { PAGE_SIZE } from "../constants";
 
 export default function SearchSpellsPage() {
-  const { state } = usePersistedState();
+  const { state } = useUserPrefs();
   const rulebookIds = state.selectedRulebookIds;
   const { queryKey } = useAppI18n();
   const { t } = useTranslation("spell-search");

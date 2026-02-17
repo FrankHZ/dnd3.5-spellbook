@@ -13,10 +13,10 @@ export type Edition = {
 export type RulebookMin = {
   id: RulebookId;
   abbr: string;
+  name: string;
 };
 
 export type Rulebook = RulebookMin & {
-  name: string;
   slug: string;
   edition: Edition;
 };

@@ -92,7 +92,6 @@ export function MultiSelectPicker(props: {
     const next = new Set(selectedIds);
     if (next.has(id)) next.delete(id);
     else next.add(id);
-    console.log(id);
     onChange(Array.from(next));
   }
 

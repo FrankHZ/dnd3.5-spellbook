@@ -1,8 +1,8 @@
-import { usePersistedState } from "~/state/persisted-state";
+import { useUserPrefs } from "~/state/user-prefs-state";
 import type { CardViewMode, GroupMode } from "./BrowseOptionsToggle";
 
 export function useBrowsePrefs() {
-  const { state, setState } = usePersistedState();
+  const { state, setState } = useUserPrefs();
 
   const cardView = state.browsePrefs?.cardView ?? "simple";
   const groupMode = state.browsePrefs?.groupMode ?? "grouped";

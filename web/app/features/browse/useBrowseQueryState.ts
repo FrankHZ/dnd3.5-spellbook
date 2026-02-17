@@ -7,7 +7,7 @@ import {
   parseIntParam,
   setOrDelete,
 } from "~/lib/utils";
-import { usePersistedState } from "~/state/persisted-state";
+import { useUserPrefs } from "~/state/user-prefs-state";
 
 export type BrowseQueryState = {
   level: LevelParam | null; // 0-9
@@ -49,7 +49,7 @@ function parseLevelParam(raw: string | null): LevelParam | null {
 
 export function useBrowseQueryState(): BrowseQueryState {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { state, setState } = usePersistedState();
+  const { state, setState } = useUserPrefs();
 
   const hasClassIds = searchParams.has("classIds");
   const hasDomainIds = searchParams.has("domainIds");

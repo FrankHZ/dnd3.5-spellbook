@@ -6,12 +6,11 @@ import type {
 } from "@dnd/contracts";
 import { Prisma as RulesPrisma } from "DB_RULES/client";
 import { Prisma as AppPrisma } from "DB_APP/client";
+import { SELECT_SPELL_DETAIL, SELECT_SPELL_LIST } from "./spells.repo.rules";
 import {
-  SELECT_SPELL_DETAIL,
   SELECT_SPELL_I18N_DETAIL,
   SELECT_SPELL_I18N_MIN,
-  SELECT_SPELL_LIST,
-} from "./spells.repo.rules";
+} from "./spells.repo.app";
 
 export function mapSpellItem(
   spell: RulesPrisma.SpellGetPayload<{ select: typeof SELECT_SPELL_LIST }>,
@@ -71,6 +70,7 @@ export function mapSpellItem(
     rulebook: {
       id: spell.rulebook.id,
       abbr: spell.rulebook.abbr,
+      name: spell.rulebook.name,
     },
     school: spell.spellSchool
       ? {

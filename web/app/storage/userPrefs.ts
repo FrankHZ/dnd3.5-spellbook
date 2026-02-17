@@ -1,7 +1,7 @@
-import { LS_KEY } from "./keys";
-import { type PersistedState, STORAGE_VERSION } from "./schema";
+import { LS_KEY_PREFS } from "./keys";
+import { type UserPrefsState, STORAGE_VERSION } from "./userPrefs.type";
 
-export const DEFAULT_STATE: PersistedState = {
+export const DEFAULT_STATE: UserPrefsState = {
   storageVersion: STORAGE_VERSION,
   includePrestige: false,
   selectedRulebookIds: [4, 6],
@@ -20,9 +20,9 @@ export const DEFAULT_STATE: PersistedState = {
   },
 };
 
-export function loadState(): PersistedState {
+export function loadState(): UserPrefsState {
   try {
-    const raw = localStorage.getItem(LS_KEY);
+    const raw = localStorage.getItem(LS_KEY_PREFS);
     if (!raw) return DEFAULT_STATE;
     const parsed = JSON.parse(raw);
 
@@ -33,6 +33,6 @@ export function loadState(): PersistedState {
   }
 }
 
-export function saveState(state: PersistedState) {
-  localStorage.setItem(LS_KEY, JSON.stringify(state));
+export function saveState(state: UserPrefsState) {
+  localStorage.setItem(LS_KEY_PREFS, JSON.stringify(state));
 }

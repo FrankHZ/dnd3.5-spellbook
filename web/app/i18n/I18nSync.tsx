@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { usePersistedState } from "~/state/persisted-state";
+import { useUserPrefs } from "~/state/user-prefs-state";
 
 export function I18nSync() {
-  const { state } = usePersistedState();
+  const { state } = useUserPrefs();
   const { i18n } = useTranslation();
 
   const lang = state.uiPrefs.lang ?? "en";

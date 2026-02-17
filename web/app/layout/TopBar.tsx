@@ -5,9 +5,9 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { isSearchQueryValid } from "~/features/search/validation";
 import { useAppI18n } from "~/i18n/useAppI18n";
-import { usePersistedState } from "~/state/persisted-state";
+import { useUserPrefs } from "~/state/user-prefs-state";
 
-function TopBarSeacrch() {
+function TopBarSearch() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const q = params.get("q") || "";
@@ -56,7 +56,7 @@ function TopBarSeacrch() {
 }
 
 function LangToggle() {
-  const { state, setState } = usePersistedState();
+  const { state, setState } = useUserPrefs();
   const lang = state.uiPrefs.lang ?? "en";
 
   return (
@@ -94,7 +94,7 @@ export default function TopBar() {
           {t("D&D 3.5 Spellbook")}
         </NavLink>
 
-        <TopBarSeacrch />
+        <TopBarSearch />
         <nav className="flex gap-3 text-sm">
           <NavLink className="hover:underline" to="/browse">
             {t("Browse")}

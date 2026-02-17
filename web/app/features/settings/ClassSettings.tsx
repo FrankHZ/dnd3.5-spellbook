@@ -1,9 +1,9 @@
 import { useTranslation } from "react-i18next";
 import { Checkbox } from "~/components/ui/checkbox";
-import { usePersistedState } from "~/state/persisted-state";
+import { useUserPrefs } from "~/state/user-prefs-state";
 
 export default function ClassSettings() {
-  const { state, setState } = usePersistedState();
+  const { state, setState } = useUserPrefs();
   const { t } = useTranslation("settings");
   return (
     <div className="rounded-md border p-3 space-y-2">

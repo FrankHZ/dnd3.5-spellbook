@@ -9,10 +9,7 @@ import {
 } from "react-router";
 import appStyles from "~/app.css?url";
 import { useBootstrap } from "~/bootstrap/useBootstrap";
-import {
-  PersistedStateProvider,
-  usePersistedState,
-} from "~/state/persisted-state";
+import { UserPrefsProvider, useUserPrefs } from "~/state/user-prefs-state";
 import TopBar from "./layout/TopBar";
 import { CollectionsProvider } from "./state/collections-state";
 import "~/i18n/i18n";
@@ -34,7 +31,7 @@ const queryClient = new QueryClient({
 });
 
 function BootstrapBanner() {
-  const { state } = usePersistedState();
+  const { state } = useUserPrefs();
   const boot = useBootstrap(state.includePrestige);
 
   if (boot.isLoading) {
@@ -60,7 +57,7 @@ export default function App() {
       </head>
       <body className="bg-white text-gray-900">
         <QueryClientProvider client={queryClient}>
-          <PersistedStateProvider>
+          <UserPrefsProvider>
             <CollectionsProvider>
               <I18nSync />
               <div className="flex flex-col min-h-screen">
@@ -71,7 +68,7 @@ export default function App() {
                 </main>
               </div>
             </CollectionsProvider>
-          </PersistedStateProvider>
+          </UserPrefsProvider>
         </QueryClientProvider>
         <ScrollRestoration />
         <Scripts />

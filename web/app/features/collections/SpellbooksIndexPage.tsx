@@ -1,9 +1,10 @@
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { useCollections } from "~/state/collections-state";
 
 export default function SpellbooksIndexPage() {
   const { collections } = useCollections();
-
+  const { t } = useTranslation("collections");
   return (
     <div className="p-4 space-y-4 max-w-3xl mx-auto">
       <div className="space-y-1">
@@ -22,7 +23,11 @@ export default function SpellbooksIndexPage() {
           >
             <div className="font-medium">{b.name}</div>
             <div className="mt-1 text-sm text-muted-foreground">
-              {b.spellIds.length} spell(s)
+              {b.kind == "prepared"
+                ? t("{{entryCount}} entries.", { entryCount: b.entries.length })
+                : t("{{spellCount}} spells.", {
+                    spellCount: b.spellIds.length,
+                  })}
             </div>
           </Link>
         ))}

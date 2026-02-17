@@ -1,10 +1,10 @@
-import { usePersistedState } from "~/state/persisted-state";
+import { useUserPrefs } from "~/state/user-prefs-state";
 import ClassSettings from "~/features/settings/ClassSettings";
 import RulebookSelector from "~/features/settings/RulebookSelector";
 import { useTranslation } from "react-i18next";
 
 export default function SettingsPage() {
-  const { state } = usePersistedState();
+  const { state } = useUserPrefs();
   const { t } = useTranslation("settings");
 
   return (

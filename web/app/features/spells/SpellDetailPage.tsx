@@ -40,11 +40,10 @@ export default function SpellDetailPage() {
   const idNum = Number(id);
   const isValidId = Number.isInteger(idNum) && idNum > 0;
 
-  const { toggleDefault, togglePrepared, isInDefault, isInPrepared } =
+  const { toggleDefault, addPrepared, isInDefault, isInPrepared } =
     useCollections();
 
   const inFav = isInDefault(idNum);
-  const inPrepared = isInPrepared(idNum);
 
   const query = useQuery({
     queryKey: ["spellDetail", { idNum, ...queryKey }],
@@ -151,13 +150,8 @@ export default function SpellDetailPage() {
               />
             </Button>
 
-            <Button
-              variant={inPrepared ? "default" : "outline"}
-              onClick={() => togglePrepared(idNum)}
-            >
-              {inPrepared
-                ? t("Prepared", { ns: "collections" })
-                : t("Prepare", { ns: "collections" })}
+            <Button variant="outline" onClick={() => addPrepared(idNum)}>
+              {t("Prepare", { ns: "collections" })}
             </Button>
           </div>
         </div>

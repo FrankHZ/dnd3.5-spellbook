@@ -1,5 +1,5 @@
 import { useBootstrap } from "~/bootstrap/useBootstrap";
-import { usePersistedState } from "~/state/persisted-state";
+import { useUserPrefs } from "~/state/user-prefs-state";
 import {
   getDisplayName,
   getDisplayNameWithEn,
@@ -11,7 +11,7 @@ import {
 } from "./content";
 
 export function useAppI18n() {
-  const { state } = usePersistedState();
+  const { state } = useUserPrefs();
 
   const lang = (state.uiPrefs.lang ?? "en") as "en" | "zh";
   const variant = lang === "zh" ? state.uiPrefs.zhVariant : undefined;

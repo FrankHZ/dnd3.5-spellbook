@@ -1,4 +1,6 @@
+import type { ClassView, DomainView } from "@dnd/contracts";
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import {
   getClasses,
   getDomains,
@@ -7,10 +9,10 @@ import {
 } from "~/api/bootstrap";
 import { getMetaI18n } from "~/api/meta";
 import { useAppI18n } from "~/i18n/useAppI18n";
-import { usePersistedState } from "~/state/persisted-state";
+import { useUserPrefs } from "~/state/user-prefs-state";
 
 export function useBootstrap(includePrestige?: boolean) {
-  const { state } = usePersistedState();
+  const { state } = useUserPrefs();
   includePrestige = includePrestige ?? state.includePrestige;
   const { queryKey, lang } = useAppI18n();
   const rulebookKey = state.selectedRulebookIds.join(",");
@@ -55,11 +57,26 @@ export function useBootstrap(includePrestige?: boolean) {
     staleTime: 10 * 60 * 1000,
   });
 
+  // convenience
+  const classById = useMemo(() => {
+    const m = new Map<number, ClassView>();
+    for (const c of classes.data?.items ?? []) m.set(c.id, c);
+    return m;
+  }, [classes.data]);
+
+  const domainById = useMemo(() => {
+    const m = new Map<number, DomainView>();
+    for (const d of domains.data?.items ?? []) m.set(d.id, d);
+    return m;
+  }, [domains.data]);
+
   return {
     editions,
     rulebooks,
     classes,
+    classById,
     domains,
+    domainById,
     metaI18n,
     isLoading:
       editions.isLoading ||
