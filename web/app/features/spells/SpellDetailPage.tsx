@@ -40,10 +40,9 @@ export default function SpellDetailPage() {
   const idNum = Number(id);
   const isValidId = Number.isInteger(idNum) && idNum > 0;
 
-  const { toggleDefault, addPrepared, isInDefault, isInPrepared } =
-    useCollections();
+  const { spellbook, prepared } = useCollections();
 
-  const inFav = isInDefault(idNum);
+  const inFav = spellbook.isInDefault(idNum);
 
   const query = useQuery({
     queryKey: ["spellDetail", { idNum, ...queryKey }],
@@ -138,7 +137,7 @@ export default function SpellDetailPage() {
             <Button
               size="icon"
               variant="ghost"
-              onClick={() => toggleDefault(spell.id)}
+              onClick={() => spellbook.toggleDefault(spell.id)}
               aria-label={inFav ? "Remove from favorites" : "Add to favorites"}
             >
               <Heart
@@ -150,7 +149,7 @@ export default function SpellDetailPage() {
               />
             </Button>
 
-            <Button variant="outline" onClick={() => addPrepared(idNum)}>
+            <Button variant="outline" onClick={() => prepared.add(idNum)}>
               {t("Prepare", { ns: "collections" })}
             </Button>
           </div>

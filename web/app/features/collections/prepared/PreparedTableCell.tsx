@@ -22,16 +22,17 @@ import {
 } from "~/components/ui/hover-card";
 
 export function PreparedTableCell({
+  bookId,
   entry,
   spell,
   mode,
 }: {
+  bookId: string;
   entry: PreparedEntry;
   spell: SpellItemView;
   mode: "normal" | "edit";
 }) {
-  const { setPreparedEntryUsed, removePreparedEntry, setPreparedEntryNotes } =
-    useCollections();
+  const { preparedBook } = useCollections();
   const { name } = useAppI18n();
 
   const spellName = name(spell);
@@ -46,16 +47,22 @@ export function PreparedTableCell({
   };
 
   const saveNote = () => {
-    setPreparedEntryNotes(entry.entryId, draftNote);
+    preparedBook.setEntry(bookId, entry.entryId, { notes: draftNote });
     setNoteOpen(false);
   };
 
-  const bg = entry.used
-    ? "bg-red-200/80 hover:bg-red-200"
-    : "bg-emerald-50 hover:bg-emerald-100";
+  const bg =
+    entry.state === "used"
+      ? "bg-red-200/80 hover:bg-red-200"
+      : entry.state === "reserved"
+        ? "bg-amber-100 hover:bg-amber-200"
+        : "bg-emerald-50 hover:bg-emerald-100";
 
   const onToggle = () => {
-    if (mode == "normal") setPreparedEntryUsed(entry.entryId, !entry.used);
+    if (mode == "normal")
+      preparedBook.setEntry(bookId, entry.entryId, {
+        state: entry.state === "used" ? "ok" : "used",
+      });
   };
 
   return (
@@ -80,7 +87,7 @@ export function PreparedTableCell({
         <div
           className={cn(
             "h-4 w-4 shrink-0 rounded border",
-            entry.used
+            entry.state === "used"
               ? "bg-red-600 border-red-700"
               : "bg-white border-slate-300",
           )}
@@ -186,7 +193,7 @@ export function PreparedTableCell({
           className="shrink-0 text-slate-600 hover:text-red-700 cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
-            removePreparedEntry(entry.entryId);
+            preparedBook.removeEntry(bookId, entry.entryId);
           }}
           title="Remove"
         >

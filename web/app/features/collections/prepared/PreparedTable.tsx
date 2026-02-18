@@ -5,10 +5,12 @@ import { PreparedTableCell } from "./PreparedTableCell";
 export type PreparedViewMode = "normal" | "edit";
 
 export function PreparedTable({
+  bookId,
   columns,
   byId,
   mode,
 }: {
+  bookId: string;
   columns: PreparedEntry[][];
   byId: Map<number, SpellItemView>;
   mode: PreparedViewMode;
@@ -38,7 +40,12 @@ export function PreparedTable({
                     if (!sp) return null;
                     return (
                       <div key={e.entryId} className="border-b">
-                        <PreparedTableCell entry={e} spell={sp} mode={mode} />
+                        <PreparedTableCell
+                          bookId={bookId}
+                          entry={e}
+                          spell={sp}
+                          mode={mode}
+                        />
                       </div>
                     );
                   })

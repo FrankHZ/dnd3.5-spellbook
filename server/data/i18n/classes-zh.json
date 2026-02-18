@@ -3,7 +3,7 @@
   { "id": 2, "name": "Cleric", "zh": "牧师" },
   { "id": 3, "name": "Bard", "zh": "吟游诗人" },
   { "id": 4, "name": "Sorcerer", "zh": "术士" },
-  { "id": 5, "name": "Ranger", "zh": "游侠" },
+  { "id": 5, "name": "Ranger", "zh": "巡林客" },
   { "id": 6, "name": "Druid", "zh": "德鲁伊" },
   { "id": 7, "name": "Paladin", "zh": "圣武士" },
 

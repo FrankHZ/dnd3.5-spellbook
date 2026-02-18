@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getSpellsBatch } from "~/api/spells";
 import { useAppI18n } from "~/i18n/useAppI18n";
 import { useCollections } from "~/state/collections-state";
-import type { PreparedBook, PreparedEntry } from "~/storage/collections.type";
+import type { PreparedBook } from "~/storage/collections.type";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { Button } from "~/components/ui/button";
 import { BulkPasteDialog } from "./BulkPasteDialog";
@@ -18,98 +18,44 @@ import {
 } from "./PreparedClassSidebar";
 import { useMetaNames } from "~/i18n/useMetaNames";
 import { useBootstrap } from "~/bootstrap/useBootstrap";
-import type { SpellItemView } from "@dnd/contracts";
+import {
+  buildPreparedColumns,
+  getPreparedSpellIds,
+} from "./prepared-derivation";
 
 type ViewMode = "normal" | "edit";
 
-function dedupeIds(entries: PreparedEntry[]): number[] {
-  const set = new Set<number>();
-  for (const e of entries) set.add(e.spellId);
-  return Array.from(set);
-}
-
-function getLowestLevel(
-  spell: SpellItemView,
-  selectedClassIds: number[],
-  selectedDomainIds: number[],
-): number {
-  const selectedClassSet = new Set(selectedClassIds);
-  const selectedDomainSet = new Set(selectedDomainIds);
-
-  const clampLevel = (m: number) => (m >= 0 && m <= 9 ? m : 0);
-
-  const selectedClassLvls: number[] = [];
-  for (const cl of spell.classLevels ?? []) {
-    if (selectedClassSet.has(cl.id) && typeof cl.level === "number") {
-      selectedClassLvls.push(cl.level);
-    }
-  }
-  if (selectedClassLvls.length > 0) {
-    return clampLevel(Math.min(...selectedClassLvls));
-  }
-
-  const selectedDomainLvls: number[] = [];
-  for (const dl of spell.domainLevels ?? []) {
-    if (selectedDomainSet.has(dl.id) && typeof dl.level === "number") {
-      selectedDomainLvls.push(dl.level);
-    }
-  }
-  if (selectedDomainLvls.length > 0) {
-    return clampLevel(Math.min(...selectedDomainLvls));
-  }
-
-  // fallback: lowest possible level across all available sources
-  const nums: number[] = [];
-
-  for (const cl of spell.classLevels ?? []) {
-    if (typeof cl.level === "number") nums.push(cl.level);
-  }
-  for (const dl of spell.domainLevels ?? []) {
-    if (typeof dl.level === "number") nums.push(dl.level);
-  }
-  if (spell.corrupt?.level != null && typeof spell.corrupt.level === "number") {
-    nums.push(spell.corrupt.level);
-  }
-
-  if (nums.length === 0) return 0;
-  return clampLevel(Math.min(...nums));
-}
-
 export function PreparedBookDetail({ book }: { book: PreparedBook }) {
   const { queryKey } = useAppI18n();
-  const {
-    resetPreparedUsed,
-    clearPrepared,
-    setPreparedSelectedClassIds,
-    setPreparedSelectedDomainIds,
-  } = useCollections();
+  const { preparedBook } = useCollections();
   const [mode, setMode] = useState<ViewMode>("normal");
 
   const { metaNameWithEn } = useMetaNames();
   const { classById, domainById } = useBootstrap();
-  const selectedClassIds = book.selectedClassIds ?? [];
-  const selectedDomainIds = book.selectedDomainIds ?? [];
+  const { selectedClassIds, selectedDomainIds } = preparedBook.getPrefs(book.id);
 
   const onAddSelected = ({ type, id }: { type: OptionType; id: number }) => {
     if (type === "class") {
-      if (!book.selectedClassIds.includes(id)) {
-        setPreparedSelectedClassIds([...book.selectedClassIds, id]);
+      if (!selectedClassIds.includes(id)) {
+        preparedBook.setSelectedClassIds(book.id, [...selectedClassIds, id]);
       }
     } else {
-      if (!book.selectedDomainIds.includes(id)) {
-        setPreparedSelectedDomainIds([...book.selectedDomainIds, id]);
+      if (!selectedDomainIds.includes(id)) {
+        preparedBook.setSelectedDomainIds(book.id, [...selectedDomainIds, id]);
       }
     }
   };
 
   const onRemoveSelected = ({ type, id }: { type: OptionType; id: number }) => {
     if (type === "class") {
-      setPreparedSelectedClassIds(
-        book.selectedClassIds.filter((x) => x !== id),
+      preparedBook.setSelectedClassIds(
+        book.id,
+        selectedClassIds.filter((x) => x !== id),
       );
     } else {
-      setPreparedSelectedDomainIds(
-        book.selectedDomainIds.filter((x) => x !== id),
+      preparedBook.setSelectedDomainIds(
+        book.id,
+        selectedDomainIds.filter((x) => x !== id),
       );
     }
   };
@@ -130,7 +76,10 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
     })) satisfies DomainOption[];
   }, [selectedDomainIds, metaNameWithEn]);
 
-  const spellIds = useMemo(() => dedupeIds(book.entries), [book.entries]);
+  const spellIds = useMemo(
+    () => getPreparedSpellIds(book.entries),
+    [book.entries],
+  );
   const batchQuery = useQuery({
     queryKey: [
       "prepared-batch",
@@ -143,17 +92,16 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
   const spells = batchQuery.data?.items ?? [];
   const byId = useMemo(() => new Map(spells.map((s) => [s.id, s])), [spells]);
 
-  const columns = useMemo(() => {
-    const cols: PreparedEntry[][] = Array.from({ length: 10 }, () => []);
-    for (const e of book.entries) {
-      const sp = byId.get(e.spellId);
-      const lvl = sp
-        ? getLowestLevel(sp, selectedClassIds, selectedDomainIds)
-        : 0;
-      cols[lvl].push(e);
-    }
-    return cols;
-  }, [book.entries, byId, selectedClassIds, selectedDomainIds]);
+  const columns = useMemo(
+    () =>
+      buildPreparedColumns({
+        entries: book.entries,
+        spellsById: byId,
+        selectedClassIds,
+        selectedDomainIds,
+      }),
+    [book.entries, byId, selectedClassIds, selectedDomainIds],
+  );
 
   const candidates = useMemo((): Candidate[] => {
     const selectedClassSet = new Set(selectedClassIds);
@@ -243,7 +191,7 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
         </div>
 
         <div className="flex items-center gap-3">
-          <BulkPasteDialog />
+          <BulkPasteDialog bookId={book.id} />
 
           <ToggleGroup
             size="sm"
@@ -265,7 +213,7 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => resetPreparedUsed()}
+            onClick={() => preparedBook.resetUsed(book.id)}
             disabled={book.entries.length === 0}
           >
             Reset used
@@ -273,7 +221,7 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
           <Button
             size="sm"
             variant="destructive"
-            onClick={() => clearPrepared()}
+            onClick={() => preparedBook.clear(book.id)}
             disabled={book.entries.length === 0}
           >
             Clear
@@ -310,7 +258,12 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
                   </div>
                 </div>
               )}
-              <PreparedTable columns={columns} byId={byId} mode={mode} />
+              <PreparedTable
+                bookId={book.id}
+                columns={columns}
+                byId={byId}
+                mode={mode}
+              />
             </>
           )}
         </div>

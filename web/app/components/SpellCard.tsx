@@ -17,12 +17,11 @@ export function SpellCard({
   showDetails?: boolean;
   showActions?: boolean;
 }) {
-  const { toggleDefault, addPrepared, isInDefault, isInPrepared } =
-    useCollections();
+  const { spellbook, prepared } = useCollections();
 
   const { nameWithEn } = useAppI18n();
   const { metaName } = useMetaNames();
-  const inFav = isInDefault(spell.id);
+  const inFav = spellbook.isInDefault(spell.id);
 
   const { t } = useTranslation();
   return (
@@ -88,7 +87,7 @@ export function SpellCard({
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={() => toggleDefault(spell.id)}
+                onClick={() => spellbook.toggleDefault(spell.id)}
                 aria-label={
                   inFav ? "Remove from favorites" : "Add to favorites"
                 }
@@ -105,7 +104,7 @@ export function SpellCard({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => addPrepared(spell.id)}
+                onClick={() => prepared.add(spell.id)}
               >
                 {t("Prepare", { ns: "collections" })}
               </Button>

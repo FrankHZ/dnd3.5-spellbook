@@ -22,44 +22,28 @@ import { useUserPrefs } from "~/state/user-prefs-state";
 import type { ResolveSpellNamesResponse } from "@dnd/contracts";
 import { useMetaNames } from "~/i18n/useMetaNames";
 import { Link } from "react-router";
+import {
+  collectSelectedSpellIds,
+  countAddableRows,
+  mapResolvedRows,
+  parseTsvNames,
+  setAmbiguousPickedId,
+  summarizeRows,
+  type ResolvedRow,
+} from "./prepared-import-model";
 
 type BulkPasteDialogProps = {
+  bookId: string;
   triggerLabel?: string;
   className?: string;
 };
 
-type CandidateItem = {
-  id: number;
-  name: string;
-  rulebookId: number;
-  rulebookName: string;
-};
-
-type ResolvedRow =
-  | { key: string; input: string; status: "not_found" }
-  | { key: string; input: string; status: "resolved"; spellId: number }
-  | {
-      key: string;
-      input: string;
-      status: "ambiguous";
-      candidates: CandidateItem[];
-      pickedId: number; // always set (default pick)
-      defaultPickedId: number;
-    };
-
-function parseTsvNames(raw: string): string[] {
-  return raw
-    .replace(/\r\n/g, "\n")
-    .split(/[\t\n]/g)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
-}
-
 export function BulkPasteDialog({
+  bookId,
   triggerLabel = "Bulk Paste",
   className,
 }: BulkPasteDialogProps) {
-  const { addPrepared, clearPrepared } = useCollections();
+  const { preparedBook } = useCollections();
   const { queryKey } = useAppI18n();
   const { state } = useUserPrefs();
   const rulebookIds = state.selectedRulebookIds ?? [];
@@ -90,48 +74,12 @@ export function BulkPasteDialog({
       // if you prefer: setRows(null);
     },
     onSuccess: (data) => {
-      // Build rows in input order (backend should already preserve order)
-      const nextRows: ResolvedRow[] = data.results.map((r, idx) => {
-        const key = `${idx}-${r.input}`; // stable enough for this dialog session
-
-        if (r.status === "resolved") {
-          return {
-            key,
-            input: r.input,
-            status: "resolved",
-            spellId: r.spellId,
-          };
-        }
-
-        if (r.status === "not_found") {
-          return { key, input: r.input, status: "not_found" };
-        }
-
-        // ambiguous: default pick = first candidate (backend order)
-        const candidates: CandidateItem[] = r.candidates.map((c) => ({
-          id: c.id,
-          name: name(c),
-          rulebookId: c.rulebook.id,
-          rulebookName: metaName("rulebooks", c.rulebook),
-        }));
-
-        candidates.sort(
-          (a, b) => b.rulebookId - a.rulebookId || b.id - a.id, // stable fallback
-        );
-
-        const defaultPickedId = candidates[0]?.id ?? 0;
-
-        return {
-          key,
-          input: r.input,
-          status: "ambiguous",
-          candidates,
-          pickedId: defaultPickedId,
-          defaultPickedId,
-        };
-      });
-
-      setRows(nextRows);
+      setRows(
+        mapResolvedRows(data, {
+          getCandidateName: (c) => name(c),
+          getRulebookName: (rb) => metaName("rulebooks", rb),
+        }),
+      );
     },
     onError: (e: any) => {
       setError(e?.message ?? "Failed to resolve names");
@@ -140,18 +88,10 @@ export function BulkPasteDialog({
 
   const canResolve = names.length > 0 && !mutation.isPending;
 
-  const addableCount = useMemo(() => {
-    if (!rows) return 0;
-    let n = 0;
-    for (const r of rows) {
-      if (r.status === "resolved") n += 1;
-      if (r.status === "ambiguous" && r.pickedId > 0) n += 1;
-    }
-    return n;
-  }, [rows]);
+  const addableCount = useMemo(() => countAddableRows(rows), [rows]);
 
   function onClearPrepared() {
-    clearPrepared();
+    preparedBook.clear(bookId);
   }
 
   function onClearInput() {
@@ -168,16 +108,11 @@ export function BulkPasteDialog({
   }
 
   function onAddSelected() {
-    if (!rows) return;
-
-    const ids: number[] = [];
-    for (const r of rows) {
-      if (r.status === "resolved") ids.push(r.spellId);
-      else if (r.status === "ambiguous" && r.pickedId > 0) ids.push(r.pickedId);
-    }
+    const ids = collectSelectedSpellIds(rows);
+    if (ids.length === 0) return;
 
     // incremental add (duplicates allowed)
-    for (const id of ids) addPrepared(id);
+    for (const id of ids) preparedBook.add(bookId, id);
   }
 
   function onClose() {
@@ -186,27 +121,7 @@ export function BulkPasteDialog({
     mutation.reset();
   }
 
-  const summary = useMemo(() => {
-    if (!rows) {
-      return {
-        resolved: 0,
-        conflicts: 0,
-        notFound: 0,
-      };
-    }
-
-    let resolved = 0;
-    let conflicts = 0;
-    let notFound = 0;
-
-    for (const r of rows) {
-      if (r.status === "resolved") resolved += 1;
-      else if (r.status === "ambiguous") conflicts += 1;
-      else if (r.status === "not_found") notFound += 1;
-    }
-
-    return { resolved, conflicts, notFound };
-  }, [rows]);
+  const summary = useMemo(() => summarizeRows(rows), [rows]);
 
   return (
     <Dialog open={open} onOpenChange={(v) => (v ? setOpen(true) : onClose())}>
@@ -323,15 +238,13 @@ export function BulkPasteDialog({
                                       size="sm"
                                       variant={picked ? "secondary" : "outline"}
                                       onClick={() => {
-                                        setRows((prev) => {
-                                          if (!prev) return prev;
-                                          return prev.map((x) => {
-                                            if (x.key !== row.key) return x;
-                                            if (x.status !== "ambiguous")
-                                              return x;
-                                            return { ...x, pickedId: c.id };
-                                          });
-                                        });
+                                        setRows((prev) =>
+                                          setAmbiguousPickedId(
+                                            prev,
+                                            row.key,
+                                            c.id,
+                                          ),
+                                        );
                                       }}
                                     >
                                       {picked ? "Picked" : "Pick"}

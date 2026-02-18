@@ -3,10 +3,12 @@ import {
   type CollectionsState,
   type SpellBook,
 } from "./collections.type";
+import { getActivePreparedBook } from "./collections.selectors";
 import { DEFAULT_BOOK_ID, LS_KEY_COLLECTIONS, PREPARED_BOOK_ID } from "./keys";
 
 export const defaultCollectionsState: CollectionsState = {
   version: 2,
+  activePreparedBookId: PREPARED_BOOK_ID,
   books: [
     { id: DEFAULT_BOOK_ID, kind: "spellbook", name: "Favorite", spellIds: [] },
     {
@@ -53,12 +55,27 @@ function ensureDefaultBooks(state: CollectionsState): CollectionsState {
       selectedDomainIds: [],
     });
   }
-  return { ...state, books: nextBooks };
+
+  const nextState = { ...state, books: nextBooks };
+  const activePrepared = getActivePreparedBook(nextState);
+
+  return {
+    ...nextState,
+    activePreparedBookId: activePrepared?.id ?? PREPARED_BOOK_ID,
+  };
 }
 
 export function loadCollections(): CollectionsState {
   const parsed = safeParse(localStorage.getItem(LS_KEY_COLLECTIONS));
-  return ensureDefaultBooks(parsed ?? defaultCollectionsState);
+  return ensureDefaultBooks(
+    parsed
+      ? {
+          ...parsed,
+          activePreparedBookId:
+            parsed.activePreparedBookId ?? defaultCollectionsState.activePreparedBookId,
+        }
+      : defaultCollectionsState,
+  );
 }
 
 export function saveCollections(state: CollectionsState) {
@@ -78,7 +95,7 @@ export function getBookSpellIds(book: SpellBook): number[] {
 
 export function isInBook(book: SpellBook, spellId: number) {
   if (book.kind === "prepared") {
-    return book.entries.some((e) => e.spellId == spellId);
+    return book.entries.some((e) => e.spellId === spellId);
   }
   return book.spellIds.includes(spellId);
 }
