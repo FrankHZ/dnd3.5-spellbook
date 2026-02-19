@@ -9,5 +9,6 @@
     "spellbooks",
     "Subschool",
     "subschools"
-  ]
+  ],
+  "markdown.validate.enabled": true
 }

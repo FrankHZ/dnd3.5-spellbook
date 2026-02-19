@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Copy } from "lucide-react";
 
 import { getSpellsBatch } from "~/api/spells";
 import { useAppI18n } from "~/i18n/useAppI18n";
@@ -7,7 +8,9 @@ import { useCollections } from "~/state/collections-state";
 import type { PreparedBook } from "~/storage/collections.type";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { Button } from "~/components/ui/button";
+import { ButtonGroup } from "~/components/ui/button-group";
 import { BulkPasteDialog } from "./BulkPasteDialog";
+import { PreparedCopyDialog } from "./PreparedCopyDialog";
 import { PreparedTable } from "./PreparedTable";
 import {
   PreparedClassAndDomainSidebar,
@@ -22,13 +25,15 @@ import {
   buildPreparedColumns,
   getPreparedSpellIds,
 } from "./prepared-derivation";
+import { buildSimplePreparedTsv } from "./prepared-copy";
 
 type ViewMode = "normal" | "edit";
 
 export function PreparedBookDetail({ book }: { book: PreparedBook }) {
-  const { queryKey } = useAppI18n();
+  const { queryKey, name } = useAppI18n();
   const { preparedBook } = useCollections();
   const [mode, setMode] = useState<ViewMode>("normal");
+  const [copyStatus, setCopyStatus] = useState<string | null>(null);
 
   const { metaNameWithEn } = useMetaNames();
   const { classById, domainById } = useBootstrap();
@@ -185,6 +190,24 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
     metaNameWithEn,
   ]);
 
+  const onCopySimple = async () => {
+    try {
+      const tsv = buildSimplePreparedTsv({
+        columns,
+        byId,
+        getVisibleName: name,
+      });
+      if (!navigator.clipboard?.writeText) {
+        throw new Error("Clipboard API unavailable");
+      }
+      await navigator.clipboard.writeText(tsv);
+      const lines = tsv.length === 0 ? 0 : tsv.split("\n").length;
+      setCopyStatus(`Copied ${lines} row(s) as simple TSV.`);
+    } catch {
+      setCopyStatus("Copy failed. Browser clipboard permission may be blocked.");
+    }
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3">
@@ -194,6 +217,26 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
 
         <div className="flex items-center gap-3">
           <BulkPasteDialog bookId={book.id} />
+          <ButtonGroup>
+            <Button
+              size="icon-sm"
+              variant="outline"
+              onClick={onCopySimple}
+              disabled={book.entries.length === 0}
+              title="Copy Table"
+              aria-label="Copy table"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+            <PreparedCopyDialog
+              entries={book.entries}
+              columns={columns}
+              byId={byId}
+              selectedClassIds={selectedClassIds}
+              selectedDomainIds={selectedDomainIds}
+              getVisibleName={name}
+            />
+          </ButtonGroup>
           <ToggleGroup
             size="sm"
             type="single"
@@ -229,6 +272,9 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
           </Button>
         </div>
       </div>
+      {copyStatus && (
+        <div className="rounded-md border px-3 py-2 text-sm">{copyStatus}</div>
+      )}
       <div className="flex gap-3">
         <PreparedClassAndDomainSidebar
           selectedClasses={selectedClasses}
