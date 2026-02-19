@@ -32,7 +32,9 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
 
   const { metaNameWithEn } = useMetaNames();
   const { classById, domainById } = useBootstrap();
-  const { selectedClassIds, selectedDomainIds } = preparedBook.getPrefs(book.id);
+  const { selectedClassIds, selectedDomainIds } = preparedBook.getPrefs(
+    book.id,
+  );
 
   const onAddSelected = ({ type, id }: { type: OptionType; id: number }) => {
     if (type === "class") {
@@ -192,7 +194,6 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
 
         <div className="flex items-center gap-3">
           <BulkPasteDialog bookId={book.id} />
-
           <ToggleGroup
             size="sm"
             type="single"

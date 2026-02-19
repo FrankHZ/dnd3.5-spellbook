@@ -14,6 +14,7 @@ import TopBar from "./layout/TopBar";
 import { CollectionsProvider } from "./state/collections-state";
 import "~/i18n/i18n";
 import { I18nSync } from "./i18n/I18nSync";
+import { TooltipProvider } from "./components/ui/tooltip";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: appStyles },
@@ -56,22 +57,24 @@ export default function App() {
         <Links />
       </head>
       <body className="bg-white text-gray-900">
-        <QueryClientProvider client={queryClient}>
-          <UserPrefsProvider>
-            <CollectionsProvider>
-              <I18nSync />
-              <div className="flex flex-col min-h-screen">
-                <TopBar />
-                <BootstrapBanner />
-                <main className="flex-1">
-                  <Outlet />
-                </main>
-              </div>
-            </CollectionsProvider>
-          </UserPrefsProvider>
-        </QueryClientProvider>
-        <ScrollRestoration />
-        <Scripts />
+        <TooltipProvider>
+          <QueryClientProvider client={queryClient}>
+            <UserPrefsProvider>
+              <CollectionsProvider>
+                <I18nSync />
+                <div className="flex flex-col min-h-screen">
+                  <TopBar />
+                  <BootstrapBanner />
+                  <main className="flex-1">
+                    <Outlet />
+                  </main>
+                </div>
+              </CollectionsProvider>
+            </UserPrefsProvider>
+          </QueryClientProvider>
+          <ScrollRestoration />
+          <Scripts />
+        </TooltipProvider>
       </body>
     </html>
   );

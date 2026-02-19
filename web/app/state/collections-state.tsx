@@ -48,6 +48,14 @@ type Ctx = {
 
   preparedBook: {
     add: (bookId: string, spellId: number, opts?: AddPreparedOptions) => string;
+    replace: (
+      bookId: string,
+      next: {
+        entries: PreparedEntry[];
+        selectedClassIds: number[];
+        selectedDomainIds: number[];
+      },
+    ) => void;
     removeEntry: (bookId: string, entryId: string) => void;
     removeAllBySpellId: (bookId: string, spellId: number) => void;
     clear: (bookId: string) => void;
@@ -98,6 +106,19 @@ export function CollectionsProvider({
         });
 
         return entryId;
+      },
+      replace: (bookId, next) => {
+        setCollections((draft) => {
+          const b = getPreparedBookById(draft, bookId);
+          if (!b) return;
+          b.entries = [...next.entries];
+          b.selectedClassIds = Array.from(
+            new Set(next.selectedClassIds.filter((n) => Number.isInteger(n) && n > 0)),
+          );
+          b.selectedDomainIds = Array.from(
+            new Set(next.selectedDomainIds.filter((n) => Number.isInteger(n) && n > 0)),
+          );
+        });
       },
       removeEntry: (bookId, entryId) => {
         setCollections((draft) => {
