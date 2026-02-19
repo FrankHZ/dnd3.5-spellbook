@@ -1,25 +1,24 @@
 import { Link } from "react-router";
-import { ExternalLink, Pencil, StickyNote, Trash2 } from "lucide-react";
+import {
+  ExternalLink,
+  Lock,
+  LockOpen,
+  Sparkles,
+  StickyNote,
+  Trash2,
+} from "lucide-react";
 import type { SpellItemView } from "@dnd/contracts";
 import type { PreparedEntry } from "~/storage/collections.type";
 import { useCollections } from "~/state/collections-state";
 import { useAppI18n } from "~/i18n/useAppI18n";
 import { cn } from "~/lib/utils";
-import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/components/ui/dialog";
-import { Button } from "~/components/ui/button";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "~/components/ui/hover-card";
+import { PreparedEntryEditDialog } from "./PreparedEntryEditDialog";
+import { summarizePreparedEntry } from "./prepared-entry-summary";
 
 export function PreparedTableCell({
   bookId,
@@ -36,20 +35,13 @@ export function PreparedTableCell({
   const { name } = useAppI18n();
 
   const spellName = name(spell);
-  const hasNote = !!entry.notes?.trim();
-
-  const [noteOpen, setNoteOpen] = useState(false);
-  const [draftNote, setDraftNote] = useState(entry.notes ?? "");
-
-  const openNote = () => {
-    setDraftNote(entry.notes ?? "");
-    setNoteOpen(true);
-  };
-
-  const saveNote = () => {
-    preparedBook.setEntry(bookId, entry.entryId, { notes: draftNote });
-    setNoteOpen(false);
-  };
+  const summary = summarizePreparedEntry(entry, spellName);
+  const hasNote = summary.hasNotes;
+  const hasMetamagic = summary.hasMetamagic;
+  const hasLevelOverride = summary.hasLevelOverride;
+  const hasDisplayNameOverride = summary.hasDisplayNameOverride;
+  const hasExtraInfo =
+    hasDisplayNameOverride || hasMetamagic || hasLevelOverride || hasNote;
 
   const bg =
     entry.state === "used"
@@ -59,7 +51,7 @@ export function PreparedTableCell({
         : "bg-emerald-50 hover:bg-emerald-100";
 
   const onToggle = () => {
-    if (mode == "normal")
+    if (mode == "normal" && entry.state !== "reserved")
       preparedBook.setEntry(bookId, entry.entryId, {
         state: entry.state === "used" ? "ok" : "used",
       });
@@ -80,10 +72,10 @@ export function PreparedTableCell({
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") onToggle();
       }}
-      title={spellName}
+      title={summary.effectiveDisplayName}
     >
       {/* Bigger used indicator */}
-      {mode === "normal" && (
+      {mode === "normal" && entry.state != "reserved" && (
         <div
           className={cn(
             "h-4 w-4 shrink-0 rounded border",
@@ -94,32 +86,10 @@ export function PreparedTableCell({
         />
       )}
 
-      {/* Spell name text (NOT a link) */}
-      <div className="min-w-0 flex-1 truncate font-medium">{spellName}</div>
-
-      {/* Note icon */}
-      {hasNote && (
-        <HoverCard openDelay={150} closeDelay={100}>
-          <HoverCardTrigger asChild>
-            <span
-              className="shrink-0 text-slate-600"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <StickyNote className="h-4 w-4" />
-            </span>
-          </HoverCardTrigger>
-
-          <HoverCardContent
-            className="w-80 text-sm"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="font-medium mb-1">{spellName}</div>
-            <div className="whitespace-pre-wrap wrap-break-word text-muted-foreground">
-              {entry.notes}
-            </div>
-          </HoverCardContent>
-        </HoverCard>
-      )}
+      {/* Effective display name text */}
+      <div className="min-w-0 flex-1 truncate font-medium">
+        {summary.effectiveDisplayName}
+      </div>
 
       {/* Open detail (small, does not toggle) */}
       {mode === "normal" && (
@@ -136,58 +106,94 @@ export function PreparedTableCell({
 
       {mode === "edit" && (
         <>
-          {/* Note editor */}
-          <Dialog open={noteOpen} onOpenChange={setNoteOpen}>
-            <DialogTrigger asChild>
-              <button
-                className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-slate-600 hover:text-slate-900 cursor-pointer"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openNote();
-                }}
-                title="Edit note"
-              >
-                <Pencil className="h-4 w-4" />
-              </button>
-            </DialogTrigger>
-
-            <DialogContent
-              // stop propagation so it doesn't affect parent handlers
-              onClick={(e) => e.stopPropagation()}
-              className="sm:max-w-lg"
-            >
-              <DialogHeader>
-                <DialogTitle>Notes</DialogTitle>
-              </DialogHeader>
-
-              <div className="space-y-2">
-                <div className="text-sm font-medium">{spellName}</div>
-                <textarea
-                  className="w-full rounded-md border p-2 text-sm"
-                  rows={6}
-                  placeholder="Add notes (metamagic, reminders, etc.)"
-                  value={draftNote}
-                  onChange={(e) => setDraftNote(e.target.value)}
-                />
-              </div>
-
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setNoteOpen(false);
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button onClick={saveNote}>Save</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <PreparedEntryEditDialog
+            spellName={spellName}
+            entry={entry}
+            onSave={(patch) =>
+              preparedBook.setEntry(bookId, entry.entryId, patch)
+            }
+          />
         </>
       )}
 
-      {/* Edit-only remove icon */}
+      {mode === "edit" && (
+        <button
+          className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-slate-600 hover:text-slate-900 cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            preparedBook.setEntry(bookId, entry.entryId, {
+              state: entry.state === "reserved" ? "ok" : "reserved",
+            });
+          }}
+          title={
+            entry.state === "reserved" ? "Unlock reserved" : "Lock as reserved"
+          }
+        >
+          {entry.state === "reserved" ? (
+            <Lock className="h-4 w-4" />
+          ) : (
+            <LockOpen className="h-4 w-4" />
+          )}
+        </button>
+      )}
+
+      {/* Extra info hover */}
+      {hasExtraInfo && (
+        <HoverCard openDelay={150} closeDelay={100}>
+          <HoverCardTrigger asChild>
+            <span
+              className="shrink-0 text-slate-600 inline-flex items-center gap-1"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {hasMetamagic && <Sparkles className="h-4 w-4" />}
+              {hasNote && <StickyNote className="h-4 w-4" />}
+            </span>
+          </HoverCardTrigger>
+
+          <HoverCardContent
+            className="w-80 text-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="font-medium mb-2">{summary.effectiveDisplayName}</div>
+
+            {hasDisplayNameOverride && (
+              <div className="mb-2">
+                <div className="text-xs text-muted-foreground">Base Name</div>
+                <div>{summary.baseName}</div>
+              </div>
+            )}
+
+            {hasLevelOverride && (
+              <div className="mb-2">
+                <div className="text-xs text-muted-foreground">
+                  Level Override
+                </div>
+                <div>{entry.levelOverride}</div>
+              </div>
+            )}
+
+            {hasMetamagic && (
+              <div className="mb-2">
+                <div className="text-xs text-muted-foreground">Metamagic</div>
+                <div>{summary.metamagicSummary}</div>
+                <div className="text-xs text-muted-foreground">
+                  Total level adj: +{summary.metamagicTotalAdj}
+                </div>
+              </div>
+            )}
+
+            {hasNote && (
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">Notes</div>
+                <div className="whitespace-pre-wrap wrap-break-word text-muted-foreground">
+                  {entry.notes}
+                </div>
+              </div>
+            )}
+          </HoverCardContent>
+        </HoverCard>
+      )}
+
       {mode === "edit" && (
         <button
           className="shrink-0 text-slate-600 hover:text-red-700 cursor-pointer"

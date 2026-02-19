@@ -14,6 +14,7 @@ export type PreparedEntry = {
   state: PreparedEntryState;
 
   metamagic?: { key: string; name?: string; levelAdj?: number }[];
+  levelOverride?: number;
   notes?: string | undefined; // free text; can host metamagic later
 };
 
