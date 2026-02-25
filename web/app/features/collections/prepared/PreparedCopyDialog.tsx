@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import type { SpellItemView } from "@dnd/contracts";
+import { useTranslation } from "react-i18next";
 import type { PreparedEntry } from "~/storage/collections.type";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -50,6 +51,7 @@ export function PreparedCopyDialog({
   getVisibleName: (spell: SpellItemView) => string;
   className?: string;
 }) {
+  const { t } = useTranslation("collections");
   const [open, setOpen] = useState(false);
   const [format, setFormat] = useState<CopyFormat>("detailed");
   const [aggregateRows, setAggregateRows] = useState(true);
@@ -86,9 +88,11 @@ export function PreparedCopyDialog({
   const onCopy = async () => {
     try {
       await copyText(tsv);
-      setStatus(`Copied ${lineCount} row(s) as TSV.`);
+      setStatus(t("Copied {{count}} row(s) as TSV.", { count: lineCount }));
     } catch {
-      setStatus("Copy failed. Browser clipboard permission may be blocked.");
+      setStatus(
+        t("Copy failed. Browser clipboard permission may be blocked."),
+      );
     }
   };
 
@@ -101,21 +105,21 @@ export function PreparedCopyDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button className={className} size="sm" variant="outline">
-          Advanced Copy
+          {t("Advanced Copy")}
         </Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Advanced Copy</DialogTitle>
+          <DialogTitle>{t("Advanced Copy")}</DialogTitle>
           <DialogDescription>
-            Copy as TSV with optional detailed columns and row aggregation.
+            {t("Copy as TSV with optional detailed columns and row aggregation.")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <div className="text-sm font-medium">Format</div>
+            <div className="text-sm font-medium">{t("Format")}</div>
             <Select
               value={format}
               onValueChange={(v) => setFormat(v as CopyFormat)}
@@ -124,8 +128,12 @@ export function PreparedCopyDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="simple">Simple table (as displayed)</SelectItem>
-                <SelectItem value="detailed">Detailed TSV columns</SelectItem>
+                <SelectItem value="simple">
+                  {t("Simple table (as displayed)")}
+                </SelectItem>
+                <SelectItem value="detailed">
+                  {t("Detailed TSV columns")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -136,11 +144,11 @@ export function PreparedCopyDialog({
               onCheckedChange={(checked) => setAggregateRows(checked === true)}
               disabled={format !== "detailed"}
             />
-            Aggregate detailed rows
+            {t("Aggregate detailed rows")}
           </label>
 
           <div className="rounded-md border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
-            Output rows: <b>{lineCount}</b>
+            {t("Output rows: {{count}}", { count: lineCount })}
           </div>
 
           {status && (
@@ -150,9 +158,9 @@ export function PreparedCopyDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
+            {t("Close")}
           </Button>
-          <Button onClick={onCopy}>Copy TSV</Button>
+          <Button onClick={onCopy}>{t("Copy TSV")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

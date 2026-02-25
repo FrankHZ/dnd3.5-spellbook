@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Copy } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { getSpellsBatch } from "~/api/spells";
 import { useAppI18n } from "~/i18n/useAppI18n";
@@ -30,6 +31,7 @@ import { buildSimplePreparedTsv } from "./prepared-copy";
 type ViewMode = "normal" | "edit";
 
 export function PreparedBookDetail({ book }: { book: PreparedBook }) {
+  const { t } = useTranslation("collections");
   const { queryKey, name } = useAppI18n();
   const { preparedBook } = useCollections();
   const [mode, setMode] = useState<ViewMode>("normal");
@@ -73,7 +75,7 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
       id,
       name: metaNameWithEn("classes", classById.get(id)),
     })) satisfies ClassOption[];
-  }, [selectedClassIds, metaNameWithEn]);
+  }, [selectedClassIds, metaNameWithEn, classById]);
 
   const selectedDomains = useMemo(() => {
     return selectedDomainIds.map((id) => ({
@@ -81,7 +83,7 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
       id,
       name: metaNameWithEn("domains", domainById.get(id)),
     })) satisfies DomainOption[];
-  }, [selectedDomainIds, metaNameWithEn]);
+  }, [selectedDomainIds, metaNameWithEn, domainById]);
 
   const spellIds = useMemo(
     () => getPreparedSpellIds(book.entries),
@@ -113,8 +115,6 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
   const candidates = useMemo((): Candidate[] => {
     const selectedClassSet = new Set(selectedClassIds);
     const selectedDomainSet = new Set(selectedDomainIds);
-
-    // key: `${type}:${id}` -> count
     const counts = new Map<string, number>();
 
     const inc = (type: OptionType, id: number) => {
@@ -129,22 +129,19 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
       const cls = sp.classLevels ?? [];
       const dms = sp.domainLevels ?? [];
 
-      // skip spells that already match ANY selected class OR domain
       const hasSelectedClass = cls.some((cl) => selectedClassSet.has(cl.id));
       const hasSelectedDomain = dms.some((dl) => selectedDomainSet.has(dl.id));
       if (hasSelectedClass || hasSelectedDomain) continue;
 
-      // count class ids
       for (const cl of cls) {
-        const id = cl.id; // do not change cl.id
+        const id = cl.id;
         if (!classById.has(id)) continue;
         if (selectedClassSet.has(id)) continue;
         inc("class", id);
       }
 
-      // count domain ids
       for (const dl of dms) {
-        const id = dl.id; // keep dl.id (same pattern)
+        const id = dl.id;
         if (!domainById.has(id)) continue;
         if (selectedDomainSet.has(id)) continue;
         inc("domain", id);
@@ -156,7 +153,7 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
         const [type, idStr] = key.split(":") as [OptionType, string];
         const id = Number(idStr);
 
-        const name =
+        const display =
           type === "class"
             ? metaNameWithEn("classes", classById.get(id))
             : metaNameWithEn("domains", domainById.get(id));
@@ -165,7 +162,8 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
           type,
           id,
           count,
-          name: name || `${type === "class" ? "Class" : "Domain"} #${id}`,
+          name:
+            display || `${type === "class" ? t("Class") : t("Domain")} #${id}`,
         };
       },
     );
@@ -174,7 +172,6 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
       if (b.count !== a.count) return b.count - a.count;
       const cmp = (a.name ?? "").localeCompare(b.name ?? "");
       if (cmp !== 0) return cmp;
-      // keep stable ordering between types if names tie
       if (a.type !== b.type) return a.type.localeCompare(b.type);
       return a.id - b.id;
     });
@@ -188,6 +185,7 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
     classById,
     domainById,
     metaNameWithEn,
+    t,
   ]);
 
   const onCopySimple = async () => {
@@ -202,9 +200,13 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
       }
       await navigator.clipboard.writeText(tsv);
       const lines = tsv.length === 0 ? 0 : tsv.split("\n").length;
-      setCopyStatus(`Copied ${lines} row(s) as simple TSV.`);
+      setCopyStatus(
+        t("Copied {{count}} row(s) as simple TSV.", { count: lines }),
+      );
     } catch {
-      setCopyStatus("Copy failed. Browser clipboard permission may be blocked.");
+      setCopyStatus(
+        t("Copy failed. Browser clipboard permission may be blocked."),
+      );
     }
   };
 
@@ -212,19 +214,47 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3">
         <div className="text-sm text-muted-foreground">
-          {book.entries.length} prepared slot(s)
+          {t("{{count}} prepared slot(s)", { count: book.entries.length })}
         </div>
 
         <div className="flex items-center gap-3">
-          <BulkPasteDialog bookId={book.id} />
+          <ToggleGroup
+            size="sm"
+            type="single"
+            variant="outline"
+            value={mode}
+            onValueChange={(v) => {
+              if (!v) return;
+              setMode(v as ViewMode);
+            }}
+          >
+            <ToggleGroupItem
+              value="normal"
+              aria-label={t("Toggle normal mode")}
+            >
+              {t("Normal")}
+            </ToggleGroupItem>
+            <ToggleGroupItem value="edit" aria-label={t("Toggle edit mode")}>
+              {t("Edit")}
+            </ToggleGroupItem>
+          </ToggleGroup>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => preparedBook.resetUsed(book.id)}
+            disabled={book.entries.length === 0}
+          >
+            {t("Reset used")}
+          </Button>
+
           <ButtonGroup>
             <Button
               size="icon-sm"
               variant="outline"
               onClick={onCopySimple}
               disabled={book.entries.length === 0}
-              title="Copy Table"
-              aria-label="Copy table"
+              aria-label={t("Copy table")}
             >
               <Copy className="h-4 w-4" />
             </Button>
@@ -237,44 +267,23 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
               getVisibleName={name}
             />
           </ButtonGroup>
-          <ToggleGroup
-            size="sm"
-            type="single"
-            variant="outline"
-            value={mode}
-            onValueChange={(v) => {
-              if (!v) return;
-              setMode(v as ViewMode);
-            }}
-          >
-            <ToggleGroupItem value="normal" aria-label="Toggle normal mode">
-              Normal
-            </ToggleGroupItem>
-            <ToggleGroupItem value="edit" aria-label="Toggle edit mode">
-              Edit
-            </ToggleGroupItem>
-          </ToggleGroup>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => preparedBook.resetUsed(book.id)}
-            disabled={book.entries.length === 0}
-          >
-            Reset used
-          </Button>
+          <BulkPasteDialog bookId={book.id} />
+
           <Button
             size="sm"
             variant="destructive"
             onClick={() => preparedBook.clear(book.id)}
             disabled={book.entries.length === 0}
           >
-            Clear
+            {t("Clear")}
           </Button>
         </div>
       </div>
+
       {copyStatus && (
         <div className="rounded-md border px-3 py-2 text-sm">{copyStatus}</div>
       )}
+
       <div className="flex gap-3">
         <PreparedClassAndDomainSidebar
           selectedClasses={selectedClasses}
@@ -286,25 +295,29 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
         <div className="min-w-0 flex-1">
           {book.entries.length === 0 && (
             <div className="rounded-md border p-3 text-sm text-muted-foreground">
-              Empty.
+              {t("Empty.")}
             </div>
           )}
+
           {book.entries.length > 0 && (
             <>
               {batchQuery.isLoading && (
                 <div className="rounded-md border p-3 text-sm text-muted-foreground">
-                  Loading spells…
+                  {t("Loading spells...")}
                 </div>
               )}
 
               {batchQuery.isError && (
                 <div className="rounded-md border p-3">
-                  <div className="font-medium">Some spells failed to load</div>
+                  <div className="font-medium">
+                    {t("Some spells failed to load")}
+                  </div>
                   <div className="mt-1 text-sm text-muted-foreground">
-                    Please try again later.
+                    {t("Please try again later.")}
                   </div>
                 </div>
               )}
+
               <PreparedTable
                 bookId={book.id}
                 columns={columns}

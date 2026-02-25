@@ -6,6 +6,8 @@ i18n
   .use(initReactI18next)
   .use(Backend)
   .init({
+    keySeparator: ">",
+    nsSeparator: "::",
     lng: "en",
     fallbackLng: "en",
     ns: [
@@ -13,6 +15,8 @@ i18n
       "topbar",
       "pager",
       "collections",
+      "collections-default",
+      "metamagic",
       "settings",
       "spell-browse",
       "spell-search",

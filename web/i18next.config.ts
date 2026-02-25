@@ -4,6 +4,9 @@ export default defineConfig({
   locales: ["en", "zh"],
   extract: {
     input: "app/**/*.{js,jsx,ts,tsx}",
-    output: "public/locales/{{language}}/{{namespace}}.json",
+    output: "extracted/{{language}}/{{namespace}}.json",
+    keySeparator: ">",
+    nsSeparator: "::",
+    ignoreNamespaces: ["metamagic"],
   },
 });

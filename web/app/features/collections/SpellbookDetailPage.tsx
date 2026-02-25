@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Link, useParams } from "react-router";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { getSpellsBatch } from "~/api/spells";
 import { Button } from "~/components/ui/button";
@@ -10,6 +11,7 @@ import { getBook } from "~/storage/collections";
 import type { PreparedBook } from "~/storage/collections.type";
 import { SpellIdBookDetail } from "./SpellIdBookDetail";
 import { PreparedBookDetail } from "./prepared/PreparedBookDetail";
+import { getCollectionDisplayName } from "./collection-display-name";
 import {
   downloadPreparedCollectionExport,
   parsePreparedCollectionImport,
@@ -21,6 +23,8 @@ import {
 } from "~/components/ui/tooltip";
 
 export default function SpellbookDetailPage() {
+  const { t } = useTranslation("collections");
+  const { t: tDefault } = useTranslation("collections-default");
   const { id } = useParams();
   const bookId = id ?? "";
   const importInputRef = useRef<HTMLInputElement | null>(null);
@@ -39,9 +43,9 @@ export default function SpellbookDetailPage() {
     return (
       <div className="p-4 max-w-3xl mx-auto">
         <div className="rounded-md border p-3">
-          <div className="font-medium">Spellbook not found</div>
+          <div className="font-medium">{t("Spellbook not found")}</div>
           <div className="mt-1 text-sm text-muted-foreground">
-            Unknown book id: {bookId}
+            {t("Unknown book id: {{bookId}}", { bookId })}
           </div>
         </div>
       </div>
@@ -68,7 +72,7 @@ export default function SpellbookDetailPage() {
       try {
         parsedRaw = JSON.parse(text);
       } catch {
-        throw new Error("Invalid JSON file.");
+        throw new Error(t("Invalid JSON file."));
       }
 
       const parsed = parsePreparedCollectionImport(parsedRaw, book.id);
@@ -93,7 +97,7 @@ export default function SpellbookDetailPage() {
         missingSpellIds: [...batch.missingIds].sort((a, b) => a - b),
       });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Import failed.";
+      const msg = err instanceof Error ? err.message : t("Import failed.");
       setImportError(msg);
     } finally {
       setIsImporting(false);
@@ -112,7 +116,9 @@ export default function SpellbookDetailPage() {
     <div className="p-4 space-y-4 max-w-8xl mx-auto">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-semibold">{book.name}</h1>
+          <h1 className="text-lg font-semibold">
+            {getCollectionDisplayName(book, tDefault)}
+          </h1>
         </div>
 
         <div className="flex items-center gap-2">
@@ -135,13 +141,13 @@ export default function SpellbookDetailPage() {
                 onClick={onExport}
                 disabled={isImporting || !isPreparedBook}
               >
-                Export JSON
+                {t("Export JSON")}
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
               {isPreparedBook
-                ? "Export current collection as JSON."
-                : "JSON import/export is not implemented for this book type yet."}
+                ? t("Export current collection as JSON.")
+                : t("JSON import/export is not implemented for this book type yet.")}
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -152,18 +158,18 @@ export default function SpellbookDetailPage() {
                 onClick={openImportPicker}
                 disabled={isImporting || !isPreparedBook}
               >
-                {isImporting ? "Importing..." : "Import JSON"}
+                {isImporting ? t("Importing...") : t("Import JSON")}
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
               {isPreparedBook
-                ? "Import replaces the current collection."
-                : "JSON import/export is not implemented for this book type yet."}
+                ? t("Import replaces the current collection.")
+                : t("JSON import/export is not implemented for this book type yet.")}
             </TooltipContent>
           </Tooltip>
 
           <Link to="/spellbooks" className="text-sm underline">
-            Back
+            {t("Back")}
           </Link>
         </div>
       </div>
@@ -172,14 +178,14 @@ export default function SpellbookDetailPage() {
         <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <div className="font-medium">Import failed</div>
+              <div className="font-medium">{t("Import failed")}</div>
               <div className="mt-1 text-muted-foreground">{importError}</div>
             </div>
             <Button
               type="button"
               size="icon-xs"
               variant="ghost"
-              aria-label="Close import error"
+              aria-label={t("Close import error")}
               onClick={() => setImportError(null)}
             >
               <X />
@@ -191,19 +197,20 @@ export default function SpellbookDetailPage() {
         <div className="rounded-md border p-3 text-sm">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <div className="font-medium">Import complete</div>
+              <div className="font-medium">{t("Import complete")}</div>
               <div className="mt-1 text-muted-foreground">
-                Imported entries: <b>{importSummary.importedEntries}</b>
+                {t("Imported entries:")} <b>{importSummary.importedEntries}</b>
               </div>
               <div className="text-muted-foreground">
-                Invalid entries skipped: <b>{importSummary.invalidEntries}</b>
+                {t("Invalid entries skipped:")}{" "}
+                <b>{importSummary.invalidEntries}</b>
               </div>
               <div className="text-muted-foreground">
-                Missing spellIds:{" "}
+                {t("Missing spellIds:")}{" "}
                 <b>
                   {importSummary.missingSpellIds.length > 0
                     ? importSummary.missingSpellIds.join(", ")
-                    : "none"}
+                    : t("none")}
                 </b>
               </div>
             </div>
@@ -211,7 +218,7 @@ export default function SpellbookDetailPage() {
               type="button"
               size="icon-xs"
               variant="ghost"
-              aria-label="Close import summary"
+              aria-label={t("Close import summary")}
               onClick={() => setImportSummary(null)}
             >
               <X />

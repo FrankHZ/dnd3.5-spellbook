@@ -9,3 +9,6 @@
 # Vite env files
 .env.local
 .env.production.local
+
+# i18n generated CLI artifact
+extracted/

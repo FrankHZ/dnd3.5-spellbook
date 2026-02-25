@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 import { useAppI18n } from "~/i18n/useAppI18n";
 import { useCollections } from "~/state/collections-state";
@@ -43,22 +44,21 @@ export function BulkPasteDialog({
   triggerLabel = "Bulk Paste",
   className,
 }: BulkPasteDialogProps) {
+  const { t } = useTranslation("collections");
   const { preparedBook } = useCollections();
-  const { queryKey } = useAppI18n();
+  const { queryKey, name } = useAppI18n();
   const { state } = useUserPrefs();
   const rulebookIds = state.selectedRulebookIds ?? [];
+  const { metaName } = useMetaNames();
 
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
-
-  const names = useMemo(() => parseTsvNames(text), [text]);
-
-  // NEW: resolved rows + pick state
   const [rows, setRows] = useState<ResolvedRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { metaName } = useMetaNames();
-  const { name } = useAppI18n();
+  const names = useMemo(() => parseTsvNames(text), [text]);
+  const addableCount = useMemo(() => countAddableRows(rows), [rows]);
+  const summary = useMemo(() => summarizeRows(rows), [rows]);
 
   const mutation = useMutation({
     mutationKey: [
@@ -70,8 +70,6 @@ export function BulkPasteDialog({
     },
     onMutate: () => {
       setError(null);
-      // do NOT clear rows here: user may want to fix input and compare.
-      // if you prefer: setRows(null);
     },
     onSuccess: (data) => {
       setRows(
@@ -82,13 +80,11 @@ export function BulkPasteDialog({
       );
     },
     onError: (e: any) => {
-      setError(e?.message ?? "Failed to resolve names");
+      setError(e?.message ?? t("Failed to resolve names"));
     },
   });
 
   const canResolve = names.length > 0 && !mutation.isPending;
-
-  const addableCount = useMemo(() => countAddableRows(rows), [rows]);
 
   function onClearPrepared() {
     preparedBook.clear(bookId);
@@ -98,8 +94,6 @@ export function BulkPasteDialog({
     setText("");
     setError(null);
     mutation.reset();
-    // Keep rows so user can copy/fix from results if they want:
-    // setRows(null);
   }
 
   function onResolve() {
@@ -110,8 +104,6 @@ export function BulkPasteDialog({
   function onAddSelected() {
     const ids = collectSelectedSpellIds(rows);
     if (ids.length === 0) return;
-
-    // incremental add (duplicates allowed)
     for (const id of ids) preparedBook.add(bookId, id);
   }
 
@@ -121,40 +113,33 @@ export function BulkPasteDialog({
     mutation.reset();
   }
 
-  const summary = useMemo(() => summarizeRows(rows), [rows]);
-
   return (
     <Dialog open={open} onOpenChange={(v) => (v ? setOpen(true) : onClose())}>
       <DialogTrigger asChild>
         <Button className={className} size="sm" variant="outline">
-          {triggerLabel}
+          {triggerLabel === "Bulk Paste" ? t("Bulk Paste") : triggerLabel}
         </Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Bulk Paste</DialogTitle>
-          <DialogDescription>
-            Paste spell names as TSV only. Use <b>Tab</b> between names (new
-            lines are allowed). Spaces and commas are not delimiters.
-          </DialogDescription>
+          <DialogTitle>{t("Bulk Paste")}</DialogTitle>
+          <DialogDescription>{t("bulk-paste-description")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-2">
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder={"Magic Missile\tShield\tFireball\nHaste\tFly"}
+            placeholder={t("Magic Missile\tShield\tFireball\nHaste\tFly")}
             rows={8}
             disabled={mutation.isPending}
           />
 
           <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <div>
-              Parsed: <b>{names.length}</b> name(s)
-            </div>
+            <div>{t("Parsed: {{count}} name(s)", { count: names.length })}</div>
             <div className="truncate">
-              Scope: <b>{rulebookIds.length}</b> rulebook(s)
+              {t("Scope: {{count}} rulebook(s)", { count: rulebookIds.length })}
             </div>
           </div>
 
@@ -168,19 +153,25 @@ export function BulkPasteDialog({
             <div className="rounded-md border p-2 space-y-3">
               <div className="rounded-md border bg-muted/30 px-3 py-2 text-sm">
                 <div>
-                  Ready to add <b>{addableCount}</b> entry(ies)
+                  {t("Ready to add {{count}} entry(ies)", {
+                    count: addableCount,
+                  })}
                 </div>
                 <div className="mt-1 text-muted-foreground">
-                  {summary.resolved} resolved · {summary.conflicts} conflict
-                  {summary.conflicts !== 1 ? "s" : ""} · {summary.notFound} not
-                  found
+                  {t(
+                    "{{resolved}} resolved | {{conflicts}} conflict(s) | {{notFound}} not found",
+                    {
+                      resolved: summary.resolved,
+                      conflicts: summary.conflicts,
+                      notFound: summary.notFound,
+                    },
+                  )}
                 </div>
               </div>
 
-              {/* Conflicts */}
               {rows.some((r) => r.status === "ambiguous") && (
                 <div className="space-y-2">
-                  <div className="text-sm font-medium">Conflicts</div>
+                  <div className="text-sm font-medium">{t("Conflicts")}</div>
                   <div className="max-h-64 overflow-auto rounded-md border">
                     {rows
                       .filter((r) => r.status === "ambiguous")
@@ -223,12 +214,12 @@ export function BulkPasteDialog({
 
                                         {picked && (
                                           <span className="ml-2 text-xs text-muted-foreground">
-                                            (picked)
+                                            {t("(picked)")}
                                           </span>
                                         )}
                                         {isDefault && !picked && (
                                           <span className="ml-2 text-xs text-muted-foreground">
-                                            (default)
+                                            {t("(default)")}
                                           </span>
                                         )}
                                       </div>
@@ -247,7 +238,7 @@ export function BulkPasteDialog({
                                         );
                                       }}
                                     >
-                                      {picked ? "Picked" : "Pick"}
+                                      {picked ? t("Picked") : t("Pick")}
                                     </Button>
                                   </div>
                                 );
@@ -258,16 +249,16 @@ export function BulkPasteDialog({
                       })}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Conflicts are shown here. Default is pre-picked, but we can
-                    choose a different candidate before adding.
+                    {t(
+                      "Conflicts are shown here. Default is pre-picked, but we can choose a different candidate before adding.",
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* Not found */}
               {rows.some((r) => r.status === "not_found") && (
                 <div className="space-y-2">
-                  <div className="text-sm font-medium">Not found</div>
+                  <div className="text-sm font-medium">{t("Not found")}</div>
                   <div className="max-h-40 overflow-auto rounded-md border">
                     {rows
                       .filter((r) => r.status === "not_found")
@@ -277,7 +268,9 @@ export function BulkPasteDialog({
                           className="border-b p-2 text-sm last:border-b-0"
                         >
                           <div className="font-medium">{r.input}</div>
-                          <div className="text-muted-foreground">Not found</div>
+                          <div className="text-muted-foreground">
+                            {t("Not found")}
+                          </div>
                         </div>
                       ))}
                   </div>
@@ -294,7 +287,7 @@ export function BulkPasteDialog({
               onClick={onClearInput}
               disabled={mutation.isPending}
             >
-              Clear Input
+              {t("Clear Input")}
             </Button>
 
             <Button
@@ -302,7 +295,7 @@ export function BulkPasteDialog({
               onClick={onClearPrepared}
               disabled={mutation.isPending}
             >
-              Clear Prepared
+              {t("Clear Prepared")}
             </Button>
           </div>
 
@@ -312,18 +305,18 @@ export function BulkPasteDialog({
               onClick={onClose}
               disabled={mutation.isPending}
             >
-              Close
+              {t("Close")}
             </Button>
 
             <Button onClick={onResolve} disabled={!canResolve}>
-              {mutation.isPending ? "Resolving…" : "Resolve"}
+              {mutation.isPending ? t("Resolving...") : t("Resolve")}
             </Button>
 
             <Button
               onClick={onAddSelected}
               disabled={mutation.isPending || !rows || addableCount === 0}
             >
-              Add Selected
+              {t("Add Selected")}
             </Button>
           </div>
         </DialogFooter>

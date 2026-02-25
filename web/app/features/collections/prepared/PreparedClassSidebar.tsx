@@ -1,5 +1,6 @@
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
+import { useTranslation } from "react-i18next";
 
 export type OptionType = "class" | "domain";
 
@@ -31,6 +32,7 @@ export function PreparedClassAndDomainSidebar({
   onRemove: (option: Option) => void;
   className?: string;
 }) {
+  const { t } = useTranslation("collections");
   const selected = [...selectedClasses, ...selectedDomains];
 
   return (
@@ -38,11 +40,13 @@ export function PreparedClassAndDomainSidebar({
       <div className="sticky top-3 space-y-4">
         {/* Selected (classes + domains) */}
         <div>
-          <div className="text-sm font-medium">Selected</div>
+          <div className="text-sm font-medium">{t("Selected")}</div>
           <div className="mt-2 space-y-1">
             {selected.length === 0 ? (
               <div className="text-sm text-muted-foreground">
-                None selected. Spell level uses the lowest available level.
+                {t(
+                  "None selected. Spell level uses the lowest available level.",
+                )}
               </div>
             ) : (
               selected.map((opt) => (
@@ -53,7 +57,7 @@ export function PreparedClassAndDomainSidebar({
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="rounded border px-1.5 py-0.5 text-[11px] text-muted-foreground">
-                        {opt.type}
+                        {opt.type === "class" ? t("Class") : t("Domain")}
                       </span>
                       <div className="truncate">{opt.name}</div>
                     </div>
@@ -66,7 +70,7 @@ export function PreparedClassAndDomainSidebar({
                       onRemove(opt);
                     }}
                   >
-                    Remove
+                    {t("Remove")}
                   </Button>
                 </div>
               ))
@@ -76,11 +80,11 @@ export function PreparedClassAndDomainSidebar({
 
         {/* Candidates (classes + domains) */}
         <div>
-          <div className="text-sm font-medium">Candidates</div>
+          <div className="text-sm font-medium">{t("Candidates")}</div>
           <div className="mt-2 space-y-1">
             {candidates.length === 0 ? (
               <div className="text-sm text-muted-foreground">
-                No candidates.
+                {t("No candidates.")}
               </div>
             ) : (
               candidates.map((c) => (
@@ -92,12 +96,12 @@ export function PreparedClassAndDomainSidebar({
                     <div className="flex items-center gap-2">
                       {/* tiny tag so user knows if it's class or domain */}
                       <span className="rounded border px-1.5 py-0.5 text-[11px] text-muted-foreground">
-                        {c.type}
+                        {c.type === "class" ? t("Class") : t("Domain")}
                       </span>
                       <div>
                         <div className="truncate">{c.name}</div>
                         <div className="text-xs text-muted-foreground">
-                          {c.count} occurrence(s)
+                          {t("{{count}} occurrence(s)", { count: c.count })}
                         </div>
                       </div>
                     </div>
@@ -110,7 +114,7 @@ export function PreparedClassAndDomainSidebar({
                       onAdd(c);
                     }}
                   >
-                    Add
+                    {t("Add")}
                   </Button>
                 </div>
               ))

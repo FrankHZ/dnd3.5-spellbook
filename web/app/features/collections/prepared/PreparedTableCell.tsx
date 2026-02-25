@@ -7,6 +7,8 @@ import {
   StickyNote,
   Trash2,
 } from "lucide-react";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import type { SpellItemView } from "@dnd/contracts";
 import type { PreparedEntry } from "~/storage/collections.type";
 import { useCollections } from "~/state/collections-state";
@@ -33,6 +35,8 @@ export function PreparedTableCell({
 }) {
   const { preparedBook } = useCollections();
   const { name } = useAppI18n();
+  const { t } = useTranslation("collections");
+  const { t: tMeta } = useTranslation("metamagic");
 
   const spellName = name(spell);
   const summary = summarizePreparedEntry(entry, spellName);
@@ -42,6 +46,18 @@ export function PreparedTableCell({
   const hasDisplayNameOverride = summary.hasDisplayNameOverride;
   const hasExtraInfo =
     hasDisplayNameOverride || hasMetamagic || hasLevelOverride || hasNote;
+  const localizedMetamagicSummary = useMemo(() => {
+    const metamagic = entry.metamagic ?? [];
+    if (metamagic.length === 0) return t("None");
+    return metamagic
+      .map((tag) => {
+        const tagName = tag.name?.trim() || tMeta(tag.key, { defaultValue: tag.key });
+        return typeof tag.levelAdj === "number"
+          ? `${tagName} (+${tag.levelAdj})`
+          : tagName;
+      })
+      .join(", ");
+  }, [entry.metamagic, t, tMeta]);
 
   const bg =
     entry.state === "used"
@@ -126,7 +142,9 @@ export function PreparedTableCell({
             });
           }}
           title={
-            entry.state === "reserved" ? "Unlock reserved" : "Lock as reserved"
+            entry.state === "reserved"
+              ? t("Unlock reserved")
+              : t("Lock as reserved")
           }
         >
           {entry.state === "reserved" ? (
@@ -158,7 +176,7 @@ export function PreparedTableCell({
 
             {hasDisplayNameOverride && (
               <div className="mb-2">
-                <div className="text-xs text-muted-foreground">Base Name</div>
+                <div className="text-xs text-muted-foreground">{t("Base Name")}</div>
                 <div>{summary.baseName}</div>
               </div>
             )}
@@ -166,7 +184,7 @@ export function PreparedTableCell({
             {hasLevelOverride && (
               <div className="mb-2">
                 <div className="text-xs text-muted-foreground">
-                  Level Override
+                  {t("Level Override")}
                 </div>
                 <div>{entry.levelOverride}</div>
               </div>
@@ -174,17 +192,19 @@ export function PreparedTableCell({
 
             {hasMetamagic && (
               <div className="mb-2">
-                <div className="text-xs text-muted-foreground">Metamagic</div>
-                <div>{summary.metamagicSummary}</div>
+                <div className="text-xs text-muted-foreground">{t("Metamagic")}</div>
+                <div>{localizedMetamagicSummary}</div>
                 <div className="text-xs text-muted-foreground">
-                  Total level adj: +{summary.metamagicTotalAdj}
+                  {t("Total level adj: +{{adj}}", {
+                    adj: summary.metamagicTotalAdj,
+                  })}
                 </div>
               </div>
             )}
 
             {hasNote && (
               <div>
-                <div className="text-xs text-muted-foreground mb-1">Notes</div>
+                <div className="text-xs text-muted-foreground mb-1">{t("Notes")}</div>
                 <div className="whitespace-pre-wrap wrap-break-word text-muted-foreground">
                   {entry.notes}
                 </div>
@@ -201,7 +221,7 @@ export function PreparedTableCell({
             e.stopPropagation();
             preparedBook.removeEntry(bookId, entry.entryId);
           }}
-          title="Remove"
+          title={t("Remove")}
         >
           <Trash2 className="h-4 w-4" />
         </button>

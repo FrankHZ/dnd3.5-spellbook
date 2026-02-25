@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Pencil, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { PreparedEntry } from "~/storage/collections.type";
 import {
   Dialog,
@@ -24,15 +25,14 @@ import { cn } from "~/lib/utils";
 type MetamagicTag = NonNullable<PreparedEntry["metamagic"]>[number];
 
 const COMMON_METAMAGIC: MetamagicTag[] = [
-  { key: "empower", name: "Empower", levelAdj: 2 },
-  { key: "enlarge", name: "Enlarge", levelAdj: 1 },
-  { key: "extend", name: "Extend", levelAdj: 1 },
-  { key: "heighten", name: "Heighten", levelAdj: 1 },
-  { key: "maximize", name: "Maximize", levelAdj: 3 },
-  { key: "quicken", name: "Quicken", levelAdj: 4 },
-  { key: "silent", name: "Silent", levelAdj: 1 },
-  { key: "still", name: "Still", levelAdj: 1 },
-  { key: "widen", name: "Widen", levelAdj: 3 },
+  { key: "empower", levelAdj: 2 },
+  { key: "enlarge", levelAdj: 1 },
+  { key: "extend", levelAdj: 1 },
+  { key: "maximize", levelAdj: 3 },
+  { key: "quicken", levelAdj: 4 },
+  { key: "silent", levelAdj: 1 },
+  { key: "still", levelAdj: 1 },
+  { key: "widen", levelAdj: 3 },
 ];
 
 function normalizeOptionalText(input: string): string | undefined {
@@ -48,7 +48,10 @@ function parseNonNegativeInt(input: string): number | undefined {
   return value;
 }
 
-function buildCustomMetamagicKey(name: string, existing: MetamagicTag[]): string {
+function buildCustomMetamagicKey(
+  name: string,
+  existing: MetamagicTag[],
+): string {
   const base = name
     .trim()
     .toLowerCase()
@@ -71,6 +74,8 @@ export function PreparedEntryEditDialog({
   entry: PreparedEntry;
   onSave: (patch: Partial<Omit<PreparedEntry, "entryId" | "spellId">>) => void;
 }) {
+  const { t } = useTranslation("collections");
+  const { t: tMeta } = useTranslation("metamagic");
   const [open, setOpen] = useState(false);
   const [draftDisplayName, setDraftDisplayName] = useState(
     entry.displayNameOverride ?? "",
@@ -108,15 +113,15 @@ export function PreparedEntryEditDialog({
   );
 
   const metamagicSummary = useMemo(() => {
-    if (draftMetamagic.length === 0) return "None";
+    if (draftMetamagic.length === 0) return t("None");
     return draftMetamagic
       .map((m) => {
-        const name = m.name ?? m.key;
+        const name = m.name?.trim() || tMeta(m.key, { defaultValue: m.key });
         if (typeof m.levelAdj === "number") return `${name} (+${m.levelAdj})`;
         return name;
       })
       .join(", ");
-  }, [draftMetamagic]);
+  }, [draftMetamagic, t, tMeta]);
 
   const toggleMetamagic = (tag: MetamagicTag) => {
     setDraftMetamagic((prev) => {
@@ -167,7 +172,7 @@ export function PreparedEntryEditDialog({
             e.stopPropagation();
             openDialog();
           }}
-          title="Edit entry"
+          title={t("Edit entry")}
         >
           <Pencil className="h-4 w-4" />
         </button>
@@ -180,48 +185,53 @@ export function PreparedEntryEditDialog({
         <DialogHeader>
           <DialogTitle>{spellName}</DialogTitle>
           <DialogDescription>
-            Edit display override, metamagic tags, level override, and notes.
+            {t(
+              "Edit display override, metamagic tags, level override, and notes.",
+            )}
           </DialogDescription>
         </DialogHeader>
 
         <FieldGroup>
           <Field>
             <FieldLabel htmlFor="prepared-display-name">
-              Display Name Override
+              {t("Display Name Override")}
             </FieldLabel>
             <Input
               id="prepared-display-name"
-              placeholder="Optional per-entry display name"
+              placeholder={t("Optional per-entry display name")}
               value={draftDisplayName}
               onChange={(e) => setDraftDisplayName(e.target.value)}
             />
             <FieldDescription>
-              Leave empty to use the base spell name.
+              {t("Leave empty to use the base spell name.")}
             </FieldDescription>
           </Field>
 
           <Field>
             <FieldLabel htmlFor="prepared-level-override">
-              Level Override
+              {t("Level Override")}
             </FieldLabel>
             <Input
               id="prepared-level-override"
               type="number"
               min={0}
               step={1}
-              placeholder="0"
+              placeholder={t("0")}
               value={draftLevelOverride}
               onChange={(e) => setDraftLevelOverride(e.target.value)}
             />
             <FieldDescription>
-              Optional final level for this entry. Leave empty to derive from
-              base level + metamagic ({totalMetamagicLevelAdj >= 0 ? "+" : ""}
-              {totalMetamagicLevelAdj}).
+              {t(
+                "Optional final level for this entry. Leave empty to derive from base level + metamagic ({{adj}}).",
+                {
+                  adj: `${totalMetamagicLevelAdj >= 0 ? "+" : ""}${totalMetamagicLevelAdj}`,
+                },
+              )}
             </FieldDescription>
           </Field>
 
           <Field>
-            <FieldLabel>Metamagic</FieldLabel>
+            <FieldLabel>{t("Metamagic")}</FieldLabel>
             <div className="flex flex-wrap gap-2">
               {COMMON_METAMAGIC.map((tag) => {
                 const active = draftMetamagic.some((x) => x.key === tag.key);
@@ -240,7 +250,8 @@ export function PreparedEntryEditDialog({
                       toggleMetamagic(tag);
                     }}
                   >
-                    {tag.name} (+{tag.levelAdj ?? 0})
+                    {tMeta(tag.key, { defaultValue: tag.key })} (+
+                    {tag.levelAdj ?? 0})
                   </button>
                 );
               })}
@@ -248,7 +259,7 @@ export function PreparedEntryEditDialog({
             <div className="grid grid-cols-12 gap-2">
               <Input
                 className="col-span-7"
-                placeholder="Custom metamagic name"
+                placeholder={t("Custom metamagic name")}
                 value={customMetaName}
                 onChange={(e) => setCustomMetaName(e.target.value)}
               />
@@ -257,7 +268,7 @@ export function PreparedEntryEditDialog({
                 type="number"
                 min={0}
                 step={1}
-                placeholder="Adj"
+                placeholder={t("Adj")}
                 value={customMetaLevelAdj}
                 onChange={(e) => setCustomMetaLevelAdj(e.target.value)}
               />
@@ -270,13 +281,15 @@ export function PreparedEntryEditDialog({
                   addCustomMetamagic();
                 }}
               >
-                Add
+                {t("Add")}
               </Button>
             </div>
             {draftMetamagic.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {draftMetamagic.map((tag) => {
-                  const label = tag.name ?? tag.key;
+                  const label =
+                    tag.name?.trim() ||
+                    tMeta(tag.key, { defaultValue: tag.key });
                   return (
                     <button
                       key={tag.key}
@@ -286,7 +299,7 @@ export function PreparedEntryEditDialog({
                         e.stopPropagation();
                         removeMetamagicByKey(tag.key);
                       }}
-                      title="Remove metamagic"
+                      title={t("Remove metamagic")}
                     >
                       <span>
                         {label}
@@ -301,16 +314,19 @@ export function PreparedEntryEditDialog({
               </div>
             )}
             <FieldDescription>
-              {metamagicSummary}. Total level adj: +{totalMetamagicLevelAdj}.
+              {t("{{summary}}. Total level adj: +{{adj}}.", {
+                summary: metamagicSummary,
+                adj: totalMetamagicLevelAdj,
+              })}
             </FieldDescription>
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="prepared-notes">Notes</FieldLabel>
+            <FieldLabel htmlFor="prepared-notes">{t("Notes")}</FieldLabel>
             <Textarea
               id="prepared-notes"
               rows={6}
-              placeholder="Add notes (metamagic, reminders, etc.)"
+              placeholder={t("Add notes (metamagic, reminders, etc.)")}
               value={draftNotes}
               onChange={(e) => setDraftNotes(e.target.value)}
             />
@@ -319,9 +335,9 @@ export function PreparedEntryEditDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
-            Cancel
+            {t("Cancel")}
           </Button>
-          <Button onClick={save}>Save</Button>
+          <Button onClick={save}>{t("Save")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
