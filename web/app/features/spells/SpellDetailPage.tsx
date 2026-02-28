@@ -11,6 +11,7 @@ import ComponentsSection from "./ComponentsSection";
 import { MechanicsSection } from "./MechanicSection";
 import LevelsSection from "./LevelsSection";
 import DescriptionSection from "./DescriptionSection";
+import RelatedSpellsSection from "./RelatedSpellsSection";
 import { useCollections } from "~/state/collections-state";
 import { Heart } from "lucide-react";
 import { useAppI18n } from "~/i18n/useAppI18n";
@@ -191,6 +192,10 @@ export default function SpellDetailPage() {
       <Separator />
 
       <DescriptionSection description={getSpellDescription(spell, lang)} />
+
+      <Separator />
+
+      <RelatedSpellsSection spell={spell} />
     </div>
   );
 }

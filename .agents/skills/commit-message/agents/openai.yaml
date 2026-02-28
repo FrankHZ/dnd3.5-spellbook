@@ -1,0 +1,4 @@
+interface:
+  display_name: "Commit Message"
+  short_description: "Draft repo-specific commit messages from changes"
+  default_prompt: "Use $commit-message to draft a commit message for the current changes."

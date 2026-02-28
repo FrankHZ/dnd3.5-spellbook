@@ -8,7 +8,7 @@
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
     "i18next:extract": "i18next-cli extract",
-    "i18next:diff": "powershell -NoProfile -Command \"$out='extracted/i18next.diff'; New-Item -ItemType Directory -Force -Path 'extracted' | Out-Null; git diff --no-index -- extracted public/locales | Out-File -Encoding utf8 $out; if ($LASTEXITCODE -eq 1) { exit 0 } else { exit $LASTEXITCODE }\""
+    "i18next:diff": "pwsh -Command \"$out='extracted/i18next.diff'; New-Item -ItemType Directory -Force -Path 'extracted' | Out-Null; git diff --no-index -- extracted public/locales | Out-File -Encoding utf8 $out; if ($LASTEXITCODE -eq 1) { exit 0 } else { exit $LASTEXITCODE }\""
   },
   "dependencies": {
     "@base-ui/react": "^1.1.0",
