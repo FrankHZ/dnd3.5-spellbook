@@ -15,7 +15,9 @@ import {
 import type {
   CollectionsState,
   PreparedEntry,
+  SpellIdBook,
 } from "~/storage/collections.type";
+import { normalizePositiveIntIds } from "~/storage/prepared-normalize";
 import { useImmer } from "use-immer";
 import { DEFAULT_BOOK_ID } from "~/storage/keys";
 
@@ -31,6 +33,10 @@ type Ctx = {
   spellbook: {
     toggleDefault: (spellId: number) => void;
     isInDefault: (spellId: number) => boolean;
+  };
+
+  spellIdBook: {
+    setSpellIds: (bookId: string, spellIds: number[]) => void;
   };
 
   prepared: {
@@ -59,7 +65,11 @@ type Ctx = {
     removeEntry: (bookId: string, entryId: string) => void;
     removeAllBySpellId: (bookId: string, spellId: number) => void;
     clear: (bookId: string) => void;
-    setEntry: (bookId: string, entryId: string, patch: PreparedEntryPatch) => void;
+    setEntry: (
+      bookId: string,
+      entryId: string,
+      patch: PreparedEntryPatch,
+    ) => void;
     resetUsed: (bookId: string) => void;
     isInPrepared: (bookId: string, spellId: number) => boolean;
     getPrefs: (bookId: string) => PreparedPrefs;
@@ -73,6 +83,15 @@ function makeEntryId() {
     return crypto.randomUUID();
   }
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function getSpellIdBookById(
+  state: CollectionsState,
+  bookId: string,
+): SpellIdBook | null {
+  const book = getBook(state, bookId);
+  if (!book || book.kind === "prepared") return null;
+  return book;
 }
 
 const CollectionsContext = createContext<Ctx | null>(null);
@@ -113,10 +132,16 @@ export function CollectionsProvider({
           if (!b) return;
           b.entries = [...next.entries];
           b.selectedClassIds = Array.from(
-            new Set(next.selectedClassIds.filter((n) => Number.isInteger(n) && n > 0)),
+            new Set(
+              next.selectedClassIds.filter((n) => Number.isInteger(n) && n > 0),
+            ),
           );
           b.selectedDomainIds = Array.from(
-            new Set(next.selectedDomainIds.filter((n) => Number.isInteger(n) && n > 0)),
+            new Set(
+              next.selectedDomainIds.filter(
+                (n) => Number.isInteger(n) && n > 0,
+              ),
+            ),
           );
         });
       },
@@ -203,6 +228,15 @@ export function CollectionsProvider({
         isInDefault: (spellId) => {
           const b = collections.books.find((x) => x.id === DEFAULT_BOOK_ID);
           return b ? isInBook(b, spellId) : false;
+        },
+      },
+      spellIdBook: {
+        setSpellIds: (bookId, spellIds) => {
+          setCollections((draft) => {
+            const b = getSpellIdBookById(draft, bookId);
+            if (!b) return;
+            b.spellIds = normalizePositiveIntIds(spellIds);
+          });
         },
       },
       prepared: {

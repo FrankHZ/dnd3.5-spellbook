@@ -2,10 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { getSpellsBatch } from "~/api/spells";
-import { Separator } from "~/components/ui/separator";
 import { SpellCard } from "~/components/SpellCard";
+import { Separator } from "~/components/ui/separator";
 import { useAppI18n } from "~/i18n/useAppI18n";
-
 import type { SpellIdBook } from "~/storage/collections.type";
 
 export function SpellIdBookDetail({ book }: { book: SpellIdBook }) {

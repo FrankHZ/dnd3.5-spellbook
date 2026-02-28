@@ -269,14 +269,6 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
           </ButtonGroup>
           <BulkPasteDialog bookId={book.id} />
 
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={() => preparedBook.clear(book.id)}
-            disabled={book.entries.length === 0}
-          >
-            {t("Clear")}
-          </Button>
         </div>
       </div>
 

@@ -18,7 +18,7 @@ Derive the commit message in this order:
 3. Choose exactly one scope from: `web`, `server`, `contracts`, `db`, `infra`, `scripts`, `i18n`, `deps`.
 4. Write a short imperative summary no longer than 72 characters and do not end it with a period.
 5. Write one to three `- ` bullets describing the most important changes or effects.
-6. End with exactly one `Refs:` line. Leave it blank after the colon when no reference is available.
+6. End with exactly one `Refs:` line. It will usually be a plan doc and a deliverable doc. Leave it blank after the colon when no reference is available.
 
 Prefer the type and scope that match the dominant user-facing effect of the change, not every file touched. If multiple scopes are involved, choose the one that best represents the main purpose.
 
