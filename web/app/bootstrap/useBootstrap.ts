@@ -1,5 +1,5 @@
 import type { ClassView, DomainView } from "@dnd/contracts";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import {
   getClasses,
@@ -41,19 +41,22 @@ export function useBootstrap(includePrestige?: boolean) {
     ],
     queryFn: ({ signal }) =>
       getClasses(includePrestige, state.selectedRulebookIds, signal),
+    placeholderData: keepPreviousData,
     staleTime: Infinity,
   });
 
   const domains = useQuery({
     queryKey: ["bootstrap", "domains", { rulebookKey, ...queryKey }],
     queryFn: ({ signal }) => getDomains(state.selectedRulebookIds, signal),
+    placeholderData: keepPreviousData,
     staleTime: Infinity,
   });
 
   const metaI18n = useQuery({
-    queryKey: ["metaI18n", { rulebookKey, ...queryKey }],
+    queryKey: ["metaI18n", { ...queryKey }],
     enabled: lang === "zh", // meta is empty in en, skip network
     queryFn: ({ signal }) => getMetaI18n(signal),
+    placeholderData: keepPreviousData,
     staleTime: 10 * 60 * 1000,
   });
 
@@ -79,11 +82,11 @@ export function useBootstrap(includePrestige?: boolean) {
     domainById,
     metaI18n,
     isLoading:
-      editions.isLoading ||
-      rulebooks.isLoading ||
-      classes.isLoading ||
-      domains.isLoading ||
-      metaI18n.isLoading,
+      (editions.isPending && !editions.data) ||
+      (rulebooks.isPending && !rulebooks.data) ||
+      (classes.isPending && !classes.data) ||
+      (domains.isPending && !domains.data) ||
+      (metaI18n.isPending && !metaI18n.data),
     error:
       editions.error ||
       rulebooks.error ||

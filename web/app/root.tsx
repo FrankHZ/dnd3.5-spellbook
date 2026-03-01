@@ -9,11 +9,13 @@ import {
 } from "react-router";
 import appStyles from "~/app.css?url";
 import { useBootstrap } from "~/bootstrap/useBootstrap";
+import { useTranslation } from "react-i18next";
 import { UserPrefsProvider, useUserPrefs } from "~/state/user-prefs-state";
 import TopBar from "./layout/TopBar";
 import { CollectionsProvider } from "./state/collections-state";
 import "~/i18n/i18n";
 import { I18nSync } from "./i18n/I18nSync";
+import { Toaster } from "./components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
 
 export const links: LinksFunction = () => [
@@ -33,15 +35,16 @@ const queryClient = new QueryClient({
 
 function BootstrapBanner() {
   const { state } = useUserPrefs();
+  const { t } = useTranslation();
   const boot = useBootstrap(state.includePrestige);
 
   if (boot.isLoading) {
-    return <div className="p-4 border-b">Loading rules data...</div>;
+    return <div className="p-4 border-b">{t("Loading rules data...")}</div>;
   }
   if (boot.error) {
     return (
       <div className="p-4 border-b text-red-600">
-        Failed to load rules data. Refresh to retry.
+        {t("Failed to load rules data. Refresh to retry.")}
       </div>
     );
   }
@@ -69,6 +72,14 @@ export default function App() {
                     <Outlet />
                   </main>
                 </div>
+                <Toaster
+                  position="top-center"
+                  closeButton
+                  richColors
+                  toastOptions={{
+                    duration: 4500,
+                  }}
+                />
               </CollectionsProvider>
             </UserPrefsProvider>
           </QueryClientProvider>

@@ -13,7 +13,7 @@ export function LevelSelector({
   const level = value;
 
   return (
-    <div className="rounded-md border p-3 space-y-2">
+    <div className="space-y-3">
       <div className="font-medium">{t("Level")}</div>
       <Button
         type="button"

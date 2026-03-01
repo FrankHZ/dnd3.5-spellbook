@@ -19,6 +19,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "~/components/ui/hover-card";
+import { Button } from "~/components/ui/button";
 import { PreparedEntryEditDialog } from "./PreparedEntryEditDialog";
 import { summarizePreparedEntry } from "./prepared-entry-summary";
 
@@ -51,7 +52,8 @@ export function PreparedTableCell({
     if (metamagic.length === 0) return t("None");
     return metamagic
       .map((tag) => {
-        const tagName = tag.name?.trim() || tMeta(tag.key, { defaultValue: tag.key });
+        const tagName =
+          tag.name?.trim() || tMeta(tag.key, { defaultValue: tag.key });
         return typeof tag.levelAdj === "number"
           ? `${tagName} (+${tag.levelAdj})`
           : tagName;
@@ -76,8 +78,8 @@ export function PreparedTableCell({
   return (
     <div
       className={cn(
-        "group relative flex items-center gap-2 px-3",
-        "h-10 text-sm",
+        "group relative flex items-center gap-2 px-1",
+        "h-7 text-sm",
         "select-none",
         mode == "normal" ? "cursor-pointer" : "",
         bg,
@@ -109,15 +111,22 @@ export function PreparedTableCell({
 
       {/* Open detail (small, does not toggle) */}
       {mode === "normal" && (
-        <Link
-          to={`/spells/${spell.id}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 hover:text-slate-900"
+        <Button
+          asChild
+          type="button"
+          size="icon-xs"
+          variant="ghost"
+          className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 text-slate-500 hover:text-slate-900"
         >
-          <ExternalLink className="h-4 w-4" />
-        </Link>
+          <Link
+            to={`/spells/${spell.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ExternalLink className="h-4 w-4" />
+          </Link>
+        </Button>
       )}
 
       {mode === "edit" && (
@@ -133,8 +142,11 @@ export function PreparedTableCell({
       )}
 
       {mode === "edit" && (
-        <button
-          className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-slate-600 hover:text-slate-900 cursor-pointer"
+        <Button
+          type="button"
+          size="icon-xs"
+          variant="ghost"
+          className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 text-slate-600 hover:text-slate-900"
           onClick={(e) => {
             e.stopPropagation();
             preparedBook.setEntry(bookId, entry.entryId, {
@@ -152,7 +164,7 @@ export function PreparedTableCell({
           ) : (
             <LockOpen className="h-4 w-4" />
           )}
-        </button>
+        </Button>
       )}
 
       {/* Extra info hover */}
@@ -172,11 +184,15 @@ export function PreparedTableCell({
             className="w-80 text-sm"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="font-medium mb-2">{summary.effectiveDisplayName}</div>
+            <div className="font-medium mb-2">
+              {summary.effectiveDisplayName}
+            </div>
 
             {hasDisplayNameOverride && (
               <div className="mb-2">
-                <div className="text-xs text-muted-foreground">{t("Base Name")}</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("Base Name")}
+                </div>
                 <div>{summary.baseName}</div>
               </div>
             )}
@@ -192,7 +208,9 @@ export function PreparedTableCell({
 
             {hasMetamagic && (
               <div className="mb-2">
-                <div className="text-xs text-muted-foreground">{t("Metamagic")}</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("Metamagic")}
+                </div>
                 <div>{localizedMetamagicSummary}</div>
                 <div className="text-xs text-muted-foreground">
                   {t("Total level adj: +{{adj}}", {
@@ -204,7 +222,9 @@ export function PreparedTableCell({
 
             {hasNote && (
               <div>
-                <div className="text-xs text-muted-foreground mb-1">{t("Notes")}</div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t("Notes")}
+                </div>
                 <div className="whitespace-pre-wrap wrap-break-word text-muted-foreground">
                   {entry.notes}
                 </div>
@@ -215,8 +235,11 @@ export function PreparedTableCell({
       )}
 
       {mode === "edit" && (
-        <button
-          className="shrink-0 text-slate-600 hover:text-red-700 cursor-pointer"
+        <Button
+          type="button"
+          size="icon-xs"
+          variant="ghost"
+          className="shrink-0 text-slate-600 hover:text-red-700"
           onClick={(e) => {
             e.stopPropagation();
             preparedBook.removeEntry(bookId, entry.entryId);
@@ -224,7 +247,7 @@ export function PreparedTableCell({
           title={t("Remove")}
         >
           <Trash2 className="h-4 w-4" />
-        </button>
+        </Button>
       )}
     </div>
   );

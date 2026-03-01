@@ -1,6 +1,14 @@
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
-import { Button } from "~/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+} from "~/components/ui/pagination";
+import { cn } from "~/lib/utils";
 
 type PagerProps = {
   page: number; // 1-based
@@ -27,6 +35,34 @@ function rangeText(
   return t("Showing {{start}}-{{end}} of {{total}}", { start, end, total });
 }
 
+function buildPageTokens(currentPage: number, totalPages: number) {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  const pages = new Set<number>([
+    1,
+    totalPages,
+    currentPage - 1,
+    currentPage,
+    currentPage + 1,
+  ]);
+  const visiblePages = [...pages]
+    .filter((page) => page >= 1 && page <= totalPages)
+    .sort((a, b) => a - b);
+
+  const tokens: Array<number | "ellipsis"> = [];
+  for (const page of visiblePages) {
+    const prev = tokens.at(-1);
+    if (typeof prev === "number" && page - prev > 1) {
+      tokens.push("ellipsis");
+    }
+    tokens.push(page);
+  }
+
+  return tokens;
+}
+
 export default function Pager({
   page,
   pageSize,
@@ -38,10 +74,18 @@ export default function Pager({
 }: PagerProps) {
   const hasPrev = page > 1;
   const hasNext = page * pageSize < total;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const pageTokens = buildPageTokens(page, totalPages);
   const { t } = useTranslation("pager");
 
+  const goToPage = (nextPage: number) => {
+    if (isBusy) return;
+    if (nextPage < 1 || nextPage > totalPages || nextPage === page) return;
+    onPageChange(nextPage);
+  };
+
   return (
-    <div className={`flex items-center justify-between gap-3 ${className}`}>
+    <div className={cn("flex items-center justify-between gap-3", className)}>
       {showRangeText ? (
         <div className="text-sm text-muted-foreground">
           {rangeText(t, page, pageSize, total)}
@@ -50,24 +94,67 @@ export default function Pager({
         <div />
       )}
 
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={!hasPrev || isBusy}
-          onClick={() => onPageChange(Math.max(1, page - 1))}
-        >
-          {t("Prev")}
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={!hasNext || isBusy}
-          onClick={() => onPageChange(page + 1)}
-        >
-          {t("Next")}
-        </Button>
-      </div>
+      <Pagination className="mx-0 w-auto justify-end">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationLink
+              href={`?page=${Math.max(1, page - 1)}`}
+              aria-label={t("Prev")}
+              aria-disabled={!hasPrev || isBusy}
+              tabIndex={!hasPrev || isBusy ? -1 : undefined}
+              className={cn(
+                "gap-1 px-2.5",
+                (!hasPrev || isBusy) && "pointer-events-none opacity-50",
+              )}
+              onClick={(event) => {
+                event.preventDefault();
+                goToPage(page - 1);
+              }}
+            >
+              <ChevronLeft className="size-4" />
+            </PaginationLink>
+          </PaginationItem>
+
+          {pageTokens.map((token, index) => (
+            <PaginationItem key={`${token}-${index}`}>
+              {token === "ellipsis" ? (
+                <PaginationEllipsis />
+              ) : (
+                <PaginationLink
+                  href={`?page=${token}`}
+                  isActive={token === page}
+                  aria-label={`Page ${token}`}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    goToPage(token);
+                  }}
+                >
+                  {token}
+                </PaginationLink>
+              )}
+            </PaginationItem>
+          ))}
+
+          <PaginationItem>
+            <PaginationLink
+              href={`?page=${Math.min(totalPages, page + 1)}`}
+              aria-label={t("Next")}
+              aria-disabled={!hasNext || isBusy}
+              tabIndex={!hasNext || isBusy ? -1 : undefined}
+              className={cn(
+                "gap-1 px-2.5",
+                (!hasNext || isBusy) && "pointer-events-none opacity-50",
+              )}
+              onClick={(event) => {
+                event.preventDefault();
+                goToPage(page + 1);
+              }}
+            >
+              <ChevronRight className="size-4" />
+            </PaginationLink>
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
     </div>
   );
 }

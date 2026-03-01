@@ -8,8 +8,8 @@ export default function SettingsPage() {
   const { t } = useTranslation("settings");
 
   return (
-    <div className="p-4 space-y-4 max-w-6xl mx-auto">
-      <div className="space-y-1">
+    <div className="mx-auto max-w-4xl space-y-4 p-4">
+      <div className="space-y-1 px-1">
         <h2 className="text-lg font-semibold">{t("Settings")}</h2>
         <div className="text-sm text-muted-foreground">
           {t("Settings are stored locally (MVP).")}
@@ -19,7 +19,7 @@ export default function SettingsPage() {
       <ClassSettings />
       <RulebookSelector />
 
-      <div className="text-xs text-muted-foreground">
+      <div className="px-1 text-xs text-muted-foreground">
         storageVersion: {state.storageVersion}
       </div>
     </div>

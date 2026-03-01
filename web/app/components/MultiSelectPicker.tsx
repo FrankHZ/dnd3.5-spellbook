@@ -53,7 +53,7 @@ export function MultiSelectPicker(props: {
 }) {
   const {
     title,
-    placeholder = "Filter...",
+    placeholder,
     items,
     selectedIds,
     onChange,
@@ -76,17 +76,20 @@ export function MultiSelectPicker(props: {
     return items.filter((i) => normalize(i.name).includes(q));
   }, [items, filter]);
 
+  const { t } = useTranslation();
+  const resolvedPlaceholder = placeholder ?? t("Filter...");
+
   // group in dialog
   const groups = React.useMemo(() => {
     const m = new Map<string, PickerItem[]>();
     for (const it of filteredItems) {
-      const g = it.group ?? "All";
+      const g = it.group ?? t("All");
       const arr = m.get(g) ?? [];
       arr.push(it);
       m.set(g, arr);
     }
     return Array.from(m.entries());
-  }, [filteredItems]);
+  }, [filteredItems, t]);
 
   function toggle(id: number) {
     const next = new Set(selectedIds);
@@ -104,7 +107,6 @@ export function MultiSelectPicker(props: {
   }
 
   const anchor = useComboboxAnchor();
-  const { t } = useTranslation();
   return (
     <div className="rounded-md border p-3 space-y-3">
       <div className="flex items-center justify-between gap-2">
@@ -129,7 +131,7 @@ export function MultiSelectPicker(props: {
               </DialogHeader>
               <Command>
                 <CommandInput
-                  placeholder={placeholder}
+                  placeholder={resolvedPlaceholder}
                   value={filter}
                   onValueChange={setFilter}
                 />
@@ -178,23 +180,25 @@ export function MultiSelectPicker(props: {
                 {values.map((value: PickerItem) => (
                   <ComboboxChip key={value.id} showRemove={false}>
                     {value.name}
-                    <button
-                      className="ml-1 rounded hover:bg-muted/50"
+                    <Button
+                      className="ml-1"
+                      variant="ghost"
+                      size="icon-xs"
                       onClick={() => remove(value.id)}
-                      aria-label={`Remove ${value.name}`}
+                      aria-label={t("Remove {{name}}", { name: value.name })}
                       type="button"
                     >
                       <X className="h-3 w-3" />
-                    </button>
+                    </Button>
                   </ComboboxChip>
                 ))}
-                <ComboboxChipsInput placeholder={placeholder} />
+                <ComboboxChipsInput placeholder={resolvedPlaceholder} />
               </React.Fragment>
             )}
           </ComboboxValue>
         </ComboboxChips>
         <ComboboxContent anchor={anchor}>
-          <ComboboxEmpty>No items found.</ComboboxEmpty>
+          <ComboboxEmpty>{t("No items found.")}</ComboboxEmpty>
           <ComboboxList>
             {(item: PickerItem) => (
               <ComboboxItem

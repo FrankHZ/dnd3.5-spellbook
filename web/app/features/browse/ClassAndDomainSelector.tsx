@@ -36,7 +36,7 @@ export function ClassAndDomainSelector({
   }));
 
   return (
-    <div className="rounded-md border p-3 space-y-2">
+    <div className="space-y-3">
       <MultiSelectPicker
         title={t("Classes")}
         placeholder={t("Filter classes…")}

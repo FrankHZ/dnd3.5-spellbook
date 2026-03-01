@@ -1,8 +1,35 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { Menu } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { NavLink, useNavigate, useSearchParams } from "react-router";
+import {
+  NavLink,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+} from "~/components/ui/navigation-menu";
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+} from "~/components/ui/popover";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "~/components/ui/sheet";
+import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { isSearchQueryValid } from "~/features/search/validation";
 import { useAppI18n } from "~/i18n/useAppI18n";
 import { useUserPrefs } from "~/state/user-prefs-state";
@@ -21,6 +48,11 @@ function TopBarSearch() {
   useEffect(() => {
     setError(null);
   }, [lang]);
+
+  useEffect(() => {
+    setText(q);
+  }, [q]);
+
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValid.ok) {
@@ -37,56 +69,159 @@ function TopBarSearch() {
     navigate(`/search?q=${encodeURIComponent(text.trim())}`);
   };
 
-  useMemo(() => setText(q), [q]);
   return (
-    <div className="flex-1">
-      <form className="flex gap-2" onSubmit={onSubmit}>
-        <Input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder={t("Search spells by name...")}
-        />
-        <Button type="submit" variant="outline">
-          {t("Search")}
+    <Popover open={Boolean(error)}>
+      <div className="flex-1">
+        <PopoverAnchor asChild>
+          <form className="flex gap-2" onSubmit={onSubmit}>
+            <Input
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder={t("Search spells by name...")}
+              aria-invalid={Boolean(error)}
+            />
+            <Button type="submit" variant="outline">
+              {t("Search")}
+            </Button>
+          </form>
+        </PopoverAnchor>
+        <PopoverContent
+          align="start"
+          side="bottom"
+          sideOffset={8}
+          className="w-auto max-w-sm px-3 py-2 text-xs text-destructive"
+        >
+          {error}
+        </PopoverContent>
+      </div>
+    </Popover>
+  );
+}
+
+function useTopBarItems() {
+  const { t } = useTranslation("topbar");
+  const { pathname } = useLocation();
+
+  return [
+    { to: "/browse", label: t("Browse"), active: pathname === "/browse" },
+    {
+      to: "/spellbooks/default",
+      label: t("Favorites"),
+      active: pathname === "/spellbooks/default",
+    },
+    {
+      to: "/spellbooks/prepared",
+      label: t("Prepared"),
+      active: pathname === "/spellbooks/prepared",
+    },
+    {
+      to: "/spellbooks",
+      label: t("Spellbooks"),
+      active:
+        pathname === "/spellbooks" ||
+        (pathname.startsWith("/spellbooks/") &&
+          pathname !== "/spellbooks/default" &&
+          pathname !== "/spellbooks/prepared"),
+    },
+    { to: "/settings", label: t("Settings"), active: pathname === "/settings" },
+  ];
+}
+
+function TopBarNav() {
+  const items = useTopBarItems();
+
+  return (
+    <NavigationMenu viewport={false} className="hidden flex-none md:flex">
+      <NavigationMenuList className="gap-1">
+        {items.map((item) => (
+          <NavigationMenuItem key={item.to}>
+            <NavigationMenuLink asChild active={item.active}>
+              <NavLink to={item.to} className="px-3 py-2">
+                {item.label}
+              </NavLink>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+        ))}
+      </NavigationMenuList>
+    </NavigationMenu>
+  );
+}
+
+function MobileNavMenu() {
+  const { t } = useTranslation("topbar");
+  const items = useTopBarItems();
+
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon-sm"
+          className="md:hidden"
+          aria-label={t("Open navigation")}
+        >
+          <Menu className="size-4" />
         </Button>
-      </form>
-      {error && <div className="mt-1 text-xs text-destructive">{error}</div>}
-    </div>
+      </SheetTrigger>
+      <SheetContent side="right" className="w-72 gap-0">
+        <SheetHeader className="border-b pb-4">
+          <SheetTitle>{t("D&D 3.5 Spellbook")}</SheetTitle>
+        </SheetHeader>
+        <div className="flex flex-col gap-2 p-4">
+          {items.map((item) => (
+            <SheetClose asChild key={item.to}>
+              <NavLink
+                to={item.to}
+                className={`rounded-md px-3 py-2 text-sm transition-colors ${
+                  item.active
+                    ? "bg-accent text-accent-foreground"
+                    : "text-foreground hover:bg-accent hover:text-accent-foreground"
+                }`}
+              >
+                {item.label}
+              </NavLink>
+            </SheetClose>
+          ))}
+          <div className="pt-2">
+            <LangToggle />
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 
 function LangToggle() {
+  const { t } = useTranslation("topbar");
   const { state, setState } = useUserPrefs();
   const lang = state.uiPrefs.lang ?? "en";
 
   return (
-    <div className="flex items-center gap-1 rounded-md border p-1">
-      <Button
-        type="button"
-        size="sm"
-        variant={lang === "en" ? "default" : "ghost"}
-        onClick={() =>
-          setState((s) => ({ ...s, uiPrefs: { ...s.uiPrefs, lang: "en" } }))
-        }
-      >
+    <ToggleGroup
+      type="single"
+      value={lang}
+      variant="outline"
+      size="sm"
+      aria-label={t("Language")}
+      onValueChange={(value) => {
+        if (value !== "en" && value !== "zh") return;
+        setState((s) => ({ ...s, uiPrefs: { ...s.uiPrefs, lang: value } }));
+      }}
+    >
+      <ToggleGroupItem value="en" aria-label={t("English")}>
         EN
-      </Button>
-      <Button
-        type="button"
-        size="sm"
-        variant={lang === "zh" ? "default" : "ghost"}
-        onClick={() =>
-          setState((s) => ({ ...s, uiPrefs: { ...s.uiPrefs, lang: "zh" } }))
-        }
-      >
+      </ToggleGroupItem>
+      <ToggleGroupItem value="zh" aria-label={t("Chinese")}>
         中
-      </Button>
-    </div>
+      </ToggleGroupItem>
+    </ToggleGroup>
   );
 }
 
 export default function TopBar() {
   const { t } = useTranslation("topbar");
+
   return (
     <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur">
       <div className="flex items-center gap-3 px-4 py-3">
@@ -95,24 +230,11 @@ export default function TopBar() {
         </NavLink>
 
         <TopBarSearch />
-        <nav className="flex gap-3 text-sm">
-          <NavLink className="hover:underline" to="/browse">
-            {t("Browse")}
-          </NavLink>
-          <NavLink className="hover:underline" to="/spellbooks/default">
-            {t("Favorites")}
-          </NavLink>
-          <NavLink className="hover:underline" to="/spellbooks/prepared">
-            {t("Prepared")}
-          </NavLink>
-          <NavLink className="hover:underline" to="/spellbooks">
-            {t("Spellbooks")}
-          </NavLink>
-          <NavLink className="hover:underline" to="/settings">
-            {t("Settings")}
-          </NavLink>
-        </nav>
-        <LangToggle />
+        <MobileNavMenu />
+        <TopBarNav />
+        <div className="hidden md:block">
+          <LangToggle />
+        </div>
       </div>
     </header>
   );

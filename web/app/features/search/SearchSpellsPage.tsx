@@ -4,12 +4,17 @@ import { useSearchParams } from "react-router";
 
 import { ApiError } from "~/api/http";
 import { searchSpellsByName } from "~/api/spells";
-import { useUserPrefs } from "~/state/user-prefs-state";
-
 import Pager from "~/components/Pager";
 import { SpellCard } from "~/components/SpellCard";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { useAppI18n } from "~/i18n/useAppI18n";
+import { useUserPrefs } from "~/state/user-prefs-state";
 import { useTranslation } from "react-i18next";
 import { isSearchQueryValid } from "./validation";
 import { PAGE_SIZE } from "../constants";
@@ -49,8 +54,8 @@ export default function SearchSpellsPage() {
     const err = query.error;
     if (!err) return null;
     if (err instanceof ApiError) return err.message;
-    return "Request failed. Please try again.";
-  }, [query.error]);
+    return t("Request failed. Please try again.");
+  }, [query.error, t]);
 
   const data = query.data;
   const total = data?.total ?? 0;
@@ -64,73 +69,86 @@ export default function SearchSpellsPage() {
   }
 
   return (
-    <div className="p-4 space-y-4 max-w-4xl mx-auto">
-      <div className="space-y-1">
-        <h1 className="text-lg font-semibold">Search</h1>
+    <div className="mx-auto max-w-4xl space-y-4 p-4">
+      <div className="space-y-1 px-1">
         <div className="text-sm text-muted-foreground">
           {t("Global name search. Browsing by class/level lives in Browse.")}
         </div>
         {rulebookIds.length > 0 && (
-          <div className="text-xs text-muted-foreground">
+          <div className="text-sm text-muted-foreground">
             {t("Rulebook filter is active (from Settings).")}
           </div>
         )}
       </div>
 
       {!isValid && (
-        <div className="rounded-md border p-3">
-          <div className="text-sm text-muted-foreground">
-            {lang === "zh"
-              ? t("Enter at least 2 characters, or type a Chinese character.")
-              : t("Enter at least 2 characters to run a search.")}
-          </div>
-        </div>
+        <Card className="gap-0">
+          <CardHeader className="gap-1 py-2">
+            <CardDescription>
+              {lang === "zh"
+                ? t("Enter at least 2 characters, or type a Chinese character.")
+                : t("Enter at least 2 characters to run a search.")}
+            </CardDescription>
+          </CardHeader>
+        </Card>
       )}
 
       {isValid && (
         <div className="space-y-3">
-          <Pager
-            page={page}
-            pageSize={pageSize}
-            total={total}
-            isBusy={query.isFetching}
-            onPageChange={goToPage}
-          />
-
-          <Separator />
-
           {errorMessage && (
-            <div className="rounded-md border p-3">
-              <div className="font-medium">Couldn’t load results</div>
-              <div className="mt-1 text-sm text-muted-foreground">
-                {errorMessage}
-              </div>
-            </div>
+            <Card className="gap-0">
+              <CardHeader className="gap-1 py-2">
+                <CardDescription>{errorMessage}</CardDescription>
+              </CardHeader>
+            </Card>
           )}
 
           {!errorMessage && !query.isLoading && items.length === 0 && (
-            <div className="rounded-md border p-3">
-              <div className="font-medium">No matches</div>
-              <div className="mt-1 text-sm text-muted-foreground">
-                No spells matched “{qParam}”.
-              </div>
-            </div>
+            <Card className="gap-0">
+              <CardHeader className="gap-1 py-2">
+                <CardDescription>
+                  {t('No spells matched "{{query}}".', { query: qParam })}
+                </CardDescription>
+              </CardHeader>
+            </Card>
           )}
 
-          <div className="divide-y rounded-md border">
-            {items.map((sp) => (
-              <SpellCard key={sp.id} spell={sp} showActions />
-            ))}
-          </div>
+          {items.length > 0 && (
+            <Card className="gap-0 overflow-hidden py-2">
+              <CardContent className="space-y-3 px-0 py-1">
+                <div className="px-6">
+                  <Pager
+                    page={page}
+                    pageSize={pageSize}
+                    total={total}
+                    isBusy={query.isFetching}
+                    onPageChange={goToPage}
+                  />
+                </div>
 
-          <Pager
-            page={page}
-            pageSize={pageSize}
-            total={total}
-            isBusy={query.isFetching}
-            onPageChange={goToPage}
-            showRangeText={false}
-          />
+                <Separator />
+
+                <div className="divide-y">
+                  {items.map((sp) => (
+                    <SpellCard key={sp.id} spell={sp} showActions />
+                  ))}
+                </div>
+
+                <Separator />
+
+                <div className="px-6">
+                  <Pager
+                    page={page}
+                    pageSize={pageSize}
+                    total={total}
+                    isBusy={query.isFetching}
+                    onPageChange={goToPage}
+                    showRangeText={false}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
     </div>

@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
-import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import { getSpellsBatch } from "~/api/spells";
 import { Button } from "~/components/ui/button";
@@ -21,24 +21,14 @@ export function PreparedBookJsonActions({ book }: { book: PreparedBook }) {
   const { t } = useTranslation("collections");
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [isImporting, setIsImporting] = useState(false);
-  const [importError, setImportError] = useState<string | null>(null);
-  const [importSummary, setImportSummary] = useState<{
-    importedEntries: number;
-    invalidEntries: number;
-    missingSpellIds: number[];
-  } | null>(null);
   const { preparedBook } = useCollections();
 
   const openImportPicker = () => {
     if (isImporting) return;
-    setImportError(null);
-    setImportSummary(null);
     importInputRef.current?.click();
   };
 
   const onImportFile = async (file: File) => {
-    setImportError(null);
-    setImportSummary(null);
     setIsImporting(true);
     try {
       const text = await file.text();
@@ -62,15 +52,20 @@ export function PreparedBookJsonActions({ book }: { book: PreparedBook }) {
         selectedClassIds: parsed.selectedClassIds,
         selectedDomainIds: parsed.selectedDomainIds,
       });
+      const missingSpellIds = [...batch.missingIds].sort((a, b) => a - b);
 
-      setImportSummary({
-        importedEntries: importedEntries.length,
-        invalidEntries: parsed.invalidEntriesCount,
-        missingSpellIds: [...batch.missingIds].sort((a, b) => a - b),
+      toast.success(t("Import complete"), {
+        description: [
+          `${t("Imported entries:")} ${importedEntries.length}`,
+          `${t("Invalid entries skipped:")} ${parsed.invalidEntriesCount}`,
+          `${t("Missing spellIds:")} ${
+            missingSpellIds.length > 0 ? missingSpellIds.join(", ") : t("none")
+          }`,
+        ].join(" | "),
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : t("Import failed.");
-      setImportError(msg);
+      toast.error(t("Import failed"), { description: msg });
     } finally {
       setIsImporting(false);
       if (importInputRef.current) {
@@ -81,12 +76,16 @@ export function PreparedBookJsonActions({ book }: { book: PreparedBook }) {
 
   const onExport = () => {
     downloadPreparedCollectionExport(book);
+    toast.success(t("Export JSON"), {
+      description: t("Export current collection as JSON."),
+    });
   };
 
   const onClear = () => {
-    setImportError(null);
-    setImportSummary(null);
     preparedBook.clear(book.id);
+    toast.success(t("Clear"), {
+      description: t("Collection cleared."),
+    });
   };
 
   return (
@@ -140,58 +139,6 @@ export function PreparedBookJsonActions({ book }: { book: PreparedBook }) {
       >
         {t("Clear")}
       </Button>
-
-      {importError && (
-        <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <div className="font-medium">{t("Import failed")}</div>
-              <div className="mt-1 text-muted-foreground">{importError}</div>
-            </div>
-            <Button
-              type="button"
-              size="icon-xs"
-              variant="ghost"
-              aria-label={t("Close import error")}
-              onClick={() => setImportError(null)}
-            >
-              <X />
-            </Button>
-          </div>
-        </div>
-      )}
-      {importSummary && (
-        <div className="rounded-md border p-3 text-sm">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <div className="font-medium">{t("Import complete")}</div>
-              <div className="mt-1 text-muted-foreground">
-                {t("Imported entries:")} <b>{importSummary.importedEntries}</b>
-              </div>
-              <div className="text-muted-foreground">
-                {t("Invalid entries skipped:")} <b>{importSummary.invalidEntries}</b>
-              </div>
-              <div className="text-muted-foreground">
-                {t("Missing spellIds:")}{" "}
-                <b>
-                  {importSummary.missingSpellIds.length > 0
-                    ? importSummary.missingSpellIds.join(", ")
-                    : t("none")}
-                </b>
-              </div>
-            </div>
-            <Button
-              type="button"
-              size="icon-xs"
-              variant="ghost"
-              aria-label={t("Close import summary")}
-              onClick={() => setImportSummary(null)}
-            >
-              <X />
-            </Button>
-          </div>
-        </div>
-      )}
     </>
   );
 }

@@ -20,11 +20,11 @@ export function PreparedTable({
 
   return (
     <div className="overflow-x-auto pb-2">
-      <div className="min-w-500 rounded-md border overflow-hidden min-h-110 flex flex-col">
+      <div className="min-w-450 rounded-md border overflow-hidden min-h-110 flex flex-col">
         <div className="grid grid-cols-10 flex-1">
           {Array.from({ length: 10 }, (_, level) => (
             <div key={level} className="h-full flex flex-col border-r">
-              <div className="h-10 bg-muted flex items-center justify-center text-sm font-medium border-b">
+              <div className="h-8 bg-muted flex items-center justify-center text-sm font-medium border-b">
                 {t("Level {{level}} - {{count}} slot(s)", {
                   level,
                   count: columns[level]?.length ?? 0,

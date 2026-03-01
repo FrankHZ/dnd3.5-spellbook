@@ -164,19 +164,22 @@ export function PreparedEntryEditDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <button
-          className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-slate-600 hover:text-slate-900 cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            openDialog();
-          }}
-          title={t("Edit entry")}
-        >
-          <Pencil className="h-4 w-4" />
-        </button>
-      </DialogTrigger>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button
+            type="button"
+            size="icon-xs"
+            variant="ghost"
+            className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 text-slate-600 hover:text-slate-900"
+            onClick={(e) => {
+              e.stopPropagation();
+              openDialog();
+            }}
+            title={t("Edit entry")}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+        </DialogTrigger>
 
       <DialogContent
         onClick={(e) => e.stopPropagation()}
@@ -236,15 +239,12 @@ export function PreparedEntryEditDialog({
               {COMMON_METAMAGIC.map((tag) => {
                 const active = draftMetamagic.some((x) => x.key === tag.key);
                 return (
-                  <button
+                  <Button
                     key={tag.key}
                     type="button"
-                    className={cn(
-                      "rounded-md border px-2 py-1 text-xs",
-                      active
-                        ? "bg-primary/10 border-primary text-primary"
-                        : "bg-background border-border text-foreground hover:bg-muted",
-                    )}
+                    size="xs"
+                    variant={active ? "secondary" : "outline"}
+                    className={cn(active ? "border-primary text-primary" : "")}
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleMetamagic(tag);
@@ -252,7 +252,7 @@ export function PreparedEntryEditDialog({
                   >
                     {tMeta(tag.key, { defaultValue: tag.key })} (+
                     {tag.levelAdj ?? 0})
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -291,10 +291,12 @@ export function PreparedEntryEditDialog({
                     tag.name?.trim() ||
                     tMeta(tag.key, { defaultValue: tag.key });
                   return (
-                    <button
+                    <Button
                       key={tag.key}
                       type="button"
-                      className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs bg-muted hover:bg-muted/80"
+                      size="xs"
+                      variant="outline"
+                      className="inline-flex bg-muted hover:bg-muted/80"
                       onClick={(e) => {
                         e.stopPropagation();
                         removeMetamagicByKey(tag.key);
@@ -308,7 +310,7 @@ export function PreparedEntryEditDialog({
                           : ""}
                       </span>
                       <X className="h-3 w-3" />
-                    </button>
+                    </Button>
                   );
                 })}
               </div>

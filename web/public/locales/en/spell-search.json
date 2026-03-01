@@ -2,6 +2,8 @@
   "Enter at least 2 characters to run a search.": "Enter at least 2 characters to run a search.",
   "Enter at least 2 characters, or type a Chinese character.": "Enter at least 2 characters, or type a Chinese character.",
   "Global name search. Browsing by class/level lives in Browse.": "Global name search. Browsing by class/level lives in Browse.",
+  "No spells matched \"{{query}}\".": "No spells matched \"{{query}}\".",
+  "Request failed. Please try again.": "Request failed. Please try again.",
   "Rulebook filter is active (from Settings).": "Rulebook filter is active (from Settings).",
   "Search": "Search",
   "Search spells by name...": "Search spells by name..."

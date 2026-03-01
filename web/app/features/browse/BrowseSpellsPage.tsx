@@ -1,25 +1,26 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 import { ApiError } from "~/api/http";
 import { getSpellsByLevel } from "~/api/spells";
-
 import Pager from "~/components/Pager";
-import { Separator } from "~/components/ui/separator";
-import { SpellCard } from "../../components/SpellCard";
-
-import { useTranslation } from "react-i18next";
-import { useAppI18n } from "~/i18n/useAppI18n";
-import { LevelSelector } from "./LevelSelector";
-import { ClassAndDomainSelector } from "./ClassAndDomainSelector";
-import { useBrowseQueryState } from "./useBrowseQueryState";
-import { PAGE_SIZE } from "../constants";
+import { SpellCard } from "~/components/SpellCard";
 import {
-  BrowseOptionsToggle,
-  type CardViewMode,
-  type GroupMode,
-} from "./BrowseOptionsToggle";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from "~/components/ui/card";
+import { Separator } from "~/components/ui/separator";
+import { useAppI18n } from "~/i18n/useAppI18n";
+
+import { PAGE_SIZE } from "../constants";
+import { BrowseOptionsToggle } from "./BrowseOptionsToggle";
+import { ClassAndDomainSelector } from "./ClassAndDomainSelector";
+import { LevelSelector } from "./LevelSelector";
 import { useBrowsePrefs } from "./useBrowsePref";
+import { useBrowseQueryState } from "./useBrowseQueryState";
 
 export default function BrowsePage() {
   const { queryKey } = useAppI18n();
@@ -59,7 +60,7 @@ export default function BrowsePage() {
       getSpellsByLevel({
         classIds,
         domainIds,
-        level: level!, // safe because enabled guards it
+        level: level!,
         rulebookIds: rulebookIds.length ? rulebookIds : undefined,
         page,
         pageSize,
@@ -69,111 +70,134 @@ export default function BrowsePage() {
   });
 
   const validationMessages: string[] = [];
-  if (classIds.length === 0 && domainIds.length === 0)
-    validationMessages.push("Select at least one class or domain.");
-  if (level === null) validationMessages.push("Select a spell level (0-9).");
+  if (classIds.length === 0 && domainIds.length === 0) {
+    validationMessages.push(t("Select at least one class or domain."));
+  }
+  if (level === null) {
+    validationMessages.push(t("Select a spell level (0-9)."));
+  }
 
   const errorMessage = useMemo(() => {
     const err = browseQuery.error;
     if (!err) return null;
-    if (err instanceof ApiError) return err.message; // message already normalized
-    return "Request failed. Please try again.";
-  }, [browseQuery.error]);
+    if (err instanceof ApiError) return err.message;
+    return t("Request failed. Please try again.");
+  }, [browseQuery.error, t]);
 
   const total = browseQuery.data?.total ?? 0;
   const groups = browseQuery.data?.groups;
   const bookCount = rulebookIds.length;
-  const hasSpellData = groups?.flatMap((g) => g.items).length !== 0;
+  const hasSpellData = groups?.flatMap((group) => group.items).length !== 0;
+  const scopeDescription =
+    bookCount !== 0
+      ? t("Using saved rulebook scope: {{bookCount}} selected", {
+          ns: "spell-browse",
+          bookCount,
+        })
+      : t("Using default rulebook scope: 3.5 core", {
+          ns: "spell-browse",
+        });
 
   return (
-    <div className="p-4 space-y-4 max-w-6xl mx-auto">
+    <div className="mx-auto max-w-6xl space-y-4 p-4">
       <div className="grid gap-4 md:grid-cols-[320px_1fr]">
+        <Card className="gap-0 self-start">
+          <CardContent className="space-y-4">
+            <BrowseOptionsToggle
+              cardView={cardView}
+              onCardViewChange={setCardView}
+              groupMode={groupMode}
+              onGroupModeChange={setGroupMode}
+            />
+            <Separator />
+            <ClassAndDomainSelector
+              classIds={classIds}
+              domainIds={domainIds}
+              onChangeClasses={setClassIds}
+              onChangeDomains={setDomainIds}
+            />
+            <Separator />
+            <LevelSelector value={level} onChange={setLevel} />
+          </CardContent>
+        </Card>
+
         <div className="space-y-3">
-          <BrowseOptionsToggle
-            cardView={cardView}
-            onCardViewChange={setCardView}
-            groupMode={groupMode}
-            onGroupModeChange={setGroupMode}
-          />
-          <ClassAndDomainSelector
-            classIds={classIds}
-            domainIds={domainIds}
-            onChangeClasses={setClassIds}
-            onChangeDomains={setDomainIds}
-          />
-          <LevelSelector value={level} onChange={setLevel} />
-        </div>
-        <div className="space-y-3">
-          {!hasValidSelection && (
-            <div className="rounded-md border p-3">
-              <div className="font-medium">Before searching</div>
-              <ul className="mt-2 list-disc pl-5 text-sm text-muted-foreground">
-                {validationMessages.map((m) => (
-                  <li key={m}>{m}</li>
-                ))}
-              </ul>
+          <div className="space-y-1 px-1">
+            <div className="text-sm text-muted-foreground">
+              {scopeDescription}
             </div>
-          )}
-          <div className="text-xs text-muted-foreground">
-            {bookCount !== 0
-              ? t("Using saved rulebook scope\: {{bookCount}} selected", {
-                  ns: "spell-browse",
-                  bookCount,
-                })
-              : t("Using default rulebook scope\: 3.5 core", {
-                  ns: "spell-browse",
-                })}
           </div>
-          {hasValidSelection && (
-            <div className="space-y-3">
-              <Pager
-                page={page}
-                pageSize={pageSize}
-                total={total}
-                onPageChange={setPage}
-              />
 
-              <Separator />
+          {!hasValidSelection && (
+            <Card className="gap-0">
+              <CardHeader className="gap-1 py-1">
+                <CardDescription>
+                  {t("Choose at least one class or domain, then set a spell level.")}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <ul className="list-disc pl-5 text-sm text-muted-foreground">
+                  {validationMessages.map((message) => (
+                    <li key={message}>{message}</li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
 
-              {errorMessage && (
-                <div className="rounded-md border p-3">
-                  <div className="font-medium">Couldn't load spells</div>
-                  <div className="mt-1 text-sm text-muted-foreground">
-                    {errorMessage}
-                  </div>
-                </div>
-              )}
+          {hasValidSelection && errorMessage && (
+            <Card className="gap-0">
+              <CardHeader className="gap-1 py-1">
+                <CardDescription>{errorMessage}</CardDescription>
+              </CardHeader>
+            </Card>
+          )}
 
-              {!errorMessage && !browseQuery.isLoading && !hasSpellData && (
-                <div className="rounded-md border p-3">
-                  <div className="font-medium">{t("No spells found")}</div>
-                  <div className="mt-1 text-sm text-muted-foreground">
+          {hasValidSelection &&
+            !errorMessage &&
+            !browseQuery.isLoading &&
+            !hasSpellData && (
+              <Card className="gap-0">
+                <CardHeader className="gap-1">
+                  <CardDescription>
                     {t(
                       "No spells found for selected classes at level {{level}}.",
                       { level },
                     )}
-                  </div>
-                </div>
-              )}
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            )}
 
-              {hasSpellData && (
-                <div className="divide-y rounded-md border">
+          {hasValidSelection && hasSpellData && (
+            <Card className="gap-0 overflow-hidden py-2">
+              <CardContent className="space-y-3 px-0 py-1">
+                <div className="px-6">
+                  <Pager
+                    page={page}
+                    pageSize={pageSize}
+                    total={total}
+                    onPageChange={setPage}
+                  />
+                </div>
+
+                <Separator className="my-0" />
+
+                <div className="divide-y">
                   {groupMode === "grouped"
-                    ? groups?.map((g) => (
-                        <div key={g.level} className="divide-y">
-                          {/* Level header */}
-                          <div className="px-3 py-2 text-sm font-medium bg-muted/30 text-center tracking-wide">
+                    ? groups?.map((group) => (
+                        <div key={group.level} className="divide-y">
+                          <div className="bg-muted/30 px-3 py-2 text-center text-sm font-medium tracking-wide">
                             {t("Level {{level}}", {
                               ns: "spell-browse",
-                              level: g.level,
+                              level: group.level,
                             })}
                           </div>
 
-                          {/* Items in this level */}
-                          {g.items.map((sp) => (
+                          {group.items.map((spell) => (
                             <SpellCard
-                              key={`${g.level}-${sp.id}`}
-                              spell={sp}
+                              key={`${group.level}-${spell.id}`}
+                              spell={spell}
                               showActions={cardView === "all"}
                               showDetails={cardView === "all"}
                             />
@@ -181,26 +205,30 @@ export default function BrowsePage() {
                         </div>
                       ))
                     : groups
-                        ?.flatMap((g) => g.items)
-                        .map((sp) => (
+                        ?.flatMap((group) => group.items)
+                        .map((spell) => (
                           <SpellCard
-                            key={sp.id}
-                            spell={sp}
+                            key={spell.id}
+                            spell={spell}
                             showActions={cardView === "all"}
                             showDetails={cardView === "all"}
                           />
                         ))}
                 </div>
-              )}
 
-              <Pager
-                page={page}
-                pageSize={pageSize}
-                total={total}
-                onPageChange={setPage}
-                showRangeText={false}
-              />
-            </div>
+                <Separator />
+
+                <div className="px-6">
+                  <Pager
+                    page={page}
+                    pageSize={pageSize}
+                    total={total}
+                    onPageChange={setPage}
+                    showRangeText={false}
+                  />
+                </div>
+              </CardContent>
+            </Card>
           )}
         </div>
       </div>

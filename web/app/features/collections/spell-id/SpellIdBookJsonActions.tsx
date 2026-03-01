@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
-import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import { getSpellsBatch } from "~/api/spells";
 import { Button } from "~/components/ui/button";
@@ -24,27 +24,15 @@ export function SpellIdBookJsonActions({ book }: { book: SpellIdBook }) {
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [importMode, setImportMode] = useState<SpellIdImportMode>("replace");
-  const [importError, setImportError] = useState<string | null>(null);
-  const [importSummary, setImportSummary] = useState<{
-    mode: SpellIdImportMode;
-    importedSpellIds: number;
-    alreadyExisted: number;
-    invalidEntries: number;
-    missingSpellIds: number[];
-  } | null>(null);
   const { spellIdBook } = useCollections();
 
   const openImportPicker = (mode: SpellIdImportMode) => {
     if (isImporting) return;
     setImportMode(mode);
-    setImportError(null);
-    setImportSummary(null);
     importInputRef.current?.click();
   };
 
   const onImportFile = async (file: File) => {
-    setImportError(null);
-    setImportSummary(null);
     setIsImporting(true);
     try {
       const text = await file.text();
@@ -72,17 +60,26 @@ export function SpellIdBookJsonActions({ book }: { book: SpellIdBook }) {
         importMode === "merge" ? [...book.spellIds, ...validSpellIds] : validSpellIds;
 
       spellIdBook.setSpellIds(book.id, nextSpellIds);
+      const missingSpellIds = [...(batch?.missingIds ?? [])].sort((a, b) => a - b);
+      const description = [
+        importMode === "merge"
+          ? `${t("Added spellIds:")} ${addedSpellIds}`
+          : `${t("Imported spellIds:")} ${validSpellIds.length}`,
+        importMode === "merge"
+          ? `${t("Already existed:")} ${alreadyExisted}`
+          : null,
+        `${t("Invalid entries skipped:")} ${parsed.invalidEntriesCount}`,
+        `${t("Missing spellIds:")} ${
+          missingSpellIds.length > 0 ? missingSpellIds.join(", ") : t("none")
+        }`,
+      ]
+        .filter(Boolean)
+        .join(" | ");
 
-      setImportSummary({
-        mode: importMode,
-        importedSpellIds: importMode === "merge" ? addedSpellIds : validSpellIds.length,
-        alreadyExisted: importMode === "merge" ? alreadyExisted : 0,
-        invalidEntries: parsed.invalidEntriesCount,
-        missingSpellIds: [...(batch?.missingIds ?? [])].sort((a, b) => a - b),
-      });
+      toast.success(t("Import complete"), { description });
     } catch (err) {
       const msg = err instanceof Error ? err.message : t("Import failed.");
-      setImportError(msg);
+      toast.error(t("Import failed"), { description: msg });
     } finally {
       setIsImporting(false);
       if (importInputRef.current) {
@@ -93,12 +90,16 @@ export function SpellIdBookJsonActions({ book }: { book: SpellIdBook }) {
 
   const onExport = () => {
     downloadSpellIdBookExport(book);
+    toast.success(t("Export JSON"), {
+      description: t("Export current collection as JSON."),
+    });
   };
 
   const onClear = () => {
-    setImportError(null);
-    setImportSummary(null);
     spellIdBook.setSpellIds(book.id, []);
+    toast.success(t("Clear"), {
+      description: t("Collection cleared."),
+    });
   };
 
   return (
@@ -171,66 +172,6 @@ export function SpellIdBookJsonActions({ book }: { book: SpellIdBook }) {
       >
         {t("Clear")}
       </Button>
-
-      {importError && (
-        <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <div className="font-medium">{t("Import failed")}</div>
-              <div className="mt-1 text-muted-foreground">{importError}</div>
-            </div>
-            <Button
-              type="button"
-              size="icon-xs"
-              variant="ghost"
-              aria-label={t("Close import error")}
-              onClick={() => setImportError(null)}
-            >
-              <X />
-            </Button>
-          </div>
-        </div>
-      )}
-      {importSummary && (
-        <div className="rounded-md border p-3 text-sm">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <div className="font-medium">{t("Import complete")}</div>
-              <div className="mt-1 text-muted-foreground">
-                {importSummary.mode === "merge"
-                  ? t("Added spellIds:")
-                  : t("Imported spellIds:")}{" "}
-                <b>{importSummary.importedSpellIds}</b>
-              </div>
-              {importSummary.mode === "merge" && (
-                <div className="text-muted-foreground">
-                  {t("Already existed:")} <b>{importSummary.alreadyExisted}</b>
-                </div>
-              )}
-              <div className="text-muted-foreground">
-                {t("Invalid entries skipped:")} <b>{importSummary.invalidEntries}</b>
-              </div>
-              <div className="text-muted-foreground">
-                {t("Missing spellIds:")}{" "}
-                <b>
-                  {importSummary.missingSpellIds.length > 0
-                    ? importSummary.missingSpellIds.join(", ")
-                    : t("none")}
-                </b>
-              </div>
-            </div>
-            <Button
-              type="button"
-              size="icon-xs"
-              variant="ghost"
-              aria-label={t("Close import summary")}
-              onClick={() => setImportSummary(null)}
-            >
-              <X />
-            </Button>
-          </div>
-        </div>
-      )}
     </>
   );
 }

@@ -18,10 +18,9 @@ export function BrowseOptionsToggle({
   const { t } = useTranslation("spell-browse");
 
   return (
-    <div className="rounded-md border p-3 space-y-3">
-      {/* Show details */}
+    <div className="space-y-3">
       <label className="flex items-center justify-between gap-3 text-sm">
-        <span className="text-muted-foreground">{t("Show details")}</span>
+        <span className="font-medium text-foreground">{t("Show details")}</span>
         <Switch
           checked={cardView === "all"}
           onCheckedChange={(checked) =>
@@ -30,9 +29,8 @@ export function BrowseOptionsToggle({
         />
       </label>
 
-      {/* Group by level */}
       <label className="flex items-center justify-between gap-3 text-sm">
-        <span className="text-muted-foreground">{t("Group by level")}</span>
+        <span className="font-medium text-foreground">{t("Group by level")}</span>
         <Switch
           checked={groupMode === "grouped"}
           onCheckedChange={(checked) =>
