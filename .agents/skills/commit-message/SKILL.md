@@ -7,7 +7,7 @@ description: Generate git commit messages for this repo in the required fixed fo
 
 Generate a commit message that matches the repository's required format.
 
-Use the version provided by the user or already present in the conversation context. If no version is available, ask for it instead of inventing one.
+Use the version provided by the user or already present in the conversation context. If no version is available, ask for it instead of inventing one. The version should start with `v`, e.g, `v1.0`.
 
 Inspect the staged diff first when available. If nothing is staged, inspect the requested change set or the working diff that the user is referring to.
 
