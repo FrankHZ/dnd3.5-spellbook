@@ -4,6 +4,13 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { searchSpellsByName } from "~/api/spells";
+import { Button } from "~/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from "~/components/ui/card";
 import { useAppI18n } from "~/i18n/useAppI18n";
 import { useUserPrefs } from "~/state/user-prefs-state";
 
@@ -138,25 +145,24 @@ function RelatedSpellList({
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-medium">{title}</h3>
-      <div className="rounded-md border divide-y">
-        {items.map((item) => (
-          <div
-            key={item.id}
-            className="flex items-center justify-between gap-3 p-3 text-sm"
-          >
-            <Link
-              to={`/spells/${item.id}`}
-              className="font-medium hover:underline"
+      <Card className="gap-0 overflow-hidden py-0">
+        <CardContent className="divide-y px-0 py-0">
+          {items.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center justify-between gap-3 p-3 text-sm"
             >
-              {nameWithEn(item)}
-            </Link>
-            <div className="shrink-0 text-xs text-muted-foreground">
-              <span className="font-mono">{item.rulebook?.abbr ?? "-"}</span>
-              {item.page ? <span> - p. {item.page}</span> : null}
+              <Button asChild variant="link" className="h-auto px-0 py-0 font-medium">
+                <Link to={`/spells/${item.id}`}>{nameWithEn(item)}</Link>
+              </Button>
+              <div className="shrink-0 text-xs text-muted-foreground">
+                <span className="font-mono">{item.rulebook?.abbr ?? "-"}</span>
+                {item.page ? <span> - p. {item.page}</span> : null}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -266,9 +272,11 @@ export default function RelatedSpellsSection({
 
   if (relatedQuery.isLoading) {
     return (
-      <div className="rounded-md border p-3 text-sm text-muted-foreground">
-        {t("Loading related spells...")}
-      </div>
+      <Card className="gap-0">
+        <CardHeader className="py-3">
+          <CardDescription>{t("Loading related spells...")}</CardDescription>
+        </CardHeader>
+      </Card>
     );
   }
 

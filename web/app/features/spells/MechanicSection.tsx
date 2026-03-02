@@ -3,18 +3,26 @@ import { useTranslation } from "react-i18next";
 
 function Field({ label, value }: { label: string; value?: string | null }) {
   return (
-    <div>
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="text-sm">{value && value.trim() ? value : "—"}</div>
+    <div className="space-y-0.5">
+      <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </div>
+      <div className="text-sm leading-5">
+        {value && value.trim() ? value : "—"}
+      </div>
     </div>
   );
 }
 
 export function MechanicsSection({ casting }: { casting: SpellCasting }) {
   const { t } = useTranslation("spell-detail");
+
   return (
-    <div className="space-y-2">
-      <div className="grid gap-3 sm:grid-cols-2">
+    <section className="space-y-2">
+      <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {t("Mechanics")}
+      </div>
+      <div className="grid gap-2.5">
         <Field label={t("Casting Time")} value={casting.castingTime} />
         <Field label={t("Range")} value={casting.range} />
 
@@ -27,6 +35,6 @@ export function MechanicsSection({ casting }: { casting: SpellCasting }) {
         <Field label={t("Saving Throw")} value={casting.savingThrow} />
         <Field label={t("Spell Resistance")} value={casting.spellResistance} />
       </div>
-    </div>
+    </section>
   );
 }

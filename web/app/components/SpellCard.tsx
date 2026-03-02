@@ -1,12 +1,9 @@
 import type { SpellItem } from "@dnd/contracts";
-import { Heart } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import { SpellActionButtons } from "~/components/SpellActionButtons";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
 import { useAppI18n } from "~/i18n/useAppI18n";
 import { useMetaNames } from "~/i18n/useMetaNames";
-import { useCollections } from "~/state/collections-state";
 
 export function SpellCard({
   spell,
@@ -17,13 +14,8 @@ export function SpellCard({
   showDetails?: boolean;
   showActions?: boolean;
 }) {
-  const { spellbook, prepared } = useCollections();
-
   const { nameWithEn } = useAppI18n();
   const { metaName } = useMetaNames();
-  const inFav = spellbook.isInDefault(spell.id);
-
-  const { t } = useTranslation();
   return (
     <div className="p-3 transition-colors hover:bg-muted/40">
       <div className="flex items-start justify-between gap-3">
@@ -89,32 +81,7 @@ export function SpellCard({
 
         <div className="shrink-0 text-right">
           {showActions && (
-            <div className="flex flex-col items-end gap-2">
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => spellbook.toggleDefault(spell.id)}
-                aria-label={
-                  inFav ? t("Remove from favorites") : t("Add to favorites")
-                }
-              >
-                <Heart
-                  className={`h-4 w-4 ${
-                    inFav
-                      ? "fill-red-500 stroke-red-500"
-                      : "stroke-muted-foreground"
-                  }`}
-                />
-              </Button>
-
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => prepared.add(spell.id)}
-              >
-                {t("Prepare", { ns: "collections" })}
-              </Button>
-            </div>
+            <SpellActionButtons spellId={spell.id} orientation="vertical" />
           )}
         </div>
       </div>

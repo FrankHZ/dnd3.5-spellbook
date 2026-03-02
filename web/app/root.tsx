@@ -74,10 +74,9 @@ export default function App() {
                 </div>
                 <Toaster
                   position="top-center"
-                  closeButton
                   richColors
                   toastOptions={{
-                    duration: 4500,
+                    duration: 2500,
                   }}
                 />
               </CollectionsProvider>

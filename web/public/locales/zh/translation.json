@@ -1,5 +1,4 @@
 {
-  "Add to favorites": "添加到收藏",
   "All": "全选",
   "Clear": "清空",
   "Done": "完成",
@@ -9,7 +8,6 @@
   "No items found.": "没找到！",
   "No matches.": "没找到！",
   "Remove {{name}}": "移除{{name}}",
-  "Remove from favorites": "从收藏移除",
   "Selected": "已选择",
   "View All...": "列表..."
 }

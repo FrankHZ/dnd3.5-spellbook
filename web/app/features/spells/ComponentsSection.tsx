@@ -21,7 +21,10 @@ export default function ComponentsSection({
   ].filter(Boolean) as string[];
 
   return (
-    <div className="space-y-2">
+    <section className="space-y-2">
+      <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {t("Components")}
+      </div>
       {chips.length > 0 ? (
         <div className="flex flex-wrap gap-1">
           {chips.map((c) => (
@@ -35,8 +38,10 @@ export default function ComponentsSection({
       )}
 
       {components.extra && components.extra.trim().length > 0 && (
-        <div className="text-sm text-muted-foreground">{components.extra}</div>
+        <div className="text-sm leading-5 text-muted-foreground">
+          {components.extra}
+        </div>
       )}
-    </div>
+    </section>
   );
 }
