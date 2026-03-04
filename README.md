@@ -1,5 +1,7 @@
 # D&D 3.5 Spellbook
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/FrankHZ/dnd3.5-spellbook)
+
 A monorepo for a Dungeons & Dragons 3.5 spellbook application with:
 
 - a React frontend
@@ -119,3 +121,7 @@ When documents conflict, prefer the most recent freeze or handoff document calle
 The repository now includes an MIT `LICENSE` for the code in this repo.
 
 That license applies to the code you are publishing here. It does not automatically grant rights to third-party game content, imported databases, or other external source material.
+
+## Author
+
+Maintained by `FrankHZ`.
