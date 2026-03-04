@@ -128,7 +128,7 @@ export default function SpellDetailPage() {
 
   if (!isValidId) {
     return (
-      <div className="p-4 max-w-4xl mx-auto">
+    <div className="page-side">
         <Card className="gap-0">
           <CardHeader className="gap-1 py-3">
             <CardTitle>{t("Invalid spell id")}</CardTitle>
@@ -145,7 +145,7 @@ export default function SpellDetailPage() {
 
   if (status === 404) {
     return (
-      <div className="p-4 max-w-4xl mx-auto">
+      <div className="page-side">
         <Card className="gap-0">
           <CardHeader className="gap-1 py-3">
             <CardTitle>{t("Spell not found")}</CardTitle>
@@ -165,7 +165,7 @@ export default function SpellDetailPage() {
 
   if (status === 400) {
     return (
-      <div className="p-4 max-w-4xl mx-auto">
+      <div className="page-side">
         <Card className="gap-0">
           <CardHeader className="gap-1 py-3">
             <CardTitle>{t("Invalid spell id")}</CardTitle>
@@ -184,7 +184,7 @@ export default function SpellDetailPage() {
         ? query.error.message
         : t("Request failed. Please try again.");
     return (
-      <div className="p-4 max-w-4xl mx-auto">
+      <div className="page-side">
         <Card className="gap-0">
           <CardHeader className="gap-1 py-3">
             <CardTitle>{t("Couldn't load spell")}</CardTitle>
@@ -205,7 +205,7 @@ export default function SpellDetailPage() {
   }));
 
   return (
-    <div className="mx-auto max-w-6xl space-y-4 p-4">
+    <div className="page-side">
       <SpellHeader
         title={nameWithEn(spell)}
         rulebookAbbr={spell.rulebook?.abbr}

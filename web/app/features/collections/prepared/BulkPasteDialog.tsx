@@ -7,6 +7,13 @@ import { useCollections } from "~/state/collections-state";
 import { cn } from "~/lib/utils";
 
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -121,7 +128,7 @@ export function BulkPasteDialog({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{t("Bulk Paste")}</DialogTitle>
           <DialogDescription>{t("bulk-paste-description")}</DialogDescription>
@@ -144,139 +151,152 @@ export function BulkPasteDialog({
           </div>
 
           {error && (
-            <div className="rounded-md border border-red-300 bg-red-50 p-2 text-sm">
-              {error}
-            </div>
+            <Card className="gap-0 border-destructive/40">
+              <CardHeader className="gap-1 py-2">
+                <CardDescription className="text-destructive">
+                  {error}
+                </CardDescription>
+              </CardHeader>
+            </Card>
           )}
 
           {rows && (
-            <div className="rounded-md border p-2 space-y-3">
-              <div className="rounded-md border bg-muted/30 px-3 py-2 text-sm">
-                <div>
-                  {t("Ready to add {{count}} entry(ies)", {
-                    count: addableCount,
-                  })}
-                </div>
-                <div className="mt-1 text-muted-foreground">
-                  {t(
-                    "{{resolved}} resolved | {{conflicts}} conflict(s) | {{notFound}} not found",
-                    {
-                      resolved: summary.resolved,
-                      conflicts: summary.conflicts,
-                      notFound: summary.notFound,
-                    },
-                  )}
-                </div>
-              </div>
-
-              {rows.some((r) => r.status === "ambiguous") && (
-                <div className="space-y-2">
-                  <div className="text-sm font-medium">{t("Conflicts")}</div>
-                  <div className="max-h-64 overflow-auto rounded-md border">
-                    {rows
-                      .filter((r) => r.status === "ambiguous")
-                      .map((r) => {
-                        const row = r as Extract<
-                          ResolvedRow,
-                          { status: "ambiguous" }
-                        >;
-                        return (
-                          <div
-                            key={row.key}
-                            className="border-b p-2 text-sm last:border-b-0"
-                          >
-                            <div className="font-medium">{row.input}</div>
-
-                            <div className="mt-2 space-y-1">
-                              {row.candidates.map((c) => {
-                                const picked = c.id === row.pickedId;
-                                const isDefault = c.id === row.defaultPickedId;
-
-                                return (
-                                  <div
-                                    key={c.id}
-                                    className={cn(
-                                      "flex items-center justify-between gap-2 rounded border px-2 py-1",
-                                      picked ? "bg-muted/50" : "",
-                                    )}
-                                  >
-                                    <div className="min-w-0">
-                                      <div className="truncate">
-                                        <Link
-                                          to={`/spells/${c.id}`}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          onClick={(e) => e.stopPropagation()}
-                                          className="hover:underline block truncate"
-                                        >
-                                          {c.name} - {c.rulebookName}
-                                        </Link>
-
-                                        {picked && (
-                                          <span className="ml-2 text-xs text-muted-foreground">
-                                            {t("(picked)")}
-                                          </span>
-                                        )}
-                                        {isDefault && !picked && (
-                                          <span className="ml-2 text-xs text-muted-foreground">
-                                            {t("(default)")}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </div>
-
-                                    <Button
-                                      size="sm"
-                                      variant={picked ? "secondary" : "outline"}
-                                      onClick={() => {
-                                        setRows((prev) =>
-                                          setAmbiguousPickedId(
-                                            prev,
-                                            row.key,
-                                            c.id,
-                                          ),
-                                        );
-                                      }}
-                                    >
-                                      {picked ? t("Picked") : t("Pick")}
-                                    </Button>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      })}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
+            <>
+              <Card className="gap-0 bg-muted/30">
+                <CardHeader className="gap-1 py-2">
+                  <CardTitle className="text-sm font-medium">
+                    {t("Ready to add {{count}} entry(ies)", {
+                      count: addableCount,
+                    })}
+                  </CardTitle>
+                  <CardDescription>
+                    {t(
+                      "{{resolved}} resolved | {{conflicts}} conflict(s) | {{notFound}} not found",
+                      {
+                        resolved: summary.resolved,
+                        conflicts: summary.conflicts,
+                        notFound: summary.notFound,
+                      },
+                    )}
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+              <Card className="gap-0">
+                <CardHeader className="gap-1 px-4 py-2">
+                  <CardDescription>
                     {t(
                       "Conflicts are shown here. Default is pre-picked, but we can choose a different candidate before adding.",
                     )}
-                  </div>
-                </div>
-              )}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2 px-4 pb-2 pt-0">
+                  {rows.some((r) => r.status === "ambiguous") && (
+                    <div>
+                      <Card className="gap-0 overflow-hidden">
+                        <CardContent className="max-h-64 overflow-auto px-0 py-0">
+                          {rows
+                            .filter((r) => r.status === "ambiguous")
+                            .map((r) => {
+                              const row = r as Extract<
+                                ResolvedRow,
+                                { status: "ambiguous" }
+                              >;
+                              return (
+                                <Card
+                                  key={row.key}
+                                  className="gap-0 py-0 rounded-none border-0 border-b last:border-b-0 shadow-none"
+                                >
+                                  <CardHeader className="gap-1 px-3 py-0">
+                                    <CardTitle className="text-sm">
+                                      {row.input}
+                                    </CardTitle>
+                                  </CardHeader>
+                                  <CardContent className="space-y-1 px-3 pb-2 pt-0 text-sm">
+                                    {row.candidates.map((c) => {
+                                      const picked = c.id === row.pickedId;
+                                      const isDefault =
+                                        c.id === row.defaultPickedId;
+
+                                      return (
+                                        <div
+                                          key={c.id}
+                                          className={cn(
+                                            "flex items-center justify-between gap-2 rounded border px-2 py-0.5",
+                                            picked ? "bg-muted/50" : "",
+                                          )}
+                                        >
+                                          <div className="min-w-0">
+                                            <div className="flex items-center gap-2 truncate">
+                                              <Link
+                                                to={`/spells/${c.id}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={(e) =>
+                                                  e.stopPropagation()
+                                                }
+                                                className="truncate hover:underline"
+                                              >
+                                                {c.name} - {c.rulebookName}
+                                              </Link>
+                                              {isDefault && (
+                                                <span className="shrink-0 text-xs text-muted-foreground">
+                                                  {t("(default)")}
+                                                </span>
+                                              )}
+                                            </div>
+                                          </div>
+
+                                          <Button
+                                            size="sm"
+                                            variant={
+                                              picked ? "secondary" : "outline"
+                                            }
+                                            onClick={() => {
+                                              setRows((prev) =>
+                                                setAmbiguousPickedId(
+                                                  prev,
+                                                  row.key,
+                                                  c.id,
+                                                ),
+                                              );
+                                            }}
+                                          >
+                                            {picked ? t("Picked") : t("Pick")}
+                                          </Button>
+                                        </div>
+                                      );
+                                    })}
+                                  </CardContent>
+                                </Card>
+                              );
+                            })}
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
               {rows.some((r) => r.status === "not_found") && (
-                <div className="space-y-2">
-                  <div className="text-sm font-medium">{t("Not found")}</div>
-                  <div className="max-h-40 overflow-auto rounded-md border">
+                <Card className="gap-0">
+                  <CardHeader className="gap-1 px-4 py-1">
+                    <CardTitle className="text-sm">{t("Not found")}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="grid max-h-40 grid-cols-1 gap-1 overflow-auto px-4 pb-2 pt-0 sm:grid-cols-3">
                     {rows
                       .filter((r) => r.status === "not_found")
                       .map((r) => (
                         <div
                           key={r.key}
-                          className="border-b p-2 text-sm last:border-b-0"
+                          className="rounded-md border px-2 py-1 text-sm text-muted-foreground"
                         >
-                          <div className="font-medium">{r.input}</div>
-                          <div className="text-muted-foreground">
-                            {t("Not found")}
-                          </div>
+                          {r.input}
                         </div>
                       ))}
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               )}
-            </div>
+            </>
           )}
         </div>
 

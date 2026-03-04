@@ -1,6 +1,13 @@
 import { Link, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 
+import { Button } from "~/components/ui/button";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import { useCollections } from "~/state/collections-state";
 import { getBook } from "~/storage/collections";
 import { PreparedBookDetail } from "./prepared/PreparedBookDetail";
@@ -19,33 +26,37 @@ export default function SpellbookDetailPage() {
 
   if (!book) {
     return (
-      <div className="p-4 max-w-3xl mx-auto">
-        <div className="rounded-md border p-3">
-          <div className="font-medium">{t("Spellbook not found")}</div>
-          <div className="mt-1 text-sm text-muted-foreground">
-            {t("Unknown book id: {{bookId}}", { bookId })}
-          </div>
-        </div>
+      <div className="page-single">
+        <Card className="gap-0">
+          <CardHeader className="gap-1 py-3">
+            <CardTitle>{t("Spellbook not found")}</CardTitle>
+            <CardDescription>
+              {t("Unknown book id: {{bookId}}", { bookId })}
+            </CardDescription>
+          </CardHeader>
+        </Card>
       </div>
     );
   }
 
+  const pageClass = book.kind === "prepared" ? "page-wide" : "page-single";
+
   return (
-    <div className="p-4 space-y-4 max-w-8xl mx-auto">
-      <div className="flex items-start justify-between gap-3">
+    <div className={pageClass}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-lg font-semibold">
             {getCollectionDisplayName(book, tDefault)}
           </h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {book.kind === "prepared" && <PreparedBookJsonActions book={book} />}
           {book.kind === "spellbook" && <SpellIdBookJsonActions book={book} />}
 
-          <Link to="/spellbooks" className="text-sm underline">
-            {t("Back")}
-          </Link>
+          <Button asChild size="xs" variant="outline">
+            <Link to="/spellbooks">{t("Back")}</Link>
+          </Button>
         </div>
       </div>
 

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Copy } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import { getSpellsBatch } from "~/api/spells";
 import { useAppI18n } from "~/i18n/useAppI18n";
@@ -10,6 +11,12 @@ import type { PreparedBook } from "~/storage/collections.type";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { Button } from "~/components/ui/button";
 import { ButtonGroup } from "~/components/ui/button-group";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import { BulkPasteDialog } from "./BulkPasteDialog";
 import { PreparedCopyDialog } from "./PreparedCopyDialog";
 import { PreparedTable } from "./PreparedTable";
@@ -35,7 +42,6 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
   const { queryKey, name } = useAppI18n();
   const { preparedBook } = useCollections();
   const [mode, setMode] = useState<ViewMode>("normal");
-  const [copyStatus, setCopyStatus] = useState<string | null>(null);
 
   const { metaNameWithEn } = useMetaNames();
   const { classById, domainById } = useBootstrap();
@@ -200,24 +206,26 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
       }
       await navigator.clipboard.writeText(tsv);
       const lines = tsv.length === 0 ? 0 : tsv.split("\n").length;
-      setCopyStatus(
-        t("Copied {{count}} row(s) as simple TSV.", { count: lines }),
-      );
+      toast.success(t("Copy table"), {
+        description: t("Copied {{count}} row(s) as simple TSV.", {
+          count: lines,
+        }),
+      });
     } catch {
-      setCopyStatus(
-        t("Copy failed. Browser clipboard permission may be blocked."),
-      );
+      toast.error(t("Copy table"), {
+        description: t("Copy failed. Browser clipboard permission may be blocked."),
+      });
     }
   };
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between gap-3">
-        <div className="text-sm text-muted-foreground">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="px-1 text-sm text-muted-foreground">
           {t("{{count}} prepared slot(s)", { count: book.entries.length })}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <ToggleGroup
             size="sm"
             type="single"
@@ -268,15 +276,10 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
             />
           </ButtonGroup>
           <BulkPasteDialog bookId={book.id} />
-
         </div>
       </div>
 
-      {copyStatus && (
-        <div className="rounded-md border px-3 py-2 text-sm">{copyStatus}</div>
-      )}
-
-      <div className="flex gap-3">
+      <div className="flex flex-col gap-3 lg:flex-row">
         <PreparedClassAndDomainSidebar
           selectedClasses={selectedClasses}
           selectedDomains={selectedDomains}
@@ -286,28 +289,32 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
         />
         <div className="min-w-0 flex-1">
           {book.entries.length === 0 && (
-            <div className="rounded-md border p-3 text-sm text-muted-foreground">
-              {t("Empty.")}
-            </div>
+            <Card className="gap-0">
+              <CardHeader className="gap-1 py-2">
+                <CardDescription>{t("Empty.")}</CardDescription>
+              </CardHeader>
+            </Card>
           )}
 
           {book.entries.length > 0 && (
             <>
               {batchQuery.isLoading && (
-                <div className="rounded-md border p-3 text-sm text-muted-foreground">
-                  {t("Loading spells...")}
-                </div>
+                <Card className="gap-0">
+                  <CardHeader className="gap-1 py-2">
+                    <CardDescription>{t("Loading spells...")}</CardDescription>
+                  </CardHeader>
+                </Card>
               )}
 
               {batchQuery.isError && (
-                <div className="rounded-md border p-3">
-                  <div className="font-medium">
-                    {t("Some spells failed to load")}
-                  </div>
-                  <div className="mt-1 text-sm text-muted-foreground">
-                    {t("Please try again later.")}
-                  </div>
-                </div>
+                <Card className="gap-0">
+                  <CardHeader className="gap-1 py-3">
+                    <CardTitle className="text-base">
+                      {t("Some spells failed to load")}
+                    </CardTitle>
+                    <CardDescription>{t("Please try again later.")}</CardDescription>
+                  </CardHeader>
+                </Card>
               )}
 
               <PreparedTable

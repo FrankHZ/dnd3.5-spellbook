@@ -69,7 +69,7 @@ export default function SearchSpellsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-4 p-4">
+    <div className="page-single">
       <div className="space-y-1 px-1">
         <div className="text-sm text-muted-foreground">
           {t("Global name search. Browsing by class/level lives in Browse.")}
@@ -81,7 +81,7 @@ export default function SearchSpellsPage() {
         )}
       </div>
 
-      {!isValid && (
+      {!isValid.ok && (
         <Card className="gap-0">
           <CardHeader className="gap-1 py-2">
             <CardDescription>
@@ -93,7 +93,7 @@ export default function SearchSpellsPage() {
         </Card>
       )}
 
-      {isValid && (
+      {isValid.ok && (
         <div className="space-y-3">
           {errorMessage && (
             <Card className="gap-0">

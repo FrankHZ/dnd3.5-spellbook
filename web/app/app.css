@@ -4,8 +4,23 @@
 @custom-variant dark (&:is(.dark *));
 
 @layer components {
-  .page {
-    @apply p-4 space-y-4;
+  .page,
+  .page-single,
+  .page-side,
+  .page-wide {
+    @apply mx-auto p-4 space-y-4;
+  }
+
+  .page-single {
+    @apply max-w-4xl;
+  }
+
+  .page-side {
+    @apply max-w-6xl;
+  }
+
+  .page-wide {
+    max-width: 90rem;
   }
 }
 

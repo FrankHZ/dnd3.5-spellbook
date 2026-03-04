@@ -164,26 +164,27 @@ export function PreparedEntryEditDialog({
   };
 
   return (
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button
-            type="button"
-            size="icon-xs"
-            variant="ghost"
-            className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 text-slate-600 hover:text-slate-900"
-            onClick={(e) => {
-              e.stopPropagation();
-              openDialog();
-            }}
-            title={t("Edit entry")}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-        </DialogTrigger>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          type="button"
+          size="icon-xs"
+          variant="ghost"
+          className="shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 hover:text-foreground"
+          onClick={(e) => {
+            e.stopPropagation();
+            openDialog();
+          }}
+          title={t("Edit entry")}
+          aria-label={t("Edit entry")}
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
 
       <DialogContent
         onClick={(e) => e.stopPropagation()}
-        className="sm:max-w-xl"
+        className="max-h-[85vh] overflow-y-auto sm:max-w-xl"
       >
         <DialogHeader>
           <DialogTitle>{spellName}</DialogTitle>
@@ -256,15 +257,15 @@ export function PreparedEntryEditDialog({
                 );
               })}
             </div>
-            <div className="grid grid-cols-12 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-12">
               <Input
-                className="col-span-7"
+                className="sm:col-span-7"
                 placeholder={t("Custom metamagic name")}
                 value={customMetaName}
                 onChange={(e) => setCustomMetaName(e.target.value)}
               />
               <Input
-                className="col-span-3"
+                className="sm:col-span-3"
                 type="number"
                 min={0}
                 step={1}
@@ -274,7 +275,7 @@ export function PreparedEntryEditDialog({
               />
               <Button
                 type="button"
-                className="col-span-2"
+                className="sm:col-span-2"
                 variant="outline"
                 onClick={(e) => {
                   e.stopPropagation();

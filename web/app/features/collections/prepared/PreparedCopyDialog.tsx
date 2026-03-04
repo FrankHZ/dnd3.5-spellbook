@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import type { SpellItemView } from "@dnd/contracts";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import type { PreparedEntry } from "~/storage/collections.type";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -55,7 +56,6 @@ export function PreparedCopyDialog({
   const [open, setOpen] = useState(false);
   const [format, setFormat] = useState<CopyFormat>("detailed");
   const [aggregateRows, setAggregateRows] = useState(true);
-  const [status, setStatus] = useState<string | null>(null);
 
   const tsv = useMemo(() => {
     if (format === "simple") {
@@ -88,17 +88,18 @@ export function PreparedCopyDialog({
   const onCopy = async () => {
     try {
       await copyText(tsv);
-      setStatus(t("Copied {{count}} row(s) as TSV.", { count: lineCount }));
+      toast.success(t("Copy TSV"), {
+        description: t("Copied {{count}} row(s) as TSV.", { count: lineCount }),
+      });
     } catch {
-      setStatus(
-        t("Copy failed. Browser clipboard permission may be blocked."),
-      );
+      toast.error(t("Copy TSV"), {
+        description: t("Copy failed. Browser clipboard permission may be blocked."),
+      });
     }
   };
 
   const onOpenChange = (next: boolean) => {
     setOpen(next);
-    if (!next) setStatus(null);
   };
 
   return (
@@ -150,10 +151,6 @@ export function PreparedCopyDialog({
           <div className="rounded-md border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
             {t("Output rows: {{count}}", { count: lineCount })}
           </div>
-
-          {status && (
-            <div className="rounded-md border px-3 py-2 text-sm">{status}</div>
-          )}
         </div>
 
         <DialogFooter>

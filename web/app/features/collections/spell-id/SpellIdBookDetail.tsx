@@ -3,7 +3,13 @@ import { useTranslation } from "react-i18next";
 
 import { getSpellsBatch } from "~/api/spells";
 import { SpellCard } from "~/components/SpellCard";
-import { Separator } from "~/components/ui/separator";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import { useAppI18n } from "~/i18n/useAppI18n";
 import type { SpellIdBook } from "~/storage/collections.type";
 
@@ -28,51 +34,63 @@ export function SpellIdBookDetail({ book }: { book: SpellIdBook }) {
   const missingIds = batchQuery.data?.missingIds ?? [];
 
   return (
-    <>
-      <div className="text-sm text-muted-foreground">
+    <div className="space-y-3">
+      <div className="px-1 text-sm text-muted-foreground">
         {t("{{count}} spell(s)", { count: ids.length })}
       </div>
 
-      <Separator />
-
       {ids.length === 0 && (
-        <div className="rounded-md border p-3 text-sm text-muted-foreground">
-          {t("Empty.")}
-        </div>
+        <Card className="gap-0">
+          <CardHeader className="gap-1 py-2">
+            <CardDescription>{t("Empty.")}</CardDescription>
+          </CardHeader>
+        </Card>
       )}
 
       {ids.length > 0 && (
         <>
           {isLoading && (
-            <div className="rounded-md border p-3 text-sm text-muted-foreground">
-              {t("Loading spells...")}
-            </div>
+            <Card className="gap-0">
+              <CardHeader className="gap-1 py-2">
+                <CardDescription>{t("Loading spells...")}</CardDescription>
+              </CardHeader>
+            </Card>
           )}
 
           {hasError && (
-            <div className="rounded-md border p-3">
-              <div className="font-medium">{t("Some spells failed to load")}</div>
-              <div className="mt-1 text-sm text-muted-foreground">
-                {t("Please try again later.")}
-              </div>
-            </div>
+            <Card className="gap-0">
+              <CardHeader className="gap-1 py-3">
+                <CardTitle className="text-base">
+                  {t("Some spells failed to load")}
+                </CardTitle>
+                <CardDescription>{t("Please try again later.")}</CardDescription>
+              </CardHeader>
+            </Card>
           )}
 
           {missingIds.length > 0 && (
-            <div className="rounded-md border p-3 text-sm">
-              {t("Some spells are missing (deleted or unavailable): {{ids}}", {
-                ids: missingIds.join(", "),
-              })}
-            </div>
+            <Card className="gap-0">
+              <CardHeader className="gap-1 py-2">
+                <CardDescription>
+                  {t("Some spells are missing (deleted or unavailable): {{ids}}", {
+                    ids: missingIds.join(", "),
+                  })}
+                </CardDescription>
+              </CardHeader>
+            </Card>
           )}
 
-          <div className="divide-y rounded-md border">
-            {spells.map((sp) => (
-              <SpellCard key={sp.id} spell={sp} showActions={true} />
-            ))}
-          </div>
+          {spells.length > 0 && (
+            <Card className="gap-0 overflow-hidden py-0">
+              <CardContent className="divide-y px-0 py-0">
+                {spells.map((sp) => (
+                  <SpellCard key={sp.id} spell={sp} showActions />
+                ))}
+              </CardContent>
+            </Card>
+          )}
         </>
       )}
-    </>
+    </div>
   );
 }

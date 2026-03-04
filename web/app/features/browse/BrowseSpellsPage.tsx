@@ -99,7 +99,7 @@ export default function BrowsePage() {
         });
 
   return (
-    <div className="mx-auto max-w-6xl space-y-4 p-4">
+    <div className="page-side">
       <div className="grid gap-4 md:grid-cols-[320px_1fr]">
         <Card className="gap-0 self-start">
           <CardContent className="space-y-4">

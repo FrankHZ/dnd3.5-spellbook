@@ -7,7 +7,7 @@ import {
   StickyNote,
   Trash2,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, type ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import type { SpellItemView } from "@dnd/contracts";
 import type { PreparedEntry } from "~/storage/collections.type";
@@ -22,6 +22,32 @@ import {
 import { Button } from "~/components/ui/button";
 import { PreparedEntryEditDialog } from "./PreparedEntryEditDialog";
 import { summarizePreparedEntry } from "./prepared-entry-summary";
+
+function PreparedTableRowShell({
+  className,
+  children,
+  ...props
+}: ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(
+        "group relative flex h-full items-center gap-2 px-1 text-sm",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function PreparedTableEmptyCell({ label }: { label: string }) {
+  return (
+    <PreparedTableRowShell className="justify-center text-muted-foreground">
+      {label}
+    </PreparedTableRowShell>
+  );
+}
 
 export function PreparedTableCell({
   bookId,
@@ -67,36 +93,38 @@ export function PreparedTableCell({
       : entry.state === "reserved"
         ? "bg-amber-100 hover:bg-amber-200"
         : "bg-emerald-50 hover:bg-emerald-100";
+  const isToggleInteractive = mode === "normal" && entry.state !== "reserved";
 
   const onToggle = () => {
-    if (mode == "normal" && entry.state !== "reserved")
-      preparedBook.setEntry(bookId, entry.entryId, {
-        state: entry.state === "used" ? "ok" : "used",
-      });
+    if (!isToggleInteractive) return;
+    preparedBook.setEntry(bookId, entry.entryId, {
+      state: entry.state === "used" ? "ok" : "used",
+    });
   };
 
   return (
-    <div
+    <PreparedTableRowShell
       className={cn(
-        "group relative flex items-center gap-2 px-1",
-        "h-7 text-sm",
         "select-none",
-        mode == "normal" ? "cursor-pointer" : "",
+        isToggleInteractive ? "cursor-pointer" : "",
         bg,
       )}
-      onClick={onToggle}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") onToggle();
-      }}
+      onClick={isToggleInteractive ? onToggle : undefined}
+      role={isToggleInteractive ? "button" : undefined}
+      tabIndex={isToggleInteractive ? 0 : undefined}
+      onKeyDown={
+        isToggleInteractive
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") onToggle();
+            }
+          : undefined
+      }
       title={summary.effectiveDisplayName}
     >
-      {/* Bigger used indicator */}
       {mode === "normal" && entry.state != "reserved" && (
         <div
           className={cn(
-            "h-4 w-4 shrink-0 rounded border",
+            "h-2 w-2 shrink-0 rounded border",
             entry.state === "used"
               ? "bg-red-600 border-red-700"
               : "bg-white border-slate-300",
@@ -116,7 +144,8 @@ export function PreparedTableCell({
           type="button"
           size="icon-xs"
           variant="ghost"
-          className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 text-slate-500 hover:text-slate-900"
+          className="shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 hover:text-foreground"
+          aria-label={t("Open spell detail")}
         >
           <Link
             to={`/spells/${spell.id}`}
@@ -146,7 +175,7 @@ export function PreparedTableCell({
           type="button"
           size="icon-xs"
           variant="ghost"
-          className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 text-slate-600 hover:text-slate-900"
+          className="shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 hover:text-foreground"
           onClick={(e) => {
             e.stopPropagation();
             preparedBook.setEntry(bookId, entry.entryId, {
@@ -154,6 +183,11 @@ export function PreparedTableCell({
             });
           }}
           title={
+            entry.state === "reserved"
+              ? t("Unlock reserved")
+              : t("Lock as reserved")
+          }
+          aria-label={
             entry.state === "reserved"
               ? t("Unlock reserved")
               : t("Lock as reserved")
@@ -172,7 +206,7 @@ export function PreparedTableCell({
         <HoverCard openDelay={150} closeDelay={100}>
           <HoverCardTrigger asChild>
             <span
-              className="shrink-0 text-slate-600 inline-flex items-center gap-1"
+              className="inline-flex shrink-0 items-center gap-1 text-muted-foreground"
               onClick={(e) => e.stopPropagation()}
             >
               {hasMetamagic && <Sparkles className="h-4 w-4" />}
@@ -181,16 +215,16 @@ export function PreparedTableCell({
           </HoverCardTrigger>
 
           <HoverCardContent
-            className="w-80 text-sm"
+            className="w-80 space-y-3 text-sm"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="font-medium mb-2">
+            <div className="border-b pb-2 font-medium">
               {summary.effectiveDisplayName}
             </div>
 
             {hasDisplayNameOverride && (
-              <div className="mb-2">
-                <div className="text-xs text-muted-foreground">
+              <div className="space-y-1">
+                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {t("Base Name")}
                 </div>
                 <div>{summary.baseName}</div>
@@ -198,8 +232,8 @@ export function PreparedTableCell({
             )}
 
             {hasLevelOverride && (
-              <div className="mb-2">
-                <div className="text-xs text-muted-foreground">
+              <div className="space-y-1">
+                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {t("Level Override")}
                 </div>
                 <div>{entry.levelOverride}</div>
@@ -207,8 +241,8 @@ export function PreparedTableCell({
             )}
 
             {hasMetamagic && (
-              <div className="mb-2">
-                <div className="text-xs text-muted-foreground">
+              <div className="space-y-1">
+                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {t("Metamagic")}
                 </div>
                 <div>{localizedMetamagicSummary}</div>
@@ -221,8 +255,8 @@ export function PreparedTableCell({
             )}
 
             {hasNote && (
-              <div>
-                <div className="text-xs text-muted-foreground mb-1">
+              <div className="space-y-1">
+                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {t("Notes")}
                 </div>
                 <div className="whitespace-pre-wrap wrap-break-word text-muted-foreground">
@@ -239,16 +273,17 @@ export function PreparedTableCell({
           type="button"
           size="icon-xs"
           variant="ghost"
-          className="shrink-0 text-slate-600 hover:text-red-700"
+          className="shrink-0 text-muted-foreground hover:text-destructive"
           onClick={(e) => {
             e.stopPropagation();
             preparedBook.removeEntry(bookId, entry.entryId);
           }}
           title={t("Remove")}
+          aria-label={t("Remove")}
         >
           <Trash2 className="h-4 w-4" />
         </Button>
       )}
-    </div>
+    </PreparedTableRowShell>
   );
 }
