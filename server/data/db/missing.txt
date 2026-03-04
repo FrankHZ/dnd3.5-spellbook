@@ -1,4 +1,0 @@
-Resistance Item, ECS
-Shield Of Faith, Legion's, ECS
-Skill Enhancement, ECS
-Spider Poison, Sc_
