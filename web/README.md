@@ -1,87 +1,82 @@
-# Welcome to React Router!
+# Web Workspace
 
-A modern, production-ready template for building full-stack React applications using React Router.
+This workspace contains the frontend application.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+It is a React Router app that provides the user-facing spellbook experience: browsing, search, spell detail, favorites, collections, prepared spell management, and i18n.
 
-## Features
+## Key Directories
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+- `app/`: routes, features, components, state, API client code
+- `public/`: static assets and locale JSON files
+- `scripts/`: local maintenance scripts such as i18n sync helpers
+- `build/`: generated production output
 
-## Getting Started
+## Main Commands
 
-### Installation
-
-Install the dependencies:
+Run the frontend in development:
 
 ```bash
-npm install
+npm run -w web dev
 ```
 
-### Development
-
-Start the development server with HMR:
+Build the frontend:
 
 ```bash
-npm run dev
+npm run -w web build
 ```
 
-Your application will be available at `http://localhost:5173`.
-
-## Building for Production
-
-Create a production build:
+Run the built app locally:
 
 ```bash
-npm run build
+npm run -w web start
 ```
 
-## Deployment
-
-### Docker Deployment
-
-To build and run using Docker:
+Run type generation and type checks:
 
 ```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+npm run -w web typecheck
 ```
 
-The containerized application can be deployed to any platform that supports Docker, including:
+Sync extracted i18n namespaces back into checked-in locale files:
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
+```bash
+npm run -w web i18next:sync
 ```
 
-## Styling
+Run the sync check without leaving extracted changes behind:
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+```bash
+npm run -w web i18next:sync:check
+```
 
----
+## Configuration
 
-Built with ❤️ using React Router.
+The frontend currently keeps runtime configuration intentionally minimal.
+
+Current behavior:
+
+- API requests are made against relative `/api/...` paths
+- the app expects the browser-facing host to expose the backend under `/api`
+- there is no current required frontend runtime environment variable for API base URL
+
+In development, the app code uses `import.meta.env.DEV` for development-only behavior such as i18n debug mode.
+
+For deployment and reverse-proxy expectations, use:
+
+- [../docs/deployment.md](../docs/deployment.md)
+
+## Notes
+
+- The frontend depends on `@dnd/contracts` for shared DTOs and types.
+- UI behavior should follow the frozen v3.2 state unless a newer doc supersedes it.
+- The production build output is written under `build/`.
+- Deployment workflow and remote activation steps are documented in [../docs/deployment.md](../docs/deployment.md).
+- For current release-level behavior, start with [../docs/mvp/v3.2/FREEZE.md](../docs/mvp/v3.2/FREEZE.md).
+
+## Related Docs
+
+- [../README.md](../README.md)
+- [../docs/README.md](../docs/README.md)
+- [../docs/deployment.md](../docs/deployment.md)
+- [../docs/data-setup.md](../docs/data-setup.md)
+- [../docs/frontend-map.md](../docs/frontend-map.md)

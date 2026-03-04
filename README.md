@@ -1,124 +1,121 @@
 # D&D 3.5 Spellbook
 
-A modern **Dungeons & Dragons 3.5 spellbook web application** built with a **React + Express** stack, powered by a legacy SQLite dataset and extended with **bilingual (English / Chinese) spell support**.
+A monorepo for a Dungeons & Dragons 3.5 spellbook application with:
 
-This project focuses on **fast spell querying**, **clean spell presentation**, and **practical spell management** for real tabletop play.
+- a React frontend
+- an Express API
+- shared TypeScript contracts
+- bilingual English / Chinese spell support
 
----
+The project is optimized for practical tabletop use: fast lookup, clean spell detail pages, favorites, spellbooks, and prepared spell management.
 
-## Project Goals
+## Public Repo Status
 
-* 🔍 **Modern spell search & filtering**
+This repository is an unofficial fan project.
 
-  * Fast, flexible querying across thousands of D&D 3.5 spells
-  * Filters by class, level, school, components, and more
-  
-* 📖 **Practical spell management**
+It is not affiliated with, endorsed by, or sponsored by Wizards of the Coast.
 
-  * Favorites
-  * Custom spellbooks
-  * Daily prepared spell lists
+To reduce redistribution risk, data-bearing local artifacts are intentionally excluded from the public repository, especially content under `server/data/`.
 
-* 🌏 **Bilingual support (EN / ZH)**
+## Status
 
-  * English base data from legacy sources
-  * Chinese spell descriptions imported from player-made CHM/HTML sources
-  * Language toggle with graceful fallback
+The current documented release state is **v3.2 frozen**.
 
-* 🧠 **Table-ready UX**
+For the canonical release handoff, start with [docs/mvp/v3.2/FREEZE.md](./docs/mvp/v3.2/FREEZE.md).
+For the full documentation map, use [docs/README.md](./docs/README.md).
 
-  * Optimized for quick lookup during sessions
-  * Clear spell formatting and minimal friction
+## Quick Start
 
----
+Install workspace dependencies from the repo root:
 
-## Non-Goals (Intentional Scope Limits)
-
-To keep the project focused and sustainable, the following are **out of scope** for now:
-
-* ❌ Full character sheets
-* ❌ Spell slot legality or automatic rule enforcement
-* ❌ Multi-edition support (5e / Pathfinder)
-* ❌ Comprehensive SRD rules beyond spells
-
-These may be revisited later if they clearly improve at-table usability.
-
----
-
-## Project Structure
-
-This repository is organized as a **monorepo**:
-
-```
-/
-├── server/        # Express API + SQLite access
-├── web/           # React single-page application
-├── tools/
-│   └── zh-parser/ # Chinese spell import & normalization tools
-├── docs/          # Requirements, schema notes, decisions
-└── README.md
+```bash
+npm install
 ```
 
-Each major component is treated as a self-contained module, even though they live in one repository.
+Build shared contracts:
 
----
+```bash
+npm run build:contracts
+```
 
-## Data Sources & Licensing Notes
+Run the API in one terminal:
 
-* Spell data originates from a **legacy `dnd.sqlite` database** (ignored from git).
-* Chinese spell descriptions come from **player-created CHM/HTML sources** and are imported via a separate tool.
-* Raw data files are **not committed** to this repository.
-* This project is intended for **personal, educational, and tabletop use**.
+```bash
+npm run -w server dev
+```
 
-If you plan to reuse or publish parts of this project, please review the licensing status of any external data sources.
+Run the frontend in another terminal:
 
----
+```bash
+npm run -w web dev
+```
 
-## Development Status
+The main workspace commands and constraints are documented in:
 
-Current phase:
+- [server/README.md](./server/README.md)
+- [web/README.md](./web/README.md)
+- [contracts/README.md](./contracts/README.md)
 
-* 🟡 Project setup & planning
-* 🟡 Legacy database analysis
-* 🟡 API and data model design
+## Operational Helpers
 
-This project is under **active development**, but stability and long-term maintainability are prioritized over rapid feature growth.
+The current deployment workflow is documented in:
 
----
+- [docs/deployment.md](./docs/deployment.md)
+- [docs/data-setup.md](./docs/data-setup.md)
 
-## Guiding Principles
+Tracked shell scripts under `docs/deployment-scripts/` are the canonical deployment scripts.
 
-* **At-table usefulness beats theoretical completeness**
-* **Readable, explicit decisions over clever abstractions**
-* **Bilingual support as a first-class feature, not an afterthought**
-* **Future contributors should understand *why* decisions were made**
+Ignored root-level `.bat` files may exist as local machine-specific convenience wrappers, but they are not part of the canonical deployment contract.
 
-Key architectural and design decisions are documented in `/docs`.
+For local database setup and data origins, use [docs/data-setup.md](./docs/data-setup.md).
 
----
+## Repo Layout
 
-## Contributing
+```text
+.
+|- server/     Backend API, Prisma schema, import tooling, tests
+|- web/        Frontend app, routes, UI, i18n assets
+|- contracts/  Shared DTOs and TypeScript types
+|- data/       Local data inputs used by tooling
+|- docs/       Release docs, MVP plans, handoff notes
+```
 
-This is currently a **solo project**, but contributions may be considered in the future.
+## What The App Covers
 
-If you are interested:
+- Spell browsing and search
+- Spell detail pages
+- Favorites
+- Spellbook collections
+- Prepared spell tracking
+- English / Chinese UI and content support
 
-* Open an issue to discuss ideas first
-* Avoid submitting large refactors without context
-* Keep changes aligned with the project goals above
+## Intentional Non-Goals
 
----
+To keep the scope stable, the project currently does not aim to provide:
 
-## Roadmap (High Level)
+- full character sheets
+- automatic spell-slot legality enforcement
+- multi-edition support
+- a full rules engine beyond spell-centric workflows
 
-* **v0.x** — Data import, schema stabilization, basic API
-* **v1.0** — Spell search, spell detail view, favorites
-* **v1.5** — Spellbooks & daily prepared spells
-* **v2.0** — Full Chinese content integration & bilingual search
+## Documentation Model
 
----
+This repo keeps documentation intentionally lightweight:
 
-## Author
+- The root `README.md` is the human-friendly entry point.
+- Each workspace `README.md` gives short operational guidance.
+- `docs/` contains versioned and canonical project documents.
 
-Maintained by **FFang**
-Built for real D&D 3.5 tables, not just demos.
+When documents conflict, prefer the most recent freeze or handoff document called out by [docs/README.md](./docs/README.md).
+
+## Data Notes
+
+- Spell data ultimately comes from local imported sources and app databases that are not fully committed as portable source data.
+- Chinese content is derived from player-created source material processed by local tooling.
+- If you reuse project data or publish derivatives, review the licensing status of the underlying data sources first.
+
+## License Status
+
+The repository now includes an MIT `LICENSE` for the code in this repo.
+
+That license applies to the code you are publishing here. It does not automatically grant rights to third-party game content, imported databases, or other external source material.
