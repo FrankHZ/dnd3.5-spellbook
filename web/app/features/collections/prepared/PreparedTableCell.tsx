@@ -21,17 +21,28 @@ import {
 } from "~/components/ui/hover-card";
 import { Button } from "~/components/ui/button";
 import { PreparedEntryEditDialog } from "./PreparedEntryEditDialog";
+import { DEFAULT_PREPARED_ROW_MIN_HEIGHT } from "./prepared-layout";
 import { summarizePreparedEntry } from "./prepared-entry-summary";
+
+const TRAILING_ACTION_BUTTON_CLASS =
+  "shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 hover:text-foreground";
+const TRAILING_ICON_CLASS = "h-3 w-3";
+const INFO_ICON_SLOT_CLASS =
+  "inline-flex shrink-0 items-center gap-0.5 text-muted-foreground";
+const TRAILING_ACTIONS_CLASS =
+  "ml-auto inline-flex shrink-0 items-center gap-0.5";
 
 function PreparedTableRowShell({
   className,
   children,
+  rowMinHeight = DEFAULT_PREPARED_ROW_MIN_HEIGHT,
   ...props
-}: ComponentProps<"div">) {
+}: ComponentProps<"div"> & { rowMinHeight?: string }) {
   return (
     <div
+      style={{ minHeight: rowMinHeight }}
       className={cn(
-        "group relative flex h-full items-center gap-2 px-1 text-sm",
+        "group relative flex w-full items-center gap-1.5 px-1.5 text-sm",
         className,
       )}
       {...props}
@@ -41,9 +52,18 @@ function PreparedTableRowShell({
   );
 }
 
-export function PreparedTableEmptyCell({ label }: { label: string }) {
+export function PreparedTableEmptyCell({
+  label,
+  rowMinHeight,
+}: {
+  label: string;
+  rowMinHeight?: string;
+}) {
   return (
-    <PreparedTableRowShell className="justify-center text-muted-foreground">
+    <PreparedTableRowShell
+      rowMinHeight={rowMinHeight}
+      className="justify-center text-muted-foreground"
+    >
       {label}
     </PreparedTableRowShell>
   );
@@ -54,11 +74,13 @@ export function PreparedTableCell({
   entry,
   spell,
   mode,
+  rowMinHeight,
 }: {
   bookId: string;
   entry: PreparedEntry;
   spell: SpellItemView;
   mode: "normal" | "edit";
+  rowMinHeight?: string;
 }) {
   const { preparedBook } = useCollections();
   const { name } = useAppI18n();
@@ -104,6 +126,7 @@ export function PreparedTableCell({
 
   return (
     <PreparedTableRowShell
+      rowMinHeight={rowMinHeight}
       className={cn(
         "select-none",
         isToggleInteractive ? "cursor-pointer" : "",
@@ -124,7 +147,7 @@ export function PreparedTableCell({
       {mode === "normal" && entry.state != "reserved" && (
         <div
           className={cn(
-            "h-2 w-2 shrink-0 rounded border",
+            "h-3 w-3 shrink-0 rounded border",
             entry.state === "used"
               ? "bg-red-600 border-red-700"
               : "bg-white border-slate-300",
@@ -132,34 +155,101 @@ export function PreparedTableCell({
         />
       )}
 
-      {/* Effective display name text */}
-      <div className="min-w-0 flex-1 truncate font-medium">
-        {summary.effectiveDisplayName}
+      <div className="min-w-0 flex max-w-[70%] items-center gap-1.5">
+        <div className="min-w-0 truncate font-medium">
+          {summary.effectiveDisplayName}
+        </div>
+
+        {hasExtraInfo && (
+          <HoverCard openDelay={150} closeDelay={100}>
+            <HoverCardTrigger asChild>
+              <span
+                className={INFO_ICON_SLOT_CLASS}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {hasMetamagic && <Sparkles className={TRAILING_ICON_CLASS} />}
+                {hasNote && <StickyNote className={TRAILING_ICON_CLASS} />}
+              </span>
+            </HoverCardTrigger>
+
+            <HoverCardContent
+              className="w-80 space-y-3 text-sm"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="border-b pb-2 font-medium">
+                {summary.effectiveDisplayName}
+              </div>
+
+              {hasDisplayNameOverride && (
+                <div className="space-y-1">
+                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {t("Base Name")}
+                  </div>
+                  <div>{summary.baseName}</div>
+                </div>
+              )}
+
+              {hasLevelOverride && (
+                <div className="space-y-1">
+                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {t("Level Override")}
+                  </div>
+                  <div>{entry.levelOverride}</div>
+                </div>
+              )}
+
+              {hasMetamagic && (
+                <div className="space-y-1">
+                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {t("Metamagic")}
+                  </div>
+                  <div>{localizedMetamagicSummary}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {t("Total level adj: +{{adj}}", {
+                      adj: summary.metamagicTotalAdj,
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {hasNote && (
+                <div className="space-y-1">
+                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {t("Notes")}
+                  </div>
+                  <div className="whitespace-pre-wrap wrap-break-word text-muted-foreground">
+                    {entry.notes}
+                  </div>
+                </div>
+              )}
+            </HoverCardContent>
+          </HoverCard>
+        )}
       </div>
 
       {/* Open detail (small, does not toggle) */}
-      {mode === "normal" && (
-        <Button
-          asChild
-          type="button"
-          size="icon-xs"
-          variant="ghost"
-          className="shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 hover:text-foreground"
-          aria-label={t("Open spell detail")}
-        >
-          <Link
-            to={`/spells/${spell.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
+      <div className={TRAILING_ACTIONS_CLASS}>
+        {mode === "normal" && (
+          <Button
+            asChild
+            type="button"
+            size="icon-xs"
+            variant="ghost"
+            className={TRAILING_ACTION_BUTTON_CLASS}
+            aria-label={t("Open spell detail")}
           >
-            <ExternalLink className="h-4 w-4" />
-          </Link>
-        </Button>
-      )}
+            <Link
+              to={`/spells/${spell.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ExternalLink className={TRAILING_ICON_CLASS} />
+            </Link>
+          </Button>
+        )}
 
-      {mode === "edit" && (
-        <>
+        {mode === "edit" && (
           <PreparedEntryEditDialog
             spellName={spellName}
             entry={entry}
@@ -167,123 +257,56 @@ export function PreparedTableCell({
               preparedBook.setEntry(bookId, entry.entryId, patch)
             }
           />
-        </>
-      )}
+        )}
 
-      {mode === "edit" && (
-        <Button
-          type="button"
-          size="icon-xs"
-          variant="ghost"
-          className="shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 hover:text-foreground"
-          onClick={(e) => {
-            e.stopPropagation();
-            preparedBook.setEntry(bookId, entry.entryId, {
-              state: entry.state === "reserved" ? "ok" : "reserved",
-            });
-          }}
-          title={
-            entry.state === "reserved"
-              ? t("Unlock reserved")
-              : t("Lock as reserved")
-          }
-          aria-label={
-            entry.state === "reserved"
-              ? t("Unlock reserved")
-              : t("Lock as reserved")
-          }
-        >
-          {entry.state === "reserved" ? (
-            <Lock className="h-4 w-4" />
-          ) : (
-            <LockOpen className="h-4 w-4" />
-          )}
-        </Button>
-      )}
-
-      {/* Extra info hover */}
-      {hasExtraInfo && (
-        <HoverCard openDelay={150} closeDelay={100}>
-          <HoverCardTrigger asChild>
-            <span
-              className="inline-flex shrink-0 items-center gap-1 text-muted-foreground"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {hasMetamagic && <Sparkles className="h-4 w-4" />}
-              {hasNote && <StickyNote className="h-4 w-4" />}
-            </span>
-          </HoverCardTrigger>
-
-          <HoverCardContent
-            className="w-80 space-y-3 text-sm"
-            onClick={(e) => e.stopPropagation()}
+        {mode === "edit" && (
+          <Button
+            type="button"
+            size="icon-xs"
+            variant="ghost"
+            className={TRAILING_ACTION_BUTTON_CLASS}
+            onClick={(e) => {
+              e.stopPropagation();
+              preparedBook.setEntry(bookId, entry.entryId, {
+                state: entry.state === "reserved" ? "ok" : "reserved",
+              });
+            }}
+            title={
+              entry.state === "reserved"
+                ? t("Unlock reserved")
+                : t("Lock as reserved")
+            }
+            aria-label={
+              entry.state === "reserved"
+                ? t("Unlock reserved")
+                : t("Lock as reserved")
+            }
           >
-            <div className="border-b pb-2 font-medium">
-              {summary.effectiveDisplayName}
-            </div>
-
-            {hasDisplayNameOverride && (
-              <div className="space-y-1">
-                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  {t("Base Name")}
-                </div>
-                <div>{summary.baseName}</div>
-              </div>
+            {entry.state === "reserved" ? (
+              <Lock className={TRAILING_ICON_CLASS} />
+            ) : (
+              <LockOpen className={TRAILING_ICON_CLASS} />
             )}
+          </Button>
+        )}
 
-            {hasLevelOverride && (
-              <div className="space-y-1">
-                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  {t("Level Override")}
-                </div>
-                <div>{entry.levelOverride}</div>
-              </div>
-            )}
-
-            {hasMetamagic && (
-              <div className="space-y-1">
-                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  {t("Metamagic")}
-                </div>
-                <div>{localizedMetamagicSummary}</div>
-                <div className="text-xs text-muted-foreground">
-                  {t("Total level adj: +{{adj}}", {
-                    adj: summary.metamagicTotalAdj,
-                  })}
-                </div>
-              </div>
-            )}
-
-            {hasNote && (
-              <div className="space-y-1">
-                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  {t("Notes")}
-                </div>
-                <div className="whitespace-pre-wrap wrap-break-word text-muted-foreground">
-                  {entry.notes}
-                </div>
-              </div>
-            )}
-          </HoverCardContent>
-        </HoverCard>
-      )}
-
-      {mode === "edit" && (
-        <Button
-          type="button"
-          size="icon-xs"
-          variant="ghost"
-          className="shrink-0 text-muted-foreground hover:text-destructive"
-          onClick={(e) => {
-            e.stopPropagation();
-            preparedBook.removeEntry(bookId, entry.entryId);
-          }}
-          title={t("Remove")}
-          aria-label={t("Remove")}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      )}
+        {mode === "edit" && (
+          <Button
+            type="button"
+            size="icon-xs"
+            variant="ghost"
+            className="shrink-0 text-muted-foreground hover:text-destructive"
+            onClick={(e) => {
+              e.stopPropagation();
+              preparedBook.removeEntry(bookId, entry.entryId);
+            }}
+            title={t("Remove")}
+            aria-label={t("Remove")}
+          >
+            <Trash2 className={TRAILING_ICON_CLASS} />
+          </Button>
+        )}
+      </div>
     </PreparedTableRowShell>
   );
 }

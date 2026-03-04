@@ -23,6 +23,7 @@ import {
 import { cn } from "~/lib/utils";
 
 type MetamagicTag = NonNullable<PreparedEntry["metamagic"]>[number];
+const EDIT_TRIGGER_ICON_CLASS = "h-3 w-3";
 
 const COMMON_METAMAGIC: MetamagicTag[] = [
   { key: "empower", levelAdj: 2 },
@@ -178,7 +179,7 @@ export function PreparedEntryEditDialog({
           title={t("Edit entry")}
           aria-label={t("Edit entry")}
         >
-          <Pencil className="h-4 w-4" />
+          <Pencil className={EDIT_TRIGGER_ICON_CLASS} />
         </Button>
       </DialogTrigger>
 

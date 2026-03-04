@@ -1,7 +1,8 @@
 import type { SpellItemView } from "@dnd/contracts";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent } from "~/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import type { PreparedEntry } from "~/storage/collections.type";
+import { DEFAULT_PREPARED_ROW_MIN_HEIGHT } from "./prepared-layout";
 import { PreparedTableCell, PreparedTableEmptyCell } from "./PreparedTableCell";
 
 export type PreparedViewMode = "normal" | "edit";
@@ -11,73 +12,62 @@ export function PreparedTable({
   columns,
   byId,
   mode,
+  rowMinHeight = DEFAULT_PREPARED_ROW_MIN_HEIGHT,
 }: {
   bookId: string;
   columns: PreparedEntry[][];
   byId: Map<number, SpellItemView>;
   mode: PreparedViewMode;
+  rowMinHeight?: string;
 }) {
   const { t } = useTranslation("collections");
-  const rowHeightClass = "h-7";
-  const cellWidthClass = "min-w-48";
 
   return (
-    <div className="overflow-x-auto pb-2">
-      <Card className="gap-0 py-0 shadow-none w-max">
-        <CardContent className="px-0 py-0">
-          <div className="inline-flex flex-col divide-y">
-            {Array.from({ length: 10 }, (_, level) => (
-              <div
-                key={level}
-                className={["flex w-max", rowHeightClass].join(" ")}
-              >
-                <div
-                  className={[
-                    "flex w-30 shrink-0 items-center justify-center border-r bg-muted/40 px-2 text-center text-xs font-medium",
-                    rowHeightClass,
-                  ].join(" ")}
-                >
-                  {t("Level {{level}} - {{count}} slot(s)", {
-                    level,
-                    count: columns[level]?.length ?? 0,
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+      {Array.from({ length: 10 }, (_, level) => {
+        const resolvedEntries = (columns[level] ?? []).flatMap((entry) => {
+          const spell = byId.get(entry.spellId);
+          return spell ? [{ entry, spell }] : [];
+        });
+
+        return (
+          <Card key={level} className="gap-0 overflow-hidden py-0">
+            <CardHeader className="border-b bg-muted/20 px-4 py-3 [.border-b]:pb-2">
+              <CardTitle className="flex items-center justify-between gap-3 text-sm font-semibold">
+                {t("Level {{level}}", { level })}
+                <span className="text-xs font-medium text-muted-foreground">
+                  {t("{{count}} slot(s)", {
+                    count: resolvedEntries.length,
                   })}
+                </span>
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent className="px-0 py-0">
+              {resolvedEntries.length === 0 ? (
+                <PreparedTableEmptyCell
+                  label={t("Empty")}
+                  rowMinHeight={rowMinHeight}
+                />
+              ) : (
+                <div className="divide-y">
+                  {resolvedEntries.map(({ entry, spell }) => (
+                    <div key={entry.entryId}>
+                      <PreparedTableCell
+                        bookId={bookId}
+                        entry={entry}
+                        spell={spell}
+                        mode={mode}
+                        rowMinHeight={rowMinHeight}
+                      />
+                    </div>
+                  ))}
                 </div>
-
-                <>
-                  {(columns[level]?.length ?? 0) === 0 ? (
-                    <div className={[cellWidthClass, rowHeightClass].join(" ")}>
-                      <PreparedTableEmptyCell label={t("Empty")} />
-                    </div>
-                  ) : (
-                    <div className="flex min-w-max divide-x divide-y overflow-y-hidden box-content">
-                      {columns[level]!.map((entry) => {
-                        const spell = byId.get(entry.spellId);
-                        if (!spell) return null;
-
-                        return (
-                          <div
-                            key={entry.entryId}
-                            className={[cellWidthClass, rowHeightClass].join(
-                              " ",
-                            )}
-                          >
-                            <PreparedTableCell
-                              bookId={bookId}
-                              entry={entry}
-                              spell={spell}
-                              mode={mode}
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { getSpellsBatch } from "~/api/spells";
 import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import {
   Tooltip,
   TooltipContent,
@@ -104,7 +105,7 @@ export function SpellIdBookJsonActions({ book }: { book: SpellIdBook }) {
 
   return (
     <>
-      <input
+      <Input
         ref={importInputRef}
         className="hidden"
         type="file"

@@ -92,16 +92,17 @@ export function PreparedClassAndDomainSidebar({
         {!collapsed && (
           <div id="prepared-sidebar-panels" className="space-y-3">
             <Card className="gap-0">
-              <CardHeader className="gap-1 py-3">
+              <CardHeader>
                 <CardTitle className="text-base">{t("Selected")}</CardTitle>
-                <CardDescription>
-                  {t("None selected. Spell level uses the lowest available level.")}
+                <CardDescription className="text-sm py-1">
+                  {selected.length === 0 &&
+                    t(
+                      "None selected. Spell level uses the lowest available level.",
+                    )}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-1 pt-0">
-                {selected.length === 0 ? (
-                  <div className="text-sm text-muted-foreground">{t("None")}</div>
-                ) : (
+                {selected.length !== 0 && (
                   <div className="max-h-48 space-y-1 overflow-auto pr-1">
                     {selected.map((opt) => (
                       <div
@@ -133,7 +134,7 @@ export function PreparedClassAndDomainSidebar({
             </Card>
 
             <Card className="gap-0">
-              <CardHeader className="gap-1 py-3">
+              <CardHeader>
                 <CardTitle className="text-base">{t("Candidates")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 pt-0">

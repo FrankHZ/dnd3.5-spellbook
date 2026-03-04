@@ -24,7 +24,7 @@ i18n
     ],
     // default namespace to use if not specified in t function
     defaultNS: "translation",
-    debug: true,
+    debug: import.meta.env.DEV,
     interpolation: { escapeValue: false },
     react: {
       useSuspense: true,

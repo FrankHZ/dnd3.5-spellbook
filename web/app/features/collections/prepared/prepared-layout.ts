@@ -1,0 +1,1 @@
+export const DEFAULT_PREPARED_ROW_MIN_HEIGHT = "2rem";

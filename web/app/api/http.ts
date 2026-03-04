@@ -44,8 +44,6 @@ export async function apiGet<T>(
 ): Promise<T> {
   const url = withI18nParams(path);
 
-  console.log(`Fetching API endpoint: GET ${url}`);
-
   const res = await fetch(url, { method: "GET", signal });
   const text = await res.text();
   const data = text ? JSON.parse(text) : null;
@@ -61,7 +59,6 @@ export async function apiPost<ResponseT, BodyT>(
 ): Promise<ResponseT> {
   const url = withI18nParams(path);
 
-  console.log(`Fetching API endpoint: POST ${url}`);
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
