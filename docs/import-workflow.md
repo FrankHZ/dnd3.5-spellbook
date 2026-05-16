@@ -47,6 +47,8 @@ but `data-tools` owns parser and inspection tooling.
 
 The CHM preprocess and parser commands scan nested directories and preserve
 relative paths. Word/CHM companion directories ending in `.files` are skipped.
+When spell headers omit explicit book labels, the parser may infer a label from
+the mapped top-level source directory, such as `九剑/` for Tome of Battle.
 
 ### Mapping And Dictionary Inputs
 

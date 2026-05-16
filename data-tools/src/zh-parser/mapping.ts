@@ -1,9 +1,17 @@
 import mapping from "DATA/chm-mapping/books-zh-chm-mapping.json";
+
+const BUILTIN_BOOK_LABEL_TO_ABBR: Record<string, string> = {
+  九剑: "ToB",
+};
+
 /**
  * Map Chinese book labels (as they appear in headers) -> Rulebook.abbr in DB
  * Add new keys as we discover them in unmatched logs.
  */
-export const BOOK_LABEL_TO_ABBR: Record<string, string> = mapping;
+export const BOOK_LABEL_TO_ABBR: Record<string, string> = {
+  ...BUILTIN_BOOK_LABEL_TO_ABBR,
+  ...mapping,
+};
 
 export function normalizeBookLabel(label: string): string {
   return label

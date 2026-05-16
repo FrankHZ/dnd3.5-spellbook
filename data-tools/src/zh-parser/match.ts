@@ -2,10 +2,29 @@ import { Prisma } from "prisma-rules-clean/generated/client";
 import { rulesPrisma as prisma } from "../db/rules-prisma-client";
 import aliasMapGlobal from "DATA/chm-mapping/enName-aliases-global.json";
 import aliasMapExtra from "DATA/chm-mapping/enName-aliases-extra.json";
-import bookMap from "DATA/chm-mapping/books-zh-chm-mapping.json";
+import { BOOK_LABEL_TO_ABBR } from "./mapping";
 
-const ZH_BOOK_MAP: Record<string, string> = bookMap;
-const EN_ALIAS_MAP_GLOBAL: Record<string, string> = aliasMapGlobal;
+const ZH_BOOK_MAP: Record<string, string> = BOOK_LABEL_TO_ABBR;
+const BUILTIN_EN_ALIAS_MAP_GLOBAL: Record<string, string> = {
+  "Action Before Throught": "Action Before Thought",
+  "Dragons Flame": "Dragon's Flame",
+  "Fanthe Flames": "Fan the Flames",
+  "Five-Shadow Creeping Ice Enervation Strike":
+    "Five-Shadow Creeping Ice Enervating Strike",
+  "Flames Blessing": "Flame's Blessing",
+  "Ironguard's Glare": "Iron Guard's Glare",
+  "Lighting Recovery": "Lightning Recovery",
+  "Lighting Throw": "Lightning Throw",
+  "Stalkerin The Night": "Stalker in the Night",
+  "Step Of Dancing Moth": "Step of the Dancing Moth",
+  "Strike Of The Broken Shield": "Strike of the Broke Shield",
+  SwarmTactics: "Swarm Tactics",
+  "White Raven Tactic": "White Raven Tactics",
+};
+const EN_ALIAS_MAP_GLOBAL: Record<string, string> = {
+  ...BUILTIN_EN_ALIAS_MAP_GLOBAL,
+  ...aliasMapGlobal,
+};
 const EN_ALIAS_EXTRA: Record<string, string[]> = aliasMapExtra;
 
 function checkingMissLabel(opts: {

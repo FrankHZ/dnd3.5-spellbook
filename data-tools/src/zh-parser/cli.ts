@@ -5,9 +5,9 @@ import { segmentLetterPage } from "./segment";
 import { matchByEnNameAllBooks } from "./match";
 import { sanitizeDescription } from "./sanitize";
 import { ParserStats, ZhMatchedRecord } from "./types";
-import bookMap from "DATA/chm-mapping/books-zh-chm-mapping.json";
+import { BOOK_LABEL_TO_ABBR } from "./mapping";
 
-const ZH_BOOK_MAP: Record<string, string> = bookMap;
+const ZH_BOOK_MAP: Record<string, string> = BOOK_LABEL_TO_ABBR;
 
 function parseArgs(argv: string[]) {
   const args = new Map<string, string>();
@@ -47,6 +47,12 @@ function encodeKeyPart(s: string): string {
   return encodeURIComponent(s.toLowerCase()).replace(/%20/g, "+");
 }
 
+function inferBookLabelsFromPath(file: string): string[] {
+  const [topLevelDir] = file.split("/");
+  if (topLevelDir && ZH_BOOK_MAP[topLevelDir]) return [topLevelDir];
+  return [];
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const inputDir = args.get("--input");
@@ -75,6 +81,7 @@ async function main() {
     try {
       const html = fs.readFileSync(abs, "utf-8");
       const segments = segmentLetterPage(html);
+      const fileBookLabels = inferBookLabelsFromPath(file);
 
       stats.segmentsFound += segments.length;
 
@@ -84,12 +91,15 @@ async function main() {
         const sourceKeyBase = `${file}#${encodeKeyPart(seg.enName)}`;
         const extractMethod = seg.method;
 
+        const bookLabels =
+          seg.bookLabels.length > 0 ? seg.bookLabels : fileBookLabels;
+
         const matches = await matchByEnNameAllBooks({
           enName: seg.enName,
-          bookLabels: seg.bookLabels,
+          bookLabels,
         });
 
-        let segRulebookAbbrs = seg.bookLabels
+        let segRulebookAbbrs = bookLabels
           .map((label) => ZH_BOOK_MAP[label])
           .filter((abbr) => abbr != undefined);
 

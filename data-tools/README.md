@@ -42,6 +42,11 @@ CHM preprocess and parse commands scan nested directories and preserve relative
 paths in cleaned output and parser source keys. Word/CHM companion directories
 ending in `.files` are skipped.
 
+If a nested source file does not include an explicit book label in its spell
+headers, the parser may infer one from the top-level source directory when that
+directory is mapped to a known rulebook. For example, `九剑/` is treated as the
+CHM label for `Tome of Battle` (`ToB`).
+
 The rules DB path comes from `RULES_DATABASE_URL`; see `server/.env` and
 `docs/data-setup.md`.
 
