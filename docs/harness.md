@@ -55,8 +55,9 @@ around this boundary before changing either side.
 
 ### Browser Coverage
 
-There is no dedicated browser smoke harness yet. Add it after the API and pure
-logic harnesses are stable.
+There is no dedicated browser smoke harness yet, and the repo does not currently
+include a Playwright or Puppeteer setup. Add browser smoke after the API and pure
+logic harnesses are stable and after choosing a browser runner intentionally.
 
 ## Recommended Build-Out
 
@@ -121,6 +122,9 @@ Current coverage includes:
 
 - search validation
 - collection selectors
+- collection storage normalization
+- user preferences storage
+- i18n storage fallback
 - spell-id JSON import/export
 - prepared JSON import/export
 - prepared bulk-paste row mapping

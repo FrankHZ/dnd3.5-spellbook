@@ -44,6 +44,23 @@ as proof of shipped behavior.
 - If behavior differs from documentation, update the newest canonical doc rather
   than editing old MVP history.
 
+## Feature Change Workflow
+
+For ordinary feature requests, follow this default loop:
+
+1. Locate the feature in `docs/features.md`.
+2. Read the existing feature entry point and nearby tests before editing.
+3. Reuse the current API helpers, storage helpers, UI wrappers, and feature
+   folders instead of creating parallel structures.
+4. Make the smallest change that satisfies the requested behavior.
+5. Add or update the closest harness layer:
+   - API shape or error tests for backend contract changes
+   - pure frontend tests for storage, import/export, derivation, or API wrapper
+     changes
+   - typecheck/build verification for UI integration changes
+6. Run `npm run verify` before handing off.
+7. Update durable docs only when behavior, workflow, or agent guidance changed.
+
 ## Data And Environment
 
 The app depends on local SQLite files configured by `server/.env`:
