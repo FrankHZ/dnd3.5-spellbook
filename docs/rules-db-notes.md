@@ -110,6 +110,38 @@ Historical SQL patch assets currently live under `server/data/db/sql/`, but no
 current npm script or runtime path consumes them. v3.3 should move those assets
 and any write-capable rules DB preparation commands into `data-tools`.
 
+## Verified Manual Fixes
+
+The local `rules-clean.sqlite` already reflects the manual fixes listed in
+`server/data/db/fixes.txt` and `rules-clean-v2.0.patch.sql`.
+
+Verified spell names:
+
+| ID     | Name                         | Rulebook |
+| ------ | ---------------------------- | -------- |
+| `4912` | `Detect Aberration`          | `ECS`    |
+| `3164` | `Desiccate`                  | `Sa`     |
+| `4887` | `Hero's Blade`               | `ECS`    |
+| `3926` | `Ironguard, Lesser`          | `Sc_`    |
+| `429`  | `Protege`                    | `CAd`    |
+| `4664` | `Protege`                    | `Sc_`    |
+| `4190` | `Solipsism`                  | `Sc_`    |
+| `815`  | `Vecna's Malevolent Whisper` | `CM`     |
+
+Verified rulebook names:
+
+| ID   | Name                                     | Abbr  |
+| ---- | ---------------------------------------- | ----- |
+| `21` | `Monster Compendium: Monsters of Faerûn` | `Mon` |
+| `22` | `Player's Guide to Faerûn`               | `PG`  |
+
+`Blood Wind` is not missing from the current rules DB. It exists as:
+
+| ID     | Name         | Rulebook |
+| ------ | ------------ | -------- |
+| `3202` | `Blood Wind` | `SS`     |
+| `3975` | `Blood Wind` | `Sc_`    |
+
 ## Open Questions For v3.3 Importer
 
 - Should the importer allocate ids by `MAX(id) + 1`, or should ids come from a
