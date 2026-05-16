@@ -65,6 +65,25 @@ describe("POST /api/spells/resolve", () => {
     expect(res.status).toBe(400);
   });
 
+  it("accepts the documented maximum names per request", async () => {
+    const names = new Array(200).fill("DefinitelyNotASpell");
+
+    const res = await request(app).post("/api/spells/resolve").send({ names });
+
+    expect(res.status).toBe(200);
+    expect(res.body.results).toHaveLength(200);
+  });
+
+  it("rejects more than the documented maximum names per request", async () => {
+    const names = new Array(201).fill("Magic Missile");
+
+    const res = await request(app).post("/api/spells/resolve").send({ names });
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe("Invalid request");
+    expect(res.body.error).toBe("names must be <= 200");
+  });
+
   it("rejects oversized names array", async () => {
     const large = new Array(5000).fill("Magic Missile");
 

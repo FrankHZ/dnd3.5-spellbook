@@ -19,9 +19,15 @@ The repository currently has:
 Useful commands:
 
 ```bash
+npm run verify
+```
+
+Or run the pieces individually:
+
+```bash
 npm run build:contracts
-npm run -w server test -- --run
-npm run -w web typecheck
+npm run test:server
+npm run typecheck:web
 ```
 
 For frontend packaging checks:
@@ -30,21 +36,21 @@ For frontend packaging checks:
 npm run -w web build
 ```
 
-## Known Harness Gaps
+## Harness Guardrails
 
 ### Generated Test Output
 
 The server build writes compiled tests under `server/dist/tests/`.
 
-Vitest may discover both source tests and compiled tests if `dist` is present,
-which causes duplicated execution and can hide stale-output problems. The test
-configuration should explicitly include source tests or exclude `dist`.
+Vitest is configured to run only source tests under `server/tests/` and exclude
+`server/dist/`. Generated output must not become a source of truth for test
+discovery.
 
 ### Frontend-Backend Batch Limit
 
 Backend spell-name resolve currently rejects more than 200 names per request.
-The frontend resolver chunk size is currently larger than that. Add a focused
-test before changing either side so the intended limit is explicit.
+The frontend resolver chunks requests at the same limit. Keep focused tests
+around this boundary before changing either side.
 
 ### Browser Coverage
 

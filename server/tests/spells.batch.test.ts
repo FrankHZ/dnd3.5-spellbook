@@ -23,4 +23,25 @@ describe("POST /api/spells/batch", () => {
 
     expect(res.status).toBe(400);
   });
+
+  it("accepts the documented maximum ids per request", async () => {
+    const ids = Array.from({ length: 100 }, (_, i) => i + 1);
+
+    const res = await request(app).post("/api/spells/batch").send({ ids });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ids).toHaveLength(100);
+    expect(Array.isArray(res.body.items)).toBe(true);
+    expect(Array.isArray(res.body.missingIds)).toBe(true);
+  });
+
+  it("rejects more than the documented maximum ids per request", async () => {
+    const ids = Array.from({ length: 101 }, (_, i) => i + 1);
+
+    const res = await request(app).post("/api/spells/batch").send({ ids });
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe("Invalid request");
+    expect(res.body.error).toBe("ids must be <= 100");
+  });
 });

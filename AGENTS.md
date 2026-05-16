@@ -60,9 +60,15 @@ fresh clone has the same data.
 Run the smallest relevant set first:
 
 ```bash
+npm run verify
+```
+
+Or run the pieces individually:
+
+```bash
 npm run build:contracts
-npm run -w server test -- --run
-npm run -w web typecheck
+npm run test:server
+npm run typecheck:web
 ```
 
 For frontend behavior changes, also build or manually smoke-test the app:

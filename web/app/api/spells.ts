@@ -116,7 +116,7 @@ export async function getSpellsBatch(
   };
 }
 
-const MAX_NAMES_PER_RESOLVE = 500;
+const MAX_NAMES_PER_RESOLVE = 200;
 
 export async function resolveSpellNames(
   names: string[],
