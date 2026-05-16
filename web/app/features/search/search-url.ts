@@ -70,27 +70,17 @@ export function buildSearchUrl(input: Parameters<typeof buildSearchParams>[0]) {
   return query ? `/search?${query}` : "/search";
 }
 
-export function buildBrowseUrl(input: {
-  classIds?: number[] | null;
-  domainIds?: number[] | null;
-  level?: LevelParam | null;
-}) {
-  const params = new URLSearchParams();
-  const classIds = normalizeIds(input.classIds ?? []);
-  const domainIds = normalizeIds(input.domainIds ?? []);
-  setOrDelete(params, "classIds", classIds.length ? classIds.join(",") : null);
-  setOrDelete(
-    params,
-    "domainIds",
-    domainIds.length ? domainIds.join(",") : null,
-  );
-  setOrDelete(
-    params,
-    "level",
-    input.level == null ? null : String(input.level),
-  );
-  const query = params.toString();
-  return query ? `/browse?${query}` : "/browse";
+export function buildSearchUrlWithPreservedScope(
+  params: URLSearchParams,
+  q: string,
+) {
+  const scope = parseSearchScope(params);
+  return buildSearchUrl({
+    q,
+    classIds: scope.classIds,
+    domainIds: scope.domainIds,
+    level: scope.level,
+  });
 }
 
 export function hasSearchScope(

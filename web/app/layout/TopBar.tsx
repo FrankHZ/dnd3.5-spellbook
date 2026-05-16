@@ -30,6 +30,10 @@ import {
   SheetTrigger,
 } from "~/components/ui/sheet";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
+import {
+  buildSearchUrl,
+  buildSearchUrlWithPreservedScope,
+} from "~/features/search/search-url";
 import { isSearchQueryValid } from "~/features/search/validation";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useUserPrefs } from "~/state/user-prefs-state";
@@ -67,13 +71,14 @@ function TopBarSearch() {
       return;
     }
     setError(null);
-    const next =
-      location.pathname === "/search"
-        ? new URLSearchParams(params)
-        : new URLSearchParams();
-    next.set("q", text.trim());
-    next.delete("page");
-    navigate(`/search?${next.toString()}`);
+    const query = text.trim();
+    const shouldPreserveScope =
+      location.pathname === "/search" || location.pathname === "/browse";
+    navigate(
+      shouldPreserveScope
+        ? buildSearchUrlWithPreservedScope(params, query)
+        : buildSearchUrl({ q: query }),
+    );
   };
 
   return (

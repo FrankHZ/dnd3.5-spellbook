@@ -1,7 +1,6 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
 
 import { ApiError } from "~/api/http";
 import { getSpellsByLevel } from "~/api/spells";
@@ -13,7 +12,6 @@ import {
   CardDescription,
   CardHeader,
 } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 
@@ -23,7 +21,6 @@ import { ClassAndDomainSelector } from "./ClassAndDomainSelector";
 import { LevelSelector } from "./LevelSelector";
 import { useBrowsePrefs } from "./useBrowsePref";
 import { useBrowseQueryState } from "./useBrowseQueryState";
-import { buildSearchUrl } from "../search/search-url";
 
 export default function BrowsePage() {
   const { queryKey } = useAppI18n();
@@ -100,35 +97,12 @@ export default function BrowsePage() {
       : t("Using default rulebook scope: 3.5 core", {
           ns: "spell-browse",
         });
-  const scopedSearchUrl = buildSearchUrl({
-    classIds,
-    domainIds,
-    level,
-  });
 
   return (
     <div className="page-side">
-      <div className="flex flex-col gap-3 px-1 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-xl font-semibold">{t("Browse")}</h1>
-          <div className="text-sm text-muted-foreground">
-            {scopeDescription}
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {hasValidSelection ? (
-            <Button asChild variant="outline">
-              <Link to={scopedSearchUrl}>{t("Search within filters")}</Link>
-            </Button>
-          ) : (
-            <Button type="button" variant="outline" disabled>
-              {t("Search within filters")}
-            </Button>
-          )}
-          <Button asChild variant="ghost">
-            <Link to="/search">{t("Open clean search")}</Link>
-          </Button>
-        </div>
+      <div className="space-y-1 px-1">
+        <h1 className="text-xl font-semibold">{t("Browse")}</h1>
+        <div className="text-sm text-muted-foreground">{scopeDescription}</div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-[320px_1fr]">

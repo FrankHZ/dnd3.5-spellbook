@@ -5,9 +5,11 @@ import { cn } from "~/lib/utils";
 export function LevelSelector({
   value,
   onChange,
+  allowAnyLevel = false,
 }: {
   value: number | "all" | null;
   onChange: (next: number | "all" | null) => void;
+  allowAnyLevel?: boolean;
 }) {
   const { t } = useTranslation("spell-browse");
   const level = value;
@@ -15,6 +17,17 @@ export function LevelSelector({
   return (
     <div className="space-y-3">
       <div className="font-medium">{t("Level")}</div>
+      {allowAnyLevel && (
+        <Button
+          type="button"
+          variant={level === null ? "default" : "outline"}
+          size="sm"
+          className="w-full justify-center"
+          onClick={() => onChange(null)}
+        >
+          {t("Any Level")}
+        </Button>
+      )}
       <Button
         type="button"
         variant={level === "all" ? "default" : "outline"}
@@ -39,7 +52,7 @@ export function LevelSelector({
         ))}
       </div>
 
-      {level === null && (
+      {!allowAnyLevel && level === null && (
         <div className="text-sm text-destructive">
           {t("Select a spell level (0-9).")}
         </div>

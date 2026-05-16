@@ -37,8 +37,10 @@ Current behavior:
 - English and other non-CJK queries require at least two characters
 - CJK queries may search from one character
 - rulebook filtering is supported
-- optional browse-scope URL filters can constrain search by class, domain, and
-  level
+- URL filters can constrain search by class, domain, and level
+- the Search sidebar exposes editable class, domain, and level controls
+- header search preserves current Browse or Search filter scope while replacing
+  the name query
 - results are paginated
 - empty or too-short usable queries return an empty result set rather than a
   failed search

@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  buildBrowseUrl,
   buildSearchParams,
   buildSearchUrl,
+  buildSearchUrlWithPreservedScope,
   parseSearchScope,
 } from "./search-url";
 
@@ -41,10 +41,12 @@ describe("search URL helpers", () => {
     );
   });
 
-  it("builds browse URLs from search scope", () => {
-    expect(buildBrowseUrl({})).toBe("/browse");
-    expect(buildBrowseUrl({ classIds: [3, 1], level: 2 })).toBe(
-      "/browse?classIds=1%2C3&level=2",
-    );
+  it("builds search URLs by preserving filter scope and replacing q", () => {
+    expect(
+      buildSearchUrlWithPreservedScope(
+        new URLSearchParams("q=old&page=3&classIds=2,1&domainIds=8&level=all"),
+        "magic missile",
+      ),
+    ).toBe("/search?q=magic+missile&classIds=1%2C2&domainIds=8&level=all");
   });
 });

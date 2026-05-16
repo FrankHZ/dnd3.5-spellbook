@@ -1,5 +1,6 @@
 {
   "All Levels": "All Levels",
+  "Any Level": "Any Level",
   "Base Classes": "Base Classes",
   "Browse": "Browse",
   "Choose at least one class or domain, then set a spell level.": "Choose at least one class or domain, then set a spell level.",
@@ -11,10 +12,8 @@
   "Level": "Level",
   "Level {{level}}": "Level {{level}}",
   "No spells found for selected classes at level {{level}}.": "No spells found for selected classes at level {{level}}.",
-  "Open clean search": "Open clean search",
   "Prestige Classes": "Prestige Classes",
   "Request failed. Please try again.": "Request failed. Please try again.",
-  "Search within filters": "Search within filters",
   "Select a spell level (0-9).": "Select a spell level (0-9).",
   "Select at least one class or domain.": "Select at least one class or domain.",
   "Show details": "Show details",

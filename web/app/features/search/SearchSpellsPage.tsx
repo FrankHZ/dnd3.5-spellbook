@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { Link, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 
 import { ApiError } from "~/api/http";
 import { searchSpellsByName } from "~/api/spells";
@@ -18,11 +18,12 @@ import { Separator } from "~/components/ui/separator";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useUserPrefs } from "~/state/user-prefs-state";
 import { useTranslation } from "react-i18next";
+import { ClassAndDomainSelector } from "../browse/ClassAndDomainSelector";
+import { LevelSelector } from "../browse/LevelSelector";
 import { isSearchQueryValid } from "./validation";
 import { PAGE_SIZE } from "../constants";
 import {
-  buildBrowseUrl,
-  buildSearchUrl,
+  buildSearchParams,
   hasSearchScope,
   parseSearchScope,
 } from "./search-url";
@@ -45,8 +46,23 @@ export default function SearchSpellsPage() {
       : searchScope.level === "all"
         ? t("all")
         : String(searchScope.level);
-  const cleanSearchUrl = buildSearchUrl({ q: qParam });
-  const browseScopeUrl = buildBrowseUrl(searchScope);
+
+  function updateSearchScope(
+    patch: Partial<
+      Pick<typeof searchScope, "classIds" | "domainIds" | "level">
+    >,
+  ) {
+    const next = buildSearchParams({
+      ...searchScope,
+      ...patch,
+      page: null,
+    });
+    setParams(next);
+  }
+
+  function clearSearchScope() {
+    setParams(buildSearchParams({ q: qParam }));
+  }
 
   const query = useQuery({
     queryKey: [
@@ -110,42 +126,35 @@ export default function SearchSpellsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-0">
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">{t("Query")}</span>
-                <span className="truncate font-medium">{qParam || "—"}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">{t("Classes")}</span>
-                <span className="font-medium">
-                  {searchScope.classIds.length}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">{t("Domains")}</span>
-                <span className="font-medium">
-                  {searchScope.domainIds.length}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">{t("Level")}</span>
-                <span className="font-medium">{levelLabel}</span>
-              </div>
-            </div>
+            <ClassAndDomainSelector
+              classIds={searchScope.classIds}
+              domainIds={searchScope.domainIds}
+              onChangeClasses={(classIds) => updateSearchScope({ classIds })}
+              onChangeDomains={(domainIds) => updateSearchScope({ domainIds })}
+            />
+
+            <Separator />
+
+            <LevelSelector
+              value={searchScope.level}
+              onChange={(level) => updateSearchScope({ level })}
+              allowAnyLevel
+            />
 
             <Separator />
 
             <div className="grid gap-2">
-              <Button asChild variant="outline">
-                <Link to={browseScopeUrl}>{t("Edit in Browse")}</Link>
-              </Button>
               {hasScopedSearch ? (
-                <Button asChild variant="ghost">
-                  <Link to={cleanSearchUrl}>{t("Clear Browse scope")}</Link>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={clearSearchScope}
+                >
+                  {t("Clear Search filters")}
                 </Button>
               ) : (
                 <Button type="button" variant="ghost" disabled>
-                  {t("Clear Browse scope")}
+                  {t("Clear Search filters")}
                 </Button>
               )}
             </div>

@@ -1,5 +1,6 @@
 {
   "All Levels": "所有",
+  "Any Level": "任意环数",
   "Base Classes": "基础职业",
   "Browse": "浏览",
   "Choose at least one class or domain, then set a spell level.": "选择至少一个职业或者领域，然后选环数",
@@ -11,10 +12,8 @@
   "Level": "环数",
   "Level {{level}}": "{{level}}环",
   "No spells found for selected classes at level {{level}}.": "选择的职业/领域没有{{level}}环法术。",
-  "Open clean search": "打开干净搜索",
   "Prestige Classes": "进阶职业",
   "Request failed. Please try again.": "查询失败。",
-  "Search within filters": "按当前筛选搜索",
   "Select a spell level (0-9).": "选择法术环数",
   "Select at least one class or domain.": "选择至少一个职业或者领域。",
   "Show details": "显示更多",
