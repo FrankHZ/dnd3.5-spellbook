@@ -7,6 +7,7 @@ A monorepo for a Dungeons & Dragons 3.5 spellbook application with:
 - a React frontend
 - an Express API
 - shared TypeScript contracts
+- data import and inspection tooling
 - bilingual English / Chinese spell support
 
 The project is optimized for practical tabletop use: fast lookup, clean spell detail pages, favorites, spellbooks, and prepared spell management.
@@ -21,7 +22,8 @@ To reduce redistribution risk, data-bearing local artifacts are intentionally ex
 
 ## Status
 
-The current documented release state is **v3.2 frozen**.
+The current documented release state is **v3.2 frozen**. Active feature planning
+after that freeze lives under `docs/mvp/v3.3/`.
 
 For the canonical release handoff, start with [docs/mvp/v3.2/FREEZE.md](./docs/mvp/v3.2/FREEZE.md).
 For the full documentation map, use [docs/README.md](./docs/README.md).
@@ -57,6 +59,7 @@ The main workspace commands and constraints are documented in:
 - [server/README.md](./server/README.md)
 - [web/README.md](./web/README.md)
 - [contracts/README.md](./contracts/README.md)
+- [data-tools/README.md](./data-tools/README.md)
 
 ## Operational Helpers
 
@@ -64,6 +67,7 @@ The current deployment workflow is documented in:
 
 - [docs/deployment.md](./docs/deployment.md)
 - [docs/data-setup.md](./docs/data-setup.md)
+- [data-tools/README.md](./data-tools/README.md)
 
 Tracked shell scripts under `docs/deployment-scripts/` are the canonical deployment scripts.
 
@@ -75,11 +79,12 @@ For local database setup and data origins, use [docs/data-setup.md](./docs/data-
 
 ```text
 .
-|- server/     Backend API, Prisma schema, import tooling, tests
-|- web/        Frontend app, routes, UI, i18n assets
-|- contracts/  Shared DTOs and TypeScript types
-|- data/       Local data inputs used by tooling
-|- docs/       Release docs, MVP plans, handoff notes
+|- server/      Backend API, Prisma schemas, app DB import scripts, tests
+|- web/         Frontend app, routes, UI, i18n assets
+|- contracts/   Shared DTOs and TypeScript types
+|- data-tools/  Data inspection, parser, and rules DB tooling
+|- data/        Local data inputs used by tooling
+|- docs/        Release docs, MVP plans, handoff notes
 ```
 
 ## What The App Covers
@@ -104,7 +109,8 @@ To keep the scope stable, the project currently does not aim to provide:
 
 This repo keeps documentation intentionally lightweight:
 
-- The root `README.md` is the human-friendly entry point.
+- The root `README.md` is a short human-friendly entry point.
+- [docs/README.md](./docs/README.md) is the canonical documentation map.
 - Each workspace `README.md` gives short operational guidance.
 - `docs/` contains versioned and canonical project documents.
 
