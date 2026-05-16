@@ -5,6 +5,8 @@ database. It is a working reference for v3.3 data-import planning, especially
 new spell imports.
 
 For current database roles and local paths, see `docs/data-setup.md`.
+For planned rules DB preparation command ownership, see
+`docs/mvp/v3.3/rules-db-prep-workflow-plan.md`.
 
 ## Inspection Tool
 
@@ -103,6 +105,10 @@ A new spell import must account for:
 The existing CHM workflow still only imports Chinese overlay text into the app
 DB. It expects matched records to already have `spellId` values from the rules
 DB, so it cannot create new base spells by itself.
+
+Historical SQL patch assets currently live under `server/data/db/sql/`, but no
+current npm script or runtime path consumes them. v3.3 should move those assets
+and any write-capable rules DB preparation commands into `data-tools`.
 
 ## Open Questions For v3.3 Importer
 

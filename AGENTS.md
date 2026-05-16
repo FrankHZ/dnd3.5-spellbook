@@ -32,15 +32,19 @@ Start with these files when orienting:
    import, parser, rules DB inspection, or rules DB patch tooling.
 5. `docs/mvp/v3.3/local-data-layout-plan.md` before moving CHM inputs, parser
    outputs, local source data, or future rules patch files.
-6. `docs/harness.md` for validation and test-harness strategy.
-7. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
-8. `docs/mvp/v3.2/FREEZE.md` only when you need the latest frozen release
+6. `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before moving SQL patch
+   assets, adding rules DB preparation commands, or importing missing English
+   base spell records.
+7. `docs/harness.md` for validation and test-harness strategy.
+8. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
+9. `docs/mvp/v3.2/FREEZE.md` only when you need the latest frozen release
    snapshot for historical comparison or regression checks.
-9. Workspace READMEs for operational commands:
-   - `server/README.md`
-   - `data-tools/README.md`
-   - `web/README.md`
-   - `contracts/README.md`
+10. Workspace READMEs for operational commands:
+
+- `server/README.md`
+- `data-tools/README.md`
+- `web/README.md`
+- `contracts/README.md`
 
 Version folders under `docs/mvp/` are stage records. A `FREEZE.md` describes the
 state of that stage; it is not automatically the baseline for later active
@@ -181,6 +185,8 @@ See `docs/harness.md` for details.
 - New missing-spell workflows should treat base spell data as rules DB patches,
   not app DB overlays. Use `docs/rules-db-notes.md` before designing those
   imports.
+- Follow `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before turning manual
+  SQL patches into commands or adding write-capable rules DB workflows.
 - Data tools may inspect local SQLite files, but must not modify
   `server/data/db/` unless the user explicitly asked for a write-capable
   workflow.
