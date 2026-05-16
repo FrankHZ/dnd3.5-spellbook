@@ -25,11 +25,13 @@ Start with these files when orienting:
 3. `docs/feature-workflow.md` before implementing non-trivial new features.
 4. `docs/mvp/v3.3/data-tools-workspace-plan.md` before moving or adding data
    import, parser, rules DB inspection, or rules DB patch tooling.
-5. `docs/harness.md` for validation and test-harness strategy.
-6. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
-7. `docs/mvp/v3.2/FREEZE.md` only when you need the latest frozen release
+5. `docs/mvp/v3.3/local-data-layout-plan.md` before moving CHM inputs, parser
+   outputs, local source data, or future rules patch files.
+6. `docs/harness.md` for validation and test-harness strategy.
+7. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
+8. `docs/mvp/v3.2/FREEZE.md` only when you need the latest frozen release
    snapshot for historical comparison or regression checks.
-8. Workspace READMEs for operational commands:
+9. Workspace READMEs for operational commands:
    - `server/README.md`
    - `data-tools/README.md`
    - `web/README.md`
@@ -167,6 +169,8 @@ See `docs/harness.md` for details.
   `server/src`.
 - Follow `docs/mvp/v3.3/data-tools-workspace-plan.md` when moving existing tools
   or adding new data tooling.
+- Follow `docs/mvp/v3.3/local-data-layout-plan.md` before moving local data
+  inputs or generated parser outputs.
 - Preserve command compatibility when moving existing tooling, and keep behavior
   unchanged unless a feature plan says otherwise.
 - New missing-spell workflows should treat base spell data as rules DB patches,

@@ -27,6 +27,7 @@ Feature work after the v3.2 freeze is tracked under `docs/mvp/v3.3/`.
 Current v3.3 planning docs:
 
 - [mvp/v3.3/data-tools-workspace-plan.md](./mvp/v3.3/data-tools-workspace-plan.md)
+- [mvp/v3.3/local-data-layout-plan.md](./mvp/v3.3/local-data-layout-plan.md)
 - [mvp/v3.3/search-browse-query-plan.md](./mvp/v3.3/search-browse-query-plan.md)
 
 ## Current Operational Docs
