@@ -1,6 +1,7 @@
-import "dotenv/config";
 import Database from "better-sqlite3";
 import path from "node:path";
+
+import { loadServerEnv, resolveServerRelativePath } from "./env";
 
 type SqliteTable = {
   name: string;
@@ -42,12 +43,13 @@ function usage() {
 }
 
 function rulesDbPath() {
+  loadServerEnv();
   const raw = process.env.RULES_DATABASE_URL;
   if (!raw) throw new Error("RULES_DATABASE_URL is not set");
   if (!raw.startsWith("file:")) {
     throw new Error(`Only file: SQLite URLs are supported, got ${raw}`);
   }
-  return path.resolve(raw.slice("file:".length));
+  return resolveServerRelativePath(raw.slice("file:".length));
 }
 
 function openDb() {

@@ -1,7 +1,15 @@
 import { appPrisma } from "~/lib/app-prisma-client";
 import fs from "node:fs";
 import { load } from "cheerio";
-import { ZhMatchedRecord } from "tools/zh-parser/types";
+
+type ZhMatchedRecord = {
+  spellId: number | null;
+  rulebookId: number | null;
+  sourceKey: string;
+  zhName: string;
+  enName: string;
+  zhDescriptionHtml: string;
+};
 
 const LANG = "zh";
 const VARIANT = "chm";

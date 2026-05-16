@@ -11,9 +11,8 @@ project docs live under `docs/`.
 - `server/`: Express API, Prisma clients, SQLite access used by runtime, API tests.
 - `web/`: React Router frontend, local UI wrappers, browser-facing app state.
 - `contracts/`: shared TypeScript DTOs used by both `server` and `web`.
-- `data-tools/`: planned v3.3 home for import, inspection, parser, and rules DB
-  patch tooling. Until migration is complete, some data tools still live under
-  `server/tools/` and `server/scripts/`.
+- `data-tools/`: import, inspection, parser, and future rules DB patch tooling.
+  Server-side wrapper scripts may remain for command compatibility.
 - `docs/`: current operational docs plus historical MVP planning records.
 - `server/data/`: local-only data and databases; do not assume it is portable.
 
@@ -31,6 +30,7 @@ Start with these files when orienting:
 7. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
 8. Workspace READMEs for operational commands:
    - `server/README.md`
+   - `data-tools/README.md`
    - `web/README.md`
    - `contracts/README.md`
 
@@ -159,8 +159,8 @@ See `docs/harness.md` for details.
   `server/src`.
 - Follow `docs/mvp/v3.3/data-tools-workspace-plan.md` when moving existing tools
   or adding new data tooling.
-- Until `data-tools/` exists, prefer incremental moves that preserve command
-  compatibility and keep behavior unchanged.
+- Preserve command compatibility when moving existing tooling, and keep behavior
+  unchanged unless a feature plan says otherwise.
 - New missing-spell workflows should treat base spell data as rules DB patches,
   not app DB overlays. Use `docs/rules-db-notes.md` before designing those
   imports.

@@ -11,16 +11,19 @@ For current database roles and local paths, see `docs/data-setup.md`.
 Use the read-only inspection command from the `server` workspace:
 
 ```bash
-npm run -w server tool:inspect-rules
-npm run -w server tool:inspect-rules -- tables spell
-npm run -w server tool:inspect-rules -- schema dnd_spell
-npm run -w server tool:inspect-rules -- sample dnd_spell 5
-npm run -w server tool:inspect-rules -- counts
-npm run -w server tool:inspect-rules -- spell fireball
+npm run -w data-tools inspect:rules
+npm run -w data-tools inspect:rules -- tables spell
+npm run -w data-tools inspect:rules -- schema dnd_spell
+npm run -w data-tools inspect:rules -- sample dnd_spell 5
+npm run -w data-tools inspect:rules -- counts
+npm run -w data-tools inspect:rules -- spell fireball
 ```
 
 The tool opens `RULES_DATABASE_URL` in read-only mode and only supports known
 SQLite tables or views from `sqlite_master`.
+
+The server workspace keeps a compatibility wrapper at
+`npm run -w server tool:inspect-rules`.
 
 ## Current Counts
 

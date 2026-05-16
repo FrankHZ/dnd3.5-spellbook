@@ -45,6 +45,13 @@ For deployment and environment operations, use:
 - [stable-backlog.md](./stable-backlog.md)
 - [public-repo-notes.md](./public-repo-notes.md)
 
+Workspace command references:
+
+- [../data-tools/README.md](../data-tools/README.md)
+- [../server/README.md](../server/README.md)
+- [../web/README.md](../web/README.md)
+- [../contracts/README.md](../contracts/README.md)
+
 These documents define:
 
 - the current manual deployment workflow
@@ -61,6 +68,7 @@ These documents define:
 - the intentionally deferred stable-version backlog
 - the public-repo exclusions and publication caveats
 - the tracked canonical deployment scripts under `docs/deployment-scripts/`
+- the current data tooling commands in `data-tools`
 
 ## Agent Entry Point
 

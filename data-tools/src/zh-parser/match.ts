@@ -1,5 +1,5 @@
 import { Prisma } from "prisma-rules-clean/generated/client";
-import { rulesPrisma as prisma } from "~/lib/rules-prisma-client";
+import { rulesPrisma as prisma } from "../db/rules-prisma-client";
 import aliasMapGlobal from "DATA/chm-mapping/enName-aliases-global.json";
 import aliasMapExtra from "DATA/chm-mapping/enName-aliases-extra.json";
 import bookMap from "DATA/chm-mapping/books-zh-chm-mapping.json";
@@ -60,6 +60,7 @@ export type MatchResult = {
   matchMethod: string;
   matchConfidence: number;
   failReason?: FailReason;
+  flags?: string[];
 };
 
 export async function matchByEnNameAllBooks(opts: {

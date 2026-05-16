@@ -23,15 +23,19 @@ At the moment:
 
 ## Main Scripts
 
-The relevant `server` workspace commands are:
+The relevant workspace commands are:
 
 ```bash
-npm run -w server tool:preprocess-zh
-npm run -w server tool:parse
-npm run -w server tool:parse:test
+npm run -w data-tools zh:preprocess
+npm run -w data-tools zh:parse
+npm run -w data-tools zh:parse:test
+npm run -w data-tools zh:backcheck
 npm run -w server db:app:import:zh-entities
 npm run -w server db:app:import:zh-chm
 ```
+
+The `server` workspace keeps compatibility wrappers for the `tool:*` commands,
+but `data-tools` owns parser and inspection tooling.
 
 ## Input And Output Locations
 
@@ -72,8 +76,8 @@ For a normal full rebuild:
 2. Run `npm install` from the repo root if needed.
 3. Run `npm run -w server db:generate`.
 4. Run `npm run -w server db:app:reset`.
-5. Run `npm run -w server tool:preprocess-zh` if raw CHM HTML changed.
-6. Run `npm run -w server tool:parse`.
+5. Run `npm run -w data-tools zh:preprocess` if raw CHM HTML changed.
+6. Run `npm run -w data-tools zh:parse`.
 7. Inspect `server/out/zh-parser/stats.json`, `matched.json`, and `unmatched.json`.
 8. Run `npm run -w server db:app:import:zh-entities`.
 9. Run `npm run -w server db:app:import:zh-chm`.
@@ -87,7 +91,7 @@ This order keeps the app DB aligned with the latest parser output and the latest
 Command:
 
 ```bash
-npm run -w server tool:preprocess-zh
+npm run -w data-tools zh:preprocess
 ```
 
 Current script behavior:
@@ -110,7 +114,7 @@ Use this when the raw CHM-exported source files change.
 Command:
 
 ```bash
-npm run -w server tool:parse
+npm run -w data-tools zh:parse
 ```
 
 Current script behavior:
@@ -130,7 +134,7 @@ The parser:
 For a smaller validation run, use:
 
 ```bash
-npm run -w server tool:parse:test
+npm run -w data-tools zh:parse:test
 ```
 
 That uses the test input set under `server/data/chm-test/`.
@@ -216,8 +220,9 @@ This workflow does not:
 
 - [data-setup.md](./data-setup.md)
 - [rules-db-notes.md](./rules-db-notes.md)
-- [../server/package.json](../server/package.json)
+- [../data-tools/README.md](../data-tools/README.md)
+- [../data-tools/package.json](../data-tools/package.json)
 - [../server/scripts/import-zh-entities.ts](../server/scripts/import-zh-entities.ts)
 - [../server/scripts/import-zh-chm.ts](../server/scripts/import-zh-chm.ts)
-- [../server/tools/zh-parser/cli.ts](../server/tools/zh-parser/cli.ts)
-- [../server/tools/zh-parser/scripts/preprocess-chm-html.ts](../server/tools/zh-parser/scripts/preprocess-chm-html.ts)
+- [../data-tools/src/zh-parser/cli.ts](../data-tools/src/zh-parser/cli.ts)
+- [../data-tools/src/zh-parser/scripts/preprocess-chm-html.ts](../data-tools/src/zh-parser/scripts/preprocess-chm-html.ts)

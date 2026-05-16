@@ -2,6 +2,7 @@
   "name": "dnd-spellbook",
   "private": true,
   "workspaces": [
+    "data-tools",
     "server",
     "web",
     "contracts"

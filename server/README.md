@@ -1,8 +1,8 @@
 # Server Workspace
 
-This workspace contains the backend API, database access layer, and local data-import tooling.
+This workspace contains the backend API and database access layer.
 
-It serves the spell data consumed by the frontend and also contains the Prisma schemas and scripts used to manage local application data.
+It serves the spell data consumed by the frontend and also contains the Prisma schemas and scripts used to manage local application data. Parser, inspection, and rules DB patch tooling lives in the `data-tools` workspace.
 
 ## Key Directories
 
@@ -10,8 +10,7 @@ It serves the spell data consumed by the frontend and also contains the Prisma s
 - `tests/`: backend tests
 - `prisma-app/`: app database schema and config
 - `prisma-rules-clean/`: rules-side schema and generated client setup
-- `scripts/`: one-off import and maintenance scripts
-- `tools/`: local parser and related utilities
+- `scripts/`: app DB import and maintenance scripts
 - `out/`: generated tool output
 
 ## Main Commands
@@ -74,6 +73,10 @@ The canonical import pipeline doc is:
 
 - [../docs/import-workflow.md](../docs/import-workflow.md)
 
+Data tooling commands live in:
+
+- [../data-tools/README.md](../data-tools/README.md)
+
 For deployed runtime configuration, including `/etc/default/spellbook-api`, use:
 
 - [../docs/deployment.md](../docs/deployment.md)
@@ -81,7 +84,8 @@ For deployed runtime configuration, including `/etc/default/spellbook-api`, use:
 ## Notes
 
 - The server depends on `@dnd/contracts` for shared DTOs and type contracts.
-- Database setup and import workflows are project-specific; use the existing scripts rather than inventing parallel flows.
+- Database setup and import workflows are project-specific; use the existing
+  `server` and `data-tools` scripts rather than inventing parallel flows.
 - Deployment and database update workflows are documented in [../docs/deployment.md](../docs/deployment.md).
 - For current release-level behavior, use [../docs/mvp/v3.2/FREEZE.md](../docs/mvp/v3.2/FREEZE.md) as the top-level functional reference.
 
@@ -92,3 +96,4 @@ For deployed runtime configuration, including `/etc/default/spellbook-api`, use:
 - [../docs/deployment.md](../docs/deployment.md)
 - [../docs/data-setup.md](../docs/data-setup.md)
 - [../docs/import-workflow.md](../docs/import-workflow.md)
+- [../data-tools/README.md](../data-tools/README.md)

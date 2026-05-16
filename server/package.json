@@ -16,11 +16,11 @@
     "db:studio": "prisma studio",
     "test": "cross-env NODE_ENV=test vitest",
     "test:watch": "cross-env NODE_ENV=test vitest --watch",
-    "tool:parse:test": "tsx tools/zh-parser/cli.ts --input ./data/chm-test/ --outDir out/zh-parser/test",
-    "tool:parse": "tsx tools/zh-parser/cli.ts --input ./data/chm-clean/ --outDir out/zh-parser",
-    "tool:backcheck-zh": "tsx tools/zh-parser/scripts/zh-backcheck.ts ./out/zh-parser/matched.json ./out/zh-parser/missing-zh.json",
-    "tool:inspect-rules": "tsx scripts/inspect-rules-db.ts",
-    "tool:preprocess-zh": "tsx tools/zh-parser/scripts/preprocess-chm-html.ts --in ./data/chm-raw --out ./data/chm-clean"
+    "tool:parse:test": "npm run -w data-tools zh:parse:test",
+    "tool:parse": "npm run -w data-tools zh:parse",
+    "tool:backcheck-zh": "npm run -w data-tools zh:backcheck",
+    "tool:inspect-rules": "npm run -w data-tools inspect:rules",
+    "tool:preprocess-zh": "npm run -w data-tools zh:preprocess"
   },
   "keywords": [],
   "author": "",
