@@ -27,6 +27,8 @@ For deployment and environment operations, use:
 - [data-setup.md](./data-setup.md)
 - [import-workflow.md](./import-workflow.md)
 - [repo-conventions.md](./repo-conventions.md)
+- [features.md](./features.md)
+- [harness.md](./harness.md)
 - [frontend-map.md](./frontend-map.md)
 - [stable-backlog.md](./stable-backlog.md)
 - [public-repo-notes.md](./public-repo-notes.md)
@@ -38,10 +40,27 @@ These documents define:
 - the current local database setup and origins
 - the current MVP import pipeline for Chinese app-owned data
 - the repo conventions around local wrappers and canonical docs
+- the current user-facing feature map
+- the current validation surface and harness improvement path
 - the quick navigation map for major frontend surfaces
 - the intentionally deferred stable-version backlog
 - the public-repo exclusions and publication caveats
 - the tracked canonical deployment scripts under `docs/deployment-scripts/`
+
+## Agent Entry Point
+
+Agents should start at the repository-root `AGENTS.md`.
+
+That file defines:
+
+- the fastest project orientation path
+- current source-of-truth ordering
+- validation commands
+- data and generated-file cautions
+- harness priorities
+
+Keep detailed agent guidance there rather than scattering operational rules
+through old MVP plan documents.
 
 ## v3.2 Supporting Docs
 
@@ -95,3 +114,4 @@ To keep maintenance cost low:
 - avoid repeating long feature descriptions across multiple README files
 - use workspace READMEs for navigation and operational context
 - use `docs/` for release-specific or cross-cutting truth
+- use root `AGENTS.md` for agent-facing execution guidance

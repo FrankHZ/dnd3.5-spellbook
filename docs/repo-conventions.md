@@ -23,8 +23,16 @@ Current convention:
 The repository keeps docs intentionally lightweight:
 
 - `README.md` files are navigation and short operational entry points
+- root `AGENTS.md` is the agent-facing execution guide
 - `docs/` contains canonical release, data, import, and operations docs
+- `docs/features.md` records the stable user-facing feature map
+- `docs/harness.md` records validation strategy and test-harness priorities
 - when docs conflict, prefer the newer focused canonical doc instead of older incidental mentions
+
+New docs should usually be topic-based and durable. Avoid adding new session-log
+style MVP notes for ordinary follow-up work. Historical MVP docs under
+`docs/mvp/` should be treated as release history, not the day-to-day working
+surface for agents.
 
 ## MVP Convention
 

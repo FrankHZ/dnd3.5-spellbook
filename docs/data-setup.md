@@ -97,8 +97,8 @@ The current local server environment points to these database files in [server/.
 Current default local paths:
 
 ```dotenv
-RULES_DATABASE_URL="file:K:/Codes-personal/dnd3.5-spellbook/server/data/db/rules-clean.sqlite"
-APP_DATABASE_URL="file:K:/Codes-personal/dnd3.5-spellbook/server/data/db/app.sqlite"
+RULES_DATABASE_URL="file:<repo>/server/data/db/rules-clean.sqlite"
+APP_DATABASE_URL="file:<repo>/server/data/db/app.sqlite"
 ```
 
 If your local checkout lives elsewhere, update the paths accordingly.
