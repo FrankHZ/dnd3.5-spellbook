@@ -4,8 +4,8 @@ This document records the current validation surface and the preferred order for
 improving it.
 
 The goal is not to add a large testing framework all at once. The goal is to
-turn the frozen v3.2 behavior into executable checks, starting with the cheapest
-and most stable seams.
+turn current documented behavior into executable checks, starting with the
+cheapest and most stable seams.
 
 ## Current Baseline
 
@@ -14,7 +14,8 @@ The repository currently has:
 - shared DTO compilation in `contracts`
 - backend API tests with Vitest and Supertest
 - frontend type generation and TypeScript checks
-- release behavior described by `docs/mvp/v3.2/FREEZE.md`
+- current feature behavior described by `docs/features.md`
+- frozen stage snapshots under `docs/mvp/` for historical regression checks
 
 Useful commands:
 
@@ -77,7 +78,9 @@ Expected result:
 
 ### 2. API Contract Tests
 
-Use the frozen v3.2 behavior as the source of truth for API contracts.
+Use the current feature map, current API behavior, and relevant frozen stage
+snapshots as the source material for API contracts. Do not treat a past freeze
+as the automatic baseline for later active development.
 
 Good first targets:
 

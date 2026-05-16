@@ -21,22 +21,24 @@ project docs live under `docs/`.
 Start with these files when orienting:
 
 1. `docs/README.md` for the documentation map.
-2. `docs/mvp/v3.2/FREEZE.md` for frozen shipped behavior.
-3. `docs/features.md` for the current user-facing feature map.
-4. `docs/feature-workflow.md` before implementing non-trivial new features.
-5. `docs/mvp/v3.3/data-tools-workspace-plan.md` before moving or adding data
+2. `docs/features.md` for the current user-facing feature map.
+3. `docs/feature-workflow.md` before implementing non-trivial new features.
+4. `docs/mvp/v3.3/data-tools-workspace-plan.md` before moving or adding data
    import, parser, rules DB inspection, or rules DB patch tooling.
-6. `docs/harness.md` for validation and test-harness strategy.
-7. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
+5. `docs/harness.md` for validation and test-harness strategy.
+6. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
+7. `docs/mvp/v3.2/FREEZE.md` only when you need the latest frozen release
+   snapshot for historical comparison or regression checks.
 8. Workspace READMEs for operational commands:
    - `server/README.md`
    - `data-tools/README.md`
    - `web/README.md`
    - `contracts/README.md`
 
-Older files under `docs/mvp/` are historical unless the current freeze document
-or `docs/README.md` says otherwise. Treat plan documents as intended scope, not
-as proof of shipped behavior.
+Version folders under `docs/mvp/` are stage records. A `FREEZE.md` describes the
+state of that stage; it is not automatically the baseline for later active
+development. Treat plan documents as intended scope, not as proof of shipped
+behavior.
 
 ## Working Rules
 
@@ -48,8 +50,8 @@ as proof of shipped behavior.
   live under `docs/deployment-scripts/`.
 - If shared DTOs change, rebuild `contracts` before validating `server` or
   `web`.
-- If behavior differs from documentation, update the newest canonical doc rather
-  than editing old MVP history.
+- If behavior differs from documentation, update the newest topic-specific
+  canonical doc rather than editing old MVP history.
 
 ## Feature Change Workflow
 
@@ -74,7 +76,12 @@ For ordinary feature requests, follow this default loop:
 8. Delete `docs/tmp-feature-plan.md` before commit unless the user explicitly
    wants it archived.
 9. Run `npm run verify` before handing off.
-10. Update durable docs only when behavior, workflow, or agent guidance changed.
+10. Update durable docs when behavior, workflow, workspace shape, validation
+    commands, or agent guidance changed.
+11. When adding, moving, or retiring a workspace, tool command, active plan, or
+    source-of-truth document, check and update the navigation surface together:
+    root `README.md`, `docs/README.md`, `AGENTS.md`, and the relevant workspace
+    `README.md`.
 
 Use the plan-first path especially when:
 
@@ -127,7 +134,8 @@ failure.
 When improving reliability, prefer this order:
 
 1. Make existing tests deterministic and avoid generated-output interference.
-2. Add API contract tests around frozen v3.2 behavior.
+2. Add API contract tests around the current feature map and relevant frozen
+   release snapshots.
 3. Add pure frontend logic tests for JSON import/export and collection storage.
 4. Add browser smoke tests for browse, search, spell detail, and collections.
 5. Only then add larger end-to-end workflows.
@@ -174,7 +182,7 @@ Keep docs lightweight:
 - `README.md` files are navigation and short operational entry points.
 - `docs/` files are durable project truth by topic.
 - `docs/features.md` is the user-facing feature map.
-- `docs/mvp/` is release history and should not become the daily agent working
-  surface.
+- `docs/mvp/` is stage history plus active plan space; frozen version folders
+  should not become the daily agent working surface.
 - New agent or harness guidance should go in `AGENTS.md` or `docs/harness.md`,
   not inside old MVP plan files.

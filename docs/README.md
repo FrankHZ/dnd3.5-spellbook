@@ -8,15 +8,17 @@ Use this file as the documentation entry point when you need to determine:
 - which docs are historical
 - which document is canonical when multiple docs overlap
 
-## Current Canonical Release Docs
+## Latest Frozen Release Snapshot
 
-The current frozen release state is **v3.2**.
+The latest frozen stage snapshot is **v3.2**.
 
-Start here:
+Use it for historical comparison, regression checks, and understanding what was
+shipped at that stage:
 
 - [mvp/v3.2/FREEZE.md](./mvp/v3.2/FREEZE.md)
 
-That file is the canonical release-level summary for the current project state and defines the final as-built interpretation of the v3.2 handoff set.
+That file defines the final as-built interpretation of the v3.2 handoff set. It
+is not automatically the baseline for later active development.
 
 ## Active Development Docs
 
@@ -111,10 +113,8 @@ The `docs/mvp/` directory contains version folders:
 - `v3.2`
 - `v3.3`
 
-Treat frozen or older version folders as historical planning or handoff records
-unless a newer freeze document explicitly says they still define current
-behavior. Treat `v3.3` as active development until it gets its own freeze
-document.
+Treat frozen or older version folders as historical planning or handoff records.
+Treat `v3.3` as active development until it gets its own freeze document.
 
 They are useful for:
 
@@ -128,10 +128,13 @@ They are not automatically the source of truth for the current app state.
 
 When multiple docs overlap:
 
-1. Prefer the newest relevant `FREEZE.md` if one exists.
-2. Prefer later implementation handoff docs over earlier implementation notes.
-3. Prefer focused operational docs such as `deployment.md` for runtime workflow over incidental mentions in README files.
-4. Treat plan documents as intended scope, not final shipped behavior.
+1. Prefer the newest focused topic doc for current behavior or workflow.
+2. Prefer active development docs for in-flight v3.3 scope.
+3. Use frozen `FREEZE.md` files as stage snapshots, not as automatic current
+   baselines.
+4. Prefer focused operational docs such as `deployment.md` for runtime workflow
+   over incidental mentions in README files.
+5. Treat plan documents as intended scope, not final shipped behavior.
 
 ## Maintenance Rule
 
@@ -142,3 +145,6 @@ To keep maintenance cost low:
 - use workspace READMEs for navigation and operational context
 - use `docs/` for release-specific or cross-cutting truth
 - use root `AGENTS.md` for agent-facing execution guidance
+- when adding or moving workspaces, commands, active plans, or source-of-truth
+  docs, update root `README.md`, this index, `AGENTS.md`, and the relevant
+  workspace README together

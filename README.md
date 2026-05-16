@@ -22,10 +22,11 @@ To reduce redistribution risk, data-bearing local artifacts are intentionally ex
 
 ## Status
 
-The current documented release state is **v3.2 frozen**. Active feature planning
-after that freeze lives under `docs/mvp/v3.3/`.
+The latest frozen stage snapshot is **v3.2**. Active feature planning after that
+freeze lives under `docs/mvp/v3.3/`.
 
-For the canonical release handoff, start with [docs/mvp/v3.2/FREEZE.md](./docs/mvp/v3.2/FREEZE.md).
+For the current feature map, start with [docs/features.md](./docs/features.md).
+For the v3.2 release snapshot, use [docs/mvp/v3.2/FREEZE.md](./docs/mvp/v3.2/FREEZE.md).
 For the full documentation map, use [docs/README.md](./docs/README.md).
 
 ## Quick Start
@@ -114,7 +115,9 @@ This repo keeps documentation intentionally lightweight:
 - Each workspace `README.md` gives short operational guidance.
 - `docs/` contains versioned and canonical project documents.
 
-When documents conflict, prefer the most recent freeze or handoff document called out by [docs/README.md](./docs/README.md).
+When documents conflict, prefer the newest focused topic doc called out by
+[docs/README.md](./docs/README.md). Frozen MVP docs are stage snapshots, not
+automatic baselines for later work.
 
 ## Data Notes
 
