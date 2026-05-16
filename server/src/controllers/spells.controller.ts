@@ -32,6 +32,28 @@ export async function searchSpellsByName(
 
     let rulebookIds = parseCsvNumberList(req.query.rulebookIds);
     if (rulebookIds.length === 0) rulebookIds = await getDefaultRulebookIds();
+    const classIds = parseCsvNumberList(req.query.classIds);
+    const domainIds = parseCsvNumberList(req.query.domainIds);
+    const levelRaw = normalizeString(req.query.level);
+    let level: number | "all" | null = null;
+    if (levelRaw) {
+      if (levelRaw === "all") {
+        level = "all";
+      } else {
+        const n = Number(levelRaw);
+        if (!Number.isInteger(n) || n < 0 || n > 9) {
+          next(
+            new ApiError(
+              400,
+              "Invalid request",
+              "level must be either 'all' or integer 0-9",
+            ),
+          );
+          return;
+        }
+        level = n;
+      }
+    }
 
     const page = clampInt(parseIntOrDefault(req.query.page, 1), 1, 1_000_000);
     const pageSize = clampInt(
@@ -56,6 +78,9 @@ export async function searchSpellsByName(
     const result = await spellsService.searchByName({
       q,
       rulebookIds,
+      classIds,
+      domainIds,
+      level,
       page,
       pageSize,
       i18n: getI18nContext(req),

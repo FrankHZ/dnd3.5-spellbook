@@ -31,12 +31,15 @@ describe("spell API wrappers", () => {
     await searchSpellsByName({
       q: "fire ball",
       rulebookIds: [4, 6],
+      classIds: [1],
+      domainIds: [8],
+      level: 3,
       page: 2,
       pageSize: 25,
     });
 
     expect(apiGet).toHaveBeenCalledWith(
-      "/api/spells/search?q=fire+ball&page=2&pageSize=25&rulebookIds=4%2C6",
+      "/api/spells/search?q=fire+ball&page=2&pageSize=25&rulebookIds=4%2C6&classIds=1&domainIds=8&level=3",
       undefined,
     );
   });
@@ -125,7 +128,9 @@ describe("spell API wrappers", () => {
     expect(apiPost).toHaveBeenCalledTimes(2);
     expect((mockedApiPost.mock.calls[0][1] as any).names).toHaveLength(200);
     expect((mockedApiPost.mock.calls[1][1] as any).names).toHaveLength(1);
-    expect(mockedApiPost.mock.calls[0][1]).toMatchObject({ rulebookIds: [4, 6] });
+    expect(mockedApiPost.mock.calls[0][1]).toMatchObject({
+      rulebookIds: [4, 6],
+    });
     expect(result.results).toEqual([
       { input: "A", status: "not_found" },
       { input: "B", status: "not_found" },

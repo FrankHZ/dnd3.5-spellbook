@@ -11,6 +11,7 @@ import {
   querySpellDetail,
   querySpellsByIds,
   SELECT_SPELL_LIST,
+  type SpellRow,
 } from "./spells.repo.rules";
 import { listByClassAndDomainLevel } from "./spells.service.by-level";
 import {
@@ -24,12 +25,21 @@ export const spellsService = {
   async searchByName(input: {
     q: string;
     rulebookIds: number[];
+    classIds: number[];
+    domainIds: number[];
+    level: number | "all" | null;
     page: number;
     pageSize: number;
     i18n: I18nContext;
   }): Promise<SpellNameSearchResponse> {
     const doAppQuery = input.i18n.lang != "en";
-    const maxCandidates = Math.min(2000, input.page * input.pageSize * 20);
+    const hasScope =
+      input.classIds.length > 0 ||
+      input.domainIds.length > 0 ||
+      input.level !== null;
+    const maxCandidates = hasScope
+      ? 2000
+      : Math.min(2000, input.page * input.pageSize * 20);
 
     const idsEn = await queryIdsByName(
       input.q,
@@ -57,13 +67,19 @@ export const spellsService = {
         }
     }
 
-    const total = merged.length; // capped
-
     const spells = await fetchSpellsInOrder(merged, SELECT_SPELL_LIST);
-    spells.sort((a, b) => a.name.localeCompare(b.name) || a.id - b.id);
+    const scopedSpells = filterByBrowseScope(
+      spells,
+      input.classIds,
+      input.domainIds,
+      input.level,
+    );
+    scopedSpells.sort((a, b) => a.name.localeCompare(b.name) || a.id - b.id);
+
+    const total = scopedSpells.length; // capped
 
     const offset = (input.page - 1) * input.pageSize;
-    const pagedSpells = spells.slice(offset, offset + input.pageSize);
+    const pagedSpells = scopedSpells.slice(offset, offset + input.pageSize);
 
     const i18nMap = await queryI18nMap(
       pagedSpells.map((s) => s.id),
@@ -143,3 +159,39 @@ export const spellsService = {
   },
   resolveSpellNames,
 };
+
+function filterByBrowseScope(
+  spells: SpellRow<typeof SELECT_SPELL_LIST>[],
+  classIds: number[],
+  domainIds: number[],
+  level: number | "all" | null,
+) {
+  if (classIds.length === 0 && domainIds.length === 0 && level === null) {
+    return spells;
+  }
+
+  const classSet = new Set(classIds);
+  const domainSet = new Set(domainIds);
+  const matchesLevel = (entry: { level: number }) =>
+    level === null || level === "all" || entry.level === level;
+
+  return spells.filter((spell) => {
+    const classMatch = spell.spellClassIndexes.some(
+      (entry) =>
+        matchesLevel(entry) &&
+        (classSet.size === 0 || classSet.has(entry.classId)),
+    );
+    const domainMatch = spell.spellDomainIndexes.some(
+      (entry) =>
+        matchesLevel(entry) &&
+        (domainSet.size === 0 || domainSet.has(entry.domainId)),
+    );
+
+    if (classSet.size > 0 && domainSet.size > 0) {
+      return classMatch || domainMatch;
+    }
+    if (classSet.size > 0) return classMatch;
+    if (domainSet.size > 0) return domainMatch;
+    return classMatch || domainMatch;
+  });
+}

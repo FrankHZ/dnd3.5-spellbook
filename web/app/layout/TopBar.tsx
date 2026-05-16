@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import { Menu } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -35,6 +36,7 @@ import { useUserPrefs } from "~/state/user-prefs-state";
 
 function TopBarSearch() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [params] = useSearchParams();
   const q = params.get("q") || "";
   const [text, setText] = useState(q);
@@ -52,7 +54,7 @@ function TopBarSearch() {
     setText(q);
   }, [q]);
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!isValid.ok) {
       if (lang == "zh") {
@@ -65,7 +67,13 @@ function TopBarSearch() {
       return;
     }
     setError(null);
-    navigate(`/search?q=${encodeURIComponent(text.trim())}`);
+    const next =
+      location.pathname === "/search"
+        ? new URLSearchParams(params)
+        : new URLSearchParams();
+    next.set("q", text.trim());
+    next.delete("page");
+    navigate(`/search?${next.toString()}`);
   };
 
   return (

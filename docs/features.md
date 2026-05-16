@@ -37,6 +37,8 @@ Current behavior:
 - English and other non-CJK queries require at least two characters
 - CJK queries may search from one character
 - rulebook filtering is supported
+- optional browse-scope URL filters can constrain search by class, domain, and
+  level
 - results are paginated
 - empty or too-short usable queries return an empty result set rather than a
   failed search
@@ -44,6 +46,7 @@ Current behavior:
 Key code:
 
 - `web/app/features/search/SearchSpellsPage.tsx`
+- `web/app/features/search/search-url.ts`
 - `web/app/features/search/validation.ts`
 - `web/app/api/spells.ts`
 - `server/src/controllers/spells.controller.ts`

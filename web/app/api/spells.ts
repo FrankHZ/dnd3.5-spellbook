@@ -45,6 +45,9 @@ export function getSpellsByLevel(params: {
 export function searchSpellsByName(params: {
   q: string;
   rulebookIds?: number[];
+  classIds?: number[];
+  domainIds?: number[];
+  level?: LevelParam | null;
   page: number;
   pageSize: number;
   signal?: AbortSignal;
@@ -56,6 +59,15 @@ export function searchSpellsByName(params: {
 
   if (params.rulebookIds && params.rulebookIds.length > 0) {
     sp.set("rulebookIds", params.rulebookIds.join(",")); // CSV ✅
+  }
+  if (params.classIds && params.classIds.length > 0) {
+    sp.set("classIds", params.classIds.join(","));
+  }
+  if (params.domainIds && params.domainIds.length > 0) {
+    sp.set("domainIds", params.domainIds.join(","));
+  }
+  if (params.level != null) {
+    sp.set("level", String(params.level));
   }
 
   return apiGet<SpellNameSearchResponse>(
@@ -77,7 +89,9 @@ function chunk<T>(arr: T[], size: number): T[][] {
   return out;
 }
 
-function isBatchSpellItem(item: BatchSpellItem | undefined): item is BatchSpellItem {
+function isBatchSpellItem(
+  item: BatchSpellItem | undefined,
+): item is BatchSpellItem {
   return item !== undefined;
 }
 

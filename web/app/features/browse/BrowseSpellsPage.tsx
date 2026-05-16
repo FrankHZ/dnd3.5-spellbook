@@ -1,6 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 
 import { ApiError } from "~/api/http";
 import { getSpellsByLevel } from "~/api/spells";
@@ -13,6 +14,7 @@ import {
   CardHeader,
 } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
+import { Button } from "~/components/ui/button";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 
 import { PAGE_SIZE } from "../constants";
@@ -21,6 +23,7 @@ import { ClassAndDomainSelector } from "./ClassAndDomainSelector";
 import { LevelSelector } from "./LevelSelector";
 import { useBrowsePrefs } from "./useBrowsePref";
 import { useBrowseQueryState } from "./useBrowseQueryState";
+import { buildSearchUrl } from "../search/search-url";
 
 export default function BrowsePage() {
   const { queryKey } = useAppI18n();
@@ -97,6 +100,11 @@ export default function BrowsePage() {
       : t("Using default rulebook scope: 3.5 core", {
           ns: "spell-browse",
         });
+  const scopedSearchUrl = buildSearchUrl({
+    classIds,
+    domainIds,
+    level,
+  });
 
   return (
     <div className="page-side">
@@ -118,6 +126,21 @@ export default function BrowsePage() {
             />
             <Separator />
             <LevelSelector value={level} onChange={setLevel} />
+            <Separator />
+            <div className="grid gap-2">
+              {hasValidSelection ? (
+                <Button asChild variant="outline">
+                  <Link to={scopedSearchUrl}>{t("Search within filters")}</Link>
+                </Button>
+              ) : (
+                <Button type="button" variant="outline" disabled>
+                  {t("Search within filters")}
+                </Button>
+              )}
+              <Button asChild variant="ghost">
+                <Link to="/search">{t("Open clean search")}</Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -132,7 +155,9 @@ export default function BrowsePage() {
             <Card className="gap-0">
               <CardHeader className="gap-1 py-1">
                 <CardDescription>
-                  {t("Choose at least one class or domain, then set a spell level.")}
+                  {t(
+                    "Choose at least one class or domain, then set a spell level.",
+                  )}
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-0">

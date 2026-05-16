@@ -1,4 +1,6 @@
 {
+  "any": "任意",
+  "Browse scope is active: {{classCount}} classes, {{domainCount}} domains, level {{level}}.": "当前使用浏览筛选：{{classCount}}个职业，{{domainCount}}个领域，环数{{level}}。",
   "Enter at least 2 characters to run a search.": "至少输入两个字母吧",
   "Enter at least 2 characters, or type a Chinese character.": "至少两个字母或者一个汉字",
   "Global name search. Browsing by class/level lives in Browse.": "全局法术名搜索。职业/领域法表在浏览页面",

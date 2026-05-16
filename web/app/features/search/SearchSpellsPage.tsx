@@ -18,6 +18,7 @@ import { useUserPrefs } from "~/state/user-prefs-state";
 import { useTranslation } from "react-i18next";
 import { isSearchQueryValid } from "./validation";
 import { PAGE_SIZE } from "../constants";
+import { hasSearchScope, parseSearchScope } from "./search-url";
 
 export default function SearchSpellsPage() {
   const { state } = useUserPrefs();
@@ -27,23 +28,38 @@ export default function SearchSpellsPage() {
   const [params, setParams] = useSearchParams();
 
   const { lang } = useAppI18n();
-  const qParam = (params.get("q") ?? "").trim();
+  const searchScope = useMemo(() => parseSearchScope(params), [params]);
+  const qParam = searchScope.q;
   const isValid = isSearchQueryValid(qParam, lang);
-
-  // page is kept in URL (nice for sharing/back button)
-  const page = Math.max(1, Number(params.get("page") ?? "1") || 1);
+  const hasScopedSearch = hasSearchScope(searchScope);
 
   const query = useQuery({
     queryKey: [
       "search",
-      { q: qParam, rulebookIds, page, pageSize: PAGE_SIZE, ...queryKey },
+      {
+        q: qParam,
+        rulebookIds,
+        classIds: searchScope.classIds,
+        domainIds: searchScope.domainIds,
+        level: searchScope.level,
+        page: searchScope.page,
+        pageSize: PAGE_SIZE,
+        ...queryKey,
+      },
     ],
     enabled: isValid.ok, // enforce backend contract
     queryFn: ({ signal }) =>
       searchSpellsByName({
         q: qParam,
         rulebookIds: rulebookIds.length ? rulebookIds : undefined,
-        page,
+        classIds: searchScope.classIds.length
+          ? searchScope.classIds
+          : undefined,
+        domainIds: searchScope.domainIds.length
+          ? searchScope.domainIds
+          : undefined,
+        level: searchScope.level,
+        page: searchScope.page,
         pageSize: PAGE_SIZE,
         signal,
       }),
@@ -77,6 +93,18 @@ export default function SearchSpellsPage() {
         {rulebookIds.length > 0 && (
           <div className="text-sm text-muted-foreground">
             {t("Rulebook filter is active (from Settings).")}
+          </div>
+        )}
+        {hasScopedSearch && (
+          <div className="text-sm text-muted-foreground">
+            {t(
+              "Browse scope is active: {{classCount}} classes, {{domainCount}} domains, level {{level}}.",
+              {
+                classCount: searchScope.classIds.length,
+                domainCount: searchScope.domainIds.length,
+                level: searchScope.level ?? t("any"),
+              },
+            )}
           </div>
         )}
       </div>
@@ -118,7 +146,7 @@ export default function SearchSpellsPage() {
               <CardContent className="space-y-3 px-0 py-1">
                 <div className="px-6">
                   <Pager
-                    page={page}
+                    page={searchScope.page}
                     pageSize={pageSize}
                     total={total}
                     isBusy={query.isFetching}
@@ -138,7 +166,7 @@ export default function SearchSpellsPage() {
 
                 <div className="px-6">
                   <Pager
-                    page={page}
+                    page={searchScope.page}
                     pageSize={pageSize}
                     total={total}
                     isBusy={query.isFetching}
