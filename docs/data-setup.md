@@ -43,6 +43,9 @@ Purpose:
 - read-only gameplay and reference data
 - canonical spell and rules records consumed by the backend
 
+The server treats this database as a prepared runtime input. Rules DB
+preparation commands live in `data-tools`, not in server startup.
+
 ### App DB
 
 Local file:
@@ -114,6 +117,28 @@ If your local checkout lives elsewhere, update the paths accordingly.
 ## App DB Setup
 
 The app DB is managed through Prisma in the `server` workspace.
+
+## Rules DB Preparation
+
+Rules DB preparation is owned by the `data-tools` workspace.
+
+Legacy SQL patch assets live under:
+
+```text
+data-tools/data/rules-patches/legacy-sql/
+```
+
+Use dry-run before mutating the configured rules DB:
+
+```bash
+npm run -w data-tools rules:sql:dry-run -- legacy-sql/rules-clean-v2.0.patch.sql
+npm run -w data-tools rules:sql:apply -- legacy-sql/rules-clean-v2.0.patch.sql
+npm run -w data-tools rules:index:rebuild -- --dry-run
+npm run -w data-tools rules:index:rebuild
+```
+
+The dry-run command copies the target DB to a temporary file and leaves
+`RULES_DATABASE_URL` unchanged.
 
 ### Reset / Create The App DB
 

@@ -79,6 +79,10 @@ Data tooling commands live in:
 
 - [../data-tools/README.md](../data-tools/README.md)
 
+Rules DB preparation, including legacy SQL patch dry-runs/applies and derived
+index rebuilds, belongs to `data-tools`; the server runtime does not apply rules
+DB migrations at startup.
+
 For deployed runtime configuration, including `/etc/default/spellbook-api`, use:
 
 - [../docs/deployment.md](../docs/deployment.md)

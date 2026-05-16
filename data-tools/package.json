@@ -5,6 +5,9 @@
   "type": "commonjs",
   "scripts": {
     "inspect:rules": "tsx src/inspect-rules-db.ts",
+    "rules:index:rebuild": "tsx src/rules-sql.ts index:rebuild",
+    "rules:sql:apply": "tsx src/rules-sql.ts apply",
+    "rules:sql:dry-run": "tsx src/rules-sql.ts dry-run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "zh:backcheck": "tsx src/zh-parser/scripts/zh-backcheck.ts out/zh-parser/matched.json out/zh-parser/missing-zh.json",
     "zh:parse": "tsx src/zh-parser/cli.ts --input data/chm-clean --outDir out/zh-parser",

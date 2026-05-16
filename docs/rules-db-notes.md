@@ -106,9 +106,16 @@ The existing CHM workflow still only imports Chinese overlay text into the app
 DB. It expects matched records to already have `spellId` values from the rules
 DB, so it cannot create new base spells by itself.
 
-Historical SQL patch assets currently live under `server/data/db/sql/`, but no
-current npm script or runtime path consumes them. v3.3 should move those assets
-and any write-capable rules DB preparation commands into `data-tools`.
+Historical SQL patch assets live under
+`data-tools/data/rules-patches/legacy-sql/`. Use data-tools dry-run/apply
+commands rather than manual sqlite shell steps:
+
+```bash
+npm run -w data-tools rules:sql:dry-run -- legacy-sql/rules-clean-v2.0.patch.sql
+npm run -w data-tools rules:sql:apply -- legacy-sql/rules-clean-v2.0.patch.sql
+npm run -w data-tools rules:index:rebuild -- --dry-run
+npm run -w data-tools rules:index:rebuild
+```
 
 ## Verified Manual Fixes
 

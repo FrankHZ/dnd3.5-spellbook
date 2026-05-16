@@ -16,6 +16,15 @@ npm run -w data-tools inspect:rules -- spell fireball
 npm run -w data-tools inspect:rules -- schema dnd_spell
 ```
 
+Prepare the local rules DB:
+
+```bash
+npm run -w data-tools rules:sql:dry-run -- legacy-sql/rules-clean-v2.0.patch.sql
+npm run -w data-tools rules:sql:apply -- legacy-sql/rules-clean-v2.0.patch.sql
+npm run -w data-tools rules:index:rebuild -- --dry-run
+npm run -w data-tools rules:index:rebuild
+```
+
 Run the Chinese CHM parser workflow:
 
 ```bash
@@ -50,9 +59,17 @@ CHM label for `Tome of Battle` (`ToB`).
 The rules DB path comes from `RULES_DATABASE_URL`; see `server/.env` and
 `docs/data-setup.md`.
 
+Rules DB patch SQL files live under `data-tools/data/rules-patches/`. The SQL
+runner rejects paths outside that directory. Use `rules:sql:dry-run` before
+`rules:sql:apply`; dry-run copies the target DB to a temporary file and leaves
+`RULES_DATABASE_URL` unchanged.
+
 ## Safety
 
 - `inspect:rules` opens the SQLite database in read-only mode.
+- `rules:sql:dry-run` never mutates the configured rules DB.
+- `rules:sql:apply` and `rules:index:rebuild` are write-capable and must be run
+  intentionally.
 - Parser commands may write generated output under `data-tools/out/zh-parser/`.
 - Future rules DB patch commands must clearly distinguish dry-run validation
   from write-capable imports.

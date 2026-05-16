@@ -3,6 +3,10 @@
 This plan defines the v3.3 workflow for preparing the local rules SQLite
 database outside the server runtime.
 
+Status: implemented for legacy SQL asset relocation, SQL dry-run/apply commands,
+and derived spell index rebuild commands. Structured missing-spell patch inputs
+remain follow-up work.
+
 ## User Outcome
 
 Maintainers and agents should have one repeatable place for rules DB preparation:
@@ -16,7 +20,7 @@ Maintainers and agents should have one repeatable place for rules DB preparation
 ## Current Problem
 
 The server runtime reads `server/data/db/rules-clean.sqlite`, but historical SQL
-assets still live under `server/data/db/sql/`:
+assets previously lived under `server/data/db/sql/`:
 
 - `rules-clean-v2.0.patch.sql`
 - `create-idx-spell-class-level.sql`
@@ -54,7 +58,7 @@ The app should not run rules DB migration or patch logic at startup.
 
 ## File Layout
 
-Move existing SQL assets to:
+Existing SQL assets live under:
 
 ```text
 data-tools/data/rules-patches/legacy-sql/
@@ -78,7 +82,7 @@ data-tools/out/rules-patches/
 
 ## Command Plan
 
-Add explicit data-tools commands:
+Data-tools exposes explicit commands:
 
 ```bash
 npm run -w data-tools rules:sql:dry-run -- legacy-sql/rules-clean-v2.0.patch.sql
