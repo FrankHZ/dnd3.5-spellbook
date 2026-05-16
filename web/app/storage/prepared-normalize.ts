@@ -60,7 +60,9 @@ export function normalizePreparedEntries(raw: unknown, bookId: string): Prepared
     out.push({
       entryId,
       spellId,
-      state: normalizePreparedState(item),
+      state: normalizePreparedState(
+        (item as { state?: unknown }).state ?? item,
+      ),
       displayNameOverride,
       metamagic: normalizeMetamagic((item as { metamagic?: unknown }).metamagic),
       levelOverride,

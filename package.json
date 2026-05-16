@@ -11,8 +11,9 @@
     "build:server": "npm run -w server build",
     "build:web": "npm run -w web build",
     "test:server": "npm run -w server test -- --run",
+    "test:web": "npm run -w web test -- --run",
     "typecheck:web": "npm run -w web typecheck",
-    "verify": "npm run build:contracts && npm run test:server && npm run typecheck:web"
+    "verify": "npm run build:contracts && npm run test:server && npm run test:web && npm run typecheck:web"
   },
   "dependencies": {
     "i18next-http-backend": "^3.0.2"

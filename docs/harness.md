@@ -27,6 +27,7 @@ Or run the pieces individually:
 ```bash
 npm run build:contracts
 npm run test:server
+npm run test:web
 npm run typecheck:web
 ```
 

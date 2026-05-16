@@ -6,6 +6,7 @@
     "build": "react-router build",
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
+    "test": "vitest",
     "typecheck": "react-router typegen && tsc",
     "i18next:sync": "node --experimental-strip-types ./scripts/i18next-sync.ts",
     "i18next:sync:check": "node --experimental-strip-types ./scripts/i18next-sync.ts --check",
@@ -56,6 +57,7 @@
     "typescript": "^5.9.2",
     "vite": "^7.1.7",
     "vite-plugin-devtools-json": "^1.0.0",
-    "vite-tsconfig-paths": "^5.1.4"
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^4.0.18"
   }
 }
