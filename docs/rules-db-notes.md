@@ -142,6 +142,31 @@ Verified rulebook names:
 | `3202` | `Blood Wind` | `SS`     |
 | `3975` | `Blood Wind` | `Sc_`    |
 
+## Current Missing Candidates
+
+`server/data/db/missing.txt` currently lists five candidates. Local rules DB
+inspection shows:
+
+| Candidate                   | Listed Book | Current DB Status                                 |
+| --------------------------- | ----------- | ------------------------------------------------- |
+| `Resistance Item`           | `ECS`       | no exact row found                                |
+| `Shield Of Faith, Legion's` | `ECS`       | exact row exists in `MH` as id `1945`, not `ECS`  |
+| `Skill Enhancement`         | `ECS`       | no exact row found                                |
+| `Spider Poison`             | `Sc_`       | exact row exists in `Mag` as id `1722`, not `Sc_` |
+| `FIERY ASSAULT`             | `ToB`       | no exact row found                                |
+
+Current CHM parser unmatched output also includes label/source cleanup items
+that should not be treated as missing base rows until investigated:
+
+- `Close Wounds`, `Panacea`, and `Revivify` include the unknown label
+  `模型手册`.
+- `Death Dragon`, `Defenestrating Sphere`, `Delay Death`, and
+  `Phantasmal Thief` include combined or note-like labels.
+- `Otiluke's Impressing Field` appears to be source text for
+  `Otiluke's Suppressing Field`.
+- `Summon` comes from `召唤列表-summon.htm` and is likely an index/list heading,
+  not a spell row.
+
 ## Open Questions For v3.3 Importer
 
 - Should the importer allocate ids by `MAX(id) + 1`, or should ids come from a
