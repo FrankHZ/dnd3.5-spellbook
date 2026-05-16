@@ -27,8 +27,16 @@ npm run -w data-tools zh:backcheck
 
 ## Data Paths
 
-These tools currently read and write local-only data under `server/data/` and
-`server/out/`.
+These tools read local-only source data from `data-tools/data/` and write
+generated reports or parser output under `data-tools/out/`.
+
+Current CHM parser defaults:
+
+- raw CHM HTML: `data-tools/data/chm-raw/`
+- cleaned CHM HTML: `data-tools/data/chm-clean/`
+- parser test input: `data-tools/data/chm-test/`
+- CHM mapping and alias JSON: `data-tools/data/chm-mapping/`
+- parser output: `data-tools/out/zh-parser/`
 
 The rules DB path comes from `RULES_DATABASE_URL`; see `server/.env` and
 `docs/data-setup.md`.
@@ -36,6 +44,6 @@ The rules DB path comes from `RULES_DATABASE_URL`; see `server/.env` and
 ## Safety
 
 - `inspect:rules` opens the SQLite database in read-only mode.
-- Parser commands may write generated output under `server/out/zh-parser/`.
+- Parser commands may write generated output under `data-tools/out/zh-parser/`.
 - Future rules DB patch commands must clearly distinguish dry-run validation
   from write-capable imports.

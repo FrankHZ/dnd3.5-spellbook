@@ -14,7 +14,12 @@ project docs live under `docs/`.
 - `data-tools/`: import, inspection, parser, and future rules DB patch tooling.
   Server-side wrapper scripts may remain for command compatibility.
 - `docs/`: current operational docs plus historical MVP planning records.
-- `server/data/`: local-only data and databases; do not assume it is portable.
+- `server/data/db/`: local-only runtime SQLite databases; do not assume they are
+  portable.
+- `server/data/i18n/`: local app-owned entity translation inputs consumed by
+  server import scripts.
+- `data-tools/data/`: local-only parser/import source inputs.
+- `data-tools/out/`: generated data-tool reports and parser output.
 
 ## Canonical Docs
 
@@ -177,7 +182,8 @@ See `docs/harness.md` for details.
   not app DB overlays. Use `docs/rules-db-notes.md` before designing those
   imports.
 - Data tools may inspect local SQLite files, but must not modify
-  `server/data/` unless the user explicitly asked for a write-capable workflow.
+  `server/data/db/` unless the user explicitly asked for a write-capable
+  workflow.
 
 ## Documentation Notes
 

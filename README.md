@@ -18,7 +18,9 @@ This repository is an unofficial fan project.
 
 It is not affiliated with, endorsed by, or sponsored by Wizards of the Coast.
 
-To reduce redistribution risk, data-bearing local artifacts are intentionally excluded from the public repository, especially content under `server/data/`.
+To reduce redistribution risk, data-bearing local artifacts are intentionally
+excluded from the public repository, especially runtime databases under
+`server/data/db/` and parser/source data under `data-tools/data/`.
 
 ## Status
 
@@ -121,7 +123,8 @@ automatic baselines for later work.
 
 ## Data Notes
 
-- Spell data ultimately comes from local imported sources and app databases that are not fully committed as portable source data.
+- Spell data ultimately comes from local imported sources and app databases that
+  are not fully committed as portable source data.
 - Chinese content is derived from player-created source material processed by local tooling.
 - If you reuse project data or publish derivatives, review the licensing status of the underlying data sources first.
 

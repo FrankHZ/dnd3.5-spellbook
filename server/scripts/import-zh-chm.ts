@@ -1,5 +1,6 @@
 import { appPrisma } from "~/lib/app-prisma-client";
 import fs from "node:fs";
+import path from "node:path";
 import { load } from "cheerio";
 
 type ZhMatchedRecord = {
@@ -13,6 +14,10 @@ type ZhMatchedRecord = {
 
 const LANG = "zh";
 const VARIANT = "chm";
+const DEFAULT_MATCHED_PATH = path.resolve(
+  __dirname,
+  "../../data-tools/out/zh-parser/matched.json",
+);
 
 function htmlToText(html: string): string {
   if (!html) return "";
@@ -53,11 +58,7 @@ function htmlToText(html: string): string {
 }
 
 async function main() {
-  const matchedPath = process.argv[2];
-  if (!matchedPath) {
-    console.error("Missing arg: input matched json");
-    process.exit(1);
-  }
+  const matchedPath = process.argv[2] ?? DEFAULT_MATCHED_PATH;
   const raw = fs.readFileSync(matchedPath, "utf-8");
   const matched = JSON.parse(raw) as ZhMatchedRecord[];
 

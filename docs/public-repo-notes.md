@@ -4,14 +4,15 @@ This document records what is intentionally excluded or left unresolved in the p
 
 ## Local-Only Data
 
-The `server/data/` tree is intentionally local-only.
+Data-bearing local artifact directories are intentionally local-only.
 
-It is not part of the public repository baseline and may contain:
+They are not part of the public repository baseline and may contain:
 
-- processed rules-side database inputs
-- CHM-derived HTML artifacts
-- translation JSON inputs
-- local notes and SQL helpers
+- `server/data/db/`: processed rules-side and app SQLite databases
+- `server/data/i18n/`: app-owned entity translation JSON inputs
+- `data-tools/data/`: CHM-derived HTML, parser mappings, raw text inputs, and
+  future rules patch inputs
+- `data-tools/out/`: generated parser reports and intermediate artifacts
 
 Public consumers of the repository should expect to provide or recreate those files themselves.
 

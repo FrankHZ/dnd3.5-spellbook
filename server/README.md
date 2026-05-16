@@ -11,7 +11,7 @@ It serves the spell data consumed by the frontend and also contains the Prisma s
 - `prisma-app/`: app database schema and config
 - `prisma-rules-clean/`: rules-side schema and generated client setup
 - `scripts/`: app DB import and maintenance scripts
-- `out/`: generated tool output
+- `data/`: local runtime DB files and app-owned entity translation inputs
 
 ## Main Commands
 
@@ -67,7 +67,9 @@ The canonical data setup and database lifecycle doc is:
 
 - [../docs/data-setup.md](../docs/data-setup.md)
 
-The `server/data/` tree is intentionally local-only and is not part of the public repo baseline.
+The `server/data/db/` tree is intentionally local-only and is not part of the
+public repo baseline. CHM/parser source data belongs to `data-tools/data/`, and
+parser output belongs to `data-tools/out/`.
 
 The canonical import pipeline doc is:
 
@@ -87,7 +89,7 @@ For deployed runtime configuration, including `/etc/default/spellbook-api`, use:
 - Database setup and import workflows are project-specific; use the existing
   `server` and `data-tools` scripts rather than inventing parallel flows.
 - Deployment and database update workflows are documented in [../docs/deployment.md](../docs/deployment.md).
-- For current release-level behavior, use [../docs/mvp/v3.2/FREEZE.md](../docs/mvp/v3.2/FREEZE.md) as the top-level functional reference.
+- For current feature behavior, start with [../docs/features.md](../docs/features.md).
 
 ## Related Docs
 

@@ -55,7 +55,7 @@ async function main() {
 
   if (!inputDir) {
     console.error(
-      "Usage: npm run -w data-tools zh:parse -- --input <html_root> [--outDir ../server/out/zh-parser]",
+      "Usage: npm run -w data-tools zh:parse -- --input <html_root> [--outDir out/zh-parser]",
     );
     process.exit(1);
   }

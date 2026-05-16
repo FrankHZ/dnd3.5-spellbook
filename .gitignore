@@ -2,3 +2,10 @@
 node_modules
 *.bat
 docs/tmp-feature-plan.md
+server/data/db/
+data-tools/data/chm-raw/
+data-tools/data/chm-clean/
+data-tools/data/chm-test/
+data-tools/data/chm-mapping/
+data-tools/data/txt-raw/
+data-tools/out/

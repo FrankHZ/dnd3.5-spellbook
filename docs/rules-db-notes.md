@@ -114,5 +114,6 @@ DB, so it cannot create new base spells by itself.
   or a richer authoring format with generated JSON?
 - How should imported records preserve source provenance without changing the
   current rules DB schema?
-- Should local rules DB patch files live under `server/data/` only, or should a
-  redacted schema-safe patch format be committed?
+- Future local rules DB patch files should live under
+  `data-tools/data/rules-patches/`; decide later whether a redacted schema-safe
+  patch format can be committed.

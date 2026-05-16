@@ -3,6 +3,10 @@
 This plan defines the v3.3 repository boundary for local data files before
 moving CHM inputs or adding new rules DB patch workflows.
 
+Status: implemented for CHM parser inputs, CHM parser output defaults, and local
+data documentation. Future rules DB patch workflows should use the same
+boundary.
+
 ## User Outcome
 
 Maintainers and agents should be able to tell whether a file is:
@@ -14,10 +18,10 @@ Maintainers and agents should be able to tell whether a file is:
 
 That distinction should be visible from the path alone.
 
-## Current Problem
+## Pre-Migration Problem
 
 The parser and inspection tools now live in the `data-tools` workspace, but many
-of their inputs and outputs still live under `server/`:
+of their inputs and outputs still lived under `server/`:
 
 - CHM raw HTML: `server/data/chm-raw/`
 - CHM cleaned HTML: `server/data/chm-clean/`
@@ -73,8 +77,7 @@ In scope:
 - Move parser output defaults from `server/out/zh-parser/` to
   `data-tools/out/zh-parser/`.
 - Update `data-tools/package.json` default parser command paths.
-- Update `data-tools` TypeScript aliases that currently point at
-  `../server/data/*`.
+- Update `data-tools` TypeScript aliases that pointed at `../server/data/*`.
 - Update `server` import scripts or wrappers so CHM import can read from the new
   parser output path.
 - Preserve a documented compatibility command or explicit old-path override only
@@ -126,14 +129,13 @@ server/data/db/
 data-tools/data/chm-raw/
 data-tools/data/chm-clean/
 data-tools/data/chm-test/
+data-tools/data/chm-mapping/
 data-tools/data/txt-raw/
 data-tools/out/
 ```
 
-Mapping files need an explicit decision during migration:
-
-- keep checked in only if they are non-sensitive project metadata, or
-- move them under ignored local data if they are derived from excluded sources.
+Mapping files are treated as local-only data in this migration because they were
+not tracked before the move.
 
 Do not commit CHM-derived HTML, generated parser reports, SQLite databases, or
 copyright-sensitive source material.

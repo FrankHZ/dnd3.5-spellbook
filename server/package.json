@@ -11,7 +11,7 @@
     "db:generate": "prisma generate --schema ./prisma-rules-clean/schema.prisma && prisma generate --schema ./prisma-app/schema.prisma",
     "db:app:reset": "prisma migrate dev --name init --config ./prisma-app/prisma.config.ts",
     "db:app:seed": "prisma db seed --config ./prisma-app/prisma.config.ts",
-    "db:app:import:zh-chm": "tsx scripts/import-zh-chm.ts ./out/zh-parser/matched.json",
+    "db:app:import:zh-chm": "tsx scripts/import-zh-chm.ts",
     "db:app:import:zh-entities": "tsx scripts/import-zh-entities.ts",
     "db:studio": "prisma studio",
     "test": "cross-env NODE_ENV=test vitest",

@@ -41,15 +41,15 @@ but `data-tools` owns parser and inspection tooling.
 
 ### Raw And Clean CHM HTML
 
-- raw CHM-exported HTML input: `server/data/chm-raw/`
-- cleaned intermediate HTML: `server/data/chm-clean/`
-- smaller test input set: `server/data/chm-test/`
+- raw CHM-exported HTML input: `data-tools/data/chm-raw/`
+- cleaned intermediate HTML: `data-tools/data/chm-clean/`
+- smaller test input set: `data-tools/data/chm-test/`
 
 ### Mapping And Dictionary Inputs
 
-- CHM book label mapping: `server/data/chm-mapping/books-zh-chm-mapping.json`
-- extra alias support: `server/data/chm-mapping/enName-aliases-extra.json`
-- global alias support: `server/data/chm-mapping/enName-aliases-global.json`
+- CHM book label mapping: `data-tools/data/chm-mapping/books-zh-chm-mapping.json`
+- extra alias support: `data-tools/data/chm-mapping/enName-aliases-extra.json`
+- global alias support: `data-tools/data/chm-mapping/enName-aliases-global.json`
 - entity translation JSON inputs:
   - `server/data/i18n/classes-zh.json`
   - `server/data/i18n/domains-zh.json`
@@ -60,7 +60,7 @@ but `data-tools` owns parser and inspection tooling.
 
 ### Parser Outputs
 
-The parser writes into `server/out/zh-parser/`:
+The parser writes into `data-tools/out/zh-parser/`:
 
 - `matched.json`
 - `unmatched.json`
@@ -78,7 +78,7 @@ For a normal full rebuild:
 4. Run `npm run -w server db:app:reset`.
 5. Run `npm run -w data-tools zh:preprocess` if raw CHM HTML changed.
 6. Run `npm run -w data-tools zh:parse`.
-7. Inspect `server/out/zh-parser/stats.json`, `matched.json`, and `unmatched.json`.
+7. Inspect `data-tools/out/zh-parser/stats.json`, `matched.json`, and `unmatched.json`.
 8. Run `npm run -w server db:app:import:zh-entities`.
 9. Run `npm run -w server db:app:import:zh-chm`.
 
@@ -96,8 +96,8 @@ npm run -w data-tools zh:preprocess
 
 Current script behavior:
 
-- input: `server/data/chm-raw/`
-- output: `server/data/chm-clean/`
+- input: `data-tools/data/chm-raw/`
+- output: `data-tools/data/chm-clean/`
 
 The preprocessing script:
 
@@ -119,8 +119,8 @@ npm run -w data-tools zh:parse
 
 Current script behavior:
 
-- input: `server/data/chm-clean/`
-- output: `server/out/zh-parser/`
+- input: `data-tools/data/chm-clean/`
+- output: `data-tools/out/zh-parser/`
 
 The parser:
 
@@ -137,17 +137,17 @@ For a smaller validation run, use:
 npm run -w data-tools zh:parse:test
 ```
 
-That uses the test input set under `server/data/chm-test/`.
+That uses the test input set under `data-tools/data/chm-test/`.
 
 ### 3. Review Parser Artifacts
 
 Before importing CHM spell text, inspect:
 
-- `server/out/zh-parser/stats.json` for match quality and parser counts
-- `server/out/zh-parser/unmatched.json` for unresolved entries
-- `server/out/zh-parser/candidates.json` for follow-up alias or mapping work
+- `data-tools/out/zh-parser/stats.json` for match quality and parser counts
+- `data-tools/out/zh-parser/unmatched.json` for unresolved entries
+- `data-tools/out/zh-parser/candidates.json` for follow-up alias or mapping work
 
-The normal import path expects `server/out/zh-parser/matched.json` to be the source of truth for CHM-derived spell records.
+The normal import path expects `data-tools/out/zh-parser/matched.json` to be the source of truth for CHM-derived spell records.
 
 ### 4. Import Entity Translation JSON
 
@@ -186,7 +186,7 @@ npm run -w server db:app:import:zh-chm
 
 Current script behavior:
 
-- reads `server/out/zh-parser/matched.json`
+- reads `data-tools/out/zh-parser/matched.json`
 - converts CHM HTML into plain text alongside stored HTML
 - recreates `I18nSpellText` rows from the matched parser output
 - writes records using:

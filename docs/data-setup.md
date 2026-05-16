@@ -12,13 +12,21 @@ For one-time remote host setup, use [operations/bootstrap-remote.md](./operation
 
 ## Local-Only Data Policy
 
-The `server/data/` tree is expected to exist locally, but it is intentionally not committed as part of the public repository baseline.
+Local data is expected to exist in a few workspace-owned locations, but it is
+intentionally not committed as part of the public repository baseline.
 
 That means:
 
-- the application may depend on files under `server/data/` during local setup
+- the application may depend on local files during setup
 - those files are local inputs or generated artifacts
 - a fresh clone may require you to prepare those files yourself before the full workflow can run
+
+Current local data ownership:
+
+- `server/data/db/`: runtime SQLite databases used by the API
+- `server/data/i18n/`: app-owned entity translation JSON imported by server scripts
+- `data-tools/data/`: parser and data-tool source inputs such as CHM HTML
+- `data-tools/out/`: generated parser reports and intermediate output
 
 ## Current Database Roles
 
@@ -182,7 +190,9 @@ After that, the backend can use:
 - For the current MVP, app DB rebuilds are expected to start from a fresh reset rather than incremental local preservation.
 - The current MVP data population path uses import commands, not the Prisma seed command.
 - Deployment copies database files after they exist locally; deployment is not the step that creates the app DB schema.
-- The public repo intentionally excludes `server/data/`, so local users must supply or recreate those files themselves.
+- The public repo intentionally excludes data-bearing local artifacts such as
+  `server/data/db/`, `data-tools/data/`, and `data-tools/out/`, so local users
+  must supply or recreate those files themselves.
 
 ## Related Files
 
