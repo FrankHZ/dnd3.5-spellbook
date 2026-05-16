@@ -73,11 +73,12 @@ The rest of `docs/mvp/v3.2/` contains the supporting plan and implementation han
 When you need implementation detail beyond the freeze summary, read the v3.2 documents in this order:
 
 1. [mvp/v3.2/FREEZE.md](./mvp/v3.2/FREEZE.md)
-2. [mvp/v3.2/ui-polish-and-public-readiness.md](./mvp/v3.2/ui-polish-and-public-readiness.md)
-3. [mvp/v3.2/ui-stabilization-and-toast.md](./mvp/v3.2/ui-stabilization-and-toast.md)
-4. [mvp/v3.2/favorites-json-import-export.md](./mvp/v3.2/favorites-json-import-export.md)
-5. [mvp/v3.2/related-spell-references.md](./mvp/v3.2/related-spell-references.md)
-6. [mvp/v3.2/plan.md](./mvp/v3.2/plan.md)
+2. [mvp/v3.2/search-browse-query-plan.md](./mvp/v3.2/search-browse-query-plan.md)
+3. [mvp/v3.2/ui-polish-and-public-readiness.md](./mvp/v3.2/ui-polish-and-public-readiness.md)
+4. [mvp/v3.2/ui-stabilization-and-toast.md](./mvp/v3.2/ui-stabilization-and-toast.md)
+5. [mvp/v3.2/favorites-json-import-export.md](./mvp/v3.2/favorites-json-import-export.md)
+6. [mvp/v3.2/related-spell-references.md](./mvp/v3.2/related-spell-references.md)
+7. [mvp/v3.2/plan.md](./mvp/v3.2/plan.md)
 
 ## Historical MVP Docs
 
