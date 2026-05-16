@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect, useMemo } from "react";
+import { createContext, useContext, useEffect, useMemo } from "react";
+import type { ReactNode } from "react";
 import {
   getBook,
   isInBook,
@@ -99,7 +100,7 @@ const CollectionsContext = createContext<Ctx | null>(null);
 export function CollectionsProvider({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   const [collections, setCollections] = useImmer<CollectionsState>(() =>
     loadCollections(),

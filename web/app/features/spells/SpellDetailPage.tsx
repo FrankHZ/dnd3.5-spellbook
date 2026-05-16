@@ -199,7 +199,7 @@ export default function SpellDetailPage() {
   const schoolText =
     (metaName("schools", spell.school) ?? "—") +
     (spell.subSchool ? ` (${metaName("subschools", spell.subSchool)})` : "");
-  const descriptorItems = (spell.descriptors ?? []).map((d: any) => ({
+  const descriptorItems = (spell.descriptors ?? []).map((d) => ({
     key: String(d.id ?? d.slug ?? d.name),
     label: metaName("descriptors", d),
   }));

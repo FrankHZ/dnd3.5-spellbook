@@ -69,11 +69,16 @@ export function getSpellDetail(id: number, signal?: AbortSignal) {
 }
 
 const MAX_IDS_PER_BATCH = 100;
+type BatchSpellItem = SpellBatchResponse["items"][number];
 
 function chunk<T>(arr: T[], size: number): T[][] {
   const out: T[][] = [];
   for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
   return out;
+}
+
+function isBatchSpellItem(item: BatchSpellItem | undefined): item is BatchSpellItem {
+  return item !== undefined;
 }
 
 export async function getSpellsBatch(
@@ -111,7 +116,7 @@ export async function getSpellsBatch(
 
   return {
     ids: normalized,
-    items: normalized.map((id) => itemById.get(id)).filter(Boolean) as any,
+    items: normalized.map((id) => itemById.get(id)).filter(isBatchSpellItem),
     missingIds: Array.from(missing),
   };
 }

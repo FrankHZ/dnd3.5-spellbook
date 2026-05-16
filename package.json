@@ -17,8 +17,5 @@
     "i18n:check": "npm run -w web i18n:check",
     "i18n:diff": "npm run -w web i18n:diff",
     "verify": "npm run build:contracts && npm run test:server && npm run test:web && npm run typecheck:web"
-  },
-  "dependencies": {
-    "i18next-http-backend": "^3.0.2"
   }
 }
