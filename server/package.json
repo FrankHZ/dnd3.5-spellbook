@@ -19,6 +19,7 @@
     "tool:parse:test": "tsx tools/zh-parser/cli.ts --input ./data/chm-test/ --outDir out/zh-parser/test",
     "tool:parse": "tsx tools/zh-parser/cli.ts --input ./data/chm-clean/ --outDir out/zh-parser",
     "tool:backcheck-zh": "tsx tools/zh-parser/scripts/zh-backcheck.ts ./out/zh-parser/matched.json ./out/zh-parser/missing-zh.json",
+    "tool:inspect-rules": "tsx scripts/inspect-rules-db.ts",
     "tool:preprocess-zh": "tsx tools/zh-parser/scripts/preprocess-chm-html.ts --in ./data/chm-raw --out ./data/chm-clean"
   },
   "keywords": [],
@@ -28,6 +29,7 @@
     "@dnd/contracts": "0.0.1",
     "@prisma/adapter-better-sqlite3": "^7.3.0",
     "@prisma/client": "^7.3.0",
+    "better-sqlite3": "^12.10.0",
     "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",

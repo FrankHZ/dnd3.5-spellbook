@@ -34,6 +34,7 @@ For deployment and environment operations, use:
 - [operations/bootstrap-remote.md](./operations/bootstrap-remote.md)
 - [data-setup.md](./data-setup.md)
 - [import-workflow.md](./import-workflow.md)
+- [rules-db-notes.md](./rules-db-notes.md)
 - [repo-conventions.md](./repo-conventions.md)
 - [features.md](./features.md)
 - [harness.md](./harness.md)
@@ -49,6 +50,7 @@ These documents define:
 - the one-time remote host bootstrap process
 - the current local database setup and origins
 - the current MVP import pipeline for Chinese app-owned data
+- practical notes for inspecting the local rules SQLite database
 - the repo conventions around local wrappers and canonical docs
 - the current user-facing feature map
 - the current validation surface and harness improvement path

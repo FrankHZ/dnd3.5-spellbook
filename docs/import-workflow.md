@@ -208,12 +208,14 @@ This keeps the app DB populated with both:
 This workflow does not:
 
 - rebuild the rules DB
+- create new base spell rows that are missing from the rules DB
 - treat Prisma seed as the normal data population path
 - preserve app DB contents incrementally during a full rebuild
 
 ## Related Files
 
 - [data-setup.md](./data-setup.md)
+- [rules-db-notes.md](./rules-db-notes.md)
 - [../server/package.json](../server/package.json)
 - [../server/scripts/import-zh-entities.ts](../server/scripts/import-zh-entities.ts)
 - [../server/scripts/import-zh-chm.ts](../server/scripts/import-zh-chm.ts)
