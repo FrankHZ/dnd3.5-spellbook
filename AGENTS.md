@@ -35,11 +35,13 @@ Start with these files when orienting:
 6. `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before moving SQL patch
    assets, adding rules DB preparation commands, or importing missing English
    base spell records.
-7. `docs/harness.md` for validation and test-harness strategy.
-8. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
-9. `docs/mvp/v3.2/FREEZE.md` only when you need the latest frozen release
-   snapshot for historical comparison or regression checks.
-10. Workspace READMEs for operational commands:
+7. `docs/mvp/v3.3/structured-spell-patch-plan.md` before designing or applying
+   missing English spell patch data.
+8. `docs/harness.md` for validation and test-harness strategy.
+9. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
+10. `docs/mvp/v3.2/FREEZE.md` only when you need the latest frozen release
+    snapshot for historical comparison or regression checks.
+11. Workspace READMEs for operational commands:
 
 - `server/README.md`
 - `data-tools/README.md`
@@ -187,6 +189,8 @@ See `docs/harness.md` for details.
   imports.
 - Follow `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before turning manual
   SQL patches into commands or adding write-capable rules DB workflows.
+- Follow `docs/mvp/v3.3/structured-spell-patch-plan.md` before adding missing
+  English base spell records.
 - Data tools may inspect local SQLite files, but must not modify
   `server/data/db/` unless the user explicitly asked for a write-capable
   workflow.

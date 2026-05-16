@@ -7,6 +7,8 @@ new spell imports.
 For current database roles and local paths, see `docs/data-setup.md`.
 For planned rules DB preparation command ownership, see
 `docs/mvp/v3.3/rules-db-prep-workflow-plan.md`.
+For planned structured missing-spell patch data, see
+`docs/mvp/v3.3/structured-spell-patch-plan.md`.
 
 ## Inspection Tool
 
