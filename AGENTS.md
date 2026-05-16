@@ -21,9 +21,10 @@ Start with these files when orienting:
 1. `docs/README.md` for the documentation map.
 2. `docs/mvp/v3.2/FREEZE.md` for frozen shipped behavior.
 3. `docs/features.md` for the current user-facing feature map.
-4. `docs/harness.md` for validation and test-harness strategy.
-5. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
-6. Workspace READMEs for operational commands:
+4. `docs/feature-workflow.md` before implementing non-trivial new features.
+5. `docs/harness.md` for validation and test-harness strategy.
+6. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
+7. Workspace READMEs for operational commands:
    - `server/README.md`
    - `web/README.md`
    - `contracts/README.md`
@@ -51,16 +52,20 @@ For ordinary feature requests, follow this default loop:
 
 1. Locate the feature in `docs/features.md`.
 2. Read the existing feature entry point and nearby tests before editing.
-3. Reuse the current API helpers, storage helpers, UI wrappers, and feature
+3. For non-trivial changes, copy `docs/templates/feature-plan.md` to
+   `docs/tmp-feature-plan.md` and use it as a working checklist.
+4. Reuse the current API helpers, storage helpers, UI wrappers, and feature
    folders instead of creating parallel structures.
-4. Make the smallest change that satisfies the requested behavior.
-5. Add or update the closest harness layer:
+5. Make the smallest change that satisfies the requested behavior.
+6. Add or update the closest harness layer:
    - API shape or error tests for backend contract changes
    - pure frontend tests for storage, import/export, derivation, or API wrapper
      changes
    - typecheck/build verification for UI integration changes
-6. Run `npm run verify` before handing off.
-7. Update durable docs only when behavior, workflow, or agent guidance changed.
+7. Delete `docs/tmp-feature-plan.md` before commit unless the user explicitly
+   wants it archived.
+8. Run `npm run verify` before handing off.
+9. Update durable docs only when behavior, workflow, or agent guidance changed.
 
 ## Data And Environment
 

@@ -1,3 +1,4 @@
 *.sqlite
 node_modules
 *.bat
+docs/tmp-feature-plan.md
