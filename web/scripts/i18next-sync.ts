@@ -88,8 +88,8 @@ function runExtract(options?: { dryRun?: boolean; ci?: boolean }) {
     .filter(Boolean)
     .join(" ");
   const command = extraArgs
-    ? `npm run i18next:extract -- ${extraArgs}`
-    : "npm run i18next:extract";
+    ? `npm run i18n:extract -- ${extraArgs}`
+    : "npm run i18n:extract";
 
   execSync(command, {
     cwd: webDir,

@@ -8,7 +8,7 @@ import {
   getRulebooks,
 } from "~/api/bootstrap";
 import { getMetaI18n } from "~/api/meta";
-import { useAppI18n } from "~/i18n/useAppI18n";
+import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useUserPrefs } from "~/state/user-prefs-state";
 
 export function useBootstrap(includePrestige?: boolean) {

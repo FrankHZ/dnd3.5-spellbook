@@ -1,4 +1,4 @@
-import { getI18nFromStorage } from "~/i18n/i18n-storage";
+import { getI18nFromStorage } from "~/i18n/storage";
 
 export type ApiErrorPayload = { message?: string; error?: unknown };
 

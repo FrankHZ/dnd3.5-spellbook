@@ -13,7 +13,7 @@ import {
   CardHeader,
 } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
-import { useAppI18n } from "~/i18n/useAppI18n";
+import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 
 import { PAGE_SIZE } from "../constants";
 import { BrowseOptionsToggle } from "./BrowseOptionsToggle";

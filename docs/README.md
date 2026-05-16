@@ -29,6 +29,7 @@ For deployment and environment operations, use:
 - [repo-conventions.md](./repo-conventions.md)
 - [features.md](./features.md)
 - [harness.md](./harness.md)
+- [i18n.md](./i18n.md)
 - [frontend-map.md](./frontend-map.md)
 - [stable-backlog.md](./stable-backlog.md)
 - [public-repo-notes.md](./public-repo-notes.md)
@@ -42,6 +43,7 @@ These documents define:
 - the repo conventions around local wrappers and canonical docs
 - the current user-facing feature map
 - the current validation surface and harness improvement path
+- the current frontend i18n workflow and source-of-truth boundaries
 - the quick navigation map for major frontend surfaces
 - the intentionally deferred stable-version backlog
 - the public-repo exclusions and publication caveats

@@ -1,22 +1,17 @@
-import { useBootstrap } from "~/bootstrap/useBootstrap";
-import { useUserPrefs } from "~/state/user-prefs-state";
+import type { WithI18nName } from "~/i18n/display/name";
 import {
   getDisplayName,
   getDisplayNameWithEn,
-  getMetaDisplayName,
-  getMetaDisplayNameWithEn,
-  type MetaDict,
-  type WithI18nName,
-  type WithIdName,
-} from "./content";
+} from "~/i18n/display/name";
+import { DEFAULT_LANG } from "~/i18n/config";
+import { useUserPrefs } from "~/state/user-prefs-state";
 
 export function useAppI18n() {
   const { state } = useUserPrefs();
 
-  const lang = (state.uiPrefs.lang ?? "en") as "en" | "zh";
+  const lang = (state.uiPrefs.lang ?? DEFAULT_LANG) as "en" | "zh";
   const variant = lang === "zh" ? state.uiPrefs.zhVariant : undefined;
 
-  // For query keys, keep stable primitive strings
   const queryKey = {
     lang,
     variant: variant ?? "",

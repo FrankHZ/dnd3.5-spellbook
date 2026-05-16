@@ -1,6 +1,6 @@
 import type { SpellDetailView } from "@dnd/contracts";
 import { useTranslation } from "react-i18next";
-import { useMetaNames } from "~/i18n/useMetaNames";
+import { useMetaNames } from "~/i18n/hooks/useMetaNames";
 
 export default function LevelsSection({ spell }: { spell: SpellDetailView }) {
   const { metaName } = useMetaNames();

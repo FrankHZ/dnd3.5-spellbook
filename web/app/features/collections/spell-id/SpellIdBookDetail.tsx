@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { useAppI18n } from "~/i18n/useAppI18n";
+import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import type { SpellIdBook } from "~/storage/collections.type";
 
 export function SpellIdBookDetail({ book }: { book: SpellIdBook }) {

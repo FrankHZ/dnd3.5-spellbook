@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
-import { useAppI18n } from "~/i18n/useAppI18n";
+import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useCollections } from "~/state/collections-state";
 import { cn } from "~/lib/utils";
 
@@ -28,7 +28,7 @@ import { Textarea } from "~/components/ui/textarea";
 import { resolveSpellNames } from "~/api/spells";
 import { useUserPrefs } from "~/state/user-prefs-state";
 import type { ResolveSpellNamesResponse } from "@dnd/contracts";
-import { useMetaNames } from "~/i18n/useMetaNames";
+import { useMetaNames } from "~/i18n/hooks/useMetaNames";
 import { Link } from "react-router";
 import {
   collectSelectedSpellIds,

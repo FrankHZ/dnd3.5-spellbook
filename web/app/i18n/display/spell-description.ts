@@ -24,7 +24,6 @@ export function getSpellDescription(
         usedFallback: false,
       };
     }
-    // fallback to EN
     return {
       html: spell.description.html ?? undefined,
       text: spell.description.text ?? undefined,

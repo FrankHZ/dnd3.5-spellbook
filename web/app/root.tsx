@@ -13,8 +13,8 @@ import { useTranslation } from "react-i18next";
 import { UserPrefsProvider, useUserPrefs } from "~/state/user-prefs-state";
 import TopBar from "./layout/TopBar";
 import { CollectionsProvider } from "./state/collections-state";
-import "~/i18n/i18n";
-import { I18nSync } from "./i18n/I18nSync";
+import "~/i18n/init";
+import { I18nSync } from "./i18n/sync";
 import { Toaster } from "./components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
 

@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next";
 import type { SpellItemView } from "@dnd/contracts";
 import type { PreparedEntry } from "~/storage/collections.type";
 import { useCollections } from "~/state/collections-state";
-import { useAppI18n } from "~/i18n/useAppI18n";
+import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { cn } from "~/lib/utils";
 import {
   HoverCard,

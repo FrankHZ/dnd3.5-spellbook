@@ -30,7 +30,7 @@ import {
 } from "~/components/ui/sheet";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { isSearchQueryValid } from "~/features/search/validation";
-import { useAppI18n } from "~/i18n/useAppI18n";
+import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useUserPrefs } from "~/state/user-prefs-state";
 
 function TopBarSearch() {

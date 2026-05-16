@@ -1,11 +1,11 @@
-import { useAppI18n } from "~/i18n/useAppI18n";
-import { useMetaI18n } from "~/i18n/useMetaI18n";
+import { useAppI18n } from "./useAppI18n";
+import { useMetaI18n } from "./useMetaI18n";
 import {
   getMetaDisplayName,
   getMetaDisplayNameWithEn,
   type MetaDict,
   type WithIdName,
-} from "./content";
+} from "~/i18n/display/meta";
 
 export function useMetaNames() {
   const { lang } = useAppI18n();

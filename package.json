@@ -13,6 +13,9 @@
     "test:server": "npm run -w server test -- --run",
     "test:web": "npm run -w web test -- --run",
     "typecheck:web": "npm run -w web typecheck",
+    "i18n:sync": "npm run -w web i18n:sync",
+    "i18n:check": "npm run -w web i18n:check",
+    "i18n:diff": "npm run -w web i18n:diff",
     "verify": "npm run build:contracts && npm run test:server && npm run test:web && npm run typecheck:web"
   },
   "dependencies": {

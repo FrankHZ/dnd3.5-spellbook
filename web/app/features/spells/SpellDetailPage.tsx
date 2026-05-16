@@ -21,9 +21,9 @@ import { MechanicsSection } from "./MechanicSection";
 import LevelsSection from "./LevelsSection";
 import DescriptionSection from "./DescriptionSection";
 import RelatedSpellsSection from "./RelatedSpellsSection";
-import { useAppI18n } from "~/i18n/useAppI18n";
-import { getSpellDescription } from "~/i18n/spellDetail";
-import { useMetaNames } from "~/i18n/useMetaNames";
+import { useAppI18n } from "~/i18n/hooks/useAppI18n";
+import { getSpellDescription } from "~/i18n/display/spell-description";
+import { useMetaNames } from "~/i18n/hooks/useMetaNames";
 import { useTranslation } from "react-i18next";
 
 function SpellDetailSkeleton() {

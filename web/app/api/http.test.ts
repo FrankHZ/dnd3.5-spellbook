@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { apiGet, ApiError, apiPost } from "./http";
-import { getI18nFromStorage } from "~/i18n/i18n-storage";
+import { getI18nFromStorage } from "~/i18n/storage";
 
-vi.mock("~/i18n/i18n-storage", () => ({
+vi.mock("~/i18n/storage", () => ({
   getI18nFromStorage: vi.fn(),
 }));
 

@@ -22,7 +22,8 @@ Start with these files when orienting:
 2. `docs/mvp/v3.2/FREEZE.md` for frozen shipped behavior.
 3. `docs/features.md` for the current user-facing feature map.
 4. `docs/harness.md` for validation and test-harness strategy.
-5. Workspace READMEs for operational commands:
+5. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
+6. Workspace READMEs for operational commands:
    - `server/README.md`
    - `web/README.md`
    - `contracts/README.md`
@@ -117,6 +118,8 @@ See `docs/harness.md` for details.
 - Main routes and feature entry points are mapped in `docs/frontend-map.md`.
 - Local UI wrappers live in `web/app/components/ui/`.
 - API calls should go through `web/app/api/`.
+- Frontend i18n runtime and fallback helpers live under `web/app/i18n/`; use
+  `npm run i18n:sync` and `npm run i18n:check` after changing UI copy.
 - Browser-facing API paths are relative `/api/...`; development proxy behavior
   is defined in `web/vite.config.ts`.
 

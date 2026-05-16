@@ -4,7 +4,7 @@ import {
   MultiSelectPicker,
   type PickerItem,
 } from "~/components/MultiSelectPicker";
-import { useAppI18n } from "~/i18n/useAppI18n";
+import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 
 export function ClassAndDomainSelector({
   classIds,

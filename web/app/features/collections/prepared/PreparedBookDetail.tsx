@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { getSpellsBatch } from "~/api/spells";
-import { useAppI18n } from "~/i18n/useAppI18n";
+import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useCollections } from "~/state/collections-state";
 import type { PreparedBook } from "~/storage/collections.type";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
@@ -28,7 +28,7 @@ import {
   type ClassOption,
   type DomainOption,
 } from "./PreparedClassSidebar";
-import { useMetaNames } from "~/i18n/useMetaNames";
+import { useMetaNames } from "~/i18n/hooks/useMetaNames";
 import { useBootstrap } from "~/bootstrap/useBootstrap";
 import {
   buildPreparedColumns,

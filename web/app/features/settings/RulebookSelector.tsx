@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { useMetaNames } from "~/i18n/useMetaNames";
+import { useMetaNames } from "~/i18n/hooks/useMetaNames";
 import { useUserPrefs } from "~/state/user-prefs-state";
 import { Field, FieldGroup, FieldLabel } from "~/components/ui/field";
 

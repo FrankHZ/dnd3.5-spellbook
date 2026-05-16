@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { getI18nFromStorage } from "./i18n-storage";
+import { getI18nFromStorage } from "./storage";
 import { DEFAULT_STATE } from "~/storage/userPrefs";
 
 vi.mock("~/storage/userPrefs", () => ({

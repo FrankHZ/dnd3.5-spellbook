@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import DOMPurify from "dompurify";
-import type { SpellDesc } from "~/i18n/spellDetail";
+import type { SpellDesc } from "~/i18n/display/spell-description";
 
 export default function DescriptionSection({
   description,

@@ -2,8 +2,8 @@ import type { SpellItem } from "@dnd/contracts";
 import { Link } from "react-router";
 import { SpellActionButtons } from "~/components/SpellActionButtons";
 import { Badge } from "~/components/ui/badge";
-import { useAppI18n } from "~/i18n/useAppI18n";
-import { useMetaNames } from "~/i18n/useMetaNames";
+import { useAppI18n } from "~/i18n/hooks/useAppI18n";
+import { useMetaNames } from "~/i18n/hooks/useMetaNames";
 
 export function SpellCard({
   spell,

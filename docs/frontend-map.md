@@ -73,6 +73,7 @@ Purpose:
 
 - app i18n logic: `web/app/i18n/`
 - locale JSON: `web/public/locales/`
+- workflow doc: `docs/i18n.md`
 
 ## Related Docs
 

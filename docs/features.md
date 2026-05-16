@@ -188,11 +188,11 @@ Current behavior:
 
 Key code:
 
-- `web/app/i18n/i18n.ts`
-- `web/app/i18n/i18n-storage.ts`
-- `web/app/i18n/useAppI18n.ts`
-- `web/app/i18n/useMetaI18n.ts`
-- `web/app/i18n/spellDetail.ts`
+- `web/app/i18n/init.ts`
+- `web/app/i18n/config.ts`
+- `web/app/i18n/storage.ts`
+- `web/app/i18n/display/`
+- `web/app/i18n/hooks/`
 - `web/app/api/http.ts`
 - `server/src/middlewares/i18nQuery.ts`
 - `server/src/utils/i18n.ts`
