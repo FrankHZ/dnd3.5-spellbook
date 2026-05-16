@@ -38,6 +38,10 @@ Current CHM parser defaults:
 - CHM mapping and alias JSON: `data-tools/data/chm-mapping/`
 - parser output: `data-tools/out/zh-parser/`
 
+CHM preprocess and parse commands scan nested directories and preserve relative
+paths in cleaned output and parser source keys. Word/CHM companion directories
+ending in `.files` are skipped.
+
 The rules DB path comes from `RULES_DATABASE_URL`; see `server/.env` and
 `docs/data-setup.md`.
 

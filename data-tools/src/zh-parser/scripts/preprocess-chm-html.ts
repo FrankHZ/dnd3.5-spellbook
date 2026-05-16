@@ -190,22 +190,41 @@ Defaults assume GB2312 input and keep only #winchm_template_content.
   return opts;
 }
 
+function scanInputHtmlFiles(inputDir: string, globRe: RegExp): string[] {
+  const files: string[] = [];
+
+  function visit(currentDir: string) {
+    const entries = fs.readdirSync(currentDir, { withFileTypes: true });
+
+    for (const ent of entries) {
+      const fullPath = path.join(currentDir, ent.name);
+      if (ent.isDirectory()) {
+        if (!ent.name.toLowerCase().endsWith(".files")) visit(fullPath);
+        continue;
+      }
+
+      if (ent.isFile() && globRe.test(ent.name)) {
+        files.push(fullPath);
+      }
+    }
+  }
+
+  visit(inputDir);
+  return files.sort((a, b) => a.localeCompare(b));
+}
+
 async function main() {
   const opts = parseArgs();
-  const files = fs
-    .readdirSync(opts.inputDir, { withFileTypes: true })
-    .filter((d) => d.isFile() && opts.globRe.test(d.name))
-    .map((d) => d.name)
-    .sort((a, b) => a.localeCompare(b));
+  const files = scanInputHtmlFiles(opts.inputDir, opts.globRe);
 
   if (files.length === 0) {
     console.error("No .htm files found in input dir.");
     process.exit(1);
   }
 
-  for (const name of files) {
-    const inPath = path.join(opts.inputDir, name);
-    const outPath = path.join(opts.outputDir, name);
+  for (const inPath of files) {
+    const relativePath = path.relative(opts.inputDir, inPath);
+    const outPath = path.join(opts.outputDir, relativePath);
     preprocessOne(inPath, outPath, opts);
   }
 

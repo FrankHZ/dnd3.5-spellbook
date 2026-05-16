@@ -45,6 +45,9 @@ but `data-tools` owns parser and inspection tooling.
 - cleaned intermediate HTML: `data-tools/data/chm-clean/`
 - smaller test input set: `data-tools/data/chm-test/`
 
+The CHM preprocess and parser commands scan nested directories and preserve
+relative paths. Word/CHM companion directories ending in `.files` are skipped.
+
 ### Mapping And Dictionary Inputs
 
 - CHM book label mapping: `data-tools/data/chm-mapping/books-zh-chm-mapping.json`
@@ -102,6 +105,7 @@ Current script behavior:
 The preprocessing script:
 
 - reads exported `.htm` files
+- scans nested directories while skipping `.files` companion folders
 - assumes GB2312 input by default
 - removes CHM / Word-style wrapper noise
 - strips heavy attributes
@@ -125,6 +129,7 @@ Current script behavior:
 The parser:
 
 - scans cleaned HTML files
+- preserves relative source paths in parser output
 - segments spell entries
 - matches them against rules DB spell records by English name across books
 - applies CHM book-label mapping

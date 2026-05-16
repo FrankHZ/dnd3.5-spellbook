@@ -2,11 +2,26 @@ import fs from "node:fs";
 import path from "node:path";
 
 export function scanHtmlFiles(dir: string): string[] {
-  return fs
-    .readdirSync(dir, { withFileTypes: true })
-    .filter((ent) => ent.isFile() && /\.(htm|html)$/i.test(ent.name))
-    .map((ent) => path.join(dir, ent.name))
-    .sort();
+  const files: string[] = [];
+
+  function visit(currentDir: string) {
+    const entries = fs.readdirSync(currentDir, { withFileTypes: true });
+
+    for (const ent of entries) {
+      const fullPath = path.join(currentDir, ent.name);
+      if (ent.isDirectory()) {
+        if (!ent.name.toLowerCase().endsWith(".files")) visit(fullPath);
+        continue;
+      }
+
+      if (ent.isFile() && /\.(htm|html)$/i.test(ent.name)) {
+        files.push(fullPath);
+      }
+    }
+  }
+
+  visit(dir);
+  return files.sort();
 }
 
 export function relFile(rootDir: string, abs: string): string {

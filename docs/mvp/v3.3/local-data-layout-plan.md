@@ -4,8 +4,9 @@ This plan defines the v3.3 repository boundary for local data files before
 moving CHM inputs or adding new rules DB patch workflows.
 
 Status: implemented for CHM parser inputs, CHM parser output defaults, and local
-data documentation. Future rules DB patch workflows should use the same
-boundary.
+data documentation. CHM preprocessing and parsing support nested source
+directories while skipping Word/CHM `.files` companion folders. Future rules DB
+patch workflows should use the same boundary.
 
 ## User Outcome
 
