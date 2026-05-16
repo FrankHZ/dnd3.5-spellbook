@@ -100,6 +100,9 @@ Prefer shape and invariant checks over brittle full snapshots. Examples:
 - localized requests preserve valid response shape
 - invalid requests return the documented status and message shape
 
+Current coverage includes shape invariants for spell search, spell detail,
+by-level results, rule metadata lists, and common API error payloads.
+
 ### 3. Pure Frontend Logic Tests
 
 Add tests around logic that does not need a browser.
@@ -114,9 +117,18 @@ Good first targets:
 
 These tests should be fast and should not depend on the local SQLite data.
 
-Current coverage includes search validation, collection selectors, spell-id
-JSON import/export, prepared JSON import/export, prepared bulk-paste row mapping,
-and API helper i18n parameter behavior.
+Current coverage includes:
+
+- search validation
+- collection selectors
+- spell-id JSON import/export
+- prepared JSON import/export
+- prepared bulk-paste row mapping
+- prepared level derivation
+- prepared TSV copy helpers
+- prepared entry summaries
+- spell API wrapper URL building, normalization, and chunking
+- API helper i18n parameter behavior.
 
 ### 4. Browser Smoke Tests
 
