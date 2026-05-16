@@ -18,6 +18,14 @@ Start here:
 
 That file is the canonical release-level summary for the current project state and defines the final as-built interpretation of the v3.2 handoff set.
 
+## Active Development Docs
+
+Feature work after the v3.2 freeze is tracked under `docs/mvp/v3.3/`.
+
+Current v3.3 planning docs:
+
+- [mvp/v3.3/search-browse-query-plan.md](./mvp/v3.3/search-browse-query-plan.md)
+
 ## Current Operational Docs
 
 For deployment and environment operations, use:
@@ -73,16 +81,15 @@ The rest of `docs/mvp/v3.2/` contains the supporting plan and implementation han
 When you need implementation detail beyond the freeze summary, read the v3.2 documents in this order:
 
 1. [mvp/v3.2/FREEZE.md](./mvp/v3.2/FREEZE.md)
-2. [mvp/v3.2/search-browse-query-plan.md](./mvp/v3.2/search-browse-query-plan.md)
-3. [mvp/v3.2/ui-polish-and-public-readiness.md](./mvp/v3.2/ui-polish-and-public-readiness.md)
-4. [mvp/v3.2/ui-stabilization-and-toast.md](./mvp/v3.2/ui-stabilization-and-toast.md)
-5. [mvp/v3.2/favorites-json-import-export.md](./mvp/v3.2/favorites-json-import-export.md)
-6. [mvp/v3.2/related-spell-references.md](./mvp/v3.2/related-spell-references.md)
-7. [mvp/v3.2/plan.md](./mvp/v3.2/plan.md)
+2. [mvp/v3.2/ui-polish-and-public-readiness.md](./mvp/v3.2/ui-polish-and-public-readiness.md)
+3. [mvp/v3.2/ui-stabilization-and-toast.md](./mvp/v3.2/ui-stabilization-and-toast.md)
+4. [mvp/v3.2/favorites-json-import-export.md](./mvp/v3.2/favorites-json-import-export.md)
+5. [mvp/v3.2/related-spell-references.md](./mvp/v3.2/related-spell-references.md)
+6. [mvp/v3.2/plan.md](./mvp/v3.2/plan.md)
 
-## Historical MVP Docs
+## Versioned MVP Docs
 
-The `docs/mvp/` directory also contains older version folders:
+The `docs/mvp/` directory contains version folders:
 
 - `v1.0`
 - `v1.1`
@@ -91,8 +98,12 @@ The `docs/mvp/` directory also contains older version folders:
 - `v3.0`
 - `v3.1`
 - `v3.2`
+- `v3.3`
 
-Treat older version folders as historical planning or handoff records unless a newer freeze document explicitly says they still define current behavior.
+Treat frozen or older version folders as historical planning or handoff records
+unless a newer freeze document explicitly says they still define current
+behavior. Treat `v3.3` as active development until it gets its own freeze
+document.
 
 They are useful for:
 

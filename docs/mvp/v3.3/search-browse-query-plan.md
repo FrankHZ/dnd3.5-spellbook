@@ -106,4 +106,3 @@ Out of scope:
 - Clearing Search filter scope leaves the user in a clean Search state without
   requiring a trip through Browse.
 - Pagination resets when `q` or filter scope changes.
-
