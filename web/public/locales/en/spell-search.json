@@ -1,12 +1,21 @@
 {
+  "all": "all",
   "any": "any",
   "Browse scope is active: {{classCount}} classes, {{domainCount}} domains, level {{level}}.": "Browse scope is active: {{classCount}} classes, {{domainCount}} domains, level {{level}}.",
+  "Classes": "Classes",
+  "Clear Browse scope": "Clear Browse scope",
+  "Domains": "Domains",
+  "Edit in Browse": "Edit in Browse",
   "Enter at least 2 characters to run a search.": "Enter at least 2 characters to run a search.",
   "Enter at least 2 characters, or type a Chinese character.": "Enter at least 2 characters, or type a Chinese character.",
   "Global name search. Browsing by class/level lives in Browse.": "Global name search. Browsing by class/level lives in Browse.",
+  "Level": "Level",
+  "Name search can be narrowed by Browse filters.": "Name search can be narrowed by Browse filters.",
   "No spells matched \"{{query}}\".": "No spells matched \"{{query}}\".",
+  "Query": "Query",
   "Request failed. Please try again.": "Request failed. Please try again.",
   "Rulebook filter is active (from Settings).": "Rulebook filter is active (from Settings).",
   "Search": "Search",
+  "Search scope": "Search scope",
   "Search spells by name...": "Search spells by name..."
 }

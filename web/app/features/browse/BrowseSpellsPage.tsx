@@ -13,8 +13,8 @@ import {
   CardDescription,
   CardHeader,
 } from "~/components/ui/card";
-import { Separator } from "~/components/ui/separator";
 import { Button } from "~/components/ui/button";
+import { Separator } from "~/components/ui/separator";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 
 import { PAGE_SIZE } from "../constants";
@@ -108,6 +108,29 @@ export default function BrowsePage() {
 
   return (
     <div className="page-side">
+      <div className="flex flex-col gap-3 px-1 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-xl font-semibold">{t("Browse")}</h1>
+          <div className="text-sm text-muted-foreground">
+            {scopeDescription}
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {hasValidSelection ? (
+            <Button asChild variant="outline">
+              <Link to={scopedSearchUrl}>{t("Search within filters")}</Link>
+            </Button>
+          ) : (
+            <Button type="button" variant="outline" disabled>
+              {t("Search within filters")}
+            </Button>
+          )}
+          <Button asChild variant="ghost">
+            <Link to="/search">{t("Open clean search")}</Link>
+          </Button>
+        </div>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-[320px_1fr]">
         <Card className="gap-0 self-start">
           <CardContent className="space-y-4">
@@ -126,31 +149,10 @@ export default function BrowsePage() {
             />
             <Separator />
             <LevelSelector value={level} onChange={setLevel} />
-            <Separator />
-            <div className="grid gap-2">
-              {hasValidSelection ? (
-                <Button asChild variant="outline">
-                  <Link to={scopedSearchUrl}>{t("Search within filters")}</Link>
-                </Button>
-              ) : (
-                <Button type="button" variant="outline" disabled>
-                  {t("Search within filters")}
-                </Button>
-              )}
-              <Button asChild variant="ghost">
-                <Link to="/search">{t("Open clean search")}</Link>
-              </Button>
-            </div>
           </CardContent>
         </Card>
 
         <div className="space-y-3">
-          <div className="space-y-1 px-1">
-            <div className="text-sm text-muted-foreground">
-              {scopeDescription}
-            </div>
-          </div>
-
           {!hasValidSelection && (
             <Card className="gap-0">
               <CardHeader className="gap-1 py-1">

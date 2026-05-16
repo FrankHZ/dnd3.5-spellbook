@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 
 import { ApiError } from "~/api/http";
 import { searchSpellsByName } from "~/api/spells";
@@ -11,14 +11,21 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
+  CardTitle,
 } from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useUserPrefs } from "~/state/user-prefs-state";
 import { useTranslation } from "react-i18next";
 import { isSearchQueryValid } from "./validation";
 import { PAGE_SIZE } from "../constants";
-import { hasSearchScope, parseSearchScope } from "./search-url";
+import {
+  buildBrowseUrl,
+  buildSearchUrl,
+  hasSearchScope,
+  parseSearchScope,
+} from "./search-url";
 
 export default function SearchSpellsPage() {
   const { state } = useUserPrefs();
@@ -32,6 +39,14 @@ export default function SearchSpellsPage() {
   const qParam = searchScope.q;
   const isValid = isSearchQueryValid(qParam, lang);
   const hasScopedSearch = hasSearchScope(searchScope);
+  const levelLabel =
+    searchScope.level == null
+      ? t("any")
+      : searchScope.level === "all"
+        ? t("all")
+        : String(searchScope.level);
+  const cleanSearchUrl = buildSearchUrl({ q: qParam });
+  const browseScopeUrl = buildBrowseUrl(searchScope);
 
   const query = useQuery({
     queryKey: [
@@ -85,100 +100,156 @@ export default function SearchSpellsPage() {
   }
 
   return (
-    <div className="page-single">
-      <div className="space-y-1 px-1">
-        <div className="text-sm text-muted-foreground">
-          {t("Global name search. Browsing by class/level lives in Browse.")}
-        </div>
-        {rulebookIds.length > 0 && (
-          <div className="text-sm text-muted-foreground">
-            {t("Rulebook filter is active (from Settings).")}
-          </div>
-        )}
-        {hasScopedSearch && (
-          <div className="text-sm text-muted-foreground">
-            {t(
-              "Browse scope is active: {{classCount}} classes, {{domainCount}} domains, level {{level}}.",
-              {
-                classCount: searchScope.classIds.length,
-                domainCount: searchScope.domainIds.length,
-                level: searchScope.level ?? t("any"),
-              },
-            )}
-          </div>
-        )}
-      </div>
-
-      {!isValid.ok && (
-        <Card className="gap-0">
-          <CardHeader className="gap-1 py-2">
+    <div className="page-side">
+      <div className="grid gap-4 md:grid-cols-[320px_1fr]">
+        <Card className="gap-0 self-start">
+          <CardHeader className="gap-1 py-3">
+            <CardTitle className="text-base">{t("Search scope")}</CardTitle>
             <CardDescription>
-              {lang === "zh"
-                ? t("Enter at least 2 characters, or type a Chinese character.")
-                : t("Enter at least 2 characters to run a search.")}
+              {t("Name search can be narrowed by Browse filters.")}
             </CardDescription>
           </CardHeader>
+          <CardContent className="space-y-4 pt-0">
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground">{t("Query")}</span>
+                <span className="truncate font-medium">{qParam || "—"}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground">{t("Classes")}</span>
+                <span className="font-medium">
+                  {searchScope.classIds.length}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground">{t("Domains")}</span>
+                <span className="font-medium">
+                  {searchScope.domainIds.length}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground">{t("Level")}</span>
+                <span className="font-medium">{levelLabel}</span>
+              </div>
+            </div>
+
+            <Separator />
+
+            <div className="grid gap-2">
+              <Button asChild variant="outline">
+                <Link to={browseScopeUrl}>{t("Edit in Browse")}</Link>
+              </Button>
+              {hasScopedSearch ? (
+                <Button asChild variant="ghost">
+                  <Link to={cleanSearchUrl}>{t("Clear Browse scope")}</Link>
+                </Button>
+              ) : (
+                <Button type="button" variant="ghost" disabled>
+                  {t("Clear Browse scope")}
+                </Button>
+              )}
+            </div>
+
+            {rulebookIds.length > 0 && (
+              <div className="text-xs text-muted-foreground">
+                {t("Rulebook filter is active (from Settings).")}
+              </div>
+            )}
+          </CardContent>
         </Card>
-      )}
 
-      {isValid.ok && (
         <div className="space-y-3">
-          {errorMessage && (
-            <Card className="gap-0">
-              <CardHeader className="gap-1 py-2">
-                <CardDescription>{errorMessage}</CardDescription>
-              </CardHeader>
-            </Card>
-          )}
+          <div className="space-y-1 px-1">
+            <div className="text-sm text-muted-foreground">
+              {hasScopedSearch
+                ? t(
+                    "Browse scope is active: {{classCount}} classes, {{domainCount}} domains, level {{level}}.",
+                    {
+                      classCount: searchScope.classIds.length,
+                      domainCount: searchScope.domainIds.length,
+                      level: levelLabel,
+                    },
+                  )
+                : t(
+                    "Global name search. Browsing by class/level lives in Browse.",
+                  )}
+            </div>
+          </div>
 
-          {!errorMessage && !query.isLoading && items.length === 0 && (
+          {!isValid.ok && (
             <Card className="gap-0">
               <CardHeader className="gap-1 py-2">
                 <CardDescription>
-                  {t('No spells matched "{{query}}".', { query: qParam })}
+                  {lang === "zh"
+                    ? t(
+                        "Enter at least 2 characters, or type a Chinese character.",
+                      )
+                    : t("Enter at least 2 characters to run a search.")}
                 </CardDescription>
               </CardHeader>
             </Card>
           )}
 
-          {items.length > 0 && (
-            <Card className="gap-0 overflow-hidden py-2">
-              <CardContent className="space-y-3 px-0 py-1">
-                <div className="px-6">
-                  <Pager
-                    page={searchScope.page}
-                    pageSize={pageSize}
-                    total={total}
-                    isBusy={query.isFetching}
-                    onPageChange={goToPage}
-                  />
-                </div>
+          {isValid.ok && (
+            <div className="space-y-3">
+              {errorMessage && (
+                <Card className="gap-0">
+                  <CardHeader className="gap-1 py-2">
+                    <CardDescription>{errorMessage}</CardDescription>
+                  </CardHeader>
+                </Card>
+              )}
 
-                <Separator />
+              {!errorMessage && !query.isLoading && items.length === 0 && (
+                <Card className="gap-0">
+                  <CardHeader className="gap-1 py-2">
+                    <CardDescription>
+                      {t('No spells matched "{{query}}".', { query: qParam })}
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              )}
 
-                <div className="divide-y">
-                  {items.map((sp) => (
-                    <SpellCard key={sp.id} spell={sp} showActions />
-                  ))}
-                </div>
+              {items.length > 0 && (
+                <Card className="gap-0 overflow-hidden py-2">
+                  <CardContent className="space-y-3 px-0 py-1">
+                    <div className="px-6">
+                      <Pager
+                        page={searchScope.page}
+                        pageSize={pageSize}
+                        total={total}
+                        isBusy={query.isFetching}
+                        onPageChange={goToPage}
+                      />
+                    </div>
 
-                <Separator />
+                    <Separator />
 
-                <div className="px-6">
-                  <Pager
-                    page={searchScope.page}
-                    pageSize={pageSize}
-                    total={total}
-                    isBusy={query.isFetching}
-                    onPageChange={goToPage}
-                    showRangeText={false}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+                    <div className="divide-y">
+                      {items.map((sp) => (
+                        <SpellCard key={sp.id} spell={sp} showActions />
+                      ))}
+                    </div>
+
+                    <Separator />
+
+                    <div className="px-6">
+                      <Pager
+                        page={searchScope.page}
+                        pageSize={pageSize}
+                        total={total}
+                        isBusy={query.isFetching}
+                        onPageChange={goToPage}
+                        showRangeText={false}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

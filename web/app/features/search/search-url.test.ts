@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildBrowseUrl,
   buildSearchParams,
   buildSearchUrl,
   parseSearchScope,
@@ -37,6 +38,13 @@ describe("search URL helpers", () => {
     expect(String(buildSearchParams({ q: "fire", page: 1 }))).toBe("q=fire");
     expect(String(buildSearchParams({ q: "fire", page: 2 }))).toBe(
       "q=fire&page=2",
+    );
+  });
+
+  it("builds browse URLs from search scope", () => {
+    expect(buildBrowseUrl({})).toBe("/browse");
+    expect(buildBrowseUrl({ classIds: [3, 1], level: 2 })).toBe(
+      "/browse?classIds=1%2C3&level=2",
     );
   });
 });
