@@ -114,6 +114,10 @@ Good first targets:
 
 These tests should be fast and should not depend on the local SQLite data.
 
+Current coverage includes search validation, collection selectors, spell-id
+JSON import/export, prepared JSON import/export, prepared bulk-paste row mapping,
+and API helper i18n parameter behavior.
+
 ### 4. Browser Smoke Tests
 
 Add a small smoke suite once the app can run reliably in development or from a
