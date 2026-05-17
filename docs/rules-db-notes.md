@@ -35,11 +35,11 @@ Snapshot from the local `server/data/db/rules-clean.sqlite`:
 
 | Table                    |  Rows |
 | ------------------------ | ----: |
-| `dnd_spell`              |  4911 |
-| `dnd_spellclasslevel`    | 12249 |
+| `dnd_spell`              |  4912 |
+| `dnd_spellclasslevel`    | 12250 |
 | `dnd_spelldomainlevel`   |  1549 |
-| `dnd_spell_descriptors`  |  2289 |
-| `idx_spell_class_level`  | 12249 |
+| `dnd_spell_descriptors`  |  2290 |
+| `idx_spell_class_level`  | 12250 |
 | `idx_spell_domain_level` |  1549 |
 | `dnd_rulebook`           |   110 |
 | `dnd_characterclass`     |   878 |
@@ -167,8 +167,8 @@ Verified rulebook names:
 
 ## Current Missing Candidates
 
-`server/data/db/missing.txt` currently lists five candidates. Local rules DB
-inspection shows:
+`server/data/db/missing.txt` originally listed five candidates. Local rules DB
+inspection now shows:
 
 | Candidate                   | Listed Book | Current DB Status                                 |
 | --------------------------- | ----------- | ------------------------------------------------- |
@@ -176,7 +176,13 @@ inspection shows:
 | `Shield Of Faith, Legion's` | `ECS`       | exact row exists in `MH` as id `1945`, not `ECS`  |
 | `Skill Enhancement`         | `ECS`       | no exact row found                                |
 | `Spider Poison`             | `Sc_`       | exact row exists in `Mag` as id `1722`, not `Sc_` |
-| `FIERY ASSAULT`             | `ToB`       | no exact row found                                |
+| `FIERY ASSAULT`             | `ToB`       | added as structured patch id `4916`              |
+
+`Fiery Assault` was added through
+`data-tools/data/rules-patches/spells/missing-spells.jsonl` with source text
+from Tome of Battle page 53. It imports as ToB / Desert Wind / Stance,
+Swordsage 6, descriptor Fire. The CHM overlay import now creates a zh/chm row
+for spell id `4916` with name `烈焰诀`.
 
 Current CHM parser unmatched output also includes label/source cleanup items
 that should not be treated as missing base rows until investigated:
