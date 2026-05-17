@@ -86,7 +86,8 @@ For local database setup and data origins, use [docs/data-setup.md](./docs/data-
 |- web/         Frontend app, routes, UI, i18n assets
 |- contracts/   Shared DTOs and TypeScript types
 |- data-tools/  Data inspection, parser, and rules DB tooling
-|- data/        Local data inputs used by tooling
+|  |- data/     Local-only source inputs and rules patch files used by tooling
+|  `- out/      Generated parser output and data-tool reports
 |- docs/        Release docs, MVP plans, handoff notes
 ```
 

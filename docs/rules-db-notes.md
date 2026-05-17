@@ -119,6 +119,20 @@ npm run -w data-tools rules:index:rebuild -- --dry-run
 npm run -w data-tools rules:index:rebuild
 ```
 
+Structured missing-spell patch assets live under
+`data-tools/data/rules-patches/spells/`. Use JSONL and the spell-specific
+validator/apply commands instead of authoring new ad hoc SQL:
+
+```bash
+npm run -w data-tools rules:spells:validate -- spells/missing-spells.jsonl
+npm run -w data-tools rules:spells:apply -- --dry-run spells/missing-spells.jsonl
+npm run -w data-tools rules:spells:apply -- spells/missing-spells.jsonl
+```
+
+The first supported operation is `insertSpell`. It writes one `dnd_spell` row,
+optional `dnd_spell_descriptors` rows, class/domain level rows, and then
+rebuilds `idx_spell_class_level` and `idx_spell_domain_level`.
+
 ## Verified Manual Fixes
 
 The local `rules-clean.sqlite` already reflects the manual fixes listed in

@@ -140,6 +140,24 @@ npm run -w data-tools rules:index:rebuild
 The dry-run command copies the target DB to a temporary file and leaves
 `RULES_DATABASE_URL` unchanged.
 
+Structured missing-spell patches are JSONL files under:
+
+```text
+data-tools/data/rules-patches/spells/
+```
+
+Use validation and dry-run before applying:
+
+```bash
+npm run -w data-tools rules:spells:validate -- spells/missing-spells.jsonl
+npm run -w data-tools rules:spells:apply -- --dry-run spells/missing-spells.jsonl
+npm run -w data-tools rules:spells:apply -- spells/missing-spells.jsonl
+```
+
+The structured spell apply command inserts rules DB base spell rows and related
+descriptor/class/domain level rows, then rebuilds derived spell index tables.
+It does not run from server startup.
+
 ### Reset / Create The App DB
 
 Run:

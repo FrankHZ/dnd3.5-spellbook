@@ -191,6 +191,9 @@ See `docs/harness.md` for details.
   SQL patches into commands or adding write-capable rules DB workflows.
 - Follow `docs/mvp/v3.3/structured-spell-patch-plan.md` before adding missing
   English base spell records.
+- Use `npm run -w data-tools rules:spells:validate -- <patch.jsonl>` and
+  `npm run -w data-tools rules:spells:apply -- --dry-run <patch.jsonl>` before
+  applying structured missing-spell patches.
 - Data tools may inspect local SQLite files, but must not modify
   `server/data/db/` unless the user explicitly asked for a write-capable
   workflow.

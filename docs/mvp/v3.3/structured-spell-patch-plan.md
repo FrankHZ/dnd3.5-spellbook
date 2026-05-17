@@ -237,3 +237,16 @@ When implementing:
 - Real apply is explicit and write-capable.
 - Derived spell indexes are rebuilt after writes.
 - Server runtime remains read-only with respect to rules DB preparation.
+
+## Implementation Status
+
+Implemented in v3.3:
+
+- `data-tools/src/rules-spells.ts`
+- `npm run -w data-tools rules:spells:validate -- <patch.jsonl>`
+- `npm run -w data-tools rules:spells:apply -- --dry-run <patch.jsonl>`
+- `npm run -w data-tools rules:spells:apply -- <patch.jsonl>`
+
+The implementation currently supports only `insertSpell`. Future
+`cloneSpellToRulebook` or `updateSpell` behavior should get a new concrete plan
+before being added.

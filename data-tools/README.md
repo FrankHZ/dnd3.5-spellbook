@@ -25,6 +25,14 @@ npm run -w data-tools rules:index:rebuild -- --dry-run
 npm run -w data-tools rules:index:rebuild
 ```
 
+Validate and apply structured missing-spell patches:
+
+```bash
+npm run -w data-tools rules:spells:validate -- spells/missing-spells.jsonl
+npm run -w data-tools rules:spells:apply -- --dry-run spells/missing-spells.jsonl
+npm run -w data-tools rules:spells:apply -- spells/missing-spells.jsonl
+```
+
 Run the Chinese CHM parser workflow:
 
 ```bash
@@ -64,9 +72,20 @@ runner rejects paths outside that directory. Use `rules:sql:dry-run` before
 `rules:sql:apply`; dry-run copies the target DB to a temporary file and leaves
 `RULES_DATABASE_URL` unchanged.
 
+Structured spell patch JSONL files also live under
+`data-tools/data/rules-patches/`, normally in `spells/`. The first supported
+operation is `insertSpell`, which inserts the base spell row plus descriptors
+and class/domain levels, then rebuilds derived spell indexes. Validation opens
+the configured rules DB read-only; dry-run applies to a temporary copy.
+
 ## Safety
 
 - `inspect:rules` opens the SQLite database in read-only mode.
+- `rules:spells:validate` opens the SQLite database in read-only mode and
+  writes a JSON report under `data-tools/out/rules-patches/`.
+- `rules:spells:apply -- --dry-run` applies to a temporary database copy.
+- `rules:spells:apply` is write-capable and prints the target DB path before
+  mutating it.
 - `rules:sql:dry-run` never mutates the configured rules DB.
 - `rules:sql:apply` and `rules:index:rebuild` are write-capable and must be run
   intentionally.

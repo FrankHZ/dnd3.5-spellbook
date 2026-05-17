@@ -6,6 +6,8 @@
   "scripts": {
     "inspect:rules": "tsx src/inspect-rules-db.ts",
     "rules:index:rebuild": "tsx src/rules-sql.ts index:rebuild",
+    "rules:spells:apply": "tsx src/rules-spells.ts apply",
+    "rules:spells:validate": "tsx src/rules-spells.ts validate",
     "rules:sql:apply": "tsx src/rules-sql.ts apply",
     "rules:sql:dry-run": "tsx src/rules-sql.ts dry-run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
