@@ -35,11 +35,11 @@ Snapshot from the local `server/data/db/rules-clean.sqlite`:
 
 | Table                    |  Rows |
 | ------------------------ | ----: |
-| `dnd_spell`              |  4912 |
-| `dnd_spellclasslevel`    | 12250 |
+| `dnd_spell`              |  4914 |
+| `dnd_spellclasslevel`    | 12254 |
 | `dnd_spelldomainlevel`   |  1549 |
 | `dnd_spell_descriptors`  |  2290 |
-| `idx_spell_class_level`  | 12250 |
+| `idx_spell_class_level`  | 12254 |
 | `idx_spell_domain_level` |  1549 |
 | `dnd_rulebook`           |   110 |
 | `dnd_characterclass`     |   878 |
@@ -172,9 +172,9 @@ inspection now shows:
 
 | Candidate                   | Listed Book | Current DB Status                                 |
 | --------------------------- | ----------- | ------------------------------------------------- |
-| `Resistance Item`           | `ECS`       | no exact row found                                |
+| `Resistance Item`           | `ECS`       | added as spells-full patch id `4917`             |
 | `Shield Of Faith, Legion's` | `ECS`       | exact row exists in `MH` as id `1945`, not `ECS`  |
-| `Skill Enhancement`         | `ECS`       | no exact row found                                |
+| `Skill Enhancement`         | `ECS`       | added as spells-full patch id `4918`             |
 | `Spider Poison`             | `Sc_`       | exact row exists in `Mag` as id `1722`, not `Sc_` |
 | `FIERY ASSAULT`             | `ToB`       | added as structured patch id `4916`              |
 
@@ -183,6 +183,23 @@ inspection now shows:
 from Tome of Battle page 53. It imports as ToB / Desert Wind / Stance,
 Swordsage 6, descriptor Fire. The CHM overlay import now creates a zh/chm row
 for spell id `4916` with name `烈焰诀`.
+
+`Resistance Item` and `Skill Enhancement` were then generated from local
+`spells-full` parsed JSON and applied through
+`data-tools/data/rules-patches/spells/spells-full-known-misses.jsonl`.
+
+| ID     | Name                | Rulebook | CHM zh name |
+| ------ | ------------------- | -------- | ----------- |
+| `4917` | `Resistance Item`   | `ECS`    | `抗力物品`  |
+| `4918` | `Skill Enhancement` | `ECS`    | `技能强化`  |
+
+Remaining candidate status:
+
+- `Spider Poison`, `Sc_`: parsed JSON has a Spell Compendium source, but rules
+  DB already has a `Mag` row with slug `spider-poison`, so this needs explicit
+  clone/source semantics rather than a plain `insertSpell`.
+- `Shield Of Faith, Legion's`, `ECS`: no exact `spells-full` parsed JSON row was
+  found; keep it unresolved until the source/name is verified.
 
 Current CHM parser unmatched output also includes label/source cleanup items
 that should not be treated as missing base rows until investigated:

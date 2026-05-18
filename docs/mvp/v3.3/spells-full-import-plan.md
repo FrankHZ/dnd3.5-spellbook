@@ -149,3 +149,25 @@ rules DB max id plus one and include the allocation in the generated report.
   as needing a clone/source decision.
 - `Shield Of Faith, Legion's` is documented as unresolved unless a reliable
   source row is found.
+
+## Implementation Status
+
+Implemented in v3.3:
+
+- `data-tools/src/spells-full.ts`
+- `npm run -w data-tools spells-full:inspect -- known-misses`
+- `npm run -w data-tools spells-full:generate -- known-misses --write-patch <patch.jsonl>`
+- generated and applied
+  `data-tools/data/rules-patches/spells/spells-full-known-misses.jsonl`
+
+Current applied records:
+
+- `4917` `Resistance Item`, `ECS`
+- `4918` `Skill Enhancement`, `ECS`
+
+Deferred:
+
+- `Spider Poison`, `Sc_` needs explicit clone/source behavior because an
+  existing `Mag` row already uses slug `spider-poison`.
+- `Shield Of Faith, Legion's`, `ECS` still lacks an exact `spells-full` parsed
+  JSON source row.

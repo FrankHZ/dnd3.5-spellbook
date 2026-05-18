@@ -10,6 +10,8 @@
     "rules:spells:validate": "tsx src/rules-spells.ts validate",
     "rules:sql:apply": "tsx src/rules-sql.ts apply",
     "rules:sql:dry-run": "tsx src/rules-sql.ts dry-run",
+    "spells-full:generate": "tsx src/spells-full.ts generate",
+    "spells-full:inspect": "tsx src/spells-full.ts inspect",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "zh:backcheck": "tsx src/zh-parser/scripts/zh-backcheck.ts out/zh-parser/matched.json out/zh-parser/missing-zh.json",
     "zh:parse": "tsx src/zh-parser/cli.ts --input data/chm-clean --outDir out/zh-parser",

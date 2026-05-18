@@ -168,6 +168,13 @@ That directory is ignored and should not be committed. Use
 `docs/mvp/v3.3/spells-full-import-plan.md` before generating structured patch
 candidates from it.
 
+Current helper commands:
+
+```bash
+npm run -w data-tools spells-full:inspect -- known-misses
+npm run -w data-tools spells-full:generate -- known-misses --write-patch spells/spells-full-known-misses.jsonl
+```
+
 ### Reset / Create The App DB
 
 Run:

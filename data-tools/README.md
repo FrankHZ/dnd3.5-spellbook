@@ -33,6 +33,13 @@ npm run -w data-tools rules:spells:apply -- --dry-run spells/missing-spells.json
 npm run -w data-tools rules:spells:apply -- spells/missing-spells.jsonl
 ```
 
+Inspect and generate structured patches from local `spells-full` data:
+
+```bash
+npm run -w data-tools spells-full:inspect -- known-misses
+npm run -w data-tools spells-full:generate -- known-misses --write-patch spells/spells-full-known-misses.jsonl
+```
+
 Run the Chinese CHM parser workflow:
 
 ```bash
@@ -78,6 +85,11 @@ operation is `insertSpell`, which inserts the base spell row plus descriptors
 and class/domain levels, then rebuilds derived spell indexes. Validation opens
 the configured rules DB read-only; dry-run applies to a temporary copy.
 
+The optional `spells-full` source dump lives under
+`data-tools/data/spells-full/` when present locally. It is ignored and should
+not be committed. Use `spells-full:inspect` and `spells-full:generate` to create
+reviewable structured patch candidates from it.
+
 ## Safety
 
 - `inspect:rules` opens the SQLite database in read-only mode.
@@ -86,6 +98,8 @@ the configured rules DB read-only; dry-run applies to a temporary copy.
 - `rules:spells:apply -- --dry-run` applies to a temporary database copy.
 - `rules:spells:apply` is write-capable and prints the target DB path before
   mutating it.
+- `spells-full:*` reads local source data and writes reports or patch
+  candidates; it does not mutate SQLite databases.
 - `rules:sql:dry-run` never mutates the configured rules DB.
 - `rules:sql:apply` and `rules:index:rebuild` are write-capable and must be run
   intentionally.
