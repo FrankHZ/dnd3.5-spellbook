@@ -37,11 +37,13 @@ Start with these files when orienting:
    base spell records.
 7. `docs/mvp/v3.3/structured-spell-patch-plan.md` before designing or applying
    missing English spell patch data.
-8. `docs/harness.md` for validation and test-harness strategy.
-9. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
-10. `docs/mvp/v3.2/FREEZE.md` only when you need the latest frozen release
+8. `docs/mvp/v3.3/spells-full-import-plan.md` before using local
+   `spells-full` source data to generate missing English spell patches.
+9. `docs/harness.md` for validation and test-harness strategy.
+10. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
+11. `docs/mvp/v3.2/FREEZE.md` only when you need the latest frozen release
     snapshot for historical comparison or regression checks.
-11. Workspace READMEs for operational commands:
+12. Workspace READMEs for operational commands:
 
 - `server/README.md`
 - `data-tools/README.md`
@@ -191,6 +193,8 @@ See `docs/harness.md` for details.
   SQL patches into commands or adding write-capable rules DB workflows.
 - Follow `docs/mvp/v3.3/structured-spell-patch-plan.md` before adding missing
   English base spell records.
+- Follow `docs/mvp/v3.3/spells-full-import-plan.md` before generating
+  structured spell patches from local `data-tools/data/spells-full/` inputs.
 - Use `npm run -w data-tools rules:spells:validate -- <patch.jsonl>` and
   `npm run -w data-tools rules:spells:apply -- --dry-run <patch.jsonl>` before
   applying structured missing-spell patches.

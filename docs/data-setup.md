@@ -158,6 +158,16 @@ The structured spell apply command inserts rules DB base spell rows and related
 descriptor/class/domain level rows, then rebuilds derived spell index tables.
 It does not run from server startup.
 
+The optional `spells-full` source dump, when present locally, lives under:
+
+```text
+data-tools/data/spells-full/
+```
+
+That directory is ignored and should not be committed. Use
+`docs/mvp/v3.3/spells-full-import-plan.md` before generating structured patch
+candidates from it.
+
 ### Reset / Create The App DB
 
 Run:

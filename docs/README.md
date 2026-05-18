@@ -30,6 +30,7 @@ Current v3.3 planning docs:
 - [mvp/v3.3/local-data-layout-plan.md](./mvp/v3.3/local-data-layout-plan.md)
 - [mvp/v3.3/rules-db-prep-workflow-plan.md](./mvp/v3.3/rules-db-prep-workflow-plan.md)
 - [mvp/v3.3/search-browse-query-plan.md](./mvp/v3.3/search-browse-query-plan.md)
+- [mvp/v3.3/spells-full-import-plan.md](./mvp/v3.3/spells-full-import-plan.md)
 - [mvp/v3.3/structured-spell-patch-plan.md](./mvp/v3.3/structured-spell-patch-plan.md)
 
 ## Current Operational Docs
