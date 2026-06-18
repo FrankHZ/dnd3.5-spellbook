@@ -2,6 +2,7 @@ import mapping from "DATA/chm-mapping/books-zh-chm-mapping.json";
 
 const BUILTIN_BOOK_LABEL_TO_ABBR: Record<string, string> = {
   九剑: "ToB",
+  模型手册: "MH",
 };
 
 /**

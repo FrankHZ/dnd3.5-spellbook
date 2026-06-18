@@ -173,7 +173,7 @@ inspection now shows:
 | Candidate                   | Listed Book | Current DB Status                                 |
 | --------------------------- | ----------- | ------------------------------------------------- |
 | `Resistance Item`           | `ECS`       | added as spells-full patch id `4917`             |
-| `Shield Of Faith, Legion's` | `ECS`       | exact row exists in `MH` as id `1945`, not `ECS`  |
+| `Shield Of Faith, Legion's` | `ECS`       | CHM source maps to existing `MH` id `1945`        |
 | `Skill Enhancement`         | `ECS`       | added as spells-full patch id `4918`             |
 | `Spider Poison`             | `Sc_`       | exact row exists in `Mag` as id `1722`, not `Sc_` |
 | `FIERY ASSAULT`             | `ToB`       | added as structured patch id `4916`              |
@@ -198,8 +198,12 @@ Remaining candidate status:
 - `Spider Poison`, `Sc_`: parsed JSON has a Spell Compendium source, but rules
   DB already has a `Mag` row with slug `spider-poison`, so this needs explicit
   clone/source semantics rather than a plain `insertSpell`.
-- `Shield Of Faith, Legion's`, `ECS`: no exact `spells-full` parsed JSON row was
-  found; keep it unresolved until the source/name is verified.
+- `Shield Of Faith, Legion's`, `ECS`: verified against the Miniatures Handbook
+  row exposed at
+  `https://dnd.arkalseif.info/spells/miniatures-handbook--75/shield-faith-legions--1945/index.html`.
+  The page also lists Eberron Campaign Setting as another appearance, so the CHM
+  ECS label now maps to the existing `MH` row instead of creating a duplicate
+  ECS spell.
 
 Current CHM parser unmatched output also includes label/source cleanup items
 that should not be treated as missing base rows until investigated:
