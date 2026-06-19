@@ -398,12 +398,12 @@ function validatePatch(db: Database.Database, patchPath: string): ValidationResu
         .prepare("SELECT id, name FROM dnd_spell WHERE slug = ?")
         .get(slug) as { id: number; name: string } | undefined;
       if (existingSlug) {
-        errors.push(
+        warnings.push(
           `line ${line}: slug already exists: ${slug} (${existingSlug.id}, ${existingSlug.name})`,
         );
       }
       if (seenSlugs.has(slug)) {
-        errors.push(`line ${line}: duplicate slug in patch: ${slug}`);
+        warnings.push(`line ${line}: duplicate slug in patch: ${slug}`);
       }
       seenSlugs.add(slug);
     }

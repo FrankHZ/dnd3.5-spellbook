@@ -35,11 +35,11 @@ Snapshot from the local `server/data/db/rules-clean.sqlite`:
 
 | Table                    |  Rows |
 | ------------------------ | ----: |
-| `dnd_spell`              |  4914 |
-| `dnd_spellclasslevel`    | 12254 |
+| `dnd_spell`              |  4915 |
+| `dnd_spellclasslevel`    | 12257 |
 | `dnd_spelldomainlevel`   |  1549 |
 | `dnd_spell_descriptors`  |  2290 |
-| `idx_spell_class_level`  | 12254 |
+| `idx_spell_class_level`  | 12257 |
 | `idx_spell_domain_level` |  1549 |
 | `dnd_rulebook`           |   110 |
 | `dnd_characterclass`     |   878 |
@@ -175,7 +175,7 @@ inspection now shows:
 | `Resistance Item`           | `ECS`       | added as spells-full patch id `4917`             |
 | `Shield Of Faith, Legion's` | `ECS`       | CHM source maps to existing `MH` id `1945`        |
 | `Skill Enhancement`         | `ECS`       | added as spells-full patch id `4918`             |
-| `Spider Poison`             | `Sc_`       | exact row exists in `Mag` as id `1722`, not `Sc_` |
+| `Spider Poison`             | `Sc_`       | added as structured patch id `4919`              |
 | `FIERY ASSAULT`             | `ToB`       | added as structured patch id `4916`              |
 
 `Fiery Assault` was added through
@@ -195,9 +195,6 @@ for spell id `4916` with name `烈焰诀`.
 
 Remaining candidate status:
 
-- `Spider Poison`, `Sc_`: parsed JSON has a Spell Compendium source, but rules
-  DB already has a `Mag` row with slug `spider-poison`, so this needs explicit
-  clone/source semantics rather than a plain `insertSpell`.
 - `Shield Of Faith, Legion's`, `ECS`: verified against the Miniatures Handbook
   row exposed at
   `https://dnd.arkalseif.info/spells/miniatures-handbook--75/shield-faith-legions--1945/index.html`.
@@ -205,11 +202,19 @@ Remaining candidate status:
   ECS label now maps to the existing `MH` row instead of creating a duplicate
   ECS spell.
 
+`Spider Poison` was added as a Spell Compendium row through
+`data-tools/data/rules-patches/spells/spider-poison-sc.jsonl` after PDF source
+verification. It intentionally reuses the existing `spider-poison` slug already
+used by the older `Mag` row because the rules DB commonly uses repeated slugs
+for cross-book spell rows.
+
+| ID     | Name            | Rulebook | CHM zh name |
+| ------ | --------------- | -------- | ----------- |
+| `4919` | `Spider Poison` | `Sc_`    | `蜘蛛之毒`  |
+
 Current CHM parser unmatched output also includes label/source cleanup items
 that should not be treated as missing base rows until investigated:
 
-- `Close Wounds`, `Panacea`, and `Revivify` include the unknown label
-  `模型手册`.
 - `Death Dragon`, `Defenestrating Sphere`, `Delay Death`, and
   `Phantasmal Thief` include combined or note-like labels.
 - `Otiluke's Impressing Field` appears to be source text for

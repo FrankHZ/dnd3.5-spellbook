@@ -117,7 +117,9 @@ Validate before writing:
 
 - `id` is present, positive, and absent from `dnd_spell`.
 - `name + rulebook_id` is absent from `dnd_spell`.
-- `slug` is present, normalized, and does not collide unexpectedly.
+- `slug` is present and normalized. Existing cross-book slug collisions should
+  warn but not block a patch; `name + rulebook_id` remains the hard uniqueness
+  guard.
 - `rulebook` resolves to one `dnd_rulebook.abbr`.
 - `school` resolves to one `dnd_spellschool.name`.
 - `subschool`, when present, resolves to one `dnd_spellsubschool.name`.

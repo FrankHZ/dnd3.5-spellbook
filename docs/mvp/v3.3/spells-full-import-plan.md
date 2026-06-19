@@ -60,14 +60,14 @@ Known candidate lookup status from the parsed JSON:
 | --------------------------- | ------------------------------------------------------- |
 | `Resistance Item`           | exact match, source `Eberron Campaign Setting`, page 114 |
 | `Skill Enhancement`         | exact match, source `Eberron Campaign Setting`, page 115 |
-| `Spider Poison`             | exact match, source includes `Spell Compendium`, page 201 |
+| `Spider Poison`             | resolved from Spell Compendium PDF text, page 201         |
 | `Shield Of Faith, Legion's` | resolved through existing Miniatures Handbook id `1945`  |
 | `Fiery Assault`             | no parsed JSON match; already patched manually           |
 
 The `spells-full` source can directly produce candidates for `Resistance Item`
-and `Skill Enhancement`. `Spider Poison` needs a source-selection decision
-because the parsed source combines `Forgotten Realms: Magic of Faerûn 123` and
-`Spell Compendium`, while the current missing candidate wants `Sc_`.
+and `Skill Enhancement`. `Spider Poison` was resolved from user-confirmed Spell
+Compendium PDF text rather than generated directly from the combined
+`spells-full` source row.
 `Shield Of Faith, Legion's` was verified as the existing Miniatures Handbook
 row id `1945`, with Eberron Campaign Setting listed as another appearance by
 D&D Tools and confirmed against the PDF. It should not become an ECS
@@ -166,10 +166,9 @@ Current applied records:
 
 - `4917` `Resistance Item`, `ECS`
 - `4918` `Skill Enhancement`, `ECS`
+- `4919` `Spider Poison`, `Sc_`
 
-Deferred:
+Resolved non-insert decisions:
 
-- `Spider Poison`, `Sc_` needs explicit clone/source behavior because an
-  existing `Mag` row already uses slug `spider-poison`.
 - `Shield Of Faith, Legion's`, `ECS` is resolved by mapping the CHM source to
   existing Miniatures Handbook id `1945`.
