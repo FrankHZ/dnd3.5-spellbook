@@ -25,7 +25,8 @@ Current local data ownership:
 
 - `server/data/db/`: runtime SQLite databases used by the API
 - `server/data/i18n/`: app-owned entity translation JSON imported by server scripts
-- `data-tools/data/`: parser and data-tool source inputs such as CHM HTML
+- `data/`: nested local data repo for parser and data-tool source inputs such
+  as CHM HTML and rules DB patch files
 - `data-tools/out/`: generated parser reports and intermediate output
 
 ## Current Database Roles
@@ -125,7 +126,7 @@ Rules DB preparation is owned by the `data-tools` workspace.
 Legacy SQL patch assets live under:
 
 ```text
-data-tools/data/rules-patches/legacy-sql/
+data/rules-patches/legacy-sql/
 ```
 
 Use dry-run before mutating the configured rules DB:
@@ -143,7 +144,7 @@ The dry-run command copies the target DB to a temporary file and leaves
 Structured missing-spell patches are JSONL files under:
 
 ```text
-data-tools/data/rules-patches/spells/
+data/rules-patches/spells/
 ```
 
 Use validation and dry-run before applying:
@@ -161,12 +162,12 @@ It does not run from server startup.
 The optional `spells-full` source dump, when present locally, lives under:
 
 ```text
-data-tools/data/spells-full/
+data/spells-full/
 ```
 
-That directory is ignored and should not be committed. Use
-`docs/mvp/v3.3/spells-full-import-plan.md` before generating structured patch
-candidates from it.
+That directory is ignored by the parent repo. It may be versioned in the nested
+local `data/` repo. Use `docs/mvp/v3.3/spells-full-import-plan.md` before
+generating structured patch candidates from it.
 
 Current helper commands:
 
@@ -251,8 +252,11 @@ After that, the backend can use:
 - The current MVP data population path uses import commands, not the Prisma seed command.
 - Deployment copies database files after they exist locally; deployment is not the step that creates the app DB schema.
 - The public repo intentionally excludes data-bearing local artifacts such as
-  `server/data/db/`, `data-tools/data/`, and `data-tools/out/`, so local users
+  `server/data/db/`, `data/`, and `data-tools/out/`, so local users
   must supply or recreate those files themselves.
+- The root `data/` directory is a nested local Git repo in this workspace. Use
+  that repo to version local source inputs without adding them to the parent
+  project repo.
 
 ## Related Files
 
@@ -262,3 +266,4 @@ After that, the backend can use:
 - [deployment.md](./deployment.md)
 - [operations/bootstrap-remote.md](./operations/bootstrap-remote.md)
 - [public-repo-notes.md](./public-repo-notes.md)
+

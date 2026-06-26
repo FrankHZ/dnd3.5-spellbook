@@ -27,10 +27,10 @@ The v3.3 data-tooling foundation is mostly in place:
 
 - `data-tools` owns parser, inspection, rules SQL, and structured spell patch
   workflows.
-- local data layout was moved under `data-tools/data/` and generated reports
+- local data layout was moved under `data/` and generated reports
   under `data-tools/out/`.
 - legacy rules SQL patch assets moved to
-  `data-tools/data/rules-patches/legacy-sql/`.
+  `data/rules-patches/legacy-sql/`.
 - structured `insertSpell` JSONL patches can be validated, dry-run, and applied.
 - `spells-full` can inspect known misses and generate reviewable patch
   candidates.
@@ -55,10 +55,10 @@ See:
 
 Latest local CHM parser snapshot:
 
-- `matched`: `3234`
-- `unmatched`: `7`
-- `unknownBookLabel`: `5`
-- `missingSpellInDb`: `2`
+- `matched`: `3235`
+- `unmatched`: `5`
+- `unknownBookLabel`: `4`
+- `missingSpellInDb`: `1`
 
 The hard parser misses are now mostly source-label and source-text cleanup:
 
@@ -67,9 +67,6 @@ The hard parser misses are now mostly source-label and source-text cleanup:
   - `Defenestrating Sphere`
   - `Delay Death`
   - `Phantasmal Thief`
-- typo/source noise:
-  - `Otiluke's Impressing Field` should resolve to
-    `Otiluke's Suppressing Field`
 - non-spell source page:
   - `Summon` from `召唤列表-summon.htm`
 
@@ -134,3 +131,4 @@ When restarting after a gap:
 3. read the topic doc for the next area
 4. run the smallest relevant validation command before editing
 5. update this roadmap only when the next-work order or active track changes
+

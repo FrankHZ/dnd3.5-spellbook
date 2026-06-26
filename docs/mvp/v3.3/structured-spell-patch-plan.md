@@ -40,7 +40,7 @@ Out of scope:
 Use JSONL for authored patch inputs:
 
 ```text
-data-tools/data/rules-patches/spells/missing-spells.jsonl
+data/rules-patches/spells/missing-spells.jsonl
 ```
 
 One line is one operation. Start with `insertSpell`.
@@ -162,7 +162,7 @@ npm run -w data-tools rules:spells:apply -- spells/missing-spells.jsonl
 
 Rules:
 
-- patch paths resolve under `data-tools/data/rules-patches/`
+- patch paths resolve under `data/rules-patches/`
 - dry-run copies `RULES_DATABASE_URL` to a temp DB
 - apply prints the target DB path before writing
 - apply rebuilds `idx_spell_class_level` and `idx_spell_domain_level` after
@@ -252,3 +252,4 @@ Implemented in v3.3:
 The implementation currently supports only `insertSpell`. Future
 `cloneSpellToRulebook` or `updateSpell` behavior should get a new concrete plan
 before being added.
+

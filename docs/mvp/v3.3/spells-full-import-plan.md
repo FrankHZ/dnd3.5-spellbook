@@ -20,14 +20,14 @@ manual Tome of Battle patch:
 - `Shield Of Faith, Legion's`, `ECS`
 
 `Fiery Assault`, `ToB` is already represented by the structured patch in
-`data-tools/data/rules-patches/spells/missing-spells.jsonl`.
+`data/rules-patches/spells/missing-spells.jsonl`.
 
 ## Source Data Policy
 
 Local source files live under:
 
 ```text
-data-tools/data/spells-full/
+data/spells-full/
 ```
 
 Current local files:
@@ -35,8 +35,9 @@ Current local files:
 - `Spells v6.00 - Full.txt`
 - `spells-parsed.json`
 
-These files are local-only source inputs. Do not commit them. The directory is
-ignored for the public repo baseline.
+These files are local-only source inputs. Do not commit them to the parent
+project repo. The directory is ignored for the public repo baseline and may be
+versioned in the nested local `data/` repo.
 
 Generated comparison reports should go under:
 
@@ -47,7 +48,7 @@ data-tools/out/spells-full/
 Reviewable structured patch output should go under:
 
 ```text
-data-tools/data/rules-patches/spells/
+data/rules-patches/spells/
 ```
 
 ## Current Findings
@@ -84,13 +85,13 @@ npm run -w data-tools spells-full:generate -- known-misses
 
 Rules:
 
-- read `data-tools/data/spells-full/spells-parsed.json`
+- read `data/spells-full/spells-parsed.json`
 - open `RULES_DATABASE_URL` read-only
 - report exact matches, fuzzy/name-normalized matches, source matches, and
   already-existing rules DB rows
 - generate candidate `insertSpell` JSONL output, but do not apply it
 - write generated reports under `data-tools/out/spells-full/`
-- only write patch JSONL under `data-tools/data/rules-patches/spells/` when
+- only write patch JSONL under `data/rules-patches/spells/` when
   explicitly requested by the command or user
 
 The generated patch must still pass:
@@ -140,7 +141,8 @@ rules DB max id plus one and include the allocation in the generated report.
 
 ## Acceptance Criteria
 
-- `spells-full` local source files are ignored and not committed.
+- `spells-full` local source files are ignored by the parent repo and may be
+  committed only to the nested local `data/` repo.
 - Known missing candidates can be inspected against parsed JSON and the current
   rules DB.
 - Generated candidates are reviewable structured spell patches, not direct DB
@@ -160,7 +162,7 @@ Implemented in v3.3:
 - `npm run -w data-tools spells-full:inspect -- known-misses`
 - `npm run -w data-tools spells-full:generate -- known-misses --write-patch <patch.jsonl>`
 - generated and applied
-  `data-tools/data/rules-patches/spells/spells-full-known-misses.jsonl`
+  `data/rules-patches/spells/spells-full-known-misses.jsonl`
 
 Current applied records:
 
@@ -172,3 +174,4 @@ Resolved non-insert decisions:
 
 - `Shield Of Faith, Legion's`, `ECS` is resolved by mapping the CHM source to
   existing Miniatures Handbook id `1945`.
+

@@ -61,7 +61,7 @@ The app should not run rules DB migration or patch logic at startup.
 Existing SQL assets live under:
 
 ```text
-data-tools/data/rules-patches/legacy-sql/
+data/rules-patches/legacy-sql/
   rules-clean-v2.0.patch.sql
   create-idx-spell-class-level.sql
   create-idx-spell-domain-level.sql
@@ -71,7 +71,7 @@ data-tools/data/rules-patches/legacy-sql/
 Future structured patch inputs should live under:
 
 ```text
-data-tools/data/rules-patches/spells/
+data/rules-patches/spells/
 ```
 
 Generated validation reports should live under:
@@ -96,7 +96,7 @@ Rules:
 - `dry-run` copies the target DB to a temporary file, applies SQL there, and
   reports success/failure without modifying `RULES_DATABASE_URL`.
 - `apply` must be explicit and should print the target DB path before mutating.
-- SQL file paths are resolved under `data-tools/data/rules-patches/`.
+- SQL file paths are resolved under `data/rules-patches/`.
 - Commands should reject paths outside that directory.
 - Derived index rebuild can reuse existing SQL, but should be exposed as an
   intentional command rather than a remembered manual sqlite step.
@@ -107,7 +107,7 @@ Do not start new English spell imports as ad hoc SQL.
 
 Preferred next design:
 
-- author structured patch data under `data-tools/data/rules-patches/spells/`
+- author structured patch data under `data/rules-patches/spells/`
 - validate ids, slugs, rulebook ids, school ids, descriptors, and class/domain
   levels before writing
 - generate or apply SQL from structured input
@@ -161,3 +161,4 @@ npm run verify
 - Docs describe rules DB preparation as a data-tools responsibility.
 - Missing English spell work starts from a structured patch plan, not manual
   runtime migration.
+

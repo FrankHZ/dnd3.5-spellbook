@@ -2,7 +2,12 @@ import Database from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
 
-import { loadServerEnv, repoRoot, resolveServerRelativePath } from "./env";
+import {
+  loadServerEnv,
+  localDataDir,
+  repoRoot,
+  resolveServerRelativePath,
+} from "./env";
 
 type Mode = "inspect" | "generate";
 
@@ -38,14 +43,12 @@ type CandidateReport = {
 };
 
 const SPELLS_FULL_JSON = path.join(
-  repoRoot(),
-  "data-tools",
-  "data",
+  localDataDir(),
   "spells-full",
   "spells-parsed.json",
 );
 const REPORT_ROOT = path.join(repoRoot(), "data-tools", "out", "spells-full");
-const PATCH_ROOT = path.join(repoRoot(), "data-tools", "data", "rules-patches");
+const PATCH_ROOT = path.join(localDataDir(), "rules-patches");
 
 const KNOWN_MISSES: KnownMiss[] = [
   {
@@ -87,8 +90,8 @@ function usage(): never {
   npm run -w data-tools spells-full:inspect -- known-misses
   npm run -w data-tools spells-full:generate -- known-misses --write-patch spells/spells-full-known-misses.jsonl
 
-spells-full source data is read from data-tools/data/spells-full/spells-parsed.json.
-Patch paths are resolved under data-tools/data/rules-patches/.
+spells-full source data is read from data/spells-full/spells-parsed.json.
+Patch paths are resolved under data/rules-patches/.
 `);
   process.exit(1);
 }
@@ -138,7 +141,7 @@ function writeReport(report: unknown, name: string) {
 function resolvePatchPath(rawPath: string) {
   if (path.isAbsolute(rawPath)) {
     throw new Error(
-      "Patch path must be relative to data-tools/data/rules-patches",
+      "Patch path must be relative to data/rules-patches",
     );
   }
 

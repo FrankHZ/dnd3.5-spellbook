@@ -10,6 +10,10 @@ export function serverDir() {
   return path.join(repoRoot(), "server");
 }
 
+export function localDataDir() {
+  return path.join(repoRoot(), "data");
+}
+
 export function loadServerEnv() {
   const envPath = path.join(serverDir(), ".env");
   if (fs.existsSync(envPath)) {

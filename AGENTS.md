@@ -18,7 +18,8 @@ project docs live under `docs/`.
   portable.
 - `server/data/i18n/`: local app-owned entity translation inputs consumed by
   server import scripts.
-- `data-tools/data/`: local-only parser/import source inputs.
+- `data/`: nested local data repo for parser/import source inputs and rules
+  patch files. The parent repo ignores this directory.
 - `data-tools/out/`: generated data-tool reports and parser output.
 
 ## Canonical Docs
@@ -61,7 +62,8 @@ behavior.
 - Prefer existing patterns over new frameworks or broad rewrites.
 - Keep changes scoped to the requested behavior.
 - Do not commit local data, database files, generated logs, or personal wrapper
-  scripts.
+  scripts to the parent repo. The nested `data/` repo may version local source
+  data separately.
 - Do not treat root-level `.bat` files as canonical; tracked deployment scripts
   live under `docs/deployment-scripts/`.
 - If shared DTOs change, rebuild `contracts` before validating `server` or
@@ -195,7 +197,7 @@ See `docs/harness.md` for details.
 - Follow `docs/mvp/v3.3/structured-spell-patch-plan.md` before adding missing
   English base spell records.
 - Follow `docs/mvp/v3.3/spells-full-import-plan.md` before generating
-  structured spell patches from local `data-tools/data/spells-full/` inputs.
+  structured spell patches from local `data/spells-full/` inputs.
 - Use `npm run -w data-tools rules:spells:validate -- <patch.jsonl>` and
   `npm run -w data-tools rules:spells:apply -- --dry-run <patch.jsonl>` before
   applying structured missing-spell patches.
@@ -216,3 +218,4 @@ Keep docs lightweight:
   not inside old MVP plan files.
 - Current work ordering after a pause should go in `docs/roadmap.md`, while
   detailed implementation plans stay in focused topic docs.
+

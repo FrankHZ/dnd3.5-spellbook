@@ -41,9 +41,9 @@ but `data-tools` owns parser and inspection tooling.
 
 ### Raw And Clean CHM HTML
 
-- raw CHM-exported HTML input: `data-tools/data/chm-raw/`
-- cleaned intermediate HTML: `data-tools/data/chm-clean/`
-- smaller test input set: `data-tools/data/chm-test/`
+- raw CHM-exported HTML input: `data/chm-raw/`
+- cleaned intermediate HTML: `data/chm-clean/`
+- smaller test input set: `data/chm-test/`
 
 The CHM preprocess and parser commands scan nested directories and preserve
 relative paths. Word/CHM companion directories ending in `.files` are skipped.
@@ -52,9 +52,9 @@ the mapped top-level source directory, such as `九剑/` for Tome of Battle.
 
 ### Mapping And Dictionary Inputs
 
-- CHM book label mapping: `data-tools/data/chm-mapping/books-zh-chm-mapping.json`
-- extra alias support: `data-tools/data/chm-mapping/enName-aliases-extra.json`
-- global alias support: `data-tools/data/chm-mapping/enName-aliases-global.json`
+- CHM book label mapping: `data/chm-mapping/books-zh-chm-mapping.json`
+- extra alias support: `data/chm-mapping/enName-aliases-extra.json`
+- global alias support: `data/chm-mapping/enName-aliases-global.json`
 - entity translation JSON inputs:
   - `server/data/i18n/classes-zh.json`
   - `server/data/i18n/domains-zh.json`
@@ -101,8 +101,8 @@ npm run -w data-tools zh:preprocess
 
 Current script behavior:
 
-- input: `data-tools/data/chm-raw/`
-- output: `data-tools/data/chm-clean/`
+- input: `data/chm-raw/`
+- output: `data/chm-clean/`
 
 The preprocessing script:
 
@@ -125,7 +125,7 @@ npm run -w data-tools zh:parse
 
 Current script behavior:
 
-- input: `data-tools/data/chm-clean/`
+- input: `data/chm-clean/`
 - output: `data-tools/out/zh-parser/`
 
 The parser:
@@ -144,7 +144,7 @@ For a smaller validation run, use:
 npm run -w data-tools zh:parse:test
 ```
 
-That uses the test input set under `data-tools/data/chm-test/`.
+That uses the test input set under `data/chm-test/`.
 
 ### 3. Review Parser Artifacts
 
@@ -233,3 +233,4 @@ This workflow does not:
 - [../server/scripts/import-zh-chm.ts](../server/scripts/import-zh-chm.ts)
 - [../data-tools/src/zh-parser/cli.ts](../data-tools/src/zh-parser/cli.ts)
 - [../data-tools/src/zh-parser/scripts/preprocess-chm-html.ts](../data-tools/src/zh-parser/scripts/preprocess-chm-html.ts)
+

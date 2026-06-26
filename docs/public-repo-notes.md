@@ -10,8 +10,8 @@ They are not part of the public repository baseline and may contain:
 
 - `server/data/db/`: processed rules-side and app SQLite databases
 - `server/data/i18n/`: app-owned entity translation JSON inputs
-- `data-tools/data/`: CHM-derived HTML, parser mappings, raw text inputs, and
-  future rules patch inputs
+- `data/`: nested local data repo containing CHM-derived HTML, parser mappings,
+  raw text inputs, and rules patch inputs
 - `data-tools/out/`: generated parser reports and intermediate artifacts
 
 Public consumers of the repository should expect to provide or recreate those files themselves.
@@ -42,3 +42,4 @@ The current public documentation baseline is still MVP-oriented:
 - [data-setup.md](./data-setup.md)
 - [repo-conventions.md](./repo-conventions.md)
 - [stable-backlog.md](./stable-backlog.md)
+

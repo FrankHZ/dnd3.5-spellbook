@@ -3,7 +3,12 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { loadServerEnv, repoRoot, resolveServerRelativePath } from "./env";
+import {
+  loadServerEnv,
+  localDataDir,
+  repoRoot,
+  resolveServerRelativePath,
+} from "./env";
 
 type Mode = "validate" | "apply";
 
@@ -92,7 +97,7 @@ type ValidationResult = {
 
 type TableCounts = Record<string, number>;
 
-const PATCH_ROOT = path.join(repoRoot(), "data-tools", "data", "rules-patches");
+const PATCH_ROOT = path.join(localDataDir(), "rules-patches");
 const REPORT_ROOT = path.join(repoRoot(), "data-tools", "out", "rules-patches");
 
 const COUNT_TABLES = [
@@ -116,7 +121,7 @@ function usage(): never {
   npm run -w data-tools rules:spells:apply -- --dry-run spells/missing-spells.jsonl
   npm run -w data-tools rules:spells:apply -- spells/missing-spells.jsonl
 
-Patch paths are resolved under data-tools/data/rules-patches/.
+Patch paths are resolved under data/rules-patches/.
 `);
   process.exit(1);
 }
@@ -134,7 +139,7 @@ function rulesDbPath() {
 function resolvePatchPath(rawPath: string, expectedExtension: ".jsonl" | ".sql") {
   if (path.isAbsolute(rawPath)) {
     throw new Error(
-      "Patch path must be relative to data-tools/data/rules-patches",
+      "Patch path must be relative to data/rules-patches",
     );
   }
 

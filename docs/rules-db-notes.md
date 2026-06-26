@@ -109,7 +109,7 @@ DB. It expects matched records to already have `spellId` values from the rules
 DB, so it cannot create new base spells by itself.
 
 Historical SQL patch assets live under
-`data-tools/data/rules-patches/legacy-sql/`. Use data-tools dry-run/apply
+`data/rules-patches/legacy-sql/`. Use data-tools dry-run/apply
 commands rather than manual sqlite shell steps:
 
 ```bash
@@ -120,7 +120,7 @@ npm run -w data-tools rules:index:rebuild
 ```
 
 Structured missing-spell patch assets live under
-`data-tools/data/rules-patches/spells/`. Use JSONL and the spell-specific
+`data/rules-patches/spells/`. Use JSONL and the spell-specific
 validator/apply commands instead of authoring new ad hoc SQL:
 
 ```bash
@@ -179,14 +179,14 @@ inspection now shows:
 | `FIERY ASSAULT`             | `ToB`       | added as structured patch id `4916`              |
 
 `Fiery Assault` was added through
-`data-tools/data/rules-patches/spells/missing-spells.jsonl` with source text
+`data/rules-patches/spells/missing-spells.jsonl` with source text
 from Tome of Battle page 53. It imports as ToB / Desert Wind / Stance,
 Swordsage 6, descriptor Fire. The CHM overlay import now creates a zh/chm row
 for spell id `4916` with name `烈焰诀`.
 
 `Resistance Item` and `Skill Enhancement` were then generated from local
 `spells-full` parsed JSON and applied through
-`data-tools/data/rules-patches/spells/spells-full-known-misses.jsonl`.
+`data/rules-patches/spells/spells-full-known-misses.jsonl`.
 
 | ID     | Name                | Rulebook | CHM zh name |
 | ------ | ------------------- | -------- | ----------- |
@@ -203,7 +203,7 @@ Remaining candidate status:
   ECS spell.
 
 `Spider Poison` was added as a Spell Compendium row through
-`data-tools/data/rules-patches/spells/spider-poison-sc.jsonl` after PDF source
+`data/rules-patches/spells/spider-poison-sc.jsonl` after PDF source
 verification. It intentionally reuses the existing `spider-poison` slug already
 used by the older `Mag` row because the rules DB commonly uses repeated slugs
 for cross-book spell rows.
@@ -217,10 +217,12 @@ that should not be treated as missing base rows until investigated:
 
 - `Death Dragon`, `Defenestrating Sphere`, `Delay Death`, and
   `Phantasmal Thief` include combined or note-like labels.
-- `Otiluke's Impressing Field` appears to be source text for
-  `Otiluke's Suppressing Field`.
 - `Summon` comes from `召唤列表-summon.htm` and is likely an index/list heading,
   not a spell row.
+
+`Otiluke's Suppressing Field` is covered by local CHM source cleanup. The clean
+CHM title uses the published spelling, while the local CHM alias map resolves it
+to the rules DB's historical `Otiluke's Supressing Field` spelling.
 
 ## Open Questions For v3.3 Importer
 
@@ -233,5 +235,6 @@ that should not be treated as missing base rows until investigated:
 - How should imported records preserve source provenance without changing the
   current rules DB schema?
 - Future local rules DB patch files should live under
-  `data-tools/data/rules-patches/`; decide later whether a redacted schema-safe
+  `data/rules-patches/`; decide later whether a redacted schema-safe
   patch format can be committed.
+

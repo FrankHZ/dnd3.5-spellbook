@@ -68,8 +68,8 @@ The canonical data setup and database lifecycle doc is:
 - [../docs/data-setup.md](../docs/data-setup.md)
 
 The `server/data/db/` tree is intentionally local-only and is not part of the
-public repo baseline. CHM/parser source data belongs to `data-tools/data/`, and
-parser output belongs to `data-tools/out/`.
+public repo baseline. CHM/parser source data belongs to the parent workspace's
+root `data/` local repo, and parser output belongs to `data-tools/out/`.
 
 The canonical import pipeline doc is:
 
@@ -103,3 +103,4 @@ For deployed runtime configuration, including `/etc/default/spellbook-api`, use:
 - [../docs/data-setup.md](../docs/data-setup.md)
 - [../docs/import-workflow.md](../docs/import-workflow.md)
 - [../data-tools/README.md](../data-tools/README.md)
+

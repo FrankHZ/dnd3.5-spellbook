@@ -3,11 +3,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { loadServerEnv, repoRoot, resolveServerRelativePath } from "./env";
+import { loadServerEnv, localDataDir, resolveServerRelativePath } from "./env";
 
 type Mode = "dry-run" | "apply";
 
-const PATCH_ROOT = path.join(repoRoot(), "data-tools", "data", "rules-patches");
+const PATCH_ROOT = path.join(localDataDir(), "rules-patches");
 
 function usage(): never {
   console.error(`Usage:
@@ -16,7 +16,7 @@ function usage(): never {
   npm run -w data-tools rules:index:rebuild -- --dry-run
   npm run -w data-tools rules:index:rebuild
 
-Patch paths are resolved under data-tools/data/rules-patches/.
+Patch paths are resolved under data/rules-patches/.
 `);
   process.exit(1);
 }
@@ -34,7 +34,7 @@ function rulesDbPath() {
 function resolvePatchPath(rawPath: string) {
   if (path.isAbsolute(rawPath)) {
     throw new Error(
-      "Patch path must be relative to data-tools/data/rules-patches",
+      "Patch path must be relative to data/rules-patches",
     );
   }
 

@@ -20,7 +20,7 @@ It is not affiliated with, endorsed by, or sponsored by Wizards of the Coast.
 
 To reduce redistribution risk, data-bearing local artifacts are intentionally
 excluded from the public repository, especially runtime databases under
-`server/data/db/` and parser/source data under `data-tools/data/`.
+`server/data/db/` and parser/source data under `data/`.
 
 ## Status
 
@@ -87,8 +87,8 @@ For local database setup and data origins, use [docs/data-setup.md](./docs/data-
 |- web/         Frontend app, routes, UI, i18n assets
 |- contracts/   Shared DTOs and TypeScript types
 |- data-tools/  Data inspection, parser, and rules DB tooling
-|  |- data/     Local-only source inputs and rules patch files used by tooling
 |  `- out/      Generated parser output and data-tool reports
+|- data/        Local data repo for source inputs and rules patch files
 |- docs/        Release docs, MVP plans, handoff notes
 ```
 
@@ -140,3 +140,4 @@ That license applies to the code you are publishing here. It does not automatica
 ## Author
 
 Maintained by `FrankHZ`.
+

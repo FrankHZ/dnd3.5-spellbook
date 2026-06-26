@@ -51,15 +51,15 @@ npm run -w data-tools zh:backcheck
 
 ## Data Paths
 
-These tools read local-only source data from `data-tools/data/` and write
+These tools read local-only source data from `data/` and write
 generated reports or parser output under `data-tools/out/`.
 
 Current CHM parser defaults:
 
-- raw CHM HTML: `data-tools/data/chm-raw/`
-- cleaned CHM HTML: `data-tools/data/chm-clean/`
-- parser test input: `data-tools/data/chm-test/`
-- CHM mapping and alias JSON: `data-tools/data/chm-mapping/`
+- raw CHM HTML: `data/chm-raw/`
+- cleaned CHM HTML: `data/chm-clean/`
+- parser test input: `data/chm-test/`
+- CHM mapping and alias JSON: `data/chm-mapping/`
 - parser output: `data-tools/out/zh-parser/`
 
 CHM preprocess and parse commands scan nested directories and preserve relative
@@ -74,21 +74,22 @@ CHM label for `Tome of Battle` (`ToB`).
 The rules DB path comes from `RULES_DATABASE_URL`; see `server/.env` and
 `docs/data-setup.md`.
 
-Rules DB patch SQL files live under `data-tools/data/rules-patches/`. The SQL
+Rules DB patch SQL files live under `data/rules-patches/`. The SQL
 runner rejects paths outside that directory. Use `rules:sql:dry-run` before
 `rules:sql:apply`; dry-run copies the target DB to a temporary file and leaves
 `RULES_DATABASE_URL` unchanged.
 
 Structured spell patch JSONL files also live under
-`data-tools/data/rules-patches/`, normally in `spells/`. The first supported
+`data/rules-patches/`, normally in `spells/`. The first supported
 operation is `insertSpell`, which inserts the base spell row plus descriptors
 and class/domain levels, then rebuilds derived spell indexes. Validation opens
 the configured rules DB read-only; dry-run applies to a temporary copy.
 
 The optional `spells-full` source dump lives under
-`data-tools/data/spells-full/` when present locally. It is ignored and should
-not be committed. Use `spells-full:inspect` and `spells-full:generate` to create
-reviewable structured patch candidates from it.
+`data/spells-full/` when present locally. It is ignored by the parent repo and
+may be versioned in the nested local `data/` repo. Use `spells-full:inspect`
+and `spells-full:generate` to create reviewable structured patch candidates
+from it.
 
 ## Safety
 
@@ -106,3 +107,4 @@ reviewable structured patch candidates from it.
 - Parser commands may write generated output under `data-tools/out/zh-parser/`.
 - Future rules DB patch commands must clearly distinguish dry-run validation
   from write-capable imports.
+

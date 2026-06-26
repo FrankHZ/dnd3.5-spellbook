@@ -3,10 +3,10 @@
 This plan defines the v3.3 repository boundary for local data files before
 moving CHM inputs or adding new rules DB patch workflows.
 
-Status: implemented for CHM parser inputs, CHM parser output defaults, and local
-data documentation. CHM preprocessing and parsing support nested source
-directories while skipping Word/CHM `.files` companion folders. Future rules DB
-patch workflows should use the same boundary.
+Status: implemented for CHM parser inputs, CHM parser output defaults, local
+data documentation, and the root `data/` local repo boundary. CHM preprocessing
+and parsing support nested source directories while skipping Word/CHM `.files`
+companion folders. Rules DB patch workflows use the same boundary.
 
 ## User Outcome
 
@@ -41,14 +41,15 @@ This keeps old MVP paths working, but it weakens the workspace boundary:
 
 Keep server runtime data under `server/data/db/`.
 
-Move data-tool source inputs and generated outputs under `data-tools/`:
+Move data-tool source inputs to the root `data/` local repo and generated
+outputs under `data-tools/out/`:
 
 ```text
 server/data/db/
   rules-clean.sqlite
   app.sqlite
 
-data-tools/data/
+data/
   chm-raw/
   chm-clean/
   chm-test/
@@ -63,18 +64,17 @@ data-tools/out/
 Responsibilities:
 
 - `server/data/db/`: local SQLite files consumed by the API runtime.
-- `data-tools/data/`: local-only inputs used by import, parser, inspection, and
-  future patch tooling.
+- `data/`: local-only inputs used by import, parser, inspection, and
+  patch tooling. In the current workspace this is a nested local Git repo,
+  ignored by the parent project repo.
 - `data-tools/out/`: generated reports or intermediate outputs from data tools.
-- `data/`: legacy upstream raw database parking area until a later cleanup
-  decides whether to remove or document it.
 
 ## Migration Scope
 
 In scope:
 
 - Move CHM raw, clean, test, mapping, and text raw directories from
-  `server/data/` to `data-tools/data/`.
+  `server/data/` to `data/`.
 - Move parser output defaults from `server/out/zh-parser/` to
   `data-tools/out/zh-parser/`.
 - Update `data-tools/package.json` default parser command paths.
@@ -108,10 +108,10 @@ npm run -w server db:app:import:zh-chm
 
 Expected default paths:
 
-- preprocess input: `data-tools/data/chm-raw/`
-- preprocess output: `data-tools/data/chm-clean/`
-- parse input: `data-tools/data/chm-clean/`
-- parse test input: `data-tools/data/chm-test/`
+- preprocess input: `data/chm-raw/`
+- preprocess output: `data/chm-clean/`
+- parse input: `data/chm-clean/`
+- parse test input: `data/chm-test/`
 - parse output: `data-tools/out/zh-parser/`
 - app DB import input: `data-tools/out/zh-parser/matched.json`
 
@@ -120,18 +120,16 @@ the documented defaults should use the new layout.
 
 ## Gitignore And Public Repo Policy
 
-The public repo should continue excluding data-bearing local artifacts.
+The public repo should continue excluding data-bearing local artifacts. The root
+`data/` directory is intentionally ignored by the parent repo and can be
+versioned by its own local Git repo.
 
 After migration, make `.gitignore` path-aware enough that local data files do not
 depend only on broad file extensions. At minimum, ignore:
 
 ```gitignore
 server/data/db/
-data-tools/data/chm-raw/
-data-tools/data/chm-clean/
-data-tools/data/chm-test/
-data-tools/data/chm-mapping/
-data-tools/data/txt-raw/
+/data/
 data-tools/out/
 ```
 
@@ -155,7 +153,7 @@ Update these docs during migration:
 - `server/README.md`
 
 The docs should state that `server/data/db/` is the server runtime database
-location, while CHM and future rules patch inputs belong to `data-tools/data/`.
+location, while CHM and future rules patch inputs belong to `data/`.
 
 ## Harness Plan
 
@@ -181,15 +179,17 @@ test parser flow and document which source-data checks were skipped.
 - Data-tool commands work through documented defaults.
 - Server CHM import reads the documented parser output path.
 - Docs no longer describe `server/data/` as the owner of all local data.
-- `.gitignore` explicitly protects the new local data and generated output
-  locations.
+- `.gitignore` explicitly protects the root local data repo and generated
+  output locations.
 - No runtime server code imports `data-tools` modules.
 
 ## Follow-Up After Migration
 
 Once the layout is migrated, use this boundary for the missing-spell workflow:
 
-- source spell patch files under `data-tools/data/rules-patches/`
+- source spell patch files under `data/rules-patches/` in the nested local data
+  repo
 - generated validation reports under `data-tools/out/`
 - write-capable rules DB mutation commands gated behind explicit command names
   and dry-run defaults
+

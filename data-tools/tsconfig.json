@@ -12,7 +12,7 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "DATA/*": ["data/*"],
+      "DATA/*": ["../data/*"],
       "prisma-rules-clean/*": ["../server/prisma-rules-clean/*"]
     }
   },
