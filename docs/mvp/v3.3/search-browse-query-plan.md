@@ -3,6 +3,9 @@
 This plan captures the clarified feature requirement for connecting Browse and
 Search without treating Browse as the owner of Search behavior.
 
+Status: implemented in the current app behavior. Use this document as the
+acceptance reference during the v3.3 freeze pass, not as a pending feature plan.
+
 ## User Outcome
 
 Users can move between browsing and searching without losing the active spell

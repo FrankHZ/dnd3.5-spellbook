@@ -3,6 +3,10 @@
 This plan defines the v3.3 repository boundary change for data tooling before
 adding new missing-spell import workflows.
 
+Status: implemented in v3.3. `data-tools` owns parser, inspection, rules DB
+prep, structured spell patch, and `spells-full` workflows. Server runtime code
+does not import data-tools modules.
+
 ## User Outcome
 
 Maintainers and agents should have one clear place for data import, inspection,

@@ -3,8 +3,9 @@
 This plan defines the v3.3 workflow for preparing the local rules SQLite
 database outside the server runtime.
 
-Status: implemented for legacy SQL asset relocation, SQL dry-run/apply commands,
-and derived spell index rebuild commands. Structured missing-spell patch inputs
+Status: implemented in v3.3 for legacy SQL asset relocation, SQL dry-run/apply
+commands, derived spell index rebuild commands, and the structured
+missing-spell patch workflow. Future operation types beyond `insertSpell`
 remain follow-up work.
 
 ## User Outcome

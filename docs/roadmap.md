@@ -8,15 +8,16 @@ details.
 
 ## Current Track
 
-Active development is still in the post-v3.2 / v3.3 track.
+Active development is in the v3.3 acceptance track.
 
-The current emphasis is data and workflow stability:
+The v3.3 implementation focus has been data and workflow stability:
 
 1. keep rules DB preparation out of server runtime
 2. make missing spell imports reviewable and repeatable
 3. reduce CHM parser hard misses
 4. prepare a maintainable CHM source-of-truth path
-5. return to search/browse UI work after data inputs are steadier
+5. preserve the Search/Browse query behavior already described in the feature
+   map
 
 The latest frozen release snapshot remains `docs/mvp/v3.2/FREEZE.md`; it is a
 historical comparison point, not the active baseline.
@@ -41,6 +42,14 @@ The v3.3 data-tooling foundation is mostly in place:
   - `Spider Poison`, `Sc_`, id `4919`
 - `Shield Of Faith, Legion's` is resolved as existing `MH` id `1945`; the CHM
   `ECS` source label maps to that row rather than creating a duplicate.
+- Clean CHM source-of-truth work has been accepted for the current v3.3 data
+  pass:
+  - hard parser misses are clear
+  - maintained CHM inputs live under the nested local `data/chm-clean/` repo
+  - mechanical source QA runs through `npm run -w data-tools zh:qa`
+- Search/Browse query behavior is represented in the current feature map and
+  code surface: Search owns name search plus Browse-equivalent filter scope, and
+  header search preserves the active Browse/Search filter scope.
 
 See:
 
@@ -73,38 +82,56 @@ the backcheck coverage set grows.
 
 Mechanical CHM source QA now runs through `npm run -w data-tools zh:qa`. The
 current report has no errors or warnings; remaining body-note and long-bold-text
-markers are informational review leads, not parser blockers. Full bulk
-translation QA is deferred until a large translation rewrite or
-short-description import creates new target text to review.
+markers are informational review leads, not parser blockers.
+
+Full bulk translation QA is deferred until a large translation rewrite or a
+future short-description import creates new target text to review.
 
 ## Next Work
 
 Recommended next sequence:
 
-1. **Clean CHM source-of-truth**
+1. **v3.3 acceptance pass**
 
-   Treat the current `data/chm-clean/` tree as the maintained local source
-   input. Continue making known source-name and formatting fixes there, backed
-   by `zh:parse`, `zh:backcheck`, and `zh:qa`.
+   Confirm the implemented v3.3 plan set against the current repo:
 
-2. **Short description pipeline**
+   - data-tools workspace boundary
+   - root local `data/` repo boundary
+   - rules DB prep commands
+   - structured missing-spell patch commands
+   - `spells-full` known-miss import path
+   - accepted Clean CHM source-of-truth state
+   - Search/Browse query behavior described in `docs/features.md`
 
-   Parse class/spell summary tables from CHM sources and decide where short
-   descriptions live in the app-owned data model. Chinese short descriptions
-   should use local CHM sources; English short descriptions still need a source
-   decision.
+   Use the usual verification spine:
 
-3. **Data harness hardening**
+   ```bash
+   npm run -w data-tools zh:parse
+   npm run -w data-tools zh:qa
+   npm run -w data-tools zh:backcheck
+   npm run -w server db:app:import:zh-chm
+   npm run verify
+   ```
+
+2. **v3.3 freeze document**
+
+   After acceptance passes, add `docs/mvp/v3.3/FREEZE.md` as the shipped-state
+   snapshot and update `docs/README.md` / root `README.md` so v3.3 becomes the
+   latest frozen stage.
+
+3. **Post-v3.3 candidate: short description pipeline**
+
+   Do not block v3.3 on short descriptions. After v3.3 is frozen, make a new
+   concrete plan for parsing class/spell summary tables from CHM sources and
+   deciding where short descriptions live in the app-owned data model. Chinese
+   short descriptions should use local CHM sources; English short descriptions
+   still need a source decision.
+
+4. **Post-v3.3 candidate: data harness hardening**
 
    Add focused tests or report checks for CHM parser matching, source-label
    normalization, and structured rules patch validation. Keep these small and
    close to the data tooling.
-
-4. **Search/Browse feature work**
-
-   Resume the planned query unification and UI cleanup in
-   `docs/mvp/v3.3/search-browse-query-plan.md` after the current data inputs are
-   less noisy.
 
 ## Later Stable Track
 
