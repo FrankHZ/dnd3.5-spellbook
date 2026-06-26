@@ -11,7 +11,7 @@ import { getDefaultRulebookIds } from "~/services/rulebooks.service";
 import type {
   SpellBatchRequest,
   SpellNameSearchResponse,
-} from "@dnd/contracts/dist/dto/spell";
+} from "@dnd/contracts";
 import { getI18nContext, hasCjk } from "~/utils/i18n";
 import { LevelMode } from "~/services/spells/spells.service.by-level";
 import { ResolveSpellNamesRequest } from "@dnd/contracts";

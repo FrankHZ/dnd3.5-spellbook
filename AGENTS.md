@@ -135,6 +135,7 @@ Or run the pieces individually:
 
 ```bash
 npm run build:contracts
+npm run check:contracts
 npm run typecheck:data-tools
 npm run test:server
 npm run test:web

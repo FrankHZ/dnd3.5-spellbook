@@ -1,6 +1,6 @@
-import { Lang } from "../i18n";
-import { RulebookId } from "./rulebook";
-import { SpellItemView } from "./spell";
+import type { Lang } from "../i18n.js";
+import type { RulebookId } from "./rulebook.js";
+import type { SpellItemView } from "./spell.js";
 
 // NOTE: Backend matching rules (v3.0):
 // - lang="en": exact match on spell.name only

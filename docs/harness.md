@@ -12,6 +12,7 @@ cheapest and most stable seams.
 The repository currently has:
 
 - shared DTO compilation in `contracts`
+- runtime import smoke for the built `@dnd/contracts` package
 - data-tooling TypeScript checks in `data-tools`
 - backend API tests with Vitest and Supertest
 - frontend type generation and TypeScript checks
@@ -28,6 +29,7 @@ Or run the pieces individually:
 
 ```bash
 npm run build:contracts
+npm run check:contracts
 npm run typecheck:data-tools
 npm run test:server
 npm run test:web
@@ -113,6 +115,10 @@ by-level results, rule metadata lists, and common API error payloads.
 
 The root `verify` command includes `npm run typecheck:data-tools` so v3.3 data
 tooling stays covered by the standard validation path.
+
+The root `verify` command also imports the built `@dnd/contracts` package with
+Node after `build:contracts`. This catches ESM package output that typechecks
+but cannot be resolved by runtime tools such as the web dev server.
 
 Data-tool commands that depend on local-only source data or mutate temporary
 database copies remain acceptance checks rather than always-on unit tests:

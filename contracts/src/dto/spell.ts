@@ -1,7 +1,7 @@
-import { I18nNameOverlay } from "../i18n";
-import { Class } from "./class";
-import { Domain } from "./domain";
-import { RulebookMin } from "./rulebook";
+import type { I18nNameOverlay } from "../i18n.js";
+import type { Class } from "./class.js";
+import type { Domain } from "./domain.js";
+import type { RulebookMin } from "./rulebook.js";
 
 export type SpellID = number;
 

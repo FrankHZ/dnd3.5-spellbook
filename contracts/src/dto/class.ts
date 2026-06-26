@@ -1,4 +1,4 @@
-import { I18nNameOverlay } from "../i18n";
+import type { I18nNameOverlay } from "../i18n.js";
 
 export type Class = {
   id: number;
