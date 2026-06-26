@@ -212,13 +212,17 @@ for cross-book spell rows.
 | ------ | --------------- | -------- | ----------- |
 | `4919` | `Spider Poison` | `Sc_`    | `蜘蛛之毒`  |
 
-Current CHM parser unmatched output also includes label/source cleanup items
-that should not be treated as missing base rows until investigated:
+Current CHM parser hard misses are clear: `unmatched`, `unknownBookLabel`, and
+`missingSpellInDb` are all `0` in the latest local parser run.
 
-- `Death Dragon`, `Defenestrating Sphere`, `Delay Death`, and
-  `Phantasmal Thief` include combined or note-like labels.
-- `Summon` comes from `召唤列表-summon.htm` and is likely an index/list heading,
-  not a spell row.
+The last cleanup was source-only:
+
+- `Death Dragon` and `Phantasmal Thief` no longer expose note text as book
+  labels.
+- `Defenestrating Sphere` and `Delay Death` now use separate CHM book labels
+  instead of comma-joined labels.
+- `Summon` from `召唤列表-summon.htm` is preserved as a page title, not a spell
+  header.
 
 `Otiluke's Suppressing Field` is covered by local CHM source cleanup. The clean
 CHM title uses the published spelling, while the local CHM alias map resolves it

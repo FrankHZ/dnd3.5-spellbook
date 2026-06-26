@@ -56,19 +56,16 @@ See:
 Latest local CHM parser snapshot:
 
 - `matched`: `3235`
-- `unmatched`: `5`
-- `unknownBookLabel`: `4`
-- `missingSpellInDb`: `1`
+- `unmatched`: `0`
+- `unknownBookLabel`: `0`
+- `missingSpellInDb`: `0`
 
-The hard parser misses are now mostly source-label and source-text cleanup:
+The CHM parser currently has no hard unmatched records. The latest cleanup:
 
-- combined or note-like labels:
-  - `Death Dragon`
-  - `Defenestrating Sphere`
-  - `Delay Death`
-  - `Phantasmal Thief`
-- non-spell source page:
-  - `Summon` from `召唤列表-summon.htm`
+- removed note-like source labels from `Death Dragon` and `Phantasmal Thief`
+- split combined source labels for `Defenestrating Sphere` and `Delay Death`
+- downgraded the `召唤列表-summon.htm` page title so `Summon` is not parsed as a
+  spell record
 
 `missing-zh` is a broader coverage report, not the same thing as parser hard
 misses. Its count may increase when a new rulebook label becomes recognized and
@@ -78,33 +75,27 @@ the backcheck coverage set grows.
 
 Recommended next sequence:
 
-1. **CHM hard-miss cleanup**
-
-   Fix parser/source-label handling for combined labels, note-like labels, and
-   obvious source-text typos. Target outcome: `unmatched` contains only true
-   non-spell or explicitly deferred source records.
-
-2. **Clean CHM source-of-truth**
+1. **Clean CHM source-of-truth**
 
    Copy the current cleaned CHM output into a maintainable local source tree,
    then make known source-name and formatting fixes there instead of patching
    generated output. Keep source material local-only unless a redacted fixture
    is needed for tests.
 
-3. **Short description pipeline**
+2. **Short description pipeline**
 
    Parse class/spell summary tables from CHM sources and decide where short
    descriptions live in the app-owned data model. Chinese short descriptions
    should use local CHM sources; English short descriptions still need a source
    decision.
 
-4. **Data harness hardening**
+3. **Data harness hardening**
 
    Add focused tests or report checks for CHM parser matching, source-label
    normalization, and structured rules patch validation. Keep these small and
    close to the data tooling.
 
-5. **Search/Browse feature work**
+4. **Search/Browse feature work**
 
    Resume the planned query unification and UI cleanup in
    `docs/mvp/v3.3/search-browse-query-plan.md` after the current data inputs are
