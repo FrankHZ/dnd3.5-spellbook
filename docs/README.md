@@ -35,6 +35,10 @@ Current v3.3 planning docs:
 
 ## Current Operational Docs
 
+For current work ordering, use:
+
+- [roadmap.md](./roadmap.md)
+
 For deployment and environment operations, use:
 
 - [deployment.md](./deployment.md)
@@ -42,6 +46,7 @@ For deployment and environment operations, use:
 - [data-setup.md](./data-setup.md)
 - [import-workflow.md](./import-workflow.md)
 - [rules-db-notes.md](./rules-db-notes.md)
+- [roadmap.md](./roadmap.md)
 - [repo-conventions.md](./repo-conventions.md)
 - [features.md](./features.md)
 - [harness.md](./harness.md)
@@ -65,6 +70,7 @@ These documents define:
 - the current local database setup and origins
 - the current MVP import pipeline for Chinese app-owned data
 - practical notes for inspecting the local rules SQLite database
+- the current active work ordering and restart path
 - the repo conventions around local wrappers and canonical docs
 - the current user-facing feature map
 - the current validation surface and harness improvement path

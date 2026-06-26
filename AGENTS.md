@@ -26,24 +26,25 @@ project docs live under `docs/`.
 Start with these files when orienting:
 
 1. `docs/README.md` for the documentation map.
-2. `docs/features.md` for the current user-facing feature map.
-3. `docs/feature-workflow.md` before implementing non-trivial new features.
-4. `docs/mvp/v3.3/data-tools-workspace-plan.md` before moving or adding data
+2. `docs/roadmap.md` for current active work ordering after a pause.
+3. `docs/features.md` for the current user-facing feature map.
+4. `docs/feature-workflow.md` before implementing non-trivial new features.
+5. `docs/mvp/v3.3/data-tools-workspace-plan.md` before moving or adding data
    import, parser, rules DB inspection, or rules DB patch tooling.
-5. `docs/mvp/v3.3/local-data-layout-plan.md` before moving CHM inputs, parser
+6. `docs/mvp/v3.3/local-data-layout-plan.md` before moving CHM inputs, parser
    outputs, local source data, or future rules patch files.
-6. `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before moving SQL patch
+7. `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before moving SQL patch
    assets, adding rules DB preparation commands, or importing missing English
    base spell records.
-7. `docs/mvp/v3.3/structured-spell-patch-plan.md` before designing or applying
+8. `docs/mvp/v3.3/structured-spell-patch-plan.md` before designing or applying
    missing English spell patch data.
-8. `docs/mvp/v3.3/spells-full-import-plan.md` before using local
+9. `docs/mvp/v3.3/spells-full-import-plan.md` before using local
    `spells-full` source data to generate missing English spell patches.
-9. `docs/harness.md` for validation and test-harness strategy.
-10. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
-11. `docs/mvp/v3.2/FREEZE.md` only when you need the latest frozen release
+10. `docs/harness.md` for validation and test-harness strategy.
+11. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
+12. `docs/mvp/v3.2/FREEZE.md` only when you need the latest frozen release
     snapshot for historical comparison or regression checks.
-12. Workspace READMEs for operational commands:
+13. Workspace READMEs for operational commands:
 
 - `server/README.md`
 - `data-tools/README.md`
@@ -213,3 +214,5 @@ Keep docs lightweight:
   should not become the daily agent working surface.
 - New agent or harness guidance should go in `AGENTS.md` or `docs/harness.md`,
   not inside old MVP plan files.
+- Current work ordering after a pause should go in `docs/roadmap.md`, while
+  detailed implementation plans stay in focused topic docs.
