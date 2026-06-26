@@ -27,8 +27,8 @@ The v3.3 data-tooling foundation is mostly in place:
 
 - `data-tools` owns parser, inspection, rules SQL, and structured spell patch
   workflows.
-- local data layout was moved under `data/` and generated reports
-  under `data-tools/out/`.
+- local data layout was moved under the root `data/` local repo and generated
+  reports under `data-tools/out/`.
 - legacy rules SQL patch assets moved to
   `data/rules-patches/legacy-sql/`.
 - structured `insertSpell` JSONL patches can be validated, dry-run, and applied.

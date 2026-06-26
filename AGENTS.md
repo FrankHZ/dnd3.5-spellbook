@@ -201,6 +201,9 @@ See `docs/harness.md` for details.
 - Use `npm run -w data-tools rules:spells:validate -- <patch.jsonl>` and
   `npm run -w data-tools rules:spells:apply -- --dry-run <patch.jsonl>` before
   applying structured missing-spell patches.
+- Content-bearing local patch data belongs in the nested `data/` repo. Keep
+  schemas, validators, generators, reports, and redacted/minimal fixtures in the
+  parent repo.
 - Data tools may inspect local SQLite files, but must not modify
   `server/data/db/` unless the user explicitly asked for a write-capable
   workflow.

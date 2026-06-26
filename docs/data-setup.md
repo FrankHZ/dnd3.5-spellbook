@@ -26,7 +26,7 @@ Current local data ownership:
 - `server/data/db/`: runtime SQLite databases used by the API
 - `server/data/i18n/`: app-owned entity translation JSON imported by server scripts
 - `data/`: nested local data repo for parser and data-tool source inputs such
-  as CHM HTML and rules DB patch files
+  as CHM HTML, upstream raw data, and rules DB patch files
 - `data-tools/out/`: generated parser reports and intermediate output
 
 ## Current Database Roles
@@ -70,6 +70,12 @@ The rules DB lineage starts from the original `dnd.sqlite` dataset from the `dnd
 - upstream source: `https://github.com/dndtools/dndtools`
 
 This repository does not treat that upstream raw database as a tracked project artifact.
+When present in this workspace's nested local data repo, keep the raw upstream
+SQLite file under:
+
+```text
+data/upstream/dndtools/dnd.sqlite
+```
 
 Instead, the project works from a local processed rules database:
 
@@ -158,6 +164,10 @@ npm run -w data-tools rules:spells:apply -- spells/missing-spells.jsonl
 The structured spell apply command inserts rules DB base spell rows and related
 descriptor/class/domain level rows, then rebuilds derived spell index tables.
 It does not run from server startup.
+
+Patch files under `data/rules-patches/` may contain source text and belong to
+the nested local `data/` repo. Parent-repo code should own patch schemas,
+validators, generators, reports, and redacted/minimal fixtures.
 
 The optional `spells-full` source dump, when present locally, lives under:
 

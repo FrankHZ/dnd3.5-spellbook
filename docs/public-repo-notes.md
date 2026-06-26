@@ -10,8 +10,8 @@ They are not part of the public repository baseline and may contain:
 
 - `server/data/db/`: processed rules-side and app SQLite databases
 - `server/data/i18n/`: app-owned entity translation JSON inputs
-- `data/`: nested local data repo containing CHM-derived HTML, parser mappings,
-  raw text inputs, and rules patch inputs
+- `data/`: nested local data repo containing upstream raw inputs, CHM-derived
+  HTML, parser mappings, raw text inputs, and rules patch inputs
 - `data-tools/out/`: generated parser reports and intermediate artifacts
 
 Public consumers of the repository should expect to provide or recreate those files themselves.
@@ -21,6 +21,9 @@ Public consumers of the repository should expect to provide or recreate those fi
 The public repository is intended to be code-first.
 
 Data-bearing content with elevated redistribution risk is intentionally excluded where possible, especially imported or derived game content and translation artifacts.
+Rules patch files with source text are also excluded from the parent repo by
+default; the parent repo should contain tooling, schemas, reports, docs, and
+redacted/minimal fixtures instead.
 
 ## License Status
 

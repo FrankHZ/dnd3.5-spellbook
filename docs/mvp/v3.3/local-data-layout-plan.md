@@ -50,6 +50,7 @@ server/data/db/
   app.sqlite
 
 data/
+  upstream/             # raw third-party source inputs
   chm-raw/
   chm-clean/
   chm-test/
@@ -64,9 +65,9 @@ data-tools/out/
 Responsibilities:
 
 - `server/data/db/`: local SQLite files consumed by the API runtime.
-- `data/`: local-only inputs used by import, parser, inspection, and
-  patch tooling. In the current workspace this is a nested local Git repo,
-  ignored by the parent project repo.
+- `data/`: local-only upstream inputs, parser inputs, inspection inputs, and
+  patch tooling inputs. In the current workspace this is a nested local Git
+  repo, ignored by the parent project repo.
 - `data-tools/out/`: generated reports or intermediate outputs from data tools.
 
 ## Migration Scope

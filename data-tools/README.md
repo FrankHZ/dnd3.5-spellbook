@@ -84,6 +84,9 @@ Structured spell patch JSONL files also live under
 operation is `insertSpell`, which inserts the base spell row plus descriptors
 and class/domain levels, then rebuilds derived spell indexes. Validation opens
 the configured rules DB read-only; dry-run applies to a temporary copy.
+Because these patch files can contain source text, they are managed by the
+nested local `data/` repo. Keep patch schemas, validators, generators, reports,
+and redacted fixtures in the parent project repo.
 
 The optional `spells-full` source dump lives under
 `data/spells-full/` when present locally. It is ignored by the parent repo and

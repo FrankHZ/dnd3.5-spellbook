@@ -88,7 +88,7 @@ For local database setup and data origins, use [docs/data-setup.md](./docs/data-
 |- contracts/   Shared DTOs and TypeScript types
 |- data-tools/  Data inspection, parser, and rules DB tooling
 |  `- out/      Generated parser output and data-tool reports
-|- data/        Local data repo for source inputs and rules patch files
+|- data/        Nested local repo for upstream/source inputs and rules patches
 |- docs/        Release docs, MVP plans, handoff notes
 ```
 
