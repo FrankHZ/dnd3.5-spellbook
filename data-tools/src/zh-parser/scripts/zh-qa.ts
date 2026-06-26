@@ -41,6 +41,10 @@ type QaSummary = {
     atMost20: number;
     atMost120: number;
   };
+  boldText?: {
+    maxAllowedLength: number;
+    overLimit: number;
+  };
   missingZhByRulebook?: Record<string, number>;
 };
 
@@ -49,6 +53,7 @@ const DEFAULT_RAW_INPUT = "../data/chm-raw";
 const DEFAULT_OUT = "out/zh-parser/qa";
 const DEFAULT_PARSER_OUT = "out/zh-parser";
 const DEFAULT_BOOK_ABBR = "PH";
+const DEFAULT_MAX_BOLD_TEXT_LENGTH = 24;
 const MOJIBAKE_RE = /\uFFFD|锟斤拷/;
 const BODY_NOTE_RE = /译注|原文[:：]|备注|注[:：]/;
 
@@ -113,6 +118,14 @@ function recordFields(record: {
 
 function htmlText(html: string) {
   return load(html).text().replace(/\s+/g, " ").trim();
+}
+
+function normalizedInlineText(value: string) {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function excerpt(value: string, maxLength = 80) {
+  return value.length <= maxLength ? value : `${value.slice(0, maxLength)}...`;
 }
 
 function sortedRelativeHtmlFiles(rootDir: string) {
@@ -264,12 +277,18 @@ function main() {
   const parserOutDir = path.resolve(
     args.get("--parserOutDir") ?? DEFAULT_PARSER_OUT,
   );
+  const maxBoldTextLength = Math.max(
+    1,
+    Number(args.get("--maxBoldTextLength") ?? DEFAULT_MAX_BOLD_TEXT_LENGTH) ||
+      DEFAULT_MAX_BOLD_TEXT_LENGTH,
+  );
 
   const files = scanHtmlFiles(inputDir);
   const issues: QaIssue[] = [];
   const sourceKeys = new Map<string, Array<{ file: string; headerText: string }>>();
   let segmentsFound = 0;
   const descriptionLength = { empty: 0, atMost20: 0, atMost120: 0 };
+  const boldText = { maxAllowedLength: maxBoldTextLength, overLimit: 0 };
 
   qaFileSet(inputDir, rawInputDir, issues);
   for (const abs of files) {
@@ -330,6 +349,21 @@ function main() {
           detail: "description body contains note/source marker text",
         });
       }
+
+      const $segment = load(seg.segmentHtml);
+      $segment("b,strong").each((_, el) => {
+        const text = normalizedInlineText($segment(el).text());
+        if (text.length <= maxBoldTextLength) return;
+        boldText.overLimit++;
+        issue(issues, "info", "long-bold-text", {
+          file,
+          sourceKey,
+          headerText: seg.headerText,
+          zhName: seg.zhName,
+          enName: seg.enName,
+          detail: `bold text length ${text.length} exceeds ${maxBoldTextLength}: ${excerpt(text)}`,
+        });
+      });
 
       if (/原文[:：]|列表[:：]|两者|二者|区别|不同/.test(seg.headerText)) {
         issue(issues, "warning", "source-note-in-header", {
@@ -418,6 +452,7 @@ function main() {
     bySeverity,
     byCode,
     descriptionLength,
+    boldText,
     missingZhByRulebook,
     ...(parserStats ? { parserStats } : {}),
   };

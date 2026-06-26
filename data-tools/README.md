@@ -98,8 +98,9 @@ from it.
 
 `zh:qa` is a mechanical source and parser-output QA report. It checks parser
 hard gates, raw/clean file drift, noisy source labels, empty or very short
-descriptions, duplicate source keys, obvious mojibake markers, and broader
-coverage counts. It does not perform human translation review.
+descriptions, unexpectedly long bold text, duplicate source keys, obvious
+mojibake markers, and broader coverage counts. It does not perform human
+translation review.
 
 ## Safety
 

@@ -159,6 +159,9 @@ Before importing CHM spell text, inspect:
 - `data-tools/out/zh-parser/qa/summary.json` for mechanical source/header drift
 
 The normal import path expects `data-tools/out/zh-parser/matched.json` to be the source of truth for CHM-derived spell records.
+`zh:qa` is a mechanical gate and report; long `<b>` text is informational and
+is intended to catch copied formatting inside body text, not to block imports by
+itself.
 
 ### 4. Import Entity Translation JSON
 

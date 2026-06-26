@@ -72,10 +72,10 @@ misses. Its count may increase when a new rulebook label becomes recognized and
 the backcheck coverage set grows.
 
 Mechanical CHM source QA now runs through `npm run -w data-tools zh:qa`. The
-current report has no errors or warnings; remaining body-note markers are
-informational review leads, not parser blockers. Full bulk translation QA is
-deferred until a large translation rewrite or short-description import creates
-new target text to review.
+current report has no errors or warnings; remaining body-note and long-bold-text
+markers are informational review leads, not parser blockers. Full bulk
+translation QA is deferred until a large translation rewrite or
+short-description import creates new target text to review.
 
 ## Next Work
 
