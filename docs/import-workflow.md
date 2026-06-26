@@ -30,6 +30,7 @@ npm run -w data-tools zh:preprocess
 npm run -w data-tools zh:parse
 npm run -w data-tools zh:parse:test
 npm run -w data-tools zh:backcheck
+npm run -w data-tools zh:qa
 npm run -w server db:app:import:zh-entities
 npm run -w server db:app:import:zh-chm
 ```
@@ -72,6 +73,7 @@ The parser writes into `data-tools/out/zh-parser/`:
 - `candidates.json`
 - `stats.json`
 - `missing-zh.json` may also exist as a follow-up artifact from auxiliary checks
+- `qa/summary.json` and `qa/issues.json` from mechanical CHM source QA
 
 ## Recommended End-To-End Flow
 
@@ -83,9 +85,10 @@ For a normal full rebuild:
 4. Run `npm run -w server db:app:reset`.
 5. Run `npm run -w data-tools zh:preprocess` if raw CHM HTML changed.
 6. Run `npm run -w data-tools zh:parse`.
-7. Inspect `data-tools/out/zh-parser/stats.json`, `matched.json`, and `unmatched.json`.
-8. Run `npm run -w server db:app:import:zh-entities`.
-9. Run `npm run -w server db:app:import:zh-chm`.
+7. Run `npm run -w data-tools zh:qa`.
+8. Inspect `data-tools/out/zh-parser/stats.json`, `matched.json`, and `unmatched.json`.
+9. Run `npm run -w server db:app:import:zh-entities`.
+10. Run `npm run -w server db:app:import:zh-chm`.
 
 This order keeps the app DB aligned with the latest parser output and the latest checked-in entity translation JSON.
 
@@ -153,6 +156,7 @@ Before importing CHM spell text, inspect:
 - `data-tools/out/zh-parser/stats.json` for match quality and parser counts
 - `data-tools/out/zh-parser/unmatched.json` for unresolved entries
 - `data-tools/out/zh-parser/candidates.json` for follow-up alias or mapping work
+- `data-tools/out/zh-parser/qa/summary.json` for mechanical source/header drift
 
 The normal import path expects `data-tools/out/zh-parser/matched.json` to be the source of truth for CHM-derived spell records.
 

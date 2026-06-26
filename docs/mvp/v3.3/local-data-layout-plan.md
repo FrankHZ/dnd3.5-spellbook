@@ -104,6 +104,7 @@ npm run -w data-tools zh:preprocess
 npm run -w data-tools zh:parse
 npm run -w data-tools zh:parse:test
 npm run -w data-tools zh:backcheck
+npm run -w data-tools zh:qa
 npm run -w server db:app:import:zh-chm
 ```
 
@@ -114,6 +115,7 @@ Expected default paths:
 - parse input: `data/chm-clean/`
 - parse test input: `data/chm-test/`
 - parse output: `data-tools/out/zh-parser/`
+- mechanical QA output: `data-tools/out/zh-parser/qa/`
 - app DB import input: `data-tools/out/zh-parser/matched.json`
 
 Commands may still accept explicit path arguments for one-off local work, but
@@ -165,6 +167,7 @@ npm run -w data-tools zh:preprocess
 npm run -w data-tools zh:parse:test
 npm run -w data-tools zh:parse
 npm run -w data-tools zh:backcheck
+npm run -w data-tools zh:qa
 npm run -w server db:app:import:zh-chm
 npm run verify
 ```

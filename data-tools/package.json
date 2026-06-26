@@ -16,7 +16,8 @@
     "zh:backcheck": "tsx src/zh-parser/scripts/zh-backcheck.ts out/zh-parser/matched.json out/zh-parser/missing-zh.json",
     "zh:parse": "tsx src/zh-parser/cli.ts --input ../data/chm-clean --outDir out/zh-parser",
     "zh:parse:test": "tsx src/zh-parser/cli.ts --input ../data/chm-test --outDir out/zh-parser/test",
-    "zh:preprocess": "tsx src/zh-parser/scripts/preprocess-chm-html.ts --in ../data/chm-raw --out ../data/chm-clean"
+    "zh:preprocess": "tsx src/zh-parser/scripts/preprocess-chm-html.ts --in ../data/chm-raw --out ../data/chm-clean",
+    "zh:qa": "tsx src/zh-parser/scripts/zh-qa.ts --input ../data/chm-clean --parserOutDir out/zh-parser --outDir out/zh-parser/qa"
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.3.0",

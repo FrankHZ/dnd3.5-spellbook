@@ -71,16 +71,21 @@ The CHM parser currently has no hard unmatched records. The latest cleanup:
 misses. Its count may increase when a new rulebook label becomes recognized and
 the backcheck coverage set grows.
 
+Mechanical CHM source QA now runs through `npm run -w data-tools zh:qa`. The
+current report has no errors or warnings; remaining body-note markers are
+informational review leads, not parser blockers. Full bulk translation QA is
+deferred until a large translation rewrite or short-description import creates
+new target text to review.
+
 ## Next Work
 
 Recommended next sequence:
 
 1. **Clean CHM source-of-truth**
 
-   Copy the current cleaned CHM output into a maintainable local source tree,
-   then make known source-name and formatting fixes there instead of patching
-   generated output. Keep source material local-only unless a redacted fixture
-   is needed for tests.
+   Treat the current `data/chm-clean/` tree as the maintained local source
+   input. Continue making known source-name and formatting fixes there, backed
+   by `zh:parse`, `zh:backcheck`, and `zh:qa`.
 
 2. **Short description pipeline**
 

@@ -64,6 +64,9 @@ behavior.
 - Do not commit local data, database files, generated logs, or personal wrapper
   scripts to the parent repo. The nested `data/` repo may version local source
   data separately.
+- For any large-scale source reading or broad content QA over local data
+  sources, spawn a subagent to inspect the corpus and return summarized findings
+  instead of loading the source corpus into the main agent context.
 - Do not treat root-level `.bat` files as canonical; tracked deployment scripts
   live under `docs/deployment-scripts/`.
 - If shared DTOs change, rebuild `contracts` before validating `server` or
@@ -198,6 +201,8 @@ See `docs/harness.md` for details.
   English base spell records.
 - Follow `docs/mvp/v3.3/spells-full-import-plan.md` before generating
   structured spell patches from local `data/spells-full/` inputs.
+- Run `npm run -w data-tools zh:qa` after CHM source cleanup or parser changes
+  to catch mechanical source/header drift before import.
 - Use `npm run -w data-tools rules:spells:validate -- <patch.jsonl>` and
   `npm run -w data-tools rules:spells:apply -- --dry-run <patch.jsonl>` before
   applying structured missing-spell patches.

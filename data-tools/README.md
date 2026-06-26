@@ -47,6 +47,7 @@ npm run -w data-tools zh:preprocess
 npm run -w data-tools zh:parse
 npm run -w data-tools zh:parse:test
 npm run -w data-tools zh:backcheck
+npm run -w data-tools zh:qa
 ```
 
 ## Data Paths
@@ -61,6 +62,7 @@ Current CHM parser defaults:
 - parser test input: `data/chm-test/`
 - CHM mapping and alias JSON: `data/chm-mapping/`
 - parser output: `data-tools/out/zh-parser/`
+- mechanical QA output: `data-tools/out/zh-parser/qa/`
 
 CHM preprocess and parse commands scan nested directories and preserve relative
 paths in cleaned output and parser source keys. Word/CHM companion directories
@@ -93,6 +95,11 @@ The optional `spells-full` source dump lives under
 may be versioned in the nested local `data/` repo. Use `spells-full:inspect`
 and `spells-full:generate` to create reviewable structured patch candidates
 from it.
+
+`zh:qa` is a mechanical source and parser-output QA report. It checks parser
+hard gates, raw/clean file drift, noisy source labels, empty or very short
+descriptions, duplicate source keys, obvious mojibake markers, and broader
+coverage counts. It does not perform human translation review.
 
 ## Safety
 
