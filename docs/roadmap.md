@@ -106,6 +106,7 @@ Recommended next sequence:
    Use the usual verification spine:
 
    ```bash
+   npm run typecheck:data-tools
    npm run -w data-tools zh:parse
    npm run -w data-tools zh:qa
    npm run -w data-tools zh:backcheck

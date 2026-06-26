@@ -12,6 +12,7 @@ cheapest and most stable seams.
 The repository currently has:
 
 - shared DTO compilation in `contracts`
+- data-tooling TypeScript checks in `data-tools`
 - backend API tests with Vitest and Supertest
 - frontend type generation and TypeScript checks
 - current feature behavior described by `docs/features.md`
@@ -27,6 +28,7 @@ Or run the pieces individually:
 
 ```bash
 npm run build:contracts
+npm run typecheck:data-tools
 npm run test:server
 npm run test:web
 npm run typecheck:web
@@ -107,7 +109,27 @@ Prefer shape and invariant checks over brittle full snapshots. Examples:
 Current coverage includes shape invariants for spell search, spell detail,
 by-level results, rule metadata lists, and common API error payloads.
 
-### 3. Pure Frontend Logic Tests
+### Data-Tooling Checks
+
+The root `verify` command includes `npm run typecheck:data-tools` so v3.3 data
+tooling stays covered by the standard validation path.
+
+Data-tool commands that depend on local-only source data or mutate temporary
+database copies remain acceptance checks rather than always-on unit tests:
+
+- `npm run -w data-tools zh:parse`
+- `npm run -w data-tools zh:qa`
+- `npm run -w data-tools zh:backcheck`
+- `npm run -w data-tools rules:sql:dry-run -- <patch.sql>`
+- `npm run -w data-tools rules:index:rebuild -- --dry-run`
+- `npm run -w data-tools spells-full:inspect -- known-misses`
+
+Structured spell patch `validate` / `apply -- --dry-run` commands are most
+useful before a patch has been applied. Once a patch is already present in the
+configured rules DB, rerunning those commands against the same insert patch is
+expected to fail on duplicate spell ids or existing `name + rulebook` rows.
+
+### 4. Pure Frontend Logic Tests
 
 Add tests around logic that does not need a browser.
 
@@ -137,7 +159,7 @@ Current coverage includes:
 - spell API wrapper URL building, normalization, and chunking
 - API helper i18n parameter behavior.
 
-### 4. Browser Smoke Tests
+### 5. Browser Smoke Tests
 
 Add a small smoke suite once the app can run reliably in development or from a
 production build.
@@ -153,7 +175,7 @@ Good first flows:
 Keep smoke tests shallow. Their job is to catch blank screens, broken routing,
 and obvious integration failures.
 
-### 5. End-To-End Workflows
+### 6. End-To-End Workflows
 
 Only add broader workflows after the cheaper harness layers are stable.
 
