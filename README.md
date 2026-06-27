@@ -25,6 +25,7 @@ excluded from the public repository, especially runtime databases under
 ## Status
 
 The latest frozen stage snapshot is **v3.3**.
+Post-v3.3 candidate plans have started under `docs/mvp/v3.4/`.
 
 For the current work order, use [docs/roadmap.md](./docs/roadmap.md).
 For the current feature map, start with [docs/features.md](./docs/features.md).

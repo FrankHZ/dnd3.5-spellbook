@@ -107,8 +107,12 @@ Recommended next sequence:
 
 3. **Post-v3.3 candidate: frontend i18n convention cleanup**
 
-   Consider semantic keys and namespace ownership rules for new UI copy without
-   disturbing the v3.3 freeze snapshot.
+   Keep `i18next`, but replace raw-English translation keys with stable
+   semantic keys and make `npm run i18n:check` enforce the convention.
+
+   See:
+
+   - `docs/mvp/v3.4/i18next-conventions-plan.md`
 
 ## Later Stable Track
 

@@ -46,7 +46,9 @@ Start with these files when orienting:
    `spells-full` source data to generate missing English spell patches.
 12. `docs/harness.md` for validation and test-harness strategy.
 13. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
-14. Workspace READMEs for operational commands:
+14. `docs/mvp/v3.4/i18next-conventions-plan.md` before replacing raw-English
+    frontend translation keys or tightening i18next workflow checks.
+15. Workspace READMEs for operational commands:
 
 - `server/README.md`
 - `data-tools/README.md`

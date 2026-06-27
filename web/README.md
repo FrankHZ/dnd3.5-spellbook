@@ -80,3 +80,5 @@ For deployment and reverse-proxy expectations, use:
 - [../docs/deployment.md](../docs/deployment.md)
 - [../docs/data-setup.md](../docs/data-setup.md)
 - [../docs/frontend-map.md](../docs/frontend-map.md)
+- [../docs/i18n.md](../docs/i18n.md)
+- [../docs/mvp/v3.4/i18next-conventions-plan.md](../docs/mvp/v3.4/i18next-conventions-plan.md)

@@ -37,6 +37,10 @@ documents in this order:
 - [mvp/v3.3/spells-full-import-plan.md](./mvp/v3.3/spells-full-import-plan.md)
 - [mvp/v3.3/structured-spell-patch-plan.md](./mvp/v3.3/structured-spell-patch-plan.md)
 
+Post-v3.3 candidate planning has started under `docs/mvp/v3.4/`:
+
+- [mvp/v3.4/i18next-conventions-plan.md](./mvp/v3.4/i18next-conventions-plan.md)
+
 ## Current Operational Docs
 
 For current work ordering, use:
@@ -126,6 +130,7 @@ The `docs/mvp/` directory contains version folders:
 - `v3.1`
 - `v3.2`
 - `v3.3`
+- `v3.4`
 
 Treat frozen or older version folders as historical planning or handoff records.
 Start new active work from `docs/roadmap.md` and a focused topic plan rather
