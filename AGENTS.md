@@ -30,22 +30,22 @@ Start with these files when orienting:
 2. `docs/roadmap.md` for current active work ordering after a pause.
 3. `docs/features.md` for the current user-facing feature map.
 4. `docs/feature-workflow.md` before implementing non-trivial new features.
-5. `docs/mvp/v3.3/acceptance-checklist.md` during v3.3 acceptance/freeze work.
-6. `docs/mvp/v3.3/data-tools-workspace-plan.md` before moving or adding data
+5. `docs/mvp/v3.3/FREEZE.md` for the latest frozen release snapshot.
+6. `docs/mvp/v3.3/acceptance-checklist.md` when checking v3.3 acceptance
+   evidence.
+7. `docs/mvp/v3.3/data-tools-workspace-plan.md` before moving or adding data
    import, parser, rules DB inspection, or rules DB patch tooling.
-7. `docs/mvp/v3.3/local-data-layout-plan.md` before moving CHM inputs, parser
+8. `docs/mvp/v3.3/local-data-layout-plan.md` before moving CHM inputs, parser
    outputs, local source data, or future rules patch files.
-8. `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before moving SQL patch
+9. `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before moving SQL patch
    assets, adding rules DB preparation commands, or importing missing English
    base spell records.
-9. `docs/mvp/v3.3/structured-spell-patch-plan.md` before designing or applying
+10. `docs/mvp/v3.3/structured-spell-patch-plan.md` before designing or applying
    missing English spell patch data.
-10. `docs/mvp/v3.3/spells-full-import-plan.md` before using local
+11. `docs/mvp/v3.3/spells-full-import-plan.md` before using local
    `spells-full` source data to generate missing English spell patches.
-11. `docs/harness.md` for validation and test-harness strategy.
-12. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
-13. `docs/mvp/v3.2/FREEZE.md` only when you need the latest frozen release
-    snapshot for historical comparison or regression checks.
+12. `docs/harness.md` for validation and test-harness strategy.
+13. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
 14. Workspace READMEs for operational commands:
 
 - `server/README.md`
@@ -84,9 +84,9 @@ For ordinary feature requests, follow this default loop:
 3. For non-trivial changes with clear scope, copy `docs/templates/feature-plan.md` to
    `docs/tmp-feature-plan.md` and use it as a working checklist.
 4. For ambiguous, structural, or workflow-changing requests, write a durable
-   concrete plan under the active development docs, commit that plan first, and
-   only then implement the deliverable. Current active development plans live
-   under `docs/mvp/v3.3/`.
+   concrete plan under the active development docs indicated by
+   `docs/roadmap.md`, commit that plan first, and only then implement the
+   deliverable. Do not add new active scope to frozen version folders.
 5. Reuse the current API helpers, storage helpers, UI wrappers, and feature
    folders instead of creating parallel structures.
 6. Make the smallest change that satisfies the requested behavior.

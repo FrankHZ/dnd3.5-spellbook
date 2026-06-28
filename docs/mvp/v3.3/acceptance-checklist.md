@@ -1,13 +1,17 @@
 # v3.3 Acceptance Checklist
 
-This checklist records the v3.3 acceptance state before writing
+This checklist records the v3.3 acceptance state that supported
 `docs/mvp/v3.3/FREEZE.md`.
 
-Use it as a working handoff note, not as a frozen release snapshot.
+Use the freeze document as the frozen release snapshot. Use this file for
+verification detail.
 
 ## Automated Acceptance Run
 
-Last run: 2026-06-26.
+Last full data acceptance run: 2026-06-26.
+
+Final v3.3 UI smoke, `npm run verify`, and `npm run i18n:check` confirmation:
+2026-06-28.
 
 Commands run successfully:
 
@@ -91,9 +95,10 @@ Not repeated as automated acceptance:
   broadly than the acceptance import smoke. Run it only when explicitly doing a
   local data rebuild.
 
-## Manual Smoke Still Worth Doing
+## Manual Smoke Accepted
 
-These are not covered by the current automated harness:
+These are not covered by the current automated harness, but were manually
+checked before freeze:
 
 - Start server and web dev servers, then open the app in a browser.
 - Browse: select class/domain/level filters and confirm results render.

@@ -24,12 +24,11 @@ excluded from the public repository, especially runtime databases under
 
 ## Status
 
-The latest frozen stage snapshot is **v3.2**. Active feature planning after that
-freeze lives under `docs/mvp/v3.3/`.
+The latest frozen stage snapshot is **v3.3**.
 
 For the current work order, use [docs/roadmap.md](./docs/roadmap.md).
 For the current feature map, start with [docs/features.md](./docs/features.md).
-For the v3.2 release snapshot, use [docs/mvp/v3.2/FREEZE.md](./docs/mvp/v3.2/FREEZE.md).
+For the v3.3 release snapshot, use [docs/mvp/v3.3/FREEZE.md](./docs/mvp/v3.3/FREEZE.md).
 For the full documentation map, use [docs/README.md](./docs/README.md).
 
 ## Quick Start

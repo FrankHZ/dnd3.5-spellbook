@@ -3,8 +3,8 @@
 This document describes the current user-facing feature surface.
 
 Use it as the stable functional map for maintenance and harness work. For final
-v3.2 release details and intentional deviations from earlier plans, use
-`docs/mvp/v3.2/FREEZE.md`.
+v3.3 release details and intentional deviations from earlier plans, use
+`docs/mvp/v3.3/FREEZE.md`.
 
 ## Browse
 
@@ -17,12 +17,15 @@ Current behavior:
 - selected rulebooks constrain the result set
 - default rulebooks are supplied by the backend when no explicit rulebook ids
   are provided
+- the spell-list area shows a compact shared scope summary with selected
+  class/domain filter counts, level, and rulebook scope
 - results are paginated
 - English and Chinese UI/content modes preserve the same response shape
 
 Key code:
 
 - `web/app/features/browse/BrowseSpellsPage.tsx`
+- `web/app/features/spells/SpellFilterScopeSummary.tsx`
 - `web/app/api/spells.ts`
 - `server/src/controllers/spells.controller.ts`
 - `server/src/services/spells/spells.service.by-level.ts`
@@ -41,6 +44,8 @@ Current behavior:
 - the Search sidebar exposes editable class, domain, and level controls
 - header search preserves current Browse or Search filter scope while replacing
   the name query
+- the spell-list area uses the same compact scope summary as Browse, including
+  selected rulebook scope
 - results are paginated
 - empty or too-short usable queries return an empty result set rather than a
   failed search
@@ -48,6 +53,7 @@ Current behavior:
 Key code:
 
 - `web/app/features/search/SearchSpellsPage.tsx`
+- `web/app/features/spells/SpellFilterScopeSummary.tsx`
 - `web/app/features/search/search-url.ts`
 - `web/app/features/search/validation.ts`
 - `web/app/api/spells.ts`

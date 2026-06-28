@@ -10,22 +10,25 @@ Use this file as the documentation entry point when you need to determine:
 
 ## Latest Frozen Release Snapshot
 
-The latest frozen stage snapshot is **v3.2**.
+The latest frozen stage snapshot is **v3.3**.
 
 Use it for historical comparison, regression checks, and understanding what was
 shipped at that stage:
 
-- [mvp/v3.2/FREEZE.md](./mvp/v3.2/FREEZE.md)
+- [mvp/v3.3/FREEZE.md](./mvp/v3.3/FREEZE.md)
 
-That file defines the final as-built interpretation of the v3.2 handoff set. It
+That file defines the final as-built interpretation of the v3.3 handoff set. It
 is not automatically the baseline for later active development.
 
-## Active Development Docs
+## v3.3 Supporting Docs
 
-Feature work after the v3.2 freeze is tracked under `docs/mvp/v3.3/`.
+The rest of `docs/mvp/v3.3/` contains the supporting plan and acceptance notes
+for that release.
 
-Current v3.3 planning docs:
+When you need implementation detail beyond the freeze summary, read the v3.3
+documents in this order:
 
+- [mvp/v3.3/FREEZE.md](./mvp/v3.3/FREEZE.md)
 - [mvp/v3.3/acceptance-checklist.md](./mvp/v3.3/acceptance-checklist.md)
 - [mvp/v3.3/data-tools-workspace-plan.md](./mvp/v3.3/data-tools-workspace-plan.md)
 - [mvp/v3.3/local-data-layout-plan.md](./mvp/v3.3/local-data-layout-plan.md)
@@ -125,7 +128,8 @@ The `docs/mvp/` directory contains version folders:
 - `v3.3`
 
 Treat frozen or older version folders as historical planning or handoff records.
-Treat `v3.3` as active development until it gets its own freeze document.
+Start new active work from `docs/roadmap.md` and a focused topic plan rather
+than treating frozen version folders as active scratch space.
 
 They are useful for:
 
@@ -140,7 +144,7 @@ They are not automatically the source of truth for the current app state.
 When multiple docs overlap:
 
 1. Prefer the newest focused topic doc for current behavior or workflow.
-2. Prefer active development docs for in-flight v3.3 scope.
+2. Prefer active development docs for in-flight future scope.
 3. Use frozen `FREEZE.md` files as stage snapshots, not as automatic current
    baselines.
 4. Prefer focused operational docs such as `deployment.md` for runtime workflow

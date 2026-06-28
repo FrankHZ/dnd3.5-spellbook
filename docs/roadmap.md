@@ -8,9 +8,10 @@ details.
 
 ## Current Track
 
-Active development is in the v3.3 acceptance track.
+v3.3 is frozen. The latest release snapshot is
+`docs/mvp/v3.3/FREEZE.md`.
 
-The v3.3 implementation focus has been data and workflow stability:
+The completed v3.3 implementation focus was data and workflow stability:
 
 1. keep rules DB preparation out of server runtime
 2. make missing spell imports reviewable and repeatable
@@ -19,12 +20,12 @@ The v3.3 implementation focus has been data and workflow stability:
 5. preserve the Search/Browse query behavior already described in the feature
    map
 
-The latest frozen release snapshot remains `docs/mvp/v3.2/FREEZE.md`; it is a
-historical comparison point, not the active baseline.
+Older frozen snapshots remain historical comparison points, not active
+baselines.
 
 ## Recently Completed
 
-The v3.3 data-tooling foundation is mostly in place:
+The v3.3 data-tooling foundation is in place:
 
 - `data-tools` owns parser, inspection, rules SQL, and structured spell patch
   workflows.
@@ -91,48 +92,23 @@ future short-description import creates new target text to review.
 
 Recommended next sequence:
 
-1. **v3.3 acceptance pass**
+1. **Post-v3.3 candidate: short description pipeline**
 
-   Confirm the implemented v3.3 plan set against the current repo:
+   Make a new concrete plan for parsing class/spell summary tables from CHM
+   sources and deciding where short descriptions live in the app-owned data
+   model. Chinese short descriptions should use local CHM sources; English
+   short descriptions still need a source decision.
 
-   - data-tools workspace boundary
-   - root local `data/` repo boundary
-   - rules DB prep commands
-   - structured missing-spell patch commands
-   - `spells-full` known-miss import path
-   - accepted Clean CHM source-of-truth state
-   - Search/Browse query behavior described in `docs/features.md`
-
-   Use the usual verification spine:
-
-   ```bash
-   npm run typecheck:data-tools
-   npm run -w data-tools zh:parse
-   npm run -w data-tools zh:qa
-   npm run -w data-tools zh:backcheck
-   npm run -w server db:app:import:zh-chm
-   npm run verify
-   ```
-
-2. **v3.3 freeze document**
-
-   After acceptance passes, add `docs/mvp/v3.3/FREEZE.md` as the shipped-state
-   snapshot and update `docs/README.md` / root `README.md` so v3.3 becomes the
-   latest frozen stage.
-
-3. **Post-v3.3 candidate: short description pipeline**
-
-   Do not block v3.3 on short descriptions. After v3.3 is frozen, make a new
-   concrete plan for parsing class/spell summary tables from CHM sources and
-   deciding where short descriptions live in the app-owned data model. Chinese
-   short descriptions should use local CHM sources; English short descriptions
-   still need a source decision.
-
-4. **Post-v3.3 candidate: data harness hardening**
+2. **Post-v3.3 candidate: data harness hardening**
 
    Add focused tests or report checks for CHM parser matching, source-label
    normalization, and structured rules patch validation. Keep these small and
    close to the data tooling.
+
+3. **Post-v3.3 candidate: frontend i18n convention cleanup**
+
+   Consider semantic keys and namespace ownership rules for new UI copy without
+   disturbing the v3.3 freeze snapshot.
 
 ## Later Stable Track
 
