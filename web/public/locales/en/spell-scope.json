@@ -1,0 +1,9 @@
+{
+  "all levels": "all levels",
+  "any level": "any level",
+  "Filters: {{classCount}} class filters, {{domainCount}} domain filters, level {{level}}.": "Filters: {{classCount}} class filters, {{domainCount}} domain filters, level {{level}}.",
+  "not selected": "not selected",
+  "Rulebooks: {{count}} selected (change in Settings)._one": "Rulebooks: {{count}} selected (change in Settings).",
+  "Rulebooks: {{count}} selected (change in Settings)._other": "Rulebooks: {{count}} selected (change in Settings).",
+  "Rulebooks: default 3.5 core": "Rulebooks: default 3.5 core"
+}

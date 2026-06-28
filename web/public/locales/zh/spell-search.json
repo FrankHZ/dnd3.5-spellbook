@@ -1,16 +1,10 @@
 {
-  "all": "全部",
-  "any": "任意",
-  "Browse scope is active: {{classCount}} classes, {{domainCount}} domains, level {{level}}.": "当前使用浏览筛选：{{classCount}}个职业，{{domainCount}}个领域，环数{{level}}。",
+  "{{count}} rulebooks selected (change in Settings)._other": "已选择{{count}}本规则书（设置里改）",
   "Clear Search filters": "清除搜索筛选",
   "Enter at least 2 characters to run a search.": "至少输入两个字母吧",
   "Enter at least 2 characters, or type a Chinese character.": "至少两个字母或者一个汉字",
-  "Global name search. Browsing by class/level lives in Browse.": "全局法术名搜索。职业/领域法表在浏览页面",
-  "Name search can be narrowed by Browse filters.": "法术名搜索可以叠加浏览页筛选",
   "No spells matched \"{{query}}\".": "没有对应\"{{query}}\"的法术。",
   "Request failed. Please try again.": "查询失败。",
-  "Rulebook filter is active (from Settings).": "已启动规则书过滤（设置里改）",
   "Search": "搜索！",
-  "Search scope": "搜索范围",
   "Search spells by name...": "输入名字（中英皆可）"
 }

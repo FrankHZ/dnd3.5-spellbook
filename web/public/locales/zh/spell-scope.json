@@ -1,0 +1,8 @@
+{
+  "all levels": "全部环数",
+  "any level": "任意环数",
+  "Filters: {{classCount}} class filters, {{domainCount}} domain filters, level {{level}}.": "筛选：{{classCount}}个职业，{{domainCount}}个领域，环数{{level}}。",
+  "not selected": "未选择",
+  "Rulebooks: {{count}} selected (change in Settings)._other": "规则书：已选择{{count}}本（设置里改）",
+  "Rulebooks: default 3.5 core": "规则书：默认3.5核心"
+}

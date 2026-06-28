@@ -6,15 +6,10 @@ import { ApiError } from "~/api/http";
 import { searchSpellsByName } from "~/api/spells";
 import Pager from "~/components/Pager";
 import { SpellCard } from "~/components/SpellCard";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
+import { SpellFilterScopeSummary } from "~/features/spells/SpellFilterScopeSummary";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useUserPrefs } from "~/state/user-prefs-state";
 import { useTranslation } from "react-i18next";
@@ -40,12 +35,6 @@ export default function SearchSpellsPage() {
   const qParam = searchScope.q;
   const isValid = isSearchQueryValid(qParam, lang);
   const hasScopedSearch = hasSearchScope(searchScope);
-  const levelLabel =
-    searchScope.level == null
-      ? t("any")
-      : searchScope.level === "all"
-        ? t("all")
-        : String(searchScope.level);
 
   function updateSearchScope(
     patch: Partial<
@@ -119,30 +108,7 @@ export default function SearchSpellsPage() {
     <div className="page-side">
       <div className="grid gap-4 md:grid-cols-[320px_1fr]">
         <Card className="gap-0 self-start">
-          <CardHeader className="gap-1 py-3">
-            <CardTitle className="text-base">{t("Search scope")}</CardTitle>
-            <CardDescription>
-              {t("Name search can be narrowed by Browse filters.")}
-            </CardDescription>
-          </CardHeader>
           <CardContent className="space-y-4 pt-0">
-            <ClassAndDomainSelector
-              classIds={searchScope.classIds}
-              domainIds={searchScope.domainIds}
-              onChangeClasses={(classIds) => updateSearchScope({ classIds })}
-              onChangeDomains={(domainIds) => updateSearchScope({ domainIds })}
-            />
-
-            <Separator />
-
-            <LevelSelector
-              value={searchScope.level}
-              onChange={(level) => updateSearchScope({ level })}
-              allowAnyLevel
-            />
-
-            <Separator />
-
             <div className="grid gap-2">
               {hasScopedSearch ? (
                 <Button
@@ -157,33 +123,43 @@ export default function SearchSpellsPage() {
                   {t("Clear Search filters")}
                 </Button>
               )}
+
+              {rulebookIds.length > 0 && (
+                <div className="text-xs text-muted-foreground">
+                  {t("{{count}} rulebooks selected (change in Settings).", {
+                    count: rulebookIds.length,
+                  })}
+                </div>
+              )}
             </div>
 
-            {rulebookIds.length > 0 && (
-              <div className="text-xs text-muted-foreground">
-                {t("Rulebook filter is active (from Settings).")}
-              </div>
-            )}
+            <Separator />
+
+            <ClassAndDomainSelector
+              classIds={searchScope.classIds}
+              domainIds={searchScope.domainIds}
+              onChangeClasses={(classIds) => updateSearchScope({ classIds })}
+              onChangeDomains={(domainIds) => updateSearchScope({ domainIds })}
+            />
+
+            <Separator />
+
+            <LevelSelector
+              value={searchScope.level}
+              onChange={(level) => updateSearchScope({ level })}
+              allowAnyLevel
+            />
           </CardContent>
         </Card>
 
         <div className="space-y-3">
-          <div className="space-y-1 px-1">
-            <div className="text-sm text-muted-foreground">
-              {hasScopedSearch
-                ? t(
-                    "Browse scope is active: {{classCount}} classes, {{domainCount}} domains, level {{level}}.",
-                    {
-                      classCount: searchScope.classIds.length,
-                      domainCount: searchScope.domainIds.length,
-                      level: levelLabel,
-                    },
-                  )
-                : t(
-                    "Global name search. Browsing by class/level lives in Browse.",
-                  )}
-            </div>
-          </div>
+          <SpellFilterScopeSummary
+            classCount={searchScope.classIds.length}
+            domainCount={searchScope.domainIds.length}
+            level={searchScope.level}
+            rulebookCount={rulebookIds.length}
+            nullLevelMode="any"
+          />
 
           {!isValid.ok && (
             <Card className="gap-0">

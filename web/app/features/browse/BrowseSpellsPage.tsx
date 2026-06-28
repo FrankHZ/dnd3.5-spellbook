@@ -13,6 +13,7 @@ import {
   CardHeader,
 } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
+import { SpellFilterScopeSummary } from "~/features/spells/SpellFilterScopeSummary";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 
 import { PAGE_SIZE } from "../constants";
@@ -86,25 +87,10 @@ export default function BrowsePage() {
 
   const total = browseQuery.data?.total ?? 0;
   const groups = browseQuery.data?.groups;
-  const bookCount = rulebookIds.length;
   const hasSpellData = groups?.flatMap((group) => group.items).length !== 0;
-  const scopeDescription =
-    bookCount !== 0
-      ? t("Using saved rulebook scope: {{bookCount}} selected", {
-          ns: "spell-browse",
-          bookCount,
-        })
-      : t("Using default rulebook scope: 3.5 core", {
-          ns: "spell-browse",
-        });
 
   return (
     <div className="page-side">
-      <div className="space-y-1 px-1">
-        <h1 className="text-xl font-semibold">{t("Browse")}</h1>
-        <div className="text-sm text-muted-foreground">{scopeDescription}</div>
-      </div>
-
       <div className="grid gap-4 md:grid-cols-[320px_1fr]">
         <Card className="gap-0 self-start">
           <CardContent className="space-y-4">
@@ -127,6 +113,14 @@ export default function BrowsePage() {
         </Card>
 
         <div className="space-y-3">
+          <SpellFilterScopeSummary
+            classCount={classIds.length}
+            domainCount={domainIds.length}
+            level={level}
+            rulebookCount={rulebookIds.length}
+            nullLevelMode="required"
+          />
+
           {!hasValidSelection && (
             <Card className="gap-0">
               <CardHeader className="gap-1 py-1">

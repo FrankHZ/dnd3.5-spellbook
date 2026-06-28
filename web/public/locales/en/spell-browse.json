@@ -2,7 +2,6 @@
   "All Levels": "All Levels",
   "Any Level": "Any Level",
   "Base Classes": "Base Classes",
-  "Browse": "Browse",
   "Choose at least one class or domain, then set a spell level.": "Choose at least one class or domain, then set a spell level.",
   "Classes": "Classes",
   "Domains": "Domains",
@@ -16,7 +15,5 @@
   "Request failed. Please try again.": "Request failed. Please try again.",
   "Select a spell level (0-9).": "Select a spell level (0-9).",
   "Select at least one class or domain.": "Select at least one class or domain.",
-  "Show details": "Show details",
-  "Using default rulebook scope: 3.5 core": "Using default rulebook scope: 3.5 core",
-  "Using saved rulebook scope: {{bookCount}} selected": "Using saved rulebook scope: {{bookCount}} selected"
+  "Show details": "Show details"
 }
