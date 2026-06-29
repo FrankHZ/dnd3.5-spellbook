@@ -93,7 +93,8 @@ echo "==> Prisma generate"
 npm run -w "$WORKSPACE" db:generate
 
 echo "==> Build"
-npm run -w contracts build
+npm run build:contracts
+npm run check:contracts
 npm run -w "$WORKSPACE" build
 
 # --- 5) Sync code to /opt/spellbook (preserve data/) ---

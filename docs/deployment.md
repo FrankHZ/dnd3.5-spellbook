@@ -249,12 +249,13 @@ The tracked script in `docs/deployment-scripts/deploy-backend.sh` performs:
 6. Runs `git pull --ff-only`
 7. Runs `npm install` with constrained `NODE_OPTIONS`
 8. Runs `npm run -w server db:generate`
-9. Runs `npm run -w contracts build`
-10. Runs `npm run -w server build`
-11. `rsync`s the repo into `/opt/spellbook` with `--exclude 'data/'`
-12. Reapplies ownership
-13. Restarts `spellbook-api`
-14. Smoke-tests `http://127.0.0.1:3000/api/rulebooks`
+9. Runs `npm run build:contracts`
+10. Runs `npm run check:contracts`
+11. Runs `npm run -w server build`
+12. `rsync`s the repo into `/opt/spellbook` with `--exclude 'data/'`
+13. Reapplies ownership
+14. Restarts `spellbook-api`
+15. Smoke-tests `http://127.0.0.1:3000/api/rulebooks`
 
 ## Important Invariants
 
