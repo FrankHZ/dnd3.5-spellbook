@@ -68,6 +68,8 @@ behavior.
 
 - Prefer existing patterns over new frameworks or broad rewrites.
 - Keep changes scoped to the requested behavior.
+- Use the repo-local `$branch-naming` skill before creating, renaming, or
+  assigning Codex work branches.
 - Do not commit local data, database files, generated logs, or personal wrapper
   scripts to the parent repo. The nested `data/` repo may version local source
   data separately.
@@ -80,6 +82,25 @@ behavior.
   `web`.
 - If behavior differs from documentation, update the newest topic-specific
   canonical doc rather than editing old MVP history.
+
+## Agent Collaboration Strategy
+
+Use this main thread as the planning and review gate for broad work. The main
+agent should own roadmap interpretation, concrete plans, branch review, merge
+decisions, and source-of-truth documentation updates.
+
+Use specialist agents or focused branches for domain-heavy work such as design,
+i18n, data tooling, deployment, harness, or frontend UI passes. A specialist
+branch should have one clear owner domain, a short summary, and validation notes
+before review.
+
+Use subagents for small implementation slices when the plan is clear. The main
+agent should still review the resulting diff, check that it reuses existing
+patterns, and decide whether it is ready to merge.
+
+It is fine for the main agent to make small direct fixes when the scope is
+obvious, but avoid mixing planning, review, and unrelated implementation in one
+branch.
 
 ## Feature Change Workflow
 

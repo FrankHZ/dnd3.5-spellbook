@@ -1,0 +1,4 @@
+interface:
+  display_name: "Branch Naming"
+  short_description: "Name repo branches consistently"
+  default_prompt: "Use $branch-naming to choose a branch name for this repo task."
