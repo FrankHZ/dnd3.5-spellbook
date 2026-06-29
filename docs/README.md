@@ -56,6 +56,7 @@ For deployment and environment operations, use:
 - [rules-db-notes.md](./rules-db-notes.md)
 - [roadmap.md](./roadmap.md)
 - [repo-conventions.md](./repo-conventions.md)
+- [design.md](./design.md)
 - [features.md](./features.md)
 - [harness.md](./harness.md)
 - [feature-workflow.md](./feature-workflow.md)
@@ -80,6 +81,7 @@ These documents define:
 - practical notes for inspecting the local rules SQLite database
 - the current active work ordering and restart path
 - the repo conventions around local wrappers and canonical docs
+- the current UI design inventory, principles, and non-roadmap design notes
 - the current user-facing feature map
 - the current validation surface and harness improvement path
 - the lightweight intake workflow for new feature requests

@@ -68,10 +68,11 @@ For deployment and reverse-proxy expectations, use:
 ## Notes
 
 - The frontend depends on `@dnd/contracts` for shared DTOs and types.
-- UI behavior should follow the frozen v3.2 state unless a newer doc supersedes it.
+- UI behavior should follow the current feature map and the design inventory in
+  [../docs/design.md](../docs/design.md).
 - The production build output is written under `build/`.
 - Deployment workflow and remote activation steps are documented in [../docs/deployment.md](../docs/deployment.md).
-- For current release-level behavior, start with [../docs/mvp/v3.2/FREEZE.md](../docs/mvp/v3.2/FREEZE.md).
+- For current release-level behavior, start with [../docs/mvp/v3.3/FREEZE.md](../docs/mvp/v3.3/FREEZE.md).
 
 ## Related Docs
 
@@ -79,6 +80,7 @@ For deployment and reverse-proxy expectations, use:
 - [../docs/README.md](../docs/README.md)
 - [../docs/deployment.md](../docs/deployment.md)
 - [../docs/data-setup.md](../docs/data-setup.md)
+- [../docs/design.md](../docs/design.md)
 - [../docs/frontend-map.md](../docs/frontend-map.md)
 - [../docs/i18n.md](../docs/i18n.md)
 - [../docs/mvp/v3.4/i18next-conventions-plan.md](../docs/mvp/v3.4/i18next-conventions-plan.md)

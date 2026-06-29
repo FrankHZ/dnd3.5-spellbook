@@ -29,6 +29,7 @@ Post-v3.3 candidate plans have started under `docs/mvp/v3.4/`.
 
 For the current work order, use [docs/roadmap.md](./docs/roadmap.md).
 For the current feature map, start with [docs/features.md](./docs/features.md).
+For current UI design notes, use [docs/design.md](./docs/design.md).
 For the v3.3 release snapshot, use [docs/mvp/v3.3/FREEZE.md](./docs/mvp/v3.3/FREEZE.md).
 For the full documentation map, use [docs/README.md](./docs/README.md).
 
@@ -117,6 +118,8 @@ This repo keeps documentation intentionally lightweight:
 - The root `README.md` is a short human-friendly entry point.
 - [docs/README.md](./docs/README.md) is the canonical documentation map.
 - [docs/roadmap.md](./docs/roadmap.md) is the current active work ordering.
+- [docs/design.md](./docs/design.md) is the current UI design inventory and
+  principle note.
 - Each workspace `README.md` gives short operational guidance.
 - `docs/` contains versioned and canonical project documents.
 
