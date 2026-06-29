@@ -10,7 +10,6 @@
     "exactOptionalPropertyTypes": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "baseUrl": ".",
     "paths": {
       "DATA/*": ["../data/*"],
       "prisma-rules-clean/*": ["../server/prisma-rules-clean/*"]

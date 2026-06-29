@@ -43,12 +43,13 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "baseUrl": ".",
     "paths": {
-      "DATA/*": ["data/*"],
-      "~/*": ["src/*"],
-      "DB_RULES/*": ["prisma-rules-clean/generated/*"],
-      "DB_APP/*": ["prisma-app/generated/*"]
+      "DATA/*": ["./data/*"],
+      "~/*": ["./src/*"],
+      "prisma-rules-clean/*": ["./prisma-rules-clean/*"],
+      "prisma-app/*": ["./prisma-app/*"],
+      "DB_RULES/*": ["./prisma-rules-clean/generated/*"],
+      "DB_APP/*": ["./prisma-app/generated/*"]
     }
   },
   "include": [
