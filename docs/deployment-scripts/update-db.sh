@@ -74,6 +74,15 @@ sudo systemctl restart "$SERVICE"
 sudo systemctl status "$SERVICE" --no-pager
 
 echo "==> Smoke test"
-curl -fsS "http://127.0.0.1:3000/api/rulebooks" >/dev/null
+for attempt in 1 2 3 4 5; do
+  if curl -fsS "http://127.0.0.1:3000/api/rulebooks" >/dev/null; then
+    echo "✅ DB update complete"
+    exit 0
+  fi
 
-echo "✅ DB update complete"
+  echo "    smoke attempt $attempt failed; retrying..."
+  sleep 2
+done
+
+echo "DB update smoke test failed after retries" >&2
+exit 1

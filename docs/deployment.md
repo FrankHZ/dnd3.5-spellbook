@@ -225,7 +225,7 @@ The tracked script in `docs/deployment-scripts/update-db.sh` performs:
 6. Copies incoming files via a temp file and moves them into place
 7. Removes stale `-wal` and `-shm` files
 8. Restarts `spellbook-api`
-9. Smoke-tests `http://127.0.0.1:3000/api/rulebooks`
+9. Smoke-tests `http://127.0.0.1:3000/api/rulebooks` with short retries
 
 ## Backend Deployment
 
