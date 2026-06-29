@@ -52,6 +52,11 @@ Vitest is configured to run only source tests under `server/tests/` and exclude
 `server/dist/`. Generated output must not become a source of truth for test
 discovery.
 
+The server production build intentionally excludes local data import scripts
+under `server/scripts/`. Those scripts run through dedicated `tsx` npm commands
+and may depend on local-only source data that is not present on the deployment
+host.
+
 ### Frontend-Backend Batch Limit
 
 Backend spell-name resolve currently rejects more than 200 names per request.

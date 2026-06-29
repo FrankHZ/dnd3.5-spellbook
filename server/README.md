@@ -27,6 +27,11 @@ Build the server:
 npm run -w server build
 ```
 
+The production build compiles runtime source, Prisma generated clients, and
+server tests. Local data import scripts under `server/scripts/` are run with
+`tsx` by their dedicated npm commands and are intentionally outside the server
+build so deployment does not depend on local source-data files.
+
 Run the built server:
 
 ```bash
