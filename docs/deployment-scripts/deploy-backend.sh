@@ -86,7 +86,7 @@ git pull --ff-only
 # --- 3) Install deps ---
 echo "==> Install deps"
 export NODE_OPTIONS="--max-old-space-size=256"
-npm install
+npm ci
 
 # --- 4) Generate + build ---
 echo "==> Prisma generate"

@@ -122,7 +122,7 @@ git clone git@github.com:YOUR_ORG/dnd3.5-spellbook.git
 
 ```bash
 cd ~/dnd3.5-spellbook
-npm install
+npm ci
 npm run -w contracts build
 npm run -w server db:generate
 npm run -w server build

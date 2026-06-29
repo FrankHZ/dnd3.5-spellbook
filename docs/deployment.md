@@ -247,7 +247,7 @@ The tracked script in `docs/deployment-scripts/deploy-backend.sh` performs:
 4. Runs `git reset --hard`
 5. Runs `git clean -fd`
 6. Runs `git pull --ff-only`
-7. Runs `npm install` with constrained `NODE_OPTIONS`
+7. Runs `npm ci` with constrained `NODE_OPTIONS`
 8. Runs `npm run -w server db:generate`
 9. Runs `npm run build:contracts`
 10. Runs `npm run check:contracts`
