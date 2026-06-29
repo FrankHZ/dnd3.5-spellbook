@@ -117,5 +117,15 @@ sudo systemctl status "$SERVICE" --no-pager
 
 # --- 7) Smoke test ---
 echo "==> Smoke test"
-curl -fsS "http://127.0.0.1:3000/api/rulebooks" >/dev/null
-echo "✅ Backend deploy OK"
+for attempt in 1 2 3 4 5; do
+  if curl -fsS "http://127.0.0.1:3000/api/rulebooks" >/dev/null; then
+    echo "✅ Backend deploy OK"
+    exit 0
+  fi
+
+  echo "    smoke attempt $attempt failed; retrying..."
+  sleep 2
+done
+
+echo "Backend smoke test failed after retries" >&2
+exit 1

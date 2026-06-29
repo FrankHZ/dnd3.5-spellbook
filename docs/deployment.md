@@ -255,7 +255,7 @@ The tracked script in `docs/deployment-scripts/deploy-backend.sh` performs:
 12. `rsync`s the repo into `/opt/spellbook` with `--exclude 'data/'`
 13. Reapplies ownership
 14. Restarts `spellbook-api`
-15. Smoke-tests `http://127.0.0.1:3000/api/rulebooks`
+15. Smoke-tests `http://127.0.0.1:3000/api/rulebooks` with short retries
 
 ## Important Invariants
 
