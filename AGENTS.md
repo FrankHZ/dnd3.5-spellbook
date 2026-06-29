@@ -32,25 +32,27 @@ Start with these files when orienting:
 4. `docs/feature-workflow.md` before implementing non-trivial new features.
 5. `docs/design.md` before making broad UI layout, visual design, or design
    principle changes.
-6. `docs/mvp/v3.3/FREEZE.md` for the latest frozen release snapshot.
-7. `docs/mvp/v3.3/acceptance-checklist.md` when checking v3.3 acceptance
+6. `docs/mvp/v3.4/design-refresh-plan.md` before implementing v3.4 frontend
+   design-refresh or styling-pass work.
+7. `docs/mvp/v3.3/FREEZE.md` for the latest frozen release snapshot.
+8. `docs/mvp/v3.3/acceptance-checklist.md` when checking v3.3 acceptance
    evidence.
-8. `docs/mvp/v3.3/data-tools-workspace-plan.md` before moving or adding data
+9. `docs/mvp/v3.3/data-tools-workspace-plan.md` before moving or adding data
    import, parser, rules DB inspection, or rules DB patch tooling.
-9. `docs/mvp/v3.3/local-data-layout-plan.md` before moving CHM inputs, parser
+10. `docs/mvp/v3.3/local-data-layout-plan.md` before moving CHM inputs, parser
    outputs, local source data, or future rules patch files.
-10. `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before moving SQL patch
+11. `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before moving SQL patch
    assets, adding rules DB preparation commands, or importing missing English
    base spell records.
-11. `docs/mvp/v3.3/structured-spell-patch-plan.md` before designing or applying
+12. `docs/mvp/v3.3/structured-spell-patch-plan.md` before designing or applying
    missing English spell patch data.
-12. `docs/mvp/v3.3/spells-full-import-plan.md` before using local
+13. `docs/mvp/v3.3/spells-full-import-plan.md` before using local
    `spells-full` source data to generate missing English spell patches.
-13. `docs/harness.md` for validation and test-harness strategy.
-14. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
-15. `docs/mvp/v3.4/i18next-conventions-plan.md` before replacing raw-English
+14. `docs/harness.md` for validation and test-harness strategy.
+15. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
+16. `docs/mvp/v3.4/i18next-conventions-plan.md` before replacing raw-English
     frontend translation keys or tightening i18next workflow checks.
-16. Workspace READMEs for operational commands:
+17. Workspace READMEs for operational commands:
 
 - `server/README.md`
 - `data-tools/README.md`

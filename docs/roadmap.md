@@ -92,20 +92,26 @@ future short-description import creates new target text to review.
 
 Recommended next sequence:
 
-1. **Post-v3.3 candidate: short description pipeline**
+1. **v3.4 candidate: frontend design refresh**
+
+   Use `docs/mvp/v3.4/design-refresh-plan.md` to review existing frontend
+   components against `docs/design.md`, then implement small styling and
+   consistency improvements that are easy to inspect in the running app.
+
+2. **Post-v3.3 candidate: short description pipeline**
 
    Make a new concrete plan for parsing class/spell summary tables from CHM
    sources and deciding where short descriptions live in the app-owned data
    model. Chinese short descriptions should use local CHM sources; English
    short descriptions still need a source decision.
 
-2. **Post-v3.3 candidate: data harness hardening**
+3. **Post-v3.3 candidate: data harness hardening**
 
    Add focused tests or report checks for CHM parser matching, source-label
    normalization, and structured rules patch validation. Keep these small and
    close to the data tooling.
 
-3. **Post-v3.3 candidate: frontend i18n convention cleanup**
+4. **Post-v3.3 candidate: frontend i18n convention cleanup**
 
    Keep `i18next`, but replace raw-English translation keys with stable
    semantic keys and make `npm run i18n:check` enforce the convention.

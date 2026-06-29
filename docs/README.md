@@ -37,9 +37,17 @@ documents in this order:
 - [mvp/v3.3/spells-full-import-plan.md](./mvp/v3.3/spells-full-import-plan.md)
 - [mvp/v3.3/structured-spell-patch-plan.md](./mvp/v3.3/structured-spell-patch-plan.md)
 
-Post-v3.3 candidate planning has started under `docs/mvp/v3.4/`:
+## Early v3.4 Planning
 
+Early v3.4 planning has started under `docs/mvp/v3.4/`:
+
+- [mvp/v3.4/design-refresh-plan.md](./mvp/v3.4/design-refresh-plan.md)
 - [mvp/v3.4/i18next-conventions-plan.md](./mvp/v3.4/i18next-conventions-plan.md)
+
+The design refresh plan is intentionally narrower than a redesign. It uses
+`docs/design.md` to review existing components and pick low-risk styling
+improvements. The i18next plan covers frontend translation-key convention
+hardening.
 
 ## Current Operational Docs
 

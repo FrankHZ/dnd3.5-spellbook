@@ -30,6 +30,7 @@ Post-v3.3 candidate plans have started under `docs/mvp/v3.4/`.
 For the current work order, use [docs/roadmap.md](./docs/roadmap.md).
 For the current feature map, start with [docs/features.md](./docs/features.md).
 For current UI design notes, use [docs/design.md](./docs/design.md).
+For early v3.4 UI refresh planning, use [docs/mvp/v3.4/design-refresh-plan.md](./docs/mvp/v3.4/design-refresh-plan.md).
 For the v3.3 release snapshot, use [docs/mvp/v3.3/FREEZE.md](./docs/mvp/v3.3/FREEZE.md).
 For the full documentation map, use [docs/README.md](./docs/README.md).
 
