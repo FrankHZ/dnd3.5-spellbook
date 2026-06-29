@@ -41,13 +41,17 @@ documents in this order:
 
 Early v3.4 planning has started under `docs/mvp/v3.4/`:
 
+- [mvp/v3.4/short-description-pipeline-plan.md](./mvp/v3.4/short-description-pipeline-plan.md)
+- [mvp/v3.4/data-harness-hardening-plan.md](./mvp/v3.4/data-harness-hardening-plan.md)
 - [mvp/v3.4/design-refresh-plan.md](./mvp/v3.4/design-refresh-plan.md)
 - [mvp/v3.4/i18next-conventions-plan.md](./mvp/v3.4/i18next-conventions-plan.md)
 
 The design refresh plan is intentionally narrower than a redesign. It uses
 `docs/design.md` to review existing components and pick low-risk styling
-improvements. The i18next plan covers frontend translation-key convention
-hardening.
+improvements. The short-description plan covers source-backed summary extraction
+before runtime/UI changes. The data harness plan covers portable data-tool tests
+and local-data acceptance boundaries. The i18next plan covers frontend
+translation-key convention hardening.
 
 ## Current Operational Docs
 

@@ -8,6 +8,11 @@ serving requests.
 
 ## Commands
 
+Current v3.4 planning for data-tooling work lives in:
+
+- [../docs/mvp/v3.4/short-description-pipeline-plan.md](../docs/mvp/v3.4/short-description-pipeline-plan.md)
+- [../docs/mvp/v3.4/data-harness-hardening-plan.md](../docs/mvp/v3.4/data-harness-hardening-plan.md)
+
 Inspect the local rules DB:
 
 ```bash
@@ -57,12 +62,21 @@ generated reports or parser output under `data-tools/out/`.
 
 Current CHM parser defaults:
 
-- raw CHM HTML: `data/chm-raw/`
+- raw CHM HTML: `data/chm-raw/` (local ignored static input)
 - cleaned CHM HTML: `data/chm-clean/`
+- full raw CHM decompile for source inventory: `data/chm-raw-full/` (local
+  ignored static input)
 - parser test input: `data/chm-test/`
 - CHM mapping and alias JSON: `data/chm-mapping/`
 - parser output: `data-tools/out/zh-parser/`
 - mechanical QA output: `data-tools/out/zh-parser/qa/`
+
+`data/chm-raw/` and `data/chm-raw-full/` may exist locally under the nested
+`data/` directory, but they are static inputs and should stay ignored rather
+than maintained as source-of-truth files. `data/chm-raw-full/` is not part of
+the current full-description parser input. Use it for source discovery and
+future short-summary extraction planning before promoting adopted pages into a
+maintained clean or summary source path.
 
 CHM preprocess and parse commands scan nested directories and preserve relative
 paths in cleaned output and parser source keys. Word/CHM companion directories

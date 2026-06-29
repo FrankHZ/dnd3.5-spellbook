@@ -121,6 +121,11 @@ by-level results, rule metadata lists, and common API error payloads.
 The root `verify` command includes `npm run typecheck:data-tools` so v3.3 data
 tooling stays covered by the standard validation path.
 
+The next data-tooling harness pass is tracked in
+`docs/mvp/v3.4/data-harness-hardening-plan.md`. Use that plan before adding a
+portable `data-tools` test command, parser acceptance command, or structured
+rules-patch fixture harness.
+
 The root `verify` command also imports the built `@dnd/contracts` package with
 Node after `build:contracts`. This catches ESM package output that typechecks
 but cannot be resolved by runtime tools such as the web dev server.

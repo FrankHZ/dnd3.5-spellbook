@@ -92,26 +92,28 @@ future short-description import creates new target text to review.
 
 Recommended next sequence:
 
-1. **v3.4 candidate: frontend design refresh**
+1. **v3.4 candidate: short description pipeline**
+
+   Use `docs/mvp/v3.4/short-description-pipeline-plan.md` to build a
+   data-tools-first pipeline for source-backed short descriptions. Start with
+   Chinese summaries from the full CHM class spell overview pages, then fold in
+   the confirmed ToB maneuver list, optional domain-list sources, and
+   IMarvinTPA as the planned local English source. Defer schema/API/UI exposure
+   until extraction and partial coverage behavior are accepted.
+
+2. **v3.4 candidate: data harness hardening**
+
+   Use `docs/mvp/v3.4/data-harness-hardening-plan.md` to add portable
+   data-tools tests and explicit local-data acceptance checks around CHM parser
+   matching, source-label normalization, and structured rules patch validation.
+
+3. **v3.4 candidate: frontend design refresh**
 
    Use `docs/mvp/v3.4/design-refresh-plan.md` to review existing frontend
    components against `docs/design.md`, then implement small styling and
    consistency improvements that are easy to inspect in the running app.
 
-2. **Post-v3.3 candidate: short description pipeline**
-
-   Make a new concrete plan for parsing class/spell summary tables from CHM
-   sources and deciding where short descriptions live in the app-owned data
-   model. Chinese short descriptions should use local CHM sources; English
-   short descriptions still need a source decision.
-
-3. **Post-v3.3 candidate: data harness hardening**
-
-   Add focused tests or report checks for CHM parser matching, source-label
-   normalization, and structured rules patch validation. Keep these small and
-   close to the data tooling.
-
-4. **Post-v3.3 candidate: frontend i18n convention cleanup**
+4. **v3.4 candidate: frontend i18n convention cleanup**
 
    Keep `i18next`, but replace raw-English translation keys with stable
    semantic keys and make `npm run i18n:check` enforce the convention.
