@@ -6,7 +6,12 @@ import { ApiError } from "~/api/http";
 import { searchSpellsByName } from "~/api/spells";
 import Pager from "~/components/Pager";
 import { SpellCard } from "~/components/SpellCard";
-import { Card, CardContent, CardDescription, CardHeader } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { SpellFilterScopeSummary } from "~/features/spells/SpellFilterScopeSummary";
@@ -122,14 +127,6 @@ export default function SearchSpellsPage() {
                 <Button type="button" variant="ghost" disabled>
                   {t("Clear Search filters")}
                 </Button>
-              )}
-
-              {rulebookIds.length > 0 && (
-                <div className="text-xs text-muted-foreground">
-                  {t("{{count}} rulebooks selected (change in Settings).", {
-                    count: rulebookIds.length,
-                  })}
-                </div>
               )}
             </div>
 
