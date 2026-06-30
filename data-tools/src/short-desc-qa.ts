@@ -70,6 +70,7 @@ type QaSummary = {
     enSourceMismatches: number;
     deferredPdf: number;
     enResolvedCandidates: number;
+    enResolvedSourceMismatches: number;
   };
 };
 
@@ -489,7 +490,7 @@ function enCandidateName(candidate: EnCandidate) {
   return candidate.exactName ?? candidate.name;
 }
 
-function isAddCandidateResolved(
+function isReviewedEnglishDecisionResolved(
   decision: EnStrictDecision,
   candidateKeys: Set<string> | null,
   sourceKeys: Set<string> | null,
@@ -757,7 +758,7 @@ function main() {
     (decision) => decision.decision === "add_candidate",
   );
   const enResolvedCandidateRows = enAddCandidateRows.filter((decision) =>
-    isAddCandidateResolved(decision, enCandidateKeys, enSourceKeys),
+    isReviewedEnglishDecisionResolved(decision, enCandidateKeys, enSourceKeys),
   );
   const enUnresolvedAddCandidateRows = enAddCandidateRows.filter(
     (decision) => !enResolvedCandidateRows.includes(decision),
@@ -767,6 +768,12 @@ function main() {
   );
   const enSourceMismatchRows = (enStrictDecisions ?? []).filter(
     (decision) => decision.decision === "source_mismatch",
+  );
+  const enResolvedSourceMismatchRows = enSourceMismatchRows.filter((decision) =>
+    isReviewedEnglishDecisionResolved(decision, enCandidateKeys, enSourceKeys),
+  );
+  const enUnresolvedSourceMismatchRows = enSourceMismatchRows.filter(
+    (decision) => !enResolvedSourceMismatchRows.includes(decision),
   );
   const enDeferredPdfRows = (enStrictDecisions ?? []).filter(
     (decision) => decision.decision === "defer_pdf",
@@ -809,6 +816,13 @@ function main() {
       detail: `${enRulesDbGapRows.length} reviewed English rows appear to be rules DB gaps before short-description import`,
     });
   }
+  if (enResolvedSourceMismatchRows.length > 0) {
+    issue(issues, "info", "en-strict35-resolved-source-mismatches", {
+      queue: "en-resolved-source-mismatches",
+      count: enResolvedSourceMismatchRows.length,
+      detail: `${enResolvedSourceMismatchRows.length} reviewed English source-mismatch rows are covered by current matching rules`,
+    });
+  }
 
   const zhNames = chineseMatchedNames(zhMatched);
   const enNames = englishMatchedNames(enSourceIndex);
@@ -832,7 +846,7 @@ function main() {
       notes: decision.notes,
       confidence: decision.confidence,
     })),
-    ...enSourceMismatchRows.map((decision) => ({
+    ...enUnresolvedSourceMismatchRows.map((decision) => ({
       queue: "import-blockers",
       sourceQueue: "en-strict35-missing",
       key: decision.key,
@@ -873,8 +887,9 @@ function main() {
     "import-blockers": importBlockerRows,
     "en-add-candidates": enUnresolvedAddCandidateRows,
     "en-resolved-candidates": enResolvedCandidateRows,
+    "en-resolved-source-mismatches": enResolvedSourceMismatchRows,
     "en-rules-db-gaps": enRulesDbGapRows,
-    "en-source-mismatches": enSourceMismatchRows,
+    "en-source-mismatches": enUnresolvedSourceMismatchRows,
     "en-deferred-pdf": enDeferredPdfRows,
   };
   for (const [name, rows] of Object.entries(queues)) {
@@ -941,9 +956,10 @@ function main() {
       blockers: importBlockerRows.length,
       enAddCandidates: enUnresolvedAddCandidateRows.length,
       enRulesDbGaps: enRulesDbGapRows.length,
-      enSourceMismatches: enSourceMismatchRows.length,
+      enSourceMismatches: enUnresolvedSourceMismatchRows.length,
       deferredPdf: enDeferredPdfRows.length,
       enResolvedCandidates: enResolvedCandidateRows.length,
+      enResolvedSourceMismatches: enResolvedSourceMismatchRows.length,
     },
   };
 

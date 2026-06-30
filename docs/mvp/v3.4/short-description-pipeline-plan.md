@@ -346,6 +346,7 @@ data-tools/out/short-desc-qa/
    |- import-blockers.jsonl
    |- en-add-candidates.jsonl
    |- en-resolved-candidates.jsonl
+   |- en-resolved-source-mismatches.jsonl
    |- en-rules-db-gaps.jsonl
    |- en-source-mismatches.jsonl
    |- en-deferred-pdf.jsonl
@@ -363,16 +364,19 @@ It then promotes decisions into follow-up queues:
   alias normalization and are not yet covered by the current matching rules
 - `en-resolved-candidates.jsonl` for reviewed add-candidate rows already covered
   by the current IMarvinTPA name-matching rules
+- `en-resolved-source-mismatches.jsonl` for reviewed source-mismatch rows that
+  are already covered by conservative IMarvinTPA title-normalization rules
 - `en-rules-db-gaps.jsonl` for English rows that appear to require future rules
   DB patch work before short-description import
 
 The current local QA snapshot with review decisions has `0` errors, `3` warning
-categories, and `3` info categories. It reports `7` reviewed Chinese alias audit
-entries, `80` reviewed English strict-3.5 missing candidates, `17` import
-blockers, `19` resolved English candidate-normalization rows, `0` remaining
-English add-candidate rows, `47` English rules DB gaps, `656` Chinese conflict
-rows, and `1,274` cross-language coverage rows. The large queues remain review
-leads unless a future import gate explicitly consumes them.
+categories, and `4` info categories. It reports `7` reviewed Chinese alias audit
+entries, `80` reviewed English strict-3.5 missing candidates, `6` import
+blockers, `19` resolved English candidate-normalization rows, `11` resolved
+English source-mismatch rows, `0` remaining English add-candidate rows, `1`
+remaining English source-mismatch row, `47` English rules DB gaps, `656` Chinese
+conflict rows, and `1,274` cross-language coverage rows. The large queues
+remain review leads unless a future import gate explicitly consumes them.
 
 The reviewed English rules DB gaps now have a source-to-patch triage path:
 

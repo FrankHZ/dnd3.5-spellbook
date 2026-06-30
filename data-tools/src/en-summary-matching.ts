@@ -3,8 +3,18 @@ import aliasMapGlobal from "DATA/chm-mapping/enName-aliases-global.json";
 
 const BUILTIN_IMARVIN_ALIAS_EXTRA: Record<string, string[]> = {
   "Channel Greater Celestial": ["Greater Channel Celestial"],
+  "Crown of Glory": ["Crown of Glory 2"],
+  "Curse of Lycanthropy": ["Curse of Lycanthropy 2", "Curse of Lycanthropy 2 (M)"],
+  Darkbolt: ["Darkness Darkbolt", "Vile Darkbolt"],
+  Forceward: ["Force Effects Forceward"],
+  Frostbite: ["Frostbite 2"],
+  Razorfangs: ["Razorfanqs"],
+  Sandblast: ["Sandblast (LE)"],
+  "Silvered Weapon": ["Alternate Silvered Weapon"],
   "Status, Greater": ["Greater Status (HoB)"],
+  "Tortoise Shell": ["Tortoise (AC) Shell"],
   "Undeniable Gravity, Legion's": ["Mass Undeniable Gravity"],
+  "Wall of Sand": ["Wall of Sand 2"],
   "Prot\uFFFDg\uFFFD": ["Protege", "Prot\u00E9g\u00E9"],
   "Stars of Sel\uFFFDne": ["Stars Of Selune", "Stars of Selune"],
   "Unfettered Herosim": ["Unfettered Heroism"],

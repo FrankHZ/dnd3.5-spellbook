@@ -185,7 +185,9 @@ stable keys and decisions, records review coverage in `summary.json`, and writes
 follow-up queues such as `import-blockers.jsonl`, `en-add-candidates.jsonl`, and
 `en-rules-db-gaps.jsonl`. English add-candidate decisions that are covered by
 the current IMarvinTPA name-matching rules are moved to
-`en-resolved-candidates.jsonl`.
+`en-resolved-candidates.jsonl`; conservative source-mismatch title aliases that
+are covered by the same matching rules are moved to
+`en-resolved-source-mismatches.jsonl`.
 
 ## Safety
 
