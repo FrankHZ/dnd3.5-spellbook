@@ -254,7 +254,7 @@ See `docs/harness.md` for details.
   Validated review decisions under
   `data-tools/out/short-desc-qa/review-results/` are consumed by the same
   command and promoted into follow-up queues such as `import-blockers`,
-  `en-add-candidates`, and `en-rules-db-gaps`.
+  `en-add-candidates`, `en-resolved-candidates`, and `en-rules-db-gaps`.
 - Use `npm run -w data-tools rules:spells:validate -- <patch.jsonl>` and
   `npm run -w data-tools rules:spells:apply -- --dry-run <patch.jsonl>` before
   applying structured missing-spell patches.

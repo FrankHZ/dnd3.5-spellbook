@@ -3,8 +3,7 @@ import Database from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
 
-import aliasMapExtra from "DATA/chm-mapping/enName-aliases-extra.json";
-import aliasMapGlobal from "DATA/chm-mapping/enName-aliases-global.json";
+import { chooseExact, normalizeName } from "./en-summary-matching";
 import {
   loadServerEnv,
   localDataDir,
@@ -224,39 +223,6 @@ function parseNonNegativeInt(raw: string | undefined, label: string) {
     throw new Error(`${label} must be a non-negative integer, got ${raw}`);
   }
   return parsed;
-}
-
-function normalizeName(value: string) {
-  return value
-    .replace(/\s+/g, " ")
-    .replace(/[’]/g, "'")
-    .replace(/(?:\s+\((?:M|F|DF|XP)\))+$/gi, "")
-    .trim()
-    .toLowerCase();
-}
-
-function alternateExactNames(exactName: string) {
-  const names = [exactName];
-  const target = normalizeName(exactName);
-
-  const commaSuffix = exactName.match(/^(.+),\s*(Greater|Lesser|Mass)$/i);
-  if (commaSuffix?.[1] && commaSuffix[2]) {
-    names.push(`${commaSuffix[2]} ${commaSuffix[1]}`);
-  }
-
-  for (const [alias, canonical] of Object.entries(
-    aliasMapGlobal as Record<string, string>,
-  )) {
-    if (normalizeName(canonical) === target) names.push(alias);
-  }
-
-  for (const [canonical, aliases] of Object.entries(
-    aliasMapExtra as Record<string, string[]>,
-  )) {
-    if (normalizeName(canonical) === target) names.push(...aliases);
-  }
-
-  return [...new Set(names)];
 }
 
 function textOf(
@@ -795,11 +761,6 @@ function parseSmall2(html: string) {
   }
 
   return results;
-}
-
-function chooseExact<T extends { name: string }>(rows: T[], exactName: string) {
-  const targets = new Set(alternateExactNames(exactName).map(normalizeName));
-  return rows.filter((row) => targets.has(normalizeName(row.name)));
 }
 
 async function probeCandidate(

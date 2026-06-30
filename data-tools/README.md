@@ -177,7 +177,9 @@ validated subagent or human decisions exist under
 `data-tools/out/short-desc-qa/review-results/`, the command validates their
 stable keys and decisions, records review coverage in `summary.json`, and writes
 follow-up queues such as `import-blockers.jsonl`, `en-add-candidates.jsonl`, and
-`en-rules-db-gaps.jsonl`.
+`en-rules-db-gaps.jsonl`. English add-candidate decisions that are covered by
+the current IMarvinTPA name-matching rules are moved to
+`en-resolved-candidates.jsonl`.
 
 ## Safety
 
