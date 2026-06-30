@@ -51,6 +51,7 @@ Probe IMarvinTPA for English short-description candidates:
 npm run -w data-tools en:summaries:probe
 npm run -w data-tools en:summaries:probe -- --candidate "Spider Poison" --candidate "Blood Wind"
 npm run -w data-tools en:summaries:probe -- --input short-desc/imarvin-candidates.json --limit 20
+npm run -w data-tools en:summaries:probe -- --input short-desc/imarvin-candidates.json --offset 0 --limit 20 --delay-ms 1500 --output-name imarvin-00000-00020
 ```
 
 Run the Chinese CHM parser workflow:
@@ -130,8 +131,9 @@ from it.
 IMarvinTPA's spell search. It defaults to one candidate at a time with at least
 750 ms between HTTP requests, and rejects concurrency above 3. Reports are
 written under `data-tools/out/en-summaries/`, which is ignored by the parent
-repo. Candidate JSON inputs are local data and should live under `data/` when
-kept.
+repo. Use `--offset`, `--limit`, and `--output-name` for resumable slow-crawl
+chunks with stable report filenames. Candidate JSON inputs are local data and
+should live under `data/` when kept.
 
 `zh:qa` is a mechanical source and parser-output QA report. It checks parser
 hard gates, raw/clean file drift, noisy source labels, empty or very short

@@ -61,6 +61,8 @@ type ProbeReport = {
     concurrency: number;
     delayMs: number;
     limit: number | null;
+    offset: number;
+    outputName: string | null;
   };
   summary: {
     candidates: number;
@@ -107,7 +109,9 @@ function usage(): never {
 Options:
   --candidate <name>       Add a simple exact-name candidate.
   --input <path>           JSON candidate file. Relative paths resolve under data/.
+  --offset <n>             Skip the first n candidates before applying --limit.
   --limit <n>              Probe at most n candidates.
+  --output-name <name>     Stable report filename stem for resumable chunks.
   --concurrency <n>        Parallel candidate probes. Default 1, max ${MAX_CONCURRENCY}.
   --delay-ms <n>           Minimum spacing between HTTP requests. Default ${DEFAULT_DELAY_MS}.
 
@@ -130,6 +134,15 @@ function parsePositiveInt(raw: string | undefined, label: string) {
   const parsed = Number(raw);
   if (!Number.isInteger(parsed) || parsed < 1) {
     throw new Error(`${label} must be a positive integer, got ${raw}`);
+  }
+  return parsed;
+}
+
+function parseNonNegativeInt(raw: string | undefined, label: string) {
+  if (!raw) return undefined;
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed) || parsed < 0) {
+    throw new Error(`${label} must be a non-negative integer, got ${raw}`);
   }
   return parsed;
 }
@@ -225,6 +238,8 @@ function parseArgs(argv: string[]) {
   const cliCandidates: string[] = [];
   let inputPath: string | undefined;
   let limit: number | undefined;
+  let offset = 0;
+  let outputName: string | undefined;
   let concurrency = 1;
   let delayMs = DEFAULT_DELAY_MS;
 
@@ -241,8 +256,17 @@ function parseArgs(argv: string[]) {
         inputPath = argv[index + 1] as string;
         index += 1;
         break;
+      case "--offset":
+        offset = parseNonNegativeInt(argv[index + 1], "--offset") ?? 0;
+        index += 1;
+        break;
       case "--limit":
         limit = parsePositiveInt(argv[index + 1], "--limit");
+        index += 1;
+        break;
+      case "--output-name":
+        if (!argv[index + 1]) usage();
+        outputName = argv[index + 1] as string;
         index += 1;
         break;
       case "--concurrency":
@@ -267,9 +291,15 @@ function parseArgs(argv: string[]) {
   }
 
   const candidates = readCandidates(inputPath, cliCandidates);
+  const slicedCandidates = candidates.slice(
+    offset,
+    limit ? offset + limit : undefined,
+  );
   return {
-    candidates: limit ? candidates.slice(0, limit) : candidates,
+    candidates: slicedCandidates,
     limit: limit ?? null,
+    offset,
+    outputName: outputName ?? null,
     concurrency,
     delayMs,
   };
@@ -485,11 +515,16 @@ async function mapConcurrent<T, R>(
   return results;
 }
 
+function safeReportName(outputName: string | null) {
+  if (!outputName) return `${timestamp()}-imarvintpa-probe`;
+  return outputName.replace(/[^A-Za-z0-9._-]/g, "-");
+}
+
 function writeReport(report: ProbeReport) {
   fs.mkdirSync(REPORT_ROOT, { recursive: true });
   const reportPath = path.join(
     REPORT_ROOT,
-    `${timestamp()}-imarvintpa-probe.json`,
+    `${safeReportName(report.options.outputName)}.json`,
   );
   fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
   return reportPath;
@@ -516,6 +551,8 @@ async function probe(argv: string[]) {
       concurrency: options.concurrency,
       delayMs: options.delayMs,
       limit: options.limit,
+      offset: options.offset,
+      outputName: options.outputName,
     },
     summary: {
       candidates: results.length,
