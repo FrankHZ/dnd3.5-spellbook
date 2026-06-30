@@ -7,7 +7,7 @@ import { localDataDir } from "../../env";
 import { matchByEnNameAllBooks } from "../match";
 import { BOOK_LABEL_TO_ABBR, normalizeBookLabel } from "../mapping";
 
-type SourceKind = "class-list" | "maneuver-list";
+type SourceKind = "class-list" | "domain-list" | "maneuver-list";
 type SummaryKind = "spell" | "maneuver";
 
 type SummaryCandidate = {
@@ -20,7 +20,10 @@ type SummaryCandidate = {
   schoolGroup: string | null;
   discipline: string | null;
   sourceLabelHints: string[];
-  sourceProvenance: "zh-chm-class-list" | "zh-chm-maneuver-list";
+  sourceProvenance:
+    | "zh-chm-class-list"
+    | "zh-chm-domain-list"
+    | "zh-chm-maneuver-list";
   zhName: string;
   enName: string;
   rawEnName: string;
@@ -51,6 +54,7 @@ type ExtractReport = {
   generatedAt: string;
   options: {
     classListInput: string;
+    domainListInput: string;
     maneuverListInput: string;
     outDir: string;
   };
@@ -71,6 +75,11 @@ const DEFAULT_CLASS_INPUT = path.join(
   "chm-raw-full",
   "职业法术列表",
 );
+const DEFAULT_DOMAIN_INPUT = path.join(
+  localDataDir(),
+  "chm-raw-full",
+  "领域法术",
+);
 const DEFAULT_MANEUVER_INPUT = path.join(
   localDataDir(),
   "chm-clean",
@@ -80,7 +89,7 @@ const DEFAULT_MANEUVER_INPUT = path.join(
 const DEFAULT_OUT_DIR = path.join("out", "zh-parser", "summary");
 const MANEUVER_BOOK_LABEL = "九剑";
 
-const COMPONENT_MARKERS = new Set(["M", "F", "DF", "XP", "X"]);
+const COMPONENT_MARKERS = new Set(["M", "F", "DF", "MF", "XP", "X"]);
 const DISCIPLINES = new Set([
   "漠风",
   "虔心",
@@ -105,6 +114,9 @@ function parseArgs(argv: string[]) {
   return {
     classListInput: path.resolve(
       args.get("--classListInput") ?? DEFAULT_CLASS_INPUT,
+    ),
+    domainListInput: path.resolve(
+      args.get("--domainListInput") ?? DEFAULT_DOMAIN_INPUT,
     ),
     maneuverListInput: path.resolve(
       args.get("--maneuverListInput") ?? DEFAULT_MANEUVER_INPUT,
@@ -243,6 +255,7 @@ function extractPrefixLabels(left: string) {
 
 function cleanEnName(rawEnName: string) {
   const tokens = normalizeDigits(normalizePunctuation(rawEnName))
+    .replace(/[*＊]+$/g, "")
     .replace(/[,.，。;；]+$/g, "")
     .replace(/([a-z])([IVX]+)$/g, "$1 $2")
     .replace(/\s*,\s*/g, ", ")
@@ -269,6 +282,20 @@ function cleanEnName(rawEnName: string) {
       marker === "X" ? "XP" : marker,
     ),
   };
+}
+
+function isComponentMarkerText(text: string) {
+  return text
+    .split(/[\s,，/]+/)
+    .filter(Boolean)
+    .every((item) => COMPONENT_MARKERS.has(item.toUpperCase()));
+}
+
+function cleanZhName(rawZhName: string) {
+  return normalizeWhitespace(rawZhName)
+    .replace(/^[、,，.．。\s]+/g, "")
+    .replace(/[（(](?:M|F|DF|MF|XP|X)[）)]$/i, "")
+    .trim();
 }
 
 function delimiterColonIndex(value: string) {
@@ -325,7 +352,11 @@ function parseSummaryLine(
   const parenMatches = [...left.matchAll(/[（(]([^（）()]+)[）)]/g)];
   const englishParen = [...parenMatches]
     .reverse()
-    .find((match) => /[A-Za-z]/.test(match[1] ?? ""));
+    .find(
+      (match) =>
+        /[A-Za-z]/.test(match[1] ?? "") &&
+        !isComponentMarkerText(match[1] ?? ""),
+    );
 
   if (englishParen?.index !== undefined && englishParen[1]) {
     const rawZhPart = left.slice(0, englishParen.index).trim();
@@ -333,7 +364,7 @@ function parseSummaryLine(
     const cleaned = cleanEnName(englishParen[1]);
     if (!rest || !cleaned.enName) return null;
     return {
-      zhName: rest,
+      zhName: cleanZhName(rest),
       rawEnName: englishParen[1],
       enName: cleaned.enName,
       componentMarkers: cleaned.componentMarkers,
@@ -349,7 +380,7 @@ function parseSummaryLine(
 
   const cleaned = cleanEnName(bareMatch[2]);
   return {
-    zhName: normalizeWhitespace(bareMatch[1]),
+    zhName: cleanZhName(bareMatch[1]),
     rawEnName: bareMatch[2],
     enName: cleaned.enName,
     componentMarkers: cleaned.componentMarkers,
@@ -419,6 +450,66 @@ function extractClassListCandidates(inputDir: string) {
         matchMethod: parsed.method,
       });
       }
+    }
+  }
+
+  return { filesScanned: files.length, candidates };
+}
+
+function parseDomainSpellLine(text: string) {
+  const normalized = normalizeDigits(text);
+  const match = normalized.match(/^(\d+)[、.．]?\s*(.+)$/);
+  if (!match?.[1] || !match[2]) return null;
+
+  const parsed = parseSummaryLine(match[2]);
+  if (!parsed) return null;
+  if (/^同\s*phb$/i.test(parsed.enName)) return null;
+
+  return {
+    spellLevel: Number(match[1]),
+    parsed,
+  };
+}
+
+function extractDomainListCandidates(inputDir: string) {
+  const candidates: SummaryCandidate[] = [];
+  const files = scanHtmlFiles(inputDir);
+
+  for (const filePath of files) {
+    const file = relFile(inputDir, filePath);
+    const listOwner = ownerFromFile(filePath);
+    let inSpellList = false;
+    let paragraphIndex = 0;
+
+    for (const text of textParagraphs(readGb2312(filePath))) {
+      paragraphIndex += 1;
+      if (/领域法术[（(][^（）()]*Domain Spells[^（）()]*[）)]/i.test(text)) {
+        inSpellList = true;
+        continue;
+      }
+      if (!inSpellList) continue;
+
+      const parsedLine = parseDomainSpellLine(text);
+      if (!parsedLine) continue;
+
+      candidates.push({
+        sourceKey: sourceKey(file, parsedLine.parsed.enName, paragraphIndex),
+        file,
+        kind: "spell",
+        sourceKind: "domain-list",
+        listOwner,
+        spellLevel: parsedLine.spellLevel,
+        schoolGroup: null,
+        discipline: null,
+        sourceLabelHints: parsedLine.parsed.sourceLabelHints,
+        sourceProvenance: "zh-chm-domain-list",
+        zhName: parsedLine.parsed.zhName,
+        enName: parsedLine.parsed.enName,
+        rawEnName: parsedLine.parsed.rawEnName,
+        componentMarkers: parsedLine.parsed.componentMarkers,
+        summaryText: parsedLine.parsed.summaryText,
+        matchMethod: parsedLine.parsed.method,
+      });
     }
   }
 
@@ -561,8 +652,13 @@ async function main() {
   const options = parseArgs(process.argv.slice(2));
 
   const classResult = extractClassListCandidates(options.classListInput);
+  const domainResult = extractDomainListCandidates(options.domainListInput);
   const maneuverResult = extractManeuverListCandidates(options.maneuverListInput);
-  const candidates = [...classResult.candidates, ...maneuverResult.candidates];
+  const candidates = [
+    ...classResult.candidates,
+    ...domainResult.candidates,
+    ...maneuverResult.candidates,
+  ];
   const { matched, unmatched, byMatchMethod } = await matchCandidates(candidates);
   const duplicates = findDuplicates(matched);
 
@@ -573,7 +669,10 @@ async function main() {
     generatedAt: timestampKey(),
     options,
     stats: {
-      filesScanned: classResult.filesScanned + maneuverResult.filesScanned,
+      filesScanned:
+        classResult.filesScanned +
+        domainResult.filesScanned +
+        maneuverResult.filesScanned,
       candidates: candidates.length,
       matched: matched.length,
       unmatched: unmatched.length,

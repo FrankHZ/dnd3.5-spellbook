@@ -29,9 +29,10 @@ decision.
   - `I18nCharacterClassText.shortDescriptionText` already exists.
   - `I18nSpellText` has translated name and full description fields, but no
     short-description field.
-- The strongest confirmed Chinese spell short-description source is the class
-  spell overview set under `data/chm-raw-full/职业法术列表/`. These pages use
-  dense one-line records such as `zhName (English Name): summary`.
+- The strongest confirmed Chinese spell short-description sources are the class
+  spell overview set under `data/chm-raw-full/职业法术列表/` and the domain spell
+  overview set under `data/chm-raw-full/领域法术/`. These pages use dense
+  one-line records such as `zhName (English Name): summary`.
 - A first-pass inventory of that directory found:
   - `14` class-list pages
   - `4,642` candidate occurrences
@@ -45,16 +46,18 @@ decision.
 npm run -w data-tools zh:summaries:extract
 ```
 
-  Its current baseline scans `15` files, including the class-list pages plus the
-  clean ToB maneuver list, finds `4,813` candidate occurrences, expands to
-  `5,784` matched records, leaves `0` unmatched records, and reports `1,641`
-  duplicate targets, including `599` conflicting duplicate targets, for review
-  under `data-tools/out/zh-parser/summary/`.
+  Its current baseline scans `101` files, including the class-list pages, the
+  domain-list pages, and the clean ToB maneuver list, finds `5,445` candidate
+  occurrences, expands to `6,527` matched records, leaves `0` unmatched records,
+  and reports `1,833` duplicate targets, including `695` conflicting duplicate
+  targets, for review under `data-tools/out/zh-parser/summary/`.
   The zero-unmatched baseline relies on the shared CHM English-name alias layer,
   including typo fixes and compact slash-name expansion for alignment,
   protection, mantle, and wall spell families.
-- Secondary confirmed short-summary sources exist under
-  `data/chm-raw-full/领域法术/` and `data/chm-raw-full/各种其他类法术及超能/`.
+- A secondary confirmed short-summary source exists under
+  `data/chm-raw-full/各种其他类法术及超能/`, but the first probe over `机关术.htm`
+  mixes infusion and non-spell content and should stay out of the default spell
+  short-description extractor until it has a dedicated parser.
 - The ToB maneuver list under `data/chm-clean/九剑/招数列表.htm` is also a
   valid one-line summary source, but it should supplement the class-list spell
   source rather than define the whole pipeline.
@@ -193,7 +196,8 @@ Initial targets:
 - `data/chm-raw-full/职业法术列表/*.htm`
 - `data/chm-clean/九剑/招数列表.htm`
 - `data/chm-raw-full/领域法术/*.htm`
-- `data/chm-raw-full/各种其他类法术及超能/*.htm`
+- `data/chm-raw-full/各种其他类法术及超能/*.htm` as a later dedicated
+  non-spell/infusion source, not part of the default spell summary extractor
 
 Expected findings to record:
 
@@ -362,8 +366,8 @@ first, the UI should degrade cleanly without placeholder text on other rows.
 - Adopted source files have stable matched/unmatched counts.
 - Unmatched records from adopted source files are either resolved, documented as
   deferred, or excluded from import.
-- Class-list parsing handles level headings, optional school headings, leading
-  source prefixes, and trailing component markers.
+- Class/domain-list parsing handles level headings, optional school headings,
+  leading source prefixes, and trailing component markers.
 - Summary QA reports duplicate targets, empty text, unexpected length, mojibake,
   and unsafe HTML/text drift.
 - Existing `zh:parse`, `zh:qa`, and Chinese import workflows do not regress.

@@ -68,7 +68,7 @@ Extract Chinese short-description candidates from local CHM overview pages:
 
 ```bash
 npm run -w data-tools zh:summaries:extract
-npm run -w data-tools zh:summaries:extract -- --classListInput ../data/chm-raw-full/职业法术列表 --outDir out/zh-parser/summary
+npm run -w data-tools zh:summaries:extract -- --classListInput ../data/chm-raw-full/职业法术列表 --domainListInput ../data/chm-raw-full/领域法术 --outDir out/zh-parser/summary
 ```
 
 ## Data Paths
@@ -143,7 +143,8 @@ translation review.
 
 `zh:summaries:extract` is a read-only v3.4 extractor for short-description
 candidates. It reads class spell overview pages from
-`data/chm-raw-full/职业法术列表/`, reads the ToB maneuver overview from
+`data/chm-raw-full/职业法术列表/`, domain spell overview pages from
+`data/chm-raw-full/领域法术/`, reads the ToB maneuver overview from
 `data/chm-clean/九剑/招数列表.htm`, reuses the current CHM alias/matching helpers,
 and writes `candidates.json`, `matched.json`, `unmatched.json`,
 `duplicates.json`, and `summary.json` under
