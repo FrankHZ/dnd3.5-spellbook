@@ -679,8 +679,13 @@ function main() {
       allowedDecisions: ZH_ALIAS_DECISIONS,
     },
   );
+  const currentZhAliasKeys = new Set(
+    aliasRows.map((row) => row.enName).filter((name): name is string => Boolean(name)),
+  );
   const zhAliasImportBlockers = (zhAliasDecisions ?? []).filter(
-    (decision) => decision.decision !== "confirmed",
+    (decision) =>
+      decision.decision !== "confirmed" &&
+      currentZhAliasKeys.has(decision.enName),
   );
   if (aliasRows.length > 0 && !zhAliasDecisionSummary.present) {
     issue(issues, "warning", "zh-alias-review-required", {

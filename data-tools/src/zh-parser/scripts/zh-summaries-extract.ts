@@ -307,6 +307,7 @@ function cleanEnName(rawEnName: string) {
   }
 
   let enName = tokens.join(" ").trim();
+  enName = enName.replace(/^列表[:：]\s*/u, "").trim();
   for (;;) {
     const match = enName.match(/^(.+?)(DF|XP|M|F|X)$/);
     if (!match?.[1] || !match[2]) break;

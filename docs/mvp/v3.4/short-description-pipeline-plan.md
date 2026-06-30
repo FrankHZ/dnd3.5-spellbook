@@ -369,14 +369,24 @@ It then promotes decisions into follow-up queues:
 - `en-rules-db-gaps.jsonl` for English rows that appear to require future rules
   DB patch work before short-description import
 
-The current local QA snapshot with review decisions has `0` errors, `3` warning
-categories, and `4` info categories. It reports `7` reviewed Chinese alias audit
-entries, `80` reviewed English strict-3.5 missing candidates, `6` import
+The current local QA snapshot with review decisions has `0` errors, `2` warning
+categories, and `4` info categories. It reports `4` reviewed Chinese alias audit
+entries, `80` reviewed English strict-3.5 missing candidates, `3` import
 blockers, `19` resolved English candidate-normalization rows, `11` resolved
 English source-mismatch rows, `0` remaining English add-candidate rows, `1`
-remaining English source-mismatch row, `47` English rules DB gaps, `656` Chinese
-conflict rows, and `1,274` cross-language coverage rows. The large queues
+remaining English source-mismatch row, `47` English rules DB gaps, `654` Chinese
+conflict rows, and `1,273` cross-language coverage rows. The large queues
 remain review leads unless a future import gate explicitly consumes them.
+
+The current import blockers are all English-side review blockers:
+`Foe's Burning Blood` remains ambiguous between local `Burning Blood` and
+`Beltyn's Burning Blood`, while `Crown of Despair` and `Touch of the Pharaoh`
+remain PDF-deferred because IMarvinTPA cross-labels them between Eberron
+Campaign Setting and Dragon Magazine #331. Earlier Chinese blockers were
+cleared by mapping the CHM `Bigby's Striking Hand` typo to local
+`Bigby's Striking Fist`, normalizing the `列表:` source prefix before matching,
+and routing `Dance Of Blade` to the automatic-blade spell family instead of
+`Bladeweave`.
 
 The reviewed English rules DB gaps now have a source-to-patch triage path:
 

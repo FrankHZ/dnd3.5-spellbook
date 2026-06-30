@@ -15,7 +15,7 @@ const BUILTIN_EN_ALIAS_MAP_GLOBAL: Record<string, string> = {
   "Animate Legionm": "Animate Legion",
   "Awaken, Maxx": "Awaken, Mass",
   BallistaThrow: "Ballista Throw",
-  "Bigby's Striking Hand": "Bigby's Slapping Hand",
+  "Bigby's Striking Hand": "Bigby's Striking Fist",
   "Blade of Fire": "Blades of Fire",
   "Blingind Color Surge": "Blinding Color Surge",
   "Body Out side Body": "Body Outside Body",
@@ -25,7 +25,7 @@ const BUILTIN_EN_ALIAS_MAP_GLOBAL: Record<string, string> = {
   "Command Plant": "Command Plants",
   "Cown of Brilliance": "Crown of Brilliance",
   "Creeping Cold, Great": "Creeping Cold, Greater",
-  "Dance Of Blade": "Bladeweave",
+  "Dance Of Blade": "Dancing Blade",
   "Dance Of Blades": "Dancing Blade",
   "Dance of th Unicorn": "Dance of the Unicorn",
   "DauntingS trike": "Daunting Strike",
@@ -111,7 +111,6 @@ const BUILTIN_EN_ALIAS_MAP_GLOBAL: Record<string, string> = {
   "winter's Embrane": "Winter's Embrace",
   "White Raven Tactic": "White Raven Tactics",
   "Wyrms Flame": "Wyrm's Flame",
-  "列表:Otiluke's Suppressing Field": "Otiluke's Suppressing Field",
   "nerotic cyst": "Necrotic Cyst",
 };
 const BUILTIN_EN_ALIAS_EXTRA: Record<string, string[]> = {
@@ -157,9 +156,7 @@ const BUILTIN_EN_ALIAS_EXTRA: Record<string, string[]> = {
 const EN_ALIAS_EXTRA: Record<string, string[]> = aliasMapExtra;
 const SEMANTIC_RISK_ALIAS_KEYS = new Set(
   [
-    "Bigby's Striking Hand",
     "Blade of Fire",
-    "Dance Of Blade",
     "Dance Of Blades",
     "Slapping Hand",
   ].map((key) => key.toLowerCase()),
