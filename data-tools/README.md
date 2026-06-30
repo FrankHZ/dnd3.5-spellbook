@@ -172,7 +172,12 @@ and writes `candidates.json`, `matched.json`, `unmatched.json`,
 IMarvinTPA source-index reports, then writes `summary.json`, `issues.json`, and
 JSONL review queues under `data-tools/out/short-desc-qa/`. It does not fetch
 network sources. Generate or refresh the English reports with
-`en:summaries:sources` before relying on cross-language coverage queues.
+`en:summaries:sources` before relying on cross-language coverage queues. If
+validated subagent or human decisions exist under
+`data-tools/out/short-desc-qa/review-results/`, the command validates their
+stable keys and decisions, records review coverage in `summary.json`, and writes
+follow-up queues such as `import-blockers.jsonl`, `en-add-candidates.jsonl`, and
+`en-rules-db-gaps.jsonl`.
 
 ## Safety
 

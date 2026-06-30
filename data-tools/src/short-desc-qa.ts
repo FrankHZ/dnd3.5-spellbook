@@ -22,6 +22,7 @@ type QaSummary = {
     zhSummaryDir: string;
     enSourceIndex: string;
     enStrictMissing: string;
+    reviewResultsDir: string;
     outDir: string;
   };
   issueCount: number;
@@ -50,6 +51,17 @@ type QaSummary = {
     enWithoutZh: number;
   };
   queues: Record<string, number>;
+  reviews: {
+    zhAliasRequired: ReviewDecisionSummary;
+    enStrict35Missing: ReviewDecisionSummary;
+  };
+  importGate: {
+    blockers: number;
+    enAddCandidates: number;
+    enRulesDbGaps: number;
+    enSourceMismatches: number;
+    deferredPdf: number;
+  };
 };
 
 type ZhMatchedRecord = {
@@ -126,17 +138,68 @@ type EnStrictMissingReport = {
   strict35QaCandidates?: Array<Record<string, unknown>>;
 };
 
+type ReviewDecisionSummary = {
+  present: boolean;
+  reviewedRows: number;
+  missingRows: number;
+  extraRows: number;
+  byDecision: Record<string, number>;
+};
+
+type ZhAliasDecision = {
+  queue: "zh-alias-required";
+  enName: string;
+  decision: "confirmed" | "source_error" | "wrong_alias" | "defer_pdf";
+  chosenResolvedEnName: string | null;
+  recommendedAction: string;
+  evidence: string[];
+  notes: string;
+  confidence: "high" | "medium" | "low";
+};
+
+type EnStrictDecision = {
+  queue: "en-strict35-missing";
+  key: string;
+  name: string;
+  decision:
+    | "add_candidate"
+    | "rules_db_gap"
+    | "source_mismatch"
+    | "defer_pdf"
+    | "out_of_scope";
+  recommendedAction: string;
+  sources: string[];
+  descriptionSamples: string[];
+  evidence: string[];
+  notes: string;
+  confidence: "high" | "medium" | "low";
+};
+
 const DEFAULT_ZH_SUMMARY_DIR = "out/zh-parser/summary";
 const DEFAULT_EN_SOURCE_INDEX =
   "out/en-summaries/imarvin-source-index.json";
 const DEFAULT_EN_STRICT_MISSING =
   "out/en-summaries/imarvin-source-index-db-missing-strict35.json";
 const DEFAULT_OUT_DIR = "out/short-desc-qa";
+const DEFAULT_REVIEW_RESULTS_DIR = "out/short-desc-qa/review-results";
 const MOJIBAKE_RE = /\uFFFD|锟斤拷/;
 const HTML_RE = /<\/?[a-z][^>]*>/i;
 const VERY_SHORT_TEXT_LENGTH = 2;
 const LONG_TEXT_LENGTH = 180;
 const SPOT_CHECK_LIMIT = 40;
+const ZH_ALIAS_DECISIONS = new Set([
+  "confirmed",
+  "source_error",
+  "wrong_alias",
+  "defer_pdf",
+]);
+const EN_STRICT_DECISIONS = new Set([
+  "add_candidate",
+  "rules_db_gap",
+  "source_mismatch",
+  "defer_pdf",
+  "out_of_scope",
+]);
 
 function parseArgs(argv: string[]) {
   const args = new Map<string, string>();
@@ -157,6 +220,9 @@ function parseArgs(argv: string[]) {
     enStrictMissing: path.resolve(
       args.get("--enStrictMissing") ?? DEFAULT_EN_STRICT_MISSING,
     ),
+    reviewResultsDir: path.resolve(
+      args.get("--reviewResultsDir") ?? DEFAULT_REVIEW_RESULTS_DIR,
+    ),
     outDir: path.resolve(args.get("--outDir") ?? DEFAULT_OUT_DIR),
   };
 }
@@ -168,6 +234,15 @@ function readJson<T>(file: string): T {
 function readJsonIfExists<T>(file: string): T | null {
   if (!fs.existsSync(file)) return null;
   return readJson<T>(file);
+}
+
+function readJsonlIfExists<T>(file: string): T[] | null {
+  if (!fs.existsSync(file)) return null;
+  return fs
+    .readFileSync(file, "utf-8")
+    .split(/\r?\n/)
+    .filter((line) => line.trim())
+    .map((line) => JSON.parse(line) as T);
 }
 
 function bump(map: Record<string, number>, key: string) {
@@ -213,6 +288,74 @@ function uniqueStrings(values: Array<string | undefined | null>) {
 
 function queuePath(outDir: string, name: string) {
   return path.join(outDir, "review-queues", `${name}.jsonl`);
+}
+
+function decisionSummary<T>(
+  decisions: T[] | null,
+  expectedKeys: string[],
+  actualKey: (decision: T) => string | undefined,
+  decisionValue: (decision: T) => string | undefined,
+  issues: QaIssue[],
+  opts: {
+    queue: string;
+    file: string;
+    allowedDecisions: Set<string>;
+  },
+): ReviewDecisionSummary {
+  const byDecision: Record<string, number> = {};
+  if (!decisions) {
+    return {
+      present: false,
+      reviewedRows: 0,
+      missingRows: expectedKeys.length,
+      extraRows: 0,
+      byDecision,
+    };
+  }
+
+  const expected = new Set(expectedKeys);
+  const actual = new Set<string>();
+  for (const decision of decisions) {
+    const key = actualKey(decision);
+    const value = decisionValue(decision);
+    if (!key) {
+      issue(issues, "error", "review-decision-missing-key", {
+        file: opts.file,
+        queue: opts.queue,
+        detail: "review decision row is missing its stable key",
+      });
+      continue;
+    }
+    actual.add(key);
+    if (!value || !opts.allowedDecisions.has(value)) {
+      issue(issues, "error", "review-decision-invalid-value", {
+        file: opts.file,
+        queue: opts.queue,
+        detail: `review decision for ${key} has invalid value ${value ?? "(missing)"}`,
+      });
+      continue;
+    }
+    bump(byDecision, value);
+  }
+
+  const missingRows = [...expected].filter((key) => !actual.has(key)).length;
+  const extraRows = [...actual].filter((key) => !expected.has(key)).length;
+  if (missingRows > 0 || extraRows > 0) {
+    issue(issues, "error", "review-decision-key-mismatch", {
+      file: opts.file,
+      queue: opts.queue,
+      count: missingRows + extraRows,
+      detail: `review decision keys do not match queue keys: ${missingRows} missing, ${extraRows} extra`,
+    });
+  }
+
+  return {
+    present: true,
+    reviewedRows: decisions.length,
+    missingRows,
+    extraRows,
+    byDecision,
+  };
 }
 
 function writeJson(file: string, value: unknown) {
@@ -323,6 +466,11 @@ function enStrictRows(strictReport: EnStrictMissingReport | null) {
     recommendation:
       "confirm whether this IMarvinTPA strict-3.5 row should become a local candidate, rules DB patch, or deferred source mismatch",
   }));
+}
+
+function strictRowKey(row: unknown) {
+  const key = (row as { key?: unknown }).key;
+  return typeof key === "string" ? key : undefined;
 }
 
 function englishMatchedNames(report: EnSourceIndexReport | null) {
@@ -438,6 +586,14 @@ function main() {
   const zhUnmatchedPath = path.join(options.zhSummaryDir, "unmatched.json");
   const zhConflictsPath = path.join(options.zhSummaryDir, "conflicts.json");
   const zhAliasPath = path.join(options.zhSummaryDir, "alias-audit.json");
+  const zhAliasDecisionsPath = path.join(
+    options.reviewResultsDir,
+    "zh-alias-required.decisions.jsonl",
+  );
+  const enStrictDecisionsPath = path.join(
+    options.reviewResultsDir,
+    "en-strict35-missing.decisions.jsonl",
+  );
 
   const zhMatched = readJson<ZhMatchedRecord[]>(zhMatchedPath);
   const zhUnmatched = readJson<ZhMatchedRecord[]>(zhUnmatchedPath);
@@ -449,6 +605,10 @@ function main() {
   const enStrictMissing = readJsonIfExists<EnStrictMissingReport>(
     options.enStrictMissing,
   );
+  const zhAliasDecisions =
+    readJsonlIfExists<ZhAliasDecision>(zhAliasDecisionsPath);
+  const enStrictDecisions =
+    readJsonlIfExists<EnStrictDecision>(enStrictDecisionsPath);
 
   if (zhUnmatched.length > 0) {
     issue(issues, "error", "zh-unmatched-records", {
@@ -464,11 +624,33 @@ function main() {
   }
 
   const aliasRows = aliasQueueRows(zhAliasAudit);
-  if (aliasRows.length > 0) {
+  const zhAliasDecisionSummary = decisionSummary(
+    zhAliasDecisions,
+    aliasRows.map((row) => row.enName).filter((name): name is string => Boolean(name)),
+    (decision) => decision.enName,
+    (decision) => decision.decision,
+    issues,
+    {
+      queue: "zh-alias-required",
+      file: zhAliasDecisionsPath,
+      allowedDecisions: ZH_ALIAS_DECISIONS,
+    },
+  );
+  const zhAliasImportBlockers = (zhAliasDecisions ?? []).filter(
+    (decision) => decision.decision !== "confirmed",
+  );
+  if (aliasRows.length > 0 && !zhAliasDecisionSummary.present) {
     issue(issues, "warning", "zh-alias-review-required", {
       queue: "zh-alias-required",
       count: aliasRows.length,
       detail: `${aliasRows.length} Chinese alias audit entries require review`,
+    });
+  }
+  if (zhAliasImportBlockers.length > 0) {
+    issue(issues, "warning", "zh-alias-import-blockers", {
+      queue: "import-blockers",
+      count: zhAliasImportBlockers.length,
+      detail: `${zhAliasImportBlockers.length} reviewed Chinese alias entries are blocked from import`,
     });
   }
 
@@ -515,11 +697,54 @@ function main() {
   }
 
   const strictRows = enStrictRows(enStrictMissing);
-  if (strictRows.length > 0) {
+  const enStrictDecisionSummary = decisionSummary(
+    enStrictDecisions,
+    strictRows
+      .map(strictRowKey)
+      .filter((key): key is string => Boolean(key)),
+    (decision) => decision.key,
+    (decision) => decision.decision,
+    issues,
+    {
+      queue: "en-strict35-missing",
+      file: enStrictDecisionsPath,
+      allowedDecisions: EN_STRICT_DECISIONS,
+    },
+  );
+  const enAddCandidateRows = (enStrictDecisions ?? []).filter(
+    (decision) => decision.decision === "add_candidate",
+  );
+  const enRulesDbGapRows = (enStrictDecisions ?? []).filter(
+    (decision) => decision.decision === "rules_db_gap",
+  );
+  const enSourceMismatchRows = (enStrictDecisions ?? []).filter(
+    (decision) => decision.decision === "source_mismatch",
+  );
+  const enDeferredPdfRows = (enStrictDecisions ?? []).filter(
+    (decision) => decision.decision === "defer_pdf",
+  );
+  const enOutOfScopeRows = (enStrictDecisions ?? []).filter(
+    (decision) => decision.decision === "out_of_scope",
+  );
+  if (strictRows.length > 0 && !enStrictDecisionSummary.present) {
     issue(issues, "warning", "en-strict35-review-candidates", {
       queue: "en-strict35-missing",
       count: strictRows.length,
       detail: `${strictRows.length} IMarvinTPA strict-3.5 rows need source/DB review`,
+    });
+  }
+  if (enAddCandidateRows.length > 0) {
+    issue(issues, "info", "en-strict35-add-candidates", {
+      queue: "en-add-candidates",
+      count: enAddCandidateRows.length,
+      detail: `${enAddCandidateRows.length} reviewed English rows can be handled by candidate or alias normalization`,
+    });
+  }
+  if (enRulesDbGapRows.length > 0) {
+    issue(issues, "warning", "en-strict35-rules-db-gaps", {
+      queue: "en-rules-db-gaps",
+      count: enRulesDbGapRows.length,
+      detail: `${enRulesDbGapRows.length} reviewed English rows appear to be rules DB gaps before short-description import`,
     });
   }
 
@@ -535,6 +760,47 @@ function main() {
   }
 
   const spotRows = spotCheckRows(aliasRows, conflictRows, strictRows, crossRows);
+  const importBlockerRows = [
+    ...zhAliasImportBlockers.map((decision) => ({
+      queue: "import-blockers",
+      sourceQueue: "zh-alias-required",
+      key: decision.enName,
+      decision: decision.decision,
+      recommendedAction: decision.recommendedAction,
+      notes: decision.notes,
+      confidence: decision.confidence,
+    })),
+    ...enSourceMismatchRows.map((decision) => ({
+      queue: "import-blockers",
+      sourceQueue: "en-strict35-missing",
+      key: decision.key,
+      name: decision.name,
+      decision: decision.decision,
+      recommendedAction: decision.recommendedAction,
+      notes: decision.notes,
+      confidence: decision.confidence,
+    })),
+    ...enDeferredPdfRows.map((decision) => ({
+      queue: "import-blockers",
+      sourceQueue: "en-strict35-missing",
+      key: decision.key,
+      name: decision.name,
+      decision: decision.decision,
+      recommendedAction: decision.recommendedAction,
+      notes: decision.notes,
+      confidence: decision.confidence,
+    })),
+    ...enOutOfScopeRows.map((decision) => ({
+      queue: "import-blockers",
+      sourceQueue: "en-strict35-missing",
+      key: decision.key,
+      name: decision.name,
+      decision: decision.decision,
+      recommendedAction: decision.recommendedAction,
+      notes: decision.notes,
+      confidence: decision.confidence,
+    })),
+  ];
 
   const queues: Record<string, unknown[]> = {
     "zh-alias-required": aliasRows,
@@ -542,6 +808,11 @@ function main() {
     "en-strict35-missing": strictRows,
     "cross-coverage": crossRows,
     "spot-check": spotRows,
+    "import-blockers": importBlockerRows,
+    "en-add-candidates": enAddCandidateRows,
+    "en-rules-db-gaps": enRulesDbGapRows,
+    "en-source-mismatches": enSourceMismatchRows,
+    "en-deferred-pdf": enDeferredPdfRows,
   };
   for (const [name, rows] of Object.entries(queues)) {
     writeJsonl(queuePath(options.outDir, name), rows);
@@ -567,6 +838,7 @@ function main() {
       zhSummaryDir: options.zhSummaryDir,
       enSourceIndex: options.enSourceIndex,
       enStrictMissing: options.enStrictMissing,
+      reviewResultsDir: options.reviewResultsDir,
       outDir: options.outDir,
     },
     issueCount: issues.length,
@@ -597,6 +869,17 @@ function main() {
     queues: Object.fromEntries(
       Object.entries(queues).map(([name, rows]) => [name, rows.length]),
     ),
+    reviews: {
+      zhAliasRequired: zhAliasDecisionSummary,
+      enStrict35Missing: enStrictDecisionSummary,
+    },
+    importGate: {
+      blockers: importBlockerRows.length,
+      enAddCandidates: enAddCandidateRows.length,
+      enRulesDbGaps: enRulesDbGapRows.length,
+      enSourceMismatches: enSourceMismatchRows.length,
+      deferredPdf: enDeferredPdfRows.length,
+    },
   };
 
   writeJson(path.join(options.outDir, "summary.json"), summary);

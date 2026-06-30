@@ -251,6 +251,10 @@ See `docs/harness.md` for details.
 - Run `npm run -w data-tools summaries:qa` after refreshing Chinese and English
   short-summary reports, then review
   `data-tools/out/short-desc-qa/summary.json` and the generated review queues.
+  Validated review decisions under
+  `data-tools/out/short-desc-qa/review-results/` are consumed by the same
+  command and promoted into follow-up queues such as `import-blockers`,
+  `en-add-candidates`, and `en-rules-db-gaps`.
 - Use `npm run -w data-tools rules:spells:validate -- <patch.jsonl>` and
   `npm run -w data-tools rules:spells:apply -- --dry-run <patch.jsonl>` before
   applying structured missing-spell patches.

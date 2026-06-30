@@ -343,13 +343,32 @@ data-tools/out/short-desc-qa/
    |- en-strict35-missing.jsonl
    |- cross-coverage.jsonl
    |- spot-check.jsonl
+   |- import-blockers.jsonl
+   |- en-add-candidates.jsonl
+   |- en-rules-db-gaps.jsonl
+   |- en-source-mismatches.jsonl
+   |- en-deferred-pdf.jsonl
 ```
 
-The current local QA snapshot has `0` errors, `3` warning categories, and `2`
-info categories. It reports `7` Chinese alias audit entries requiring review,
-`656` Chinese conflict rows, `80` English strict-3.5 missing candidates, and
-`1,274` cross-language coverage rows. The large queues are review leads, not
-automatic blockers.
+If validated review decisions exist under
+`data-tools/out/short-desc-qa/review-results/`, the command validates decision
+keys against the generated queues and records review coverage in `summary.json`.
+It then promotes decisions into follow-up queues:
+
+- `import-blockers.jsonl` for reviewed rows that must not enter import
+  candidates yet, such as wrong aliases, source errors, source mismatches, or
+  PDF-deferred rows
+- `en-add-candidates.jsonl` for English rows that can be handled by candidate or
+  alias normalization
+- `en-rules-db-gaps.jsonl` for English rows that appear to require future rules
+  DB patch work before short-description import
+
+The current local QA snapshot with review decisions has `0` errors, `3` warning
+categories, and `3` info categories. It reports `7` reviewed Chinese alias audit
+entries, `80` reviewed English strict-3.5 missing candidates, `17` import
+blockers, `19` English add-candidate rows, `47` English rules DB gaps, `656`
+Chinese conflict rows, and `1,274` cross-language coverage rows. The large
+queues remain review leads unless a future import gate explicitly consumes them.
 
 Good checks:
 
