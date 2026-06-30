@@ -126,6 +126,20 @@ including Spell Compendium and common extension books. Treat it as a local data
 source, not a parent-repo dependency: the parent repo should contain fetchers,
 parsers, validators, and redacted fixtures only.
 
+Initial live probing uses:
+
+```bash
+npm run -w data-tools en:summaries:probe
+```
+
+The probe posts to IMarvinTPA's `SearchList.php` with `Small=5` for compact
+result rows and `Small=2` for source-label hints. It is intentionally
+candidate-based and rate-limited rather than a full-site crawler. Default
+behavior is one candidate at a time with at least 750 ms between HTTP requests;
+the command rejects concurrency above 3. Generated probe reports live under
+`data-tools/out/en-summaries/` and must not be committed as parent-repo source
+data.
+
 `d20srd.org` and SRD class spell lists provide English one-line descriptions for
 the OGL/SRD spell set. They remain useful for SRD/Core cross-checks and as a
 clearly source-marked subset.
@@ -248,6 +262,8 @@ The English extractor, if added, should start with SRD/Core only:
 - allow non-adopted mirror rows only in separate research reports
 - do not backfill missing English extension summaries from Chinese translations
   or mirror text
+- keep live fetches rate-limited and candidate-scoped until an adopted local
+  source dataset exists
 
 ### 3. Matching And Alias Review
 

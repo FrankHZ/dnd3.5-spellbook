@@ -10,6 +10,7 @@
     "rules:spells:validate": "tsx src/rules-spells.ts validate",
     "rules:sql:apply": "tsx src/rules-sql.ts apply",
     "rules:sql:dry-run": "tsx src/rules-sql.ts dry-run",
+    "en:summaries:probe": "tsx src/en-summaries.ts probe",
     "spells-full:generate": "tsx src/spells-full.ts generate",
     "spells-full:inspect": "tsx src/spells-full.ts inspect",
     "typecheck": "tsc -p tsconfig.json --noEmit",
