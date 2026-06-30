@@ -48,10 +48,12 @@ npm run -w data-tools spells-full:generate -- known-misses --write-patch spells/
 Probe IMarvinTPA for English short-description candidates:
 
 ```bash
+npm run -w data-tools en:summaries:candidates
 npm run -w data-tools en:summaries:probe
 npm run -w data-tools en:summaries:probe -- --candidate "Spider Poison" --candidate "Blood Wind"
 npm run -w data-tools en:summaries:probe -- --input short-desc/imarvin-candidates.json --limit 20
 npm run -w data-tools en:summaries:probe -- --input short-desc/imarvin-candidates.json --offset 0 --limit 20 --delay-ms 1500 --output-name imarvin-00000-00020
+npm run -w data-tools en:summaries:sources -- --input short-desc/imarvin-candidates.json --delay-ms 1500
 ```
 
 Run the Chinese CHM parser workflow:
@@ -135,6 +137,16 @@ repo. Use `--offset`, `--limit`, and `--output-name` for resumable slow-crawl
 chunks with stable report filenames. Candidate JSON inputs are local data and
 should live under `data/` when kept.
 
+`en:summaries:candidates` writes local-only rules DB candidate JSON under
+`data/short-desc/` by default. It excludes Tome of Battle maneuver names unless
+`--include-tob` is passed.
+
+`en:summaries:sources` fetches IMarvinTPA's source-book index and each source's
+`Small=5` line view, then joins the indexed rows against the local candidate
+JSON. It is also rate-limited, writes generated reports under
+`data-tools/out/en-summaries/`, and does not mutate local source data or
+SQLite databases.
+
 `zh:qa` is a mechanical source and parser-output QA report. It checks parser
 hard gates, raw/clean file drift, noisy source labels, empty or very short
 descriptions, unexpectedly long bold text, duplicate source keys, obvious
@@ -162,6 +174,8 @@ and writes `candidates.json`, `matched.json`, `unmatched.json`,
   candidates; it does not mutate SQLite databases.
 - `en:summaries:probe` fetches only requested candidate searches and writes a
   report; it does not mutate source data or SQLite databases.
+- `en:summaries:sources` fetches source-index pages and writes generated review
+  output only; it does not mutate source data or SQLite databases.
 - `rules:sql:dry-run` never mutates the configured rules DB.
 - `rules:sql:apply` and `rules:index:rebuild` are write-capable and must be run
   intentionally.

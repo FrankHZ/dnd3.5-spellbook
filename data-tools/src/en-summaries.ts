@@ -1,10 +1,18 @@
 import * as cheerio from "cheerio";
+import Database from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
 
-import { localDataDir, repoRoot } from "./env";
+import aliasMapExtra from "DATA/chm-mapping/enName-aliases-extra.json";
+import aliasMapGlobal from "DATA/chm-mapping/enName-aliases-global.json";
+import {
+  loadServerEnv,
+  localDataDir,
+  repoRoot,
+  resolveServerRelativePath,
+} from "./env";
 
-type Mode = "probe";
+type Mode = "candidates" | "probe" | "sources";
 
 type ProbeCandidate = {
   name: string;
@@ -63,6 +71,7 @@ type ProbeReport = {
     limit: number | null;
     offset: number;
     outputName: string | null;
+    retries: number;
   };
   summary: {
     candidates: number;
@@ -73,7 +82,68 @@ type ProbeReport = {
   results: CandidateProbeResult[];
 };
 
+type SourceIndexSource = {
+  token: string;
+  name: string;
+  abbr: string;
+  expectedCount: number | null;
+  status: string;
+  linesHref: string;
+};
+
+type SourceIndexSpell = SearchLineResult & {
+  sourceToken: string;
+  sourceName: string;
+  sourceAbbr: string;
+  sourceStatus: string;
+};
+
+type SourceIndexReport = {
+  generatedAt: string;
+  source: {
+    name: "IMarvinTPA";
+    sourceIndexUrl: string;
+    mode: "Index_Sources.php plus per-source Small=5 lines";
+  };
+  options: {
+    delayMs: number;
+    retries: number;
+    sourceOffset: number;
+    sourceLimit: number | null;
+    outputName: string | null;
+    candidateInput: string | null;
+  };
+  summary: {
+    sources: number;
+    expectedRows: number;
+    rows: number;
+    uniqueImarvinIds: number;
+    uniqueImarvinNames: number;
+    candidates: number;
+    matchedCandidates: number;
+    missingCandidates: number;
+    ambiguousCandidates: number;
+  };
+  sources: SourceIndexSource[];
+  rows: SourceIndexSpell[];
+  coverage: {
+    matched: Array<{
+      candidate: ProbeCandidate;
+      matches: SourceIndexSpell[];
+      warnings: string[];
+    }>;
+    missing: ProbeCandidate[];
+    ambiguous: Array<{
+      candidate: ProbeCandidate;
+      matches: SourceIndexSpell[];
+      warnings: string[];
+    }>;
+  };
+};
+
 const SEARCH_URL = "https://imarvintpa.com/dndlive/SearchList.php";
+const SOURCE_INDEX_URL = "https://imarvintpa.com/dndlive/Index_Sources.php";
+const DNDLIVE_BASE_URL = "https://imarvintpa.com/dndlive/";
 const REPORT_ROOT = path.join(
   repoRoot(),
   "data-tools",
@@ -82,6 +152,7 @@ const REPORT_ROOT = path.join(
 );
 const MAX_CONCURRENCY = 3;
 const DEFAULT_DELAY_MS = 750;
+const DEFAULT_RETRIES = 2;
 
 const DEFAULT_CANDIDATES: ProbeCandidate[] = [
   { name: "Fireball" },
@@ -103,10 +174,17 @@ const DEFAULT_CANDIDATES: ProbeCandidate[] = [
 function usage(): never {
   console.error(`Usage:
   npm run -w data-tools en:summaries:probe
+  npm run -w data-tools en:summaries:candidates
   npm run -w data-tools en:summaries:probe -- --candidate "Spider Poison" --candidate "Blood Wind"
   npm run -w data-tools en:summaries:probe -- --input short-desc/imarvin-candidates.json --limit 20
+  npm run -w data-tools en:summaries:sources -- --input short-desc/imarvin-candidates.json --delay-ms 1500
 
 Options:
+  candidates mode:
+  --out <path>             Candidate JSON path. Relative paths resolve under data/.
+  --include-tob            Include Tome of Battle maneuvers. Default excludes them.
+
+  probe mode:
   --candidate <name>       Add a simple exact-name candidate.
   --input <path>           JSON candidate file. Relative paths resolve under data/.
   --offset <n>             Skip the first n candidates before applying --limit.
@@ -114,6 +192,7 @@ Options:
   --output-name <name>     Stable report filename stem for resumable chunks.
   --concurrency <n>        Parallel candidate probes. Default 1, max ${MAX_CONCURRENCY}.
   --delay-ms <n>           Minimum spacing between HTTP requests. Default ${DEFAULT_DELAY_MS}.
+  --retries <n>            Retry failed HTTP requests. Default ${DEFAULT_RETRIES}.
 
 Input JSON can be an array of strings or objects:
   { "name": "Shield of Faith, Legion", "queryName": "*Shield*Faith*", "exactName": "Mass Shield of Faith", "source": "Miniatures" }
@@ -151,8 +230,33 @@ function normalizeName(value: string) {
   return value
     .replace(/\s+/g, " ")
     .replace(/[’]/g, "'")
+    .replace(/(?:\s+\((?:M|F|DF|XP)\))+$/gi, "")
     .trim()
     .toLowerCase();
+}
+
+function alternateExactNames(exactName: string) {
+  const names = [exactName];
+  const target = normalizeName(exactName);
+
+  const commaSuffix = exactName.match(/^(.+),\s*(Greater|Lesser|Mass)$/i);
+  if (commaSuffix?.[1] && commaSuffix[2]) {
+    names.push(`${commaSuffix[2]} ${commaSuffix[1]}`);
+  }
+
+  for (const [alias, canonical] of Object.entries(
+    aliasMapGlobal as Record<string, string>,
+  )) {
+    if (normalizeName(canonical) === target) names.push(alias);
+  }
+
+  for (const [canonical, aliases] of Object.entries(
+    aliasMapExtra as Record<string, string[]>,
+  )) {
+    if (normalizeName(canonical) === target) names.push(...aliases);
+  }
+
+  return [...new Set(names)];
 }
 
 function textOf(
@@ -183,6 +287,21 @@ function hrefSpellId(href: string | undefined) {
 function resolveInputPath(rawPath: string) {
   if (path.isAbsolute(rawPath)) return rawPath;
   return path.resolve(localDataDir(), rawPath);
+}
+
+function resolveLocalDataPath(rawPath: string) {
+  if (path.isAbsolute(rawPath)) return rawPath;
+  return path.resolve(localDataDir(), rawPath);
+}
+
+function rulesDbPath() {
+  loadServerEnv();
+  const raw = process.env.RULES_DATABASE_URL;
+  if (!raw) throw new Error("RULES_DATABASE_URL is not set");
+  if (!raw.startsWith("file:")) {
+    throw new Error(`Only file: SQLite URLs are supported, got ${raw}`);
+  }
+  return resolveServerRelativePath(raw.slice("file:".length));
 }
 
 function asCandidate(value: unknown): ProbeCandidate {
@@ -242,6 +361,7 @@ function parseArgs(argv: string[]) {
   let outputName: string | undefined;
   let concurrency = 1;
   let delayMs = DEFAULT_DELAY_MS;
+  let retries = DEFAULT_RETRIES;
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -277,6 +397,10 @@ function parseArgs(argv: string[]) {
         delayMs = parsePositiveInt(argv[index + 1], "--delay-ms") ?? DEFAULT_DELAY_MS;
         index += 1;
         break;
+      case "--retries":
+        retries = parseNonNegativeInt(argv[index + 1], "--retries") ?? DEFAULT_RETRIES;
+        index += 1;
+        break;
       case "--help":
       case "-h":
         usage();
@@ -302,18 +426,188 @@ function parseArgs(argv: string[]) {
     outputName: outputName ?? null,
     concurrency,
     delayMs,
+    retries,
   };
+}
+
+function parseSourceArgs(argv: string[]) {
+  let inputPath: string | undefined = "short-desc/imarvin-candidates.json";
+  let sourceLimit: number | undefined;
+  let sourceOffset = 0;
+  let outputName: string | undefined = "imarvin-source-index";
+  let delayMs = DEFAULT_DELAY_MS;
+  let retries = DEFAULT_RETRIES;
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    switch (arg) {
+      case "--input":
+        if (!argv[index + 1]) usage();
+        inputPath = argv[index + 1] as string;
+        index += 1;
+        break;
+      case "--no-input":
+        inputPath = undefined;
+        break;
+      case "--source-offset":
+        sourceOffset = parseNonNegativeInt(argv[index + 1], "--source-offset") ?? 0;
+        index += 1;
+        break;
+      case "--source-limit":
+        sourceLimit = parsePositiveInt(argv[index + 1], "--source-limit");
+        index += 1;
+        break;
+      case "--output-name":
+        if (!argv[index + 1]) usage();
+        outputName = argv[index + 1] as string;
+        index += 1;
+        break;
+      case "--delay-ms":
+        delayMs = parsePositiveInt(argv[index + 1], "--delay-ms") ?? DEFAULT_DELAY_MS;
+        index += 1;
+        break;
+      case "--retries":
+        retries = parseNonNegativeInt(argv[index + 1], "--retries") ?? DEFAULT_RETRIES;
+        index += 1;
+        break;
+      case "--help":
+      case "-h":
+        usage();
+        break;
+      default:
+        throw new Error(`Unknown argument: ${arg}`);
+    }
+  }
+
+  return {
+    inputPath,
+    sourceLimit: sourceLimit ?? null,
+    sourceOffset,
+    outputName: outputName ?? null,
+    delayMs,
+    retries,
+  };
+}
+
+function parseCandidateArgs(argv: string[]) {
+  let outPath = "short-desc/imarvin-candidates.json";
+  let includeTob = false;
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    switch (arg) {
+      case "--out":
+        if (!argv[index + 1]) usage();
+        outPath = argv[index + 1] as string;
+        index += 1;
+        break;
+      case "--include-tob":
+        includeTob = true;
+        break;
+      case "--help":
+      case "-h":
+        usage();
+        break;
+      default:
+        throw new Error(`Unknown argument: ${arg}`);
+    }
+  }
+
+  return { outPath, includeTob };
+}
+
+function writeCandidates(argv: string[]) {
+  const options = parseCandidateArgs(argv);
+  const dbPath = rulesDbPath();
+  const db = new Database(dbPath, { readonly: true, fileMustExist: true });
+  const where = options.includeTob ? "1 = 1" : "tobRows = 0";
+  const rows = db
+    .prepare(
+      `
+        WITH grouped AS (
+          SELECT
+            s.name AS spellName,
+            COUNT(*) AS rows,
+            GROUP_CONCAT(DISTINCT rb.abbr) AS rulebooks,
+            SUM(CASE WHEN rb.abbr = 'ToB' THEN 1 ELSE 0 END) AS tobRows
+          FROM dnd_spell s
+          LEFT JOIN dnd_rulebook rb ON rb.id = s.rulebook_id
+          WHERE s.name IS NOT NULL AND TRIM(s.name) <> ''
+          GROUP BY LOWER(s.name)
+        )
+        SELECT *
+        FROM grouped
+        WHERE ${where}
+        ORDER BY LOWER(spellName)
+      `,
+    )
+    .all() as Array<{
+    spellName: string;
+    rows: number;
+    rulebooks: string | null;
+    tobRows: number;
+  }>;
+
+  const excluded = options.includeTob
+    ? []
+    : (db
+        .prepare(
+          `
+            WITH grouped AS (
+              SELECT
+                s.name AS spellName,
+                COUNT(*) AS rows,
+                GROUP_CONCAT(DISTINCT rb.abbr) AS rulebooks,
+                SUM(CASE WHEN rb.abbr = 'ToB' THEN 1 ELSE 0 END) AS tobRows
+              FROM dnd_spell s
+              LEFT JOIN dnd_rulebook rb ON rb.id = s.rulebook_id
+              WHERE s.name IS NOT NULL AND TRIM(s.name) <> ''
+              GROUP BY LOWER(s.name)
+            )
+            SELECT *
+            FROM grouped
+            WHERE tobRows > 0
+            ORDER BY LOWER(spellName)
+          `,
+        )
+        .all() as Array<{ rows: number }>);
+  db.close();
+
+  const candidates = rows.map((row) => ({ name: row.spellName }));
+  const resolvedOut = resolveLocalDataPath(options.outPath);
+  fs.mkdirSync(path.dirname(resolvedOut), { recursive: true });
+  fs.writeFileSync(resolvedOut, `${JSON.stringify(candidates, null, 2)}\n`, "utf8");
+
+  const meta = {
+    generatedAt: new Date().toISOString(),
+    dbPath,
+    includeTob: options.includeTob,
+    uniqueNames: candidates.length,
+    sourceRows: rows.reduce((total, row) => total + Number(row.rows), 0),
+    excludedToBUniqueNames: excluded.length,
+    excludedToBRows: excluded.reduce(
+      (total, row) => total + Number(row.rows),
+      0,
+    ),
+  };
+  const metaPath = resolvedOut.replace(/\.json$/i, ".meta.json");
+  fs.writeFileSync(metaPath, `${JSON.stringify(meta, null, 2)}\n`, "utf8");
+
+  console.log(`IMarvinTPA candidates OK: ${resolvedOut}`);
+  console.log(JSON.stringify(meta, null, 2));
 }
 
 class RateLimitedFetcher {
   private nextRequestAt = 0;
   private gate: Promise<void> = Promise.resolve();
 
-  constructor(private readonly delayMs: number) {}
+  constructor(
+    private readonly delayMs: number,
+    private readonly retries: number,
+  ) {}
 
   async postSearch(params: URLSearchParams) {
-    await this.waitForTurn();
-    const response = await fetch(SEARCH_URL, {
+    return this.fetchText(SEARCH_URL, {
       method: "POST",
       body: params,
       headers: {
@@ -321,12 +615,37 @@ class RateLimitedFetcher {
         "user-agent": "dnd3.5-spellbook-data-tools/imarvintpa-probe",
       },
     });
+  }
 
-    if (!response.ok) {
-      throw new Error(`IMarvinTPA request failed: ${response.status}`);
+  async getUrl(url: string) {
+    return this.fetchText(url, {
+      method: "GET",
+      headers: {
+        "user-agent": "dnd3.5-spellbook-data-tools/imarvintpa-source-index",
+      },
+    });
+  }
+
+  private async fetchText(url: string, init: RequestInit) {
+    let lastError: unknown = null;
+    for (let attempt = 0; attempt <= this.retries; attempt += 1) {
+      await this.waitForTurn();
+      try {
+        const response = await fetch(url, init);
+
+        if (!response.ok) {
+          throw new Error(`IMarvinTPA request failed: ${response.status} ${url}`);
+        }
+
+        return response.text();
+      } catch (error) {
+        lastError = error;
+        if (attempt >= this.retries) break;
+        await sleep(this.delayMs * (attempt + 2));
+      }
     }
 
-    return response.text();
+    throw lastError;
   }
 
   private async waitForTurn() {
@@ -391,6 +710,52 @@ function parseSmall5(html: string) {
   return results;
 }
 
+function sourceToken(href: string | undefined) {
+  if (!href) return null;
+  const url = new URL(href, DNDLIVE_BASE_URL);
+  return url.searchParams.get("Sources");
+}
+
+function absoluteDndLiveUrl(href: string) {
+  return new URL(href, DNDLIVE_BASE_URL).toString();
+}
+
+function parseSourceIndex(html: string) {
+  const $ = cheerio.load(html);
+  const sources: SourceIndexSource[] = [];
+
+  $("tbody tr").each((_, tr) => {
+    const cells = $(tr).children("th,td").toArray();
+    if (cells.length < 8) return;
+
+    const sourceLink = $(cells[0]).find("a").first();
+    const token = sourceToken(sourceLink.attr("href"));
+    const lineLink = $(tr)
+      .find("a")
+      .toArray()
+      .map((link) => ({
+        text: textOf($, link),
+        href: $(link).attr("href"),
+      }))
+      .find((link) => link.text === "Lines" && link.href);
+
+    if (!token || !lineLink?.href) return;
+
+    const expectedCountRaw = textOf($, cells[2]);
+    const expectedCount = Number(expectedCountRaw);
+    sources.push({
+      token,
+      name: textOf($, sourceLink),
+      abbr: textOf($, cells[1]),
+      expectedCount: Number.isInteger(expectedCount) ? expectedCount : null,
+      status: textOf($, cells[3]),
+      linesHref: lineLink.href,
+    });
+  });
+
+  return sources;
+}
+
 function parseSmall2(html: string) {
   const $ = cheerio.load(html);
   const rows = $("tr").toArray();
@@ -433,8 +798,8 @@ function parseSmall2(html: string) {
 }
 
 function chooseExact<T extends { name: string }>(rows: T[], exactName: string) {
-  const target = normalizeName(exactName);
-  return rows.filter((row) => normalizeName(row.name) === target);
+  const targets = new Set(alternateExactNames(exactName).map(normalizeName));
+  return rows.filter((row) => targets.has(normalizeName(row.name)));
 }
 
 async function probeCandidate(
@@ -455,6 +820,9 @@ async function probeCandidate(
   if (exactRows.length === 1) {
     matched = exactRows[0] ?? null;
     status = "matched";
+    if (matched && normalizeName(matched.name) !== normalizeName(exactName)) {
+      warnings.push(`Matched alias ${matched.name} for ${exactName}`);
+    }
   } else if (exactRows.length > 1) {
     matched = exactRows[0] ?? null;
     status = "ambiguous";
@@ -520,19 +888,20 @@ function safeReportName(outputName: string | null) {
   return outputName.replace(/[^A-Za-z0-9._-]/g, "-");
 }
 
-function writeReport(report: ProbeReport) {
+function writeJsonReport(fileStem: string | null, report: unknown) {
   fs.mkdirSync(REPORT_ROOT, { recursive: true });
-  const reportPath = path.join(
-    REPORT_ROOT,
-    `${safeReportName(report.options.outputName)}.json`,
-  );
+  const reportPath = path.join(REPORT_ROOT, `${safeReportName(fileStem)}.json`);
   fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
   return reportPath;
 }
 
+function writeReport(report: ProbeReport) {
+  return writeJsonReport(report.options.outputName, report);
+}
+
 async function probe(argv: string[]) {
   const options = parseArgs(argv);
-  const fetcher = new RateLimitedFetcher(options.delayMs);
+  const fetcher = new RateLimitedFetcher(options.delayMs, options.retries);
 
   const results = await mapConcurrent(
     options.candidates,
@@ -553,6 +922,7 @@ async function probe(argv: string[]) {
       limit: options.limit,
       offset: options.offset,
       outputName: options.outputName,
+      retries: options.retries,
     },
     summary: {
       candidates: results.length,
@@ -575,13 +945,134 @@ async function probe(argv: string[]) {
   }
 }
 
+function coverageForCandidates(
+  candidates: ProbeCandidate[],
+  rows: SourceIndexSpell[],
+) {
+  const matched: SourceIndexReport["coverage"]["matched"] = [];
+  const missing: ProbeCandidate[] = [];
+  const ambiguous: SourceIndexReport["coverage"]["ambiguous"] = [];
+
+  for (const candidate of candidates) {
+    const exactName = candidate.exactName ?? candidate.name;
+    const matches = chooseExact(rows, exactName);
+    if (matches.length === 0) {
+      missing.push(candidate);
+      continue;
+    }
+
+    const warnings: string[] = [];
+    const aliasMatches = matches.filter(
+      (match) => normalizeName(match.name) !== normalizeName(exactName),
+    );
+    if (aliasMatches.length > 0) {
+      warnings.push(
+        `Matched alias names: ${[
+          ...new Set(aliasMatches.map((match) => match.name)),
+        ].join(", ")}`,
+      );
+    }
+
+    const uniqueIds = new Set(
+      matches.map((match) => match.id).filter((id): id is number => id !== null),
+    );
+    if (uniqueIds.size > 1) {
+      ambiguous.push({ candidate, matches, warnings });
+    } else {
+      matched.push({ candidate, matches, warnings });
+    }
+  }
+
+  return { matched, missing, ambiguous };
+}
+
+async function sources(argv: string[]) {
+  const options = parseSourceArgs(argv);
+  const fetcher = new RateLimitedFetcher(options.delayMs, options.retries);
+  const sourceIndexHtml = await fetcher.getUrl(SOURCE_INDEX_URL);
+  const allSources = parseSourceIndex(sourceIndexHtml);
+  const selectedSources = allSources.slice(
+    options.sourceOffset,
+    options.sourceLimit
+      ? options.sourceOffset + options.sourceLimit
+      : undefined,
+  );
+
+  const rows: SourceIndexSpell[] = [];
+  for (const source of selectedSources) {
+    const html = await fetcher.getUrl(absoluteDndLiveUrl(source.linesHref));
+    const sourceRows = parseSmall5(html);
+    rows.push(
+      ...sourceRows.map((row) => ({
+        ...row,
+        sourceToken: source.token,
+        sourceName: source.name,
+        sourceAbbr: source.abbr,
+        sourceStatus: source.status,
+      })),
+    );
+  }
+
+  const candidates = options.inputPath
+    ? readCandidates(options.inputPath, [])
+    : [];
+  const coverage = coverageForCandidates(candidates, rows);
+  const expectedRows = selectedSources.reduce(
+    (total, source) => total + (source.expectedCount ?? 0),
+    0,
+  );
+
+  const report: SourceIndexReport = {
+    generatedAt: new Date().toISOString(),
+    source: {
+      name: "IMarvinTPA",
+      sourceIndexUrl: SOURCE_INDEX_URL,
+      mode: "Index_Sources.php plus per-source Small=5 lines",
+    },
+    options: {
+      delayMs: options.delayMs,
+      retries: options.retries,
+      sourceOffset: options.sourceOffset,
+      sourceLimit: options.sourceLimit,
+      outputName: options.outputName,
+      candidateInput: options.inputPath ?? null,
+    },
+    summary: {
+      sources: selectedSources.length,
+      expectedRows,
+      rows: rows.length,
+      uniqueImarvinIds: new Set(
+        rows.map((row) => row.id).filter((id): id is number => id !== null),
+      ).size,
+      uniqueImarvinNames: new Set(rows.map((row) => normalizeName(row.name))).size,
+      candidates: candidates.length,
+      matchedCandidates: coverage.matched.length,
+      missingCandidates: coverage.missing.length,
+      ambiguousCandidates: coverage.ambiguous.length,
+    },
+    sources: selectedSources,
+    rows,
+    coverage,
+  };
+
+  const reportPath = writeJsonReport(options.outputName, report);
+  console.log(`IMarvinTPA source index OK: ${reportPath}`);
+  console.log(JSON.stringify(report.summary, null, 2));
+}
+
 async function main() {
   const [mode, ...argv] = process.argv.slice(2);
   if (!mode) usage();
 
   switch (mode as Mode) {
+    case "candidates":
+      writeCandidates(argv);
+      break;
     case "probe":
       await probe(argv);
+      break;
+    case "sources":
+      await sources(argv);
       break;
     default:
       usage();
