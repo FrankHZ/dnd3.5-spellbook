@@ -114,10 +114,6 @@ const BUILTIN_EN_ALIAS_MAP_GLOBAL: Record<string, string> = {
   "列表:Otiluke's Suppressing Field": "Otiluke's Suppressing Field",
   "nerotic cyst": "Necrotic Cyst",
 };
-const EN_ALIAS_MAP_GLOBAL: Record<string, string> = {
-  ...BUILTIN_EN_ALIAS_MAP_GLOBAL,
-  ...aliasMapGlobal,
-};
 const BUILTIN_EN_ALIAS_EXTRA: Record<string, string[]> = {
   "Detect Chaos/Evil/Good/Law": [
     "Detect Chaos",
@@ -159,6 +155,15 @@ const BUILTIN_EN_ALIAS_EXTRA: Record<string, string[]> = {
   ],
 };
 const EN_ALIAS_EXTRA: Record<string, string[]> = aliasMapExtra;
+const SEMANTIC_RISK_ALIAS_KEYS = new Set(
+  [
+    "Bigby's Striking Hand",
+    "Blade of Fire",
+    "Dance Of Blade",
+    "Dance Of Blades",
+    "Slapping Hand",
+  ].map((key) => key.toLowerCase()),
+);
 
 function checkingMissLabel(opts: {
   enName: string; // already normalized
@@ -213,15 +218,135 @@ export type MatchResult = {
   matchConfidence: number;
   failReason?: FailReason;
   flags?: string[];
+  resolvedEnName?: string | null;
+  aliasChain?: AliasStep[];
+  aliasCategories?: AliasCategory[];
+  aliasReview?: "none" | "low" | "required";
 };
 
-function lookupRecordCi<T>(record: Record<string, T>, key: string): T | undefined {
+export type AliasSource = "builtin" | "data";
+export type AliasStepKind = "global" | "extra";
+export type AliasCategory =
+  | "typo"
+  | "punctuation"
+  | "inversion"
+  | "fanout"
+  | "semantic-risk"
+  | "source-specific";
+
+export type AliasStep = {
+  from: string;
+  to: string;
+  kind: AliasStepKind;
+  source: AliasSource;
+  category: AliasCategory;
+  reviewRequired: boolean;
+};
+
+type AliasEntry<T> = {
+  value: T;
+  source: AliasSource;
+};
+
+type ResolvedName = {
+  name: string;
+  aliasChain: AliasStep[];
+};
+
+function lookupRecordCi<T>(
+  record: Record<string, T>,
+  key: string,
+): T | undefined {
   if (record[key] !== undefined) return record[key];
   const lowerKey = key.toLowerCase();
   const match = Object.entries(record).find(
     ([recordKey]) => recordKey.toLowerCase() === lowerKey,
   );
   return match?.[1];
+}
+
+function lookupAliasEntryCi<T>(
+  records: Array<{ record: Record<string, T>; source: AliasSource }>,
+  key: string,
+): AliasEntry<T> | undefined {
+  for (const { record, source } of records) {
+    const value = lookupRecordCi(record, key);
+    if (value !== undefined) return { value, source };
+  }
+  return undefined;
+}
+
+function compactAliasText(value: string) {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/gi, "")
+    .toLowerCase();
+}
+
+function aliasCategory(opts: {
+  from: string;
+  to: string;
+  kind: AliasStepKind;
+  targetCount: number;
+}): AliasCategory {
+  const fromLower = opts.from.toLowerCase();
+  if (SEMANTIC_RISK_ALIAS_KEYS.has(fromLower)) return "semantic-risk";
+  if (opts.targetCount > 1 || opts.from.includes("/")) return "fanout";
+  if (/^列表:/i.test(opts.from)) return "source-specific";
+  if (
+    opts.from.includes(",") ||
+    opts.to.includes(",") ||
+    /\b(greater|lesser|mass)\b/i.test(opts.from)
+  ) {
+    return "inversion";
+  }
+  if (compactAliasText(opts.from) === compactAliasText(opts.to)) {
+    return "punctuation";
+  }
+  return "typo";
+}
+
+function makeAliasStep(opts: {
+  from: string;
+  to: string;
+  kind: AliasStepKind;
+  source: AliasSource;
+  targetCount?: number;
+}): AliasStep {
+  const category = aliasCategory({
+    from: opts.from,
+    to: opts.to,
+    kind: opts.kind,
+    targetCount: opts.targetCount ?? 1,
+  });
+  return {
+    from: opts.from,
+    to: opts.to,
+    kind: opts.kind,
+    source: opts.source,
+    category,
+    reviewRequired: category === "semantic-risk" || category === "source-specific",
+  };
+}
+
+function lookupGlobalAlias(enName: string): AliasEntry<string> | undefined {
+  return lookupAliasEntryCi(
+    [
+      { record: BUILTIN_EN_ALIAS_MAP_GLOBAL, source: "builtin" },
+      { record: aliasMapGlobal, source: "data" },
+    ],
+    enName,
+  );
+}
+
+function lookupExtraAliases(enName: string): Array<AliasEntry<string[]>> {
+  const entries: Array<AliasEntry<string[]>> = [];
+  const builtin = lookupRecordCi(BUILTIN_EN_ALIAS_EXTRA, enName);
+  if (builtin) entries.push({ value: builtin, source: "builtin" });
+  const data = lookupRecordCi(EN_ALIAS_EXTRA, enName);
+  if (data) entries.push({ value: data, source: "data" });
+  return entries;
 }
 
 function uniqueNames(names: string[]) {
@@ -236,17 +361,74 @@ function uniqueNames(names: string[]) {
   return result;
 }
 
-function candidateNamesFor(enName: string) {
-  const primary = lookupRecordCi(EN_ALIAS_MAP_GLOBAL, enName) ?? enName;
-  const extras = [
-    ...(lookupRecordCi(BUILTIN_EN_ALIAS_EXTRA, enName) ?? []),
-    ...(lookupRecordCi(BUILTIN_EN_ALIAS_EXTRA, primary) ?? []),
-    ...(lookupRecordCi(EN_ALIAS_EXTRA, enName) ?? []),
-    ...(lookupRecordCi(EN_ALIAS_EXTRA, primary) ?? []),
-  ];
-  return uniqueNames([primary, ...extras]).map(
-    (name) => lookupRecordCi(EN_ALIAS_MAP_GLOBAL, name) ?? name,
-  );
+function resolveGlobalAliasChain(enName: string) {
+  const chain: AliasStep[] = [];
+  let current = enName;
+  const seen = new Set<string>([current]);
+
+  for (let depth = 0; depth < 8; depth += 1) {
+    const alias = lookupGlobalAlias(current);
+    if (!alias) break;
+    const next = alias.value;
+    chain.push(
+      makeAliasStep({
+        from: current,
+        to: next,
+        kind: "global",
+        source: alias.source,
+      }),
+    );
+    if (seen.has(next)) break;
+    seen.add(next);
+    current = next;
+  }
+
+  return { name: current, aliasChain: chain };
+}
+
+function uniqueResolvedNames(names: ResolvedName[]) {
+  const seen = new Set<string>();
+  const result: ResolvedName[] = [];
+  for (const name of names) {
+    const key = name.name.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(name);
+  }
+  return result;
+}
+
+function candidateNamesFor(enName: string): ResolvedName[] {
+  const primary = resolveGlobalAliasChain(enName);
+  const extras: ResolvedName[] = [];
+  for (const key of uniqueNames([enName, primary.name])) {
+    for (const extra of lookupExtraAliases(key)) {
+      for (const target of extra.value) {
+        const step = makeAliasStep({
+          from: key,
+          to: target,
+          kind: "extra",
+          source: extra.source,
+          targetCount: extra.value.length,
+        });
+        const resolved = resolveGlobalAliasChain(target);
+        extras.push({
+          name: resolved.name,
+          aliasChain: [step, ...resolved.aliasChain],
+        });
+      }
+    }
+  }
+  return uniqueResolvedNames([primary, ...extras]);
+}
+
+function aliasCategories(aliasChain: AliasStep[]) {
+  return [...new Set(aliasChain.map((step) => step.category))];
+}
+
+function aliasReview(aliasChain: AliasStep[]): "none" | "low" | "required" {
+  if (aliasChain.length === 0) return "none";
+  return aliasChain.some((step) => step.reviewRequired) ? "required" : "low";
 }
 
 export async function matchByEnNameAllBooks(opts: {
@@ -257,10 +439,14 @@ export async function matchByEnNameAllBooks(opts: {
 
   const missingLabels = checkingMissLabel(opts);
 
-  const rows: Array<{ id: number; rulebook_id: number }> = [];
   const candidateNames = candidateNamesFor(opts.enName);
+  const rows: Array<{
+    id: number;
+    rulebook_id: number;
+    resolved: ResolvedName;
+  }> = [];
 
-  for (const enName of candidateNames) {
+  for (const candidateName of candidateNames) {
     const nameRows = await prisma.$queryRaw<
     Array<{ id: number; rulebook_id: number }>
     >(
@@ -268,10 +454,10 @@ export async function matchByEnNameAllBooks(opts: {
       SELECT s.id, s.rulebook_id
       FROM dnd_spell s
       WHERE s.rulebook_id IN (${Prisma.join(rulebookIds)})
-          AND LOWER(s.name) = LOWER(${enName})
+          AND LOWER(s.name) = LOWER(${candidateName.name})
     `,
     );
-    rows.push(...nameRows);
+    rows.push(...nameRows.map((row) => ({ ...row, resolved: candidateName })));
   }
 
   if (rows.length === 0) {
@@ -298,9 +484,15 @@ export async function matchByEnNameAllBooks(opts: {
     rulebookId: Number(r.rulebook_id),
     rulebookAbbr: rulebookAbbrMap.get(Number(r.rulebook_id)) ?? null,
     chmRulebookLabels: opts.bookLabels,
-    matchMethod: `match:enExactCiAllBooks; expand:${uniqueRows.length}`,
+    matchMethod: `match:${
+      r.resolved.aliasChain.length > 0 ? "enAliasCiAllBooks" : "enExactCiAllBooks"
+    }; expand:${uniqueRows.length}`,
     matchConfidence: 1.0,
     flags: ["MULTI_BOOK_BY_ENNAME"],
+    resolvedEnName: r.resolved.name,
+    aliasChain: r.resolved.aliasChain,
+    aliasCategories: aliasCategories(r.resolved.aliasChain),
+    aliasReview: aliasReview(r.resolved.aliasChain),
   }));
 
   return [...missingLabels, ...results];

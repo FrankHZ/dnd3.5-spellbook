@@ -159,7 +159,7 @@ candidates. It reads class spell overview pages from
 `data/chm-raw-full/领域法术/`, reads the ToB maneuver overview from
 `data/chm-clean/九剑/招数列表.htm`, reuses the current CHM alias/matching helpers,
 and writes `candidates.json`, `matched.json`, `unmatched.json`,
-`duplicates.json`, `conflicts.json`, and `summary.json` under
+`duplicates.json`, `conflicts.json`, `alias-audit.json`, and `summary.json` under
 `data-tools/out/zh-parser/summary/`.
 
 ## Safety

@@ -4,7 +4,11 @@ import iconv from "iconv-lite";
 import * as cheerio from "cheerio";
 
 import { localDataDir } from "../../env";
-import { matchByEnNameAllBooks } from "../match";
+import {
+  type AliasCategory,
+  type AliasStep,
+  matchByEnNameAllBooks,
+} from "../match";
 import { BOOK_LABEL_TO_ABBR, normalizeBookLabel } from "../mapping";
 
 type SourceKind = "class-list" | "domain-list" | "maneuver-list";
@@ -38,6 +42,10 @@ type MatchedSummary = SummaryCandidate & {
   rulebookAbbr: string | null;
   chmRulebookLabels: string[];
   finalMatchMethod: string;
+  resolvedEnName: string | null;
+  aliasChain: AliasStep[];
+  aliasCategories: AliasCategory[];
+  aliasReview: "none" | "low" | "required";
 };
 
 type DuplicateGroup = {
@@ -57,6 +65,25 @@ type ConflictGroup = DuplicateGroup & {
   }>;
 };
 
+type AliasAuditEntry = {
+  enName: string;
+  records: number;
+  spellIds: number[];
+  rulebookAbbrs: string[];
+  aliasReview: "low" | "required";
+  aliasCategories: AliasCategory[];
+  resolutions: Array<{
+    resolvedEnName: string;
+    records: number;
+    spellIds: number[];
+    rulebookAbbrs: string[];
+    aliasReview: "low" | "required";
+    aliasCategories: AliasCategory[];
+    aliasChain: AliasStep[];
+    sourceKeys: string[];
+  }>;
+};
+
 type ExtractReport = {
   generatedAt: string;
   options: {
@@ -73,6 +100,9 @@ type ExtractReport = {
     duplicates: number;
     conflictingDuplicates: number;
     normalizedConflictingDuplicates: number;
+    aliasAssistedMatches: number;
+    aliasReviewRequiredMatches: number;
+    aliasAuditEntries: number;
     bySourceKind: Record<string, number>;
     byMatchMethod: Record<string, number>;
   };
@@ -608,6 +638,10 @@ async function matchCandidates(candidates: SummaryCandidate[]) {
         rulebookAbbr: match.rulebookAbbr,
         chmRulebookLabels: match.chmRulebookLabels,
         finalMatchMethod,
+        resolvedEnName: match.resolvedEnName ?? null,
+        aliasChain: match.aliasChain ?? [],
+        aliasCategories: match.aliasCategories ?? [],
+        aliasReview: match.aliasReview ?? "none",
       };
 
       if (match.spellId) matched.push(record);
@@ -616,6 +650,79 @@ async function matchCandidates(candidates: SummaryCandidate[]) {
   }
 
   return { matched, unmatched, byMatchMethod };
+}
+
+function uniqueNumbers(values: Array<number | null>) {
+  return [...new Set(values.filter((value): value is number => value !== null))];
+}
+
+function uniqueStrings(values: Array<string | null>) {
+  return [...new Set(values.filter((value): value is string => value !== null))];
+}
+
+function strongestAliasReview(
+  values: Array<MatchedSummary["aliasReview"]>,
+): "low" | "required" {
+  return values.includes("required") ? "required" : "low";
+}
+
+function uniqueAliasCategories(records: MatchedSummary[]) {
+  return [
+    ...new Set(records.flatMap((record) => record.aliasCategories)),
+  ].sort();
+}
+
+function findAliasAudit(records: MatchedSummary[]): AliasAuditEntry[] {
+  const grouped = new Map<string, MatchedSummary[]>();
+  for (const record of records) {
+    if (record.aliasChain.length === 0) continue;
+    grouped.set(record.enName, [...(grouped.get(record.enName) ?? []), record]);
+  }
+
+  const entries: AliasAuditEntry[] = [];
+  for (const [enName, group] of grouped) {
+    const byResolution = new Map<string, MatchedSummary[]>();
+    for (const record of group) {
+      const key = `${record.resolvedEnName ?? ""}|${JSON.stringify(
+        record.aliasChain,
+      )}`;
+      byResolution.set(key, [...(byResolution.get(key) ?? []), record]);
+    }
+
+    const resolutions = [...byResolution.values()]
+      .map((resolutionGroup) => ({
+        resolvedEnName: resolutionGroup[0]?.resolvedEnName ?? "",
+        records: resolutionGroup.length,
+        spellIds: uniqueNumbers(resolutionGroup.map((record) => record.spellId)),
+        rulebookAbbrs: uniqueStrings(
+          resolutionGroup.map((record) => record.rulebookAbbr),
+        ),
+        aliasReview: strongestAliasReview(
+          resolutionGroup.map((record) => record.aliasReview),
+        ),
+        aliasCategories: uniqueAliasCategories(resolutionGroup),
+        aliasChain: resolutionGroup[0]?.aliasChain ?? [],
+        sourceKeys: resolutionGroup.map((record) => record.sourceKey),
+      }))
+      .sort((a, b) => a.resolvedEnName.localeCompare(b.resolvedEnName));
+
+    entries.push({
+      enName,
+      records: group.length,
+      spellIds: uniqueNumbers(group.map((record) => record.spellId)),
+      rulebookAbbrs: uniqueStrings(group.map((record) => record.rulebookAbbr)),
+      aliasReview: strongestAliasReview(group.map((record) => record.aliasReview)),
+      aliasCategories: uniqueAliasCategories(group),
+      resolutions,
+    });
+  }
+
+  return entries.sort((a, b) => {
+    if (a.aliasReview !== b.aliasReview) {
+      return a.aliasReview === "required" ? -1 : 1;
+    }
+    return b.records - a.records || a.enName.localeCompare(b.enName);
+  });
 }
 
 function findDuplicates(records: MatchedSummary[]): DuplicateGroup[] {
@@ -701,6 +808,7 @@ async function main() {
     ...maneuverResult.candidates,
   ];
   const { matched, unmatched, byMatchMethod } = await matchCandidates(candidates);
+  const aliasAudit = findAliasAudit(matched);
   const duplicates = findDuplicates(matched);
   const conflicts = findConflicts(duplicates);
 
@@ -723,6 +831,13 @@ async function main() {
         (group) => group.summaries.length > 1,
       ).length,
       normalizedConflictingDuplicates: conflicts.length,
+      aliasAssistedMatches: matched.filter(
+        (record) => record.aliasChain.length > 0,
+      ).length,
+      aliasReviewRequiredMatches: matched.filter(
+        (record) => record.aliasReview === "required",
+      ).length,
+      aliasAuditEntries: aliasAudit.length,
       bySourceKind,
       byMatchMethod,
     },
@@ -734,6 +849,7 @@ async function main() {
   writeJson(path.join(options.outDir, "unmatched.json"), unmatched);
   writeJson(path.join(options.outDir, "duplicates.json"), duplicates);
   writeJson(path.join(options.outDir, "conflicts.json"), conflicts);
+  writeJson(path.join(options.outDir, "alias-audit.json"), aliasAudit);
 
   console.log("zh summary extraction done");
   console.log(report.stats);

@@ -51,10 +51,14 @@ npm run -w data-tools zh:summaries:extract
   occurrences, expands to `6,527` matched records, leaves `0` unmatched records,
   and reports `1,833` duplicate targets, including `695` conflicting duplicate
   targets and `656` normalized conflicting duplicate targets, for review under
-  `data-tools/out/zh-parser/summary/`.
+  `data-tools/out/zh-parser/summary/`. It also reports `304` alias-assisted
+  matches, `26` matches that require alias review, and `153` alias audit
+  entries.
   The zero-unmatched baseline relies on the shared CHM English-name alias layer,
   including typo fixes and compact slash-name expansion for alignment,
-  protection, mantle, and wall spell families.
+  protection, mantle, and wall spell families. Alias-assisted matches are
+  reviewable through `alias-audit.json`; semantic-risk and source-specific
+  aliases should not be promoted to import without human or cross-source review.
 - A secondary confirmed short-summary source exists under
   `data/chm-raw-full/各种其他类法术及超能/`, but the first probe over `机关术.htm`
   mixes infusion and non-spell content and should stay out of the default spell
@@ -235,12 +239,14 @@ data-tools/out/zh-parser/summary/
 |- unmatched.json
 |- duplicates.json
 |- conflicts.json
+|- alias-audit.json
 |- summary.json
 ```
 
 `duplicates.json` keeps every repeated target. `conflicts.json` is the narrower
 manual-review entry point after punctuation, whitespace, quote, and case
-normalization.
+normalization. `alias-audit.json` records alias-assisted matches, resolved names,
+alias chains, alias categories, and whether the alias needs review before import.
 
 Suggested record fields:
 
@@ -264,6 +270,10 @@ Suggested record fields:
 - `rulebookAbbr`
 - `spellId` or future entity id
 - `matchMethod`
+- `resolvedEnName`
+- `aliasChain`
+- `aliasCategories`
+- `aliasReview`
 
 Keep the source summary literal. Normalize whitespace and punctuation, but do
 not rewrite the prose into a new summary.
@@ -298,6 +308,7 @@ The extractor should report:
 - known exact matches
 - component-marker-stripped matches
 - alias-assisted matches
+- alias chains, alias categories, and review-required alias matches
 - missing rules DB rows
 - unresolved names
 - source-key duplicates
@@ -372,6 +383,8 @@ first, the UI should degrade cleanly without placeholder text on other rows.
 - Adopted source files have stable matched/unmatched counts.
 - Unmatched records from adopted source files are either resolved, documented as
   deferred, or excluded from import.
+- Alias-assisted matches are separately auditable, and review-required aliases
+  are either confirmed, documented as deferred, or excluded from import.
 - Class/domain-list parsing handles level headings, optional school headings,
   leading source prefixes, and trailing component markers.
 - Summary QA reports duplicate targets, empty text, unexpected length, mojibake,
