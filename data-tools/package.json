@@ -13,6 +13,7 @@
     "en:summaries:candidates": "tsx src/en-summaries.ts candidates",
     "en:summaries:probe": "tsx src/en-summaries.ts probe",
     "en:summaries:sources": "tsx src/en-summaries.ts sources",
+    "summaries:qa": "tsx src/short-desc-qa.ts",
     "spells-full:generate": "tsx src/spells-full.ts generate",
     "spells-full:inspect": "tsx src/spells-full.ts inspect",
     "typecheck": "tsc -p tsconfig.json --noEmit",

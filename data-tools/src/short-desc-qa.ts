@@ -1,0 +1,613 @@
+import fs from "node:fs";
+import path from "node:path";
+
+type Severity = "error" | "warning" | "info";
+
+type QaIssue = {
+  severity: Severity;
+  code: string;
+  detail: string;
+  file?: string;
+  queue?: string;
+  count?: number;
+  sourceKey?: string;
+  spellId?: number | null;
+  enName?: string;
+  zhName?: string;
+};
+
+type QaSummary = {
+  generatedAt: string;
+  inputs: {
+    zhSummaryDir: string;
+    enSourceIndex: string;
+    enStrictMissing: string;
+    outDir: string;
+  };
+  issueCount: number;
+  bySeverity: Record<Severity, number>;
+  byCode: Record<string, number>;
+  zh: {
+    matched: number;
+    unmatched: number;
+    conflicts: number;
+    aliasAuditEntries: number;
+    aliasReviewRequired: number;
+    textIssues: number;
+  };
+  en: {
+    sourceIndexPresent: boolean;
+    candidates: number;
+    matchedCandidates: number;
+    missingCandidates: number;
+    ambiguousCandidates: number;
+    strict35QaCandidates: number;
+  };
+  crossCoverage: {
+    zhUniqueNames: number;
+    enUniqueNames: number;
+    zhWithoutEn: number;
+    enWithoutZh: number;
+  };
+  queues: Record<string, number>;
+};
+
+type ZhMatchedRecord = {
+  sourceKey?: string;
+  sourceKind?: string;
+  listOwner?: string;
+  zhName?: string;
+  enName?: string;
+  resolvedEnName?: string | null;
+  summaryText?: string;
+  spellId?: number | null;
+  rulebookAbbr?: string | null;
+  aliasReview?: "none" | "low" | "required";
+};
+
+type ZhConflictRecord = {
+  targetKey?: string;
+  spellId?: number | null;
+  enName?: string;
+  summaries?: Array<{
+    summaryText?: string;
+    records?: ZhMatchedRecord[];
+  }>;
+  normalizedSummaries?: Array<{
+    normalizedSummaryText?: string;
+    summaries?: Array<{
+      summaryText?: string;
+      records?: ZhMatchedRecord[];
+    }>;
+  }>;
+};
+
+type ZhAliasAuditEntry = {
+  enName?: string;
+  records?: number;
+  spellIds?: number[];
+  rulebookAbbrs?: string[];
+  aliasReview?: "low" | "required";
+  aliasCategories?: string[];
+  resolutions?: unknown[];
+};
+
+type EnSourceIndexReport = {
+  summary?: {
+    candidates?: number;
+    matchedCandidates?: number;
+    missingCandidates?: number;
+    ambiguousCandidates?: number;
+  };
+  coverage?: {
+    matched?: Array<{
+      candidate?: { name?: string; exactName?: string };
+      matches?: Array<{
+        id?: number | null;
+        name?: string;
+        shortDescription?: string;
+        sourceToken?: string;
+        sourceName?: string;
+        sourceAbbr?: string;
+      }>;
+      warnings?: string[];
+    }>;
+    missing?: Array<{ name?: string; exactName?: string }>;
+    ambiguous?: unknown[];
+  };
+};
+
+type EnStrictMissingReport = {
+  summary?: {
+    strict35QaCandidates?: number;
+    totalImarvinOnly?: number;
+    deferred?: number;
+  };
+  strict35QaCandidates?: Array<Record<string, unknown>>;
+};
+
+const DEFAULT_ZH_SUMMARY_DIR = "out/zh-parser/summary";
+const DEFAULT_EN_SOURCE_INDEX =
+  "out/en-summaries/imarvin-source-index.json";
+const DEFAULT_EN_STRICT_MISSING =
+  "out/en-summaries/imarvin-source-index-db-missing-strict35.json";
+const DEFAULT_OUT_DIR = "out/short-desc-qa";
+const MOJIBAKE_RE = /\uFFFD|锟斤拷/;
+const HTML_RE = /<\/?[a-z][^>]*>/i;
+const VERY_SHORT_TEXT_LENGTH = 2;
+const LONG_TEXT_LENGTH = 180;
+const SPOT_CHECK_LIMIT = 40;
+
+function parseArgs(argv: string[]) {
+  const args = new Map<string, string>();
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (!arg?.startsWith("--")) continue;
+    const next = argv[index + 1];
+    args.set(arg, next && !next.startsWith("--") ? next : "true");
+    if (next && !next.startsWith("--")) index += 1;
+  }
+  return {
+    zhSummaryDir: path.resolve(
+      args.get("--zhSummaryDir") ?? DEFAULT_ZH_SUMMARY_DIR,
+    ),
+    enSourceIndex: path.resolve(
+      args.get("--enSourceIndex") ?? DEFAULT_EN_SOURCE_INDEX,
+    ),
+    enStrictMissing: path.resolve(
+      args.get("--enStrictMissing") ?? DEFAULT_EN_STRICT_MISSING,
+    ),
+    outDir: path.resolve(args.get("--outDir") ?? DEFAULT_OUT_DIR),
+  };
+}
+
+function readJson<T>(file: string): T {
+  return JSON.parse(fs.readFileSync(file, "utf-8")) as T;
+}
+
+function readJsonIfExists<T>(file: string): T | null {
+  if (!fs.existsSync(file)) return null;
+  return readJson<T>(file);
+}
+
+function bump(map: Record<string, number>, key: string) {
+  map[key] = (map[key] ?? 0) + 1;
+}
+
+function issue(
+  issues: QaIssue[],
+  severity: Severity,
+  code: string,
+  fields: Omit<QaIssue, "severity" | "code">,
+) {
+  issues.push({ severity, code, ...fields });
+}
+
+function normalizeName(value: string) {
+  return value
+    .replace(/\s+/g, " ")
+    .replace(/[’]/g, "'")
+    .replace(/(?:\s+\((?:M|F|DF|XP)\))+$/gi, "")
+    .trim()
+    .toLowerCase();
+}
+
+function normalizedRecordName(record: ZhMatchedRecord) {
+  return normalizeName(record.resolvedEnName || record.enName || "");
+}
+
+function issueRecordFields(record: ZhMatchedRecord) {
+  return {
+    ...(record.sourceKey ? { sourceKey: record.sourceKey } : {}),
+    ...(typeof record.spellId === "number" || record.spellId === null
+      ? { spellId: record.spellId }
+      : {}),
+    ...(record.enName ? { enName: record.enName } : {}),
+    ...(record.zhName ? { zhName: record.zhName } : {}),
+  };
+}
+
+function uniqueStrings(values: Array<string | undefined | null>) {
+  return [...new Set(values.filter((value): value is string => Boolean(value)))];
+}
+
+function queuePath(outDir: string, name: string) {
+  return path.join(outDir, "review-queues", `${name}.jsonl`);
+}
+
+function writeJson(file: string, value: unknown) {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`, "utf-8");
+}
+
+function writeJsonl(file: string, rows: unknown[]) {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(
+    file,
+    rows.map((row) => JSON.stringify(row)).join("\n") +
+      (rows.length > 0 ? "\n" : ""),
+    "utf-8",
+  );
+}
+
+function recordTextIssue(record: ZhMatchedRecord, issues: QaIssue[]) {
+  const text = record.summaryText ?? "";
+  if (!text.trim()) {
+    issue(issues, "error", "zh-empty-summary", {
+      file: "matched.json",
+      detail: "Chinese matched summary has empty summaryText",
+      ...issueRecordFields(record),
+    });
+    return 1;
+  }
+  let count = 0;
+  if (MOJIBAKE_RE.test(text)) {
+    count += 1;
+    issue(issues, "error", "zh-summary-mojibake", {
+      file: "matched.json",
+      detail: "Chinese summary contains replacement/mojibake marker",
+      ...issueRecordFields(record),
+    });
+  }
+  if (HTML_RE.test(text)) {
+    count += 1;
+    issue(issues, "error", "zh-summary-raw-html", {
+      file: "matched.json",
+      detail: "Chinese summaryText appears to contain raw HTML",
+      ...issueRecordFields(record),
+    });
+  }
+  if (text.trim().length <= VERY_SHORT_TEXT_LENGTH) {
+    count += 1;
+    issue(issues, "warning", "zh-summary-very-short", {
+      file: "matched.json",
+      detail: `Chinese summaryText length is ${text.trim().length}`,
+      ...issueRecordFields(record),
+    });
+  }
+  if (text.length > LONG_TEXT_LENGTH) {
+    count += 1;
+    issue(issues, "info", "zh-summary-long", {
+      file: "matched.json",
+      detail: `Chinese summaryText length is ${text.length}`,
+      ...issueRecordFields(record),
+    });
+  }
+  return count;
+}
+
+function conflictQueueRows(conflicts: ZhConflictRecord[]) {
+  return conflicts.map((conflict) => {
+    const variants = conflict.summaries ?? [];
+    const records = variants.flatMap((variant) => variant.records ?? []);
+    return {
+      queue: "zh-conflicts",
+      targetKey: conflict.targetKey,
+      spellId: conflict.spellId ?? null,
+      enName: conflict.enName,
+      variantCount: variants.length,
+      normalizedVariantCount: conflict.normalizedSummaries?.length ?? null,
+      summarySamples: variants.slice(0, 6).map((variant) => ({
+        summaryText: variant.summaryText,
+        records: variant.records?.length ?? 0,
+        sourceKeys: uniqueStrings(
+          variant.records?.map((record) => record.sourceKey) ?? [],
+        ).slice(0, 12),
+      })),
+      sourceKinds: uniqueStrings(records.map((record) => record.sourceKind)),
+      rulebookAbbrs: uniqueStrings(records.map((record) => record.rulebookAbbr)),
+      recommendation: "review duplicate summary variants before import",
+    };
+  });
+}
+
+function aliasQueueRows(aliasAudit: ZhAliasAuditEntry[]) {
+  return aliasAudit
+    .filter((entry) => entry.aliasReview === "required")
+    .map((entry) => ({
+      queue: "zh-alias-required",
+      enName: entry.enName,
+      records: entry.records ?? 0,
+      spellIds: entry.spellIds ?? [],
+      rulebookAbbrs: entry.rulebookAbbrs ?? [],
+      aliasCategories: entry.aliasCategories ?? [],
+      resolutions: entry.resolutions ?? [],
+      recommendation: "confirm alias target or mark source/alias as deferred",
+    }));
+}
+
+function enStrictRows(strictReport: EnStrictMissingReport | null) {
+  return (strictReport?.strict35QaCandidates ?? []).map((entry) => ({
+    queue: "en-strict35-missing",
+    ...entry,
+    recommendation:
+      "confirm whether this IMarvinTPA strict-3.5 row should become a local candidate, rules DB patch, or deferred source mismatch",
+  }));
+}
+
+function englishMatchedNames(report: EnSourceIndexReport | null) {
+  const names = new Map<string, { name: string; sources: string[] }>();
+  for (const item of report?.coverage?.matched ?? []) {
+    const candidateName = item.candidate?.exactName ?? item.candidate?.name;
+    if (candidateName) {
+      names.set(normalizeName(candidateName), {
+        name: candidateName,
+        sources: [],
+      });
+    }
+    for (const match of item.matches ?? []) {
+      if (!match.name) continue;
+      const key = normalizeName(match.name);
+      const existing = names.get(key);
+      names.set(key, {
+        name: match.name,
+        sources: uniqueStrings([
+          ...(existing?.sources ?? []),
+          match.sourceAbbr,
+          match.sourceToken,
+        ]),
+      });
+    }
+  }
+  return names;
+}
+
+function chineseMatchedNames(records: ZhMatchedRecord[]) {
+  const names = new Map<string, { name: string; records: number; spellIds: number[] }>();
+  for (const record of records) {
+    const normalized = normalizedRecordName(record);
+    if (!normalized) continue;
+    const existing = names.get(normalized);
+    names.set(normalized, {
+      name: record.resolvedEnName || record.enName || normalized,
+      records: (existing?.records ?? 0) + 1,
+      spellIds: [
+        ...(existing?.spellIds ?? []),
+        ...(typeof record.spellId === "number" ? [record.spellId] : []),
+      ],
+    });
+  }
+  return names;
+}
+
+function crossCoverageRows(
+  zhNames: Map<string, { name: string; records: number; spellIds: number[] }>,
+  enNames: Map<string, { name: string; sources: string[] }>,
+) {
+  const rows: unknown[] = [];
+  for (const [key, zh] of zhNames) {
+    if (enNames.has(key)) continue;
+    rows.push({
+      queue: "cross-coverage",
+      direction: "zh-without-en",
+      key,
+      name: zh.name,
+      records: zh.records,
+      spellIds: [...new Set(zh.spellIds)].sort((a, b) => a - b),
+      recommendation:
+        "review whether English source coverage is intentionally missing, source-named differently, or out of scope",
+    });
+  }
+  for (const [key, en] of enNames) {
+    if (zhNames.has(key)) continue;
+    rows.push({
+      queue: "cross-coverage",
+      direction: "en-without-zh",
+      key,
+      name: en.name,
+      sources: en.sources,
+      recommendation:
+        "review whether Chinese CHM overview coverage is intentionally missing, named differently, or out of scope",
+    });
+  }
+  return rows.sort((a, b) => {
+    const left = a as { direction?: string; key?: string };
+    const right = b as { direction?: string; key?: string };
+    return `${left.direction}:${left.key}`.localeCompare(
+      `${right.direction}:${right.key}`,
+    );
+  });
+}
+
+function spotCheckRows(
+  aliasRows: unknown[],
+  conflictRows: unknown[],
+  strictRows: unknown[],
+  crossRows: unknown[],
+) {
+  return [
+    ...aliasRows.slice(0, 10),
+    ...conflictRows.slice(0, 10),
+    ...strictRows.slice(0, 10),
+    ...crossRows.slice(0, 10),
+  ]
+    .slice(0, SPOT_CHECK_LIMIT)
+    .map((row, index) => ({
+      queue: "spot-check",
+      priority: index + 1,
+      sample: row,
+      recommendation: "manual spot-check for v3.4 workflow acceptance",
+    }));
+}
+
+function main() {
+  const options = parseArgs(process.argv.slice(2));
+  const issues: QaIssue[] = [];
+
+  const zhMatchedPath = path.join(options.zhSummaryDir, "matched.json");
+  const zhUnmatchedPath = path.join(options.zhSummaryDir, "unmatched.json");
+  const zhConflictsPath = path.join(options.zhSummaryDir, "conflicts.json");
+  const zhAliasPath = path.join(options.zhSummaryDir, "alias-audit.json");
+
+  const zhMatched = readJson<ZhMatchedRecord[]>(zhMatchedPath);
+  const zhUnmatched = readJson<ZhMatchedRecord[]>(zhUnmatchedPath);
+  const zhConflicts = readJson<ZhConflictRecord[]>(zhConflictsPath);
+  const zhAliasAudit = readJson<ZhAliasAuditEntry[]>(zhAliasPath);
+  const enSourceIndex = readJsonIfExists<EnSourceIndexReport>(
+    options.enSourceIndex,
+  );
+  const enStrictMissing = readJsonIfExists<EnStrictMissingReport>(
+    options.enStrictMissing,
+  );
+
+  if (zhUnmatched.length > 0) {
+    issue(issues, "error", "zh-unmatched-records", {
+      file: zhUnmatchedPath,
+      count: zhUnmatched.length,
+      detail: `Chinese summary extraction has ${zhUnmatched.length} unmatched records`,
+    });
+  }
+
+  let zhTextIssues = 0;
+  for (const record of zhMatched) {
+    zhTextIssues += recordTextIssue(record, issues);
+  }
+
+  const aliasRows = aliasQueueRows(zhAliasAudit);
+  if (aliasRows.length > 0) {
+    issue(issues, "warning", "zh-alias-review-required", {
+      queue: "zh-alias-required",
+      count: aliasRows.length,
+      detail: `${aliasRows.length} Chinese alias audit entries require review`,
+    });
+  }
+
+  const conflictRows = conflictQueueRows(zhConflicts);
+  if (conflictRows.length > 0) {
+    issue(issues, "warning", "zh-summary-conflicts", {
+      queue: "zh-conflicts",
+      count: conflictRows.length,
+      detail: `${conflictRows.length} Chinese duplicate targets have conflicting summaries`,
+    });
+  }
+
+  if (!enSourceIndex) {
+    issue(issues, "warning", "en-source-index-missing", {
+      file: options.enSourceIndex,
+      detail:
+        "English IMarvinTPA source-index report is missing; run en:summaries:sources before cross-language QA",
+    });
+  } else {
+    const ambiguous = enSourceIndex.summary?.ambiguousCandidates ?? 0;
+    if (ambiguous > 0) {
+      issue(issues, "warning", "en-ambiguous-candidates", {
+        file: options.enSourceIndex,
+        count: ambiguous,
+        detail: `${ambiguous} English candidates have ambiguous IMarvinTPA source-index matches`,
+      });
+    }
+    const missing = enSourceIndex.summary?.missingCandidates ?? 0;
+    if (missing > 0) {
+      issue(issues, "info", "en-missing-candidates", {
+        file: options.enSourceIndex,
+        count: missing,
+        detail: `${missing} local English candidates are missing from the IMarvinTPA source-index report`,
+      });
+    }
+  }
+
+  if (!enStrictMissing) {
+    issue(issues, "warning", "en-strict35-report-missing", {
+      file: options.enStrictMissing,
+      detail:
+        "English strict-3.5 missing report is missing; strict source review queue will be empty",
+    });
+  }
+
+  const strictRows = enStrictRows(enStrictMissing);
+  if (strictRows.length > 0) {
+    issue(issues, "warning", "en-strict35-review-candidates", {
+      queue: "en-strict35-missing",
+      count: strictRows.length,
+      detail: `${strictRows.length} IMarvinTPA strict-3.5 rows need source/DB review`,
+    });
+  }
+
+  const zhNames = chineseMatchedNames(zhMatched);
+  const enNames = englishMatchedNames(enSourceIndex);
+  const crossRows = crossCoverageRows(zhNames, enNames);
+  if (crossRows.length > 0) {
+    issue(issues, "info", "cross-coverage-differences", {
+      queue: "cross-coverage",
+      count: crossRows.length,
+      detail: `${crossRows.length} normalized names differ between Chinese and English summary coverage`,
+    });
+  }
+
+  const spotRows = spotCheckRows(aliasRows, conflictRows, strictRows, crossRows);
+
+  const queues: Record<string, unknown[]> = {
+    "zh-alias-required": aliasRows,
+    "zh-conflicts": conflictRows,
+    "en-strict35-missing": strictRows,
+    "cross-coverage": crossRows,
+    "spot-check": spotRows,
+  };
+  for (const [name, rows] of Object.entries(queues)) {
+    writeJsonl(queuePath(options.outDir, name), rows);
+  }
+
+  const bySeverity: Record<Severity, number> = { error: 0, warning: 0, info: 0 };
+  const byCode: Record<string, number> = {};
+  for (const item of issues) {
+    bySeverity[item.severity]++;
+    bump(byCode, item.code);
+  }
+
+  const zhWithoutEn = crossRows.filter(
+    (row) => (row as { direction?: string }).direction === "zh-without-en",
+  ).length;
+  const enWithoutZh = crossRows.filter(
+    (row) => (row as { direction?: string }).direction === "en-without-zh",
+  ).length;
+
+  const summary: QaSummary = {
+    generatedAt: new Date().toISOString(),
+    inputs: {
+      zhSummaryDir: options.zhSummaryDir,
+      enSourceIndex: options.enSourceIndex,
+      enStrictMissing: options.enStrictMissing,
+      outDir: options.outDir,
+    },
+    issueCount: issues.length,
+    bySeverity,
+    byCode,
+    zh: {
+      matched: zhMatched.length,
+      unmatched: zhUnmatched.length,
+      conflicts: zhConflicts.length,
+      aliasAuditEntries: zhAliasAudit.length,
+      aliasReviewRequired: aliasRows.length,
+      textIssues: zhTextIssues,
+    },
+    en: {
+      sourceIndexPresent: Boolean(enSourceIndex),
+      candidates: enSourceIndex?.summary?.candidates ?? 0,
+      matchedCandidates: enSourceIndex?.summary?.matchedCandidates ?? 0,
+      missingCandidates: enSourceIndex?.summary?.missingCandidates ?? 0,
+      ambiguousCandidates: enSourceIndex?.summary?.ambiguousCandidates ?? 0,
+      strict35QaCandidates: strictRows.length,
+    },
+    crossCoverage: {
+      zhUniqueNames: zhNames.size,
+      enUniqueNames: enNames.size,
+      zhWithoutEn,
+      enWithoutZh,
+    },
+    queues: Object.fromEntries(
+      Object.entries(queues).map(([name, rows]) => [name, rows.length]),
+    ),
+  };
+
+  writeJson(path.join(options.outDir, "summary.json"), summary);
+  writeJson(path.join(options.outDir, "issues.json"), issues);
+
+  console.log("short-desc QA done");
+  console.log(summary);
+
+  if (bySeverity.error > 0) {
+    process.exitCode = 1;
+  }
+}
+
+main();

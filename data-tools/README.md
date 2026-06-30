@@ -73,6 +73,12 @@ npm run -w data-tools zh:summaries:extract
 npm run -w data-tools zh:summaries:extract -- --classListInput ../data/chm-raw-full/职业法术列表 --domainListInput ../data/chm-raw-full/领域法术 --outDir out/zh-parser/summary
 ```
 
+Run short-description QA over already-generated Chinese and English reports:
+
+```bash
+npm run -w data-tools summaries:qa
+```
+
 ## Data Paths
 
 These tools read local-only source data from `data/` and write
@@ -162,6 +168,12 @@ and writes `candidates.json`, `matched.json`, `unmatched.json`,
 `duplicates.json`, `conflicts.json`, `alias-audit.json`, and `summary.json` under
 `data-tools/out/zh-parser/summary/`.
 
+`summaries:qa` reads the generated Chinese summary reports and English
+IMarvinTPA source-index reports, then writes `summary.json`, `issues.json`, and
+JSONL review queues under `data-tools/out/short-desc-qa/`. It does not fetch
+network sources. Generate or refresh the English reports with
+`en:summaries:sources` before relying on cross-language coverage queues.
+
 ## Safety
 
 - `inspect:rules` opens the SQLite database in read-only mode.
@@ -182,6 +194,8 @@ and writes `candidates.json`, `matched.json`, `unmatched.json`,
 - Parser commands may write generated output under `data-tools/out/zh-parser/`.
 - `zh:summaries:extract` writes generated review output only; it does not
   mutate source data or SQLite databases.
+- `summaries:qa` reads generated reports and writes generated QA output only; it
+  does not mutate source data, fetch network sources, or touch SQLite databases.
 - Future rules DB patch commands must clearly distinguish dry-run validation
   from write-capable imports.
 

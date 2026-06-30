@@ -248,6 +248,9 @@ See `docs/harness.md` for details.
 - Run `npm run -w data-tools zh:summaries:extract` after changing CHM
   short-summary extraction or matching behavior, and review
   `data-tools/out/zh-parser/summary/summary.json`.
+- Run `npm run -w data-tools summaries:qa` after refreshing Chinese and English
+  short-summary reports, then review
+  `data-tools/out/short-desc-qa/summary.json` and the generated review queues.
 - Use `npm run -w data-tools rules:spells:validate -- <patch.jsonl>` and
   `npm run -w data-tools rules:spells:apply -- --dry-run <patch.jsonl>` before
   applying structured missing-spell patches.

@@ -323,6 +323,34 @@ patterns or legitimate alternate names.
 
 Add summary-specific QA after the extractor exists.
 
+Current command:
+
+```bash
+npm run -w data-tools summaries:qa
+```
+
+It reads the generated Chinese summary reports under
+`data-tools/out/zh-parser/summary/` and the generated English IMarvinTPA reports
+under `data-tools/out/en-summaries/`, then writes:
+
+```text
+data-tools/out/short-desc-qa/
+|- issues.json
+|- summary.json
+|- review-queues/
+   |- zh-alias-required.jsonl
+   |- zh-conflicts.jsonl
+   |- en-strict35-missing.jsonl
+   |- cross-coverage.jsonl
+   |- spot-check.jsonl
+```
+
+The current local QA snapshot has `0` errors, `3` warning categories, and `2`
+info categories. It reports `7` Chinese alias audit entries requiring review,
+`656` Chinese conflict rows, `80` English strict-3.5 missing candidates, and
+`1,274` cross-language coverage rows. The large queues are review leads, not
+automatic blockers.
+
 Good checks:
 
 - empty summary text
@@ -335,6 +363,9 @@ Good checks:
 - unstripped component markers in canonical English names
 - unmatched records in adopted source files
 - raw HTML or formatting that should not enter `summaryText`
+- review-required alias matches
+- English strict-3.5 source rows missing from the local candidate/DB line
+- zh/en coverage differences after normalized-name matching
 
 Info markers are fine for review leads. Hard errors should be reserved for
 records that would make import unsafe.

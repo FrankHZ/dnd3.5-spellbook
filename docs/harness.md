@@ -136,6 +136,8 @@ database copies remain acceptance checks rather than always-on unit tests:
 - `npm run -w data-tools zh:parse`
 - `npm run -w data-tools zh:qa`
 - `npm run -w data-tools zh:backcheck`
+- `npm run -w data-tools zh:summaries:extract`
+- `npm run -w data-tools summaries:qa`
 - `npm run -w data-tools rules:sql:dry-run -- <patch.sql>`
 - `npm run -w data-tools rules:index:rebuild -- --dry-run`
 - `npm run -w data-tools spells-full:inspect -- known-misses`
