@@ -50,6 +50,13 @@ type DuplicateGroup = {
   }>;
 };
 
+type ConflictGroup = DuplicateGroup & {
+  normalizedSummaries: Array<{
+    normalizedSummaryText: string;
+    summaries: DuplicateGroup["summaries"];
+  }>;
+};
+
 type ExtractReport = {
   generatedAt: string;
   options: {
@@ -65,6 +72,7 @@ type ExtractReport = {
     unmatched: number;
     duplicates: number;
     conflictingDuplicates: number;
+    normalizedConflictingDuplicates: number;
     bySourceKind: Record<string, number>;
     byMatchMethod: Record<string, number>;
   };
@@ -643,6 +651,39 @@ function findDuplicates(records: MatchedSummary[]): DuplicateGroup[] {
   return duplicates.sort((a, b) => a.targetKey.localeCompare(b.targetKey));
 }
 
+function normalizeSummaryForConflict(text: string) {
+  return normalizeDigits(normalizePunctuation(text))
+    .replace(/\s+/g, "")
+    .replace(/[。．.]+$/g, "")
+    .replace(/[，,]/g, ",")
+    .replace(/[；;]/g, ";")
+    .replace(/[：:]/g, ":")
+    .replace(/[（）]/g, (value) => (value === "（" ? "(" : ")"))
+    .toLowerCase();
+}
+
+function findConflicts(duplicates: DuplicateGroup[]): ConflictGroup[] {
+  const conflicts: ConflictGroup[] = [];
+  for (const duplicate of duplicates) {
+    const normalized = new Map<string, DuplicateGroup["summaries"]>();
+    for (const summary of duplicate.summaries) {
+      const key = normalizeSummaryForConflict(summary.summaryText);
+      normalized.set(key, [...(normalized.get(key) ?? []), summary]);
+    }
+    if (normalized.size < 2) continue;
+    conflicts.push({
+      ...duplicate,
+      normalizedSummaries: [...normalized.entries()].map(
+        ([normalizedSummaryText, summaries]) => ({
+          normalizedSummaryText,
+          summaries,
+        }),
+      ),
+    });
+  }
+  return conflicts;
+}
+
 function writeJson(filePath: string, value: unknown) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf-8");
@@ -661,6 +702,7 @@ async function main() {
   ];
   const { matched, unmatched, byMatchMethod } = await matchCandidates(candidates);
   const duplicates = findDuplicates(matched);
+  const conflicts = findConflicts(duplicates);
 
   const bySourceKind: Record<string, number> = {};
   for (const candidate of candidates) bump(bySourceKind, candidate.sourceKind);
@@ -680,6 +722,7 @@ async function main() {
       conflictingDuplicates: duplicates.filter(
         (group) => group.summaries.length > 1,
       ).length,
+      normalizedConflictingDuplicates: conflicts.length,
       bySourceKind,
       byMatchMethod,
     },
@@ -690,6 +733,7 @@ async function main() {
   writeJson(path.join(options.outDir, "matched.json"), matched);
   writeJson(path.join(options.outDir, "unmatched.json"), unmatched);
   writeJson(path.join(options.outDir, "duplicates.json"), duplicates);
+  writeJson(path.join(options.outDir, "conflicts.json"), conflicts);
 
   console.log("zh summary extraction done");
   console.log(report.stats);

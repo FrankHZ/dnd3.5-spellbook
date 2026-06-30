@@ -50,7 +50,8 @@ npm run -w data-tools zh:summaries:extract
   domain-list pages, and the clean ToB maneuver list, finds `5,445` candidate
   occurrences, expands to `6,527` matched records, leaves `0` unmatched records,
   and reports `1,833` duplicate targets, including `695` conflicting duplicate
-  targets, for review under `data-tools/out/zh-parser/summary/`.
+  targets and `656` normalized conflicting duplicate targets, for review under
+  `data-tools/out/zh-parser/summary/`.
   The zero-unmatched baseline relies on the shared CHM English-name alias layer,
   including typo fixes and compact slash-name expansion for alignment,
   protection, mantle, and wall spell families.
@@ -233,8 +234,13 @@ data-tools/out/zh-parser/summary/
 |- matched.json
 |- unmatched.json
 |- duplicates.json
+|- conflicts.json
 |- summary.json
 ```
+
+`duplicates.json` keeps every repeated target. `conflicts.json` is the narrower
+manual-review entry point after punctuation, whitespace, quote, and case
+normalization.
 
 Suggested record fields:
 
