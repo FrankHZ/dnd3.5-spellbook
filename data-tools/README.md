@@ -43,6 +43,8 @@ Inspect and generate structured patches from local `spells-full` data:
 ```bash
 npm run -w data-tools spells-full:inspect -- known-misses
 npm run -w data-tools spells-full:generate -- known-misses --write-patch spells/spells-full-known-misses.jsonl
+npm run -w data-tools spells-full:inspect -- short-desc-rules-gaps
+npm run -w data-tools spells-full:generate -- short-desc-rules-gaps --write-patch spells/short-desc-rules-gaps.generated.jsonl
 ```
 
 Probe IMarvinTPA for English short-description candidates:
@@ -133,7 +135,11 @@ The optional `spells-full` source dump lives under
 `data/spells-full/` when present locally. It is ignored by the parent repo and
 may be versioned in the nested local `data/` repo. Use `spells-full:inspect`
 and `spells-full:generate` to create reviewable structured patch candidates
-from it.
+from it. The `short-desc-rules-gaps` target consumes
+`data-tools/out/short-desc-qa/review-queues/en-rules-db-gaps.jsonl`, infers
+target rulebooks from reviewed IMarvinTPA source labels, and only writes patch
+candidates when the parsed spell, rules DB lookups, class/domain levels,
+schools, subschools, descriptors, and slug checks all pass.
 
 `en:summaries:probe` performs a small, rate-limited live probe against
 IMarvinTPA's spell search. It defaults to one candidate at a time with at least

@@ -374,6 +374,25 @@ English add-candidate rows, `47` English rules DB gaps, `656` Chinese conflict
 rows, and `1,274` cross-language coverage rows. The large queues remain review
 leads unless a future import gate explicitly consumes them.
 
+The reviewed English rules DB gaps now have a source-to-patch triage path:
+
+```bash
+npm run -w data-tools spells-full:inspect -- short-desc-rules-gaps
+npm run -w data-tools spells-full:generate -- short-desc-rules-gaps --write-patch spells/short-desc-rules-gaps.generated.jsonl
+npm run -w data-tools rules:spells:validate -- spells/short-desc-rules-gaps.generated.jsonl
+npm run -w data-tools rules:spells:apply -- --dry-run spells/short-desc-rules-gaps.generated.jsonl
+```
+
+The current local run generates and validates `7` structured spell patch
+operations from local `spells-full` parsed data: `Dominate Living Construct`,
+`Elemental Prod`, `Energy Alteration`, `Indisputable Possession`,
+`Metamagic Item`, `Power Surge`, and `Suppress Requirement`. The remaining
+`40` rules DB gaps are still blocked before import: `36` have no exact local
+`spells-full` parsed source row, and `4` Player's Guide to Eberron rows have
+parsed source rows but include class levels that are not currently resolvable
+against the local rules DB class table. Do not treat the generated patch file as
+applied until the rules DB write-capable workflow is explicitly run.
+
 Good checks:
 
 - empty summary text

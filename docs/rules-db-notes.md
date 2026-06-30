@@ -133,6 +133,23 @@ The first supported operation is `insertSpell`. It writes one `dnd_spell` row,
 optional `dnd_spell_descriptors` rows, class/domain level rows, and then
 rebuilds `idx_spell_class_level` and `idx_spell_domain_level`.
 
+For v3.4 short-description work, reviewed English rules DB gaps can be
+cross-checked against local `data/spells-full/spells-parsed.json` and converted
+into a reviewable structured patch draft:
+
+```bash
+npm run -w data-tools spells-full:inspect -- short-desc-rules-gaps
+npm run -w data-tools spells-full:generate -- short-desc-rules-gaps --write-patch spells/short-desc-rules-gaps.generated.jsonl
+npm run -w data-tools rules:spells:validate -- spells/short-desc-rules-gaps.generated.jsonl
+npm run -w data-tools rules:spells:apply -- --dry-run spells/short-desc-rules-gaps.generated.jsonl
+```
+
+This generator is intentionally conservative: rows with missing parsed source
+data, unresolved local class/domain levels, unresolved spell metadata, existing
+slugs, or existing target spell rows stay in the generated report rather than
+being written into the patch file. Running `rules:spells:apply` without
+`--dry-run` is still the write-capable step.
+
 ## Verified Manual Fixes
 
 The local `rules-clean.sqlite` already reflects the manual fixes listed in

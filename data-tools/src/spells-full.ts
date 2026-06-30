@@ -42,10 +42,28 @@ type CandidateReport = {
   notes: string[];
 };
 
+type GapDecision = {
+  key?: string;
+  name?: string;
+  sources?: string[];
+  descriptionSamples?: string[];
+  decision?: string;
+  recommendedAction?: string;
+  confidence?: string;
+};
+
 const SPELLS_FULL_JSON = path.join(
   localDataDir(),
   "spells-full",
   "spells-parsed.json",
+);
+const DEFAULT_RULES_GAPS_PATH = path.join(
+  repoRoot(),
+  "data-tools",
+  "out",
+  "short-desc-qa",
+  "review-queues",
+  "en-rules-db-gaps.jsonl",
 );
 const REPORT_ROOT = path.join(repoRoot(), "data-tools", "out", "spells-full");
 const PATCH_ROOT = path.join(localDataDir(), "rules-patches");
@@ -80,15 +98,40 @@ const KNOWN_MISSES: KnownMiss[] = [
 
 const SOURCE_TO_RULEBOOK: Record<string, string> = {
   "Eberron Campaign Setting": "ECS",
+  "Explorer's Handbook": "EH",
+  "Magic of Eberron": "MoE",
+  "Player's Guide to Eberron": "PE",
+  "Player’s Guide to Eberron": "PE",
+  "Races of Eberron": "RE",
   "Spell Compendium": "Sc_",
   "Forgotten Realms: Magic of Faerûn": "Mag",
   "Forgotten Realms: Magic of Faerun": "Mag",
+};
+
+const IMARVIN_SOURCE_ABBR_TO_RULEBOOK: Record<string, string> = {
+  ECS: "ECS",
+  EH: "EH",
+  MoE: "MoE",
+  PGtE: "PE",
+  RE: "RE",
+  SPC: "Sc_",
+};
+
+const RULEBOOK_TO_SOURCE_NAME: Record<string, string> = {
+  ECS: "Eberron Campaign Setting",
+  EH: "Explorer's Handbook",
+  MoE: "Magic of Eberron",
+  PE: "Player's Guide to Eberron",
+  RE: "Races of Eberron",
+  Sc_: "Spell Compendium",
 };
 
 function usage(): never {
   console.error(`Usage:
   npm run -w data-tools spells-full:inspect -- known-misses
   npm run -w data-tools spells-full:generate -- known-misses --write-patch spells/spells-full-known-misses.jsonl
+  npm run -w data-tools spells-full:inspect -- short-desc-rules-gaps
+  npm run -w data-tools spells-full:generate -- short-desc-rules-gaps --write-patch spells/short-desc-rules-gaps.jsonl
 
 spells-full source data is read from data/spells-full/spells-parsed.json.
 Patch paths are resolved under data/rules-patches/.
@@ -111,7 +154,20 @@ function timestamp() {
 }
 
 function normalize(value: string) {
-  return value.trim().toLowerCase();
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’]/g, "'")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function cleanSpellNameForMatch(value: string) {
+  return normalize(value)
+    .replace(/\s*\((?:m|f|df|xp|v|s|af|x)\)\s*$/, "")
+    .replace(/,\s*(greater|lesser)$/, " $1")
+    .trim();
 }
 
 function slugify(value: string) {
@@ -165,6 +221,28 @@ function loadParsedSpells() {
     throw new Error("spells-full JSON must be an array");
   }
   return parsed as ParsedSpell[];
+}
+
+function parseJsonlFile<T>(filePath: string) {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`JSONL file not found: ${filePath}`);
+  }
+  return fs
+    .readFileSync(filePath, "utf-8")
+    .split(/\r?\n/)
+    .flatMap((line, index) => {
+      const text = line.trim();
+      if (!text) return [];
+      try {
+        return [JSON.parse(text) as T];
+      } catch (error) {
+        throw new Error(
+          `${filePath}:${index + 1}: invalid JSON: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
+    });
 }
 
 function loadLookup(
@@ -254,6 +332,94 @@ function sourcePage(spell: ParsedSpell, sourceName: string | undefined) {
   const match = spell.source.match(new RegExp(`${escaped}\\s+(\\d+)`, "i"));
   if (match?.[1]) return Number(match[1]);
   return Number(spell.page) || null;
+}
+
+function inferRulebookFromSource(source: string | undefined) {
+  if (!source) return undefined;
+  const abbrMatch = source.match(/\((ECS|EH|MoE|PGtE|RE|SPC)\b/);
+  if (abbrMatch?.[1]) {
+    return IMARVIN_SOURCE_ABBR_TO_RULEBOOK[abbrMatch[1]];
+  }
+
+  for (const [sourceName, rulebook] of Object.entries(SOURCE_TO_RULEBOOK)) {
+    if (normalize(source).includes(normalize(sourceName))) {
+      return rulebook;
+    }
+  }
+  return undefined;
+}
+
+function missFromGapDecision(decision: GapDecision) {
+  const name = decision.name?.trim();
+  if (!name) return undefined;
+
+  const source = decision.sources?.[0];
+  const targetRulebook = inferRulebookFromSource(source);
+  if (!targetRulebook) return undefined;
+
+  const notes = [
+    `short-desc QA key: ${decision.key ?? cleanSpellNameForMatch(name)}`,
+  ];
+  if (source) notes.push(`short-desc source: ${source}`);
+  if (decision.descriptionSamples?.[0]) {
+    notes.push(`short-desc sample: ${decision.descriptionSamples[0]}`);
+  }
+  if (decision.recommendedAction) {
+    notes.push(`review action: ${decision.recommendedAction}`);
+  }
+  if (decision.confidence) {
+    notes.push(`review confidence: ${decision.confidence}`);
+  }
+
+  const miss: KnownMiss = {
+    name,
+    targetRulebook,
+    generate: true,
+    note: notes.join(" | "),
+  };
+  const sourceName = RULEBOOK_TO_SOURCE_NAME[targetRulebook];
+  if (sourceName) miss.sourceName = sourceName;
+  return miss;
+}
+
+function skippedGap(
+  decision: GapDecision,
+  notes: string[],
+): { name?: string; sources?: string[]; notes: string[] } {
+  const skipped: { name?: string; sources?: string[]; notes: string[] } = {
+    notes,
+  };
+  if (decision.name) skipped.name = decision.name;
+  if (decision.sources) skipped.sources = decision.sources;
+  return skipped;
+}
+
+function loadRulesGapMisses(inputPath: string) {
+  const decisions = parseJsonlFile<GapDecision>(inputPath);
+  const misses: KnownMiss[] = [];
+  const skipped: Array<{ name?: string; sources?: string[]; notes: string[] }> = [];
+
+  for (const decision of decisions) {
+    if (decision.decision && decision.decision !== "rules_db_gap") {
+      skipped.push(
+        skippedGap(decision, [`unsupported decision: ${decision.decision}`]),
+      );
+      continue;
+    }
+
+    const miss = missFromGapDecision(decision);
+    if (!miss) {
+      skipped.push(
+        skippedGap(decision, [
+          "could not infer target rulebook from reviewed source",
+        ]),
+      );
+      continue;
+    }
+    misses.push(miss);
+  }
+
+  return { misses, skipped };
 }
 
 function convertCandidate(
@@ -372,7 +538,13 @@ function convertCandidate(
   };
 }
 
-function runKnownMisses(mode: Mode, patchPath: string | undefined) {
+function runMisses(
+  mode: Mode,
+  patchPath: string | undefined,
+  misses: KnownMiss[],
+  reportName: string,
+  extraReport: Record<string, unknown> = {},
+) {
   const parsedSpells = loadParsedSpells();
   const db = new Database(rulesDbPath(), { readonly: true });
   try {
@@ -380,13 +552,14 @@ function runKnownMisses(mode: Mode, patchPath: string | undefined) {
     const generated: unknown[] = [];
     let nextSpellId = currentMaxSpellId(db) + 1;
 
-    for (const miss of KNOWN_MISSES) {
+    for (const miss of misses) {
       const notes: string[] = [];
       if (miss.note) notes.push(miss.note);
 
       const parsed = parsedSpells.find(
         (spell) =>
-          normalize(spell.name) === normalize(miss.name) &&
+          cleanSpellNameForMatch(spell.name) ===
+            cleanSpellNameForMatch(miss.name) &&
           sourceContains(spell, miss.sourceName),
       );
       if (!parsed) {
@@ -435,10 +608,11 @@ function runKnownMisses(mode: Mode, patchPath: string | undefined) {
       {
         mode,
         sourcePath: SPELLS_FULL_JSON,
+        ...extraReport,
         generatedCount: generated.length,
-        knownMisses: report,
+        misses: report,
       },
-      `spells-full-${mode}`,
+      `spells-full-${reportName}-${mode}`,
     );
 
     let writtenPatchPath: string | undefined;
@@ -452,8 +626,8 @@ function runKnownMisses(mode: Mode, patchPath: string | undefined) {
       writtenPatchPath = resolved;
     }
 
-    console.log(`spells-full ${mode} OK`);
-    console.log(`Known misses: ${report.length}`);
+    console.log(`spells-full ${reportName} ${mode} OK`);
+    console.log(`Misses: ${report.length}`);
     console.log(`Generated: ${generated.length}`);
     console.log(`Report: ${reportPath}`);
     if (writtenPatchPath) console.log(`Patch: ${writtenPatchPath}`);
@@ -465,14 +639,28 @@ function runKnownMisses(mode: Mode, patchPath: string | undefined) {
 function main() {
   const [, , command, target, ...args] = process.argv;
   if (command !== "inspect" && command !== "generate") usage();
-  if (target !== "known-misses") usage();
+  if (target !== "known-misses" && target !== "short-desc-rules-gaps") usage();
 
   const writePatchIndex = args.indexOf("--write-patch");
   const patchPath =
     writePatchIndex >= 0 ? args[writePatchIndex + 1] : undefined;
   if (writePatchIndex >= 0 && !patchPath) usage();
 
-  runKnownMisses(command, patchPath);
+  if (target === "known-misses") {
+    runMisses(command, patchPath, KNOWN_MISSES, "known-misses");
+    return;
+  }
+
+  const inputIndex = args.indexOf("--input");
+  const inputPathArg =
+    inputIndex >= 0 ? args[inputIndex + 1] : DEFAULT_RULES_GAPS_PATH;
+  if (!inputPathArg) usage();
+
+  const { misses, skipped } = loadRulesGapMisses(inputPathArg);
+  runMisses(command, patchPath, misses, "short-desc-rules-gaps", {
+    rulesGapQueue: inputPathArg,
+    skipped,
+  });
 }
 
 main();
