@@ -25,10 +25,13 @@ decision.
   - generated parser output: `data-tools/out/zh-parser/`
 - The current Chinese parser extracts full spell descriptions only.
   `ZhMatchedRecord` has no short-description field.
-- App DB overlays are asymmetric today:
+- The app DB currently acts as app-owned content DB rather than a real user-data
+  DB. Its content overlays are asymmetric today:
   - `I18nCharacterClassText.shortDescriptionText` already exists.
   - `I18nSpellText` has translated name and full description fields, but no
     short-description field.
+- Future user-facing state should get a separate DB boundary review instead of
+  continuing to mix content overlays with user/app-state tables by default.
 - The strongest confirmed Chinese spell short-description sources are the class
   spell overview set under `data/chm-raw-full/职业法术列表/` and the domain spell
   overview set under `data/chm-raw-full/领域法术/`. These pages use dense
@@ -127,7 +130,9 @@ npm run -w data-tools zh:summaries:extract
   Adopted pages should have a smaller maintained path or generated review
   artifact first.
 - Generated reports belong under `data-tools/out/zh-parser/summary/`.
-- Imported app-owned overlays belong in the app DB workflow, not the rules DB.
+- Imported app-owned content overlays belong in the current app DB workflow, not
+  the rules DB. Keep short summaries in a summary-specific table rather than
+  extending full-description/name overlay rows by default.
 - If short descriptions become content-bearing patch inputs, those inputs belong
   in the nested local `data/` repo, not the parent repo.
 - English SRD short-description imports must keep source provenance separate
@@ -430,36 +435,177 @@ records that would make import unsafe.
 
 Make this a gate after extraction review, not the first step.
 
-Likely options:
+Adopt this v3.4 shape:
 
-- Use existing `I18nCharacterClassText.shortDescriptionText` for class summaries
-  if a clear Chinese class-summary source exists.
-- Add `I18nSpellText.shortDescriptionText` only if spell or maneuver summaries
-  are accepted for API/UI consumption.
-- Add English short descriptions from adopted local source data, starting with
-  IMarvinTPA and SRD/Core cross-checks.
+- Keep the current app DB as the app-owned content DB for v3.4.
+- Do not add `shortDescriptionText` to `I18nSpellText`. That table remains the
+  translated name plus full-description overlay table.
+- Add a separate source-backed spell summary table in the app DB.
+- Keep `I18nCharacterClassText.shortDescriptionText` as-is for future class
+  summaries; do not block spell summary import on class summary curation.
+- Do not add HTML for short descriptions in v3.4. The adopted sources are
+  one-line plain-text summaries, and list/detail UI should render text only.
+- Store durable source provenance for imported summaries. Keep richer extraction
+  and review provenance in import reports and local data-tool artifacts.
 
-If importing summaries:
+The app DB patch should be a normal Prisma schema change plus generated client
+refresh:
 
-- add a dry-run import path first
-- keep imports idempotent by `entity id + lang + variant`
-- preserve source provenance in reports or DB fields
-- update Prisma generated clients when schemas change
-- add API shape tests if summaries are returned by server endpoints
+```prisma
+model I18nSpellSummaryText {
+  id         String @id @default(cuid())
+  spellId    Int
+  rulebookId Int
+  lang       String
+  variant    String
+
+  summaryText  String
+  sourceKey    String?
+  sourceName   String?
+  reviewStatus String @default("accepted")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spellId, lang, variant])
+  @@index([lang, variant, rulebookId])
+  @@index([lang, rulebookId])
+  @@index([rulebookId, spellId])
+}
+```
+
+The local app DB is not migrated at runtime. Use an explicit data-prep command
+that can run after schema/client generation and before import. The command
+should be idempotent and should not replace existing `I18nSpellText`
+name/full-description overlays.
+
+Planned import command:
+
+```bash
+npm run -w data-tools summaries:import -- --dry-run
+npm run -w data-tools summaries:import
+```
+
+Import behavior:
+
+- Read reviewed/generated candidates, not raw CHM or raw fetched HTML directly.
+- Upsert by `spellId + lang + variant`.
+- For `lang=zh`, `variant=chm`, create or update only
+  `I18nSpellSummaryText` rows when a selected Chinese summary exists.
+- For `lang=en`, `variant=imarvin`, create or update
+  `I18nSpellSummaryText` rows with `summaryText`, `sourceKey`, source name, and
+  review status.
+- Do not delete `I18nSpellText` or `I18nSpellSummaryText` rows during summary
+  import.
+- Skip rows with unresolved conflicts, import blockers, missing spell ids,
+  unresolved source mismatches, or rules DB gaps.
+- Emit an import report with inserted, updated, unchanged, skipped, and
+  blocker counts by language/source.
+
+English source policy:
+
+- Import only rows matched to existing local spell ids.
+- Do not import `en-rules-db-gaps` until the relevant rules DB patch has been
+  applied and the English candidate/source report has been refreshed.
+- Treat the 7 generated `short-desc-rules-gaps` spell patches as a separate
+  rules DB preparation step, not as part of summary import.
+- Preserve `sourceKey` for every imported `en/imarvin` row so imported English
+  summary provenance remains durable outside transient data-tool reports.
+
+Chinese source policy:
+
+- First import pass should use the conflict-reviewed/selected summary set once a
+  deterministic selected-output file exists.
+- Until then, the import command may support a conservative mode that imports
+  only non-conflicting matched summaries and reports skipped conflicts.
+- Do not machine-translate Chinese summaries into English or English summaries
+  into Chinese.
 
 ### 6. API And UI Consumption
 
 Expose summaries only after the data path is accepted.
 
-Potential consumers:
+Expose spell summaries through the existing overlay path rather than a new API
+surface.
 
-- Browse result rows/cards
-- Search result rows/cards
-- Spell or maneuver detail headers
-- class/domain metadata panels
+Contract shape:
 
-Partial coverage must be intentional. If only ToB maneuver summaries exist at
-first, the UI should degrade cleanly without placeholder text on other rows.
+```ts
+export type Lang = "en" | "zh";
+
+export type I18nNameOverlay = {
+  lang: Lang;
+  variant?: string | undefined;
+  name?: string | undefined;
+};
+
+export type I18nSpellSummaryOverlay = {
+  lang: Lang;
+  variant?: string | undefined;
+  shortDescription?: string | undefined;
+  sourceKey?: string | undefined;
+};
+
+export type I18nSpellDetailOverlay = I18nNameOverlay & {
+  description?: {
+    text?: string | undefined;
+    html?: string | undefined;
+  } | undefined;
+  summary?: I18nSpellSummaryOverlay | undefined;
+};
+```
+
+Server mapping:
+
+- Keep `I18nSpellText` queries responsible for translated names and full
+  descriptions.
+- Add summary-specific repository queries against `I18nSpellSummaryText` for
+  list/search/batch and detail responses.
+- `mapSpellItem` should accept both the optional name overlay row and optional
+  summary row, then map summaries to `spell.i18n.summary.shortDescription` or an
+  equivalent summary sub-object.
+- `mapSpellDetail` should keep full-description overlay data separate from the
+  summary overlay.
+- Use the row `lang` returned from app DB/content DB queries. Do not hard-code
+  summary overlays as `lang: "zh"` once English summaries are exposed.
+- For `lang=en`, query English `variant=imarvin` summaries while keeping
+  `queryIdsByI18nName` non-English unless English overlay search is deliberately
+  adopted.
+
+Frontend consumption:
+
+- Add `getSpellShortDescription(spell, lang)` under
+  `web/app/i18n/display/` mirroring `getSpellDescription`.
+- `SpellCard` should render one optional short-description line between the
+  title/rulebook row and metadata rows. If missing, render nothing and keep
+  current spacing compact.
+- `Search` and `Browse` inherit the display through `SpellCard`; no page-level
+  rendering fork is needed.
+- `SpellDetailPage` should render the same short description under the header
+  title as a muted lead line. It should not duplicate the full Description
+  section.
+- Spellbook/favorites batch views also inherit the field through `SpellCard` if
+  they use it; otherwise no special UI is required.
+
+Fallback rules:
+
+- In Chinese mode, prefer `zh/chm` short description; if absent, do not show an
+  English fallback in v3.4 unless a later explicit UI decision asks for
+  bilingual fallback.
+- In English mode, show `en/imarvin` short description when imported; otherwise
+  show nothing.
+- Never show placeholder text for missing summaries.
+- Keep the field out of UI-copy i18next files; this is content overlay data, not
+  interface text.
+
+Validation:
+
+- Add API shape tests for `i18n.shortDescription` on search/by-level/batch and
+  detail when fixture data exists.
+- Add mapper-level or repository tests if fixture coverage is too sparse.
+- Add a focused frontend test for `getSpellShortDescription` fallback behavior.
+- Existing Browse/Search smoke behavior should remain unchanged when summaries
+  are absent.
 
 ## Acceptance Criteria
 
@@ -484,6 +630,8 @@ first, the UI should degrade cleanly without placeholder text on other rows.
   decision.
 - Fetched English source text is not committed to the parent repo.
 - Imported English summaries keep explicit source provenance.
+- Spell summaries are stored in a summary-specific app DB table, not appended to
+  `I18nSpellText`.
 - Mechanical QA reports missing translations, zh/en coverage differences,
   duplicate summaries, conflicts, suspicious length, and obvious mojibake.
 - Full manual translation/proofreading is not required for v3.4 acceptance.
@@ -502,6 +650,7 @@ first, the UI should degrade cleanly without placeholder text on other rows.
   patches, or should selected structured local source data be versioned in the
   nested `data/` repo?
 - How large should the v3.4 translation/proofreading spot-check set be?
-- Which UI surfaces should consume summaries first?
-- Should imported summary text store only plain text, or also preserve a limited
-  inline HTML form?
+- Should future class summaries use the existing `I18nCharacterClassText` field
+  or a parallel summary table for consistency with spell summaries?
+- When real user/app-state data ships, should the current app DB be renamed or
+  split into a generated content DB plus a separate user app-state DB?

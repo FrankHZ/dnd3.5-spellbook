@@ -99,7 +99,9 @@ Recommended next sequence:
    Chinese summaries from the full CHM class spell overview pages, then fold in
    the confirmed ToB maneuver list, optional domain-list sources, and
    IMarvinTPA as the planned local English source. Defer schema/API/UI exposure
-   until extraction and partial coverage behavior are accepted.
+   until extraction and partial coverage behavior are accepted. When schema work
+   starts, keep summaries in a summary-specific app DB content table instead of
+   expanding `I18nSpellText`.
 
 2. **v3.4 candidate: data harness hardening**
 
@@ -121,6 +123,14 @@ Recommended next sequence:
    See:
 
    - `docs/mvp/v3.4/i18next-conventions-plan.md`
+
+5. **follow-up architecture review: DB ownership boundaries**
+
+   Review the current app DB after the short-description pipeline settles. Today
+   it effectively acts as an app-owned content DB, despite having placeholder
+   user/app-state tables. Before real user state ships, decide whether to split
+   generated content overlays into a content DB and keep user data in a separate
+   app-state DB.
 
 ## Later Stable Track
 
