@@ -63,6 +63,13 @@ npm run -w data-tools zh:backcheck
 npm run -w data-tools zh:qa
 ```
 
+Extract Chinese short-description candidates from local CHM overview pages:
+
+```bash
+npm run -w data-tools zh:summaries:extract
+npm run -w data-tools zh:summaries:extract -- --classListInput ../data/chm-raw-full/职业法术列表 --outDir out/zh-parser/summary
+```
+
 ## Data Paths
 
 These tools read local-only source data from `data/` and write
@@ -78,6 +85,7 @@ Current CHM parser defaults:
 - CHM mapping and alias JSON: `data/chm-mapping/`
 - parser output: `data-tools/out/zh-parser/`
 - mechanical QA output: `data-tools/out/zh-parser/qa/`
+- short-description extraction output: `data-tools/out/zh-parser/summary/`
 
 `data/chm-raw/` and `data/chm-raw-full/` may exist locally under the nested
 `data/` directory, but they are static inputs and should stay ignored rather
@@ -131,6 +139,14 @@ descriptions, unexpectedly long bold text, duplicate source keys, obvious
 mojibake markers, and broader coverage counts. It does not perform human
 translation review.
 
+`zh:summaries:extract` is a read-only v3.4 extractor for short-description
+candidates. It reads class spell overview pages from
+`data/chm-raw-full/职业法术列表/`, reads the ToB maneuver overview from
+`data/chm-clean/九剑/招数列表.htm`, reuses the current CHM alias/matching helpers,
+and writes `candidates.json`, `matched.json`, `unmatched.json`,
+`duplicates.json`, and `summary.json` under
+`data-tools/out/zh-parser/summary/`.
+
 ## Safety
 
 - `inspect:rules` opens the SQLite database in read-only mode.
@@ -147,6 +163,8 @@ translation review.
 - `rules:sql:apply` and `rules:index:rebuild` are write-capable and must be run
   intentionally.
 - Parser commands may write generated output under `data-tools/out/zh-parser/`.
+- `zh:summaries:extract` writes generated review output only; it does not
+  mutate source data or SQLite databases.
 - Future rules DB patch commands must clearly distinguish dry-run validation
   from write-capable imports.
 

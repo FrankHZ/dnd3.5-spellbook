@@ -39,6 +39,17 @@ decision.
   - about `2,399` unique names matched after exact matching, existing aliases,
     and stripping trailing component markers such as `M` and `F`
   - about `130` unique misses left for alias/source cleanup
+- The first implemented Chinese summary extractor command is:
+
+```bash
+npm run -w data-tools zh:summaries:extract
+```
+
+  Its current baseline scans `15` files, including the class-list pages plus the
+  clean ToB maneuver list, finds `4,813` candidate occurrences, expands to
+  `5,583` matched records, leaves `112` unmatched records, and reports `1,573`
+  duplicate targets, including `547` conflicting duplicate targets, for review
+  under `data-tools/out/zh-parser/summary/`.
 - Secondary confirmed short-summary sources exist under
   `data/chm-raw-full/领域法术/` and `data/chm-raw-full/各种其他类法术及超能/`.
 - The ToB maneuver list under `data/chm-clean/九剑/招数列表.htm` is also a

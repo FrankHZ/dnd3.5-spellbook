@@ -245,6 +245,9 @@ See `docs/harness.md` for details.
   harnesses.
 - Run `npm run -w data-tools zh:qa` after CHM source cleanup or parser changes
   to catch mechanical source/header drift before import.
+- Run `npm run -w data-tools zh:summaries:extract` after changing CHM
+  short-summary extraction or matching behavior, and review
+  `data-tools/out/zh-parser/summary/summary.json`.
 - Use `npm run -w data-tools rules:spells:validate -- <patch.jsonl>` and
   `npm run -w data-tools rules:spells:apply -- --dry-run <patch.jsonl>` before
   applying structured missing-spell patches.
