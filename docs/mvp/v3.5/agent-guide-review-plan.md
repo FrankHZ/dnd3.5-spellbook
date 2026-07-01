@@ -5,9 +5,16 @@ Status: planned v3.5 documentation/harness review.
 ## Problem
 
 `AGENTS.md` has gradually become a second documentation map. That helped early
-repo orientation, but it now duplicates `docs/README.md`, `docs/roadmap.md`, and
-focused MVP plans. The result is predictable drift: every new plan wants another
-line in `AGENTS.md`, and the actual operational rules are harder to see.
+repo orientation, but it now duplicates `docs/README.md`, `docs/roadmap.md`,
+focused MVP plans, and sometimes feature/workspace docs. The result is
+predictable drift: every new plan wants another line in `AGENTS.md`, and the
+actual operational rules are harder to see.
+
+There is a related docs-boundary problem. `docs/features.md` is a good
+user-facing feature map, `docs/frontend-map.md` is a compact navigation aid, and
+feature plans are useful for scoped work. High-level module design docs would be
+useful later, but ordinary feature branches should not have to maintain broad
+architecture docs by hand for every change.
 
 There is also a recurring local-skill routing mistake: agents sometimes try to
 read a global/user skill path first, then correct themselves to the repo-local
@@ -28,6 +35,10 @@ conversation tax.
 - Reduce duplicate lists that must be updated whenever a new plan doc appears.
 - Make worktree-specific behavior explicit enough that agents do not patch the
   wrong checkout.
+- Clarify which docs own feature behavior, feature workflow, frontend
+  navigation, and future module design notes.
+- Pair this review with the v3.5 CI/CD and module-doc automation plan so
+  high-level module docs can be refreshed after accepted `main` merges.
 
 ## Non-Goals
 
@@ -36,6 +47,8 @@ conversation tax.
 - Do not duplicate universal Windows shell hygiene here; keep cross-repo habits
   in user-level/global guidance unless this repo needs a special exception.
 - Do not make old MVP folders active work surfaces again.
+- Do not require ordinary feature branches to update broad module design docs
+  once merge-to-main module-doc automation exists.
 
 ## Proposed Shape
 
@@ -58,6 +71,11 @@ Move or keep elsewhere:
 
 - detailed docs maps -> `docs/README.md`
 - current sequence -> `docs/roadmap.md`
+- user-facing behavior -> `docs/features.md`
+- feature intake loop -> `docs/feature-workflow.md`
+- frontend navigation map -> `docs/frontend-map.md`
+- high-level module design -> future `docs/modules/*` docs refreshed by the
+  merge-to-main doc automation
 - implementation detail -> focused topic docs
 - broad Windows shell habits -> user/global AGENTS guidance
 - branch/commit formatting details -> repo-local skills
@@ -95,6 +113,14 @@ modifying an active implementation worktree.
 - `AGENTS.md` is shorter and reads as an execution guide rather than a catalog.
 - `docs/README.md` remains the canonical documentation map.
 - `docs/roadmap.md` remains the canonical current/future work ordering surface.
+- `docs/features.md` remains the canonical user-facing feature map instead of
+  turning into an architecture document.
+- `docs/feature-workflow.md` explains when feature branches update focused docs
+  and when broad module docs are handled after merge.
+- `docs/frontend-map.md` remains a quick navigation map, not a full architecture
+  document.
+- Future module design docs are scoped to `docs/modules/*` and can be refreshed
+  by the v3.5 merge-to-main doc automation.
 - Repo-local skill resolution is explicit and examples include `branch-naming`
   and `commit-message`.
 - Multi-worktree edit targeting is explicit.

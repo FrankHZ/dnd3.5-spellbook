@@ -11,14 +11,19 @@ separate from active v3.4 implementation branches.
 1. Review DB ownership boundaries before real user/app-state data ships.
 2. Review rulebook display labels so public UI does not depend on legacy
    DnDTools-style source abbreviations or slugs.
-3. Review `AGENTS.md` so it becomes a compact execution guide again instead of
-   a second documentation map.
+3. Review `AGENTS.md` together with feature and workflow docs so agent guidance,
+   feature maps, and future module docs have clear ownership.
+4. Add CI around the current unit/API/typecheck spine, keep E2E out of initial
+   scope, and plan CD as a thin wrapper around the existing deployment scripts.
+5. Add merge-to-main agent automation for high-level module design docs so
+   ordinary feature branches can stay focused on scoped feature documentation.
 
 ## Plans
 
 - [db-ownership-boundary-plan.md](./db-ownership-boundary-plan.md)
 - [rulebook-display-labels-plan.md](./rulebook-display-labels-plan.md)
 - [agent-guide-review-plan.md](./agent-guide-review-plan.md)
+- [ci-cd-and-module-docs-plan.md](./ci-cd-and-module-docs-plan.md)
 
 ## Working Rule
 

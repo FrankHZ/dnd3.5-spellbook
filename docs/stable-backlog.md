@@ -22,16 +22,16 @@ It is not a full roadmap. It exists to record what is known to be intentionally 
 
 ### Delivery
 
-- CI/CD
-- more repeatable release automation
-- stronger deployment validation
+- release automation beyond the v3.5 script-backed CI/CD pass
+- stronger deployment validation and rollback drills
 
 ### Documentation
 
-- deeper architecture docs if the codebase grows enough to justify them
+- deeper architecture docs beyond the v3.5 high-level module-doc automation
+  pass
 
 ## Scope Note
 
-These are intentionally deferred for the MVP line.
+These are intentionally deferred beyond the currently planned MVP line.
 
 They should be considered early candidates for the future stable-version track rather than gaps accidentally left undocumented.

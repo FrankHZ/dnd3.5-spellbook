@@ -143,19 +143,29 @@ v3.4 acceptance work unless a v3.4 implementation exposes the same boundary.
 3. **Agent guide review**
 
    Use `docs/mvp/v3.5/agent-guide-review-plan.md` to shrink `AGENTS.md` back
-   into a compact execution guide. In the same pass, make repo-local skill path
-   resolution explicit so agents read `.agents/skills/commit-message/SKILL.md`
-   from the active worktree instead of probing user-level paths first.
+   into a compact execution guide. In the same pass, review `docs/features.md`,
+   `docs/feature-workflow.md`, and `docs/frontend-map.md` so feature docs,
+   workflow docs, and future module docs have clear ownership. Make repo-local
+   skill path resolution explicit so agents read
+   `.agents/skills/commit-message/SKILL.md` from the active worktree instead of
+   probing user-level paths first.
+
+4. **CI/CD and module-doc automation**
+
+   Use `docs/mvp/v3.5/ci-cd-and-module-docs-plan.md` to add CI around the
+   existing unit/API/typecheck validation spine, keep browser E2E out of the
+   first CI scope, preserve CD as a thin wrapper around the current deployment
+   scripts, and design a merge-to-main agent job that refreshes high-level
+   module design docs after accepted changes.
 
 ## Later Stable Track
 
 The stable-version backlog remains intentionally deferred:
 
-- CI/CD
-- release automation
+- release automation beyond the v3.5 script-backed CD pass
 - rollback playbook
 - HTTPS / TLS and host hardening
-- deeper architecture docs if the system grows enough to justify them
+- deeper architecture docs beyond the v3.5 module-doc automation pass
 
 See `docs/stable-backlog.md`.
 
