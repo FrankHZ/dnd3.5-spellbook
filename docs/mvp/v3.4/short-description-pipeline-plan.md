@@ -379,20 +379,20 @@ It then promotes decisions into follow-up queues:
 - `en-rules-db-gaps.jsonl` for English rows that appear to require future rules
   DB patch work before short-description import
 
-The current local QA snapshot with review decisions has `0` errors, `2` warning
+The current local QA snapshot with review decisions has `0` errors, `3` warning
 categories, and `4` info categories. It reports `4` reviewed Chinese alias audit
-entries, `80` reviewed English strict-3.5 missing candidates, `3` import
-blockers, `19` resolved English candidate-normalization rows, `11` resolved
-English source-mismatch rows, `0` remaining English add-candidate rows, `1`
-remaining English source-mismatch row, `47` English rules DB gaps, `654` Chinese
-conflict rows, and `1,273` cross-language coverage rows. The large queues
-remain review leads unless a future import gate explicitly consumes them.
+entries, `80` reviewed English strict-3.5 missing candidates, `0` import
+blockers, `19` resolved English candidate-normalization rows, `12` resolved
+English source-mismatch rows, `0` remaining English add-candidate rows, `0`
+remaining English source-mismatch rows, `47` English rules DB gaps, `654`
+Chinese conflict rows, and `1,293` cross-language coverage rows. The large
+queues remain review leads unless a future import gate explicitly consumes them.
 
-The current import blockers are all English-side review blockers:
-`Foe's Burning Blood` remains ambiguous between local `Burning Blood` and
-`Beltyn's Burning Blood`, while `Crown of Despair` and `Touch of the Pharaoh`
-remain PDF-deferred because IMarvinTPA cross-labels them between Eberron
-Campaign Setting and Dragon Magazine #331. Earlier Chinese blockers were
+The former English import blockers are resolved for v3.4 import purposes:
+`Foe's Burning Blood` maps to local `Burning Blood` for accepted 3.5 sources,
+while the Unapproachable East / 3.0 source is out of scope; `Crown of Despair`
+and `Touch of the Pharaoh` are Dragon Magazine rows, not Eberron Campaign
+Setting rows, and are skipped as out-of-scope. Earlier Chinese blockers were
 cleared by mapping the CHM `Bigby's Striking Hand` typo to local
 `Bigby's Striking Fist`, normalizing the `列表:` source prefix before matching,
 and routing `Dance Of Blade` to the automatic-blade spell family instead of
@@ -582,7 +582,7 @@ Contract shape:
 export type Lang = "en" | "zh";
 
 export type I18nNameOverlay = {
-  lang: Lang;
+  lang: "zh";
   variant?: string | undefined;
   name?: string | undefined;
 };
@@ -594,12 +594,19 @@ export type I18nSpellSummaryOverlay = {
   sourceKey?: string | undefined;
 };
 
-export type I18nSpellDetailOverlay = I18nNameOverlay & {
+export type I18nSpellOverlay = {
+  lang?: "zh" | undefined;
+  variant?: string | undefined;
+  name?: string | undefined;
+  summary?: I18nSpellSummaryOverlay | undefined;
+};
+
+export type I18nSpellDetailOverlay = I18nSpellOverlay & {
+  sourceKey?: string | undefined;
   description?: {
     text?: string | undefined;
     html?: string | undefined;
   } | undefined;
-  summary?: I18nSpellSummaryOverlay | undefined;
 };
 ```
 
@@ -609,9 +616,12 @@ Server mapping:
   descriptions.
 - Add summary-specific repository queries against `I18nSpellSummaryText` for
   list/search/batch and detail responses.
+- Keep the generic `I18nNameOverlay` as the non-English name overlay shape used
+  by classes, domains, rulebooks, and translated spell names. Spell summaries use
+  a spell-specific overlay so English summaries do not imply English name
+  overlays.
 - `mapSpellItem` should accept both the optional name overlay row and optional
-  summary row, then map summaries to `spell.i18n.summary.shortDescription` or an
-  equivalent summary sub-object.
+  summary row, then map summaries to `spell.i18n.summary.shortDescription`.
 - `mapSpellDetail` should keep full-description overlay data separate from the
   summary overlay.
 - Use the row `lang` returned from app DB/content DB queries. Do not hard-code
@@ -687,20 +697,47 @@ Validation:
 - Full manual translation/proofreading is not required for v3.4 acceptance.
   A small spot-check set is enough to validate the workflow.
 
-## Open Questions
+## Decisions And Remaining Blockers
 
-- Should adopted class-list overview pages be copied into `data/chm-clean/`, a
-  new `data/chm-summary/` source path, or kept as raw-full inputs plus generated
-  review artifacts?
-- Should domain-list summaries participate in the first import, or only serve as
-  duplicate/conflict evidence for class-list spell summaries?
-- Should class short descriptions be manually curated from rules DB English
-  `short_description`, imported from CHM only, or deferred?
-- Should IMarvinTPA fetched data be ignored raw cache plus generated structured
-  patches, or should selected structured local source data be versioned in the
-  nested `data/` repo?
-- How large should the v3.4 translation/proofreading spot-check set be?
-- Should future class summaries use the existing `I18nCharacterClassText` field
-  or a parallel summary table for consistency with spell summaries?
-- When real user/app-state data ships, should the current app DB be renamed or
-  split into a generated content DB plus a separate user app-state DB?
+Resolved v3.4 decisions:
+
+- Keep CHM summary extraction source discovery in ignored `data/chm-raw-full/`
+  plus generated review artifacts for v3.4. Do not copy raw overview pages into
+  `data/chm-clean/` or create a maintained `data/chm-summary/` source path until
+  data-tool hardening decides which short-description extractors are durable.
+- Allow domain-list summaries to participate in the first spell-summary import
+  when `summaries:normalize` selects an accepted row. Domain-list conflicts that
+  need human review remain skipped and reported; import does not treat them as
+  blockers.
+- Defer class short descriptions from v3.4. This pipeline ships spell summaries
+  only.
+- Version selected structured IMarvinTPA source-index data in the nested
+  `data/` repo under `data/imarvin/short-desc/`. Raw fetch caches remain ignored
+  and are not parent-repo source.
+- Use the generated `spot-check.jsonl` queue as the v3.4 translation/proofreading
+  spot-check set. It is a review aid, not an import blocker when normalized
+  accepted rows exist.
+
+Consumer implementation blockers before UI/API exposure:
+
+1. Add the app DB `I18nSpellSummaryText` schema and migration, then regenerate
+   the app Prisma client.
+2. Add `summaries:import` as an explicit data-prep command that reads only
+   `data/short-desc-normalized/summaries.generated.jsonl`, supports `--dry-run`,
+   upserts by `spellId + lang + variant`, and reports inserted/updated/unchanged
+   rows.
+3. Update contracts with a spell-specific `I18nSpellOverlay` containing
+   `summary?: I18nSpellSummaryOverlay`; keep the generic `I18nNameOverlay`
+   scoped to translated names.
+4. Add server repository/service/mapper support for summary rows in list, search,
+   by-level, batch, and detail responses.
+5. Add API shape tests for `i18n.summary.shortDescription` and fallback/absence
+   cases before wiring frontend display.
+
+Deferred architecture questions:
+
+- Future class summaries may use the existing `I18nCharacterClassText` field or
+  a parallel summary table. Decide after spell summaries settle.
+- When real user/app-state data ships, review whether the current app DB should
+  be renamed or split into a generated content DB plus a separate user app-state
+  DB.
