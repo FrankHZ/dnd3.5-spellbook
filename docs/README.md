@@ -60,6 +60,7 @@ Early v3.5 planning has started under `docs/mvp/v3.5/`:
 - [mvp/v3.5/README.md](./mvp/v3.5/README.md)
 - [mvp/v3.5/db-ownership-boundary-plan.md](./mvp/v3.5/db-ownership-boundary-plan.md)
 - [mvp/v3.5/rules-content-normalization-plan.md](./mvp/v3.5/rules-content-normalization-plan.md)
+- [mvp/v3.5/normalized-rules-frontend-consumer-plan.md](./mvp/v3.5/normalized-rules-frontend-consumer-plan.md)
 - [mvp/v3.5/rulebook-display-labels-plan.md](./mvp/v3.5/rulebook-display-labels-plan.md)
 - [mvp/v3.5/agent-guide-review-plan.md](./mvp/v3.5/agent-guide-review-plan.md)
 - [mvp/v3.5/ci-cd-and-module-docs-plan.md](./mvp/v3.5/ci-cd-and-module-docs-plan.md)
@@ -67,13 +68,16 @@ Early v3.5 planning has started under `docs/mvp/v3.5/`:
 The DB ownership plan covers the v3.5 split between generated content data and
 future user/app-state data. The rules content normalization plan covers
 promoting cleaned legacy rules data into this repo's own normalized runtime
-content model for finer query surfaces. The rulebook display-label plan covers
-curated English rulebook abbreviations and Chinese full-name display labels
-without mutating legacy source slugs or rulebook IDs. The agent guide review
-plan covers shrinking `AGENTS.md` back into an execution guide, clarifying
-repo-local skill path resolution, and reviewing feature/workflow doc boundaries.
-The CI/CD and module-docs plan covers clean-checkout CI, script-backed CD, and
-merge-to-main agent automation for high-level module design docs.
+content model for finer query surfaces. The normalized rules frontend consumer
+plan covers how Browse, Search, Spell Detail, Prepared Spells, and Settings
+consume those facets without bloating page controls. The rulebook display-label
+plan covers curated English rulebook abbreviations and Chinese full-name display
+labels without mutating legacy source slugs or rulebook IDs. The agent guide
+review plan covers shrinking `AGENTS.md` back into an execution guide,
+clarifying repo-local skill path resolution, and reviewing feature/workflow doc
+boundaries. The CI/CD and module-docs plan covers clean-checkout CI,
+script-backed CD, and merge-to-main agent automation for high-level module
+design docs.
 
 ## Current Operational Docs
 

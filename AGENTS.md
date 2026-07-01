@@ -44,32 +44,35 @@ Start with these files when orienting:
 11. `docs/mvp/v3.5/rules-content-normalization-plan.md` before replacing rules
     DB runtime reads, normalizing legacy rules columns, or adding fine-grained
     spell query filters.
-12. `docs/mvp/v3.5/rulebook-display-labels-plan.md` before changing rulebook
+12. `docs/mvp/v3.5/normalized-rules-frontend-consumer-plan.md` before adding
+    frontend controls, URL params, or scope summaries for normalized rules
+    facets.
+13. `docs/mvp/v3.5/rulebook-display-labels-plan.md` before changing rulebook
     abbreviations, localized rulebook display labels, or rulebook display
     contract fields.
-13. `docs/mvp/v3.5/agent-guide-review-plan.md` before broadly restructuring
+14. `docs/mvp/v3.5/agent-guide-review-plan.md` before broadly restructuring
     this agent guide or moving agent-facing workflow rules.
-14. `docs/mvp/v3.5/ci-cd-and-module-docs-plan.md` before adding CI workflows,
+15. `docs/mvp/v3.5/ci-cd-and-module-docs-plan.md` before adding CI workflows,
     CD wrappers, or merge-triggered module documentation automation.
-15. `docs/mvp/v3.3/FREEZE.md` for the latest frozen release snapshot.
-16. `docs/mvp/v3.3/acceptance-checklist.md` when checking v3.3 acceptance
+16. `docs/mvp/v3.3/FREEZE.md` for the latest frozen release snapshot.
+17. `docs/mvp/v3.3/acceptance-checklist.md` when checking v3.3 acceptance
    evidence.
-17. `docs/mvp/v3.3/data-tools-workspace-plan.md` before moving or adding data
+18. `docs/mvp/v3.3/data-tools-workspace-plan.md` before moving or adding data
    import, parser, rules DB inspection, or rules DB patch tooling.
-18. `docs/mvp/v3.3/local-data-layout-plan.md` before moving CHM inputs, parser
+19. `docs/mvp/v3.3/local-data-layout-plan.md` before moving CHM inputs, parser
    outputs, local source data, or future rules patch files.
-19. `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before moving SQL patch
+20. `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before moving SQL patch
    assets, adding rules DB preparation commands, or importing missing English
    base spell records.
-20. `docs/mvp/v3.3/structured-spell-patch-plan.md` before designing or applying
+21. `docs/mvp/v3.3/structured-spell-patch-plan.md` before designing or applying
    missing English spell patch data.
-21. `docs/mvp/v3.3/spells-full-import-plan.md` before using local
+22. `docs/mvp/v3.3/spells-full-import-plan.md` before using local
    `spells-full` source data to generate missing English spell patches.
-22. `docs/harness.md` for validation and test-harness strategy.
-23. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
-24. `docs/mvp/v3.4/i18next-conventions-plan.md` before replacing raw-English
+23. `docs/harness.md` for validation and test-harness strategy.
+24. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
+25. `docs/mvp/v3.4/i18next-conventions-plan.md` before replacing raw-English
     frontend translation keys or tightening i18next workflow checks.
-25. Workspace READMEs for operational commands:
+26. Workspace READMEs for operational commands:
 
 - `server/README.md`
 - `data-tools/README.md`

@@ -169,9 +169,12 @@ The generator should emit review queues instead of hiding parser uncertainty.
    - Search/detail response parity against current API fixtures
 6. Generate the content DB only after reports pass the selected acceptance gate.
 
-## API And Frontend Plan
+## API And Frontend Boundary
 
-Start with API shape and backend queries before adding many controls.
+Start with API shape and backend queries before adding many controls. The
+frontend consumer rollout is owned by
+`normalized-rules-frontend-consumer-plan.md`; this section only identifies the
+backend-facing query foundation that consumer plan can build on.
 
 Candidate query filters after normalized content exists:
 
@@ -188,10 +191,8 @@ Candidate query filters after normalized content exists:
 
 Search should remain a name/text query plus optional structured filters. Browse
 should remain filter-first, but it can gain the same structured facets once the
-backend supports them.
-
-Frontend controls should be added incrementally to the Browse/Search sidebars
-and only after the API contract and metadata endpoints are stable.
+backend supports them. Frontend controls, URL state, scope summaries, and
+consumer validation are planned separately in the frontend consumer plan.
 
 ## Migration Strategy
 
@@ -202,7 +203,9 @@ and only after the API contract and metadata endpoints are stable.
    content-backed responses for representative Browse, Search, detail, batch,
    and resolve flows.
 5. Switch runtime reads to the normalized content DB when parity is acceptable.
-6. Add fine-grained query contract tests and frontend controls in small slices.
+6. Add fine-grained query contract tests, then follow
+   `normalized-rules-frontend-consumer-plan.md` for frontend controls in small
+   slices.
 7. Keep the legacy rules DB available as a source input, but stop treating it as
    the place for new long-term schema fixes.
 
@@ -217,6 +220,8 @@ and only after the API contract and metadata endpoints are stable.
   fallback, or emitted into review queues.
 - Frontend-facing contracts expose at least one new fine-grained structured
   filter backed by normalized data.
+- The first frontend consumer slice follows
+  `normalized-rules-frontend-consumer-plan.md`.
 - Data-tools can regenerate the normalized content DB from declared inputs.
 - Documentation explains when to edit source patches/review decisions instead
   of patching the legacy rules SQLite directly.

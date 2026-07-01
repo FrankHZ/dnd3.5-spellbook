@@ -143,14 +143,21 @@ v3.4 acceptance work unless a v3.4 implementation exposes the same boundary.
    Browse/Search filters such as schools, descriptors, components, casting
    facets, range, duration, saving throws, and spell resistance.
 
-3. **Rulebook display-label review**
+3. **Normalized rules frontend consumer**
+
+   Use `docs/mvp/v3.5/normalized-rules-frontend-consumer-plan.md` before adding
+   broad Browse/Search controls for normalized rules facets. Keep URL state,
+   API helper tests, scope summaries, and mobile sidebar behavior aligned while
+   preserving Browse as filter-first and Search as name-first.
+
+4. **Rulebook display-label review**
 
    Use `docs/mvp/v3.5/rulebook-display-labels-plan.md` to audit rulebook
    abbreviations and localized display labels. Keep rules DB slugs and legacy
    source abbreviations stable, but stop treating them as the default
    reader-facing UI labels.
 
-4. **Agent guide review**
+5. **Agent guide review**
 
    Use `docs/mvp/v3.5/agent-guide-review-plan.md` to shrink `AGENTS.md` back
    into a compact execution guide. In the same pass, review `docs/features.md`,
@@ -160,7 +167,7 @@ v3.4 acceptance work unless a v3.4 implementation exposes the same boundary.
    `.agents/skills/commit-message/SKILL.md` from the active worktree instead of
    probing user-level paths first.
 
-5. **CI/CD and module-doc automation**
+6. **CI/CD and module-doc automation**
 
    Use `docs/mvp/v3.5/ci-cd-and-module-docs-plan.md` to add CI around the
    existing unit/API/typecheck validation spine, keep browser E2E out of the
