@@ -524,6 +524,11 @@ Normalization behavior:
   decisions. Direct source-label matches are preferred over all-book fallback
   records for the same target. `needs_human` and `source_error` conflict
   decisions are skipped.
+- The current normalized snapshot has `6,077` accepted rows: `3,186`
+  `en/imarvin` rows and `2,891` `zh/chm` rows. The remaining Chinese skipped
+  conflict rows are `47` `source_error` entries; the prior `7`
+  `needs_human` entries were resolved by comparing Chinese candidates against
+  English short descriptions and the current rules DB spell text.
 - `en/imarvin` rows are selected from the local source-index data only when the
   source maps to a local DB rulebook and the row uniquely matches a local spell.
 - The output is unique by `spellId + lang + variant`, matching the planned app
