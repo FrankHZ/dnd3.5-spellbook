@@ -9,6 +9,7 @@ import {
   repoRoot,
   resolveServerRelativePath,
 } from "../env";
+import { BOOK_LABEL_TO_ABBR, normalizeBookLabel } from "../zh-parser/mapping";
 
 type Lang = "zh" | "en";
 type Variant = "chm" | "imarvin";
@@ -46,6 +47,7 @@ type ZhMatchedRecord = {
   spellId?: number | null;
   rulebookId?: number | null;
   rulebookAbbr?: string | null;
+  chmRulebookLabels?: string[];
   resolvedEnName?: string | null;
   aliasReview?: string;
 };
@@ -340,7 +342,18 @@ function groupBySpell(records: ZhMatchedRecord[]) {
     if (typeof record.spellId !== "number") continue;
     groups.set(record.spellId, [...(groups.get(record.spellId) ?? []), record]);
   }
+  for (const [spellId, group] of groups) {
+    const direct = group.filter(recordHasDirectRulebookLabel);
+    if (direct.length > 0) groups.set(spellId, direct);
+  }
   return groups;
+}
+
+function recordHasDirectRulebookLabel(record: ZhMatchedRecord) {
+  if (!record.rulebookAbbr) return false;
+  return (record.chmRulebookLabels ?? []).some(
+    (label) => BOOK_LABEL_TO_ABBR[normalizeBookLabel(label)] === record.rulebookAbbr,
+  );
 }
 
 function conflictKey(spellId: number | null | undefined, enName: string | undefined) {

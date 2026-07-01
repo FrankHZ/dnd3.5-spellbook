@@ -2,7 +2,7 @@ import { Prisma } from "prisma-rules-clean/generated/client";
 import { rulesPrisma as prisma } from "../db/rules-prisma-client";
 import aliasMapGlobal from "DATA/chm-mapping/enName-aliases-global.json";
 import aliasMapExtra from "DATA/chm-mapping/enName-aliases-extra.json";
-import { BOOK_LABEL_TO_ABBR } from "./mapping";
+import { BOOK_LABEL_TO_ABBR, normalizeBookLabel } from "./mapping";
 
 const ZH_BOOK_MAP: Record<string, string> = BOOK_LABEL_TO_ABBR;
 const BUILTIN_EN_ALIAS_MAP_GLOBAL: Record<string, string> = {
@@ -162,12 +162,24 @@ const SEMANTIC_RISK_ALIAS_KEYS = new Set(
   ].map((key) => key.toLowerCase()),
 );
 
+function uniqueStrings(values: string[]) {
+  return [...new Set(values)];
+}
+
+function labelAbbrs(bookLabels: string[]) {
+  return uniqueStrings(
+    bookLabels
+      .map((label) => ZH_BOOK_MAP[normalizeBookLabel(label)])
+      .filter((abbr): abbr is string => Boolean(abbr)),
+  );
+}
+
 function checkingMissLabel(opts: {
   enName: string; // already normalized
   bookLabels: string[];
 }): MatchResult[] {
   const missingLabel = opts.bookLabels.filter(
-    (label) => ZH_BOOK_MAP[label] === undefined,
+    (label) => ZH_BOOK_MAP[normalizeBookLabel(label)] === undefined,
   );
   return missingLabel.map((label) => {
     return {
@@ -184,10 +196,11 @@ function checkingMissLabel(opts: {
 
 let rulebookIds: null | number[] = null;
 let rulebookAbbrMap: null | Map<number, string> = null;
+let rulebookIdByAbbr: null | Map<string, number> = null;
 
 async function load() {
-  if (rulebookIds && rulebookAbbrMap) {
-    return { rulebookIds, rulebookAbbrMap };
+  if (rulebookIds && rulebookAbbrMap && rulebookIdByAbbr) {
+    return { rulebookIds, rulebookAbbrMap, rulebookIdByAbbr };
   }
   const abbrs = Object.values(ZH_BOOK_MAP);
   const rulebooks = await prisma.rulebook.findMany({
@@ -197,8 +210,10 @@ async function load() {
 
   rulebookIds = rulebooks.map((r) => Number(r.id));
   rulebookAbbrMap = new Map();
+  rulebookIdByAbbr = new Map();
   rulebooks.forEach((r) => rulebookAbbrMap?.set(r.id, r.abbr));
-  return { rulebookIds, rulebookAbbrMap };
+  rulebooks.forEach((r) => rulebookIdByAbbr?.set(r.abbr, Number(r.id)));
+  return { rulebookIds, rulebookAbbrMap, rulebookIdByAbbr };
 }
 
 type FailReason =
@@ -432,40 +447,77 @@ export async function matchByEnNameAllBooks(opts: {
   enName: string; // already normalized
   bookLabels: string[];
 }): Promise<MatchResult[]> {
-  const { rulebookIds, rulebookAbbrMap } = await load();
+  const { rulebookIds, rulebookAbbrMap, rulebookIdByAbbr } = await load();
 
   const missingLabels = checkingMissLabel(opts);
+  const scopedAbbrs = labelAbbrs(opts.bookLabels);
+  const missingRulebookAbbrs = scopedAbbrs.filter(
+    (abbr) => !rulebookIdByAbbr.has(abbr),
+  );
+  const missingRulebooks: MatchResult[] = missingRulebookAbbrs.map((abbr) => ({
+    spellId: null,
+    rulebookId: null,
+    rulebookAbbr: abbr,
+    chmRulebookLabels: opts.bookLabels,
+    matchMethod: `missingRulebookInDb:${abbr}`,
+    matchConfidence: 0,
+    failReason: "missingRulebookInDb",
+  }));
+  const scopedRulebookIds = scopedAbbrs
+    .map((abbr) => rulebookIdByAbbr.get(abbr))
+    .filter((id): id is number => typeof id === "number");
+  const targetRulebookIds =
+    opts.bookLabels.length > 0 ? scopedRulebookIds : rulebookIds;
+
+  if (targetRulebookIds.length === 0) {
+    return [...missingLabels, ...missingRulebooks];
+  }
 
   const candidateNames = candidateNamesFor(opts.enName);
-  const rows: Array<{
+  type SpellNameRow = {
     id: number;
     rulebook_id: number;
     resolved: ResolvedName;
-  }> = [];
+  };
 
-  for (const candidateName of candidateNames) {
-    const nameRows = await prisma.$queryRaw<
-    Array<{ id: number; rulebook_id: number }>
-    >(
-      Prisma.sql`
+  async function queryRows(searchRulebookIds: number[]) {
+    const matchedRows: SpellNameRow[] = [];
+    for (const candidateName of candidateNames) {
+      const nameRows = await prisma.$queryRaw<
+      Array<{ id: number; rulebook_id: number }>
+      >(
+        Prisma.sql`
       SELECT s.id, s.rulebook_id
       FROM dnd_spell s
-      WHERE s.rulebook_id IN (${Prisma.join(rulebookIds)})
+      WHERE s.rulebook_id IN (${Prisma.join(searchRulebookIds)})
           AND LOWER(s.name) = LOWER(${candidateName.name})
     `,
-    );
-    rows.push(...nameRows.map((row) => ({ ...row, resolved: candidateName })));
+      );
+      matchedRows.push(
+        ...nameRows.map((row) => ({ ...row, resolved: candidateName })),
+      );
+    }
+    return matchedRows;
+  }
+
+  let rows = await queryRows(targetRulebookIds);
+  const usedFallbackAllBooks = scopedAbbrs.length > 0 && rows.length === 0;
+  if (usedFallbackAllBooks) {
+    rows = await queryRows(rulebookIds);
   }
 
   if (rows.length === 0) {
     return [
       ...missingLabels,
+      ...missingRulebooks,
       {
         spellId: null,
         rulebookId: null,
         rulebookAbbr: null,
         chmRulebookLabels: opts.bookLabels,
-        matchMethod: `match:enExactCiAllBooksMiss`,
+        matchMethod: `match:${
+          scopedAbbrs.length > 0 ? "enExactCiSourceBooksMiss" : "enExactCiAllBooksMiss"
+        }`,
         matchConfidence: 0,
         failReason: "missingSpellInDb",
       },
@@ -482,15 +534,31 @@ export async function matchByEnNameAllBooks(opts: {
     rulebookAbbr: rulebookAbbrMap.get(Number(r.rulebook_id)) ?? null,
     chmRulebookLabels: opts.bookLabels,
     matchMethod: `match:${
-      r.resolved.aliasChain.length > 0 ? "enAliasCiAllBooks" : "enExactCiAllBooks"
+      r.resolved.aliasChain.length > 0
+        ? scopedAbbrs.length > 0 && !usedFallbackAllBooks
+          ? "enAliasCiSourceBooks"
+          : usedFallbackAllBooks
+            ? "enAliasCiSourceBooksFallbackAllBooks"
+            : "enAliasCiAllBooks"
+        : scopedAbbrs.length > 0 && !usedFallbackAllBooks
+          ? "enExactCiSourceBooks"
+          : usedFallbackAllBooks
+            ? "enExactCiSourceBooksFallbackAllBooks"
+            : "enExactCiAllBooks"
     }; expand:${uniqueRows.length}`,
     matchConfidence: 1.0,
-    flags: ["MULTI_BOOK_BY_ENNAME"],
+    flags: [
+      scopedAbbrs.length > 0 && !usedFallbackAllBooks
+        ? "SOURCE_BOOK_SCOPED"
+        : usedFallbackAllBooks
+          ? "SOURCE_BOOK_FALLBACK_ALL_BOOKS"
+          : "MULTI_BOOK_BY_ENNAME",
+    ],
     resolvedEnName: r.resolved.name,
     aliasChain: r.resolved.aliasChain,
     aliasCategories: aliasCategories(r.resolved.aliasChain),
     aliasReview: aliasReview(r.resolved.aliasChain),
   }));
 
-  return [...missingLabels, ...results];
+  return [...missingLabels, ...missingRulebooks, ...results];
 }

@@ -407,12 +407,19 @@ function decisionSummary<T>(
 
   const missingRows = [...expected].filter((key) => !actual.has(key)).length;
   const extraRows = [...actual].filter((key) => !expected.has(key)).length;
-  if (missingRows > 0 || extraRows > 0) {
+  if (missingRows > 0) {
     issue(issues, "error", "review-decision-key-mismatch", {
       file: opts.file,
       queue: opts.queue,
-      count: missingRows + extraRows,
+      count: missingRows,
       detail: `review decision keys do not match queue keys: ${missingRows} missing, ${extraRows} extra`,
+    });
+  } else if (extraRows > 0) {
+    issue(issues, "info", "review-decision-extra-keys", {
+      file: opts.file,
+      queue: opts.queue,
+      count: extraRows,
+      detail: `review decision file has ${extraRows} stale row(s) no longer present in the current queue`,
     });
   }
 
@@ -549,13 +556,13 @@ function isReviewedEnglishDecisionResolved(
   candidateKeys: Set<string> | null,
   sourceKeys: Set<string> | null,
 ) {
-  if (!candidateKeys || !sourceKeys) return false;
+  if (!sourceKeys) return false;
   const reviewedNames = [decision.name, decision.resolvedName].filter(
     (name): name is string => Boolean(name),
   );
-  return reviewedNames.flatMap((name) => nameMatchKeys(name)).some(
-    (key) => candidateKeys.has(key) && sourceKeys.has(key),
-  );
+  return reviewedNames
+    .flatMap((name) => nameMatchKeys(name))
+    .some((key) => sourceKeys.has(key) && (!candidateKeys || candidateKeys.has(key)));
 }
 
 function enCandidateKeySet(candidates: EnCandidate[] | null) {
@@ -638,6 +645,21 @@ function englishMatchedNames(report: EnSourceIndexReport | null) {
           ...(existing?.sources ?? []),
           match.sourceAbbr,
           match.sourceToken,
+        ]),
+      });
+    }
+  }
+  if (names.size === 0) {
+    for (const row of report?.rows ?? []) {
+      const key = normalizeName(row.name);
+      if (!key) continue;
+      const existing = names.get(key);
+      names.set(key, {
+        name: row.name,
+        sources: uniqueStrings([
+          ...(existing?.sources ?? []),
+          row.sourceAbbr,
+          row.sourceToken,
         ]),
       });
     }

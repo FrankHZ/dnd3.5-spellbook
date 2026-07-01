@@ -126,6 +126,22 @@ const DEFAULT_MANEUVER_INPUT = path.join(
 );
 const DEFAULT_OUT_DIR = path.join("out", "zh-parser", "summary");
 const MANEUVER_BOOK_LABEL = "九剑";
+const SOURCE_PREFIX_TO_BOOK_LABEL: Record<string, string> = {
+  BoED: "好人书",
+  CA: "完美奥术",
+  CD: "完美神力",
+  CW: "完美战士",
+  Dra: "巨龙之书",
+  FC1: "邪魔释典I",
+  FC2: "邪魔释典II",
+  Frost: "霜燃之书",
+  LM: "死者之书",
+  LoM: "异怪书",
+  PHB2: "玩家手册2",
+  RoD: "天命族裔",
+  RoW: "荒野族裔",
+  Sand: "沙暴之书",
+};
 
 const COMPONENT_MARKERS = new Set(["M", "F", "DF", "MF", "XP", "X"]);
 const DISCIPLINES = new Set([
@@ -434,6 +450,17 @@ function sourceKey(file: string, enName: string, index: number) {
   return `${file}#${index}-${encoded}`;
 }
 
+function inferredBookLabelsFromFile(file: string) {
+  const baseName = path.basename(file);
+  const match = baseName.match(/^([A-Za-z0-9]+)(?:扩展|--)/);
+  const label = match?.[1] ? SOURCE_PREFIX_TO_BOOK_LABEL[match[1]] : undefined;
+  return label ? [label] : [];
+}
+
+function sourceLabelsForRecord(file: string, parsedLabels: string[]) {
+  return uniqueStrings([...parsedLabels, ...inferredBookLabelsFromFile(file)]);
+}
+
 function extractClassListCandidates(inputDir: string) {
   const candidates: SummaryCandidate[] = [];
   const files = scanHtmlFiles(inputDir);
@@ -479,7 +506,7 @@ function extractClassListCandidates(inputDir: string) {
         spellLevel,
         schoolGroup,
         discipline: null,
-        sourceLabelHints: parsed.sourceLabelHints,
+        sourceLabelHints: sourceLabelsForRecord(file, parsed.sourceLabelHints),
         sourceProvenance: "zh-chm-class-list",
         zhName: parsed.zhName,
         enName: parsed.enName,
@@ -540,7 +567,10 @@ function extractDomainListCandidates(inputDir: string) {
         spellLevel: parsedLine.spellLevel,
         schoolGroup: null,
         discipline: null,
-        sourceLabelHints: parsedLine.parsed.sourceLabelHints,
+        sourceLabelHints: sourceLabelsForRecord(
+          file,
+          parsedLine.parsed.sourceLabelHints,
+        ),
         sourceProvenance: "zh-chm-domain-list",
         zhName: parsedLine.parsed.zhName,
         enName: parsedLine.parsed.enName,
@@ -673,6 +703,18 @@ function uniqueAliasCategories(records: MatchedSummary[]) {
   ].sort();
 }
 
+function recordHasDirectRulebookLabel(record: MatchedSummary) {
+  if (!record.rulebookAbbr) return false;
+  return record.chmRulebookLabels.some(
+    (label) => BOOK_LABEL_TO_ABBR[normalizeBookLabel(label)] === record.rulebookAbbr,
+  );
+}
+
+function preferredRecordsForTarget(records: MatchedSummary[]) {
+  const direct = records.filter(recordHasDirectRulebookLabel);
+  return direct.length > 0 ? direct : records;
+}
+
 function findAliasAudit(records: MatchedSummary[]): AliasAuditEntry[] {
   const grouped = new Map<string, MatchedSummary[]>();
   for (const record of records) {
@@ -737,9 +779,10 @@ function findDuplicates(records: MatchedSummary[]): DuplicateGroup[] {
 
   const duplicates: DuplicateGroup[] = [];
   for (const [targetKey, group] of grouped) {
-    if (group.length < 2) continue;
+    const preferredGroup = preferredRecordsForTarget(group);
+    if (preferredGroup.length < 2) continue;
     const bySummary = new Map<string, MatchedSummary[]>();
-    for (const record of group) {
+    for (const record of preferredGroup) {
       bySummary.set(record.summaryText, [
         ...(bySummary.get(record.summaryText) ?? []),
         record,
@@ -747,8 +790,8 @@ function findDuplicates(records: MatchedSummary[]): DuplicateGroup[] {
     }
     duplicates.push({
       targetKey,
-      spellId: group[0]?.spellId ?? null,
-      enName: group[0]?.enName ?? "",
+      spellId: preferredGroup[0]?.spellId ?? null,
+      enName: preferredGroup[0]?.enName ?? "",
       summaries: [...bySummary.entries()].map(([summaryText, records]) => ({
         summaryText,
         records,

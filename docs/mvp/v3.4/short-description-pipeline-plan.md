@@ -51,17 +51,22 @@ npm run -w data-tools zh:summaries:extract
 
   Its current baseline scans `101` files, including the class-list pages, the
   domain-list pages, and the clean ToB maneuver list, finds `5,445` candidate
-  occurrences, expands to `6,527` matched records, leaves `0` unmatched records,
-  and reports `1,833` duplicate targets, including `695` conflicting duplicate
-  targets and `656` normalized conflicting duplicate targets, for review under
-  `data-tools/out/zh-parser/summary/`. It also reports `304` alias-assisted
-  matches, `26` matches that require alias review, and `153` alias audit
+  occurrences, expands to `5,820` matched records, leaves `0` unmatched records,
+  and reports `1,494` duplicate targets, including `453` conflicting duplicate
+  targets and `414` normalized conflicting duplicate targets, for review under
+  `data-tools/out/zh-parser/summary/`. It also reports `246` alias-assisted
+  matches, `6` matches that require alias review, and `151` alias audit
   entries.
-  The zero-unmatched baseline relies on the shared CHM English-name alias layer,
-  including typo fixes and compact slash-name expansion for alignment,
-  protection, mantle, and wall spell families. Alias-assisted matches are
-  reviewable through `alias-audit.json`; semantic-risk and source-specific
-  aliases should not be promoted to import without human or cross-source review.
+  The zero-unmatched baseline relies on the shared CHM English-name alias layer
+  plus source-label scoping. Explicit Chinese source labels and known file
+  prefixes such as `CA扩展--`, `BoED--`, and `Dra--` first constrain matching to
+  the corresponding local rulebook; if that scoped lookup misses, the extractor
+  falls back to all-book matching so class/domain overview lists can still
+  include PHB or other-source spells. When a target has direct source-label
+  matches, fallback records are ignored for conflict grouping and normalized
+  import selection. Alias-assisted matches are reviewable through
+  `alias-audit.json`; semantic-risk and source-specific aliases should not be
+  promoted to import without human or cross-source review.
 - A secondary confirmed short-summary source exists under
   `data/chm-raw-full/各种其他类法术及超能/`, but the first probe over `机关术.htm`
   mixes infusion and non-spell content and should stay out of the default spell
@@ -380,12 +385,12 @@ It then promotes decisions into follow-up queues:
   DB patch work before short-description import
 
 The current local QA snapshot with review decisions has `0` errors, `3` warning
-categories, and `4` info categories. It reports `4` reviewed Chinese alias audit
+categories, and `5` info categories. It reports `4` reviewed Chinese alias audit
 entries, `80` reviewed English strict-3.5 missing candidates, `0` import
 blockers, `19` resolved English candidate-normalization rows, `12` resolved
 English source-mismatch rows, `0` remaining English add-candidate rows, `0`
-remaining English source-mismatch rows, `47` English rules DB gaps, `654`
-Chinese conflict rows, and `1,293` cross-language coverage rows. The large
+remaining English source-mismatch rows, `47` English rules DB gaps, `414`
+Chinese conflict rows, and `1,677` cross-language coverage rows. The large
 queues remain review leads unless a future import gate explicitly consumes them.
 
 The former English import blockers are resolved for v3.4 import purposes:
@@ -516,7 +521,9 @@ type NormalizedSpellSummaryRow = {
 Normalization behavior:
 
 - `zh/chm` rows are selected from extractor matches plus conflict-review
-  decisions. `needs_human` and `source_error` conflict decisions are skipped.
+  decisions. Direct source-label matches are preferred over all-book fallback
+  records for the same target. `needs_human` and `source_error` conflict
+  decisions are skipped.
 - `en/imarvin` rows are selected from the local source-index data only when the
   source maps to a local DB rulebook and the row uniquely matches a local spell.
 - The output is unique by `spellId + lang + variant`, matching the planned app
