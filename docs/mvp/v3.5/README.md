@@ -8,7 +8,8 @@ separate from active v3.4 implementation branches.
 
 ## Candidate Scope
 
-1. Review DB ownership boundaries before real user/app-state data ships.
+1. Split the current app-owned content DB boundary from the future
+   user/app-state DB boundary before real server-side user data ships.
 2. Review rulebook display labels so public UI does not depend on legacy
    DnDTools-style source abbreviations or slugs.
 3. Review `AGENTS.md` together with feature and workflow docs so agent guidance,

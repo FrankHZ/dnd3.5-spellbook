@@ -22,8 +22,17 @@ It is not a full roadmap. It exists to record what is known to be intentionally 
 
 ### Delivery
 
+- content artifact pipeline for versioned content releases
+- static HTML/offline artifact generation to replace old loose HTML
+  distribution
 - release automation beyond the v3.5 script-backed CI/CD pass
 - stronger deployment validation and rollback drills
+
+### Content
+
+- large-scale Chinese/English translation and QA workflow
+- content coverage, provenance, and review-status reporting
+- search/index artifact generation for offline or static deployments
 
 ### Documentation
 

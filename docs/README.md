@@ -63,8 +63,8 @@ Early v3.5 planning has started under `docs/mvp/v3.5/`:
 - [mvp/v3.5/agent-guide-review-plan.md](./mvp/v3.5/agent-guide-review-plan.md)
 - [mvp/v3.5/ci-cd-and-module-docs-plan.md](./mvp/v3.5/ci-cd-and-module-docs-plan.md)
 
-The DB ownership plan covers the future split between generated content data
-and user/app-state data. The rulebook display-label plan covers curated English
+The DB ownership plan covers the v3.5 split between generated content data and
+future user/app-state data. The rulebook display-label plan covers curated English
 rulebook abbreviations and Chinese full-name display labels without mutating
 legacy source slugs or rulebook IDs. The agent guide review plan covers
 shrinking `AGENTS.md` back into an execution guide, clarifying repo-local skill

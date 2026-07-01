@@ -127,11 +127,12 @@ Recommended next sequence:
 These items are intentionally future-facing. Do not let them disrupt active
 v3.4 acceptance work unless a v3.4 implementation exposes the same boundary.
 
-1. **DB ownership boundary review**
+1. **Content DB / app-state DB split**
 
-   Use `docs/mvp/v3.5/db-ownership-boundary-plan.md` to decide whether generated
-   content overlays should stay in the current app DB or move to a dedicated
-   content DB before real user/app-state data ships.
+   Use `docs/mvp/v3.5/db-ownership-boundary-plan.md` to split generated content
+   overlays from future user/app-state data before real server-side user data
+   ships. The current app DB is effectively content-owned today; v3.5 should
+   make that physical and tooling boundary explicit.
 
 2. **Rulebook display-label review**
 
@@ -162,6 +163,11 @@ v3.4 acceptance work unless a v3.4 implementation exposes the same boundary.
 
 The stable-version backlog remains intentionally deferred:
 
+- content artifact pipeline for versioned content releases
+- large-scale Chinese/English translation and QA workflow
+- static HTML/offline artifact generation to replace old loose HTML
+  distribution
+- search/index artifact generation for offline or static deployments
 - release automation beyond the v3.5 script-backed CD pass
 - rollback playbook
 - HTTPS / TLS and host hardening
