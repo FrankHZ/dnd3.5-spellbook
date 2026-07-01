@@ -35,7 +35,10 @@ real server-side user data exists.
 
 ## Non-Goals
 
-- Do not move rules DB ownership into the app DB.
+- Do not mutate or collapse the legacy rules DB into app-state. The normalized
+  rules content plan may promote rules-derived runtime tables into
+  `CONTENT_DATABASE_URL`, while preserving the legacy rules DB as a source
+  input.
 - Do not introduce user accounts or syncable server-side user data as part of the
   split.
 - Do not block v3.4 short-description import on a DB split if v3.4 still only
@@ -45,9 +48,11 @@ real server-side user data exists.
 
 ## Current Interpretation
 
-- `rules DB`: legacy imported rules dataset and rules patches.
+- `rules DB`: legacy imported rules dataset and rules patches; v3.5 should
+  treat this as a source input once normalized rules content exists.
 - current `app DB`: app-owned content overlay DB, despite the name.
-- target `content DB`: generated/imported app-owned content overlays.
+- target `content DB`: generated/imported app-owned content overlays and,
+  after rules normalization, canonical rules-derived runtime tables.
 - target `app-state DB`: user-owned state, if server-side users, notes, synced
   collections, or favorites become real runtime features.
 
@@ -74,7 +79,8 @@ Create two app-owned SQLite schemas:
 Move or keep these model families by ownership:
 
 - content DB: `I18n*Text`, spell summaries, rulebook display labels, curated
-  aliases that are generated or imported
+  aliases that are generated or imported, and normalized rules-derived tables
+  when `rules-content-normalization-plan.md` is implemented
 - app-state DB: `User`, `FavoriteSpell`, `SpellNote`, future syncable
   collections or user preferences
 
@@ -103,6 +109,10 @@ state.
    named clients.
 9. Update local DB rebuild/setup docs and deployment docs.
 10. Define a rollback or rebuild path before any destructive local migration.
+
+Coordinate this split with `rules-content-normalization-plan.md` so normalized
+rules runtime tables land in the content DB boundary rather than creating a
+third long-lived runtime DB by accident.
 
 ## Acceptance Criteria
 

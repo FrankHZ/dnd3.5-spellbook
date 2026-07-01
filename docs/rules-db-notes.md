@@ -9,6 +9,9 @@ For planned rules DB preparation command ownership, see
 `docs/mvp/v3.3/rules-db-prep-workflow-plan.md`.
 For planned structured missing-spell patch data, see
 `docs/mvp/v3.3/structured-spell-patch-plan.md`.
+For the v3.5 direction that replaces legacy runtime reads with a normalized
+project-owned content model, see
+`docs/mvp/v3.5/rules-content-normalization-plan.md`.
 
 ## Inspection Tool
 
