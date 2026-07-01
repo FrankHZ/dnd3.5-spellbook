@@ -260,8 +260,15 @@ See `docs/harness.md` for details.
   when reviewed English short-summary gaps need local `spells-full` rules patch
   candidates before import.
 - Use `npm run -w data-tools summaries:normalize` to rebuild the accepted
-  normalized spell-summary JSONL, then
-  `npm run -w data-tools summaries:import -- --dry-run` before
+  normalized spell-summary JSONL.
+- Use `npm run -w data-tools summaries:punctuation` for deterministic
+  sentence-final punctuation QA. Use `-- --write` only when intentionally
+  updating `data/short-desc-normalized/summaries.generated.jsonl`.
+- Use `npm run -w data-tools summaries:reuse-candidates` to generate same-name
+  core/supplementals summary reuse queues, then
+  `npm run -w data-tools summaries:reuse-apply -- --write` after auto or
+  reviewed decisions are accepted.
+- Run `npm run -w data-tools summaries:import -- --dry-run` before
   `npm run -w data-tools summaries:import` when refreshing local app DB
   `I18nSpellSummaryText` rows.
 - Use `npm run -w data-tools rules:spells:validate -- <patch.jsonl>` and

@@ -497,6 +497,16 @@ Normalize reviewed source data before import:
 npm run -w data-tools summaries:normalize
 ```
 
+Run deterministic cleanup and reuse review after normalization, not inside the
+normalizer:
+
+```bash
+npm run -w data-tools summaries:punctuation
+npm run -w data-tools summaries:punctuation -- --write
+npm run -w data-tools summaries:reuse-candidates
+npm run -w data-tools summaries:reuse-apply -- --write
+```
+
 This writes `data/short-desc-normalized/summaries.generated.jsonl` and a report
 under `data-tools/out/short-desc-normalized/summary.json`. The normalized JSONL
 is the only intended input to the app DB import command. Each line has one
@@ -543,6 +553,23 @@ Normalization behavior:
   DB uniqueness constraint.
 - Skipped rows are counted in the normalization report; they are not passed to
   import as blockers.
+
+Post-normalization cleanup behavior:
+
+- `summaries:punctuation` handles sentence-final punctuation as a separate
+  deterministic QA/cleanup layer so `summaries:normalize` stays focused on
+  source selection and row shaping.
+- `summaries:reuse-candidates` generates same-name summary reuse candidates
+  within `core-35` and `supplementals-35` rules DB rows, excluding ToB by
+  default. Exact source/target rules DB description matches are emitted as
+  auto reuse decisions; all other candidates are chunked for subagent or human
+  review.
+- `summaries:reuse-apply` consumes auto/reviewed reuse decisions and writes
+  accepted `summary-reuse` rows into the normalized JSONL with explicit reuse
+  provenance.
+- Current cleanup snapshot: punctuation QA fixed `155` rows (`39` English,
+  `116` Chinese). Same-name reuse generated `507` candidates, accepted `14`
+  exact-description auto reuse rows, and left `493` rows for batch review.
 
 Implemented import command:
 

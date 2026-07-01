@@ -87,6 +87,16 @@ Build the normalized import JSONL after extraction and QA review:
 npm run -w data-tools summaries:normalize
 ```
 
+Run short-description cleanup QA and same-name reuse candidate generation:
+
+```bash
+npm run -w data-tools summaries:punctuation
+npm run -w data-tools summaries:punctuation -- --write
+npm run -w data-tools summaries:reuse-candidates
+npm run -w data-tools summaries:reuse-apply
+npm run -w data-tools summaries:reuse-apply -- --write
+```
+
 Import normalized short descriptions into the local app DB:
 
 ```bash
@@ -223,6 +233,25 @@ accepted normalized row shape, and upserts rows into
 does not delete existing summary or full-description rows, and writes audit
 reports under `data-tools/out/short-desc-import/`.
 
+`summaries:punctuation` is a deterministic cleanup QA pass over the normalized
+JSONL. It reports summaries missing sentence-final punctuation and, with
+`--write`, appends `.` for English or `。` for Chinese. It writes
+`punctuation-summary.json` and `review-queues/summary-punctuation.jsonl` under
+`data-tools/out/short-desc-qa/`.
+
+`summaries:reuse-candidates` finds same-name spell rows within the configured
+rules DB edition scope, currently `core-35` and `supplementals-35`, where one
+row has an accepted summary and another lacks that language/variant summary. It
+excludes ToB by default because maneuver summaries are a separate content track.
+Rows whose source and target rules DB descriptions match exactly are emitted as
+high-confidence auto decisions; all other candidates are chunked for subagent or
+human review under `review-queues/summary-reuse-candidates/`.
+
+`summaries:reuse-apply` consumes auto decisions and reviewed
+`summary-reuse/*.decisions.jsonl` files. It writes accepted reuse rows back into
+the normalized JSONL only with `--write`, preserving reuse provenance through
+`sourceKind: "summary-reuse"`.
+
 ## Safety
 
 - `inspect:rules` opens the SQLite database in read-only mode.
@@ -239,6 +268,12 @@ reports under `data-tools/out/short-desc-import/`.
   output plus local source-index JSON only; it does not mutate SQLite databases.
 - `summaries:normalize` writes local JSONL/report files only; it does not mutate
   SQLite databases.
+- `summaries:punctuation` without `--write` writes reports only; with `--write`
+  it mutates the normalized local data JSONL.
+- `summaries:reuse-candidates` writes generated QA queues and does not mutate
+  SQLite databases or normalized data.
+- `summaries:reuse-apply` without `--write` writes reports only; with `--write`
+  it mutates the normalized local data JSONL.
 - `summaries:import -- --dry-run` validates and counts app DB changes without
   mutating SQLite databases.
 - `summaries:import` is write-capable against `APP_DATABASE_URL` and upserts
