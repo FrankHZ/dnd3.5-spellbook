@@ -369,9 +369,9 @@ data-tools/out/short-desc-qa/
    |- en-out-of-scope.jsonl
 ```
 
-If validated review decisions exist under
-`data-tools/out/short-desc-qa/review-results/`, the command validates decision
-keys against the generated queues and records review coverage in `summary.json`.
+If validated review decisions exist under `data/short-desc-review/qa/`, the
+command validates decision keys against the generated queues and records review
+coverage in `summary.json`.
 It then promotes decisions into follow-up queues:
 
 - `import-blockers.jsonl` for reviewed rows that must not enter import
@@ -501,10 +501,9 @@ Run deterministic cleanup and reuse review after normalization, not inside the
 normalizer:
 
 ```bash
-npm run -w data-tools summaries:punctuation
-npm run -w data-tools summaries:punctuation -- --write
 npm run -w data-tools summaries:reuse-candidates
 npm run -w data-tools summaries:reuse-apply -- --write
+npm run -w data-tools summaries:punctuation -- --write
 ```
 
 This writes `data/short-desc-normalized/summaries.generated.jsonl` and a report
@@ -533,8 +532,9 @@ type NormalizedSpellSummaryRow = {
 Normalization behavior:
 
 - `zh/chm` rows are selected from extractor matches plus conflict-review
-  decisions. Direct source-label matches are preferred over all-book fallback
-  records for the same target. `needs_human` decisions are skipped.
+  decisions under `data/short-desc-review/zh-conflicts/`. Direct source-label
+  matches are preferred over all-book fallback records for the same target.
+  `needs_human` decisions are skipped.
   `source_error` decisions are accepted only when review selected a concrete
   `chosenVariantId`; this means the source group had bad variants, but the
   selected variant is considered clean enough for import.
@@ -558,17 +558,19 @@ Post-normalization cleanup behavior:
 
 - `summaries:punctuation` handles sentence-final punctuation as a separate
   deterministic QA/cleanup layer so `summaries:normalize` stays focused on
-  source selection and row shaping.
+  source selection and row shaping. Run the write mode after reuse apply so
+  source rows and reused rows are cleaned consistently.
 - `summaries:reuse-candidates` generates same-name summary reuse candidates
   within `core-35` and `supplementals-35` rules DB rows, excluding ToB by
   default. Exact source/target rules DB description matches are emitted as
   auto reuse decisions; all other candidates are chunked for subagent or human
   review.
-- `summaries:reuse-apply` consumes auto/reviewed reuse decisions and writes
-  accepted `summary-reuse` rows into the normalized JSONL with explicit reuse
-  provenance. Reviewed decisions may provide a `summaryText` override for cases
-  where source and target have the same mechanism but the target rules DB entry
-  uses different numbers.
+- `summaries:reuse-apply` consumes generated auto decisions plus reviewed reuse
+  decisions under `data/short-desc-review/summary-reuse/` and writes accepted
+  `summary-reuse` rows into the normalized JSONL with explicit reuse provenance.
+  Reviewed decisions may provide a `summaryText` override for cases where source
+  and target have the same mechanism but the target rules DB entry uses
+  different numbers.
 - `summaries:coverage-report` generates a per-rulebook coverage report for the
   current official 3.5 working scope (`core-35`, `supplementals-35`,
   `eberron-35`, and `forgotten-realms-35`). It lists missing Chinese summaries,
@@ -780,6 +782,9 @@ Resolved v3.4 decisions:
 - Version selected structured IMarvinTPA source-index data in the nested
   `data/` repo under `data/imarvin/short-desc/`. Raw fetch caches remain ignored
   and are not parent-repo source.
+- Version durable human/subagent review decisions in the nested `data/` repo
+  under `data/short-desc-review/`. Generated queues, coverage reports, run
+  summaries, and dry-run reports remain under `data-tools/out/`.
 - Use the generated `spot-check.jsonl` queue as the v3.4 translation/proofreading
   spot-check set. It is a review aid, not an import blocker when normalized
   accepted rows exist.

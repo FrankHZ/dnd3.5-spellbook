@@ -181,12 +181,9 @@ const DEFAULT_ZH_CONFLICTS = path.join(
   "conflicts.json",
 );
 const DEFAULT_ZH_CONFLICT_REVIEW_DIR = path.join(
-  repoRoot(),
-  "data-tools",
-  "out",
-  "zh-parser",
-  "summary",
-  "conflict-review",
+  localDataDir(),
+  "short-desc-review",
+  "zh-conflicts",
 );
 const DEFAULT_EN_SOURCE_INDEX = path.join(
   localDataDir(),

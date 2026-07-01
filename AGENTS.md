@@ -18,9 +18,11 @@ project docs live under `docs/`.
   portable.
 - `server/data/i18n/`: local app-owned entity translation inputs consumed by
   server import scripts.
-- `data/`: nested local data repo for parser/import source inputs and rules
-  patch files. The parent repo ignores this directory.
-- `data-tools/out/`: generated data-tool reports and parser output.
+- `data/`: nested local data repo for parser/import source inputs, rules patch
+  files, normalized import JSONL, and maintained short-description review
+  decisions. The parent repo ignores this directory.
+- `data-tools/out/`: generated data-tool reports, parser output, review queues,
+  run summaries, and other rebuildable intermediates.
 
 ## Canonical Docs
 
@@ -251,9 +253,8 @@ See `docs/harness.md` for details.
 - Run `npm run -w data-tools summaries:qa` after refreshing Chinese and English
   short-summary reports, then review
   `data-tools/out/short-desc-qa/summary.json` and the generated review queues.
-  Validated review decisions under
-  `data-tools/out/short-desc-qa/review-results/` are consumed by the same
-  command and promoted into follow-up queues such as `import-blockers`,
+  Validated review decisions under `data/short-desc-review/qa/` are consumed by
+  the same command and promoted into follow-up queues such as `import-blockers`,
   `en-add-candidates`, `en-resolved-candidates`,
   `en-resolved-source-mismatches`, and `en-rules-db-gaps`.
 - Use `npm run -w data-tools spells-full:generate -- short-desc-rules-gaps`
@@ -263,13 +264,15 @@ See `docs/harness.md` for details.
   normalized spell-summary JSONL.
 - Use `npm run -w data-tools summaries:punctuation` for deterministic
   sentence-final punctuation QA. Use `-- --write` only when intentionally
-  updating `data/short-desc-normalized/summaries.generated.jsonl`.
+  updating `data/short-desc-normalized/summaries.generated.jsonl`, and run write
+  mode after `summaries:reuse-apply -- --write` so reused rows are cleaned too.
 - Use `npm run -w data-tools summaries:reuse-candidates` to generate same-name
   core/supplementals summary reuse queues, then
   `npm run -w data-tools summaries:reuse-apply -- --write` after auto or
-  reviewed decisions are accepted. Reviewed reuse decisions may include
-  `summaryText` only when the target rules DB text supports the same mechanism
-  with different target-specific numbers.
+  reviewed decisions are accepted. Reviewed reuse decisions live under
+  `data/short-desc-review/summary-reuse/` and may include `summaryText` only
+  when the target rules DB text supports the same mechanism with different
+  target-specific numbers.
 - Use `npm run -w data-tools summaries:coverage-report` when deciding the next
   short-summary cleanup scope by rulebook. It reports missing Chinese, missing
   English, missing-both, source-desc-without-DB-spell counts, and English
@@ -280,9 +283,10 @@ See `docs/harness.md` for details.
 - Use `npm run -w data-tools rules:spells:validate -- <patch.jsonl>` and
   `npm run -w data-tools rules:spells:apply -- --dry-run <patch.jsonl>` before
   applying structured missing-spell patches.
-- Content-bearing local patch data belongs in the nested `data/` repo. Keep
-  schemas, validators, generators, reports, and redacted/minimal fixtures in the
-  parent repo.
+- Content-bearing local patch data, maintained source indexes, normalized import
+  JSONL, and durable review decisions belong in the nested `data/` repo. Keep
+  schemas, validators, generators, generated queues, run reports, and
+  redacted/minimal fixtures in the parent repo.
 - Data tools may inspect local SQLite files, but must not modify
   `server/data/db/` unless the user explicitly asked for a write-capable
   workflow.

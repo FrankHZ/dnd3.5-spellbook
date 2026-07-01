@@ -76,15 +76,12 @@ const DEFAULT_AUTO_DECISIONS = path.join(
   "data-tools",
   "out",
   "short-desc-qa",
-  "review-results",
+  "generated",
   "summary-reuse.auto-decisions.jsonl",
 );
 const DEFAULT_REVIEW_DIR = path.join(
-  repoRoot(),
-  "data-tools",
-  "out",
-  "short-desc-qa",
-  "review-results",
+  localDataDir(),
+  "short-desc-review",
   "summary-reuse",
 );
 const DEFAULT_OUT_DIR = path.join(
@@ -231,8 +228,12 @@ function rowFromCandidate(
       decision: decision.decision,
       reason: decision.reason,
       confidence: decision.confidence,
-      summaryOverride: hasSummaryOverride,
-      sourceSummaryText: hasSummaryOverride ? candidate.source.summaryText : undefined,
+      ...(hasSummaryOverride
+        ? {
+            summaryOverride: true,
+            sourceSummaryText: candidate.source.summaryText,
+          }
+        : {}),
       matchStatus: candidate.matchStatus,
       source: {
         spellId: candidate.source.spellId,
@@ -330,7 +331,7 @@ function main() {
 
   const acceptedPath = path.join(
     options.outDir,
-    "review-results",
+    "generated",
     "summary-reuse.accepted.generated.jsonl",
   );
   writeJsonl(acceptedPath, acceptedRows);

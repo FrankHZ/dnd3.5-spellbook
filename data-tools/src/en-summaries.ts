@@ -631,6 +631,7 @@ function writeCandidates(argv: string[]) {
   const meta = {
     generatedAt: new Date().toISOString(),
     dbPath,
+    outputPath: resolvedOut,
     includeTob: options.includeTob,
     uniqueNames: candidates.length,
     sourceRows: rows.reduce((total, row) => total + Number(row.rows), 0),
@@ -640,7 +641,11 @@ function writeCandidates(argv: string[]) {
       0,
     ),
   };
-  const metaPath = resolvedOut.replace(/\.json$/i, ".meta.json");
+  const metaPath = path.join(
+    REPORT_ROOT,
+    `${safeReportName(`${path.parse(options.outPath).name}.meta`)}.json`,
+  );
+  fs.mkdirSync(path.dirname(metaPath), { recursive: true });
   fs.writeFileSync(metaPath, `${JSON.stringify(meta, null, 2)}\n`, "utf8");
 
   console.log(`IMarvinTPA candidates OK: ${resolvedOut}`);

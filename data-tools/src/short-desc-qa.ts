@@ -224,7 +224,11 @@ const DEFAULT_EN_SOURCE_INDEX = path.join(
 const DEFAULT_EN_STRICT_MISSING =
   "out/en-summaries/imarvin-source-index-db-missing-strict35.json";
 const DEFAULT_OUT_DIR = "out/short-desc-qa";
-const DEFAULT_REVIEW_RESULTS_DIR = "out/short-desc-qa/review-results";
+const DEFAULT_REVIEW_RESULTS_DIR = path.join(
+  localDataDir(),
+  "short-desc-review",
+  "qa",
+);
 const DEFAULT_EN_CANDIDATES = path.join(
   localDataDir(),
   "imarvin",

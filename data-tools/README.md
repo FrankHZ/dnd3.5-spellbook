@@ -90,11 +90,11 @@ npm run -w data-tools summaries:normalize
 Run short-description cleanup QA and same-name reuse candidate generation:
 
 ```bash
-npm run -w data-tools summaries:punctuation
-npm run -w data-tools summaries:punctuation -- --write
 npm run -w data-tools summaries:reuse-candidates
 npm run -w data-tools summaries:reuse-apply
 npm run -w data-tools summaries:reuse-apply -- --write
+npm run -w data-tools summaries:punctuation
+npm run -w data-tools summaries:punctuation -- --write
 ```
 
 Import normalized short descriptions into the local app DB:
@@ -118,6 +118,8 @@ Current CHM parser defaults:
 - parser test input: `data/chm-test/`
 - CHM mapping and alias JSON: `data/chm-mapping/`
 - IMarvinTPA source data: `data/imarvin/short-desc/`
+- maintained short-description review decisions:
+  `data/short-desc-review/`
 - parser output: `data-tools/out/zh-parser/`
 - mechanical QA output: `data-tools/out/zh-parser/qa/`
 - short-description extraction output: `data-tools/out/zh-parser/summary/`
@@ -208,9 +210,9 @@ JSONL review queues under `data-tools/out/short-desc-qa/`. It does not fetch
 network sources. Generate or refresh the English source index with
 `en:summaries:sources` before relying on cross-language coverage queues. If
 validated subagent or human decisions exist under
-`data-tools/out/short-desc-qa/review-results/`, the command validates their
-stable keys and decisions, records review coverage in `summary.json`, and writes
-follow-up queues such as `import-blockers.jsonl`, `en-add-candidates.jsonl`, and
+`data/short-desc-review/qa/`, the command validates their stable keys and
+decisions, records review coverage in `summary.json`, and writes follow-up
+queues such as `import-blockers.jsonl`, `en-add-candidates.jsonl`, and
 `en-rules-db-gaps.jsonl`. English add-candidate decisions that are covered by
 the current IMarvinTPA name-matching rules are moved to
 `en-resolved-candidates.jsonl`; conservative source-mismatch title aliases that
@@ -218,12 +220,13 @@ are covered by the same matching rules are moved to
 `en-resolved-source-mismatches.jsonl`.
 
 `summaries:normalize` is the import boundary for v3.4 spell summaries. It reads
-Chinese extractor output plus conflict-review decisions and the local IMarvinTPA
-source-index data, then writes one normalized JSONL row shape for both languages
-under `data/short-desc-normalized/summaries.generated.jsonl`. It only emits
-accepted rows with local `spellId` and `rulebookId`; unresolved Chinese
-conflicts, English rules DB gaps, and sources that cannot be mapped to local
-rules DB rows are reported as skipped in
+Chinese extractor output plus conflict-review decisions from
+`data/short-desc-review/zh-conflicts/` and the local IMarvinTPA source-index
+data, then writes one normalized JSONL row shape for both languages under
+`data/short-desc-normalized/summaries.generated.jsonl`. It only emits accepted
+rows with local `spellId` and `rulebookId`; unresolved Chinese conflicts,
+English rules DB gaps, and sources that cannot be mapped to local rules DB rows
+are reported as skipped in
 `data-tools/out/short-desc-normalized/summary.json`.
 
 `summaries:import` is the app DB mutation boundary for v3.4 spell summaries. It
@@ -237,7 +240,8 @@ reports under `data-tools/out/short-desc-import/`.
 JSONL. It reports summaries missing sentence-final punctuation and, with
 `--write`, appends `.` for English or `。` for Chinese. It writes
 `punctuation-summary.json` and `review-queues/summary-punctuation.jsonl` under
-`data-tools/out/short-desc-qa/`.
+`data-tools/out/short-desc-qa/`. Run it after `summaries:reuse-apply -- --write`
+so reused rows receive the same final punctuation cleanup as source rows.
 
 `summaries:reuse-candidates` finds same-name spell rows within the configured
 rules DB edition scope, currently `core-35` and `supplementals-35`, where one
@@ -247,12 +251,13 @@ Rows whose source and target rules DB descriptions match exactly are emitted as
 high-confidence auto decisions; all other candidates are chunked for subagent or
 human review under `review-queues/summary-reuse-candidates/`.
 
-`summaries:reuse-apply` consumes auto decisions and reviewed
-`summary-reuse/*.decisions.jsonl` files. It writes accepted reuse rows back into
-the normalized JSONL only with `--write`, preserving reuse provenance through
-`sourceKind: "summary-reuse"`. A reviewed reuse decision may include
-`summaryText` to override the source summary when source and target share the
-same mechanism but the target rules DB text uses different numbers.
+`summaries:reuse-apply` consumes auto decisions from generated QA output and
+reviewed `data/short-desc-review/summary-reuse/*.decisions.jsonl` files. It
+writes accepted reuse rows back into the normalized JSONL only with `--write`,
+preserving reuse provenance through `sourceKind: "summary-reuse"`. A reviewed
+reuse decision may include `summaryText` to override the source summary when
+source and target share the same mechanism but the target rules DB text uses
+different numbers.
 
 `summaries:coverage-report` writes a per-rulebook coverage report to
 `data-tools/out/short-desc-qa/book-coverage-report.{json,md}`. It compares the
@@ -296,8 +301,9 @@ another scoped book. The default scope is the current official 3.5 working set:
 - Parser commands may write generated output under `data-tools/out/zh-parser/`.
 - `zh:summaries:extract` writes generated review output only; it does not
   mutate source data or SQLite databases.
-- `summaries:qa` reads generated reports and writes generated QA output only; it
-  does not mutate source data, fetch network sources, or touch SQLite databases.
+- `summaries:qa` reads generated reports and maintained review decisions, then
+  writes generated QA output only; it does not mutate source data, fetch network
+  sources, or touch SQLite databases.
 - Future rules DB patch commands must clearly distinguish dry-run validation
   from write-capable imports.
 

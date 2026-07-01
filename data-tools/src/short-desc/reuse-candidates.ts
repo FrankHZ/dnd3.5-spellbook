@@ -404,7 +404,7 @@ function main() {
   );
 
   const queueRoot = path.join(options.outDir, "review-queues");
-  const resultRoot = path.join(options.outDir, "review-results");
+  const resultRoot = path.join(options.outDir, "generated");
   writeJsonl(
     path.join(queueRoot, "summary-reuse-candidates.jsonl"),
     candidates,
