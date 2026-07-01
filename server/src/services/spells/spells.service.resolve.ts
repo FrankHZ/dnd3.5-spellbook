@@ -14,6 +14,7 @@ import {
 import {
   queryByExactI18nNames,
   queryI18nMap,
+  queryI18nSummaryMap,
   SpellI18nRow,
 } from "./spells.repo.app";
 import { mapSpellItem } from "./spells.mapper";
@@ -173,16 +174,20 @@ export async function resolveSpellNames(input: {
     ? await fetchSpellsInOrder(allIds, SELECT_SPELL_LIST)
     : [];
 
-  const i18nMap = spells.length
-    ? await queryI18nMap(
-        spells.map((s) => s.id),
-        input.i18n,
-      )
-    : new Map<number, SpellI18nRow>();
+  const spellIds = spells.map((s) => s.id);
+  const [i18nMap, summaryMap] = spells.length
+    ? await Promise.all([
+        queryI18nMap(spellIds, input.i18n),
+        queryI18nSummaryMap(spellIds, input.i18n),
+      ])
+    : [new Map<number, SpellI18nRow>(), new Map()];
 
   const viewById = new Map<SpellID, SpellItemView>();
   for (const s of spells) {
-    viewById.set(s.id, mapSpellItem(s, i18nMap.get(s.id) ?? null));
+    viewById.set(
+      s.id,
+      mapSpellItem(s, i18nMap.get(s.id) ?? null, summaryMap.get(s.id) ?? null),
+    );
   }
 
   // Phase 3: materialize results + conflictRulebooks

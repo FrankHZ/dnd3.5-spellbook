@@ -94,14 +94,12 @@ Recommended next sequence:
 
 1. **v3.4 candidate: short description pipeline**
 
-   Use `docs/mvp/v3.4/short-description-pipeline-plan.md` to build a
-   data-tools-first pipeline for source-backed short descriptions. Start with
-   Chinese summaries from the full CHM class spell overview pages, then fold in
-   the confirmed ToB maneuver list, optional domain-list sources, and
-   IMarvinTPA as the planned local English source. Defer schema/API/UI exposure
-   until extraction and partial coverage behavior are accepted. When schema work
-   starts, keep summaries in a summary-specific app DB content table instead of
-   expanding `I18nSpellText`.
+   Use `docs/mvp/v3.4/short-description-pipeline-plan.md` as the source of
+   truth for the implemented extraction, normalization, import, API, and UI
+   consumer path. The current local app DB import contains `6,124` accepted
+   spell summary rows in `I18nSpellSummaryText`. Remaining work is source-text
+   spot checking and any follow-up queue cleanup, preferably delegated to
+   subagents, not new consumer architecture.
 
 2. **v3.4 candidate: data harness hardening**
 

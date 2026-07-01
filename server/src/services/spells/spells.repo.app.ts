@@ -16,11 +16,32 @@ export const SELECT_SPELL_I18N_DETAIL = {
   sourceKey: true,
 } satisfies Prisma.I18nSpellTextSelect;
 
+export const SELECT_SPELL_I18N_SUMMARY = {
+  spellId: true,
+  rulebookId: true,
+  lang: true,
+  variant: true,
+  summaryText: true,
+  sourceKey: true,
+} satisfies Prisma.I18nSpellSummaryTextSelect;
+
 export type SpellI18nRow<
   T extends Prisma.I18nSpellTextSelect = typeof SELECT_SPELL_I18N_MIN,
 > = Prisma.I18nSpellTextGetPayload<{
   select: T;
 }>;
+
+export type SpellI18nSummaryRow =
+  AppPrisma.I18nSpellSummaryTextGetPayload<{
+    select: typeof SELECT_SPELL_I18N_SUMMARY;
+  }>;
+
+function summaryTarget(i18n: I18nContext): { lang: Lang; variant: string } {
+  if (i18n.lang === "en") {
+    return { lang: "en", variant: "imarvin" };
+  }
+  return { lang: i18n.lang, variant: i18n.variant ?? "chm" };
+}
 
 export async function queryIdsByI18nName(
   lang: Lang,
@@ -67,6 +88,22 @@ export async function queryI18nDetail(
   return s ? s : null;
 }
 
+export async function queryI18nSummaryDetail(id: number, i18n: I18nContext) {
+  const target = summaryTarget(i18n);
+  const summary = await appPrisma.i18nSpellSummaryText.findUnique({
+    where: {
+      spellId_lang_variant: {
+        spellId: id,
+        lang: target.lang,
+        variant: target.variant,
+      },
+    },
+    select: SELECT_SPELL_I18N_SUMMARY,
+  });
+
+  return summary ? summary : null;
+}
+
 export async function queryI18nMap(
   spellIds: number[],
   i18n: I18nContext,
@@ -86,6 +123,26 @@ export async function queryI18nMap(
     spellI18n.forEach((s) => i18nMap.set(s.spellId, s));
   }
   return i18nMap;
+}
+
+export async function queryI18nSummaryMap(
+  spellIds: number[],
+  i18n: I18nContext,
+): Promise<Map<number, SpellI18nSummaryRow>> {
+  const summaryMap = new Map<number, SpellI18nSummaryRow>();
+  if (spellIds.length === 0) return summaryMap;
+
+  const target = summaryTarget(i18n);
+  const summaries = await appPrisma.i18nSpellSummaryText.findMany({
+    where: {
+      spellId: { in: spellIds },
+      lang: target.lang,
+      variant: target.variant,
+    },
+    select: SELECT_SPELL_I18N_SUMMARY,
+  });
+  summaries.forEach((summary) => summaryMap.set(summary.spellId, summary));
+  return summaryMap;
 }
 
 export async function queryI18nNamesByIds(

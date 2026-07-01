@@ -1,40 +1,47 @@
-import type { SpellItem } from "@dnd/contracts";
+import type { SpellItemView } from "@dnd/contracts";
 import { Link } from "react-router";
 import { SpellActionButtons } from "~/components/SpellActionButtons";
 import { Badge } from "~/components/ui/badge";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useMetaNames } from "~/i18n/hooks/useMetaNames";
+import { getSpellShortDescription } from "~/i18n/display/spell-short-description";
 
 export function SpellCard({
   spell,
   showActions = false,
   showDetails = true,
 }: {
-  spell: SpellItem;
+  spell: SpellItemView;
   showDetails?: boolean;
   showActions?: boolean;
 }) {
-  const { nameWithEn } = useAppI18n();
+  const { lang, nameWithEn } = useAppI18n();
   const { metaName } = useMetaNames();
+  const shortDescription = getSpellShortDescription(spell, lang);
   return (
     <div className="p-3 transition-colors hover:bg-muted/40">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
             <Link
               to={`/spells/${spell.id}`}
               className="font-medium leading-5 hover:underline"
             >
               {nameWithEn(spell)}
             </Link>
-            <span className="text-xs text-muted-foreground space-y-2">
-              <span className="px-2 font-mono">
+            <span className="inline-flex items-baseline gap-1 text-xs text-muted-foreground">
+              <span className="font-mono">
                 {spell.rulebook.abbr ?? "—"}
               </span>
-              <span className="px-1">
+              <span>
                 {spell.page ? `p. ${spell.page}` : ""}
               </span>
             </span>
+            {shortDescription && (
+              <span className="basis-full text-sm leading-5 text-foreground/80 sm:basis-auto sm:flex-1">
+                {shortDescription}
+              </span>
+            )}
           </div>
 
           {showDetails && (

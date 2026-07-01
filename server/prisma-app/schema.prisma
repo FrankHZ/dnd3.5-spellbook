@@ -67,6 +67,29 @@ model I18nSpellText {
     @@index([rulebookId, spellId])
 }
 
+model I18nSpellSummaryText {
+    id         String @id @default(cuid())
+    spellId    Int
+    rulebookId Int
+    lang       String
+    variant    String @default("default")
+
+    summaryText String
+    sourceKey   String?
+    sourceName  String?
+    sourceKind  String?
+
+    reviewStatus String @default("accepted")
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([spellId, lang, variant])
+    @@index([lang, variant, rulebookId])
+    @@index([lang, rulebookId])
+    @@index([rulebookId, spellId])
+}
+
 model I18nSpellNameAlias {
     id         String  @id @default(cuid())
     spellId    Int

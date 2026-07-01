@@ -1,6 +1,8 @@
 # Short Description Pipeline Plan
 
-Status: planned v3.4 data-workflow track.
+Status: v3.4 implementation track. Extraction, normalization, app DB import,
+API exposure, and first UI consumption are implemented locally; remaining
+original-source spot checks are review work, not a consumer blocker.
 
 This plan covers short descriptions for spells, maneuvers, and class-facing
 metadata. It is deliberately data-tools first: extract and review source-backed
@@ -542,7 +544,7 @@ Normalization behavior:
 - Skipped rows are counted in the normalization report; they are not passed to
   import as blockers.
 
-Planned import command:
+Implemented import command:
 
 ```bash
 npm run -w data-tools summaries:import -- --dry-run
@@ -561,10 +563,13 @@ Import behavior:
   review status.
 - Do not delete `I18nSpellText` or `I18nSpellSummaryText` rows during summary
   import.
-- Skip rows with unresolved conflicts, import blockers, missing spell ids,
-  unresolved source mismatches, or rules DB gaps.
-- Emit an import report with inserted, updated, unchanged, skipped, and
-  blocker counts by language/source.
+- The importer validates accepted normalized rows. Rows with unresolved
+  conflicts, import blockers, missing spell ids, unresolved source mismatches,
+  or rules DB gaps should be excluded by `summaries:normalize` before import.
+- Emit an import report with inserted, updated, unchanged, skipped, blocker, and
+  language counts under `data-tools/out/short-desc-import/`.
+- Current local import baseline: first apply imported `6,124` rows; subsequent
+  dry-run reported `0` inserted, `0` updated, and `6,124` unchanged.
 
 English source policy:
 
@@ -589,7 +594,8 @@ Chinese source policy:
 
 ### 6. API And UI Consumption
 
-Expose summaries only after the data path is accepted.
+Expose summaries through the existing spell DTOs after the normalized import
+path is accepted.
 
 Expose spell summaries through the existing overlay path rather than a new API
 surface.
@@ -682,6 +688,8 @@ Validation:
 - Add a focused frontend test for `getSpellShortDescription` fallback behavior.
 - Existing Browse/Search smoke behavior should remain unchanged when summaries
   are absent.
+- Current implemented tests cover search, batch, and detail summary overlays,
+  plus focused frontend fallback behavior for `getSpellShortDescription`.
 
 ## Acceptance Criteria
 
@@ -736,21 +744,24 @@ Resolved v3.4 decisions:
   spot-check set. It is a review aid, not an import blocker when normalized
   accepted rows exist.
 
-Consumer implementation blockers before UI/API exposure:
+Consumer implementation status:
 
-1. Add the app DB `I18nSpellSummaryText` schema and migration, then regenerate
-   the app Prisma client.
-2. Add `summaries:import` as an explicit data-prep command that reads only
+1. App DB `I18nSpellSummaryText` schema and migration are implemented, and the
+   local app DB migration has been applied.
+2. `summaries:import` reads only
    `data/short-desc-normalized/summaries.generated.jsonl`, supports `--dry-run`,
    upserts by `spellId + lang + variant`, and reports inserted/updated/unchanged
-   rows.
-3. Update contracts with a spell-specific `I18nSpellOverlay` containing
-   `summary?: I18nSpellSummaryOverlay`; keep the generic `I18nNameOverlay`
-   scoped to translated names.
-4. Add server repository/service/mapper support for summary rows in list, search,
-   by-level, batch, and detail responses.
-5. Add API shape tests for `i18n.summary.shortDescription` and fallback/absence
-   cases before wiring frontend display.
+   counts.
+3. Contracts expose spell-specific `I18nSpellOverlay.summary` while keeping the
+   generic `I18nNameOverlay` scoped to translated names.
+4. Server repository/service/mapper support returns summary rows in search,
+   by-level, batch, resolve candidates, and detail responses.
+5. Frontend `SpellCard` and `SpellDetailPage` render optional short
+   descriptions through `getSpellShortDescription` without cross-language
+   fallback.
+6. Remaining source-text spot checks should be delegated to subagents using the
+   generated review queues; they are not required to keep the consumer pipeline
+   wired.
 
 Deferred architecture questions:
 

@@ -4,7 +4,7 @@ import type {
   SpellBatchRequest,
   SpellBatchResponse,
   SpellByLevelResponse,
-  SpellDetail,
+  SpellDetailView,
   SpellNameSearchResponse,
 } from "@dnd/contracts";
 import { apiGet, apiPost } from "./http";
@@ -77,7 +77,7 @@ export function searchSpellsByName(params: {
 }
 
 export function getSpellDetail(id: number, signal?: AbortSignal) {
-  return apiGet<SpellDetail>(`/api/spells/${id}`, signal);
+  return apiGet<SpellDetailView>(`/api/spells/${id}`, signal);
 }
 
 const MAX_IDS_PER_BATCH = 100;

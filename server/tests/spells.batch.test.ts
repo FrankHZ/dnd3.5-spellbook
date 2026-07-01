@@ -18,6 +18,19 @@ describe("POST /api/spells/batch", () => {
     expect(returnedIds.join(",")).toMatch(/1.*2|2.*1|1|2/); // tolerant if one id missing in your DB
   });
 
+  it("returns short descriptions for batch items", async () => {
+    const res = await request(app)
+      .post("/api/spells/batch")
+      .send({ ids: [2441] });
+
+    expect(res.status).toBe(200);
+    expect(res.body.items[0]?.i18n?.summary).toMatchObject({
+      lang: "en",
+      variant: "imarvin",
+      shortDescription: "Calls extraplanar creature to fight for you.",
+    });
+  });
+
   it("rejects empty ids", async () => {
     const res = await request(app).post("/api/spells/batch").send({ ids: [] });
 

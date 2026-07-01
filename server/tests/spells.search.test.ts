@@ -11,6 +11,20 @@ describe("GET /api/spells/search", () => {
     expect(Array.isArray(res.body.items)).toBe(true);
   });
 
+  it("returns English short descriptions from the summary overlay", async () => {
+    const res = await request(app)
+      .get("/api/spells/search")
+      .query({ q: "Summon Monster I", rulebookIds: "6" });
+
+    expect(res.status).toBe(200);
+    const summonMonster = res.body.items.find((item: any) => item.id === 2441);
+    expect(summonMonster?.i18n?.summary).toMatchObject({
+      lang: "en",
+      variant: "imarvin",
+      shortDescription: "Calls extraplanar creature to fight for you.",
+    });
+  });
+
   it("can constrain name search by browse filters", async () => {
     const res = await request(app)
       .get("/api/spells/search")

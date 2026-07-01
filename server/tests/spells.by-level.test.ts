@@ -30,6 +30,22 @@ describe("GET /api/spells/by-level", () => {
     expect(first.i18n.name).toBeDefined();
   });
 
+  it("returns short descriptions for by-level items", async () => {
+    const res = await request(app)
+      .get("/api/spells/by-level")
+      .query({ classIds: "1", level: 1, rulebookIds: "6", pageSize: 100 });
+
+    expect(res.status).toBe(200);
+    const summonMonster = res.body.groups
+      .flatMap((group: any) => group.items)
+      .find((item: any) => item.id === 2441);
+    expect(summonMonster?.i18n?.summary).toMatchObject({
+      lang: "en",
+      variant: "imarvin",
+      shortDescription: "Calls extraplanar creature to fight for you.",
+    });
+  });
+
   it("lists spells for class + level=all (grouped)", async () => {
     const res = await request(app)
       .get("/api/spells/by-level")

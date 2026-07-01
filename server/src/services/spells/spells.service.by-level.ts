@@ -9,7 +9,7 @@ import {
   SpellRow,
 } from "./spells.repo.rules";
 import { mapSpellItem } from "./spells.mapper";
-import { queryI18nMap } from "./spells.repo.app";
+import { queryI18nMap, queryI18nSummaryMap } from "./spells.repo.app";
 
 type HasLevel = { level: number };
 type SpellClassIndex = SpellRow["spellClassIndexes"][number];
@@ -82,12 +82,15 @@ async function prepareSpellItems(
     filterSpellIndexes(spell, classSet, domainSet, level);
   });
 
-  const i18nMap = await queryI18nMap(
-    spellsInOrder.map((s) => s.id),
-    i18n,
-  );
+  const spellIds = spellsInOrder.map((s) => s.id);
+  const [i18nMap, summaryMap] = await Promise.all([
+    queryI18nMap(spellIds, i18n),
+    queryI18nSummaryMap(spellIds, i18n),
+  ]);
 
-  return spellsInOrder.map((s) => mapSpellItem(s, i18nMap.get(s.id) ?? null));
+  return spellsInOrder.map((s) =>
+    mapSpellItem(s, i18nMap.get(s.id) ?? null, summaryMap.get(s.id) ?? null),
+  );
 }
 
 export async function listByClassAndDomainLevel(input: {
@@ -149,13 +152,14 @@ export async function listByClassAndDomainLevel(input: {
       );
     });
 
-    const i18nMap = await queryI18nMap(
-      spellsInOrder.map((s) => s.id),
-      input.i18n,
-    );
+    const spellIds = spellsInOrder.map((s) => s.id);
+    const [i18nMap, summaryMap] = await Promise.all([
+      queryI18nMap(spellIds, input.i18n),
+      queryI18nSummaryMap(spellIds, input.i18n),
+    ]);
 
     const items: SpellItemView[] = spellsInOrder.map((s) =>
-      mapSpellItem(s, i18nMap.has(s.id) ? i18nMap.get(s.id)! : null),
+      mapSpellItem(s, i18nMap.get(s.id) ?? null, summaryMap.get(s.id) ?? null),
     );
 
     return {

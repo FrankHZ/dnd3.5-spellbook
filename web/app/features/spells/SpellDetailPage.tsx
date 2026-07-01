@@ -23,6 +23,7 @@ import DescriptionSection from "./DescriptionSection";
 import RelatedSpellsSection from "./RelatedSpellsSection";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { getSpellDescription } from "~/i18n/display/spell-description";
+import { getSpellShortDescription } from "~/i18n/display/spell-short-description";
 import { useMetaNames } from "~/i18n/hooks/useMetaNames";
 import { useTranslation } from "react-i18next";
 
@@ -64,6 +65,7 @@ function SpellHeader({
   rulebookAbbr,
   page,
   schoolText,
+  shortDescription,
   descriptors,
   spellId,
   className = "",
@@ -72,6 +74,7 @@ function SpellHeader({
   rulebookAbbr?: string | null;
   page?: number | null;
   schoolText: string;
+  shortDescription?: string;
   descriptors: Array<{ key: string; label: string }>;
   spellId: number;
   className?: string;
@@ -81,6 +84,11 @@ function SpellHeader({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h1 className="text-2xl font-semibold leading-tight">{title}</h1>
+          {shortDescription ? (
+            <p className="mt-2 text-sm leading-5 text-foreground/80">
+              {shortDescription}
+            </p>
+          ) : null}
           <div className="mt-1 text-sm text-muted-foreground">
             <span className="font-mono">{rulebookAbbr ?? "—"}</span>
             {page ? <span> • p. {page}</span> : null}
@@ -203,6 +211,7 @@ export default function SpellDetailPage() {
     key: String(d.id ?? d.slug ?? d.name),
     label: metaName("descriptors", d),
   }));
+  const shortDescription = getSpellShortDescription(spell, lang);
 
   return (
     <div className="page-side">
@@ -211,6 +220,7 @@ export default function SpellDetailPage() {
         rulebookAbbr={spell.rulebook?.abbr}
         page={spell.page}
         schoolText={schoolText}
+        shortDescription={shortDescription}
         descriptors={descriptorItems}
         spellId={spell.id}
         className="md:hidden"
@@ -236,6 +246,7 @@ export default function SpellDetailPage() {
               rulebookAbbr={spell.rulebook?.abbr}
               page={spell.page}
               schoolText={schoolText}
+              shortDescription={shortDescription}
               descriptors={descriptorItems}
               spellId={spell.id}
             />

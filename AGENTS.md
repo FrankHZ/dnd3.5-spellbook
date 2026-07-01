@@ -259,6 +259,11 @@ See `docs/harness.md` for details.
 - Use `npm run -w data-tools spells-full:generate -- short-desc-rules-gaps`
   when reviewed English short-summary gaps need local `spells-full` rules patch
   candidates before import.
+- Use `npm run -w data-tools summaries:normalize` to rebuild the accepted
+  normalized spell-summary JSONL, then
+  `npm run -w data-tools summaries:import -- --dry-run` before
+  `npm run -w data-tools summaries:import` when refreshing local app DB
+  `I18nSpellSummaryText` rows.
 - Use `npm run -w data-tools rules:spells:validate -- <patch.jsonl>` and
   `npm run -w data-tools rules:spells:apply -- --dry-run <patch.jsonl>` before
   applying structured missing-spell patches.

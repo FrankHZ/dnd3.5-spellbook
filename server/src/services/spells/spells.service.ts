@@ -18,6 +18,8 @@ import {
   queryI18nMap,
   queryIdsByI18nName,
   queryI18nDetail,
+  queryI18nSummaryDetail,
+  queryI18nSummaryMap,
 } from "./spells.repo.app";
 import { resolveSpellNames } from "./spells.service.resolve";
 
@@ -81,10 +83,11 @@ export const spellsService = {
     const offset = (input.page - 1) * input.pageSize;
     const pagedSpells = scopedSpells.slice(offset, offset + input.pageSize);
 
-    const i18nMap = await queryI18nMap(
-      pagedSpells.map((s) => s.id),
-      input.i18n,
-    );
+    const pagedIds = pagedSpells.map((s) => s.id);
+    const [i18nMap, summaryMap] = await Promise.all([
+      queryI18nMap(pagedIds, input.i18n),
+      queryI18nSummaryMap(pagedIds, input.i18n),
+    ]);
 
     return {
       page: input.page,
@@ -92,7 +95,13 @@ export const spellsService = {
       total,
       q: input.q,
       rulebookIds: input.rulebookIds,
-      items: pagedSpells.map((s) => mapSpellItem(s, i18nMap.get(s.id) ?? null)),
+      items: pagedSpells.map((s) =>
+        mapSpellItem(
+          s,
+          i18nMap.get(s.id) ?? null,
+          summaryMap.get(s.id) ?? null,
+        ),
+      ),
     };
   },
   listByClassAndDomainLevel,
@@ -106,16 +115,18 @@ export const spellsService = {
       input.i18n.lang != "en"
         ? queryI18nDetail(input.id, input.i18n.lang, input.i18n.variant)
         : null;
+    const spellSummaryPromise = queryI18nSummaryDetail(input.id, input.i18n);
 
-    const [spell, spellI18n] = await Promise.all([
+    const [spell, spellI18n, spellSummary] = await Promise.all([
       spellPromise,
       spellI18nPromise,
+      spellSummaryPromise,
     ]);
     if (!spell) {
       return null;
     }
 
-    return mapSpellDetail(spell, spellI18n);
+    return mapSpellDetail(spell, spellI18n, spellSummary);
   },
 
   async batch(input: {
@@ -134,9 +145,10 @@ export const spellsService = {
       }
     }
 
-    const [rows, i18nMap] = await Promise.all([
+    const [rows, i18nMap, summaryMap] = await Promise.all([
       querySpellsByIds(uniqueIds),
       queryI18nMap(uniqueIds, input.i18n),
+      queryI18nSummaryMap(uniqueIds, input.i18n),
     ]);
 
     const byId = new Map<number, (typeof rows)[number]>();
@@ -146,7 +158,11 @@ export const spellsService = {
       .map((id) => byId.get(id))
       .filter((x): x is NonNullable<typeof x> => !!x)
       .map((s) =>
-        mapSpellItem(s, i18nMap.has(s.id) ? i18nMap.get(s.id)! : null),
+        mapSpellItem(
+          s,
+          i18nMap.get(s.id) ?? null,
+          summaryMap.get(s.id) ?? null,
+        ),
       );
 
     const missingIds = inputIds.filter((id) => !byId.has(id));

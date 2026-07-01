@@ -1,4 +1,4 @@
-import type { I18nNameOverlay } from "../i18n.js";
+import type { I18nSpellOverlay } from "../i18n.js";
 import type { Class } from "./class.js";
 import type { Domain } from "./domain.js";
 import type { RulebookMin } from "./rulebook.js";
@@ -28,17 +28,17 @@ export type SpellItem = {
   };
 };
 
+export type SpellItemView = SpellItem & {
+  i18n?: I18nSpellOverlay | undefined;
+};
+
 export type SpellNameSearchResponse = {
   page: number;
   pageSize: number;
   total: number;
   q: string;
   rulebookIds: number[];
-  items: SpellItem[];
-};
-
-export type SpellItemView = SpellItem & {
-  i18n?: I18nNameOverlay | undefined;
+  items: SpellItemView[];
 };
 
 export type SpellsByLevelGroup = {
@@ -103,7 +103,7 @@ export type SpellDetail = SpellItem & {
   };
 };
 
-export type I18nSpellDetailOverlay = I18nNameOverlay & {
+export type I18nSpellDetailOverlay = I18nSpellOverlay & {
   sourceKey?: string | undefined;
   description?:
     | {

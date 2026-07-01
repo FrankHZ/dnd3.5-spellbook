@@ -87,6 +87,13 @@ Build the normalized import JSONL after extraction and QA review:
 npm run -w data-tools summaries:normalize
 ```
 
+Import normalized short descriptions into the local app DB:
+
+```bash
+npm run -w data-tools summaries:import -- --dry-run
+npm run -w data-tools summaries:import
+```
+
 ## Data Paths
 
 These tools read local-only source data from `data/` and write
@@ -205,9 +212,16 @@ Chinese extractor output plus conflict-review decisions and the local IMarvinTPA
 source-index data, then writes one normalized JSONL row shape for both languages
 under `data/short-desc-normalized/summaries.generated.jsonl`. It only emits
 accepted rows with local `spellId` and `rulebookId`; unresolved Chinese
-conflicts, source-error rows, English rules DB gaps, and sources that cannot be
-mapped to local rules DB rows are reported as skipped in
+conflicts, English rules DB gaps, and sources that cannot be mapped to local
+rules DB rows are reported as skipped in
 `data-tools/out/short-desc-normalized/summary.json`.
+
+`summaries:import` is the app DB mutation boundary for v3.4 spell summaries. It
+reads only `data/short-desc-normalized/summaries.generated.jsonl`, validates the
+accepted normalized row shape, and upserts rows into
+`I18nSpellSummaryText` by `spellId + lang + variant`. It supports `--dry-run`,
+does not delete existing summary or full-description rows, and writes audit
+reports under `data-tools/out/short-desc-import/`.
 
 ## Safety
 
@@ -225,6 +239,10 @@ mapped to local rules DB rows are reported as skipped in
   output plus local source-index JSON only; it does not mutate SQLite databases.
 - `summaries:normalize` writes local JSONL/report files only; it does not mutate
   SQLite databases.
+- `summaries:import -- --dry-run` validates and counts app DB changes without
+  mutating SQLite databases.
+- `summaries:import` is write-capable against `APP_DATABASE_URL` and upserts
+  only `I18nSpellSummaryText` rows.
 - `rules:sql:dry-run` never mutates the configured rules DB.
 - `rules:sql:apply` and `rules:index:rebuild` are write-capable and must be run
   intentionally.

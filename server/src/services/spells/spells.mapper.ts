@@ -1,7 +1,7 @@
 import type {
   SpellItemView,
   SpellDetailView,
-  I18nNameOverlay,
+  I18nSpellOverlay,
   I18nSpellDetailOverlay,
 } from "@dnd/contracts";
 import { Prisma as RulesPrisma } from "DB_RULES/client";
@@ -10,13 +10,54 @@ import { SELECT_SPELL_DETAIL, SELECT_SPELL_LIST } from "./spells.repo.rules";
 import {
   SELECT_SPELL_I18N_DETAIL,
   SELECT_SPELL_I18N_MIN,
+  SELECT_SPELL_I18N_SUMMARY,
 } from "./spells.repo.app";
+
+type SpellNameI18nRow = AppPrisma.I18nSpellTextGetPayload<{
+  select: typeof SELECT_SPELL_I18N_MIN;
+}>;
+
+type SpellDetailI18nRow = AppPrisma.I18nSpellTextGetPayload<{
+  select: typeof SELECT_SPELL_I18N_DETAIL;
+}>;
+
+type SpellSummaryI18nRow = AppPrisma.I18nSpellSummaryTextGetPayload<{
+  select: typeof SELECT_SPELL_I18N_SUMMARY;
+}>;
+
+function mapSummary(summary: SpellSummaryI18nRow | null) {
+  if (!summary) return undefined;
+  return {
+    lang: summary.lang === "zh" ? "zh" : "en",
+    variant: summary.variant ?? undefined,
+    shortDescription: summary.summaryText ?? undefined,
+    sourceKey: summary.sourceKey ?? undefined,
+  } satisfies NonNullable<I18nSpellOverlay["summary"]>;
+}
+
+function mapSpellOverlay(
+  spellI18n: SpellNameI18nRow | null,
+  summaryI18n: SpellSummaryI18nRow | null,
+): I18nSpellOverlay | undefined {
+  const summary = mapSummary(summaryI18n);
+  if (!spellI18n && !summary) return undefined;
+
+  return {
+    ...(spellI18n
+      ? {
+          lang: "zh" as const,
+          name: spellI18n.name ?? undefined,
+          variant: spellI18n.variant ?? undefined,
+        }
+      : {}),
+    ...(summary ? { summary } : {}),
+  };
+}
 
 export function mapSpellItem(
   spell: RulesPrisma.SpellGetPayload<{ select: typeof SELECT_SPELL_LIST }>,
-  spellI18n: AppPrisma.I18nSpellTextGetPayload<{
-    select: typeof SELECT_SPELL_I18N_MIN;
-  }> | null,
+  spellI18n: SpellNameI18nRow | null,
+  summaryI18n: SpellSummaryI18nRow | null = null,
 ): SpellItemView {
   const descriptors = (spell.spellDescriptors ?? [])
     .map((sd: any) => sd.spellDescriptor)
@@ -54,13 +95,7 @@ export function mapSpellItem(
         a.level - b.level || a.name.localeCompare(b.name) || a.id - b.id,
     );
 
-  const i18n: I18nNameOverlay | undefined = spellI18n
-    ? {
-        lang: "zh",
-        name: spellI18n.name ?? undefined,
-        variant: spellI18n.variant ?? undefined,
-      }
-    : undefined;
+  const i18n = mapSpellOverlay(spellI18n, summaryI18n);
 
   return {
     id: spell.id,
@@ -120,12 +155,13 @@ export function mapSpellItem(
 
 export function mapSpellDetail(
   spell: RulesPrisma.SpellGetPayload<{ select: typeof SELECT_SPELL_DETAIL }>,
-  spellDetailI18n: AppPrisma.I18nSpellTextGetPayload<{
-    select: typeof SELECT_SPELL_I18N_DETAIL;
-  }> | null,
+  spellDetailI18n: SpellDetailI18nRow | null,
+  summaryI18n: SpellSummaryI18nRow | null = null,
 ): SpellDetailView {
+  const baseI18n = mapSpellOverlay(spellDetailI18n, summaryI18n);
   const i18n: I18nSpellDetailOverlay | undefined = spellDetailI18n
     ? {
+        ...baseI18n,
         lang: "zh",
         name: spellDetailI18n.name ?? undefined,
         variant: spellDetailI18n.variant ?? undefined,
@@ -135,10 +171,10 @@ export function mapSpellDetail(
           text: spellDetailI18n.descriptionText ?? undefined,
         },
       }
-    : undefined;
+    : baseI18n;
 
   const detail: SpellDetailView = {
-    ...mapSpellItem(spell, spellDetailI18n),
+    ...mapSpellItem(spell, spellDetailI18n, summaryI18n),
     added: spell.added.toISOString(),
     description: {
       text: spell.description,
