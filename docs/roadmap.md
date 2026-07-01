@@ -122,6 +122,24 @@ Recommended next sequence:
 
    - `docs/mvp/v3.4/i18next-conventions-plan.md`
 
+## v3.5 Planning Candidates
+
+These items are intentionally future-facing. Do not let them disrupt active
+v3.4 acceptance work unless a v3.4 implementation exposes the same boundary.
+
+1. **DB ownership boundary review**
+
+   Use `docs/mvp/v3.5/db-ownership-boundary-plan.md` to decide whether generated
+   content overlays should stay in the current app DB or move to a dedicated
+   content DB before real user/app-state data ships.
+
+2. **Rulebook display-label review**
+
+   Use `docs/mvp/v3.5/rulebook-display-labels-plan.md` to audit rulebook
+   abbreviations and localized display labels. Keep rules DB slugs and legacy
+   source abbreviations stable, but stop treating them as the default
+   reader-facing UI labels.
+
 ## Later Stable Track
 
 The stable-version backlog remains intentionally deferred:

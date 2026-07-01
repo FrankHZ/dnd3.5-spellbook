@@ -53,6 +53,19 @@ before runtime/UI changes. The data harness plan covers portable data-tool tests
 and local-data acceptance boundaries. The i18next plan covers frontend
 translation-key convention hardening.
 
+## Early v3.5 Planning
+
+Early v3.5 planning has started under `docs/mvp/v3.5/`:
+
+- [mvp/v3.5/README.md](./mvp/v3.5/README.md)
+- [mvp/v3.5/db-ownership-boundary-plan.md](./mvp/v3.5/db-ownership-boundary-plan.md)
+- [mvp/v3.5/rulebook-display-labels-plan.md](./mvp/v3.5/rulebook-display-labels-plan.md)
+
+The DB ownership plan covers the future split between generated content data
+and user/app-state data. The rulebook display-label plan covers curated English
+rulebook abbreviations and Chinese full-name display labels without mutating
+legacy source slugs or rulebook IDs.
+
 ## Current Operational Docs
 
 For current work ordering, use:
@@ -145,6 +158,7 @@ The `docs/mvp/` directory contains version folders:
 - `v3.2`
 - `v3.3`
 - `v3.4`
+- `v3.5`
 
 Treat frozen or older version folders as historical planning or handoff records.
 Start new active work from `docs/roadmap.md` and a focused topic plan rather
