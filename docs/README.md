@@ -58,6 +58,7 @@ translation-key convention hardening.
 Early v3.5 planning has started under `docs/mvp/v3.5/`:
 
 - [mvp/v3.5/README.md](./mvp/v3.5/README.md)
+- [mvp/v3.5/integrated-plan.md](./mvp/v3.5/integrated-plan.md)
 - [mvp/v3.5/db-ownership-boundary-plan.md](./mvp/v3.5/db-ownership-boundary-plan.md)
 - [mvp/v3.5/rules-content-normalization-plan.md](./mvp/v3.5/rules-content-normalization-plan.md)
 - [mvp/v3.5/normalized-rules-frontend-consumer-plan.md](./mvp/v3.5/normalized-rules-frontend-consumer-plan.md)
@@ -65,7 +66,9 @@ Early v3.5 planning has started under `docs/mvp/v3.5/`:
 - [mvp/v3.5/agent-guide-review-plan.md](./mvp/v3.5/agent-guide-review-plan.md)
 - [mvp/v3.5/ci-cd-and-module-docs-plan.md](./mvp/v3.5/ci-cd-and-module-docs-plan.md)
 
-The DB ownership plan covers the v3.5 split between generated content data and
+The integrated plan ties the v3.5 child plans together and records the current
+cross-plan conflict review. The DB ownership plan covers the v3.5 split between
+generated content data and
 future user/app-state data. The rules content normalization plan covers
 promoting cleaned legacy rules data into this repo's own normalized runtime
 content model for finer query surfaces. The normalized rules frontend consumer

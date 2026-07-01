@@ -127,6 +127,10 @@ Recommended next sequence:
 These items are intentionally future-facing. Do not let them disrupt active
 v3.4 acceptance work unless a v3.4 implementation exposes the same boundary.
 
+Start v3.5 planning from `docs/mvp/v3.5/integrated-plan.md`. That plan owns the
+cross-plan delivery sequence and conflict review; the items below remain the
+topic-specific child plans.
+
 1. **Content DB / app-state DB split**
 
    Use `docs/mvp/v3.5/db-ownership-boundary-plan.md` to split generated content

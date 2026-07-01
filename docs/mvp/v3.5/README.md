@@ -25,6 +25,7 @@ separate from active v3.4 implementation branches.
 
 ## Plans
 
+- [integrated-plan.md](./integrated-plan.md)
 - [db-ownership-boundary-plan.md](./db-ownership-boundary-plan.md)
 - [rules-content-normalization-plan.md](./rules-content-normalization-plan.md)
 - [normalized-rules-frontend-consumer-plan.md](./normalized-rules-frontend-consumer-plan.md)
@@ -34,6 +35,9 @@ separate from active v3.4 implementation branches.
 
 ## Working Rule
 
-Treat v3.5 docs as future-facing plans, not proof of shipped behavior. If a
-v3.5 plan needs facts from an active v3.4 branch, rebase or merge the accepted
-v3.4 docs first instead of copying stale assumptions.
+Start with `integrated-plan.md` when deciding v3.5 sequencing or reviewing
+whether child plans conflict.
+
+Treat v3.5 docs as future-facing plans, not proof of shipped behavior. If a v3.5
+plan needs facts from an active v3.4 branch, rebase or merge the accepted v3.4
+docs first instead of copying stale assumptions.
