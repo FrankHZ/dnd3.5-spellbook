@@ -392,12 +392,31 @@ function loadZhConflictReviews(reviewDir: string) {
   return byConflict;
 }
 
-function bestRecord(records: ZhMatchedRecord[]) {
+function sourceKeyOrdinal(sourceKey: string | undefined) {
+  const match = sourceKey?.match(/#(\d+)-/);
+  return match?.[1] ? Number(match[1]) : Number.MAX_SAFE_INTEGER;
+}
+
+function sourceKindRank(sourceKind: string | undefined) {
+  if (sourceKind === "class-list") return 0;
+  if (sourceKind === "maneuver-list") return 1;
+  if (sourceKind === "domain-list") return 2;
+  return 3;
+}
+
+function bestRecord(
+  records: ZhMatchedRecord[],
+  opts: { preferSourceOrder?: boolean } = {},
+) {
   return [...records].sort((a, b) => {
     const aLen = a.summaryText?.length ?? 0;
     const bLen = b.summaryText?.length ?? 0;
     return (
       aLen - bLen ||
+      (opts.preferSourceOrder
+        ? sourceKindRank(a.sourceKind) - sourceKindRank(b.sourceKind) ||
+          sourceKeyOrdinal(a.sourceKey) - sourceKeyOrdinal(b.sourceKey)
+        : 0) ||
       (a.sourceKey ?? "").localeCompare(b.sourceKey ?? "") ||
       (a.listOwner ?? "").localeCompare(b.listOwner ?? "")
     );
@@ -446,7 +465,7 @@ function selectedRecordFromConflict(
   review: { decision: ZhConflictReview; batch: ZhConflictBatch | undefined },
 ) {
   const decision = review.decision;
-  if (decision.decision === "needs_human" || decision.decision === "source_error") {
+  if (decision.decision === "needs_human") {
     return null;
   }
   if (!decision.chosenVariantId || !review.batch?.variants) return null;
@@ -463,7 +482,7 @@ function selectedRecordFromConflict(
   const candidates = group.filter(
     (record) => record.sourceKey && selectedSourceKeys.has(record.sourceKey),
   );
-  if (candidates.length > 0) return bestRecord(candidates);
+  if (candidates.length > 0) return bestRecord(candidates, { preferSourceOrder: true });
 
   const selectedTexts = new Set(
     selected?.summaries
@@ -473,7 +492,7 @@ function selectedRecordFromConflict(
   const byText = group.filter(
     (record) => record.summaryText && selectedTexts.has(record.summaryText),
   );
-  if (byText.length > 0) return bestRecord(byText);
+  if (byText.length > 0) return bestRecord(byText, { preferSourceOrder: true });
 
   const normalizedTexts = new Set(
     selected?.summaries
@@ -485,14 +504,19 @@ function selectedRecordFromConflict(
     (record) =>
       record.summaryText && normalizedTexts.has(normalizeZhSummary(record.summaryText)),
   );
-  if (byNormalizedText.length > 0) return bestRecord(byNormalizedText);
+  if (byNormalizedText.length > 0) {
+    return bestRecord(byNormalizedText, { preferSourceOrder: true });
+  }
 
   const conflictTexts = new Set(
     conflict.summaries
       ?.map((summary) => summary.summaryText)
       .filter((text): text is string => Boolean(text)) ?? [],
   );
-  return bestRecord(group.filter((record) => record.summaryText && conflictTexts.has(record.summaryText)));
+  return bestRecord(
+    group.filter((record) => record.summaryText && conflictTexts.has(record.summaryText)),
+    { preferSourceOrder: true },
+  );
 }
 
 function normalizeZh(

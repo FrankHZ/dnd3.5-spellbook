@@ -522,13 +522,19 @@ Normalization behavior:
 
 - `zh/chm` rows are selected from extractor matches plus conflict-review
   decisions. Direct source-label matches are preferred over all-book fallback
-  records for the same target. `needs_human` and `source_error` conflict
-  decisions are skipped.
-- The current normalized snapshot has `6,077` accepted rows: `3,186`
-  `en/imarvin` rows and `2,891` `zh/chm` rows. The remaining Chinese skipped
-  conflict rows are `47` `source_error` entries; the prior `7`
-  `needs_human` entries were resolved by comparing Chinese candidates against
-  English short descriptions and the current rules DB spell text.
+  records for the same target. `needs_human` decisions are skipped.
+  `source_error` decisions are accepted only when review selected a concrete
+  `chosenVariantId`; this means the source group had bad variants, but the
+  selected variant is considered clean enough for import.
+- The current normalized snapshot has `6,124` accepted rows: `3,186`
+  `en/imarvin` rows and `2,938` `zh/chm` rows. Chinese normalization currently
+  has no skipped rows. The prior `7` `needs_human` entries were resolved by
+  comparing Chinese candidates against English short descriptions and the
+  current rules DB spell text; the prior `47` `source_error` skips are now
+  accepted through their reviewed `chosenVariantId` selections. A follow-up
+  original-source audit accepted `46` of those selections directly and fixed
+  the remaining `Summon Monster I` provenance by preferring class-list records
+  and earlier source paragraphs within the selected variant.
 - `en/imarvin` rows are selected from the local source-index data only when the
   source maps to a local DB rulebook and the row uniquely matches a local spell.
 - The output is unique by `spellId + lang + variant`, matching the planned app
