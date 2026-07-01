@@ -254,6 +254,16 @@ the normalized JSONL only with `--write`, preserving reuse provenance through
 `summaryText` to override the source summary when source and target share the
 same mechanism but the target rules DB text uses different numbers.
 
+`summaries:coverage-report` writes a per-rulebook coverage report to
+`data-tools/out/short-desc-qa/book-coverage-report.{json,md}`. It compares the
+rules DB spell list against accepted normalized Chinese and English summaries,
+and also reports English/Chinese source rows that have short descriptions but
+do not match a spell in the scoped rules DB books. English source rows are split
+between true scoped-DB misses and source-book mismatches that match a spell in
+another scoped book. The default scope is the current official 3.5 working set:
+`core-35`, `supplementals-35`, `eberron-35`, and `forgotten-realms-35`; pass
+`-- --scope all` for a whole-DB backlog.
+
 ## Safety
 
 - `inspect:rules` opens the SQLite database in read-only mode.

@@ -569,9 +569,20 @@ Post-normalization cleanup behavior:
   provenance. Reviewed decisions may provide a `summaryText` override for cases
   where source and target have the same mechanism but the target rules DB entry
   uses different numbers.
+- `summaries:coverage-report` generates a per-rulebook coverage report for the
+  current official 3.5 working scope (`core-35`, `supplementals-35`,
+  `eberron-35`, and `forgotten-realms-35`). It lists missing Chinese summaries,
+  missing English summaries, missing-both rows, and source short descriptions
+  whose source book row does not match a spell in the rules DB.
 - Current cleanup snapshot: punctuation QA fixed `155` rows (`39` English,
   `116` Chinese). Same-name reuse generated `507` candidates, accepted `14`
   exact-description auto reuse rows, and sent `493` rows through batch review.
+- Current book-coverage snapshot for the official 3.5 working scope has `59`
+  books, `3927` rules DB spell rows, `775` missing Chinese summaries, `1310`
+  missing English summaries, `383` missing-both rows, `538` English source rows
+  with short descriptions but no scoped rules DB spell match, `151` English
+  source-book mismatch rows that match another scoped DB book, and `0` Chinese
+  source rows with short descriptions but no rules DB spell match.
 
 Implemented import command:
 

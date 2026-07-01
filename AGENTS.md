@@ -270,6 +270,10 @@ See `docs/harness.md` for details.
   reviewed decisions are accepted. Reviewed reuse decisions may include
   `summaryText` only when the target rules DB text supports the same mechanism
   with different target-specific numbers.
+- Use `npm run -w data-tools summaries:coverage-report` when deciding the next
+  short-summary cleanup scope by rulebook. It reports missing Chinese, missing
+  English, missing-both, source-desc-without-DB-spell counts, and English
+  source-book mismatches that match another scoped DB book.
 - Run `npm run -w data-tools summaries:import -- --dry-run` before
   `npm run -w data-tools summaries:import` when refreshing local app DB
   `I18nSpellSummaryText` rows.
