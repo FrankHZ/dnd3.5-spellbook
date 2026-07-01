@@ -140,6 +140,14 @@ type SourceIndexReport = {
   };
 };
 
+type RulebookSourceCategory = {
+  category: string;
+  categorySource: "db" | "fallback";
+  rulebookAbbr?: string;
+  rulebookName?: string;
+  editionSlug?: string;
+};
+
 const SEARCH_URL = "https://imarvintpa.com/dndlive/SearchList.php";
 const SOURCE_INDEX_URL = "https://imarvintpa.com/dndlive/Index_Sources.php";
 const DNDLIVE_BASE_URL = "https://imarvintpa.com/dndlive/";
@@ -149,9 +157,85 @@ const REPORT_ROOT = path.join(
   "out",
   "en-summaries",
 );
+const SOURCE_INDEX_DATA_ROOT = path.join(
+  localDataDir(),
+  "imarvin",
+  "short-desc",
+);
 const MAX_CONCURRENCY = 3;
 const DEFAULT_DELAY_MS = 750;
 const DEFAULT_RETRIES = 2;
+const DEFAULT_IMARVIN_CANDIDATES = "imarvin/short-desc/candidates.json";
+
+const IMARVIN_SOURCE_RULEBOOK_ABBR: Record<string, string> = {
+  Draconomicon: "Dr",
+  SRD: "PH",
+  "Magic of Faerun": "Mag",
+  "Tome and Blood": "TB",
+  DotF: "DF",
+  MotW: "MW",
+  FR: "FRCS",
+  "Savage Species": "SS",
+  "Song and Silence": "SaS",
+  FnP: "FP",
+  Ghostwalk: "Gh",
+  "Complete Arcane": "CAr",
+  SPC: "Sc_",
+  Miniatures: "MH",
+  PGtF: "PG",
+  HoH: "HH",
+  Libris: "LM",
+  "Complete Adventurer": "CAd",
+  Underdark: "Und",
+  RoF: "Rac",
+  "Complete Divine": "CD",
+  OA: "OA",
+  CR: "CR",
+  MotP: "MP",
+  "Planar Handbook": "PlH",
+  "Unapproachable East": "Una",
+  LD: "LD",
+  CV: "CV",
+  SK: "SK",
+  FE: "FE",
+  Stormwrack: "Sto",
+  MMII: "MM2",
+  RoD: "RD",
+  Lords: "LoM",
+  Frostburn: "Fr",
+  CW: "CW",
+  "Races of Stone": "RS",
+  RE: "RE",
+  RotW: "RW",
+  SBG: "SB",
+  HoB: "HB",
+  CS: "CS",
+  LostEmpiresOfFaerun: "LE",
+  MOI: "MoI",
+  PHBII: "PH2",
+  MoE: "MoE",
+  PGtE: "PE",
+  RotDrg: "RDr",
+  EH: "EH",
+  Sh: "Sh",
+  ShS: "ShS",
+  CC: "CC",
+  Ebberon: "ECS",
+  "Book of Vile Darkness": "BV",
+  Sandstorm: "Sa",
+  "Book of Exalted Deeds": "BE",
+};
+
+const FALLBACK_SOURCE_CATEGORY_BY_TOKEN: Record<string, string> = {
+  ATB: "third-party",
+  Drew: "third-party",
+  BoEM: "third-party",
+  Cypren: "third-party",
+  Necromancy: "third-party",
+  SPELLSandSPELLCRAFT: "third-party",
+  "seankreynolds.com": "third-party",
+  DA5: "magazine",
+};
 
 const DEFAULT_CANDIDATES: ProbeCandidate[] = [
   { name: "Fireball" },
@@ -175,8 +259,8 @@ function usage(): never {
   npm run -w data-tools en:summaries:probe
   npm run -w data-tools en:summaries:candidates
   npm run -w data-tools en:summaries:probe -- --candidate "Spider Poison" --candidate "Blood Wind"
-  npm run -w data-tools en:summaries:probe -- --input short-desc/imarvin-candidates.json --limit 20
-  npm run -w data-tools en:summaries:sources -- --input short-desc/imarvin-candidates.json --delay-ms 1500
+  npm run -w data-tools en:summaries:probe -- --input ${DEFAULT_IMARVIN_CANDIDATES} --limit 20
+  npm run -w data-tools en:summaries:sources -- --input ${DEFAULT_IMARVIN_CANDIDATES} --delay-ms 1500
 
 Options:
   candidates mode:
@@ -397,10 +481,10 @@ function parseArgs(argv: string[]) {
 }
 
 function parseSourceArgs(argv: string[]) {
-  let inputPath: string | undefined = "short-desc/imarvin-candidates.json";
+  let inputPath: string | undefined = DEFAULT_IMARVIN_CANDIDATES;
   let sourceLimit: number | undefined;
   let sourceOffset = 0;
-  let outputName: string | undefined = "imarvin-source-index";
+  let outputName: string | undefined = "source-index";
   let delayMs = DEFAULT_DELAY_MS;
   let retries = DEFAULT_RETRIES;
 
@@ -456,7 +540,7 @@ function parseSourceArgs(argv: string[]) {
 }
 
 function parseCandidateArgs(argv: string[]) {
-  let outPath = "short-desc/imarvin-candidates.json";
+  let outPath = DEFAULT_IMARVIN_CANDIDATES;
   let includeTob = false;
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -849,6 +933,122 @@ function safeReportName(outputName: string | null) {
   return outputName.replace(/[^A-Za-z0-9._-]/g, "-");
 }
 
+function slugifySource(value: string) {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/['’]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^A-Za-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .toLowerCase();
+}
+
+function rulebookLookupKeys(source: SourceIndexSource) {
+  return [source.token, source.abbr, source.name].flatMap((value) => [
+    normalizeName(value),
+    slugifySource(value),
+  ]);
+}
+
+function sourceAliasAbbr(source: SourceIndexSource) {
+  for (const value of [source.token, source.abbr, source.name]) {
+    const abbr = IMARVIN_SOURCE_RULEBOOK_ABBR[value];
+    if (abbr) return abbr;
+  }
+  return undefined;
+}
+
+function loadRulebookSourceCategories(): Map<string, RulebookSourceCategory> {
+  const db = new Database(rulesDbPath(), { readonly: true, fileMustExist: true });
+  try {
+    const rows = db
+      .prepare(
+        `
+          SELECT
+            rb.name AS rulebookName,
+            rb.abbr AS rulebookAbbr,
+            rb.slug AS rulebookSlug,
+            ed.slug AS editionSlug
+          FROM dnd_rulebook rb
+          JOIN dnd_dndedition ed ON ed.id = rb.dnd_edition_id
+        `,
+      )
+      .all() as Array<{
+      rulebookName: string;
+      rulebookAbbr: string;
+      rulebookSlug: string;
+      editionSlug: string;
+    }>;
+
+    const categories = new Map<string, RulebookSourceCategory>();
+    for (const row of rows) {
+      const category: RulebookSourceCategory = {
+        category: row.editionSlug,
+        categorySource: "db",
+        rulebookAbbr: row.rulebookAbbr,
+        rulebookName: row.rulebookName,
+        editionSlug: row.editionSlug,
+      };
+      for (const key of [
+        normalizeName(row.rulebookAbbr),
+        normalizeName(row.rulebookName),
+        slugifySource(row.rulebookName),
+        normalizeName(row.rulebookSlug),
+        slugifySource(row.rulebookSlug),
+      ]) {
+        categories.set(key, category);
+      }
+    }
+    return categories;
+  } finally {
+    db.close();
+  }
+}
+
+function sourceCategory(
+  source: SourceIndexSource,
+  categories: Map<string, RulebookSourceCategory>,
+): RulebookSourceCategory {
+  const aliasAbbr = sourceAliasAbbr(source);
+  if (aliasAbbr) {
+    const category = categories.get(normalizeName(aliasAbbr));
+    if (category) return category;
+  }
+
+  for (const key of rulebookLookupKeys(source)) {
+    const category = categories.get(key);
+    if (category) return category;
+  }
+
+  if (/^Dragon Magazine #/i.test(source.name)) {
+    return { category: "magazine", categorySource: "fallback" };
+  }
+  if (/^Dragon Annual #/i.test(source.name)) {
+    return { category: "magazine", categorySource: "fallback" };
+  }
+  return {
+    category: FALLBACK_SOURCE_CATEGORY_BY_TOKEN[source.token] ?? "unmatched-source",
+    categorySource: "fallback",
+  };
+}
+
+function safeSourceFileName(source: SourceIndexSource) {
+  const slug =
+    slugifySource(source.name) ||
+    slugifySource(source.token) ||
+    slugifySource(source.abbr) ||
+    "source";
+  return `${slug}.json`;
+}
+
+function assertInside(root: string, target: string) {
+  const relative = path.relative(root, target);
+  if (relative.startsWith("..") || path.isAbsolute(relative)) {
+    throw new Error(`Refusing to write outside ${root}: ${target}`);
+  }
+}
+
 function writeJsonReport(fileStem: string | null, report: unknown) {
   fs.mkdirSync(REPORT_ROOT, { recursive: true });
   const reportPath = path.join(REPORT_ROOT, `${safeReportName(fileStem)}.json`);
@@ -858,6 +1058,49 @@ function writeJsonReport(fileStem: string | null, report: unknown) {
 
 function writeReport(report: ProbeReport) {
   return writeJsonReport(report.options.outputName, report);
+}
+
+function writeSourceIndexData(
+  report: SourceIndexReport,
+  categories: Map<string, RulebookSourceCategory>,
+) {
+  const folderName = safeReportName(report.options.outputName ?? "source-index");
+  const dataDir = path.join(SOURCE_INDEX_DATA_ROOT, folderName);
+  assertInside(SOURCE_INDEX_DATA_ROOT, dataDir);
+  fs.rmSync(dataDir, { recursive: true, force: true });
+  fs.mkdirSync(path.join(dataDir, "books"), { recursive: true });
+
+  const sourceFiles = report.sources.map((source) => {
+    const rows = report.rows.filter((row) => row.sourceToken === source.token);
+    const classification = sourceCategory(source, categories);
+    const file = path.join(
+      "books",
+      classification.category,
+      safeSourceFileName(source),
+    );
+    fs.mkdirSync(path.dirname(path.join(dataDir, file)), { recursive: true });
+    fs.writeFileSync(
+      path.join(dataDir, file),
+      `${JSON.stringify({ source, rows }, null, 2)}\n`,
+      "utf8",
+    );
+    return { ...source, ...classification, file, rows: rows.length };
+  });
+
+  const manifest = {
+    generatedAt: report.generatedAt,
+    source: report.source,
+    options: report.options,
+    summary: report.summary,
+    sources: sourceFiles,
+  };
+  fs.writeFileSync(
+    path.join(dataDir, "manifest.json"),
+    `${JSON.stringify(manifest, null, 2)}\n`,
+    "utf8",
+  );
+
+  return { dataDir, manifest };
 }
 
 async function probe(argv: string[]) {
@@ -949,6 +1192,7 @@ function coverageForCandidates(
 
 async function sources(argv: string[]) {
   const options = parseSourceArgs(argv);
+  const categories = loadRulebookSourceCategories();
   const fetcher = new RateLimitedFetcher(options.delayMs, options.retries);
   const sourceIndexHtml = await fetcher.getUrl(SOURCE_INDEX_URL);
   const allSources = parseSourceIndex(sourceIndexHtml);
@@ -1016,8 +1260,14 @@ async function sources(argv: string[]) {
     coverage,
   };
 
-  const reportPath = writeJsonReport(options.outputName, report);
-  console.log(`IMarvinTPA source index OK: ${reportPath}`);
+  const { dataDir, manifest } = writeSourceIndexData(report, categories);
+  const reportPath = writeJsonReport(`${options.outputName}-run`, {
+    ...manifest,
+    coverage: report.coverage,
+    dataDir,
+  });
+  console.log(`IMarvinTPA source index data OK: ${dataDir}`);
+  console.log(`IMarvinTPA source index run report: ${reportPath}`);
   console.log(JSON.stringify(report.summary, null, 2));
 }
 

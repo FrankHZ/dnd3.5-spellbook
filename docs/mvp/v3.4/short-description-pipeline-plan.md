@@ -165,7 +165,10 @@ candidate-based and rate-limited rather than a full-site crawler. Default
 behavior is one candidate at a time with at least 750 ms between HTTP requests;
 the command rejects concurrency above 3. Generated probe reports live under
 `data-tools/out/en-summaries/` and must not be committed as parent-repo source
-data.
+data. Source-index rows are local source data, so the source-index command
+writes them under `data/imarvin/short-desc/source-index/`, split by source book
+and grouped by our local rules DB edition categories when a source can be mapped
+to a local rulebook.
 
 `d20srd.org` and SRD class spell lists provide English one-line descriptions for
 the OGL/SRD spell set. They remain useful for SRD/Core cross-checks and as a
@@ -335,8 +338,9 @@ npm run -w data-tools summaries:qa
 ```
 
 It reads the generated Chinese summary reports under
-`data-tools/out/zh-parser/summary/` and the generated English IMarvinTPA reports
-under `data-tools/out/en-summaries/`, then writes:
+`data-tools/out/zh-parser/summary/` and the local English IMarvinTPA source
+index under `data/imarvin/short-desc/source-index/`, plus generated English
+strict-missing reports under `data-tools/out/en-summaries/`, then writes:
 
 ```text
 data-tools/out/short-desc-qa/
@@ -355,6 +359,7 @@ data-tools/out/short-desc-qa/
    |- en-rules-db-gaps.jsonl
    |- en-source-mismatches.jsonl
    |- en-deferred-pdf.jsonl
+   |- en-out-of-scope.jsonl
 ```
 
 If validated review decisions exist under
@@ -363,8 +368,8 @@ keys against the generated queues and records review coverage in `summary.json`.
 It then promotes decisions into follow-up queues:
 
 - `import-blockers.jsonl` for reviewed rows that must not enter import
-  candidates yet, such as wrong aliases, source errors, source mismatches, or
-  PDF-deferred rows
+  candidates yet, such as wrong aliases, source errors, unresolved source
+  mismatches, or PDF-deferred rows
 - `en-add-candidates.jsonl` for English rows that can be handled by candidate or
   alias normalization and are not yet covered by the current matching rules
 - `en-resolved-candidates.jsonl` for reviewed add-candidate rows already covered
@@ -479,6 +484,46 @@ that can run after schema/client generation and before import. The command
 should be idempotent and should not replace existing `I18nSpellText`
 name/full-description overlays.
 
+Normalize reviewed source data before import:
+
+```bash
+npm run -w data-tools summaries:normalize
+```
+
+This writes `data/short-desc-normalized/summaries.generated.jsonl` and a report
+under `data-tools/out/short-desc-normalized/summary.json`. The normalized JSONL
+is the only intended input to the app DB import command. Each line has one
+accepted import row:
+
+```ts
+type NormalizedSpellSummaryRow = {
+  schemaVersion: 1;
+  stableKey: string; // spellId:lang:variant
+  spellId: number;
+  rulebookId: number;
+  rulebookAbbr: string;
+  lang: "zh" | "en";
+  variant: "chm" | "imarvin";
+  summaryText: string;
+  sourceKey: string;
+  sourceName: string;
+  sourceKind: string;
+  reviewStatus: "accepted";
+  provenance: Record<string, unknown>;
+};
+```
+
+Normalization behavior:
+
+- `zh/chm` rows are selected from extractor matches plus conflict-review
+  decisions. `needs_human` and `source_error` conflict decisions are skipped.
+- `en/imarvin` rows are selected from the local source-index data only when the
+  source maps to a local DB rulebook and the row uniquely matches a local spell.
+- The output is unique by `spellId + lang + variant`, matching the planned app
+  DB uniqueness constraint.
+- Skipped rows are counted in the normalization report; they are not passed to
+  import as blockers.
+
 Planned import command:
 
 ```bash
@@ -488,7 +533,8 @@ npm run -w data-tools summaries:import
 
 Import behavior:
 
-- Read reviewed/generated candidates, not raw CHM or raw fetched HTML directly.
+- Read normalized JSONL, not raw CHM, raw fetched HTML, extractor output, or QA
+  queues directly.
 - Upsert by `spellId + lang + variant`.
 - For `lang=zh`, `variant=chm`, create or update only
   `I18nSpellSummaryText` rows when a selected Chinese summary exists.
@@ -507,17 +553,19 @@ English source policy:
 - Import only rows matched to existing local spell ids.
 - Do not import `en-rules-db-gaps` until the relevant rules DB patch has been
   applied and the English candidate/source report has been refreshed.
-- Treat the 7 generated `short-desc-rules-gaps` spell patches as a separate
-  rules DB preparation step, not as part of summary import.
+- Treat generated `short-desc-rules-gaps` spell patches as a separate rules DB
+  preparation step, not as part of summary import. The current parsed source
+  only auto-generates seven patch operations; other rules DB gaps need fuller
+  source text or parser coverage before they are patchable.
 - Preserve `sourceKey` for every imported `en/imarvin` row so imported English
   summary provenance remains durable outside transient data-tool reports.
 
 Chinese source policy:
 
-- First import pass should use the conflict-reviewed/selected summary set once a
-  deterministic selected-output file exists.
-- Until then, the import command may support a conservative mode that imports
-  only non-conflicting matched summaries and reports skipped conflicts.
+- First import pass should use
+  `data/short-desc-normalized/summaries.generated.jsonl`.
+- Conflict-reviewed selected summaries are resolved before import by
+  `summaries:normalize`; import should not reimplement conflict selection.
 - Do not machine-translate Chinese summaries into English or English summaries
   into Chinese.
 
@@ -600,8 +648,8 @@ Fallback rules:
 
 Validation:
 
-- Add API shape tests for `i18n.shortDescription` on search/by-level/batch and
-  detail when fixture data exists.
+- Add API shape tests for `i18n.summary.shortDescription` on
+  search/by-level/batch and detail when fixture data exists.
 - Add mapper-level or repository tests if fixture coverage is too sparse.
 - Add a focused frontend test for `getSpellShortDescription` fallback behavior.
 - Existing Browse/Search smoke behavior should remain unchanged when summaries
@@ -622,6 +670,8 @@ Validation:
   leading source prefixes, and trailing component markers.
 - Summary QA reports duplicate targets, empty text, unexpected length, mojibake,
   and unsafe HTML/text drift.
+- Reviewed Chinese and English summary sources can be normalized into
+  `data/short-desc-normalized/summaries.generated.jsonl` with accepted rows only.
 - Existing `zh:parse`, `zh:qa`, and Chinese import workflows do not regress.
 - Schema/API changes, if made, have the closest server or contract tests.
 - UI changes, if made, preserve Browse/Search behavior when summaries are

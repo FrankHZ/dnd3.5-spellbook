@@ -53,9 +53,9 @@ Probe IMarvinTPA for English short-description candidates:
 npm run -w data-tools en:summaries:candidates
 npm run -w data-tools en:summaries:probe
 npm run -w data-tools en:summaries:probe -- --candidate "Spider Poison" --candidate "Blood Wind"
-npm run -w data-tools en:summaries:probe -- --input short-desc/imarvin-candidates.json --limit 20
-npm run -w data-tools en:summaries:probe -- --input short-desc/imarvin-candidates.json --offset 0 --limit 20 --delay-ms 1500 --output-name imarvin-00000-00020
-npm run -w data-tools en:summaries:sources -- --input short-desc/imarvin-candidates.json --delay-ms 1500
+npm run -w data-tools en:summaries:probe -- --input imarvin/short-desc/candidates.json --limit 20
+npm run -w data-tools en:summaries:probe -- --input imarvin/short-desc/candidates.json --offset 0 --limit 20 --delay-ms 1500 --output-name imarvin-00000-00020
+npm run -w data-tools en:summaries:sources -- --input imarvin/short-desc/candidates.json --delay-ms 1500
 ```
 
 Run the Chinese CHM parser workflow:
@@ -81,6 +81,12 @@ Run short-description QA over already-generated Chinese and English reports:
 npm run -w data-tools summaries:qa
 ```
 
+Build the normalized import JSONL after extraction and QA review:
+
+```bash
+npm run -w data-tools summaries:normalize
+```
+
 ## Data Paths
 
 These tools read local-only source data from `data/` and write
@@ -94,9 +100,12 @@ Current CHM parser defaults:
   ignored static input)
 - parser test input: `data/chm-test/`
 - CHM mapping and alias JSON: `data/chm-mapping/`
+- IMarvinTPA source data: `data/imarvin/short-desc/`
 - parser output: `data-tools/out/zh-parser/`
 - mechanical QA output: `data-tools/out/zh-parser/qa/`
 - short-description extraction output: `data-tools/out/zh-parser/summary/`
+- normalized short-description import JSONL:
+  `data/short-desc-normalized/summaries.generated.jsonl`
 
 `data/chm-raw/` and `data/chm-raw-full/` may exist locally under the nested
 `data/` directory, but they are static inputs and should stay ignored rather
@@ -150,14 +159,16 @@ chunks with stable report filenames. Candidate JSON inputs are local data and
 should live under `data/` when kept.
 
 `en:summaries:candidates` writes local-only rules DB candidate JSON under
-`data/short-desc/` by default. It excludes Tome of Battle maneuver names unless
-`--include-tob` is passed.
+`data/imarvin/short-desc/candidates.json` by default. It excludes Tome of Battle
+maneuver names unless `--include-tob` is passed.
 
 `en:summaries:sources` fetches IMarvinTPA's source-book index and each source's
 `Small=5` line view, then joins the indexed rows against the local candidate
-JSON. It is also rate-limited, writes generated reports under
-`data-tools/out/en-summaries/`, and does not mutate local source data or
-SQLite databases.
+JSON. It is also rate-limited and writes the source-index rows as local source
+data split by our local rules DB edition categories under
+`data/imarvin/short-desc/source-index/` by default. It also writes a compact run
+report under `data-tools/out/en-summaries/` and does not mutate SQLite
+databases.
 
 `zh:qa` is a mechanical source and parser-output QA report. It checks parser
 hard gates, raw/clean file drift, noisy source labels, empty or very short
@@ -174,10 +185,10 @@ and writes `candidates.json`, `matched.json`, `unmatched.json`,
 `duplicates.json`, `conflicts.json`, `alias-audit.json`, and `summary.json` under
 `data-tools/out/zh-parser/summary/`.
 
-`summaries:qa` reads the generated Chinese summary reports and English
-IMarvinTPA source-index reports, then writes `summary.json`, `issues.json`, and
+`summaries:qa` reads the generated Chinese summary reports and the local English
+IMarvinTPA source-index directory, then writes `summary.json`, `issues.json`, and
 JSONL review queues under `data-tools/out/short-desc-qa/`. It does not fetch
-network sources. Generate or refresh the English reports with
+network sources. Generate or refresh the English source index with
 `en:summaries:sources` before relying on cross-language coverage queues. If
 validated subagent or human decisions exist under
 `data-tools/out/short-desc-qa/review-results/`, the command validates their
@@ -188,6 +199,15 @@ the current IMarvinTPA name-matching rules are moved to
 `en-resolved-candidates.jsonl`; conservative source-mismatch title aliases that
 are covered by the same matching rules are moved to
 `en-resolved-source-mismatches.jsonl`.
+
+`summaries:normalize` is the import boundary for v3.4 spell summaries. It reads
+Chinese extractor output plus conflict-review decisions and the local IMarvinTPA
+source-index data, then writes one normalized JSONL row shape for both languages
+under `data/short-desc-normalized/summaries.generated.jsonl`. It only emits
+accepted rows with local `spellId` and `rulebookId`; unresolved Chinese
+conflicts, source-error rows, English rules DB gaps, and sources that cannot be
+mapped to local rules DB rows are reported as skipped in
+`data-tools/out/short-desc-normalized/summary.json`.
 
 ## Safety
 
@@ -202,7 +222,9 @@ are covered by the same matching rules are moved to
 - `en:summaries:probe` fetches only requested candidate searches and writes a
   report; it does not mutate source data or SQLite databases.
 - `en:summaries:sources` fetches source-index pages and writes generated review
-  output only; it does not mutate source data or SQLite databases.
+  output plus local source-index JSON only; it does not mutate SQLite databases.
+- `summaries:normalize` writes local JSONL/report files only; it does not mutate
+  SQLite databases.
 - `rules:sql:dry-run` never mutates the configured rules DB.
 - `rules:sql:apply` and `rules:index:rebuild` are write-capable and must be run
   intentionally.

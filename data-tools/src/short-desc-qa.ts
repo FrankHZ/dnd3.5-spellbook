@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import {
+  chooseExact,
   exactNameMatchKeys,
   nameMatchKeys,
   normalizeName,
@@ -69,6 +70,7 @@ type QaSummary = {
     enRulesDbGaps: number;
     enSourceMismatches: number;
     deferredPdf: number;
+    enOutOfScope: number;
     enResolvedCandidates: number;
     enResolvedSourceMismatches: number;
   };
@@ -137,7 +139,27 @@ type EnSourceIndexReport = {
     missing?: Array<{ name?: string; exactName?: string }>;
     ambiguous?: unknown[];
   };
-  rows?: Array<{ name: string }>;
+  rows?: EnSourceIndexRow[];
+};
+
+type EnSourceIndexRow = {
+  id?: number | null;
+  name: string;
+  shortDescription?: string;
+  sourceToken?: string;
+  sourceName?: string;
+  sourceAbbr?: string;
+};
+
+type EnSourceIndexManifest = {
+  summary?: EnSourceIndexReport["summary"];
+  sources?: Array<{
+    file?: string;
+  }>;
+};
+
+type EnSourceBookFile = {
+  rows?: EnSourceIndexRow[];
 };
 
 type EnStrictMissingReport = {
@@ -180,6 +202,7 @@ type EnStrictDecision = {
     | "out_of_scope";
   recommendedAction: string;
   sources: string[];
+  resolvedName?: string;
   descriptionSamples: string[];
   evidence: string[];
   notes: string;
@@ -192,16 +215,21 @@ type EnCandidate = {
 };
 
 const DEFAULT_ZH_SUMMARY_DIR = "out/zh-parser/summary";
-const DEFAULT_EN_SOURCE_INDEX =
-  "out/en-summaries/imarvin-source-index.json";
+const DEFAULT_EN_SOURCE_INDEX = path.join(
+  localDataDir(),
+  "imarvin",
+  "short-desc",
+  "source-index",
+);
 const DEFAULT_EN_STRICT_MISSING =
   "out/en-summaries/imarvin-source-index-db-missing-strict35.json";
 const DEFAULT_OUT_DIR = "out/short-desc-qa";
 const DEFAULT_REVIEW_RESULTS_DIR = "out/short-desc-qa/review-results";
 const DEFAULT_EN_CANDIDATES = path.join(
   localDataDir(),
+  "imarvin",
   "short-desc",
-  "imarvin-candidates.json",
+  "candidates.json",
 );
 const MOJIBAKE_RE = /\uFFFD|锟斤拷/;
 const HTML_RE = /<\/?[a-z][^>]*>/i;
@@ -256,6 +284,32 @@ function readJson<T>(file: string): T {
 function readJsonIfExists<T>(file: string): T | null {
   if (!fs.existsSync(file)) return null;
   return readJson<T>(file);
+}
+
+function readEnSourceIndexIfExists(indexPath: string): EnSourceIndexReport | null {
+  if (!fs.existsSync(indexPath)) return null;
+  if (!fs.statSync(indexPath).isDirectory()) {
+    return readJson<EnSourceIndexReport>(indexPath);
+  }
+
+  const manifestPath = path.join(indexPath, "manifest.json");
+  if (!fs.existsSync(manifestPath)) {
+    return null;
+  }
+
+  const manifest = readJson<EnSourceIndexManifest>(manifestPath);
+  const rows = (manifest.sources ?? []).flatMap((source) => {
+    if (!source.file) return [];
+    const bookPath = path.join(indexPath, source.file);
+    if (!fs.existsSync(bookPath)) return [];
+    return readJson<EnSourceBookFile>(bookPath).rows ?? [];
+  });
+
+  const report: EnSourceIndexReport = {
+    rows,
+  };
+  if (manifest.summary) report.summary = manifest.summary;
+  return report;
 }
 
 function readJsonlIfExists<T>(file: string): T[] | null {
@@ -496,7 +550,10 @@ function isReviewedEnglishDecisionResolved(
   sourceKeys: Set<string> | null,
 ) {
   if (!candidateKeys || !sourceKeys) return false;
-  return nameMatchKeys(decision.name).some(
+  const reviewedNames = [decision.name, decision.resolvedName].filter(
+    (name): name is string => Boolean(name),
+  );
+  return reviewedNames.flatMap((name) => nameMatchKeys(name)).some(
     (key) => candidateKeys.has(key) && sourceKeys.has(key),
   );
 }
@@ -506,6 +563,54 @@ function enCandidateKeySet(candidates: EnCandidate[] | null) {
   return new Set(
     candidates.flatMap((candidate) => exactNameMatchKeys(enCandidateName(candidate))),
   );
+}
+
+function sourceIndexCoverageForCandidates(
+  candidates: EnCandidate[],
+  rows: EnSourceIndexRow[],
+): NonNullable<EnSourceIndexReport["coverage"]> {
+  const matched: NonNullable<EnSourceIndexReport["coverage"]>["matched"] = [];
+  const missing: NonNullable<EnSourceIndexReport["coverage"]>["missing"] = [];
+  const ambiguous: NonNullable<EnSourceIndexReport["coverage"]>["ambiguous"] = [];
+
+  for (const candidate of candidates) {
+    const exactName = enCandidateName(candidate);
+    const matches = chooseExact(rows, exactName);
+    if (matches.length === 0) {
+      missing.push(candidate);
+      continue;
+    }
+
+    const uniqueIds = new Set(
+      matches.map((match) => match.id).filter((id): id is number => id !== null),
+    );
+    if (uniqueIds.size > 1) {
+      ambiguous.push({ candidate, matches, warnings: [] });
+    } else {
+      matched.push({ candidate, matches, warnings: [] });
+    }
+  }
+
+  return { matched, missing, ambiguous };
+}
+
+function withComputedCoverage(
+  report: EnSourceIndexReport | null,
+  candidates: EnCandidate[] | null,
+) {
+  if (!report || report.coverage || !candidates) return report;
+  const coverage = sourceIndexCoverageForCandidates(candidates, report.rows ?? []);
+  return {
+    ...report,
+    coverage,
+    summary: {
+      ...report.summary,
+      candidates: candidates.length,
+      matchedCandidates: coverage.matched?.length ?? 0,
+      missingCandidates: coverage.missing?.length ?? 0,
+      ambiguousCandidates: coverage.ambiguous?.length ?? 0,
+    },
+  };
 }
 
 function enSourceKeySet(report: EnSourceIndexReport | null) {
@@ -639,13 +744,12 @@ function main() {
   const zhUnmatched = readJson<ZhMatchedRecord[]>(zhUnmatchedPath);
   const zhConflicts = readJson<ZhConflictRecord[]>(zhConflictsPath);
   const zhAliasAudit = readJson<ZhAliasAuditEntry[]>(zhAliasPath);
-  const enSourceIndex = readJsonIfExists<EnSourceIndexReport>(
-    options.enSourceIndex,
-  );
+  const enSourceIndexRaw = readEnSourceIndexIfExists(options.enSourceIndex);
   const enStrictMissing = readJsonIfExists<EnStrictMissingReport>(
     options.enStrictMissing,
   );
   const enCandidates = readJsonIfExists<EnCandidate[]>(options.enCandidates);
+  const enSourceIndex = withComputedCoverage(enSourceIndexRaw, enCandidates);
   const enCandidateKeys = enCandidateKeySet(enCandidates);
   const enSourceKeys = enSourceKeySet(enSourceIndex);
   const zhAliasDecisions =
@@ -715,7 +819,7 @@ function main() {
     issue(issues, "warning", "en-source-index-missing", {
       file: options.enSourceIndex,
       detail:
-        "English IMarvinTPA source-index report is missing; run en:summaries:sources before cross-language QA",
+        "English IMarvinTPA source-index data is missing; run en:summaries:sources before cross-language QA",
     });
   } else {
     const ambiguous = enSourceIndex.summary?.ambiguousCandidates ?? 0;
@@ -871,16 +975,6 @@ function main() {
       notes: decision.notes,
       confidence: decision.confidence,
     })),
-    ...enOutOfScopeRows.map((decision) => ({
-      queue: "import-blockers",
-      sourceQueue: "en-strict35-missing",
-      key: decision.key,
-      name: decision.name,
-      decision: decision.decision,
-      recommendedAction: decision.recommendedAction,
-      notes: decision.notes,
-      confidence: decision.confidence,
-    })),
   ];
 
   const queues: Record<string, unknown[]> = {
@@ -896,6 +990,7 @@ function main() {
     "en-rules-db-gaps": enRulesDbGapRows,
     "en-source-mismatches": enUnresolvedSourceMismatchRows,
     "en-deferred-pdf": enDeferredPdfRows,
+    "en-out-of-scope": enOutOfScopeRows,
   };
   for (const [name, rows] of Object.entries(queues)) {
     writeJsonl(queuePath(options.outDir, name), rows);
@@ -963,6 +1058,7 @@ function main() {
       enRulesDbGaps: enRulesDbGapRows.length,
       enSourceMismatches: enUnresolvedSourceMismatchRows.length,
       deferredPdf: enDeferredPdfRows.length,
+      enOutOfScope: enOutOfScopeRows.length,
       enResolvedCandidates: enResolvedCandidateRows.length,
       enResolvedSourceMismatches: enResolvedSourceMismatchRows.length,
     },
