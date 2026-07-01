@@ -250,7 +250,9 @@ human review under `review-queues/summary-reuse-candidates/`.
 `summaries:reuse-apply` consumes auto decisions and reviewed
 `summary-reuse/*.decisions.jsonl` files. It writes accepted reuse rows back into
 the normalized JSONL only with `--write`, preserving reuse provenance through
-`sourceKind: "summary-reuse"`.
+`sourceKind: "summary-reuse"`. A reviewed reuse decision may include
+`summaryText` to override the source summary when source and target share the
+same mechanism but the target rules DB text uses different numbers.
 
 ## Safety
 

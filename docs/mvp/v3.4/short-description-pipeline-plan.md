@@ -566,10 +566,12 @@ Post-normalization cleanup behavior:
   review.
 - `summaries:reuse-apply` consumes auto/reviewed reuse decisions and writes
   accepted `summary-reuse` rows into the normalized JSONL with explicit reuse
-  provenance.
+  provenance. Reviewed decisions may provide a `summaryText` override for cases
+  where source and target have the same mechanism but the target rules DB entry
+  uses different numbers.
 - Current cleanup snapshot: punctuation QA fixed `155` rows (`39` English,
   `116` Chinese). Same-name reuse generated `507` candidates, accepted `14`
-  exact-description auto reuse rows, and left `493` rows for batch review.
+  exact-description auto reuse rows, and sent `493` rows through batch review.
 
 Implemented import command:
 

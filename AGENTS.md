@@ -267,7 +267,9 @@ See `docs/harness.md` for details.
 - Use `npm run -w data-tools summaries:reuse-candidates` to generate same-name
   core/supplementals summary reuse queues, then
   `npm run -w data-tools summaries:reuse-apply -- --write` after auto or
-  reviewed decisions are accepted.
+  reviewed decisions are accepted. Reviewed reuse decisions may include
+  `summaryText` only when the target rules DB text supports the same mechanism
+  with different target-specific numbers.
 - Run `npm run -w data-tools summaries:import -- --dry-run` before
   `npm run -w data-tools summaries:import` when refreshing local app DB
   `I18nSpellSummaryText` rows.

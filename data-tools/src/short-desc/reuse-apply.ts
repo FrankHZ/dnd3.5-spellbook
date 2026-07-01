@@ -51,6 +51,7 @@ type ReuseDecision = {
   schemaVersion?: number;
   stableKey?: string;
   decision?: "reuse" | "reject" | "needs_source_check";
+  summaryText?: string;
   reason?: string;
   confidence?: "high" | "medium" | "low";
   sourceStableKey?: string;
@@ -208,6 +209,9 @@ function rowFromCandidate(
     return null;
   }
 
+  const summaryText = decision.summaryText?.trim() || candidate.source.summaryText;
+  const hasSummaryOverride = summaryText !== candidate.source.summaryText;
+
   return {
     schemaVersion: 1,
     stableKey: `${candidate.target.spellId}:${candidate.lang}:${candidate.variant}`,
@@ -216,7 +220,7 @@ function rowFromCandidate(
     rulebookAbbr: candidate.target.rulebookAbbr,
     lang: candidate.lang,
     variant: candidate.variant,
-    summaryText: candidate.source.summaryText,
+    summaryText,
     sourceKey: `reuse:${candidate.target.spellId}:${candidate.source.sourceKey}`,
     sourceName: `${candidate.source.rulebookAbbr} summary reused for ${candidate.target.rulebookAbbr}`,
     sourceKind: "summary-reuse",
@@ -227,6 +231,8 @@ function rowFromCandidate(
       decision: decision.decision,
       reason: decision.reason,
       confidence: decision.confidence,
+      summaryOverride: hasSummaryOverride,
+      sourceSummaryText: hasSummaryOverride ? candidate.source.summaryText : undefined,
       matchStatus: candidate.matchStatus,
       source: {
         spellId: candidate.source.spellId,
