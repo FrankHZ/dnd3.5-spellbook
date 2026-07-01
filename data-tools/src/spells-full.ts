@@ -306,6 +306,18 @@ function descriptors(raw: string | undefined) {
     .filter(Boolean);
 }
 
+function expandClassNames(className: string) {
+  const trimmed = className.trim();
+  if (trimmed === "Crusader (base)") return ["Crusader"];
+  if (trimmed.includes("/")) {
+    return trimmed
+      .split("/")
+      .map((name) => name.trim())
+      .filter(Boolean);
+  }
+  return [trimmed];
+}
+
 function descriptionText(spell: ParsedSpell) {
   return (spell.description ?? [])
     .map((line) => line.trim())
@@ -449,11 +461,16 @@ function convertCandidate(
         notes.push(`unparsed class level: ${className}=${rawLevel}`);
         return [];
       }
-      if (!classes.has(normalize(className))) {
-        notes.push(`unresolved class: ${className}`);
-        return [];
-      }
-      return [{ class: className, level: parsed.level, extra: parsed.extra }];
+      return expandClassNames(className).flatMap((expandedName) => {
+        const classRow = classes.get(normalize(expandedName));
+        if (!classRow) {
+          notes.push(`skipped unresolved class: ${expandedName}`);
+          return [];
+        }
+        return [
+          { class: classRow.label, level: parsed.level, extra: parsed.extra },
+        ];
+      });
     },
   );
 
@@ -483,7 +500,16 @@ function convertCandidate(
     notes.push("no resolvable class or domain levels");
   }
 
-  if (notes.some((note) => note.startsWith("unresolved") || note.startsWith("unparsed"))) {
+  if (
+    notes.some(
+      (note) =>
+        note.startsWith("unresolved school") ||
+        note.startsWith("unresolved subschool") ||
+        note.startsWith("unresolved descriptor") ||
+        note.startsWith("unparsed") ||
+        note === "no resolvable class or domain levels",
+    )
+  ) {
     return undefined;
   }
 

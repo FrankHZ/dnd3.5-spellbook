@@ -414,15 +414,18 @@ npm run -w data-tools rules:spells:validate -- spells/short-desc-rules-gaps.gene
 npm run -w data-tools rules:spells:apply -- --dry-run spells/short-desc-rules-gaps.generated.jsonl
 ```
 
-The current local run generates and validates `7` structured spell patch
-operations from local `spells-full` parsed data: `Dominate Living Construct`,
-`Elemental Prod`, `Energy Alteration`, `Indisputable Possession`,
-`Metamagic Item`, `Power Surge`, and `Suppress Requirement`. The remaining
-`40` rules DB gaps are still blocked before import: `36` have no exact local
-`spells-full` parsed source row, and `4` Player's Guide to Eberron rows have
-parsed source rows but include class levels that are not currently resolvable
-against the local rules DB class table. Do not treat the generated patch file as
-applied until the rules DB write-capable workflow is explicitly run.
+The current local run generates and validates `11` structured spell patch
+operations from local `spells-full` parsed data: `Create Spirit Idol`,
+`Dominate Living Construct`, `Elemental Prod`, `Energy Alteration`,
+`Indisputable Possession`, `Metamagic Item`, `Power Surge`,
+`Price of Loyalty`, `Sentinel's Watch`, `Suppress Requirement`, and
+`Unity Wine`. The four Player's Guide to Eberron rows rely on conservative
+class-name handling in the generator: split combined names such as
+`Sorcerer/Wizard`, map `Crusader (base)` to local `Crusader`, and skip class
+levels whose classes do not exist in the local rules DB. The remaining `36`
+rules DB gaps are still blocked before import because the local `spells-full`
+parsed source has no exact source row for them. Do not treat the generated patch
+file as applied until the rules DB write-capable workflow is explicitly run.
 
 Good checks:
 
@@ -620,7 +623,7 @@ English source policy:
   applied and the English candidate/source report has been refreshed.
 - Treat generated `short-desc-rules-gaps` spell patches as a separate rules DB
   preparation step, not as part of summary import. The current parsed source
-  only auto-generates seven patch operations; other rules DB gaps need fuller
+  auto-generates eleven patch operations; other rules DB gaps need fuller
   source text or parser coverage before they are patchable.
 - Preserve `sourceKey` for every imported `en/imarvin` row so imported English
   summary provenance remains durable outside transient data-tool reports.
