@@ -44,25 +44,27 @@ Start with these files when orienting:
 11. `docs/mvp/v3.5/rulebook-display-labels-plan.md` before changing rulebook
     abbreviations, localized rulebook display labels, or rulebook display
     contract fields.
-12. `docs/mvp/v3.3/FREEZE.md` for the latest frozen release snapshot.
-13. `docs/mvp/v3.3/acceptance-checklist.md` when checking v3.3 acceptance
+12. `docs/mvp/v3.5/agent-guide-review-plan.md` before broadly restructuring
+    this agent guide or moving agent-facing workflow rules.
+13. `docs/mvp/v3.3/FREEZE.md` for the latest frozen release snapshot.
+14. `docs/mvp/v3.3/acceptance-checklist.md` when checking v3.3 acceptance
    evidence.
-14. `docs/mvp/v3.3/data-tools-workspace-plan.md` before moving or adding data
+15. `docs/mvp/v3.3/data-tools-workspace-plan.md` before moving or adding data
    import, parser, rules DB inspection, or rules DB patch tooling.
-15. `docs/mvp/v3.3/local-data-layout-plan.md` before moving CHM inputs, parser
+16. `docs/mvp/v3.3/local-data-layout-plan.md` before moving CHM inputs, parser
    outputs, local source data, or future rules patch files.
-16. `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before moving SQL patch
+17. `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before moving SQL patch
    assets, adding rules DB preparation commands, or importing missing English
    base spell records.
-17. `docs/mvp/v3.3/structured-spell-patch-plan.md` before designing or applying
+18. `docs/mvp/v3.3/structured-spell-patch-plan.md` before designing or applying
    missing English spell patch data.
-18. `docs/mvp/v3.3/spells-full-import-plan.md` before using local
+19. `docs/mvp/v3.3/spells-full-import-plan.md` before using local
    `spells-full` source data to generate missing English spell patches.
-19. `docs/harness.md` for validation and test-harness strategy.
-20. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
-21. `docs/mvp/v3.4/i18next-conventions-plan.md` before replacing raw-English
+20. `docs/harness.md` for validation and test-harness strategy.
+21. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
+22. `docs/mvp/v3.4/i18next-conventions-plan.md` before replacing raw-English
     frontend translation keys or tightening i18next workflow checks.
-22. Workspace READMEs for operational commands:
+23. Workspace READMEs for operational commands:
 
 - `server/README.md`
 - `data-tools/README.md`
@@ -80,6 +82,13 @@ behavior.
 - Keep changes scoped to the requested behavior.
 - Use the repo-local `$branch-naming` skill before creating, renaming, or
   assigning Codex work branches.
+- Repo-local skills live under `.agents/skills/` in the current worktree. When
+  using repo skills such as `branch-naming` or `commit-message`, read
+  `.agents/skills/<skill>/SKILL.md` relative to the active worktree root. Do not
+  probe a user-level `.agents` path first.
+- When editing from a sibling worktree, use absolute paths with patch tools or
+  otherwise prove the edit target is inside the intended worktree before
+  applying changes.
 - Do not commit local data, database files, generated logs, or personal wrapper
   scripts to the parent repo. The nested `data/` repo may version local source
   data separately.

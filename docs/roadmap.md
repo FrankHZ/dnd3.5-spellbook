@@ -140,6 +140,13 @@ v3.4 acceptance work unless a v3.4 implementation exposes the same boundary.
    source abbreviations stable, but stop treating them as the default
    reader-facing UI labels.
 
+3. **Agent guide review**
+
+   Use `docs/mvp/v3.5/agent-guide-review-plan.md` to shrink `AGENTS.md` back
+   into a compact execution guide. In the same pass, make repo-local skill path
+   resolution explicit so agents read `.agents/skills/commit-message/SKILL.md`
+   from the active worktree instead of probing user-level paths first.
+
 ## Later Stable Track
 
 The stable-version backlog remains intentionally deferred:
