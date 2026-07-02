@@ -31,6 +31,8 @@ It is not a full roadmap. It exists to record what is known to be intentionally 
 ### Content
 
 - large-scale Chinese/English translation and QA workflow
+- `data/spells-full` completion workflow for adding remaining source-backed
+  English spells into the content/rules DB path
 - content coverage, provenance, and review-status reporting
 - search/index artifact generation for offline or static deployments
 

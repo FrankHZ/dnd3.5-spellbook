@@ -185,6 +185,8 @@ The stable-version backlog remains intentionally deferred:
 
 - content artifact pipeline for versioned content releases
 - large-scale Chinese/English translation and QA workflow
+- `data/spells-full` completion workflow for adding remaining source-backed
+  English spells into the content/rules DB path
 - static HTML/offline artifact generation to replace old loose HTML
   distribution
 - search/index artifact generation for offline or static deployments

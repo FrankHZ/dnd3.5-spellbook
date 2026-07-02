@@ -20,8 +20,8 @@ and app-owned overlays into a more maintainable content platform:
 - docs and CI/CD make agent work safer instead of more ceremonial
 
 Large content-release goals such as bulk Chinese/English translation QA,
-static/offline HTML artifacts, and versioned content packs remain long-term
-roadmap targets, not v3.5 deliverables.
+`data/spells-full` completion imports, static/offline HTML artifacts, and
+versioned content packs remain long-term roadmap targets, not v3.5 deliverables.
 
 ## Child Plans
 
@@ -201,7 +201,7 @@ Expected output:
 | CI vs local data | CI/CD, rules normalization, data harness | No conflict, but implementation must create portable fixtures or preparation commands before enabling backend API tests in CI. Ignored local DBs cannot be CI inputs. |
 | CD vs deploy scripts | CI/CD, deployment docs | No conflict. CD wrappers call tracked scripts; deploy logic stays in `docs/deployment-scripts/`. |
 | AGENTS vs docs index | agent guide, CI/CD module docs, this plan | No conflict. `docs/README.md` is the map, this plan is v3.5 coordination, and `AGENTS.md` should shrink after the review. |
-| v3.5 vs long-term content artifacts | roadmap, stable backlog | No conflict. Bulk translation QA, static/offline HTML artifacts, content packs, and offline search indexes stay long-term unless explicitly pulled into a later version plan. |
+| v3.5 vs long-term content artifacts | roadmap, stable backlog | No conflict. Bulk translation QA, `data/spells-full` completion imports, static/offline HTML artifacts, content packs, and offline search indexes stay long-term unless explicitly pulled into a later version plan. |
 
 ## Review Notes By Child Plan
 
