@@ -122,14 +122,6 @@
     "{{spellCount}} spells.",
     "{{summary}}. Total level adj: +{{adj}}."
   ],
-  "settings": [
-    "Classes",
-    "Include prestige classes (affects Browse class list)",
-    "Leave empty to rely on backend default edition rulebooks.",
-    "Rulebooks",
-    "Settings",
-    "Settings are stored locally (MVP)."
-  ],
   "spell-browse": [
     "All Levels",
     "Any Level",

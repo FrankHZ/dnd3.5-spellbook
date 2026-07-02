@@ -13,7 +13,7 @@ export default function ClassSettings() {
   return (
     <Card className="gap-0">
       <CardHeader className="gap-1 py-3">
-        <CardTitle>{t("Classes")}</CardTitle>
+        <CardTitle>{t("classes.title")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2 pt-0">
         <Field orientation="horizontal">
@@ -25,7 +25,7 @@ export default function ClassSettings() {
             }
           />
           <Label htmlFor={checkboxId}>
-            {t("Include prestige classes (affects Browse class list)")}
+            {t("classes.include-prestige")}
           </Label>
         </Field>
       </CardContent>

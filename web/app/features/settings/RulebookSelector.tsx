@@ -101,9 +101,9 @@ export default function RulebookSelector() {
   return (
     <Card className="gap-0">
       <CardHeader className="gap-1 py-3">
-        <CardTitle>{t("Rulebooks")}</CardTitle>
+        <CardTitle>{t("rulebooks.title")}</CardTitle>
         <CardDescription>
-          {t("Leave empty to rely on backend default edition rulebooks.")}
+          {t("rulebooks.default-hint")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3 pt-0">
@@ -137,7 +137,7 @@ export default function RulebookSelector() {
                   </FieldLabel>
                 </Field>
                 <div className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
-                  {st.count}/{st.total} {t("selected")}
+                  {st.count}/{st.total} {t("rulebooks.selected")}
                 </div>
               </div>
               <Separator />

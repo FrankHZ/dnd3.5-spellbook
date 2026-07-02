@@ -1,9 +1,9 @@
 {
-  "Classes": "Classes",
-  "Include prestige classes (affects Browse class list)": "Include prestige classes (affects Browse class list)",
-  "Leave empty to rely on backend default edition rulebooks.": "Leave empty to rely on backend default edition rulebooks.",
-  "Rulebooks": "Rulebooks",
-  "selected": "selected",
-  "Settings": "Settings",
-  "Settings are stored locally (MVP).": "Settings are stored locally (MVP)."
+  "classes.include-prestige": "Include prestige classes (affects Browse class list)",
+  "classes.title": "Classes",
+  "page.description": "Settings are stored locally (MVP).",
+  "page.title": "Settings",
+  "rulebooks.default-hint": "Leave empty to rely on backend default edition rulebooks.",
+  "rulebooks.selected": "selected",
+  "rulebooks.title": "Rulebooks"
 }

@@ -8,9 +8,9 @@ export default function SettingsPage() {
   return (
     <div className="page-single">
       <div className="space-y-1 px-1">
-        <h2 className="text-lg font-semibold">{t("Settings")}</h2>
+        <h2 className="text-lg font-semibold">{t("page.title")}</h2>
         <div className="text-sm text-muted-foreground">
-          {t("Settings are stored locally (MVP).")}
+          {t("page.description")}
         </div>
       </div>
 
