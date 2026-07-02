@@ -142,7 +142,7 @@ Recommended handling:
 Owner docs:
 
 - this integrated plan
-- future `docs/mvp/v3.4/acceptance-checklist.md`
+- `docs/mvp/v3.4/acceptance-checklist.md`
 - future `docs/mvp/v3.4/FREEZE.md`
 
 Closeout tasks:
@@ -171,12 +171,17 @@ Closeout tasks:
 
    ```bash
    npm run verify
+   npm run -w data-tools test:portable
+   npm run -w data-tools acceptance:local
+   ```
+
+   The local acceptance bundle includes:
+
+   ```bash
    npm run -w data-tools summaries:qa
    npm run -w data-tools summaries:import -- --dry-run
    npm run -w data-tools rules:manifest:verify
    ```
-
-   Add any new harness command once implemented.
 
 4. **Freeze docs**
 

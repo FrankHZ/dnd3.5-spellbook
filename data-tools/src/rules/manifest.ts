@@ -8,7 +8,7 @@ import {
   localDataDir,
   repoRoot,
   resolveServerRelativePath,
-} from "./env";
+} from "../shared/env";
 
 type Mode = "write" | "verify";
 

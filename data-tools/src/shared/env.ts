@@ -3,7 +3,7 @@ import path from "node:path";
 import dotenv from "dotenv";
 
 export function repoRoot() {
-  return path.resolve(__dirname, "..", "..");
+  return path.resolve(__dirname, "..", "..", "..");
 }
 
 export function serverDir() {

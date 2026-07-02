@@ -2,13 +2,13 @@ import Database from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
 
-import { chooseExact } from "../en-summary-matching";
+import { chooseExact } from "./en-summary-matching";
 import {
   loadServerEnv,
   localDataDir,
   repoRoot,
   resolveServerRelativePath,
-} from "../env";
+} from "../shared/env";
 
 type Lang = "en" | "zh";
 

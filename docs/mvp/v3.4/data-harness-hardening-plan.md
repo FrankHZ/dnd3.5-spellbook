@@ -1,6 +1,7 @@
 # Data Harness Hardening Plan
 
-Status: planned v3.4 data-workflow track.
+Status: implemented portable v3.4 slice; remaining parser/temp-DB fixture work
+is optional follow-up.
 
 This plan covers small, repeatable checks around `data-tools` and local-data
 acceptance. It should make data work safer without pulling local CHM sources or
@@ -32,6 +33,8 @@ That covers:
 
 `data-tools` also has useful local commands:
 
+- `test:portable`
+- `acceptance:local`
 - `zh:parse`
 - `zh:qa`
 - `zh:backcheck`
@@ -42,12 +45,18 @@ That covers:
 - `rules:sql:dry-run`
 - `rules:index:rebuild -- --dry-run`
 
-The gap is that most data-tool behavior is either only typechecked or only
-exercised manually against local ignored data.
+The remaining gap is deeper fixture coverage for parser integration and
+temp-database write paths. The first portable pure-helper slice is covered by
+`test:portable`, while local short-description/rules acceptance is bundled by
+`acceptance:local`.
 
 ## Boundaries
 
 - Keep portable fixture tests separate from local-data acceptance commands.
+- Distinguish maintained data-tool commands from one-time or ad hoc migration
+  scripts. Harness maintained commands and shared pure helpers; do not spend
+  coverage on one-time scripts unless they are promoted into the maintained
+  workflow.
 - Do not require `data/chm-clean/`, `data/spells-full/`, or
   `server/data/db/` for root `npm run verify`.
 - Do not commit generated parser reports or local source data to the parent
@@ -65,6 +74,8 @@ exercised manually against local ignored data.
 - Add fixture-backed checks for structured spell patch validation and dry-run
   behavior.
 - Keep local source-data checks explicit and documented.
+- Record which command lifecycles deserve harness investment so one-time data
+  cleanup scripts do not become permanent testing obligations.
 
 ## Non-Goals
 
@@ -74,18 +85,25 @@ exercised manually against local ignored data.
 - Do not test exact full spell descriptions or copyrighted source text.
 - Do not replace existing data-tools commands unless the replacement preserves
   command compatibility.
+- Do not add tests for one-time data cleanup or investigation scripts solely to
+  improve coverage.
 
 ## Work Phases
 
 ### 1. Add Portable Data-Tools Tests
 
-Add a `data-tools` test runner and wire it into root verification only after the
-tests are fixture-only.
+Add a `data-tools` test runner and keep it fixture-only.
 
 Suggested command shape:
 
 ```bash
 npm run -w data-tools test -- --run
+```
+
+Implemented command:
+
+```bash
+npm run -w data-tools test:portable
 ```
 
 Good first tests:
@@ -125,6 +143,17 @@ Suggested command shape:
 ```bash
 npm run -w data-tools zh:accept
 ```
+
+Implemented local v3.4 closeout bundle:
+
+```bash
+npm run -w data-tools acceptance:local
+```
+
+It runs `typecheck`, `rules:manifest:verify`, `summaries:qa`, and
+`summaries:import -- --dry-run`. It intentionally does not run CHM parser
+commands because those depend on ignored raw/clean CHM inputs and are only
+needed after parser/source changes.
 
 Possible behavior:
 
@@ -178,6 +207,8 @@ Portable checks can enter root `npm run verify`.
 Local acceptance commands should remain explicit:
 
 ```bash
+npm run -w data-tools test:portable
+npm run -w data-tools acceptance:local
 npm run -w data-tools zh:parse
 npm run -w data-tools zh:qa
 npm run -w data-tools zh:backcheck

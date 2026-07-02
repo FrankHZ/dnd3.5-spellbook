@@ -23,6 +23,7 @@ Useful commands:
 
 ```bash
 npm run verify
+npm run -w data-tools test:portable
 ```
 
 Or run the pieces individually:
@@ -31,6 +32,7 @@ Or run the pieces individually:
 npm run build:contracts
 npm run check:contracts
 npm run typecheck:data-tools
+npm run test:data-tools
 npm run test:server
 npm run test:web
 npm run typecheck:web
@@ -116,28 +118,73 @@ Prefer shape and invariant checks over brittle full snapshots. Examples:
 Current coverage includes shape invariants for spell search, spell detail,
 by-level results, rule metadata lists, and common API error payloads.
 
-### Data-Tooling Checks
+### 3. Data-Tooling Checks
 
-The root `verify` command includes `npm run typecheck:data-tools` so v3.3 data
-tooling stays covered by the standard validation path.
+The root `verify` command includes `npm run typecheck:data-tools` and
+`npm run test:data-tools` so data tooling stays covered by the standard
+validation path without requiring local source data.
 
-The next data-tooling harness pass is tracked in
-`docs/mvp/v3.4/data-harness-hardening-plan.md`. Use that plan before adding a
-portable `data-tools` test command, parser acceptance command, or structured
-rules-patch fixture harness.
+The portable data-tools unit command is:
+
+```bash
+npm run -w data-tools test:portable
+```
+
+It is fixture-only and covers pure helpers for source-label mapping, English
+name normalization, normalized summary row validation, and structured spell
+patch JSONL/schema validation. Root `npm run test:data-tools` delegates to this
+command. It must remain independent of ignored CHM/raw source data, the nested
+`data/` repo, and SQLite databases.
+
+Do not treat every script under `data-tools` as equally worth testing. Use three
+lifecycles:
+
+- maintained commands: durable import, validation, manifest, parser, generator,
+  and acceptance commands that future agents are expected to reuse
+- local acceptance commands: durable commands that require local ignored data or
+  local SQLite files, so they stay explicit rather than entering CI
+- dormant local commands: source-consumed workflows kept for reruns when source
+  data or parser logic changes, but not part of active acceptance
+- one-time or ad hoc scripts: historical migration, investigation, or backfill
+  helpers that are kept only for auditability or possible reuse
+
+Put harness effort into maintained commands and their extracted pure helpers.
+For dormant local commands, keep command compatibility and typecheck coverage,
+but avoid new harness work unless the workflow is active again. For one-time
+scripts, prefer a short note, a generated report, or a commit message explaining
+the run. Do not add portable tests for one-time code unless the workflow is
+promoted into a maintained command.
 
 The root `verify` command also imports the built `@dnd/contracts` package with
 Node after `build:contracts`. This catches ESM package output that typechecks
 but cannot be resolved by runtime tools such as the web dev server.
 
-Data-tool commands that depend on local-only source data or mutate temporary
-database copies remain acceptance checks rather than always-on unit tests:
+The local v3.4 data acceptance bundle is:
+
+```bash
+npm run -w data-tools acceptance:local
+```
+
+It currently runs:
+
+```bash
+npm run -w data-tools typecheck
+npm run -w data-tools rules:manifest:verify
+npm run -w data-tools summaries:qa
+npm run -w data-tools summaries:import -- --dry-run
+```
+
+Data-tool commands that depend on local-only source data, local SQLite files,
+or temporary database copies remain explicit acceptance checks rather than
+always-on unit tests:
 
 - `npm run -w data-tools zh:parse`
 - `npm run -w data-tools zh:qa`
 - `npm run -w data-tools zh:backcheck`
 - `npm run -w data-tools zh:summaries:extract`
 - `npm run -w data-tools summaries:qa`
+- `npm run -w data-tools summaries:import -- --dry-run`
+- `npm run -w data-tools rules:manifest:verify`
 - `npm run -w data-tools rules:sql:dry-run -- <patch.sql>`
 - `npm run -w data-tools rules:index:rebuild -- --dry-run`
 - `npm run -w data-tools spells-full:inspect -- known-misses`

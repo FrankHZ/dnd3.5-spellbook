@@ -13,12 +13,13 @@
     "build:server": "npm run -w server build",
     "build:web": "npm run -w web build",
     "typecheck:data-tools": "npm run -w data-tools typecheck",
+    "test:data-tools": "npm run -w data-tools test:portable",
     "test:server": "npm run -w server test -- --run",
     "test:web": "npm run -w web test -- --run",
     "typecheck:web": "npm run -w web typecheck",
     "i18n:sync": "npm run -w web i18n:sync",
     "i18n:check": "npm run -w web i18n:check",
     "i18n:diff": "npm run -w web i18n:diff",
-    "verify": "npm run build:contracts && npm run check:contracts && npm run typecheck:data-tools && npm run test:server && npm run test:web && npm run typecheck:web"
+    "verify": "npm run build:contracts && npm run check:contracts && npm run typecheck:data-tools && npm run test:data-tools && npm run test:server && npm run test:web && npm run typecheck:web"
   }
 }

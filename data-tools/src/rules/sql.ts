@@ -3,7 +3,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { loadServerEnv, localDataDir, resolveServerRelativePath } from "./env";
+import {
+  loadServerEnv,
+  localDataDir,
+  resolveServerRelativePath,
+} from "../shared/env";
 
 type Mode = "dry-run" | "apply";
 

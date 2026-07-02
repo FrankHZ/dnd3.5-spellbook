@@ -7,8 +7,8 @@ import {
   localDataDir,
   repoRoot,
   resolveServerRelativePath,
-} from "../env";
-import { normalizeName } from "../en-summary-matching";
+} from "../shared/env";
+import { normalizeName } from "./en-summary-matching";
 
 type Lang = "en" | "zh";
 type MatchStatus = "description_exact" | "description_differs";

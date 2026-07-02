@@ -6,6 +6,26 @@ patch tooling.
 It is separate from the `server` workspace so API runtime code stays focused on
 serving requests.
 
+## Source Layout
+
+`data-tools/src/` is grouped by module before lifecycle:
+
+- `shared/`: repo path, environment, and local-data helpers.
+- `db/`: data-tool database clients.
+- `rules/`: rules DB inspection, SQL patching, manifests, structured spell
+  patching, and `spells-full` patch generation.
+- `short-desc/`: English source probing, matching helpers, QA, normalization,
+  import, coverage, and reuse workflows for short descriptions.
+- `zh-parser/`: Chinese CHM parser, parser helpers, and parser-local scripts.
+- `harness/`: portable tests and explicit local acceptance bundles.
+
+Command lifecycle is documented below. Physical module placement does not by
+itself mean every script is equally durable.
+
+Command lifecycle metadata lives in
+[`scripts.manifest.json`](./scripts.manifest.json). The portable harness checks
+that every `package.json` script is classified there.
+
 ## Commands
 
 Current v3.4 planning for data-tooling work lives in:
@@ -46,6 +66,28 @@ rules patch inputs:
 npm run -w data-tools rules:manifest:write
 npm run -w data-tools rules:manifest:verify
 ```
+
+Run portable data-tools helper tests:
+
+```bash
+npm run -w data-tools test:portable
+```
+
+This command is fixture-only and does not require local CHM/raw source data,
+the nested `data/` repo, or SQLite databases. It covers pure source-label
+mapping, English name normalization, short-description row validation, and
+structured spell patch JSONL/schema validation.
+
+Run the local v3.4 data acceptance bundle:
+
+```bash
+npm run -w data-tools acceptance:local
+```
+
+This explicit local gate runs `typecheck`, `rules:manifest:verify`,
+`summaries:qa`, and `summaries:import -- --dry-run`. It depends on the local
+nested `data/` repo and configured SQLite paths, so it is intentionally not
+part of root `npm run verify`.
 
 Inspect and generate structured patches from local `spells-full` data:
 
@@ -121,6 +163,40 @@ npm run -w data-tools summaries:import
 These tools read local-only source data from `data/` and write
 generated reports or parser output under `data-tools/out/`.
 
+## Command Lifecycles
+
+Not every data-tool script has the same maintenance burden.
+
+- **Maintained commands** are part of the repeatable project workflow. Examples:
+  `test:portable`, `acceptance:local`, `rules:manifest:*`,
+  `rules:spells:*`, `summaries:*`, `zh:qa`, and parser/generator commands that
+  are documented as current inputs to a release or acceptance gate.
+- **Local acceptance commands** are maintained, but depend on ignored local data
+  or SQLite files. Keep them explicit and do not wire them into root
+  `npm run verify`.
+- **Dormant local commands** are source-consumed workflows kept for reruns when
+  source data or parser logic changes. They should keep typechecking and command
+  compatibility, but they are not active acceptance gates.
+- **One-time/ad hoc scripts** are investigation, migration, or backfill helpers.
+  Keep them out of always-on validation. If one becomes part of future feature
+  work, promote it to a documented maintained command and add focused helper
+  tests at that point.
+
+Harness work should follow that lifecycle. Test reusable parsing, validation,
+mapping, and schema helpers behind maintained commands; do not spend test
+coverage on scripts whose only job was a single historical data move.
+
+When adding a new `package.json` script, add it to `scripts.manifest.json` with
+its owning module and lifecycle. Use `one-time/ad hoc` only in docs or future
+manifest revisions for scripts that should not be treated as maintained package
+commands.
+
+The current Chinese CHM full-parse and summary-extraction workflow is marked
+`dormant-local` after the v3.4 source pass: `zh:preprocess`, `zh:parse`,
+`zh:backcheck`, and `zh:summaries:extract` are kept for source/parser reruns,
+while `zh:qa` stays maintained because it remains useful after CHM source
+cleanup.
+
 Current CHM parser defaults:
 
 - raw CHM HTML: `data/chm-raw/` (local ignored static input)
@@ -156,6 +232,10 @@ CHM label for `Tome of Battle` (`ToB`).
 
 The rules DB path comes from `RULES_DATABASE_URL`; see `server/.env` and
 `docs/data-setup.md`.
+
+`test:portable` is the clone-friendly data-tools harness. Local JSON mapping
+files under `data/chm-mapping/` are optional runtime inputs; built-in mappings
+remain available when the nested local data repo is absent.
 
 Rules DB patch SQL files live under `data/rules-patches/`. The SQL
 runner rejects paths outside that directory. Use `rules:sql:dry-run` before
@@ -306,6 +386,10 @@ another scoped book. The default scope is the current official 3.5 working set:
 ## Safety
 
 - `inspect:rules` opens the SQLite database in read-only mode.
+- `test:portable` uses inline fixtures and does not read local data or SQLite
+  databases.
+- `acceptance:local` runs local read/dry-run acceptance commands only; it does
+  not perform write-capable imports.
 - `rules:spells:validate` opens the SQLite database in read-only mode and
   writes a JSON report under `data-tools/out/rules-patches/`.
 - `rules:spells:apply -- --dry-run` applies to a temporary database copy.

@@ -2,13 +2,13 @@ import Database from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
 
-import { chooseExact, normalizeName } from "../en-summary-matching";
+import { chooseExact, normalizeName } from "./en-summary-matching";
 import {
   loadServerEnv,
   localDataDir,
   repoRoot,
   resolveServerRelativePath,
-} from "../env";
+} from "../shared/env";
 import { BOOK_LABEL_TO_ABBR, normalizeBookLabel } from "../zh-parser/mapping";
 
 type Lang = "zh" | "en";

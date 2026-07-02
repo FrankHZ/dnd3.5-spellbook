@@ -43,6 +43,7 @@ v3.4 planning and closeout coordination live under `docs/mvp/v3.4/`.
 Start with the integrated plan, then move to the focused topic doc:
 
 - [mvp/v3.4/integrated-plan.md](./mvp/v3.4/integrated-plan.md)
+- [mvp/v3.4/acceptance-checklist.md](./mvp/v3.4/acceptance-checklist.md)
 - [mvp/v3.4/short-description-pipeline-plan.md](./mvp/v3.4/short-description-pipeline-plan.md)
 - [mvp/v3.4/data-harness-hardening-plan.md](./mvp/v3.4/data-harness-hardening-plan.md)
 - [mvp/v3.4/design-refresh-plan.md](./mvp/v3.4/design-refresh-plan.md)

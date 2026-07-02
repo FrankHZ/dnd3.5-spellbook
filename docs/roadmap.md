@@ -155,6 +155,16 @@ Recommended next sequence:
    generated content overlays into a content DB and keep user data in a separate
    app-state DB.
 
+8. **follow-up TypeScript module config cleanup**
+
+   `data-tools` has moved to `moduleResolution: "Node16"` with an explicit
+   `rootDir`. The server still uses CommonJS plus `moduleResolution: "node"`
+   with `ignoreDeprecations: "6.0"` because direct Node16 migration exposes the
+   existing CommonJS server / ESM `@dnd/contracts` boundary. Treat the real
+   server migration as a focused follow-up: decide whether to move server to ESM
+   or add an explicit CJS-compatible contracts boundary, then remove the
+   deprecation suppression.
+
 ## Later Stable Track
 
 The stable-version backlog remains intentionally deferred:

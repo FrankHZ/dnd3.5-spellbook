@@ -1,4 +1,4 @@
-import mapping from "DATA/chm-mapping/books-zh-chm-mapping.json";
+import { readOptionalLocalJsonRecord } from "../shared/local-data-json";
 
 const BUILTIN_BOOK_LABEL_TO_ABBR: Record<string, string> = {
   DMG: "DMG",
@@ -13,7 +13,9 @@ const BUILTIN_BOOK_LABEL_TO_ABBR: Record<string, string> = {
  */
 export const BOOK_LABEL_TO_ABBR: Record<string, string> = {
   ...BUILTIN_BOOK_LABEL_TO_ABBR,
-  ...mapping,
+  ...readOptionalLocalJsonRecord<Record<string, string>>(
+    "chm-mapping/books-zh-chm-mapping.json",
+  ),
 };
 
 export function normalizeBookLabel(label: string): string {

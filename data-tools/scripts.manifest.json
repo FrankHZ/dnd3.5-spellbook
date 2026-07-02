@@ -1,0 +1,232 @@
+{
+  "schemaVersion": 1,
+  "lifecycleDefinitions": {
+    "portable": "Runs from a clean checkout without ignored local data or SQLite databases.",
+    "local-acceptance": "Maintained local gate that depends on ignored local data or SQLite databases and stays outside root verify.",
+    "maintained-local": "Maintained command for repeatable active data work; may require local data, SQLite, network access, or explicit write intent.",
+    "dormant-local": "Source-consumed local workflow kept for reruns when source data or parser logic changes; not part of active acceptance."
+  },
+  "commands": {
+    "acceptance:local": {
+      "module": "harness",
+      "lifecycle": "local-acceptance",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
+    "en:summaries:candidates": {
+      "module": "short-desc",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "en:summaries:probe": {
+      "module": "short-desc",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": false,
+      "network": true,
+      "writeCapable": false
+    },
+    "en:summaries:sources": {
+      "module": "short-desc",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": false,
+      "network": true,
+      "writeCapable": true
+    },
+    "inspect:rules": {
+      "module": "rules",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
+    "rules:index:rebuild": {
+      "module": "rules",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "rules:manifest:verify": {
+      "module": "rules",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
+    "rules:manifest:write": {
+      "module": "rules",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "rules:spells:apply": {
+      "module": "rules",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "rules:spells:validate": {
+      "module": "rules",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
+    "rules:sql:apply": {
+      "module": "rules",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "rules:sql:dry-run": {
+      "module": "rules",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
+    "spells-full:generate": {
+      "module": "rules",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "spells-full:inspect": {
+      "module": "rules",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
+    "summaries:coverage-report": {
+      "module": "short-desc",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
+    "summaries:import": {
+      "module": "short-desc",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "summaries:normalize": {
+      "module": "short-desc",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "summaries:punctuation": {
+      "module": "short-desc",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": false,
+      "writeCapable": true
+    },
+    "summaries:qa": {
+      "module": "short-desc",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
+    "summaries:reuse-apply": {
+      "module": "short-desc",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "summaries:reuse-candidates": {
+      "module": "short-desc",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
+    "summaries:source-gap-apply": {
+      "module": "short-desc",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "summaries:source-gap-candidates": {
+      "module": "short-desc",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
+    "test:portable": {
+      "module": "harness",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": false,
+      "rootVerify": true,
+      "writeCapable": false
+    },
+    "typecheck": {
+      "module": "harness",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": false,
+      "rootVerify": true,
+      "writeCapable": false
+    },
+    "zh:backcheck": {
+      "module": "zh-parser",
+      "lifecycle": "dormant-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
+    "zh:parse": {
+      "module": "zh-parser",
+      "lifecycle": "dormant-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
+    "zh:parse:test": {
+      "module": "zh-parser",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
+    "zh:preprocess": {
+      "module": "zh-parser",
+      "lifecycle": "dormant-local",
+      "requiresLocalData": true,
+      "requiresSqlite": false,
+      "writeCapable": true
+    },
+    "zh:qa": {
+      "module": "zh-parser",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": false,
+      "writeCapable": false
+    },
+    "zh:summaries:extract": {
+      "module": "zh-parser",
+      "lifecycle": "dormant-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": false
+    }
+  }
+}

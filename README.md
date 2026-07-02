@@ -31,6 +31,7 @@ For the current work order, use [docs/roadmap.md](./docs/roadmap.md).
 For the current feature map, start with [docs/features.md](./docs/features.md).
 For current UI design notes, use [docs/design.md](./docs/design.md).
 For v3.4 scope and closeout sequencing, use [docs/mvp/v3.4/integrated-plan.md](./docs/mvp/v3.4/integrated-plan.md).
+For v3.4 acceptance commands, use [docs/mvp/v3.4/acceptance-checklist.md](./docs/mvp/v3.4/acceptance-checklist.md).
 For v3.4 short-description planning, use [docs/mvp/v3.4/short-description-pipeline-plan.md](./docs/mvp/v3.4/short-description-pipeline-plan.md).
 For v3.4 data harness planning, use [docs/mvp/v3.4/data-harness-hardening-plan.md](./docs/mvp/v3.4/data-harness-hardening-plan.md).
 For early v3.4 UI refresh planning, use [docs/mvp/v3.4/design-refresh-plan.md](./docs/mvp/v3.4/design-refresh-plan.md).

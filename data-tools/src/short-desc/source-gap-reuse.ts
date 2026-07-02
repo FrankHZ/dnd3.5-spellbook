@@ -2,13 +2,13 @@ import Database from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
 
-import { exactNameMatchKeys, nameMatchKeys } from "../en-summary-matching";
+import { exactNameMatchKeys, nameMatchKeys } from "./en-summary-matching";
 import {
   loadServerEnv,
   localDataDir,
   repoRoot,
   resolveServerRelativePath,
-} from "../env";
+} from "../shared/env";
 
 type Mode = "candidates" | "apply";
 

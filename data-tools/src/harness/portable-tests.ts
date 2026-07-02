@@ -1,0 +1,234 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+
+import {
+  chooseExact,
+  exactNameMatchKeys,
+  normalizeName,
+} from "../short-desc/en-summary-matching";
+import {
+  parsePatchJsonlText,
+  validateInsertSpellShape,
+  validateLevelShape,
+} from "../rules/spells-schema";
+import { readSummaryJsonlText } from "../short-desc/summary-row-schema";
+import { mapBookLabelToAbbr, normalizeBookLabel } from "../zh-parser/mapping";
+
+type TestCase = {
+  name: string;
+  run: () => void;
+};
+
+const tests: TestCase[] = [
+  {
+    name: "script manifest classifies every npm script",
+    run: () => {
+      const dataToolsRoot = path.resolve(__dirname, "..", "..");
+      const packageJson = JSON.parse(
+        fs.readFileSync(path.join(dataToolsRoot, "package.json"), "utf-8"),
+      ) as { scripts: Record<string, string> };
+      const manifest = JSON.parse(
+        fs.readFileSync(
+          path.join(dataToolsRoot, "scripts.manifest.json"),
+          "utf-8",
+        ),
+      ) as {
+        commands: Record<
+          string,
+          {
+            module: string;
+            lifecycle: string;
+            requiresLocalData: boolean;
+            requiresSqlite: boolean;
+            writeCapable: boolean;
+          }
+        >;
+      };
+      const scriptNames = Object.keys(packageJson.scripts).sort();
+      const manifestNames = Object.keys(manifest.commands).sort();
+      assert.deepEqual(manifestNames, scriptNames);
+
+      const modules = new Set([
+        "harness",
+        "rules",
+        "short-desc",
+        "zh-parser",
+      ]);
+      const lifecycles = new Set([
+        "portable",
+        "local-acceptance",
+        "maintained-local",
+        "dormant-local",
+      ]);
+      for (const [name, command] of Object.entries(manifest.commands)) {
+        assert.ok(modules.has(command.module), `${name}: invalid module`);
+        assert.ok(
+          lifecycles.has(command.lifecycle),
+          `${name}: invalid lifecycle`,
+        );
+        assert.equal(
+          typeof command.requiresLocalData,
+          "boolean",
+          `${name}: requiresLocalData must be boolean`,
+        );
+        assert.equal(
+          typeof command.requiresSqlite,
+          "boolean",
+          `${name}: requiresSqlite must be boolean`,
+        );
+        assert.equal(
+          typeof command.writeCapable,
+          "boolean",
+          `${name}: writeCapable must be boolean`,
+        );
+      }
+    },
+  },
+  {
+    name: "source-label mapping normalizes built-in Chinese labels",
+    run: () => {
+      assert.equal(normalizeBookLabel(" 《 九剑 》 "), "九剑");
+      assert.deepEqual(mapBookLabelToAbbr("《 九剑 》"), {
+        abbr: "ToB",
+        norm: "九剑",
+      });
+      assert.deepEqual(mapBookLabelToAbbr(" 模型手册 "), {
+        abbr: "MH",
+        norm: "模型手册",
+      });
+      assert.deepEqual(mapBookLabelToAbbr("未知规则书"), {
+        abbr: null,
+        norm: "未知规则书",
+      });
+    },
+  },
+  {
+    name: "English name matching normalizes punctuation and known aliases",
+    run: () => {
+      assert.equal(normalizeName(" Protégé’s Spell (M) "), "protege's spell");
+      assert.ok(exactNameMatchKeys("Undeniable Gravity, Legion's").includes(
+        "mass undeniable gravity",
+      ));
+      assert.deepEqual(
+        chooseExact(
+          [{ name: "Mass Undeniable Gravity" }, { name: "Fireball" }],
+          "Undeniable Gravity, Legion's",
+        ),
+        [{ name: "Mass Undeniable Gravity" }],
+      );
+    },
+  },
+  {
+    name: "summary JSONL validation accepts reviewed rows and rejects duplicates",
+    run: () => {
+      const valid = {
+        schemaVersion: 1,
+        spellId: 10,
+        rulebookId: 20,
+        lang: "zh",
+        variant: "chm",
+        summaryText: "短描述。",
+        sourceKey: "chm:10",
+        sourceName: "九剑",
+        sourceKind: "chm-overview",
+        reviewStatus: "accepted",
+      };
+      const { rows, errors } = readSummaryJsonlText(`${JSON.stringify(valid)}\n`);
+      assert.deepEqual(errors, []);
+      assert.equal(rows[0]?.id, "spell-summary:10:zh:chm");
+
+      const duplicate = readSummaryJsonlText(
+        `${JSON.stringify(valid)}\n${JSON.stringify(valid)}\n`,
+      );
+      assert.equal(duplicate.rows.length, 1);
+      assert.ok(
+        duplicate.errors.some((error) =>
+          error.includes("duplicate spell/lang/variant"),
+        ),
+      );
+
+      const invalid = readSummaryJsonlText(
+        JSON.stringify({ ...valid, lang: "fr", reviewStatus: "todo" }),
+      );
+      assert.ok(invalid.errors.some((error) => error.includes("lang must be")));
+      assert.ok(
+        invalid.errors.some((error) =>
+          error.includes("reviewStatus must be accepted"),
+        ),
+      );
+    },
+  },
+  {
+    name: "structured spell patch schema catches portable JSONL errors",
+    run: () => {
+      const parseErrors: string[] = [];
+      const parsed = parsePatchJsonlText(
+        "{}\n[]\n{\"op\":\"deleteSpell\"}\nnot-json",
+        parseErrors,
+      );
+      assert.equal(parsed.length, 0);
+      assert.ok(parseErrors.some((error) => error.includes("unsupported operation")));
+      assert.ok(parseErrors.some((error) => error.includes("must be a JSON object")));
+      assert.ok(parseErrors.some((error) => error.includes("invalid JSON")));
+
+      const shapeErrors: string[] = [];
+      validateInsertSpellShape(
+        {
+          op: "insertSpell",
+          id: 1,
+          source: { rulebook: "SC" },
+          spell: {
+            name: "Fixture Spell",
+            slug: "Fixture Spell",
+            school: "Evocation",
+            description: "Text",
+            descriptionHtml: "<p>Text</p>",
+          },
+          levels: { classes: [{ class: "Wizard", level: 10 }] },
+        },
+        1,
+        shapeErrors,
+      );
+      assert.ok(shapeErrors.some((error) => error.includes("slug is not normalized")));
+
+      validateLevelShape(
+        { class: "Wizard", level: 10 },
+        1,
+        "levels.classes",
+        0,
+        shapeErrors,
+      );
+      assert.ok(shapeErrors.some((error) => error.includes("level must be 0..9")));
+
+      const okErrors: string[] = [];
+      const ok = validateInsertSpellShape(
+        {
+          op: "insertSpell",
+          id: 2,
+          source: { rulebook: "SC" },
+          spell: {
+            name: "Fixture Spell",
+            slug: "fixture-spell",
+            school: "Evocation",
+            description: "Text",
+            descriptionHtml: "<p>Text</p>",
+          },
+          levels: { classes: [{ class: "Wizard", level: 1 }] },
+        },
+        1,
+        okErrors,
+      );
+      assert.deepEqual(okErrors, []);
+      assert.equal(ok.name, "Fixture Spell");
+      assert.equal(ok.classLevels[0]?.level, 1);
+    },
+  },
+];
+
+for (const test of tests) {
+  test.run();
+  console.log(`ok - ${test.name}`);
+}
+
+console.log(`Portable data-tools tests OK (${tests.length})`);

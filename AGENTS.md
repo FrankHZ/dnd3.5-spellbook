@@ -42,25 +42,27 @@ Start with these files when orienting:
    importing, modeling, or exposing spell/class short descriptions.
 9. `docs/mvp/v3.4/data-harness-hardening-plan.md` before adding data-tools
    tests, data acceptance commands, parser QA gates, or rules-patch harnesses.
-10. `docs/mvp/v3.3/FREEZE.md` for the latest frozen release snapshot.
-11. `docs/mvp/v3.3/acceptance-checklist.md` when checking v3.3 acceptance
+10. `docs/mvp/v3.4/acceptance-checklist.md` when checking v3.4 closeout
    evidence.
-12. `docs/mvp/v3.3/data-tools-workspace-plan.md` before moving or adding data
+11. `docs/mvp/v3.3/FREEZE.md` for the latest frozen release snapshot.
+12. `docs/mvp/v3.3/acceptance-checklist.md` when checking v3.3 acceptance
+   evidence.
+13. `docs/mvp/v3.3/data-tools-workspace-plan.md` before moving or adding data
    import, parser, rules DB inspection, or rules DB patch tooling.
-13. `docs/mvp/v3.3/local-data-layout-plan.md` before moving CHM inputs, parser
+14. `docs/mvp/v3.3/local-data-layout-plan.md` before moving CHM inputs, parser
    outputs, local source data, or future rules patch files.
-14. `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before moving SQL patch
+15. `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before moving SQL patch
    assets, adding rules DB preparation commands, or importing missing English
    base spell records.
-15. `docs/mvp/v3.3/structured-spell-patch-plan.md` before designing or applying
+16. `docs/mvp/v3.3/structured-spell-patch-plan.md` before designing or applying
    missing English spell patch data.
-16. `docs/mvp/v3.3/spells-full-import-plan.md` before using local
+17. `docs/mvp/v3.3/spells-full-import-plan.md` before using local
    `spells-full` source data to generate missing English spell patches.
-17. `docs/harness.md` for validation and test-harness strategy.
-18. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
-19. `docs/mvp/v3.4/i18next-conventions-plan.md` before replacing raw-English
+18. `docs/harness.md` for validation and test-harness strategy.
+19. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
+20. `docs/mvp/v3.4/i18next-conventions-plan.md` before replacing raw-English
     frontend translation keys or tightening i18next workflow checks.
-20. Workspace READMEs for operational commands:
+21. Workspace READMEs for operational commands:
 
 - `server/README.md`
 - `data-tools/README.md`
@@ -172,6 +174,7 @@ Or run the pieces individually:
 npm run build:contracts
 npm run check:contracts
 npm run typecheck:data-tools
+npm run test:data-tools
 npm run test:server
 npm run test:web
 npm run typecheck:web
@@ -247,6 +250,28 @@ See `docs/harness.md` for details.
 - Follow `docs/mvp/v3.4/data-harness-hardening-plan.md` before adding
   data-tools tests, parser acceptance commands, or rules-patch fixture
   harnesses.
+- `data-tools/src/` is grouped by module: `shared/`, `db/`, `rules/`,
+  `short-desc/`, `zh-parser/`, and `harness/`. Add new maintained code under
+  the owning module before classifying command lifecycle in docs or manifests.
+- Classify every `data-tools/package.json` script in
+  `data-tools/scripts.manifest.json`. The portable data-tools harness checks
+  this manifest so new scripts do not become implicit maintenance promises.
+- Use `npm run -w data-tools test:portable` for fixture-only data-tools helper
+  coverage. Keep it independent of ignored CHM/raw data, the nested `data/`
+  repo, and SQLite databases. Root `npm run test:data-tools` delegates to this
+  portable command.
+- Distinguish maintained data-tool commands from one-time/ad hoc scripts.
+  Maintained import, validation, manifest, parser, and acceptance commands
+  deserve focused helper tests; one-time migration or investigation scripts do
+  not need harness coverage unless they are promoted into the maintained
+  workflow.
+- Treat source-consumed workflows as `dormant-local`: keep typecheck and command
+  compatibility, but do not add harness work unless new source data or parser
+  changes make the workflow active again.
+- Use `npm run -w data-tools acceptance:local` for v3.4 local data acceptance.
+  It runs `rules:manifest:verify`, `summaries:qa`, and
+  `summaries:import -- --dry-run` along with data-tools typecheck. Do not wire
+  this command into root `npm run verify`.
 - Run `npm run -w data-tools zh:qa` after CHM source cleanup or parser changes
   to catch mechanical source/header drift before import.
 - Run `npm run -w data-tools zh:summaries:extract` after changing CHM

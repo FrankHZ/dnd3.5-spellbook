@@ -3,7 +3,7 @@ import path from "node:path";
 import iconv from "iconv-lite";
 import * as cheerio from "cheerio";
 
-import { localDataDir } from "../../env";
+import { localDataDir } from "../../shared/env";
 import {
   type AliasCategory,
   type AliasStep,

@@ -1,7 +1,7 @@
 import Database from "better-sqlite3";
 import path from "node:path";
 
-import { loadServerEnv, resolveServerRelativePath } from "./env";
+import { loadServerEnv, resolveServerRelativePath } from "../shared/env";
 
 type SqliteTable = {
   name: string;

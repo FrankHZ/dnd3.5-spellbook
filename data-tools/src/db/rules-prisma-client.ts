@@ -1,7 +1,7 @@
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "prisma-rules-clean/generated/client";
 
-import { loadServerEnv } from "../env";
+import { loadServerEnv } from "../shared/env";
 
 loadServerEnv();
 

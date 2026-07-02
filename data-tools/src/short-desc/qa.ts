@@ -7,7 +7,7 @@ import {
   nameMatchKeys,
   normalizeName,
 } from "./en-summary-matching";
-import { localDataDir } from "./env";
+import { localDataDir } from "../shared/env";
 
 type Severity = "error" | "warning" | "info";
 

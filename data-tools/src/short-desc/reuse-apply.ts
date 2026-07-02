@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { localDataDir, repoRoot } from "../env";
+import { localDataDir, repoRoot } from "../shared/env";
 
 type Lang = "en" | "zh";
 

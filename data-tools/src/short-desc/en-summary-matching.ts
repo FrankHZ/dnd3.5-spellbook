@@ -1,5 +1,11 @@
-import aliasMapExtra from "DATA/chm-mapping/enName-aliases-extra.json";
-import aliasMapGlobal from "DATA/chm-mapping/enName-aliases-global.json";
+import { readOptionalLocalJsonRecord } from "../shared/local-data-json";
+
+const aliasMapExtra = readOptionalLocalJsonRecord<Record<string, string[]>>(
+  "chm-mapping/enName-aliases-extra.json",
+);
+const aliasMapGlobal = readOptionalLocalJsonRecord<Record<string, string>>(
+  "chm-mapping/enName-aliases-global.json",
+);
 
 const BUILTIN_IMARVIN_ALIAS_EXTRA: Record<string, string[]> = {
   "Channel Greater Celestial": ["Greater Channel Celestial"],
@@ -27,6 +33,7 @@ export function normalizeName(value: string) {
     .replace(/\s+/g, " ")
     .replace(/[’]/g, "'")
     .replace(/[‐‑‒–—]/g, "-")
+    .trim()
     .replace(/(?:\s+\((?:M|F|DF|XP)\))+$/gi, "")
     .trim()
     .toLowerCase();

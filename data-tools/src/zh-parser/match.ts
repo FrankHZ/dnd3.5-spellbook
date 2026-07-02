@@ -1,8 +1,14 @@
 import { Prisma } from "prisma-rules-clean/generated/client";
 import { rulesPrisma as prisma } from "../db/rules-prisma-client";
-import aliasMapGlobal from "DATA/chm-mapping/enName-aliases-global.json";
-import aliasMapExtra from "DATA/chm-mapping/enName-aliases-extra.json";
+import { readOptionalLocalJsonRecord } from "../shared/local-data-json";
 import { BOOK_LABEL_TO_ABBR, normalizeBookLabel } from "./mapping";
+
+const aliasMapGlobal = readOptionalLocalJsonRecord<Record<string, string>>(
+  "chm-mapping/enName-aliases-global.json",
+);
+const aliasMapExtra = readOptionalLocalJsonRecord<Record<string, string[]>>(
+  "chm-mapping/enName-aliases-extra.json",
+);
 
 const ZH_BOOK_MAP: Record<string, string> = BOOK_LABEL_TO_ABBR;
 const BUILTIN_EN_ALIAS_MAP_GLOBAL: Record<string, string> = {

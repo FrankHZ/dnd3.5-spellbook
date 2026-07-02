@@ -7,37 +7,11 @@ import {
   localDataDir,
   repoRoot,
   resolveServerRelativePath,
-} from "../env";
-
-type Lang = "en" | "zh";
-
-type SummaryRecord = {
-  schemaVersion?: unknown;
-  stableKey?: unknown;
-  spellId?: unknown;
-  rulebookId?: unknown;
-  rulebookAbbr?: unknown;
-  lang?: unknown;
-  variant?: unknown;
-  summaryText?: unknown;
-  sourceKey?: unknown;
-  sourceName?: unknown;
-  sourceKind?: unknown;
-  reviewStatus?: unknown;
-};
-
-type SummaryRow = {
-  id: string;
-  spellId: number;
-  rulebookId: number;
-  lang: Lang;
-  variant: string;
-  summaryText: string;
-  sourceKey: string | null;
-  sourceName: string | null;
-  sourceKind: string | null;
-  reviewStatus: string;
-};
+} from "../shared/env";
+import {
+  readSummaryJsonlText,
+  type SummaryRow,
+} from "./summary-row-schema";
 
 type ExistingRow = Omit<SummaryRow, "id">;
 
@@ -94,136 +68,12 @@ function appDbPath() {
   return resolveServerRelativePath(raw.slice("file:".length));
 }
 
-function asInteger(value: unknown) {
-  return typeof value === "number" && Number.isInteger(value)
-    ? value
-    : undefined;
-}
-
-function asString(value: unknown) {
-  return typeof value === "string" ? value.trim() : undefined;
-}
-
-function asOptionalString(value: unknown) {
-  if (value === null || value === undefined) return null;
-  return typeof value === "string" ? value.trim() || null : undefined;
-}
-
-function stableId(spellId: number, lang: Lang, variant: string) {
-  return `spell-summary:${spellId}:${lang}:${variant}`;
-}
-
-function validateRecord(
-  record: SummaryRecord,
-  line: number,
-  errors: string[],
-): SummaryRow | null {
-  if (record.schemaVersion !== 1) {
-    errors.push(`line ${line}: schemaVersion must be 1`);
-  }
-
-  const spellId = asInteger(record.spellId);
-  const rulebookId = asInteger(record.rulebookId);
-  const langRaw = asString(record.lang);
-  const variant = asString(record.variant);
-  const summaryText = asString(record.summaryText);
-  const reviewStatus = asString(record.reviewStatus);
-  const sourceKey = asOptionalString(record.sourceKey);
-  const sourceName = asOptionalString(record.sourceName);
-  const sourceKind = asOptionalString(record.sourceKind);
-
-  if (spellId === undefined || spellId <= 0) {
-    errors.push(`line ${line}: spellId must be a positive integer`);
-  }
-  if (rulebookId === undefined || rulebookId <= 0) {
-    errors.push(`line ${line}: rulebookId must be a positive integer`);
-  }
-  if (langRaw !== "en" && langRaw !== "zh") {
-    errors.push(`line ${line}: lang must be en or zh`);
-  }
-  if (!variant) errors.push(`line ${line}: variant is required`);
-  if (!summaryText) errors.push(`line ${line}: summaryText is required`);
-  if (reviewStatus !== "accepted") {
-    errors.push(`line ${line}: reviewStatus must be accepted`);
-  }
-  if (sourceKey === undefined) {
-    errors.push(`line ${line}: sourceKey must be a string or null`);
-  }
-  if (sourceName === undefined) {
-    errors.push(`line ${line}: sourceName must be a string or null`);
-  }
-  if (sourceKind === undefined) {
-    errors.push(`line ${line}: sourceKind must be a string or null`);
-  }
-
-  if (
-    spellId === undefined ||
-    rulebookId === undefined ||
-    (langRaw !== "en" && langRaw !== "zh") ||
-    !variant ||
-    !summaryText ||
-    reviewStatus !== "accepted" ||
-    sourceKey === undefined ||
-    sourceName === undefined ||
-    sourceKind === undefined
-  ) {
-    return null;
-  }
-
-  return {
-    id: stableId(spellId, langRaw, variant),
-    spellId,
-    rulebookId,
-    lang: langRaw,
-    variant,
-    summaryText,
-    sourceKey,
-    sourceName,
-    sourceKind,
-    reviewStatus,
-  };
-}
-
 function readInput(inputPath: string) {
   if (!fs.existsSync(inputPath)) {
     throw new Error(`Input file not found: ${inputPath}`);
   }
 
-  const errors: string[] = [];
-  const rows: SummaryRow[] = [];
-  const seen = new Set<string>();
-
-  fs.readFileSync(inputPath, "utf-8")
-    .split(/\r?\n/)
-    .forEach((lineText, index) => {
-      const text = lineText.trim();
-      if (!text) return;
-
-      let parsed: SummaryRecord;
-      try {
-        parsed = JSON.parse(text) as SummaryRecord;
-      } catch (error) {
-        errors.push(
-          `line ${index + 1}: invalid JSON: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        );
-        return;
-      }
-
-      const row = validateRecord(parsed, index + 1, errors);
-      if (!row) return;
-
-      const key = `${row.spellId}:${row.lang}:${row.variant}`;
-      if (seen.has(key)) {
-        errors.push(`line ${index + 1}: duplicate spell/lang/variant ${key}`);
-        return;
-      }
-      seen.add(key);
-      rows.push(row);
-    });
-
-  return { rows, errors };
+  return readSummaryJsonlText(fs.readFileSync(inputPath, "utf-8"));
 }
 
 function tableExists(db: Database.Database) {
