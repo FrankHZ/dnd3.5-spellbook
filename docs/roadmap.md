@@ -92,28 +92,20 @@ future short-description import creates new target text to review.
 
 Recommended next sequence:
 
-1. **v3.4 candidate: short description pipeline**
-
-   Use `docs/mvp/v3.4/short-description-pipeline-plan.md` as the source of
-   truth for the implemented extraction, normalization, import, API, and UI
-   consumer path. The current local app DB import contains `6,124` accepted
-   spell summary rows in `I18nSpellSummaryText`. Remaining work is source-text
-   spot checking and any follow-up queue cleanup, preferably delegated to
-   subagents, not new consumer architecture.
-
-2. **v3.4 candidate: data harness hardening**
+1. **v3.4 candidate: data harness hardening**
 
    Use `docs/mvp/v3.4/data-harness-hardening-plan.md` to add portable
    data-tools tests and explicit local-data acceptance checks around CHM parser
-   matching, source-label normalization, and structured rules patch validation.
+   matching, source-label normalization, structured rules patch validation, and
+   the local rules DB manifest.
 
-3. **v3.4 candidate: frontend design refresh**
+2. **v3.4 candidate: frontend design refresh**
 
    Use `docs/mvp/v3.4/design-refresh-plan.md` to review existing frontend
    components against `docs/design.md`, then implement small styling and
    consistency improvements that are easy to inspect in the running app.
 
-4. **v3.4 candidate: frontend i18n convention cleanup**
+3. **v3.4 candidate: frontend i18n convention cleanup**
 
    Keep `i18next`, but replace raw-English translation keys with stable
    semantic keys and make `npm run i18n:check` enforce the convention.
@@ -121,6 +113,18 @@ Recommended next sequence:
    See:
 
    - `docs/mvp/v3.4/i18next-conventions-plan.md`
+
+4. **follow-up: PDF-backed short-description coverage**
+
+   Use `docs/mvp/v3.4/short-description-pipeline-plan.md` as the source of
+   truth for the implemented extraction, normalization, import, API, and UI
+   consumer path. The current local app DB import contains `6,532` accepted
+   spell summary rows in `I18nSpellSummaryText`. Low-risk automatic English
+   source-gap reuse has been exhausted for core plus supplementals; the latest
+   scoped coverage report shows `328` missing Chinese summaries, `1,053`
+   missing English summaries, and `168` missing-both rows across those scopes.
+   Further short-description coverage should be source/PDF-backed rather than
+   fuzzy reuse.
 
 5. **follow-up architecture review: DB ownership boundaries**
 
