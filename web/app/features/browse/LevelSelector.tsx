@@ -16,7 +16,7 @@ export function LevelSelector({
 
   return (
     <div className="space-y-3">
-      <div className="font-medium">{t("Level")}</div>
+      <div className="font-medium">{t("level.title")}</div>
       {allowAnyLevel && (
         <Button
           type="button"
@@ -25,7 +25,7 @@ export function LevelSelector({
           className="w-full justify-center"
           onClick={() => onChange(null)}
         >
-          {t("Any Level")}
+          {t("level.any-level")}
         </Button>
       )}
       <Button
@@ -35,7 +35,7 @@ export function LevelSelector({
         className="w-full justify-center"
         onClick={() => onChange("all")}
       >
-        {t("All Levels")}
+        {t("level.all-levels")}
       </Button>
       <div className="grid grid-cols-5 gap-2">
         {Array.from({ length: 10 }, (_, i) => (
@@ -54,7 +54,7 @@ export function LevelSelector({
 
       {!allowAnyLevel && level === null && (
         <div className="text-sm text-destructive">
-          {t("Select a spell level (0-9).")}
+          {t("validation.select-level")}
         </div>
       )}
     </div>

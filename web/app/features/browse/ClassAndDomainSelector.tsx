@@ -27,7 +27,7 @@ export function ClassAndDomainSelector({
   const classItems: PickerItem[] = classes.map((c) => ({
     id: c.id,
     name: nameWithEn(c),
-    group: c.prestige ? t("Prestige Classes") : t("Base Classes"),
+    group: c.prestige ? t("classes.prestige") : t("classes.base"),
   }));
 
   const domainItems: PickerItem[] = domains.map((d) => ({
@@ -38,16 +38,16 @@ export function ClassAndDomainSelector({
   return (
     <div className="space-y-3">
       <MultiSelectPicker
-        title={t("Classes")}
-        placeholder={t("Filter classes…")}
+        title={t("filters.classes")}
+        placeholder={t("filters.classes-placeholder")}
         items={classItems}
         selectedIds={classIds}
         onChange={onChangeClasses}
       />
 
       <MultiSelectPicker
-        title={t("Domains")}
-        placeholder={t("Filter domains…")}
+        title={t("filters.domains")}
+        placeholder={t("filters.domains-placeholder")}
         items={domainItems}
         selectedIds={domainIds}
         onChange={onChangeDomains}

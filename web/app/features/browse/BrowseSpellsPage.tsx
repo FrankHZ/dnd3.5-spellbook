@@ -72,17 +72,17 @@ export default function BrowsePage() {
 
   const validationMessages: string[] = [];
   if (classIds.length === 0 && domainIds.length === 0) {
-    validationMessages.push(t("Select at least one class or domain."));
+    validationMessages.push(t("validation.select-class-or-domain"));
   }
   if (level === null) {
-    validationMessages.push(t("Select a spell level (0-9)."));
+    validationMessages.push(t("validation.select-level"));
   }
 
   const errorMessage = useMemo(() => {
     const err = browseQuery.error;
     if (!err) return null;
     if (err instanceof ApiError) return err.message;
-    return t("Request failed. Please try again.");
+    return t("errors.request-failed");
   }, [browseQuery.error, t]);
 
   const total = browseQuery.data?.total ?? 0;
@@ -125,8 +125,7 @@ export default function BrowsePage() {
             <Card className="gap-0">
               <CardHeader className="gap-1 py-1">
                 <CardDescription>
-                  {t(
-                    "Choose at least one class or domain, then set a spell level.",
+                  {t("validation.choose-scope-and-level",
                   )}
                 </CardDescription>
               </CardHeader>
@@ -155,8 +154,7 @@ export default function BrowsePage() {
               <Card className="gap-0">
                 <CardHeader className="gap-1">
                   <CardDescription>
-                    {t(
-                      "No spells found for selected classes at level {{level}}.",
+                    {t("results.empty-for-level",
                       { level },
                     )}
                   </CardDescription>
@@ -183,7 +181,7 @@ export default function BrowsePage() {
                     ? groups?.map((group) => (
                         <div key={group.level} className="divide-y">
                           <div className="bg-muted/30 px-3 py-2 text-center text-sm font-medium tracking-wide">
-                            {t("Level {{level}}", {
+                            {t("level.value", {
                               ns: "spell-browse",
                               level: group.level,
                             })}

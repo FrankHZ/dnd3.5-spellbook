@@ -122,25 +122,6 @@
     "{{spellCount}} spells.",
     "{{summary}}. Total level adj: +{{adj}}."
   ],
-  "spell-browse": [
-    "All Levels",
-    "Any Level",
-    "Base Classes",
-    "Choose at least one class or domain, then set a spell level.",
-    "Classes",
-    "Domains",
-    "Filter classes…",
-    "Filter domains…",
-    "Group by level",
-    "Level",
-    "Level {{level}}",
-    "No spells found for selected classes at level {{level}}.",
-    "Prestige Classes",
-    "Request failed. Please try again.",
-    "Select a spell level (0-9).",
-    "Select at least one class or domain.",
-    "Show details"
-  ],
   "spell-detail": [
     "AF",
     "Area",
