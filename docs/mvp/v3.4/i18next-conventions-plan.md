@@ -3,8 +3,8 @@
 This plan captures the v3.4 direction for keeping `i18next` while making the
 frontend UI-copy workflow less fragile.
 
-Status: planned for post-v3.3 work. Use this document as the implementation
-reference when replacing raw-English translation keys with stable semantic keys.
+Status: implemented. Use this document as the implementation reference for the
+semantic-key i18next workflow and its audit guardrails.
 
 ## User Outcome
 
@@ -211,10 +211,14 @@ Suggested output:
   - plural base keys missing `_one` or `_other` when used with `count`
 - Wire the audit into `npm run i18n:check` after the current extractor check.
 
-This phase should allow existing raw-English keys temporarily through an
-explicit legacy allowlist. The allowlist should shrink during later phases.
+This phase initially allowed existing raw-English keys temporarily through an
+explicit legacy allowlist. The implementation has migrated the tracked
+namespaces and left `web/scripts/i18n-legacy-keys.json` empty so future raw-key
+additions fail `npm run i18n:check`.
 
 ### Phase 2: Low-Risk Namespace Migration
+
+Status: implemented for `topbar`, `pager`, `settings`, and `spell-scope`.
 
 Start with small namespaces:
 
@@ -245,6 +249,10 @@ Acceptance for each namespace:
 - locale diff is reviewable by namespace
 
 ### Phase 3: Feature Namespace Migration
+
+Status: implemented for `spell-browse`, `spell-search`, `spell-detail`,
+`translation`, and `collections`. `metamagic` and `collections-default` already
+used data-like semantic keys and remain extractor-ignored/manual namespaces.
 
 Migrate larger feature namespaces after the audit and small namespaces are
 proven:
@@ -341,17 +349,16 @@ When the implementation lands, update:
 
 ## Acceptance Criteria
 
-- New UI copy uses semantic keys rather than raw-English keys.
-- `npm run i18n:check` fails on new raw-English keys outside an explicit legacy
-  allowlist.
-- English and Chinese locale files have matching key sets for regular
-  namespaces.
-- Pluralized keys are represented consistently.
-- `collections-default` and `metamagic` manual maintenance rules are documented
-  if they remain extractor-ignored.
-- The legacy raw-English allowlist shrinks as namespaces migrate.
-- `docs/i18n.md` reflects the final convention.
-- `npm run verify` passes after the migration.
+- [x] New UI copy uses semantic keys rather than raw-English keys.
+- [x] `npm run i18n:check` fails on new raw-English keys outside an explicit
+  legacy allowlist.
+- [x] English and Chinese locale files have matching normalized base-key sets.
+- [x] Pluralized keys are represented consistently.
+- [x] `collections-default` and `metamagic` manual maintenance rules are
+  documented if they remain extractor-ignored.
+- [x] The legacy raw-English allowlist shrinks as namespaces migrate.
+- [x] `docs/i18n.md` reflects the final convention.
+- [x] `npm run verify` passes after the migration.
 
 ## Open Questions
 

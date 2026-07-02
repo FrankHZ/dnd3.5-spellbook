@@ -50,9 +50,9 @@ Start with the integrated plan, then move to the focused topic doc:
 - [mvp/v3.4/i18next-conventions-plan.md](./mvp/v3.4/i18next-conventions-plan.md)
 
 The integrated plan records the current v3.4 scope decision:
-short-description delivery, data harness hardening, and release/freeze docs are
+short-description delivery, data harness hardening, and release/freeze docs were
 the closeout path. The design refresh and i18next plans remain valid focused
-plans, but they are parallel or follow-up tracks unless explicitly promoted.
+plans; both have implementation records under their focused topic docs.
 
 ## Early v3.5 Planning
 

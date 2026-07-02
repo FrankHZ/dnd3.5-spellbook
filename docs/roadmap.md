@@ -125,11 +125,11 @@ Recommended next sequence:
    consistency improvements that are easy to inspect in the running app. This
    is not a v3.4 freeze blocker unless explicitly promoted.
 
-5. **parallel or follow-up: frontend i18n convention cleanup**
+5. **completed: frontend i18n convention cleanup**
 
    Keep `i18next`, but replace raw-English translation keys with stable
    semantic keys and make `npm run i18n:check` enforce the convention. This is
-   independent from spell/content summaries and can move to v3.5.
+   independent from spell/content summaries.
 
    See:
 
