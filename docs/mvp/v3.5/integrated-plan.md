@@ -20,9 +20,11 @@ and app-owned overlays into a more maintainable content platform:
 - dependency maintenance, docs, and CI/CD make agent work safer instead of more
   ceremonial
 
-Large content-release goals such as bulk Chinese/English translation QA,
-`data/spells-full` completion imports, static/offline HTML artifacts, and
-versioned content packs remain long-term roadmap targets, not v3.5 deliverables.
+Large content-release goals such as bulk Chinese/English translation and
+proofreading QA, `data/spells-full` completion imports, static/offline HTML
+artifacts, and versioned content packs remain long-term roadmap targets, not
+v3.5 deliverables. This is content QA work, not a v3.5 bilingual comparison UI
+feature.
 
 ## Child Plans
 
@@ -43,13 +45,13 @@ the affected child plan together.
 
 ### 0. Freeze Inputs
 
-Start v3.5 only after accepted v3.4 short-description and data-harness docs are
-merged or deliberately rebased into the v3.5 planning branch.
+Start v3.5 from the frozen v3.4 snapshot:
+`docs/mvp/v3.4/FREEZE.md`.
 
 Required state:
 
-- no unreviewed v3.4 schema assumptions copied by hand
-- `docs/roadmap.md` points at the accepted v3.4 state
+- no unreviewed v3.4 schema assumptions copied from pre-freeze plan drafts
+- `docs/roadmap.md` points at the frozen v3.4 state
 - local data assumptions are documented as local-only when they cannot enter CI
 
 ### 1. Split DB Ownership
@@ -220,7 +222,7 @@ Expected output:
 | CI vs local data | CI/CD, rules normalization, data harness | No conflict, but implementation must create portable fixtures or preparation commands before enabling backend API tests in CI. Ignored local DBs cannot be CI inputs. |
 | CD vs deploy scripts | CI/CD, deployment docs | No conflict. CD wrappers call tracked scripts; deploy logic stays in `docs/deployment-scripts/`. |
 | AGENTS vs docs index | agent guide, CI/CD module docs, this plan | No conflict. `docs/README.md` is the map, this plan is v3.5 coordination, and `AGENTS.md` should shrink after the review. |
-| v3.5 vs long-term content artifacts | roadmap, stable backlog | No conflict. Bulk translation QA, `data/spells-full` completion imports, static/offline HTML artifacts, content packs, and offline search indexes stay long-term unless explicitly pulled into a later version plan. |
+| v3.5 vs long-term content artifacts | roadmap, stable backlog | No conflict. Bulk translation/proofreading QA, `data/spells-full` completion imports, static/offline HTML artifacts, content packs, and offline search indexes stay long-term unless explicitly pulled into a later version plan. |
 
 ## Review Notes By Child Plan
 

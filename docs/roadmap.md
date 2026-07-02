@@ -118,8 +118,9 @@ Mechanical CHM source QA now runs through `npm run -w data-tools zh:qa`. The
 current report has no errors or warnings; remaining body-note and long-bold-text
 markers are informational review leads, not parser blockers.
 
-Full bulk translation QA is deferred until a large translation rewrite or a
-future short-description import creates new target text to review.
+Full bulk Chinese/English translation and proofreading QA is deferred until a
+large translation rewrite or a future short-description import creates new
+target text to review.
 
 ## Next Work
 
@@ -237,7 +238,7 @@ topic-specific child plans.
 The stable-version backlog remains intentionally deferred:
 
 - content artifact pipeline for versioned content releases
-- large-scale Chinese/English translation and QA workflow
+- large-scale Chinese/English translation/proofreading QA workflow
 - `data/spells-full` completion workflow for adding remaining source-backed
   English spells into the content/rules DB path
 - static HTML/offline artifact generation to replace old loose HTML

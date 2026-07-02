@@ -44,7 +44,8 @@ canonical runtime target and treat the legacy DB as an upstream source.
 
 - Do not rewrite all DnDTools tables. Start with spell-facing tables and the
   metadata required by Browse, Search, detail, and prepared-spell workflows.
-- Do not make full bulk translation QA part of this v3.5 slice.
+- Do not make full bulk Chinese/English translation/proofreading QA part of
+  this v3.5 slice.
 - Do not add every possible frontend filter at once. Expose the normalized
   query foundation first, then add UI controls in small steps.
 - Do not drop raw legacy values after parsing. Raw values are needed for review,
