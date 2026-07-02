@@ -2,15 +2,12 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import {
-  isRawEnglishI18nKey,
-  normalizePluralKey,
-  normalizedKeySet,
-  uniqueSorted,
-} from "../app/i18n/audit-rules.ts";
-
 type LocaleMap = Record<string, string>;
 type LegacyAllowlist = Record<string, string[]>;
+
+const pluralSuffixPattern = /_(zero|one|two|few|many|other)$/;
+const semanticKeyPattern = /^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$/;
+const rawKeyPattern = /[A-Z]|\s|[.!?,:;()[\]"'“”]|{{|\t|\n|…/;
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const webDir = dirname(scriptDir);
@@ -22,6 +19,26 @@ const allowlistPath = join(scriptDir, "i18n-legacy-keys.json");
 
 function readJson<T>(path: string): T {
   return JSON.parse(readFileSync(path, "utf8")) as T;
+}
+
+function normalizePluralKey(key: string): string {
+  return key.replace(pluralSuffixPattern, "");
+}
+
+function isSemanticI18nKey(key: string): boolean {
+  return semanticKeyPattern.test(normalizePluralKey(key));
+}
+
+function isRawEnglishI18nKey(key: string): boolean {
+  return !isSemanticI18nKey(key) && rawKeyPattern.test(key);
+}
+
+function uniqueSorted(values: Iterable<string>): string[] {
+  return Array.from(new Set(values)).sort();
+}
+
+function normalizedKeySet(keys: Iterable<string>): Set<string> {
+  return new Set(Array.from(keys, normalizePluralKey));
 }
 
 function readStringArrayExport(path: string, exportName: string): string[] {
