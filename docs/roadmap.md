@@ -159,6 +159,13 @@ Recommended next sequence:
    review dependencies, preserve CD as script-backed deployment, and shrink
    `AGENTS.md` back toward a compact execution guide.
 
+   Current dependency status: the first v3.5 infra slice refreshes lockfile
+   entries that fit existing semver ranges. Major or ecosystem upgrades remain
+   deferred into focused branches: React Router 8, Vite 8, i18next 26,
+   i18next-http-backend 4, react-i18next 17, lucide-react 1, shadcn 4,
+   vite-tsconfig-paths 6, @types/node 26, and the Prisma dev-chain audit fix
+   once a Prisma 7-compatible path is available.
+
 6. **PDF-backed short-description coverage**
 
    Keep this as follow-up content work unless explicitly promoted into v3.5.
@@ -232,6 +239,9 @@ topic-specific child plans.
    preserve CD as a thin wrapper around the current deployment scripts, and
    design a merge-to-main agent job that refreshes high-level module design docs
    after accepted changes.
+
+   Treat held-back major dependency upgrades as separate follow-up branches, not
+   incidental cleanup inside DB, data, i18n, or frontend feature branches.
 
 ## Later Stable Track
 
