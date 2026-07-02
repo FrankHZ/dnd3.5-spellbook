@@ -169,6 +169,25 @@ prefer grouped labels.
 
 ## Rollout Slices
 
+### Backend Handoff Notes
+
+The first normalized rules content slice exposes generated rows with these
+backend-facing categories:
+
+- taxonomy facets: `school`, `subschool`, `descriptor`
+- list entries: `class` and `domain`, preserving raw `extra`, variant labels, and
+  review notes
+- components: boolean component rows plus raw `extra_components` as reviewable
+  `other` rows
+- mechanics facets: `casting_time`, `range`, `target`, `effect`, `area`,
+  `duration`, `saving_throw`, and `spell_resistance`
+
+Frontend controls should wait for typed API DTOs and metadata endpoints. Initial
+consumer work should prefer taxonomy and conservative mechanics categories that
+have low review counts in `rules:content:audit`; rows with
+`reviewStatus: "review"` should remain display/provenance material, not filter
+vocabulary, until backend acceptance promotes them.
+
 ### Slice 1: Contract And URL Foundation
 
 - Add typed DTO fields for normalized filters.

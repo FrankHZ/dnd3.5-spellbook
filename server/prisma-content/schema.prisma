@@ -168,3 +168,162 @@ model I18nRulebookText {
     @@index([lang, rulebookId])
     @@index([rulebookId])
 }
+
+model RulesContentBuild {
+    id               String   @id
+    sourceKind       String   @default("rules-clean")
+    sourceSha256     String?
+    generatorVersion String
+    generatedAt      DateTime @default(now())
+    spellCount       Int
+    issueCount       Int
+
+    @@index([sourceKind, generatedAt])
+}
+
+model RulebookContent {
+    id               String @id
+    legacyRulebookId Int    @unique
+    editionId        Int
+    name             String
+    abbr             String
+    slug             String
+    displayName      String?
+    displayAbbr      String?
+    rawJson          String?
+
+    @@index([editionId])
+    @@index([slug])
+}
+
+model SpellContent {
+    id               String @id
+    legacySpellId    Int    @unique
+    canonicalName    String
+    slug             String
+    sourceRulebookId Int
+    sourcePage       Int?
+    schoolRaw        String?
+    subschoolRaw     String?
+    castingTimeRaw   String?
+    rangeRaw         String?
+    targetRaw        String?
+    effectRaw        String?
+    areaRaw          String?
+    durationRaw      String?
+    savingThrowRaw   String?
+    resistanceRaw    String?
+    componentsRaw    String?
+    descriptionHash  String
+    rawJson          String?
+
+    @@index([canonicalName])
+    @@index([slug])
+    @@index([sourceRulebookId])
+}
+
+model SpellAppearance {
+    id               String  @id
+    spellId          String
+    legacySpellId    Int
+    rulebookId       Int
+    page             Int?
+    printedName      String
+    sourceSlug       String
+    sourceKey        String?
+    sourceNote       String?
+
+    @@unique([legacySpellId, rulebookId, printedName])
+    @@index([spellId])
+    @@index([rulebookId])
+}
+
+model SpellTaxonomyFacet {
+    id            String  @id
+    spellId       String
+    facetType     String
+    facetKey      String
+    legacyFacetId Int?
+    name          String
+    slug          String?
+    sortOrder     Int     @default(0)
+    rawText       String?
+    sourceField   String
+    reviewStatus  String  @default("accepted")
+    issueCode     String?
+
+    @@unique([spellId, facetType, facetKey, sortOrder])
+    @@index([facetType, facetKey])
+    @@index([spellId])
+}
+
+model SpellListEntry {
+    id            String  @id
+    spellId       String
+    listType      String
+    ownerLegacyId Int
+    ownerName     String
+    ownerSlug     String
+    level         Int
+    rulebookId    Int?
+    rawExtra      String?
+    variantLabel  String?
+    note          String?
+    sourceRowId   Int?
+    sourceTable   String
+    reviewStatus  String  @default("accepted")
+    issueCode     String?
+
+    @@index([listType, ownerLegacyId, level])
+    @@index([spellId])
+    @@index([rulebookId])
+}
+
+model SpellComponent {
+    id            String  @id
+    spellId       String
+    componentType String
+    present       Boolean
+    rawText       String?
+    detailText    String?
+    sourceField   String
+    reviewStatus  String  @default("accepted")
+    issueCode     String?
+
+    @@unique([spellId, componentType, sourceField])
+    @@index([componentType, present])
+    @@index([spellId])
+}
+
+model SpellMechanicFacet {
+    id           String  @id
+    spellId      String
+    mechanicType String
+    rawText      String?
+    category     String
+    amount       Int?
+    unit         String?
+    flagsJson    String?
+    sourceField  String
+    reviewStatus String  @default("accepted")
+    issueCode    String?
+
+    @@unique([spellId, mechanicType])
+    @@index([mechanicType, category])
+    @@index([spellId])
+}
+
+model RulesContentIssue {
+    id          String  @id
+    spellId     String?
+    sourceTable String
+    sourceField String
+    rawText     String?
+    issueCode   String
+    severity    String
+    detail      String?
+
+    @@index([issueCode])
+    @@index([severity])
+    @@index([spellId])
+}

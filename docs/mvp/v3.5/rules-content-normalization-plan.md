@@ -170,6 +170,26 @@ The generator should emit review queues instead of hiding parser uncertainty.
    - Search/detail response parity against current API fixtures
 6. Generate the content DB only after reports pass the selected acceptance gate.
 
+## First Implementation Slice
+
+The `codex/rules-content-normalization` branch starts with the backend/content
+foundation only:
+
+- content DB schema tables named for durable rules content concepts, such as
+  `SpellContent`, `SpellTaxonomyFacet`, and `RulesContentIssue`
+- `rules:content:audit` for read-only dirty-field inventory over the legacy rules
+  DB
+- `rules:content:generate` for a rebuildable generated JSON artifact under
+  `data-tools/out/rules-content/`
+- `rules:content:import` for replacing only generated normalized content tables
+  in `CONTENT_DATABASE_URL`
+- portable fixture tests for the transform so core normalization remains
+  clone-friendly
+
+This slice intentionally does not change runtime spell queries or frontend
+consumer behavior. Import is write-capable only when run explicitly; local
+acceptance uses read-only generation and existing dry-run import gates.
+
 ## API And Frontend Boundary
 
 Start with API shape and backend queries before adding many controls. The

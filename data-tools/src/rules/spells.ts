@@ -17,7 +17,9 @@ import {
   parsePatchJsonlText,
   validateInsertSpellShape,
   validateLevelShape,
+  validateUpdateSpellShape,
   type InsertSpellOperation,
+  type UpdateSpellOperation,
 } from "./spells-schema";
 
 type Mode = "validate" | "apply";
@@ -28,6 +30,7 @@ type LookupValue = {
 };
 
 type ResolvedInsertSpell = {
+  kind: "insertSpell";
   line: number;
   op: InsertSpellOperation;
   spellId: number;
@@ -39,9 +42,19 @@ type ResolvedInsertSpell = {
   domainLevels: Array<{ domainId: number; level: number; extra: string }>;
 };
 
+type ResolvedUpdateSpell = {
+  kind: "updateSpell";
+  line: number;
+  op: UpdateSpellOperation;
+  spellId: number;
+  slug: string;
+};
+
+type ResolvedOperation = ResolvedInsertSpell | ResolvedUpdateSpell;
+
 type ValidationResult = {
   patchPath: string;
-  operations: ResolvedInsertSpell[];
+  operations: ResolvedOperation[];
   errors: string[];
   warnings: string[];
   maxIds: Record<string, number>;
@@ -204,9 +217,46 @@ function validatePatch(db: Database.Database, patchPath: string): ValidationResu
   const seenSpellIds = new Set<number>();
   const seenSpellKeys = new Set<string>();
   const seenSlugs = new Set<string>();
-  const resolved: ResolvedInsertSpell[] = [];
+  const resolved: ResolvedOperation[] = [];
 
   for (const { line, value } of parsed) {
+    if (value.op === "updateSpell") {
+      const shape = validateUpdateSpellShape(value, line, errors);
+      if (shape.spellId === undefined || !shape.slug) continue;
+      const existing = db
+        .prepare("SELECT id, name, slug FROM dnd_spell WHERE id = ?")
+        .get(shape.spellId) as
+        | { id: number; name: string; slug: string }
+        | undefined;
+      if (!existing) {
+        errors.push(`line ${line}: spell id does not exist: ${shape.spellId}`);
+        continue;
+      }
+      const slugCollision = db
+        .prepare("SELECT id, name FROM dnd_spell WHERE slug = ? AND id <> ?")
+        .get(shape.slug, shape.spellId) as
+        | { id: number; name: string }
+        | undefined;
+      if (slugCollision) {
+        warnings.push(
+          `line ${line}: slug also exists on another spell: ${shape.slug} (${slugCollision.id}, ${slugCollision.name})`,
+        );
+      }
+      if (existing.slug === shape.slug) {
+        warnings.push(
+          `line ${line}: spell ${shape.spellId} already has slug ${shape.slug}`,
+        );
+      }
+      resolved.push({
+        kind: "updateSpell",
+        line,
+        op: value,
+        spellId: shape.spellId,
+        slug: shape.slug,
+      });
+      continue;
+    }
+
     const shape = validateInsertSpellShape(value, line, errors);
     const {
       spellId,
@@ -375,6 +425,7 @@ function validatePatch(db: Database.Database, patchPath: string): ValidationResu
     }
 
     resolved.push({
+      kind: "insertSpell",
       line,
       op: value,
       spellId,
@@ -516,6 +567,22 @@ function insertSpells(db: Database.Database, operations: ResolvedInsertSpell[]) 
   run();
 }
 
+function updateSpells(db: Database.Database, operations: ResolvedUpdateSpell[]) {
+  const updateSpell = db.prepare(`
+    UPDATE dnd_spell
+    SET slug = @slug
+    WHERE id = @id
+  `);
+
+  const run = db.transaction(() => {
+    for (const op of operations) {
+      updateSpell.run({ id: op.spellId, slug: op.slug });
+    }
+  });
+
+  run();
+}
+
 function rebuildIndexes(db: Database.Database) {
   for (const patch of INDEX_PATCHES) {
     const sqlPath = resolvePatchPath(patch, ".sql");
@@ -590,13 +657,25 @@ function applyPatch(targetDbPath: string, patchPath: string, dryRun: boolean) {
       process.exit(1);
     }
 
-    insertSpells(db, validation.operations);
+    const insertOperations = validation.operations.filter(
+      (op): op is ResolvedInsertSpell => op.kind === "insertSpell",
+    );
+    const updateOperations = validation.operations.filter(
+      (op): op is ResolvedUpdateSpell => op.kind === "updateSpell",
+    );
+
+    insertSpells(db, insertOperations);
+    updateSpells(db, updateOperations);
     rebuildIndexes(db);
     const after = tableCounts(db);
-    const insertedSpells = validation.operations.map((op) => ({
+    const insertedSpells = insertOperations.map((op) => ({
       id: op.spellId,
       name: op.op.spell?.name,
       rulebook: op.op.source?.rulebook,
+    }));
+    const updatedSpells = updateOperations.map((op) => ({
+      id: op.spellId,
+      slug: op.slug,
     }));
     const reportPath = writeReport(
       {
@@ -606,15 +685,16 @@ function applyPatch(targetDbPath: string, patchPath: string, dryRun: boolean) {
         targetDbPath,
         operationCount: validation.operations.length,
         insertedSpells,
-        insertedDescriptorRows: validation.operations.reduce(
+        updatedSpells,
+        insertedDescriptorRows: insertOperations.reduce(
           (total, op) => total + op.descriptorIds.length,
           0,
         ),
-        insertedClassLevelRows: validation.operations.reduce(
+        insertedClassLevelRows: insertOperations.reduce(
           (total, op) => total + op.classLevels.length,
           0,
         ),
-        insertedDomainLevelRows: validation.operations.reduce(
+        insertedDomainLevelRows: insertOperations.reduce(
           (total, op) => total + op.domainLevels.length,
           0,
         ),

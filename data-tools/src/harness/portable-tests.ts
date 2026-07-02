@@ -14,6 +14,11 @@ import {
 } from "../rules/spells-schema";
 import { readSummaryJsonlText } from "../short-desc/summary-row-schema";
 import { mapBookLabelToAbbr, normalizeBookLabel } from "../zh-parser/mapping";
+import {
+  auditNormalizedContent,
+  normalizeRulesContent,
+  type LegacyRulesContentInput,
+} from "../rules-content/normalize";
 
 type TestCase = {
   name: string;
@@ -52,6 +57,7 @@ const tests: TestCase[] = [
       const modules = new Set([
         "harness",
         "rules",
+        "rules-content",
         "short-desc",
         "zh-parser",
       ]);
@@ -157,6 +163,108 @@ const tests: TestCase[] = [
           error.includes("reviewStatus must be accepted"),
         ),
       );
+    },
+  },
+  {
+    name: "rules content normalizer preserves raw mechanics and emits review issues",
+    run: () => {
+      const input: LegacyRulesContentInput = {
+        rulebooks: [
+          {
+            id: 1,
+            dndEditionId: 1,
+            name: "Player's Handbook",
+            abbr: "PHB",
+            slug: "players-handbook",
+          },
+        ],
+        spells: [
+          {
+            id: 10,
+            rulebookId: 1,
+            page: 231,
+            name: "Fixture Spell",
+            slug: "fixture-spell",
+            schoolId: 2,
+            schoolName: "Evocation",
+            schoolSlug: "evocation",
+            subSchoolId: null,
+            subSchoolName: null,
+            subSchoolSlug: null,
+            verbalComponent: true,
+            somaticComponent: true,
+            materialComponent: true,
+            arcaneFocusComponent: false,
+            divineFocusComponent: false,
+            xpComponent: false,
+            metaBreathComponent: false,
+            trueNameComponent: false,
+            corruptComponent: false,
+            extraComponents: "ruby dust worth 50 gp",
+            castingTime: "1 standard action",
+            range: "Close (25 ft. + 5 ft./2 levels)",
+            target: "One creature",
+            effect: null,
+            area: null,
+            duration: "1 round/level (D)",
+            savingThrow: "Reflex half",
+            spellResistance: "Yes",
+            description: "Fixture rules text.",
+            descriptionHtml: "<p>Fixture rules text.</p>",
+          },
+        ],
+        descriptors: [
+          { spellId: 10, descriptorId: 3, name: "Fire", slug: "fire" },
+        ],
+        listEntries: [
+          {
+            id: 100,
+            spellId: 10,
+            listType: "class",
+            ownerId: 5,
+            ownerName: "Wizard",
+            ownerSlug: "wizard",
+            level: 3,
+            rulebookId: 1,
+            extra: "except specialist variants",
+            sourceTable: "dnd_spellclasslevel",
+          },
+        ],
+      };
+
+      const normalized = normalizeRulesContent(input, "2026-07-02T00:00:00.000Z");
+      assert.equal(normalized.counts.spells, 1);
+      assert.equal(normalized.taxonomyFacets.length, 2);
+      assert.ok(
+        normalized.mechanicFacets.some(
+          (row) =>
+            row.mechanicType === "casting_time" &&
+            row.category === "standard_action" &&
+            row.amount === 1,
+        ),
+      );
+      assert.ok(
+        normalized.mechanicFacets.some(
+          (row) => row.mechanicType === "range" && row.category === "close",
+        ),
+      );
+      assert.ok(
+        normalized.components.some(
+          (row) =>
+            row.componentType === "other" &&
+            row.reviewStatus === "review" &&
+            row.rawText === "ruby dust worth 50 gp",
+        ),
+      );
+      assert.ok(
+        normalized.issues.some(
+          (row) => row.issueCode === "list.extra.review",
+        ),
+      );
+
+      const audit = auditNormalizedContent(normalized);
+      assert.equal(audit.reviewCounts.components, 1);
+      assert.equal(audit.issueCounts["component.extra.review"], 1);
     },
   },
   {

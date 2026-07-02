@@ -45,7 +45,6 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "paths": {
-      "DATA/*": ["./data/*"],
       "~/*": ["./src/*"],
       "prisma-rules-clean/*": ["./prisma-rules-clean/*"],
       "prisma-content/*": ["./prisma-content/*"],

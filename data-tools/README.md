@@ -14,6 +14,8 @@ serving requests.
 - `db/`: data-tool database clients.
 - `rules/`: rules DB inspection, SQL patching, manifests, structured spell
   patching, and `spells-full` patch generation.
+- `rules-content/`: normalized spell-facing content generation from the legacy
+  rules DB into content-DB-ready rows and audit reports.
 - `short-desc/`: English source probing, matching helpers, QA, normalization,
   import, coverage, and reuse workflows for short descriptions.
 - `zh-parser/`: Chinese CHM parser, parser helpers, and parser-local scripts.
@@ -67,6 +69,22 @@ npm run -w data-tools rules:manifest:write
 npm run -w data-tools rules:manifest:verify
 ```
 
+Audit and generate normalized spell-facing rules content:
+
+```bash
+npm run -w data-tools rules:content:audit
+npm run -w data-tools rules:content:generate
+npm run -w data-tools rules:content:import -- --dry-run
+```
+
+`rules:content:audit` and `rules:content:generate` open the configured rules DB
+read-only. The generator writes
+`data-tools/out/rules-content/rules-content.generated.json` plus an audit summary
+of review-worthy legacy strings. `rules:content:import` reads that generated file
+and replaces only the rules-content generated tables in `CONTENT_DATABASE_URL`;
+use `--dry-run` after applying content migrations to validate row counts without
+mutating SQLite.
+
 Run portable data-tools helper tests:
 
 ```bash
@@ -85,9 +103,10 @@ npm run -w data-tools acceptance:local
 ```
 
 This explicit local gate runs `typecheck`, `rules:manifest:verify`,
-`summaries:qa`, and `summaries:import -- --dry-run`. It depends on the local
-nested `data/` repo and configured SQLite paths, so it is intentionally not
-part of root `npm run verify`.
+`rules:content:audit`, `rules:content:generate`, `summaries:qa`, and
+`summaries:import -- --dry-run`. It depends on the local nested `data/` repo and
+configured SQLite paths, so it is intentionally not part of root
+`npm run verify`.
 
 Inspect and generate structured patches from local `spells-full` data:
 
@@ -330,6 +349,26 @@ DB, patch files, index-table counts, or structured patch presence drift from
 that manifest. Command reports are generated under
 `data-tools/out/rules-manifest/`.
 
+`rules:content:audit` is the read-only legacy dirty-field inventory for v3.5
+normalization. It reads spell taxonomy, components, mechanics strings, and
+class/domain list extras from `RULES_DATABASE_URL`, runs the same transform used
+by generation, and writes issue counts plus samples under
+`data-tools/out/rules-content/`.
+
+`rules:content:generate` is the repeatable generated-content boundary for v3.5
+normalized rules content. It writes a single JSON artifact with normalized
+rulebooks, spells, appearances, taxonomy facets, class/domain list entries,
+component rows, mechanics facets, and review issues. The transform preserves raw
+legacy strings beside normalized categories so future runtime reads do not need
+to parse legacy `dnd_spell` text columns.
+
+`rules:content:import` is the content DB mutation boundary for normalized rules
+content. It requires the rules-content generated tables from
+`server/prisma-content` migrations, including `SpellContent`,
+`SpellTaxonomyFacet`, and `RulesContentIssue`. Without `--dry-run`, it replaces
+only those generated tables; it does not touch i18n rows, app-state rows, the
+rules DB, or the nested local data repo.
+
 `summaries:import` is the content DB mutation boundary for spell summaries. It
 reads only `data/short-desc-normalized/summaries.generated.jsonl`, validates the
 accepted normalized row shape, and upserts rows into
@@ -390,6 +429,12 @@ another scoped book. The default scope is the current official 3.5 working set:
   databases.
 - `acceptance:local` runs local read/dry-run acceptance commands only; it does
   not perform write-capable imports.
+- `rules:content:audit` and `rules:content:generate` open the rules DB
+  read-only and write generated reports/artifacts under `data-tools/out/`.
+- `rules:content:import -- --dry-run` validates the generated normalized content
+  artifact and target content DB tables without mutating SQLite.
+- `rules:content:import` is write-capable against `CONTENT_DATABASE_URL` and
+  replaces only generated normalized rules content tables.
 - `rules:spells:validate` opens the SQLite database in read-only mode and
   writes a JSON report under `data-tools/out/rules-patches/`.
 - `rules:spells:apply -- --dry-run` applies to a temporary database copy.

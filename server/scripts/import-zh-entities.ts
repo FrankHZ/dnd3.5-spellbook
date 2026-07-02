@@ -1,12 +1,8 @@
 import "dotenv/config";
+import fs from "node:fs";
+import path from "node:path";
 import { contentPrisma } from "~/lib/content-prisma-client";
 import { rulesPrisma } from "~/lib/rules-prisma-client";
-import zhClassJson from "DATA/i18n/classes-zh.json";
-import zhDomainJson from "DATA/i18n/domains-zh.json";
-import zhRulebookJson from "DATA/i18n/rulebooks-zh.json";
-import zhDescriptorJson from "DATA/i18n/descriptors-zh.json";
-import zhSchoolJson from "DATA/i18n/schools-zh.json";
-import zhSubschoolJson from "DATA/i18n/subschools-zh.json";
 import { PrismaPromise } from "@prisma/client/runtime/client";
 import { BatchPayload } from "DB_CONTENT/internal/prismaNamespace";
 import { Prisma } from "DB_CONTENT/client";
@@ -19,6 +15,25 @@ type Entry = {
 
 const LANG = "zh";
 const VARIANT = "default";
+const DEFAULT_I18N_DIR = path.resolve(__dirname, "..", "..", "data", "i18n");
+const I18N_DIR = path.resolve(process.env.ZH_ENTITY_I18N_DIR ?? DEFAULT_I18N_DIR);
+
+function readEntries(fileName: string): Entry[] {
+  const filePath = path.join(I18N_DIR, fileName);
+  const raw = fs.readFileSync(filePath, "utf8");
+  const parsed: unknown = JSON.parse(raw);
+  if (!Array.isArray(parsed)) {
+    throw new Error(`${filePath} must contain a JSON array`);
+  }
+  return parsed as Entry[];
+}
+
+const zhClassJson = readEntries("classes-zh.json");
+const zhDomainJson = readEntries("domains-zh.json");
+const zhRulebookJson = readEntries("rulebooks-zh.json");
+const zhDescriptorJson = readEntries("descriptors-zh.json");
+const zhSchoolJson = readEntries("schools-zh.json");
+const zhSubschoolJson = readEntries("subschools-zh.json");
 
 function norm(s: string | null | undefined): string {
   return (s ?? "").trim().toLowerCase();

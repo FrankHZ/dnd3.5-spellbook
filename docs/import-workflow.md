@@ -58,12 +58,12 @@ the mapped top-level source directory, such as `九剑/` for Tome of Battle.
 - extra alias support: `data/chm-mapping/enName-aliases-extra.json`
 - global alias support: `data/chm-mapping/enName-aliases-global.json`
 - entity translation JSON inputs:
-  - `server/data/i18n/classes-zh.json`
-  - `server/data/i18n/domains-zh.json`
-  - `server/data/i18n/rulebooks-zh.json`
-  - `server/data/i18n/descriptors-zh.json`
-  - `server/data/i18n/schools-zh.json`
-  - `server/data/i18n/subschools-zh.json`
+  - `data/i18n/classes-zh.json`
+  - `data/i18n/domains-zh.json`
+  - `data/i18n/rulebooks-zh.json`
+  - `data/i18n/descriptors-zh.json`
+  - `data/i18n/schools-zh.json`
+  - `data/i18n/subschools-zh.json`
 
 ### Parser Outputs
 
@@ -91,7 +91,7 @@ For a normal full rebuild:
 9. Run `npm run -w server db:content:import:zh-entities`.
 10. Run `npm run -w server db:content:import:zh-chm`.
 
-This order keeps the content DB aligned with the latest parser output and the latest checked-in entity translation JSON.
+This order keeps the content DB aligned with the latest parser output and the latest entity translation JSON maintained in the nested data repo.
 
 ## Step Details
 
@@ -174,7 +174,7 @@ npm run -w server db:content:import:zh-entities
 
 Current script behavior:
 
-- reads checked-in JSON files from `server/data/i18n/`
+- reads JSON files from `data/i18n/`, or from `ZH_ENTITY_I18N_DIR` when set
 - validates ids against the rules DB
 - warns about:
   - ids missing from the rules DB

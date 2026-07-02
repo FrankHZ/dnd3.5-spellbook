@@ -65,6 +65,27 @@
       "requiresSqlite": true,
       "writeCapable": true
     },
+    "rules:content:audit": {
+      "module": "rules-content",
+      "lifecycle": "local-acceptance",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
+    "rules:content:generate": {
+      "module": "rules-content",
+      "lifecycle": "local-acceptance",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
+    "rules:content:import": {
+      "module": "rules-content",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
     "rules:spells:apply": {
       "module": "rules",
       "lifecycle": "maintained-local",

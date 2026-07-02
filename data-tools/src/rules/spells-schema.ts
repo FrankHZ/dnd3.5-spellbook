@@ -54,7 +54,18 @@ export type InsertSpellOperation = {
   descriptors?: string[];
 };
 
-export type PatchOperation = InsertSpellOperation;
+export type UpdateSpellOperation = {
+  op: "updateSpell";
+  id?: number;
+  source?: {
+    provenance?: string;
+  };
+  spell?: {
+    slug?: string;
+  };
+};
+
+export type PatchOperation = InsertSpellOperation | UpdateSpellOperation;
 
 export type ParsedPatchOperation = {
   line: number;
@@ -114,7 +125,7 @@ export function parsePatchJsonlText(raw: string, errors: string[]) {
         errors.push(`line ${index + 1}: operation must be a JSON object`);
         return;
       }
-      if (parsed.op !== "insertSpell") {
+      if (parsed.op !== "insertSpell" && parsed.op !== "updateSpell") {
         errors.push(
           `line ${index + 1}: unsupported operation ${String(parsed.op)}`,
         );
@@ -159,7 +170,7 @@ export function validateLevelShape(
 }
 
 export function validateInsertSpellShape(
-  value: PatchOperation,
+  value: InsertSpellOperation,
   line: number,
   errors: string[],
 ): InsertSpellShape {
@@ -217,4 +228,31 @@ export function validateInsertSpellShape(
     classLevels,
     domainLevels,
   };
+}
+
+export function validateUpdateSpellShape(
+  value: PatchOperation,
+  line: number,
+  errors: string[],
+) {
+  if (value.op !== "updateSpell") {
+    errors.push(`line ${line}: expected updateSpell operation`);
+    return {
+      spellId: undefined,
+      slug: undefined,
+    };
+  }
+
+  const spellId = asInteger(value.id);
+  if (spellId === undefined || spellId <= 0) {
+    errors.push(`line ${line}: id must be a positive integer`);
+  }
+
+  const slug = asString(value.spell?.slug);
+  if (!slug) errors.push(`line ${line}: spell.slug is required`);
+  if (slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+    errors.push(`line ${line}: spell.slug is not normalized: ${slug}`);
+  }
+
+  return { spellId, slug };
 }

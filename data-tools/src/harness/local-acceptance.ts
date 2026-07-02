@@ -10,6 +10,8 @@ const dataToolsRoot = path.resolve(__dirname, "..", "..");
 const commands: Array<{ label: string; args: string[] }> = [
   { label: "typecheck", args: ["run", "typecheck"] },
   { label: "rules manifest verify", args: ["run", "rules:manifest:verify"] },
+  { label: "rules content audit", args: ["run", "rules:content:audit"] },
+  { label: "rules content generate", args: ["run", "rules:content:generate"] },
   { label: "short-description QA", args: ["run", "summaries:qa"] },
   {
     label: "short-description import dry-run",

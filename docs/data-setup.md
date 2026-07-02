@@ -27,10 +27,9 @@ That means:
 Current local data ownership:
 
 - `server/data/db/`: runtime SQLite databases used by the API
-- `server/data/i18n/`: app-owned entity translation JSON imported by server
-  scripts
 - `data/`: nested local data repo for parser and data-tool source inputs such
-  as CHM HTML, upstream raw data, and rules DB patch files
+  as CHM HTML, upstream raw data, entity translation JSON, and rules DB patch
+  files
 - `data-tools/out/`: generated parser reports and intermediate output
 
 ## Current Database Roles
@@ -64,7 +63,7 @@ Purpose:
 - generated/imported app-owned content overlays
 - localized names and descriptions
 - spell short summaries
-- future normalized rules-derived runtime tables
+- normalized rules-derived runtime tables generated from the legacy rules DB
 
 During the v3.5 split, existing local or remote environments may still point at
 `server/data/db/app.sqlite`; runtime code and content import tools accept
@@ -146,6 +145,10 @@ The practical rule is:
 
 The app-state DB is a separate future user/app-state boundary. It may start
 empty locally, but it should not be collapsed into the content DB.
+
+Normalized rules content is rebuildable from the prepared local rules DB plus
+declared source patch/review inputs. It should be regenerated through
+`data-tools`, not patched directly in the content DB.
 
 ## Environment Variables
 
@@ -253,6 +256,21 @@ Populate the content DB through server import commands:
 
 Compatibility aliases named `db:app:*` currently forward to the content commands
 where practical, but new docs and scripts should use the content names.
+
+Generate and import normalized spell-facing rules content:
+
+```bash
+npm run -w data-tools rules:content:audit
+npm run -w data-tools rules:content:generate
+npm run -w data-tools rules:content:import -- --dry-run
+npm run -w data-tools rules:content:import
+```
+
+The audit and generate commands read `RULES_DATABASE_URL` and write rebuildable
+artifacts under `data-tools/out/rules-content/`. The import command writes only
+the generated normalized rules content tables in `CONTENT_DATABASE_URL`; it does
+not mutate the rules DB or app-state DB. Keep raw/source patch and review inputs
+in the nested `data/` repo, not the parent repo.
 
 ## App-State DB Setup
 

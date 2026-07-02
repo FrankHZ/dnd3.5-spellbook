@@ -9,9 +9,9 @@ Data-bearing local artifact directories are intentionally local-only.
 They are not part of the public repository baseline and may contain:
 
 - `server/data/db/`: processed rules-side and app SQLite databases
-- `server/data/i18n/`: app-owned entity translation JSON inputs
 - `data/`: nested local data repo containing upstream raw inputs, CHM-derived
-  HTML, parser mappings, raw text inputs, and rules patch inputs
+  HTML, parser mappings, raw text inputs, entity translation JSON, and rules
+  patch inputs
 - `data-tools/out/`: generated parser reports and intermediate artifacts
 
 Public consumers of the repository should expect to provide or recreate those files themselves.
