@@ -1,9 +1,10 @@
 # CI/CD, Dependency Review, And Module Docs Automation Plan
 
-Status: portable CI with backend API fixtures, a script-backed manual deploy
-workflow, and a `docs/modules/` baseline implemented; dependency update
-application remains planned v3.5 follow-up work, and automatic module-doc PRs
-are blocked on the chosen agent runner and secrets.
+Status: portable CI with backend API fixtures, PR-first main management, a
+script-backed manual code/web deploy workflow, and a `docs/modules/` baseline
+implemented; dependency update application remains planned v3.5 follow-up work,
+DB deployment is deferred until DB ownership redesign, and automatic module-doc
+PRs are blocked on the chosen agent runner and secrets.
 
 ## Problem
 
@@ -31,6 +32,10 @@ validation instead of being bundled into unrelated feature branches.
 
 - Add a CI gate around the existing validation spine once it can run from a
   clean checkout.
+- Treat `main` as remote-managed: agents work on branches, open PRs, and let
+  remote CI protect merges instead of locally merging and pushing `main`.
+- Keep local development checks targeted so full portable CI does not become
+  routine iteration overhead.
 - Keep browser E2E out of the initial CI scope; the project has better ROI from
   the current unit/API/typecheck suite.
 - Preserve the tracked deployment scripts as the CD source of truth.
@@ -217,6 +222,17 @@ Initial triggers:
 - `pull_request` for normal branch review
 - `push` to `main` after merges
 
+Operational policy:
+
+- local branches run the smallest relevant targeted checks before handoff
+- `npm run ci:portable` is available locally for merge-readiness spot checks or
+  debugging, but it is not mandatory for every small branch iteration
+- PR CI is the normal full portable gate before merge
+- `main` is merged through the remote provider and confirmed by the `push` to
+  `main` CI run
+- agents should not locally fast-forward `main` and push it directly unless the
+  user explicitly asks for a direct main update
+
 Future full checks after backend API fixtures exist:
 
 - install dependencies with `npm ci`
@@ -236,14 +252,17 @@ The first CD automation is a thin manual trigger around the existing scripts,
 not a copy of their logic. Current shape:
 
 - `.github/workflows/deploy.yml` exposes manual `workflow_dispatch` targets for
-  `backend`, `web`, `backend-and-web`, and `db`
+  `backend`, `web`, and `backend-and-web`
 - backend deploy invokes `~/deploy-backend.sh`
 - web deploy builds and uploads `web/build/client/` to the remote staging
   directory, then invokes `~/deploy-web.sh`
-- DB update invokes `~/update-db.sh` and assumes DB files were already uploaded
-  to `~/data/`
 - SSH host/user/key are repository secrets; SSH port and web staging directory
   are optional repository variables
+
+DB deployment is deliberately deferred. The current SQLite DB update path
+depends on operator-controlled file upload to `~/data/`, which is not a good CD
+artifact model. Revisit DB deployment after the v3.5 content DB / app-state DB
+split defines the release artifact, activation, rollback, and ownership story.
 
 Still-acceptable later shapes:
 
@@ -315,8 +334,10 @@ has a narrow job:
 The intended feature workflow after v3.5:
 
 1. Feature branch updates focused behavior docs and tests near the change.
-2. Merge to `main` runs CI.
-3. A doc agent reviews the accepted diff and opens a follow-up module-doc PR
+2. The branch opens a PR and remote CI runs `npm run ci:portable`.
+3. The remote provider merges to `main`; the `push` to `main` CI confirms the
+   integrated state.
+4. A doc agent reviews the accepted diff and opens a follow-up module-doc PR
    only when broad design docs need adjustment.
 
 ## Acceptance Criteria
@@ -324,6 +345,9 @@ The intended feature workflow after v3.5:
 - CI runs on pull requests and pushes to `main`.
 - The first CI gate runs the portable subset of the existing
   build/unit/typecheck spine rather than browser E2E.
+- Local development uses targeted checks first; full portable CI is the remote
+  merge gate rather than routine local iteration overhead.
+- `main` is treated as remote-managed, with normal changes merged through PRs.
 - CI can run from a clean checkout without ignored local DB files or raw local
   data sources.
 - Backend API tests run in CI against disposable fixtures rather than ignored
@@ -333,6 +357,8 @@ The intended feature workflow after v3.5:
   or explicitly deferred with a reason.
 - CD remains backed by `docs/deployment-scripts/`; the manual workflow wrapper
   does not duplicate deployment logic.
+- DB deployment is deferred until the content DB / app-state DB redesign
+  defines a safer artifact and activation model.
 - Merge-to-main module-doc automation is documented and explicitly blocked on
   the chosen agent runner/secrets.
 - Generated module-doc changes are docs-only and reviewable.
@@ -345,7 +371,7 @@ The intended feature workflow after v3.5:
   configured agent, or a Codex-side automation that watches `main`?
 - Should CD stay manual `workflow_dispatch` through v3.5, or deploy
   automatically after `main` CI succeeds in a later release?
-- Which minimal backend test fixture strategy gives the best balance between
-  portability and realism?
+- What DB release artifact and rollback model should replace manual SQLite file
+  upload after the DB ownership redesign?
 - Should dependency review become a scheduled maintenance task after v3.5, or
   stay a release-readiness checklist item?

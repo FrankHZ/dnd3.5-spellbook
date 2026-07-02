@@ -161,12 +161,14 @@ Recommended next sequence:
 
    Current dependency/CI/CD/docs status: the first v3.5 infra slice refreshes
    lockfile entries that fit existing semver ranges, adds clean-checkout CI,
-   runs backend API tests in CI against disposable SQLite fixtures, adds a
-   manual deploy workflow around the tracked remote scripts, and establishes a
-   `docs/modules/` baseline. `AGENTS.md` has been reduced to a compact
-   execution guide. Automatic module-doc PRs remain blocked on the chosen agent
-   runner/secrets. Major or ecosystem upgrades remain deferred into focused
-   branches: React Router 8, Vite 8, i18next 26,
+   runs backend API tests in CI against disposable SQLite fixtures, makes
+   `main` remote-managed through PRs, keeps local development on targeted
+   checks first, adds a manual code/web deploy workflow around the tracked
+   remote scripts, defers DB deployment until DB ownership redesign, and
+   establishes a `docs/modules/` baseline. `AGENTS.md` has been reduced to a
+   compact execution guide. Automatic module-doc PRs remain blocked on the
+   chosen agent runner/secrets. Major or ecosystem upgrades remain deferred
+   into focused branches: React Router 8, Vite 8, i18next 26,
    i18next-http-backend 4, react-i18next 17, lucide-react 1, shadcn 4,
    vite-tsconfig-paths 6, @types/node 26, and the Prisma dev-chain audit fix
    once a Prisma 7-compatible path is available.
@@ -241,9 +243,10 @@ topic-specific child plans.
    Use `docs/mvp/v3.5/ci-cd-and-module-docs-plan.md` to add CI around the
    existing unit/API/typecheck validation spine, review and update dependencies
    in a dedicated maintenance lane, keep browser E2E out of the first CI scope,
-   preserve CD as a thin wrapper around the current deployment scripts, and
-   design a merge-to-main agent job that refreshes high-level module design docs
-   after accepted changes.
+   preserve code/web CD as a thin wrapper around the current deployment scripts,
+   defer DB deployment until the DB ownership redesign, and design a
+   merge-to-main agent job that refreshes high-level module design docs after
+   accepted changes.
 
    Treat held-back major dependency upgrades as separate follow-up branches, not
    incidental cleanup inside DB, data, i18n, or frontend feature branches.

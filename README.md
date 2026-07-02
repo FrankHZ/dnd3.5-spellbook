@@ -78,8 +78,9 @@ The current deployment workflow is documented in:
 
 Tracked shell scripts under `docs/deployment-scripts/` are the canonical deployment scripts.
 
-The GitHub Actions deploy workflow is a manual wrapper around those scripts; it
-does not replace them as the deployment source of truth.
+The GitHub Actions deploy workflow is a manual code/web wrapper around those
+scripts; it does not replace them as the deployment source of truth. Database
+deployment remains manual until the DB ownership model is redesigned.
 
 Ignored root-level `.bat` files may exist as local machine-specific convenience wrappers, but they are not part of the canonical deployment contract.
 

@@ -205,6 +205,8 @@ Expected output:
 - portable fixture or DB preparation strategy for backend API tests
 - `npm run verify` or equivalent CI spine
 - GitHub Actions on pull requests and pushes to `main`
+- PR-first workflow where `main` is remote-managed and local work uses targeted
+  checks before handoff
 - browser E2E still deferred
 
 ### 8. Keep CD Script-Backed
@@ -220,8 +222,10 @@ Expected output:
 
 - `docs/deployment-scripts/*` remain deployment source of truth
 - `.github/workflows/deploy.yml` provides a manual wrapper around the tracked
-  remote scripts
+  remote code/web scripts
 - workflow wrappers do not duplicate deployment logic
+- DB deployment waits for content DB / app-state DB redesign rather than
+  wrapping manual SQLite file upload as CD
 - automatic deploy waits until secrets, host targeting, and rollback behavior
   are explicit
 
@@ -255,7 +259,7 @@ Expected output:
 | Settings vs URL state                       | frontend consumer                                       | No conflict. Settings owns broad defaults. Ordinary Browse/Search facet selections stay in URL state.                                                                                                                             |
 | Dependency updates vs feature branches      | CI/CD, all implementation plans                         | No conflict. v3.5 should do dependency review in a dedicated branch before broad implementation, and feature branches should only carry dependency updates when explicitly blocked.                                               |
 | CI vs local data                            | CI/CD, rules normalization, data harness                | No conflict. Backend API tests now use disposable fixtures in CI; ignored local DBs remain outside portable CI inputs.                                                                                                            |
-| CD vs deploy scripts                        | CI/CD, deployment docs                                  | No conflict. CD wrappers call tracked scripts; deploy logic stays in `docs/deployment-scripts/`.                                                                                                                                  |
+| CD vs deploy scripts                        | CI/CD, deployment docs                                  | No conflict. CD wrappers call tracked code/web scripts; deploy logic stays in `docs/deployment-scripts/`. DB deployment is deferred until the DB ownership redesign defines a real artifact model.                                |
 | AGENTS vs docs index                        | agent guide, CI/CD module docs, this plan               | No conflict. `docs/README.md` is the map, this plan is v3.5 coordination, and `AGENTS.md` should shrink after the review.                                                                                                         |
 | v3.5 vs long-term content artifacts         | roadmap, stable backlog                                 | No conflict. Bulk translation/proofreading QA, `data/spells-full` completion imports, static/offline HTML artifacts, content packs, and offline search indexes stay long-term unless explicitly pulled into a later version plan. |
 
@@ -293,10 +297,13 @@ fallback behavior is tested.
 
 Reviewed against DB/content plans. Dependency review should land in a dedicated
 maintenance branch before broad v3.5 implementation. CI has portable backend
-fixtures and should keep ignored local DBs out of clean-checkout validation. CD
-remains script-backed and should not become a parallel deployment
-implementation. Module-doc automation should be non-blocking and docs-only; the
-baseline docs exist, but the automatic PR job waits for a runner choice.
+fixtures and should keep ignored local DBs out of clean-checkout validation.
+`main` is remote-managed through PRs, while local development uses targeted
+checks first. CD remains script-backed and should not become a parallel
+deployment implementation. DB deployment is deferred until the DB ownership
+redesign defines a release artifact and rollback model. Module-doc automation
+should be non-blocking and docs-only; the baseline docs exist, but the automatic
+PR job waits for a runner choice.
 
 ### Agent Guide Review
 
