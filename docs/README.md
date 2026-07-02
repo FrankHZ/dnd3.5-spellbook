@@ -54,6 +54,35 @@ short-description delivery, data harness hardening, and release/freeze docs are
 the closeout path. The design refresh and i18next plans remain valid focused
 plans, but they are parallel or follow-up tracks unless explicitly promoted.
 
+## Early v3.5 Planning
+
+Early v3.5 planning has started under `docs/mvp/v3.5/`:
+
+- [mvp/v3.5/README.md](./mvp/v3.5/README.md)
+- [mvp/v3.5/integrated-plan.md](./mvp/v3.5/integrated-plan.md)
+- [mvp/v3.5/db-ownership-boundary-plan.md](./mvp/v3.5/db-ownership-boundary-plan.md)
+- [mvp/v3.5/rules-content-normalization-plan.md](./mvp/v3.5/rules-content-normalization-plan.md)
+- [mvp/v3.5/normalized-rules-frontend-consumer-plan.md](./mvp/v3.5/normalized-rules-frontend-consumer-plan.md)
+- [mvp/v3.5/rulebook-display-labels-plan.md](./mvp/v3.5/rulebook-display-labels-plan.md)
+- [mvp/v3.5/agent-guide-review-plan.md](./mvp/v3.5/agent-guide-review-plan.md)
+- [mvp/v3.5/ci-cd-and-module-docs-plan.md](./mvp/v3.5/ci-cd-and-module-docs-plan.md)
+
+The integrated plan ties the v3.5 child plans together and records the current
+cross-plan conflict review. The DB ownership plan covers the v3.5 split between
+generated content data and
+future user/app-state data. The rules content normalization plan covers
+promoting cleaned legacy rules data into this repo's own normalized runtime
+content model for finer query surfaces. The normalized rules frontend consumer
+plan covers how Browse, Search, Spell Detail, Prepared Spells, and Settings
+consume those facets without bloating page controls. The rulebook display-label
+plan covers curated English rulebook abbreviations and Chinese full-name display
+labels without mutating legacy source slugs or rulebook IDs. The agent guide
+review plan covers shrinking `AGENTS.md` back into an execution guide,
+clarifying repo-local skill path resolution, and reviewing feature/workflow doc
+boundaries. The CI/CD, dependency review, and module-docs plan covers
+clean-checkout CI, dependency inventory and safe updates, script-backed CD, and
+merge-to-main agent automation for high-level module design docs.
+
 ## Current Operational Docs
 
 For current work ordering, use:
@@ -146,6 +175,7 @@ The `docs/mvp/` directory contains version folders:
 - `v3.2`
 - `v3.3`
 - `v3.4`
+- `v3.5`
 
 Treat frozen or older version folders as historical planning or handoff records.
 Start new active work from `docs/roadmap.md` and a focused topic plan rather

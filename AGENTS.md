@@ -44,25 +44,44 @@ Start with these files when orienting:
    tests, data acceptance commands, parser QA gates, or rules-patch harnesses.
 10. `docs/mvp/v3.4/acceptance-checklist.md` when checking v3.4 closeout
    evidence.
-11. `docs/mvp/v3.3/FREEZE.md` for the latest frozen release snapshot.
-12. `docs/mvp/v3.3/acceptance-checklist.md` when checking v3.3 acceptance
-   evidence.
-13. `docs/mvp/v3.3/data-tools-workspace-plan.md` before moving or adding data
+11. `docs/mvp/v3.5/README.md` before planning v3.5 work.
+12. `docs/mvp/v3.5/integrated-plan.md` before sequencing v3.5 work or reviewing
+    cross-plan conflicts.
+13. `docs/mvp/v3.5/db-ownership-boundary-plan.md` before splitting, renaming, or
+    reclassifying app-owned content DB and future user/app-state DB ownership.
+14. `docs/mvp/v3.5/rules-content-normalization-plan.md` before replacing rules
+    DB runtime reads, normalizing legacy rules columns, or adding fine-grained
+    spell query filters.
+15. `docs/mvp/v3.5/normalized-rules-frontend-consumer-plan.md` before adding
+    frontend controls, URL params, or scope summaries for normalized rules
+    facets.
+16. `docs/mvp/v3.5/rulebook-display-labels-plan.md` before changing rulebook
+    abbreviations, localized rulebook display labels, or rulebook display
+    contract fields.
+17. `docs/mvp/v3.5/agent-guide-review-plan.md` before broadly restructuring
+    this agent guide or moving agent-facing workflow rules.
+18. `docs/mvp/v3.5/ci-cd-and-module-docs-plan.md` before dependency review or
+    updates, adding CI workflows, CD wrappers, or merge-triggered module
+    documentation automation.
+19. `docs/mvp/v3.3/FREEZE.md` for the latest frozen release snapshot.
+20. `docs/mvp/v3.3/acceptance-checklist.md` when checking v3.3 acceptance
+    evidence.
+21. `docs/mvp/v3.3/data-tools-workspace-plan.md` before moving or adding data
    import, parser, rules DB inspection, or rules DB patch tooling.
-14. `docs/mvp/v3.3/local-data-layout-plan.md` before moving CHM inputs, parser
-   outputs, local source data, or future rules patch files.
-15. `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before moving SQL patch
-   assets, adding rules DB preparation commands, or importing missing English
-   base spell records.
-16. `docs/mvp/v3.3/structured-spell-patch-plan.md` before designing or applying
-   missing English spell patch data.
-17. `docs/mvp/v3.3/spells-full-import-plan.md` before using local
-   `spells-full` source data to generate missing English spell patches.
-18. `docs/harness.md` for validation and test-harness strategy.
-19. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
-20. `docs/mvp/v3.4/i18next-conventions-plan.md` before replacing raw-English
+22. `docs/mvp/v3.3/local-data-layout-plan.md` before moving CHM inputs, parser
+    outputs, local source data, or future rules patch files.
+23. `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before moving SQL patch
+    assets, adding rules DB preparation commands, or importing missing English
+    base spell records.
+24. `docs/mvp/v3.3/structured-spell-patch-plan.md` before designing or applying
+    missing English spell patch data.
+25. `docs/mvp/v3.3/spells-full-import-plan.md` before using local
+    `spells-full` source data to generate missing English spell patches.
+26. `docs/harness.md` for validation and test-harness strategy.
+27. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
+28. `docs/mvp/v3.4/i18next-conventions-plan.md` before replacing raw-English
     frontend translation keys or tightening i18next workflow checks.
-21. Workspace READMEs for operational commands:
+29. Workspace READMEs for operational commands:
 
 - `server/README.md`
 - `data-tools/README.md`
@@ -80,6 +99,13 @@ behavior.
 - Keep changes scoped to the requested behavior.
 - Use the repo-local `$branch-naming` skill before creating, renaming, or
   assigning Codex work branches.
+- Repo-local skills live under `.agents/skills/` in the current worktree. When
+  using repo skills such as `branch-naming` or `commit-message`, read
+  `.agents/skills/<skill>/SKILL.md` relative to the active worktree root. Do not
+  probe a user-level `.agents` path first.
+- When editing from a sibling worktree, use absolute paths with patch tools or
+  otherwise prove the edit target is inside the intended worktree before
+  applying changes.
 - Do not commit local data, database files, generated logs, or personal wrapper
   scripts to the parent repo. The nested `data/` repo may version local source
   data separately.
@@ -272,6 +298,9 @@ See `docs/harness.md` for details.
   It runs `rules:manifest:verify`, `summaries:qa`, and
   `summaries:import -- --dry-run` along with data-tools typecheck. Do not wire
   this command into root `npm run verify`.
+- Follow `docs/mvp/v3.5/rulebook-display-labels-plan.md` before changing
+  rulebook display abbreviations, Chinese rulebook display names, or display
+  metadata import behavior.
 - Run `npm run -w data-tools zh:qa` after CHM source cleanup or parser changes
   to catch mechanical source/header drift before import.
 - Run `npm run -w data-tools zh:summaries:extract` after changing CHM
