@@ -54,6 +54,38 @@ Required state:
 - `docs/roadmap.md` points at the frozen v3.4 state
 - local data assumptions are documented as local-only when they cannot enter CI
 
+### 0.5. Agent Orchestration
+
+Use the main thread as the v3.5 planning, review, and merge gate. The main
+agent owns roadmap interpretation, cross-plan boundary decisions, acceptance
+review, and source-of-truth documentation updates.
+
+Use dedicated agents for lanes where human midstream feedback is useful:
+
+- `i18n`: UI copy conventions, localized entity labels, rulebook display
+  labels, and future bulk translation/proofreading QA rules.
+- `short-desc`: short-description coverage, source-backed extraction, review
+  queues, summary QA, and future summary translation/proofreading work.
+- `frontend-design`: Browse/Search consumer UX, filter control density, mobile
+  behavior, detail polish, and visual consistency with `docs/design.md`.
+
+Use subagents for bounded investigation or implementation slices after the main
+agent has set the boundary:
+
+- dependency and CI inventory
+- DB/schema/table usage scans
+- dirty legacy value reports
+- portable fixture or disposable test-DB spikes
+- API parity-test candidate lists
+- focused code edits with clear acceptance checks
+- documentation cross-reference proofreading
+
+Do not let specialist branches redefine v3.5 ownership. Backend/content DB
+boundaries, normalized rules schema, runtime source-of-truth changes, and
+merge-readiness decisions stay with the main agent. Dedicated and subagent
+branches should return a summary, validation evidence, and any unresolved
+questions before merge review.
+
 ### 1. Split DB Ownership
 
 Implement the content DB and app-state DB boundary before moving runtime reads
