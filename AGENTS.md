@@ -34,36 +34,37 @@ Start with these files when orienting:
 4. `docs/feature-workflow.md` before implementing non-trivial new features.
 5. `docs/design.md` before making broad UI layout, visual design, or design
    principle changes.
-6. `docs/mvp/v3.4/integrated-plan.md` for current v3.4 scope, sequencing,
-   cross-plan boundaries, and freeze criteria.
-7. `docs/mvp/v3.4/design-refresh-plan.md` before implementing v3.4 frontend
-   design-refresh or styling-pass work.
-8. `docs/mvp/v3.4/short-description-pipeline-plan.md` before extracting,
-   importing, modeling, or exposing spell/class short descriptions.
-9. `docs/mvp/v3.4/data-harness-hardening-plan.md` before adding data-tools
-   tests, data acceptance commands, parser QA gates, or rules-patch harnesses.
-10. `docs/mvp/v3.4/acceptance-checklist.md` when checking v3.4 closeout
-   evidence.
-11. `docs/mvp/v3.5/README.md` before planning v3.5 work.
-12. `docs/mvp/v3.5/integrated-plan.md` before sequencing v3.5 work or reviewing
-    cross-plan conflicts.
-13. `docs/mvp/v3.5/db-ownership-boundary-plan.md` before splitting, renaming, or
-    reclassifying app-owned content DB and future user/app-state DB ownership.
-14. `docs/mvp/v3.5/rules-content-normalization-plan.md` before replacing rules
+6. `docs/mvp/v3.4/FREEZE.md` for the latest frozen release snapshot.
+7. `docs/mvp/v3.5/README.md` before planning v3.5 work.
+8. `docs/mvp/v3.5/integrated-plan.md` before sequencing v3.5 work or reviewing
+   cross-plan conflicts.
+9. `docs/mvp/v3.5/db-ownership-boundary-plan.md` before splitting, renaming, or
+   reclassifying app-owned content DB and future user/app-state DB ownership.
+10. `docs/mvp/v3.5/rules-content-normalization-plan.md` before replacing rules
     DB runtime reads, normalizing legacy rules columns, or adding fine-grained
     spell query filters.
-15. `docs/mvp/v3.5/normalized-rules-frontend-consumer-plan.md` before adding
+11. `docs/mvp/v3.5/normalized-rules-frontend-consumer-plan.md` before adding
     frontend controls, URL params, or scope summaries for normalized rules
     facets.
-16. `docs/mvp/v3.5/rulebook-display-labels-plan.md` before changing rulebook
+12. `docs/mvp/v3.5/rulebook-display-labels-plan.md` before changing rulebook
     abbreviations, localized rulebook display labels, or rulebook display
     contract fields.
-17. `docs/mvp/v3.5/agent-guide-review-plan.md` before broadly restructuring
+13. `docs/mvp/v3.5/agent-guide-review-plan.md` before broadly restructuring
     this agent guide or moving agent-facing workflow rules.
-18. `docs/mvp/v3.5/ci-cd-and-module-docs-plan.md` before dependency review or
+14. `docs/mvp/v3.5/ci-cd-and-module-docs-plan.md` before dependency review or
     updates, adding CI workflows, CD wrappers, or merge-triggered module
     documentation automation.
-19. `docs/mvp/v3.3/FREEZE.md` for the latest frozen release snapshot.
+15. `docs/mvp/v3.4/integrated-plan.md` for v3.4 scope history, sequencing,
+    cross-plan boundaries, and freeze criteria.
+16. `docs/mvp/v3.4/design-refresh-plan.md` before implementing v3.4 frontend
+   design-refresh or styling-pass work.
+17. `docs/mvp/v3.4/short-description-pipeline-plan.md` before extracting,
+   importing, modeling, or exposing spell/class short descriptions.
+18. `docs/mvp/v3.4/data-harness-hardening-plan.md` before adding data-tools
+   tests, data acceptance commands, parser QA gates, or rules-patch harnesses.
+19. `docs/mvp/v3.4/acceptance-checklist.md` when rerunning v3.4 acceptance
+   evidence.
+20. `docs/mvp/v3.3/FREEZE.md` for the previous frozen release snapshot.
 20. `docs/mvp/v3.3/acceptance-checklist.md` when checking v3.3 acceptance
     evidence.
 21. `docs/mvp/v3.3/data-tools-workspace-plan.md` before moving or adding data
@@ -99,6 +100,9 @@ behavior.
 - Keep changes scoped to the requested behavior.
 - Use the repo-local `$branch-naming` skill before creating, renaming, or
   assigning Codex work branches.
+- Use the repo-local `$freeze-snapshot` skill before creating or updating a
+  version `FREEZE.md`, recording release acceptance evidence, or moving the
+  latest frozen snapshot in navigation docs.
 - Repo-local skills live under `.agents/skills/` in the current worktree. When
   using repo skills such as `branch-naming` or `commit-message`, read
   `.agents/skills/<skill>/SKILL.md` relative to the active worktree root. Do not

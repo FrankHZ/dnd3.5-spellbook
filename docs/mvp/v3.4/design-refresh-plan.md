@@ -1,5 +1,8 @@
 # v3.4 Design Refresh Plan
 
+Status: implemented as a small v3.4 frontend polish pass. Keep broader
+redesign work outside this frozen scope.
+
 This is the first lightweight plan for v3.4.
 
 v3.4 should not be a broad redesign. The goal is to review the existing frontend

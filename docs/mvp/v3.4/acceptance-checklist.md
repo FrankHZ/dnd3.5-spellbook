@@ -1,10 +1,14 @@
 # v3.4 Acceptance Checklist
 
-Status: active acceptance checklist for v3.4 closeout.
+Status: frozen acceptance checklist for v3.4 closeout.
 
 This checklist records the commands that should be run before freezing v3.4.
 It separates portable repository verification from local-data acceptance so the
 root harness stays clone-friendly.
+
+Final v3.4 acceptance evidence is recorded in `docs/mvp/v3.4/FREEZE.md`. Keep
+this file as the reusable command checklist for regression checks against that
+snapshot.
 
 ## Portable Checks
 
@@ -57,9 +61,9 @@ npm run -w data-tools zh:summaries:extract
 These commands depend on ignored local CHM inputs and write generated reports
 under `data-tools/out/`.
 
-## Freeze Evidence To Record
+## Freeze Evidence Recorded
 
-When creating `docs/mvp/v3.4/FREEZE.md`, record:
+`docs/mvp/v3.4/FREEZE.md` records:
 
 - final `npm run verify` result
 - final `npm run -w data-tools test:portable` result

@@ -10,15 +10,35 @@ Use this file as the documentation entry point when you need to determine:
 
 ## Latest Frozen Release Snapshot
 
-The latest frozen stage snapshot is **v3.3**.
+The latest frozen stage snapshot is **v3.4**.
 
 Use it for historical comparison, regression checks, and understanding what was
 shipped at that stage:
 
-- [mvp/v3.3/FREEZE.md](./mvp/v3.3/FREEZE.md)
+- [mvp/v3.4/FREEZE.md](./mvp/v3.4/FREEZE.md)
 
-That file defines the final as-built interpretation of the v3.3 handoff set. It
+That file defines the final as-built interpretation of the v3.4 handoff set. It
 is not automatically the baseline for later active development.
+
+## v3.4 Supporting Docs
+
+The rest of `docs/mvp/v3.4/` contains the supporting plan and acceptance notes
+for that release.
+
+When you need implementation detail beyond the freeze summary, read the v3.4
+documents in this order:
+
+- [mvp/v3.4/FREEZE.md](./mvp/v3.4/FREEZE.md)
+- [mvp/v3.4/integrated-plan.md](./mvp/v3.4/integrated-plan.md)
+- [mvp/v3.4/acceptance-checklist.md](./mvp/v3.4/acceptance-checklist.md)
+- [mvp/v3.4/short-description-pipeline-plan.md](./mvp/v3.4/short-description-pipeline-plan.md)
+- [mvp/v3.4/data-harness-hardening-plan.md](./mvp/v3.4/data-harness-hardening-plan.md)
+- [mvp/v3.4/design-refresh-plan.md](./mvp/v3.4/design-refresh-plan.md)
+- [mvp/v3.4/i18next-conventions-plan.md](./mvp/v3.4/i18next-conventions-plan.md)
+
+The freeze document records the as-built v3.4 state. The supporting plan
+documents describe implementation rationale and are not newer than the freeze
+snapshot.
 
 ## v3.3 Supporting Docs
 
@@ -37,26 +57,9 @@ documents in this order:
 - [mvp/v3.3/spells-full-import-plan.md](./mvp/v3.3/spells-full-import-plan.md)
 - [mvp/v3.3/structured-spell-patch-plan.md](./mvp/v3.3/structured-spell-patch-plan.md)
 
-## Active v3.4 Planning
+## Active v3.5 Planning
 
-v3.4 planning and closeout coordination live under `docs/mvp/v3.4/`.
-Start with the integrated plan, then move to the focused topic doc:
-
-- [mvp/v3.4/integrated-plan.md](./mvp/v3.4/integrated-plan.md)
-- [mvp/v3.4/acceptance-checklist.md](./mvp/v3.4/acceptance-checklist.md)
-- [mvp/v3.4/short-description-pipeline-plan.md](./mvp/v3.4/short-description-pipeline-plan.md)
-- [mvp/v3.4/data-harness-hardening-plan.md](./mvp/v3.4/data-harness-hardening-plan.md)
-- [mvp/v3.4/design-refresh-plan.md](./mvp/v3.4/design-refresh-plan.md)
-- [mvp/v3.4/i18next-conventions-plan.md](./mvp/v3.4/i18next-conventions-plan.md)
-
-The integrated plan records the current v3.4 scope decision:
-short-description delivery, data harness hardening, and release/freeze docs were
-the closeout path. The design refresh and i18next plans remain valid focused
-plans; both have implementation records under their focused topic docs.
-
-## Early v3.5 Planning
-
-Early v3.5 planning has started under `docs/mvp/v3.5/`:
+v3.5 planning has started under `docs/mvp/v3.5/`:
 
 - [mvp/v3.5/README.md](./mvp/v3.5/README.md)
 - [mvp/v3.5/integrated-plan.md](./mvp/v3.5/integrated-plan.md)

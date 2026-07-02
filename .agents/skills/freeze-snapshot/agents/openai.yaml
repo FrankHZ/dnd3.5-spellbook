@@ -1,0 +1,4 @@
+interface:
+  display_name: "Freeze Snapshot"
+  short_description: "Create as-built freeze docs for dnd3.5-spellbook releases."
+  default_prompt: "Create or update an as-built freeze snapshot for the current release stage."

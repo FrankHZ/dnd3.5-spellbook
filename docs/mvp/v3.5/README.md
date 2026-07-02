@@ -1,10 +1,10 @@
 # v3.5 Planning
 
-Status: early planning branch.
+Status: active planning track after the v3.4 freeze.
 
-v3.5 should start after v3.4 short-description and data-harness work has a
-clear acceptance point. This folder is for planning work that is intentionally
-separate from active v3.4 implementation branches.
+v3.5 starts after v3.4 short-description, data-harness, design, i18n, and
+freeze work has been accepted. This folder is for planning work that is
+intentionally separate from the frozen v3.4 snapshot.
 
 ## Candidate Scope
 
@@ -40,5 +40,5 @@ Start with `integrated-plan.md` when deciding v3.5 sequencing or reviewing
 whether child plans conflict.
 
 Treat v3.5 docs as future-facing plans, not proof of shipped behavior. If a v3.5
-plan needs facts from an active v3.4 branch, rebase or merge the accepted v3.4
-docs first instead of copying stale assumptions.
+plan needs v3.4 facts, start from `../v3.4/FREEZE.md` instead of copying stale
+assumptions from earlier plan drafts.

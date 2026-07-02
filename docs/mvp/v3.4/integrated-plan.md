@@ -1,11 +1,10 @@
 # v3.4 Integrated Plan
 
-Status: active v3.4 coordination plan after the short-description pipeline
-branch was reviewed and merged into local `main`.
+Status: frozen supporting plan. v3.4 has been accepted and frozen in
+`docs/mvp/v3.4/FREEZE.md`.
 
-Use this file as the v3.4 planning hub. The focused topic docs still own
-implementation detail; this document owns scope, sequencing, cross-plan
-boundaries, and freeze criteria.
+Use this file as the v3.4 planning history and cross-plan rationale. The freeze
+document owns the final as-built interpretation.
 
 ## Current Review
 
@@ -27,7 +26,8 @@ The reviewed import dry-run reports `0` inserted, `0` updated, and `6,532`
 unchanged. Low-risk English source-gap reuse has been exhausted for the current
 core plus supplemental scope; further coverage should be source/PDF-backed.
 
-The remaining v3.4 work should be a closeout pass, not a new expansion phase.
+v3.4 is now closed. New work should start from `docs/roadmap.md` and the v3.5
+plans rather than adding active scope here.
 
 ## Scope Decision
 
@@ -37,19 +37,16 @@ Treat v3.4 as:
 2. data harness hardening for the pipeline and rules DB preparation workflow
 3. release/freeze documentation for the current content and validation state
 
-Keep the following as parallel or follow-up tracks, not blockers for v3.4
-freeze unless the user explicitly promotes them:
+The following are follow-up tracks, not v3.4 freeze blockers:
 
-- frontend design refresh
-- frontend i18next semantic-key migration
 - broad translation/proofreading QA
 - content DB versus future user app-state DB split
 - static HTML/offline artifact work
 - importing remaining `data/spells-full` spell rows
 - full CI/CD and release automation
 
-This keeps v3.4 solid and shippable while preserving the larger ideas for v3.5
-or later.
+The frontend design refresh and i18next semantic-key migration landed before
+freeze and are summarized in `FREEZE.md`.
 
 ## Workstreams
 
@@ -70,10 +67,9 @@ Current status:
 
 Closeout tasks:
 
-- Keep the plan as the detailed source of truth for the pipeline.
-- Add a v3.4 acceptance checklist or freeze summary that records the final
-  commands and counts.
-- Do not add more fuzzy reuse paths in v3.4.
+- Keep the focused plan as implementation rationale.
+- Use `FREEZE.md` for final commands and counts.
+- Do not add more fuzzy reuse paths to the frozen v3.4 scope.
 
 ### B. Data Harness Hardening
 
@@ -83,12 +79,12 @@ Owner doc:
 
 Current status:
 
-- Still planned.
-- Most of the needed commands now exist because of short-description work, but
-  portable data-tools tests and local-data acceptance commands are still the
-  missing stability layer.
+- Implemented portable v3.4 slice.
+- `test:portable` covers the fixture-only helper layer.
+- `acceptance:local` bundles local rules manifest, summary QA, and import
+  dry-run checks.
 
-Target v3.4 slice:
+Frozen v3.4 slice:
 
 - Add a portable `data-tools` test command that does not require ignored local
   source data.
@@ -111,15 +107,12 @@ Owner doc:
 
 Current status:
 
-- Valid plan, but not required for the short-description/data release.
+- Implemented as a small reference-style frontend polish pass.
 
-Recommended handling:
+Frozen handling:
 
-- If pursued before freeze, keep it to one small visual polish branch and verify
-  Browse, Search, Spell Detail, collections, Settings, English, Chinese, mobile,
-  and desktop.
-- If not pursued immediately, carry it forward as a v3.5 or general frontend
-  polish track.
+- Keep this as the accepted v3.4 styling boundary.
+- Leave any broader whole-site redesign for a later explicit project.
 
 ### D. i18next Convention Hardening
 
@@ -129,13 +122,14 @@ Owner doc:
 
 Current status:
 
-- Valid plan, but independent from spell/content short descriptions.
+- Implemented.
+- Frontend UI copy now uses semantic i18next keys and `npm run i18n:check`
+  enforces extractor drift plus audit rules.
 
-Recommended handling:
+Frozen handling:
 
-- Do not mix semantic-key migration into data harness or freeze work.
-- If started, use a specialist branch and migrate one small namespace first.
-- It can safely move to v3.5 if v3.4 freeze is otherwise ready.
+- Keep UI copy in `web/public/locales/{en,zh}/`.
+- Keep spell/content summaries out of frontend locale JSON.
 
 ### E. Release Documentation
 
@@ -143,31 +137,28 @@ Owner docs:
 
 - this integrated plan
 - `docs/mvp/v3.4/acceptance-checklist.md`
-- future `docs/mvp/v3.4/FREEZE.md`
+- `docs/mvp/v3.4/FREEZE.md`
 
 Closeout tasks:
 
-- Record the final v3.4 validation commands and observed counts.
-- Record which v3.4 plans shipped, which remain planned, and which moved to
-  later work.
-- Update `docs/roadmap.md`, `docs/README.md`, `README.md`, and `AGENTS.md` when
-  the freeze snapshot is created.
+- Complete. Use `FREEZE.md` for final validation commands, observed counts, and
+  deferred backlog.
 
-## Sequencing
+## Completed Sequence
 
 1. **Plan integration**
 
-   Land this integrated plan and navigation updates.
+   Landed this integrated plan and navigation updates.
 
 2. **Data harness hardening**
 
-   Implement the smallest durable harness slice from
+   Implemented the smallest durable harness slice from
    `data-harness-hardening-plan.md`. Prefer portable tests and explicit local
    acceptance commands over broad end-to-end rebuilds.
 
 3. **v3.4 acceptance pass**
 
-   Run and record:
+   Ran and recorded:
 
    ```bash
    npm run verify
@@ -185,12 +176,12 @@ Closeout tasks:
 
 4. **Freeze docs**
 
-   Create the v3.4 acceptance checklist and `FREEZE.md`. The freeze should
+   Created the v3.4 acceptance checklist and `FREEZE.md`. The freeze should
    describe the as-built state, not every planning branch detail.
 
 5. **Post-freeze handoff**
 
-   Update `docs/roadmap.md` to make v3.5 planning the active next track.
+   Updated `docs/roadmap.md` to make v3.5 planning the active next track.
 
 ## Cross-Plan Boundaries
 
@@ -226,7 +217,7 @@ Closeout tasks:
 
 ## Freeze Criteria
 
-v3.4 can freeze when:
+v3.4 freeze criteria are met:
 
 - short-description app DB import dry-run is idempotent against the current
   local app DB
@@ -251,5 +242,3 @@ Move or keep these outside the v3.4 freeze gate:
 - remaining `data/spells-full` imports
 - full CI/CD
 - deployment automation beyond the current tracked scripts
-- broad frontend design refresh if it has not already landed as a small branch
-- full semantic-key i18next migration if it has not already landed incrementally

@@ -1,8 +1,8 @@
 # Short Description Pipeline Plan
 
-Status: v3.4 implementation track. Extraction, normalization, app DB import,
-API exposure, and first UI consumption are implemented locally; remaining
-original-source spot checks are review work, not a consumer blocker.
+Status: frozen v3.4 implementation reference. Extraction, normalization, app DB
+import, API exposure, and first UI consumption are implemented locally;
+remaining original-source spot checks are review work, not a consumer blocker.
 
 This plan covers short descriptions for spells, maneuvers, and class-facing
 metadata. It is deliberately data-tools first: extract and review source-backed

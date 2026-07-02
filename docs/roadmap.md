@@ -8,22 +8,37 @@ details.
 
 ## Current Track
 
-v3.3 is frozen. The latest release snapshot is
-`docs/mvp/v3.3/FREEZE.md`.
+v3.4 is frozen. The latest release snapshot is
+`docs/mvp/v3.4/FREEZE.md`.
 
-The completed v3.3 implementation focus was data and workflow stability:
+The completed v3.4 implementation focus was content/data reliability plus small
+frontend workflow polish:
 
-1. keep rules DB preparation out of server runtime
-2. make missing spell imports reviewable and repeatable
-3. reduce CHM parser hard misses
-4. prepare a maintainable CHM source-of-truth path
-5. preserve the Search/Browse query behavior already described in the feature
-   map
+1. ship spell short-description extraction, QA, normalization, import, API
+   exposure, and first frontend consumers
+2. harden the data-tools validation surface with portable tests and explicit
+   local acceptance
+3. keep rules DB manifest verification outside server runtime
+4. land a small reference-style frontend design refresh
+5. migrate frontend UI copy to semantic i18next keys with an audit guardrail
+6. record v3.4 as-built behavior and validation evidence in the freeze snapshot
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
 
 ## Recently Completed
+
+The v3.4 release is frozen with:
+
+- `docs/mvp/v3.4/FREEZE.md` as the as-built snapshot.
+- `6,532` accepted local spell-summary rows in `I18nSpellSummaryText`.
+- an idempotent summary import dry-run: `0` inserted, `0` updated, `6,532`
+  unchanged.
+- local data acceptance through `npm run -w data-tools acceptance:local`.
+- portable data-tools coverage through `npm run -w data-tools test:portable`.
+- semantic frontend i18n keys enforced by `npm run i18n:check`.
+- a small frontend design refresh documented by `docs/design.md` and the v3.4
+  design plan.
 
 The v3.3 data-tooling foundation is in place:
 
@@ -63,6 +78,24 @@ See:
 
 ## Current Data State
 
+Latest v3.4 local short-description acceptance snapshot:
+
+- normalized summary rows: `6,532`
+- app DB import dry-run: `0` inserted, `0` updated, `6,532` unchanged
+- short-description QA: `0` errors, `0` import blockers
+- rules DB manifest: verified, `8` patches, `15` spell operations, `15`
+  verified
+- scoped coverage report:
+  - books: `60`
+  - total spells: `3,938`
+  - zh summaries: `3,152`
+  - en summaries: `3,380`
+  - missing zh summaries: `786`
+  - missing en summaries: `1,273`
+  - missing both summaries: `369`
+  - en source rows missing DB spell: `531`
+  - en source rows book mismatch: `151`
+
 Latest local CHM parser snapshot:
 
 - `matched`: `3235`
@@ -92,62 +125,12 @@ future short-description import creates new target text to review.
 
 Recommended next sequence:
 
-1. **v3.4 closeout: integrated plan**
+1. **v3.5 scope review**
 
-   Use `docs/mvp/v3.4/integrated-plan.md` as the coordination surface. v3.4
-   should close around the short-description pipeline, data harness hardening,
-   and freeze documentation rather than expanding into every planned frontend
-   cleanup track.
+   Start from `docs/mvp/v3.5/integrated-plan.md`. Review whether the existing
+   v3.5 child plans still fit after the v3.4 freeze and dependency updates.
 
-2. **v3.4 closeout: data harness hardening**
-
-   Use `docs/mvp/v3.4/data-harness-hardening-plan.md` to add the smallest
-   durable harness slice: portable data-tools tests plus explicit local-data
-   acceptance checks around CHM parser matching, summary QA/import dry-runs,
-   structured rules patch validation, and the local rules DB manifest.
-
-3. **v3.4 closeout: acceptance and freeze docs**
-
-   Record the final validation commands and counts in a v3.4 acceptance
-   checklist and `FREEZE.md`. At minimum, rerun and record:
-
-   ```bash
-   npm run verify
-   npm run -w data-tools summaries:qa
-   npm run -w data-tools summaries:import -- --dry-run
-   npm run -w data-tools rules:manifest:verify
-   ```
-
-4. **parallel or follow-up: frontend design refresh**
-
-   Use `docs/mvp/v3.4/design-refresh-plan.md` to review existing frontend
-   components against `docs/design.md`, then implement small styling and
-   consistency improvements that are easy to inspect in the running app. This
-   is not a v3.4 freeze blocker unless explicitly promoted.
-
-5. **completed: frontend i18n convention cleanup**
-
-   Keep `i18next`, but replace raw-English translation keys with stable
-   semantic keys and make `npm run i18n:check` enforce the convention. This is
-   independent from spell/content summaries.
-
-   See:
-
-   - `docs/mvp/v3.4/i18next-conventions-plan.md`
-
-6. **follow-up: PDF-backed short-description coverage**
-
-   Use `docs/mvp/v3.4/short-description-pipeline-plan.md` as the source of
-   truth for the implemented extraction, normalization, import, API, and UI
-   consumer path. The current local app DB import contains `6,532` accepted
-   spell summary rows in `I18nSpellSummaryText`. Low-risk automatic English
-   source-gap reuse has been exhausted for core plus supplementals; the latest
-   scoped coverage report shows `328` missing Chinese summaries, `1,053`
-   missing English summaries, and `168` missing-both rows across those scopes.
-   Further short-description coverage should be source/PDF-backed rather than
-   fuzzy reuse.
-
-7. **follow-up architecture review: DB ownership boundaries**
+2. **Content DB / app-state DB split**
 
    Review the current app DB after the short-description pipeline settles. Today
    it effectively acts as an app-owned content DB, despite having placeholder
@@ -155,7 +138,33 @@ Recommended next sequence:
    generated content overlays into a content DB and keep user data in a separate
    app-state DB.
 
-8. **follow-up TypeScript module config cleanup**
+3. **Rules content normalization and frontend consumers**
+
+   Use `docs/mvp/v3.5/rules-content-normalization-plan.md` and
+   `docs/mvp/v3.5/normalized-rules-frontend-consumer-plan.md` together. The
+   goal is to stop treating dirty legacy string columns as the runtime query
+   model and to expose finer Browse/Search facets without bloating page
+   controls.
+
+4. **Rulebook display-label review**
+
+   Use `docs/mvp/v3.5/rulebook-display-labels-plan.md` to audit rulebook
+   abbreviations and localized display labels. Keep source slugs stable, but
+   improve reader-facing labels.
+
+5. **Dependency, CI/CD, module-doc, and agent-guide cleanup**
+
+   Use the v3.5 dependency/CI and agent-guide plans to add clean-checkout CI,
+   review dependencies, preserve CD as script-backed deployment, and shrink
+   `AGENTS.md` back toward a compact execution guide.
+
+6. **PDF-backed short-description coverage**
+
+   Keep this as follow-up content work unless explicitly promoted into v3.5.
+   Further short-description expansion should be source/PDF-backed rather than
+   fuzzy reuse.
+
+7. **TypeScript module config cleanup**
 
    `data-tools` has moved to `moduleResolution: "Node16"` with an explicit
    `rootDir`. The server still uses CommonJS plus `moduleResolution: "node"`
