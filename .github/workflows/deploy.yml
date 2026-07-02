@@ -1,0 +1,122 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Deployment target
+        required: true
+        default: backend
+        type: choice
+        options:
+          - backend
+          - web
+          - backend-and-web
+          - db
+      runPortableValidation:
+        description: Run portable validation before code/web deploy
+        required: true
+        default: true
+        type: boolean
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Manual deploy
+    runs-on: ubuntu-latest
+
+    env:
+      DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+      DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+      DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+      DEPLOY_SSH_PORT: ${{ vars.DEPLOY_SSH_PORT || '22' }}
+      DEPLOY_REMOTE_WEB_DIST_DIR: ${{ vars.DEPLOY_REMOTE_WEB_DIST_DIR || 'spellbook-dist' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        if: ${{ inputs.target != 'db' }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: npm
+
+      - name: Install dependencies
+        if: ${{ inputs.target != 'db' }}
+        run: npm ci
+
+      - name: Run portable validation
+        if: ${{ inputs.target != 'db' && inputs.runPortableValidation }}
+        run: npm run ci:portable
+
+      - name: Build web assets
+        if: ${{ inputs.target == 'web' || inputs.target == 'backend-and-web' }}
+        run: npm run -w web build
+        env:
+          VITE_API_BASE_URL: /api
+
+      - name: Configure SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${DEPLOY_SSH_HOST:?Missing secret DEPLOY_SSH_HOST}"
+          : "${DEPLOY_SSH_USER:?Missing secret DEPLOY_SSH_USER}"
+          : "${DEPLOY_SSH_PRIVATE_KEY:?Missing secret DEPLOY_SSH_PRIVATE_KEY}"
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$DEPLOY_SSH_PORT" "$DEPLOY_SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: Upload web assets
+        if: ${{ inputs.target == 'web' || inputs.target == 'backend-and-web' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$DEPLOY_REMOTE_WEB_DIST_DIR" in
+            ""|"."|".."|/*|../*|*/..|*"/../"*)
+              echo "Invalid DEPLOY_REMOTE_WEB_DIST_DIR: $DEPLOY_REMOTE_WEB_DIST_DIR" >&2
+              exit 1
+              ;;
+          esac
+
+          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
+            "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
+            "rm -rf ~/$DEPLOY_REMOTE_WEB_DIST_DIR && mkdir -p ~/$DEPLOY_REMOTE_WEB_DIST_DIR"
+
+          scp -i ~/.ssh/deploy_key -P "$DEPLOY_SSH_PORT" -r \
+            web/build/client/. \
+            "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST:~/$DEPLOY_REMOTE_WEB_DIST_DIR/"
+
+      - name: Deploy backend
+        if: ${{ inputs.target == 'backend' || inputs.target == 'backend-and-web' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
+            "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
+            "~/deploy-backend.sh"
+
+      - name: Deploy web
+        if: ${{ inputs.target == 'web' || inputs.target == 'backend-and-web' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
+            "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
+            "~/deploy-web.sh"
+
+      - name: Update database
+        if: ${{ inputs.target == 'db' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
+            "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
+            "~/update-db.sh"

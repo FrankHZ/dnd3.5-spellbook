@@ -20,7 +20,7 @@ intentionally separate from the frozen v3.4 snapshot.
    feature maps, and future module docs have clear ownership.
 6. Review dependencies, apply safe updates with lockfile validation, add CI
    around the current unit/API/typecheck spine, keep E2E out of initial scope,
-   and plan CD as a thin wrapper around the existing deployment scripts.
+   and keep CD as a thin manual wrapper around the existing deployment scripts.
 7. Add merge-to-main agent automation for high-level module design docs so
    ordinary feature branches can stay focused on scoped feature documentation.
 

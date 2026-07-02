@@ -1,8 +1,8 @@
 # CI/CD, Dependency Review, And Module Docs Automation Plan
 
-Status: portable CI with backend API fixtures implemented; dependency update
-application, CD wrappers, and module-doc automation remain planned v3.5
-follow-up work.
+Status: portable CI with backend API fixtures and a script-backed manual deploy
+workflow implemented; dependency update application and module-doc automation
+remain planned v3.5 follow-up work.
 
 ## Problem
 
@@ -231,15 +231,25 @@ project stage.
 Keep `docs/deployment.md` and `docs/deployment-scripts/` as the deployment
 contract.
 
-The first CD automation should be a thin trigger around the existing scripts,
-not a copy of their logic. Acceptable v3.5 shapes:
+The first CD automation is a thin manual trigger around the existing scripts,
+not a copy of their logic. Current shape:
 
-- a manual `workflow_dispatch` that SSHes to the configured host and invokes the
-  tracked remote script copies
+- `.github/workflows/deploy.yml` exposes manual `workflow_dispatch` targets for
+  `backend`, `web`, `backend-and-web`, and `db`
+- backend deploy invokes `~/deploy-backend.sh`
+- web deploy builds and uploads `web/build/client/` to the remote staging
+  directory, then invokes `~/deploy-web.sh`
+- DB update invokes `~/update-db.sh` and assumes DB files were already uploaded
+  to `~/data/`
+- SSH host/user/key are repository secrets; SSH port and web staging directory
+  are optional repository variables
+
+Still-acceptable later shapes:
+
 - a documented local release checklist that runs CI first, then invokes the
   current scripts
-- a later automatic deploy from `main` only after secrets, host targeting, and
-  rollback expectations are explicit
+- automatic deploy from `main` only after secrets, host targeting, and rollback
+  expectations are explicit
 
 The scripts themselves remain the place to change deployment behavior.
 
@@ -306,8 +316,8 @@ The intended feature workflow after v3.5:
 - Dependency review is documented before broad v3.5 implementation starts.
 - Safe dependency updates are either applied with lockfile review and validation
   or explicitly deferred with a reason.
-- CD remains backed by `docs/deployment-scripts/`; workflow wrappers do not
-  duplicate deployment logic.
+- CD remains backed by `docs/deployment-scripts/`; the manual workflow wrapper
+  does not duplicate deployment logic.
 - Merge-to-main module-doc automation is documented and either implemented or
   explicitly blocked on the chosen agent runner/secrets.
 - Generated module-doc changes are docs-only and reviewable.
@@ -319,7 +329,7 @@ The intended feature workflow after v3.5:
 - Which runner should own the merge-to-main agent job: GitHub Actions invoking a
   configured agent, or a Codex-side automation that watches `main`?
 - Should CD stay manual `workflow_dispatch` through v3.5, or deploy
-  automatically after `main` CI succeeds?
+  automatically after `main` CI succeeds in a later release?
 - Which minimal backend test fixture strategy gives the best balance between
   portability and realism?
 - Should dependency review become a scheduled maintenance task after v3.5, or

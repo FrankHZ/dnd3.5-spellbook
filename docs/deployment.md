@@ -21,6 +21,40 @@ These scripts are the source of truth for deployment behavior.
 
 Any local root-level `.bat` files are treated as ignored, machine-specific convenience wrappers only. They may call into the same workflow, but they are not canonical and should not be treated as the authoritative deploy logic.
 
+## GitHub Actions Manual Deploy
+
+The tracked GitHub Actions deploy workflow is:
+
+- `.github/workflows/deploy.yml`
+
+It is a manual `workflow_dispatch` wrapper around the canonical scripts. It is
+not a second deployment implementation.
+
+Supported targets:
+
+- `backend`: runs portable validation, then invokes `~/deploy-backend.sh` on the
+  remote host.
+- `web`: runs portable validation, builds `web`, uploads `web/build/client/` to
+  the remote staging directory, then invokes `~/deploy-web.sh`.
+- `backend-and-web`: combines the backend and web paths.
+- `db`: invokes `~/update-db.sh` only. It assumes database files were already
+  uploaded to `~/data/` by the operator.
+
+Required repository secrets:
+
+- `DEPLOY_SSH_HOST`
+- `DEPLOY_SSH_USER`
+- `DEPLOY_SSH_PRIVATE_KEY`
+
+Optional repository variables:
+
+- `DEPLOY_SSH_PORT`, default `22`
+- `DEPLOY_REMOTE_WEB_DIST_DIR`, default `spellbook-dist`
+
+The deploy workflow does not automatically sync changed files under
+`docs/deployment-scripts/` to the remote host. If those tracked scripts change,
+copy them to the remote targets first, then run the workflow.
+
 ## Remote Script Sync Policy
 
 The remote host copies of the deploy scripts are updated manually.

@@ -219,6 +219,8 @@ Primary plan:
 Expected output:
 
 - `docs/deployment-scripts/*` remain deployment source of truth
+- `.github/workflows/deploy.yml` provides a manual wrapper around the tracked
+  remote scripts
 - workflow wrappers do not duplicate deployment logic
 - automatic deploy waits until secrets, host targeting, and rollback behavior
   are explicit
@@ -242,19 +244,19 @@ Expected output:
 
 ## Conflict Review
 
-| Boundary | Child Plans | Current Review |
-| --- | --- | --- |
-| Content DB vs app-state DB | DB ownership, rules normalization | No conflict. Normalized rules-derived runtime tables belong in `CONTENT_DATABASE_URL`; future user data belongs in `APP_STATE_DATABASE_URL`. |
-| Legacy rules DB vs normalized rules content | DB ownership, rules normalization, rules DB notes | No conflict. Legacy `rules-clean` remains a read-only source input once normalized runtime content exists. Existing v3.3 patches remain source-correction history. |
-| Rulebook source ids vs UI labels | rules normalization, rulebook labels, frontend consumer | No conflict. Stable ids, legacy slugs, and legacy abbrs remain source identity; display labels are content metadata consumed through helpers. |
-| Backend facets vs frontend controls | rules normalization, frontend consumer | No conflict. Backend contract and metadata vocabulary land before broad UI controls. Frontend does not parse legacy DB strings. |
-| Search semantics vs Browse semantics | frontend consumer, features map | No conflict. Browse stays filter-first; Search stays name-first while accepting the same structured scope. |
-| Settings vs URL state | frontend consumer | No conflict. Settings owns broad defaults. Ordinary Browse/Search facet selections stay in URL state. |
-| Dependency updates vs feature branches | CI/CD, all implementation plans | No conflict. v3.5 should do dependency review in a dedicated branch before broad implementation, and feature branches should only carry dependency updates when explicitly blocked. |
-| CI vs local data | CI/CD, rules normalization, data harness | No conflict, but implementation must create portable fixtures or preparation commands before enabling backend API tests in CI. Ignored local DBs cannot be CI inputs. |
-| CD vs deploy scripts | CI/CD, deployment docs | No conflict. CD wrappers call tracked scripts; deploy logic stays in `docs/deployment-scripts/`. |
-| AGENTS vs docs index | agent guide, CI/CD module docs, this plan | No conflict. `docs/README.md` is the map, this plan is v3.5 coordination, and `AGENTS.md` should shrink after the review. |
-| v3.5 vs long-term content artifacts | roadmap, stable backlog | No conflict. Bulk translation/proofreading QA, `data/spells-full` completion imports, static/offline HTML artifacts, content packs, and offline search indexes stay long-term unless explicitly pulled into a later version plan. |
+| Boundary                                    | Child Plans                                             | Current Review                                                                                                                                                                                                                    |
+| ------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Content DB vs app-state DB                  | DB ownership, rules normalization                       | No conflict. Normalized rules-derived runtime tables belong in `CONTENT_DATABASE_URL`; future user data belongs in `APP_STATE_DATABASE_URL`.                                                                                      |
+| Legacy rules DB vs normalized rules content | DB ownership, rules normalization, rules DB notes       | No conflict. Legacy `rules-clean` remains a read-only source input once normalized runtime content exists. Existing v3.3 patches remain source-correction history.                                                                |
+| Rulebook source ids vs UI labels            | rules normalization, rulebook labels, frontend consumer | No conflict. Stable ids, legacy slugs, and legacy abbrs remain source identity; display labels are content metadata consumed through helpers.                                                                                     |
+| Backend facets vs frontend controls         | rules normalization, frontend consumer                  | No conflict. Backend contract and metadata vocabulary land before broad UI controls. Frontend does not parse legacy DB strings.                                                                                                   |
+| Search semantics vs Browse semantics        | frontend consumer, features map                         | No conflict. Browse stays filter-first; Search stays name-first while accepting the same structured scope.                                                                                                                        |
+| Settings vs URL state                       | frontend consumer                                       | No conflict. Settings owns broad defaults. Ordinary Browse/Search facet selections stay in URL state.                                                                                                                             |
+| Dependency updates vs feature branches      | CI/CD, all implementation plans                         | No conflict. v3.5 should do dependency review in a dedicated branch before broad implementation, and feature branches should only carry dependency updates when explicitly blocked.                                               |
+| CI vs local data                            | CI/CD, rules normalization, data harness                | No conflict. Backend API tests now use disposable fixtures in CI; ignored local DBs remain outside portable CI inputs.                                                                                                            |
+| CD vs deploy scripts                        | CI/CD, deployment docs                                  | No conflict. CD wrappers call tracked scripts; deploy logic stays in `docs/deployment-scripts/`.                                                                                                                                  |
+| AGENTS vs docs index                        | agent guide, CI/CD module docs, this plan               | No conflict. `docs/README.md` is the map, this plan is v3.5 coordination, and `AGENTS.md` should shrink after the review.                                                                                                         |
+| v3.5 vs long-term content artifacts         | roadmap, stable backlog                                 | No conflict. Bulk translation/proofreading QA, `data/spells-full` completion imports, static/offline HTML artifacts, content packs, and offline search indexes stay long-term unless explicitly pulled into a later version plan. |
 
 ## Review Notes By Child Plan
 
@@ -289,10 +291,10 @@ fallback behavior is tested.
 ### CI/CD, Dependency Review, And Module Docs
 
 Reviewed against DB/content plans. Dependency review should land in a dedicated
-maintenance branch before broad v3.5 implementation. CI must wait for portable
-DB fixtures or preparation commands. CD remains script-backed and should not
-become a parallel deployment implementation. Module-doc automation should be
-non-blocking and docs-only.
+maintenance branch before broad v3.5 implementation. CI has portable backend
+fixtures and should keep ignored local DBs out of clean-checkout validation. CD
+remains script-backed and should not become a parallel deployment
+implementation. Module-doc automation should be non-blocking and docs-only.
 
 ### Agent Guide Review
 
