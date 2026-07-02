@@ -1,0 +1,47 @@
+# Contracts Module
+
+## Role
+
+`contracts/` owns the shared TypeScript DTOs and exported types that define the
+runtime boundary between `server/` and `web/`.
+
+It should stay small and declarative. Do not put server data access, frontend
+state, or UI behavior in this package.
+
+## Main Boundaries
+
+- `contracts/src/index.ts` is the public export surface.
+- DTOs live under `contracts/src/dto/`.
+- Shared HTTP and i18n helper types live in `contracts/src/http.ts` and
+  `contracts/src/i18n.ts`.
+- Generated output lives under `contracts/dist/`.
+
+## Change Flow
+
+When a shared shape changes:
+
+1. Update `contracts/src/`.
+2. Rebuild contracts.
+3. Update server mapping/service tests.
+4. Update frontend API/helper consumers and tests.
+5. Run the relevant server and web validation.
+
+Server and web code should not define parallel DTOs for the same API response.
+
+## Validation
+
+Use:
+
+```bash
+npm run build:contracts
+npm run check:contracts
+```
+
+`npm run check:contracts` catches missing build artifacts or broken package
+exports from a clean consumer import.
+
+## Related Docs
+
+- [../../contracts/README.md](../../contracts/README.md)
+- [./server.md](./server.md)
+- [./web.md](./web.md)

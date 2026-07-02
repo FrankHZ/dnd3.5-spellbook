@@ -1,0 +1,70 @@
+# Data Tools Module
+
+## Role
+
+`data-tools/` owns local data preparation, parser workflows, rules DB patching,
+short-description extraction and QA, source inspection, and the data harness.
+
+It exists so runtime `server/` code does not become a parser, migration, or
+source-data operations workspace.
+
+## Main Boundaries
+
+`data-tools/src/` is grouped by owning module:
+
+- `shared/`: path, environment, and local-data helpers.
+- `db/`: data-tool database clients.
+- `rules/`: rules DB inspection, SQL patching, structured spell patches,
+  manifests, and `spells-full` patch generation.
+- `short-desc/`: English/Chinese short-description matching, QA,
+  normalization, import, coverage, and reuse workflows.
+- `zh-parser/`: CHM preprocessing, parsing, QA, matching, and summary
+  extraction.
+- `harness/`: portable tests and explicit local acceptance bundles.
+
+Command lifecycle metadata lives in `data-tools/scripts.manifest.json`.
+
+## Data Ownership
+
+Local source inputs, maintained patch data, normalized import JSONL, and review
+decisions belong in the nested `data/` repo. Generated reports and parser output
+belong under `data-tools/out/`.
+
+Parent-repo code should include schemas, validators, fixtures, command
+wrappers, and docs. Do not commit ignored raw CHM data, local SQLite DBs, or
+generated run reports to the parent repo.
+
+## Harness Boundary
+
+Portable tests should cover reusable helpers behind maintained workflows and
+must not depend on ignored source data or local SQLite DBs.
+
+Local acceptance commands may depend on the nested `data/` repo and local DBs,
+but they should remain explicit and outside root `npm run verify` or CI.
+
+## Validation
+
+Use:
+
+```bash
+npm run typecheck:data-tools
+npm run test:data-tools
+```
+
+For local data acceptance, use:
+
+```bash
+npm run -w data-tools acceptance:local
+```
+
+Use local acceptance only when the change actually touches local source data,
+rules DB manifests, parser output, or import behavior.
+
+## Related Docs
+
+- [../../data-tools/README.md](../../data-tools/README.md)
+- [../data-setup.md](../data-setup.md)
+- [../import-workflow.md](../import-workflow.md)
+- [../rules-db-notes.md](../rules-db-notes.md)
+- [../mvp/v3.4/data-harness-hardening-plan.md](../mvp/v3.4/data-harness-hardening-plan.md)
+- [../mvp/v3.4/short-description-pipeline-plan.md](../mvp/v3.4/short-description-pipeline-plan.md)

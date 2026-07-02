@@ -86,6 +86,15 @@ boundaries. The CI/CD, dependency review, and module-docs plan covers
 clean-checkout CI, dependency inventory and safe updates, script-backed CD, and
 merge-to-main agent automation for high-level module design docs.
 
+For high-level module ownership after the v3.5 module-doc baseline, use:
+
+- [modules/README.md](./modules/README.md)
+- [modules/server.md](./modules/server.md)
+- [modules/web.md](./modules/web.md)
+- [modules/contracts.md](./modules/contracts.md)
+- [modules/data-tools.md](./modules/data-tools.md)
+- [modules/delivery.md](./modules/delivery.md)
+
 ## Current Operational Docs
 
 For current work ordering, use:

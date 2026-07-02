@@ -1,8 +1,9 @@
 # CI/CD, Dependency Review, And Module Docs Automation Plan
 
-Status: portable CI with backend API fixtures and a script-backed manual deploy
-workflow implemented; dependency update application and module-doc automation
-remain planned v3.5 follow-up work.
+Status: portable CI with backend API fixtures, a script-backed manual deploy
+workflow, and a `docs/modules/` baseline implemented; dependency update
+application remains planned v3.5 follow-up work, and automatic module-doc PRs
+are blocked on the chosen agent runner and secrets.
 
 ## Problem
 
@@ -270,6 +271,15 @@ docs/modules/
   delivery.md
 ```
 
+Current baseline:
+
+- `docs/modules/README.md`
+- `docs/modules/server.md`
+- `docs/modules/web.md`
+- `docs/modules/contracts.md`
+- `docs/modules/data-tools.md`
+- `docs/modules/delivery.md`
+
 Expected automation behavior:
 
 - read the merge diff and the current feature/workspace docs
@@ -283,6 +293,11 @@ Expected automation behavior:
 The agent job should start as non-blocking. CI should protect implementation
 quality; the module-doc job should reduce drift without blocking emergency
 fixes.
+
+Implementation status: the target docs exist, but automatic docs-only PRs are
+not enabled until the project chooses a runner. The blocked decision is whether
+GitHub Actions should invoke a configured agent with repository secrets, or
+whether a Codex-side automation should watch `main` and open follow-up branches.
 
 ### 6. Review Documentation Boundaries
 
@@ -318,8 +333,8 @@ The intended feature workflow after v3.5:
   or explicitly deferred with a reason.
 - CD remains backed by `docs/deployment-scripts/`; the manual workflow wrapper
   does not duplicate deployment logic.
-- Merge-to-main module-doc automation is documented and either implemented or
-  explicitly blocked on the chosen agent runner/secrets.
+- Merge-to-main module-doc automation is documented and explicitly blocked on
+  the chosen agent runner/secrets.
 - Generated module-doc changes are docs-only and reviewable.
 - `AGENTS.md`, `docs/features.md`, `docs/feature-workflow.md`, and
   `docs/frontend-map.md` have clear non-overlapping ownership after the review.

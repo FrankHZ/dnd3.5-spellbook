@@ -239,8 +239,9 @@ Expected output:
 
 - `AGENTS.md` keeps durable safety rules, not a full plan catalog
 - feature branches update focused docs and tests near the change
-- a non-blocking doc agent opens docs-only module-doc updates after `main`
-  merges when broad module docs need refresh
+- `docs/modules/` provides the high-level module-doc target surface
+- automatic docs-only module-doc PRs are blocked until the agent runner and
+  secrets are chosen
 
 ## Conflict Review
 
@@ -294,7 +295,8 @@ Reviewed against DB/content plans. Dependency review should land in a dedicated
 maintenance branch before broad v3.5 implementation. CI has portable backend
 fixtures and should keep ignored local DBs out of clean-checkout validation. CD
 remains script-backed and should not become a parallel deployment
-implementation. Module-doc automation should be non-blocking and docs-only.
+implementation. Module-doc automation should be non-blocking and docs-only; the
+baseline docs exist, but the automatic PR job waits for a runner choice.
 
 ### Agent Guide Review
 
