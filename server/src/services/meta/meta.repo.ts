@@ -1,6 +1,6 @@
-import { appPrisma } from "~/lib/app-prisma-client";
+import { contentPrisma } from "~/lib/content-prisma-client";
 import { I18nContext, Lang } from "@dnd/contracts";
-import { Prisma } from "DB_APP/client";
+import { Prisma } from "DB_CONTENT/client";
 
 function normalizeVariant(variant?: string) {
   return variant ?? "default";
@@ -18,32 +18,32 @@ export async function queryMetaI18nOverlays(input: {
 
   const [rulebooks, classes, domains, schools, subschools, descriptors] =
     await Promise.all([
-      appPrisma.i18nRulebookText.findMany({
+      contentPrisma.i18nRulebookText.findMany({
         where: { lang: input.lang, variant },
         select: { rulebookId: true, name: true }, // abbr optional if exists
       }),
 
-      appPrisma.i18nCharacterClassText.findMany({
+      contentPrisma.i18nCharacterClassText.findMany({
         where: { lang: input.lang, variant },
         select: { classId: true, name: true },
       }),
 
-      appPrisma.i18nDomainText.findMany({
+      contentPrisma.i18nDomainText.findMany({
         where: { lang: input.lang, variant },
         select: { domainId: true, name: true },
       }),
 
-      appPrisma.i18nSpellSchoolText.findMany({
+      contentPrisma.i18nSpellSchoolText.findMany({
         where: { lang: input.lang, variant },
         select: { schoolId: true, name: true },
       }),
 
-      appPrisma.i18nSpellSubschoolText.findMany({
+      contentPrisma.i18nSpellSubschoolText.findMany({
         where: { lang: input.lang, variant },
         select: { subschoolId: true, name: true },
       }),
 
-      appPrisma.i18nDescriptorText.findMany({
+      contentPrisma.i18nDescriptorText.findMany({
         where: { lang: input.lang, variant },
         select: { descriptorId: true, name: true },
       }),

@@ -133,11 +133,11 @@ Recommended next sequence:
 
 2. **Content DB / app-state DB split**
 
-   Review the current app DB after the short-description pipeline settles. Today
-   it effectively acts as an app-owned content DB, despite having placeholder
-   user/app-state tables. Before real user state ships, decide whether to split
-   generated content overlays into a content DB and keep user data in a separate
-   app-state DB.
+   First implementation slice is underway on the v3.5 DB branch: the previous
+   app-owned content schema is being renamed to a content DB boundary, future
+   user/app-state models are being moved to a separate app-state DB boundary,
+   and `APP_DATABASE_URL` remains only as a temporary content DB compatibility
+   fallback. This slice does not migrate local SQLite files destructively.
 
 3. **Rules content normalization and frontend consumers**
 
@@ -202,8 +202,9 @@ topic-specific child plans.
 
    Use `docs/mvp/v3.5/db-ownership-boundary-plan.md` to split generated content
    overlays from future user/app-state data before real server-side user data
-   ships. The current app DB is effectively content-owned today; v3.5 should
-   make that physical and tooling boundary explicit.
+   ships. The first v3.5 DB slice makes that physical and tooling boundary
+   explicit while leaving local SQLite file migration to a later, explicit
+   operation.
 
 2. **Rules content normalization**
 

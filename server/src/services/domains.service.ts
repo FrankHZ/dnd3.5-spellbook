@@ -4,7 +4,7 @@ import {
   I18nNameOverlay,
   type DomainListResponse,
 } from "@dnd/contracts";
-import { appPrisma } from "~/lib/app-prisma-client";
+import { contentPrisma } from "~/lib/content-prisma-client";
 
 export const domainsService = {
   async listDomains(input: {
@@ -37,7 +37,7 @@ export const domainsService = {
       }),
       i18n.lang === "en"
         ? Promise.resolve([])
-        : appPrisma.i18nDomainText.findMany({
+        : contentPrisma.i18nDomainText.findMany({
             where: {
               domainId: { in: domainIds },
               lang: i18n.lang,

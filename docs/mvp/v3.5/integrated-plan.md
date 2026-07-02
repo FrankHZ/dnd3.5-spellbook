@@ -99,8 +99,8 @@ Expected output:
 
 - `CONTENT_DATABASE_URL`
 - `APP_STATE_DATABASE_URL`
-- transitional compatibility notes for `APP_DATABASE_URL`, if needed
-- clearly named Prisma clients or equivalent DB access modules
+- transitional compatibility notes for `APP_DATABASE_URL`
+- clearly named content and app-state Prisma clients or equivalent DB access modules
 - docs explaining which DBs are rebuildable content artifacts and which are
   preserve-sensitive app-state data
 

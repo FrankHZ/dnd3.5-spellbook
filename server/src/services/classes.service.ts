@@ -5,7 +5,7 @@ import {
   I18nNameOverlay,
   ClassListResponse,
 } from "@dnd/contracts";
-import { appPrisma } from "~/lib/app-prisma-client";
+import { contentPrisma } from "~/lib/content-prisma-client";
 
 export const classesService = {
   async listClasses(input: {
@@ -44,7 +44,7 @@ export const classesService = {
     const filteredClassIds = classes.map((c) => c.id);
 
     if (i18n.lang !== "en") {
-      const rows = await appPrisma.i18nCharacterClassText.findMany({
+      const rows = await contentPrisma.i18nCharacterClassText.findMany({
         where: {
           classId: { in: filteredClassIds },
           lang: i18n.lang, // "zh"

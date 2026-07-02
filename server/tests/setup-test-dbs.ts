@@ -9,10 +9,12 @@ const fixtureRoot = fs.mkdtempSync(
   path.join(os.tmpdir(), "spellbook-api-test-"),
 );
 const rulesDbPath = path.join(fixtureRoot, "rules-test.sqlite");
-const appDbPath = path.join(fixtureRoot, "app-test.sqlite");
+const contentDbPath = path.join(fixtureRoot, "content-test.sqlite");
+const appStateDbPath = path.join(fixtureRoot, "app-state-test.sqlite");
 
 process.env.RULES_DATABASE_URL = `file:${rulesDbPath.replace(/\\/g, "/")}`;
-process.env.APP_DATABASE_URL = `file:${appDbPath.replace(/\\/g, "/")}`;
+process.env.CONTENT_DATABASE_URL = `file:${contentDbPath.replace(/\\/g, "/")}`;
+process.env.APP_STATE_DATABASE_URL = `file:${appStateDbPath.replace(/\\/g, "/")}`;
 
 function execMany(db: Database.Database, statements: string[]) {
   for (const statement of statements) {
@@ -333,8 +335,8 @@ function seedRulesDb() {
   db.close();
 }
 
-function seedAppDb() {
-  const db = new Database(appDbPath);
+function seedContentDb() {
+  const db = new Database(contentDbPath);
   execMany(db, [
     `
       CREATE TABLE I18nSpellText (
@@ -529,13 +531,13 @@ function seedAppDb() {
 }
 
 seedRulesDb();
-seedAppDb();
+seedContentDb();
 
 afterAll(async () => {
-  const [{ rulesPrisma }, { appPrisma }] = await Promise.all([
+  const [{ rulesPrisma }, { contentPrisma }] = await Promise.all([
     import("~/lib/rules-prisma-client"),
-    import("~/lib/app-prisma-client"),
+    import("~/lib/content-prisma-client"),
   ]);
-  await Promise.all([rulesPrisma.$disconnect(), appPrisma.$disconnect()]);
+  await Promise.all([rulesPrisma.$disconnect(), contentPrisma.$disconnect()]);
   fs.rmSync(fixtureRoot, { recursive: true, force: true });
 });

@@ -28,7 +28,7 @@ function usage(): never {
   npm run -w data-tools summaries:import
   npm run -w data-tools summaries:import -- --input data/short-desc-normalized/summaries.generated.jsonl
 
-Imports accepted short descriptions into the app DB I18nSpellSummaryText table.
+Imports accepted short descriptions into the content DB I18nSpellSummaryText table.
 `);
   process.exit(1);
 }
@@ -58,10 +58,14 @@ function parseArgs(argv: string[]) {
   return { dryRun, inputPath };
 }
 
-function appDbPath() {
+function contentDbPath() {
   loadServerEnv();
-  const raw = process.env.APP_DATABASE_URL;
-  if (!raw) throw new Error("APP_DATABASE_URL is not set");
+  const raw = process.env.CONTENT_DATABASE_URL ?? process.env.APP_DATABASE_URL;
+  if (!raw) {
+    throw new Error(
+      "CONTENT_DATABASE_URL or transitional APP_DATABASE_URL is not set",
+    );
+  }
   if (!raw.startsWith("file:")) {
     throw new Error(`Only file: SQLite URLs are supported, got ${raw}`);
   }
@@ -101,7 +105,7 @@ function importRows(dbPath: string, rows: SummaryRow[], dryRun: boolean) {
   try {
     if (!tableExists(db)) {
       throw new Error(
-        "I18nSpellSummaryText table is missing. Apply server/prisma-app migrations first.",
+        "I18nSpellSummaryText table is missing. Apply server/prisma-content migrations first.",
       );
     }
 
@@ -197,7 +201,7 @@ function writeReport(report: unknown, dryRun: boolean) {
 
 function main() {
   const { dryRun, inputPath } = parseArgs(process.argv.slice(2));
-  const targetDbPath = appDbPath();
+  const targetDbPath = contentDbPath();
   const { rows, errors } = readInput(inputPath);
 
   if (errors.length > 0) {

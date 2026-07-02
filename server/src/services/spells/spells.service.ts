@@ -20,7 +20,7 @@ import {
   queryI18nDetail,
   queryI18nSummaryDetail,
   queryI18nSummaryMap,
-} from "./spells.repo.app";
+} from "./spells.repo.content";
 import { resolveSpellNames } from "./spells.service.resolve";
 
 export const spellsService = {

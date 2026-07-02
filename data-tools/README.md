@@ -151,7 +151,7 @@ npm run -w data-tools summaries:punctuation
 npm run -w data-tools summaries:punctuation -- --write
 ```
 
-Import normalized short descriptions into the local app DB:
+Import normalized short descriptions into the local content DB:
 
 ```bash
 npm run -w data-tools summaries:import -- --dry-run
@@ -330,7 +330,7 @@ DB, patch files, index-table counts, or structured patch presence drift from
 that manifest. Command reports are generated under
 `data-tools/out/rules-manifest/`.
 
-`summaries:import` is the app DB mutation boundary for v3.4 spell summaries. It
+`summaries:import` is the content DB mutation boundary for spell summaries. It
 reads only `data/short-desc-normalized/summaries.generated.jsonl`, validates the
 accepted normalized row shape, and upserts rows into
 `I18nSpellSummaryText` by `spellId + lang + variant`. It supports `--dry-run`,
@@ -413,10 +413,11 @@ another scoped book. The default scope is the current official 3.5 working set:
   `--write` it mutates the normalized local data JSONL.
 - `summaries:reuse-apply` without `--write` writes reports only; with `--write`
   it mutates the normalized local data JSONL.
-- `summaries:import -- --dry-run` validates and counts app DB changes without
-  mutating SQLite databases.
-- `summaries:import` is write-capable against `APP_DATABASE_URL` and upserts
-  only `I18nSpellSummaryText` rows.
+- `summaries:import -- --dry-run` validates and counts content DB changes
+  without mutating SQLite databases.
+- `summaries:import` is write-capable against `CONTENT_DATABASE_URL`
+  (`APP_DATABASE_URL` fallback during the split) and upserts only
+  `I18nSpellSummaryText` rows.
 - `rules:sql:dry-run` never mutates the configured rules DB.
 - `rules:sql:apply` and `rules:index:rebuild` are write-capable and must be run
   intentionally.

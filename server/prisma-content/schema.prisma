@@ -1,50 +1,14 @@
 generator client {
     provider = "prisma-client"
-    output   = "../prisma-app/generated"
+    output   = "../prisma-content/generated"
 }
 
 datasource db {
     provider = "sqlite"
 }
 
-model User {
-    id        String   @id @default(cuid())
-    email     String?  @unique
-    createdAt DateTime @default(now())
-
-    favorites FavoriteSpell[]
-    notes     SpellNote[]
-}
-
-model FavoriteSpell {
-    userId  String
-    spellId Int
-
-    createdAt DateTime @default(now())
-
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-    @@id([userId, spellId])
-    @@index([spellId])
-}
-
-model SpellNote {
-    id      String @id @default(cuid())
-    userId  String
-    spellId Int
-
-    note      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-    @@index([userId, spellId])
-    @@index([spellId])
-}
-
-/// ---- v2 Chinese overlay (parallel language choices) ----
-/// lang examples: "zh-chm", "zh-ai"
+/// App-owned generated/imported content overlays.
+/// User/app-state models belong to ../prisma-app-state/schema.prisma.
 model I18nSpellText {
     id         String @id @default(cuid())
     spellId    Int

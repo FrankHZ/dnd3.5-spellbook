@@ -167,9 +167,14 @@ PORT=3000
 HOST=127.0.0.1
 
 RULES_DATABASE_URL=file:/opt/spellbook/data/spellbook.db
-APP_DATABASE_URL=file:/opt/spellbook/data/app.db
+CONTENT_DATABASE_URL=file:/opt/spellbook/data/app.db
+APP_STATE_DATABASE_URL=file:/opt/spellbook/data/app-state.db
 DATABASE_URL=file:/opt/spellbook/data/spellbook.db
 ```
+
+The current deployment scripts still upload the generated content DB as
+`app.db`. `CONTENT_DATABASE_URL` should point at that file until the v3.5 DB
+deployment redesign gives content and app-state files explicit deploy steps.
 
 The backend should only listen on:
 

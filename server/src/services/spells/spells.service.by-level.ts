@@ -9,7 +9,7 @@ import {
   SpellRow,
 } from "./spells.repo.rules";
 import { mapSpellItem } from "./spells.mapper";
-import { queryI18nMap, queryI18nSummaryMap } from "./spells.repo.app";
+import { queryI18nMap, queryI18nSummaryMap } from "./spells.repo.content";
 
 type HasLevel = { level: number };
 type SpellClassIndex = SpellRow["spellClassIndexes"][number];

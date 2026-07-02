@@ -5,23 +5,23 @@ import type {
   I18nSpellDetailOverlay,
 } from "@dnd/contracts";
 import { Prisma as RulesPrisma } from "DB_RULES/client";
-import { Prisma as AppPrisma } from "DB_APP/client";
+import { Prisma as ContentPrisma } from "DB_CONTENT/client";
 import { SELECT_SPELL_DETAIL, SELECT_SPELL_LIST } from "./spells.repo.rules";
 import {
   SELECT_SPELL_I18N_DETAIL,
   SELECT_SPELL_I18N_MIN,
   SELECT_SPELL_I18N_SUMMARY,
-} from "./spells.repo.app";
+} from "./spells.repo.content";
 
-type SpellNameI18nRow = AppPrisma.I18nSpellTextGetPayload<{
+type SpellNameI18nRow = ContentPrisma.I18nSpellTextGetPayload<{
   select: typeof SELECT_SPELL_I18N_MIN;
 }>;
 
-type SpellDetailI18nRow = AppPrisma.I18nSpellTextGetPayload<{
+type SpellDetailI18nRow = ContentPrisma.I18nSpellTextGetPayload<{
   select: typeof SELECT_SPELL_I18N_DETAIL;
 }>;
 
-type SpellSummaryI18nRow = AppPrisma.I18nSpellSummaryTextGetPayload<{
+type SpellSummaryI18nRow = ContentPrisma.I18nSpellSummaryTextGetPayload<{
   select: typeof SELECT_SPELL_I18N_SUMMARY;
 }>;
 

@@ -24,15 +24,17 @@ work belong in `data-tools/`.
 
 ## Data Ownership
 
-The current runtime reads two SQLite connections:
+The current runtime reads three SQLite connection roles:
 
 - `RULES_DATABASE_URL`: legacy rules-side content input.
-- `APP_DATABASE_URL`: app-owned content overlays such as i18n names,
-  descriptions, and summaries.
+- `CONTENT_DATABASE_URL`: app-owned content overlays such as i18n names,
+  descriptions, and summaries. `APP_DATABASE_URL` is a temporary compatibility
+  fallback for this same content DB.
+- `APP_STATE_DATABASE_URL`: future user/app-state data such as server-owned
+  users, notes, synced collections, or preferences.
 
-v3.5 planning targets a clearer content DB versus future app-state DB boundary.
-Until that lands, do not add user-owned runtime state to the current app DB
-without revisiting `docs/mvp/v3.5/db-ownership-boundary-plan.md`.
+The first v3.5 split creates the physical schema/client boundary. Do not add
+server-owned user state to the content DB.
 
 ## Contracts
 

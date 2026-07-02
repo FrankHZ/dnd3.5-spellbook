@@ -1,4 +1,4 @@
-import { appPrisma } from "~/lib/app-prisma-client";
+import { contentPrisma } from "~/lib/content-prisma-client";
 import fs from "node:fs";
 import path from "node:path";
 import { load } from "cheerio";
@@ -72,9 +72,9 @@ async function main() {
   });
 
   const transactions = [
-    appPrisma.i18nSpellText.deleteMany({ where: { lang: "zh-chm" } }),
-    appPrisma.i18nSpellText.deleteMany({ where: { lang: LANG } }),
-    appPrisma.i18nSpellText.createMany({
+    contentPrisma.i18nSpellText.deleteMany({ where: { lang: "zh-chm" } }),
+    contentPrisma.i18nSpellText.deleteMany({ where: { lang: LANG } }),
+    contentPrisma.i18nSpellText.createMany({
       data: matched.map((m) => ({
         spellId: m.spellId as number,
         rulebookId: m.rulebookId as number,
@@ -90,7 +90,7 @@ async function main() {
     }),
   ];
 
-  await appPrisma.$transaction(transactions);
+  await contentPrisma.$transaction(transactions);
 }
 
-main().finally(async () => await appPrisma.$disconnect());
+main().finally(async () => await contentPrisma.$disconnect());
