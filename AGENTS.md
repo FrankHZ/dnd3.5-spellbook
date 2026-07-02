@@ -1,185 +1,124 @@
 # Agent Guide
 
-This file is the agent-facing entry point for this repository.
+This is the agent-facing execution guide for this repository.
 
-Use it to make safe, consistent changes without rereading every historical MVP
-document first. Human-facing overview material stays in `README.md`; durable
-project docs live under `docs/`.
+Keep it compact. Human-facing overview material belongs in `README.md`; the
+canonical documentation map belongs in `docs/README.md`; current work ordering
+belongs in `docs/roadmap.md`.
 
 ## Project Shape
 
-- `server/`: Express API, Prisma clients, SQLite access used by runtime, API tests.
-- `web/`: React Router frontend, local UI wrappers, browser-facing app state.
+- `server/`: Express API, Prisma clients, SQLite runtime access, API tests.
+- `web/`: React Router frontend, UI components, browser state, i18n runtime.
 - `contracts/`: shared TypeScript DTOs used by both `server` and `web`.
-- `data-tools/`: import, inspection, parser, and future rules DB patch tooling.
-  Server-side wrapper scripts may remain for command compatibility.
-- `docs/`: current operational docs plus historical MVP planning records.
-- `server/data/db/`: local-only runtime SQLite databases; do not assume they are
-  portable.
-- `server/data/i18n/`: local app-owned entity translation inputs consumed by
-  server import scripts.
-- `data/`: nested local data repo for parser/import source inputs, rules patch
-  files, normalized import JSONL, and maintained short-description review
-  decisions. The parent repo ignores this directory.
-- `data-tools/out/`: generated data-tool reports, parser output, review queues,
-  run summaries, and other rebuildable intermediates.
+- `data-tools/`: parser, import, inspection, rules patch, short-description,
+  and data harness tooling.
+- `docs/`: durable project docs, operational docs, and MVP history.
+- `data/`: ignored nested local data repo for source inputs, maintained patch
+  data, normalized import JSONL, and review decisions.
+- `server/data/db/`: ignored local runtime SQLite databases.
+- `data-tools/out/`: generated reports, parser output, review queues, and other
+  rebuildable intermediates.
 
-## Canonical Docs
+## Start Here
 
-Start with these files when orienting:
+Use these docs for orientation instead of expanding this file:
 
-1. `docs/README.md` for the documentation map.
-2. `docs/roadmap.md` for current active work ordering after a pause.
-3. `docs/features.md` for the current user-facing feature map.
-4. `docs/feature-workflow.md` before implementing non-trivial new features.
-5. `docs/design.md` before making broad UI layout, visual design, or design
-   principle changes.
-6. `docs/mvp/v3.4/FREEZE.md` for the latest frozen release snapshot.
-7. `docs/mvp/v3.5/README.md` before planning v3.5 work.
-8. `docs/mvp/v3.5/integrated-plan.md` before sequencing v3.5 work or reviewing
-   cross-plan conflicts.
-9. `docs/mvp/v3.5/db-ownership-boundary-plan.md` before splitting, renaming, or
-   reclassifying app-owned content DB and future user/app-state DB ownership.
-10. `docs/mvp/v3.5/rules-content-normalization-plan.md` before replacing rules
-    DB runtime reads, normalizing legacy rules columns, or adding fine-grained
-    spell query filters.
-11. `docs/mvp/v3.5/normalized-rules-frontend-consumer-plan.md` before adding
-    frontend controls, URL params, or scope summaries for normalized rules
-    facets.
-12. `docs/mvp/v3.5/rulebook-display-labels-plan.md` before changing rulebook
-    abbreviations, localized rulebook display labels, or rulebook display
-    contract fields.
-13. `docs/mvp/v3.5/agent-guide-review-plan.md` before broadly restructuring
-    this agent guide or moving agent-facing workflow rules.
-14. `docs/mvp/v3.5/ci-cd-and-module-docs-plan.md` before dependency review or
-    updates, adding CI workflows, CD wrappers, or merge-triggered module
-    documentation automation.
-15. `docs/mvp/v3.4/integrated-plan.md` for v3.4 scope history, sequencing,
-    cross-plan boundaries, and freeze criteria.
-16. `docs/mvp/v3.4/design-refresh-plan.md` before implementing v3.4 frontend
-    design-refresh or styling-pass work.
-17. `docs/mvp/v3.4/short-description-pipeline-plan.md` before extracting,
-    importing, modeling, or exposing spell/class short descriptions.
-18. `docs/mvp/v3.4/data-harness-hardening-plan.md` before adding data-tools
-    tests, data acceptance commands, parser QA gates, or rules-patch harnesses.
-19. `docs/mvp/v3.4/acceptance-checklist.md` when rerunning v3.4 acceptance
-    evidence.
-20. `docs/mvp/v3.3/FREEZE.md` for the previous frozen release snapshot.
-21. `docs/mvp/v3.3/acceptance-checklist.md` when checking v3.3 acceptance
-    evidence.
-22. `docs/mvp/v3.3/data-tools-workspace-plan.md` before moving or adding data
-    import, parser, rules DB inspection, or rules DB patch tooling.
-23. `docs/mvp/v3.3/local-data-layout-plan.md` before moving CHM inputs, parser
-    outputs, local source data, or future rules patch files.
-24. `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before moving SQL patch
-    assets, adding rules DB preparation commands, or importing missing English
-    base spell records.
-25. `docs/mvp/v3.3/structured-spell-patch-plan.md` before designing or applying
-    missing English spell patch data.
-26. `docs/mvp/v3.3/spells-full-import-plan.md` before using local
-    `spells-full` source data to generate missing English spell patches.
-27. `docs/harness.md` for validation and test-harness strategy.
-28. `docs/i18n.md` when changing UI copy, language fallback, or locale files.
-29. `docs/modules/README.md` before broad changes to high-level module
-    ownership, validation boundaries, or cross-module data flow.
-30. `docs/mvp/v3.4/i18next-conventions-plan.md` before replacing raw-English
-    frontend translation keys or tightening i18next workflow checks.
-31. Workspace READMEs for operational commands:
+- `docs/README.md`: canonical documentation map and historical/current doc
+  ownership.
+- `docs/roadmap.md`: current active work ordering after a pause.
+- `docs/features.md`: current user-facing feature map.
+- `docs/feature-workflow.md`: feature intake and implementation loop.
+- `docs/modules/README.md`: high-level module ownership and validation
+  boundaries.
+- `docs/harness.md`: validation and harness strategy.
+- `docs/design.md`: durable UI design direction.
+- `docs/i18n.md`: frontend copy, language fallback, and locale workflow.
+- `docs/deployment.md`: deployment and environment operations.
+
+For workspace command references, use:
 
 - `server/README.md`
-- `data-tools/README.md`
 - `web/README.md`
 - `contracts/README.md`
+- `data-tools/README.md`
 
-Version folders under `docs/mvp/` are stage records. A `FREEZE.md` describes the
-state of that stage; it is not automatically the baseline for later active
-development. Treat plan documents as intended scope, not as proof of shipped
-behavior.
+Version folders under `docs/mvp/` are stage records and active plan spaces. A
+`FREEZE.md` records a shipped stage; it is not automatically the baseline for
+later development. Treat plan documents as intended scope, not as proof of
+shipped behavior.
+
+## Repo-Local Skills
+
+Use the repo-local `$branch-naming` skill before creating, renaming, or
+assigning Codex work branches.
+
+Use the repo-local `$commit-message` skill before committing.
+
+Use the repo-local `$freeze-snapshot` skill before creating or updating a
+version `FREEZE.md`, recording release acceptance evidence, or moving the
+latest frozen snapshot in navigation docs.
+
+Repo-local skills live under `.agents/skills/` in the current worktree. When
+using repo skills such as `branch-naming` or `commit-message`, read
+`.agents/skills/<skill>/SKILL.md` relative to the active worktree root. Do not
+probe a user-level `.agents` path first.
 
 ## Working Rules
 
 - Prefer existing patterns over new frameworks or broad rewrites.
 - Keep changes scoped to the requested behavior.
-- Use the repo-local `$branch-naming` skill before creating, renaming, or
-  assigning Codex work branches.
-- Use the repo-local `$freeze-snapshot` skill before creating or updating a
-  version `FREEZE.md`, recording release acceptance evidence, or moving the
-  latest frozen snapshot in navigation docs.
-- Repo-local skills live under `.agents/skills/` in the current worktree. When
-  using repo skills such as `branch-naming` or `commit-message`, read
-  `.agents/skills/<skill>/SKILL.md` relative to the active worktree root. Do not
-  probe a user-level `.agents` path first.
+- Use this main thread as the planning and review gate for broad work. Use
+  specialist agents or focused branches for domain-heavy work such as design,
+  i18n, data tooling, deployment, harness, or frontend UI passes.
+- Use subagents for bounded implementation or corpus-inspection slices after
+  the main agent has set the boundary. The main agent still owns review,
+  merge-readiness, and source-of-truth docs.
 - When editing from a sibling worktree, use absolute paths with patch tools or
   otherwise prove the edit target is inside the intended worktree before
   applying changes.
 - Do not commit local data, database files, generated logs, or personal wrapper
   scripts to the parent repo. The nested `data/` repo may version local source
   data separately.
-- For any large-scale source reading or broad content QA over local data
-  sources, spawn a subagent to inspect the corpus and return summarized findings
-  instead of loading the source corpus into the main agent context.
-- Do not treat root-level `.bat` files as canonical; tracked deployment scripts
-  live under `docs/deployment-scripts/`.
+- Do not treat root-level `.bat` files as canonical. Tracked deployment scripts
+  live under `docs/deployment-scripts/`; the GitHub deploy workflow should stay
+  a thin wrapper around those scripts.
 - If shared DTOs change, rebuild `contracts` before validating `server` or
   `web`.
 - If behavior differs from documentation, update the newest topic-specific
   canonical doc rather than editing old MVP history.
 
-## Agent Collaboration Strategy
-
-Use this main thread as the planning and review gate for broad work. The main
-agent should own roadmap interpretation, concrete plans, branch review, merge
-decisions, and source-of-truth documentation updates.
-
-Use specialist agents or focused branches for domain-heavy work such as design,
-i18n, data tooling, deployment, harness, or frontend UI passes. A specialist
-branch should have one clear owner domain, a short summary, and validation notes
-before review.
-
-Use subagents for small implementation slices when the plan is clear. The main
-agent should still review the resulting diff, check that it reuses existing
-patterns, and decide whether it is ready to merge.
-
-It is fine for the main agent to make small direct fixes when the scope is
-obvious, but avoid mixing planning, review, and unrelated implementation in one
-branch.
-
 ## Feature Change Workflow
 
-For ordinary feature requests, follow this default loop:
+For ordinary feature requests:
 
 1. Locate the feature in `docs/features.md`.
 2. Read the existing feature entry point and nearby tests before editing.
-3. For non-trivial changes with clear scope, copy `docs/templates/feature-plan.md` to
-   `docs/tmp-feature-plan.md` and use it as a working checklist.
+3. For non-trivial changes with clear scope, copy
+   `docs/templates/feature-plan.md` to `docs/tmp-feature-plan.md` and use it as
+   a working checklist.
 4. For ambiguous, structural, or workflow-changing requests, write a durable
    concrete plan under the active development docs indicated by
    `docs/roadmap.md`, commit that plan first, and only then implement the
    deliverable. Do not add new active scope to frozen version folders.
-5. Reuse the current API helpers, storage helpers, UI wrappers, and feature
-   folders instead of creating parallel structures.
-6. Make the smallest change that satisfies the requested behavior.
-7. Add or update the closest harness layer:
-   - API shape or error tests for backend contract changes
-   - pure frontend tests for storage, import/export, derivation, or API wrapper
-     changes
-   - typecheck/build verification for UI integration changes
-8. Delete `docs/tmp-feature-plan.md` before commit unless the user explicitly
+5. Reuse current API helpers, storage helpers, UI wrappers, and feature folders
+   instead of creating parallel structures.
+6. Add or update the closest harness layer.
+7. Delete `docs/tmp-feature-plan.md` before commit unless the user explicitly
    wants it archived.
-9. Run `npm run verify` before handing off.
-10. Update durable docs when behavior, workflow, workspace shape, validation
-    commands, or agent guidance changed.
-11. When adding, moving, or retiring a workspace, tool command, active plan, or
-    source-of-truth document, check and update the navigation surface together:
-    root `README.md`, `docs/README.md`, `AGENTS.md`, and the relevant workspace
-    `README.md`.
+8. Run the smallest relevant validation command before handoff.
+9. Update durable docs when behavior, workflow, workspace shape, validation
+   commands, or agent guidance changed.
 
-Use the plan-first path especially when:
+When adding, moving, or retiring a workspace, tool command, active plan, or
+source-of-truth document, check the navigation surface together: root
+`README.md`, `docs/README.md`, `AGENTS.md`, and the relevant workspace
+`README.md`.
 
-- the user corrects or clarifies product semantics after an implementation
-- the change affects workspace boundaries or agent workflow
-- data import behavior could create parallel sources of truth
-- a feature request needs confirmation before implementation details are safe
+Use the plan-first path especially when the user corrects product semantics,
+the change affects workspace boundaries or agent workflow, data import behavior
+could create parallel sources of truth, or a feature request needs confirmation
+before implementation details are safe.
 
 ## Data And Environment
 
@@ -191,6 +130,18 @@ The app depends on local SQLite files configured by `server/.env`:
 These point at local files under `server/data/db/`. That tree is intentionally
 excluded from the public repo baseline. Do not replace it, move it, or assume a
 fresh clone has the same data.
+
+Data tools may inspect local SQLite files, but must not modify
+`server/data/db/` unless the user explicitly asked for a write-capable workflow.
+
+Content-bearing local patch data, maintained source indexes, normalized import
+JSONL, and durable review decisions belong in the nested `data/` repo. Keep
+schemas, validators, generators, generated queues, run reports, and
+redacted/minimal fixtures in the parent repo.
+
+For any large-scale source reading or broad content QA over local data sources,
+spawn a subagent to inspect the corpus and return summarized findings instead
+of loading the source corpus into the main agent context.
 
 ## Validation Commands
 
@@ -206,7 +157,7 @@ tests against disposable fixtures, but it does not replace explicit local data
 acceptance when a change touches imported content or local SQLite-backed data
 flows.
 
-Or run the pieces individually:
+Useful pieces:
 
 ```bash
 npm run build:contracts
@@ -216,173 +167,53 @@ npm run test:data-tools
 npm run test:server
 npm run test:web
 npm run typecheck:web
-```
-
-For frontend behavior changes, also build or manually smoke-test the app:
-
-```bash
 npm run -w web build
 ```
 
-Some environments block Vite/esbuild child processes unless command execution is
-allowed outside the sandbox. If a command fails with `spawn EPERM`, rerun the
-same command with the appropriate approval rather than treating it as a project
-failure.
+Use local data acceptance only when the change touches local source data,
+rules DB manifests, parser output, or import behavior:
 
-## Harness Priorities
+```bash
+npm run -w data-tools acceptance:local
+```
 
-When improving reliability, prefer this order:
+For frontend copy changes:
 
-1. Make existing tests deterministic and avoid generated-output interference.
-2. Add API contract tests around the current feature map and relevant frozen
-   release snapshots.
-3. Add pure frontend logic tests for JSON import/export and collection storage.
-4. Add browser smoke tests for browse, search, spell detail, and collections.
-5. Only then add larger end-to-end workflows.
+```bash
+npm run i18n:sync
+npm run i18n:check
+```
 
-See `docs/harness.md` for details.
+For frontend behavior or layout changes, combine targeted tests/builds with a
+manual browser smoke test of the affected pages.
 
-## Frontend Notes
+## Module Notes
 
-- Main routes and feature entry points are mapped in `docs/frontend-map.md`.
-- UI design inventory and durable visual/layout principles live in
-  `docs/design.md`.
-- Local UI wrappers live in `web/app/components/ui/`.
+- Frontend routes and feature entry points are mapped in `docs/frontend-map.md`.
+- High-level module ownership lives in `docs/modules/`.
 - API calls should go through `web/app/api/`.
-- Frontend i18n runtime and fallback helpers live under `web/app/i18n/`; use
-  `npm run i18n:sync` and `npm run i18n:check` after changing UI copy.
-- Browser-facing API paths are relative `/api/...`; development proxy behavior
-  is defined in `web/vite.config.ts`.
-
-## Backend Notes
-
-- API route registration starts in `server/src/app.ts`.
-- Spell behavior is split across controllers, service files, and repo files
-  under `server/src/services/spells/`.
-- Existing API tests use Vitest and Supertest under `server/tests/`.
-- Runtime database clients are generated from both Prisma schemas. Regenerate
+- Local UI wrappers live in `web/app/components/ui/`.
+- Server API route registration starts in `server/src/app.ts`.
+- Spell backend behavior is split under `server/src/services/spells/`.
+- Runtime database clients are generated from both Prisma schemas; regenerate
   clients when schemas change.
-
-## Data Tooling Notes
-
-- Keep data import, parser, inspection, and future rules DB patch tooling out of
-  `server/src`.
-- Follow `docs/mvp/v3.3/data-tools-workspace-plan.md` when moving existing tools
-  or adding new data tooling.
-- Follow `docs/mvp/v3.3/local-data-layout-plan.md` before moving local data
-  inputs or generated parser outputs.
-- Preserve command compatibility when moving existing tooling, and keep behavior
-  unchanged unless a feature plan says otherwise.
-- New missing-spell workflows should treat base spell data as rules DB patches,
-  not app DB overlays. Use `docs/rules-db-notes.md` before designing those
-  imports.
-- Follow `docs/mvp/v3.3/rules-db-prep-workflow-plan.md` before turning manual
-  SQL patches into commands or adding write-capable rules DB workflows.
-- Follow `docs/mvp/v3.3/structured-spell-patch-plan.md` before adding missing
-  English base spell records.
-- Follow `docs/mvp/v3.3/spells-full-import-plan.md` before generating
-  structured spell patches from local `data/spells-full/` inputs.
-- Follow `docs/mvp/v3.4/short-description-pipeline-plan.md` before adding
-  short-summary extractors, importers, schema fields, API fields, or UI
-  consumers.
-- Follow `docs/mvp/v3.4/data-harness-hardening-plan.md` before adding
-  data-tools tests, parser acceptance commands, or rules-patch fixture
-  harnesses.
-- `data-tools/src/` is grouped by module: `shared/`, `db/`, `rules/`,
-  `short-desc/`, `zh-parser/`, and `harness/`. Add new maintained code under
-  the owning module before classifying command lifecycle in docs or manifests.
+- Data-tool code belongs under the owning `data-tools/src/` module:
+  `shared/`, `db/`, `rules/`, `short-desc/`, `zh-parser/`, or `harness/`.
 - Classify every `data-tools/package.json` script in
-  `data-tools/scripts.manifest.json`. The portable data-tools harness checks
-  this manifest so new scripts do not become implicit maintenance promises.
-- Use `npm run -w data-tools test:portable` for fixture-only data-tools helper
-  coverage. Keep it independent of ignored CHM/raw data, the nested `data/`
-  repo, and SQLite databases. Root `npm run test:data-tools` delegates to this
-  portable command.
-- Distinguish maintained data-tool commands from one-time/ad hoc scripts.
-  Maintained import, validation, manifest, parser, and acceptance commands
-  deserve focused helper tests; one-time migration or investigation scripts do
-  not need harness coverage unless they are promoted into the maintained
-  workflow.
-- Treat source-consumed workflows as `dormant-local`: keep typecheck and command
-  compatibility, but do not add harness work unless new source data or parser
-  changes make the workflow active again.
-- Use `npm run -w data-tools acceptance:local` for v3.4 local data acceptance.
-  It runs `rules:manifest:verify`, `summaries:qa`, and
-  `summaries:import -- --dry-run` along with data-tools typecheck. Do not wire
-  this command into root `npm run verify`.
-- Follow `docs/mvp/v3.5/rulebook-display-labels-plan.md` before changing
-  rulebook display abbreviations, Chinese rulebook display names, or display
-  metadata import behavior.
-- Run `npm run -w data-tools zh:qa` after CHM source cleanup or parser changes
-  to catch mechanical source/header drift before import.
-- Run `npm run -w data-tools zh:summaries:extract` after changing CHM
-  short-summary extraction or matching behavior, and review
-  `data-tools/out/zh-parser/summary/summary.json`.
-- Run `npm run -w data-tools summaries:qa` after refreshing Chinese and English
-  short-summary reports, then review
-  `data-tools/out/short-desc-qa/summary.json` and the generated review queues.
-  Validated review decisions under `data/short-desc-review/qa/` are consumed by
-  the same command and promoted into follow-up queues such as `import-blockers`,
-  `en-add-candidates`, `en-resolved-candidates`,
-  `en-resolved-rules-db-gaps`, `en-resolved-source-mismatches`, and
-  `en-rules-db-gaps`.
-- Use `npm run -w data-tools spells-full:generate -- short-desc-rules-gaps`
-  when reviewed English short-summary gaps need local `spells-full` rules patch
-  candidates before import.
-- Use `npm run -w data-tools summaries:normalize` to rebuild the accepted
-  normalized spell-summary JSONL.
-- Use `npm run -w data-tools summaries:punctuation` for deterministic
-  sentence-final punctuation QA. Use `-- --write` only when intentionally
-  updating `data/short-desc-normalized/summaries.generated.jsonl`, and run write
-  mode after `summaries:source-gap-apply -- --write` and
-  `summaries:reuse-apply -- --write` so reused rows are cleaned too.
-- Use `npm run -w data-tools summaries:source-gap-candidates` to find English
-  source-index rows that have short descriptions but no scoped local source-book
-  spell row, then `npm run -w data-tools summaries:source-gap-apply -- --write`
-  after explicit decisions under `data/short-desc-review/source-gap-reuse/` are
-  accepted. This is for exact-name or established inverted-name cross-book reuse
-  only, not fuzzy matching.
-- Use `npm run -w data-tools summaries:reuse-candidates` to generate same-name
-  core/supplementals summary reuse queues, then
-  `npm run -w data-tools summaries:reuse-apply -- --write` after auto or
-  reviewed decisions are accepted. Reviewed reuse decisions live under
-  `data/short-desc-review/summary-reuse/` and may include `summaryText` only
-  when the target rules DB text supports the same mechanism with different
-  target-specific numbers.
-- Use `npm run -w data-tools summaries:coverage-report` when deciding the next
-  short-summary cleanup scope by rulebook. It reports missing Chinese, missing
-  English, missing-both, source-desc-without-DB-spell counts, and English
-  source-book mismatches that match another scoped DB book.
-- Run `npm run -w data-tools summaries:import -- --dry-run` before
-  `npm run -w data-tools summaries:import` when refreshing local app DB
-  `I18nSpellSummaryText` rows.
-- Use `npm run -w data-tools rules:spells:validate -- <patch.jsonl>` and
-  `npm run -w data-tools rules:spells:apply -- --dry-run <patch.jsonl>` before
-  applying structured missing-spell patches.
-- Run `npm run -w data-tools rules:manifest:write` after intentionally applying
-  rules DB patches to the local `rules-clean.sqlite`, then commit the updated
-  nested `data/rules-db-manifest.json` with the patch data. Use
-  `npm run -w data-tools rules:manifest:verify` to confirm the current local DB
-  still matches the manifest and that structured spell patch operations are
-  present.
-- Content-bearing local patch data, maintained source indexes, normalized import
-  JSONL, and durable review decisions belong in the nested `data/` repo. Keep
-  schemas, validators, generators, generated queues, run reports, and
-  redacted/minimal fixtures in the parent repo.
-- Data tools may inspect local SQLite files, but must not modify
-  `server/data/db/` unless the user explicitly asked for a write-capable
-  workflow.
+  `data-tools/scripts.manifest.json`.
+- Maintained data-tool commands deserve focused helper tests. One-time or
+  dormant local scripts should not be wired into always-on validation unless
+  they are promoted into the maintained workflow.
 
 ## Documentation Notes
-
-Keep docs lightweight:
 
 - `README.md` files are navigation and short operational entry points.
 - `docs/` files are durable project truth by topic.
 - `docs/features.md` is the user-facing feature map.
+- `docs/modules/` is the high-level module design surface.
 - `docs/mvp/` is stage history plus active plan space; frozen version folders
   should not become the daily agent working surface.
-- New agent or harness guidance should go in `AGENTS.md` or `docs/harness.md`,
+- New agent or harness guidance belongs in `AGENTS.md` or `docs/harness.md`,
   not inside old MVP plan files.
-- Current work ordering after a pause should go in `docs/roadmap.md`, while
+- Current work ordering after a pause belongs in `docs/roadmap.md`, while
   detailed implementation plans stay in focused topic docs.

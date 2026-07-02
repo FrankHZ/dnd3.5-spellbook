@@ -33,8 +33,9 @@ Examples:
 - data import behavior could create a new source of truth
 - the implementation needs an agreed acceptance contract before code is safe
 
-For active v3.3 development, place durable plans under `docs/mvp/v3.3/` and add
-them to `docs/README.md`.
+Place durable plans under the active development docs indicated by
+`docs/roadmap.md`, then add them to `docs/README.md` when they become a
+canonical planning surface.
 
 The sequence is:
 
@@ -55,6 +56,9 @@ The sequence is:
   work as data tooling. Follow
   `docs/mvp/v3.3/data-tools-workspace-plan.md` rather than adding new tooling
   under `server/src`.
+- Keep feature behavior in `docs/features.md` or a focused feature plan.
+  Reserve `docs/modules/` for durable module ownership, validation boundaries,
+  and cross-module data flow.
 
 ## Temporary Plan Lifecycle
 
@@ -65,6 +69,8 @@ Use it as a working checklist during implementation. At the end of the task:
 - delete it when it only contains execution notes
 - move durable decisions into `docs/features.md`, `docs/harness.md`, or another
   focused doc
+- move broad module-boundary changes into `docs/modules/` during acceptance
+  review, not as routine churn for every feature branch
 - archive it only when the user explicitly wants a retained handoff record
 
 Temporary plans should never become the canonical description of shipped

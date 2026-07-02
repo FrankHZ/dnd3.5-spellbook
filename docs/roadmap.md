@@ -163,9 +163,10 @@ Recommended next sequence:
    lockfile entries that fit existing semver ranges, adds clean-checkout CI,
    runs backend API tests in CI against disposable SQLite fixtures, adds a
    manual deploy workflow around the tracked remote scripts, and establishes a
-   `docs/modules/` baseline. Automatic module-doc PRs remain blocked on the
-   chosen agent runner/secrets. Major or ecosystem upgrades remain deferred into
-   focused branches: React Router 8, Vite 8, i18next 26,
+   `docs/modules/` baseline. `AGENTS.md` has been reduced to a compact
+   execution guide. Automatic module-doc PRs remain blocked on the chosen agent
+   runner/secrets. Major or ecosystem upgrades remain deferred into focused
+   branches: React Router 8, Vite 8, i18next 26,
    i18next-http-backend 4, react-i18next 17, lucide-react 1, shadcn 4,
    vite-tsconfig-paths 6, @types/node 26, and the Prisma dev-chain audit fix
    once a Prisma 7-compatible path is available.

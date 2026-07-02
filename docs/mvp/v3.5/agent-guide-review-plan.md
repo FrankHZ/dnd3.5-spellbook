@@ -1,6 +1,7 @@
 # Agent Guide Review Plan
 
-Status: planned v3.5 documentation/harness review.
+Status: implemented as a compact execution-guide pass; future edits should keep
+`AGENTS.md` from growing back into a full documentation map.
 
 ## Problem
 

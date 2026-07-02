@@ -300,9 +300,9 @@ baseline docs exist, but the automatic PR job waits for a runner choice.
 
 ### Agent Guide Review
 
-Reviewed against this integrated plan. `AGENTS.md` can temporarily link v3.5
-plans during planning, but the final review should keep only durable routing and
-safety rules. Detailed sequencing belongs here, not in `AGENTS.md`.
+Reviewed against this integrated plan. `AGENTS.md` has been reduced to a compact
+execution guide with durable routing and safety rules. Detailed sequencing
+belongs here or in focused child plans, not in `AGENTS.md`.
 
 ## Acceptance Criteria
 
