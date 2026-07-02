@@ -199,9 +199,10 @@ npm run verify
 npm run ci:portable
 ```
 
-`npm run ci:portable` is the clean-checkout CI subset. It does not replace
-local full validation when a change touches backend API behavior or local
-SQLite-backed data flows.
+`npm run ci:portable` is the clean-checkout CI subset. It includes backend API
+tests against disposable fixtures, but it does not replace explicit local data
+acceptance when a change touches imported content or local SQLite-backed data
+flows.
 
 Or run the pieces individually:
 

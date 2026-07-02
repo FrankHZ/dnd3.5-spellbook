@@ -27,9 +27,9 @@ npm run ci:portable
 npm run -w data-tools test:portable
 ```
 
-`npm run ci:portable` is the clean-checkout subset used by GitHub Actions. It
-excludes backend API tests until the ignored local SQLite dependency is replaced
-with fixtures or a disposable test DB preparation command.
+`npm run ci:portable` is the clean-checkout subset used by GitHub Actions. The
+backend API tests use synthetic disposable SQLite fixtures, so they do not read
+ignored local runtime databases.
 
 Or run the pieces individually:
 

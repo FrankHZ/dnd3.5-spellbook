@@ -1,8 +1,8 @@
 # CI/CD, Dependency Review, And Module Docs Automation Plan
 
-Status: first portable CI slice implemented; backend API fixture work,
-dependency update application, CD wrappers, and module-doc automation remain
-planned v3.5 follow-up work.
+Status: portable CI with backend API fixtures implemented; dependency update
+application, CD wrappers, and module-doc automation remain planned v3.5
+follow-up work.
 
 ## Problem
 
@@ -129,6 +129,7 @@ npm run build:contracts
 npm run check:contracts
 npm run -w server db:generate
 npm run build:server
+npm run test:server
 npm run typecheck:data-tools
 npm run test:data-tools
 npm run test:web
@@ -136,11 +137,9 @@ npm run typecheck:web
 npm run -w web build
 ```
 
-It does not run `npm run test:server` yet because the current API tests import
-the runtime app and query ignored local SQLite files through `server/.env`.
-Keep root `npm run verify` as the local full validation command until backend
-API fixtures or disposable test DB preparation make those tests clean-checkout
-portable.
+`npm run test:server` now uses synthetic disposable SQLite fixtures created by
+the Vitest setup file. The fixtures cover the current API test expectations
+without reading ignored local runtime DBs from `server/data/db/`.
 
 ### 2. Review And Update Dependencies
 
@@ -210,6 +209,7 @@ Initial implemented workflow:
 - installs with `npm ci`
 - runs `npm run ci:portable`
 - generates Prisma clients from checked-in schemas before building the server
+- runs backend API tests against disposable SQLite fixtures
 
 Initial triggers:
 
@@ -301,8 +301,8 @@ The intended feature workflow after v3.5:
   build/unit/typecheck spine rather than browser E2E.
 - CI can run from a clean checkout without ignored local DB files or raw local
   data sources.
-- Backend API tests have a documented fixture/preparation gap before they can
-  join CI.
+- Backend API tests run in CI against disposable fixtures rather than ignored
+  local SQLite files.
 - Dependency review is documented before broad v3.5 implementation starts.
 - Safe dependency updates are either applied with lockfile review and validation
   or explicitly deferred with a reason.
