@@ -63,10 +63,10 @@ function TopBarSearch() {
     if (!isValid.ok) {
       if (lang == "zh") {
         setError(
-          t("Enter at least 2 characters, or type a Chinese character."),
+          t("errors.too-short-cjk"),
         );
       } else {
-        setError(t("Enter at least 2 characters to run a search."));
+        setError(t("errors.too-short"));
       }
       return;
     }
@@ -89,12 +89,12 @@ function TopBarSearch() {
             <Input
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder={t("Search spells by name...")}
+              placeholder={t("input.placeholder")}
               aria-invalid={Boolean(error)}
             />
             <Button type="submit" variant="outline" className="shrink-0">
               <SearchIcon className="size-4" />
-              <span className="hidden sm:inline">{t("Search")}</span>
+              <span className="hidden sm:inline">{t("actions.search")}</span>
             </Button>
           </form>
         </PopoverAnchor>

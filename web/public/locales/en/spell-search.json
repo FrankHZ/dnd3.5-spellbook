@@ -1,9 +1,9 @@
 {
-  "Clear Search filters": "Clear Search filters",
-  "Enter at least 2 characters to run a search.": "Enter at least 2 characters to run a search.",
-  "Enter at least 2 characters, or type a Chinese character.": "Enter at least 2 characters, or type a Chinese character.",
-  "No spells matched \"{{query}}\".": "No spells matched \"{{query}}\".",
-  "Request failed. Please try again.": "Request failed. Please try again.",
-  "Search": "Search",
-  "Search spells by name...": "Search spells by name..."
+  "actions.clear-filters": "Clear Search filters",
+  "actions.search": "Search",
+  "errors.request-failed": "Request failed. Please try again.",
+  "errors.too-short": "Enter at least 2 characters to run a search.",
+  "errors.too-short-cjk": "Enter at least 2 characters, or type a Chinese character.",
+  "input.placeholder": "Search spells by name...",
+  "results.empty": "No spells matched \"{{query}}\"."
 }

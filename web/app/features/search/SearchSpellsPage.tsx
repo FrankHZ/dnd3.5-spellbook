@@ -95,7 +95,7 @@ export default function SearchSpellsPage() {
     const err = query.error;
     if (!err) return null;
     if (err instanceof ApiError) return err.message;
-    return t("Request failed. Please try again.");
+    return t("errors.request-failed");
   }, [query.error, t]);
 
   const data = query.data;
@@ -121,11 +121,11 @@ export default function SearchSpellsPage() {
                   variant="ghost"
                   onClick={clearSearchScope}
                 >
-                  {t("Clear Search filters")}
+                  {t("actions.clear-filters")}
                 </Button>
               ) : (
                 <Button type="button" variant="ghost" disabled>
-                  {t("Clear Search filters")}
+                  {t("actions.clear-filters")}
                 </Button>
               )}
             </div>
@@ -163,10 +163,9 @@ export default function SearchSpellsPage() {
               <CardHeader className="gap-1 py-2">
                 <CardDescription>
                   {lang === "zh"
-                    ? t(
-                        "Enter at least 2 characters, or type a Chinese character.",
+                    ? t("errors.too-short-cjk",
                       )
-                    : t("Enter at least 2 characters to run a search.")}
+                    : t("errors.too-short")}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -186,7 +185,7 @@ export default function SearchSpellsPage() {
                 <Card className="gap-0">
                   <CardHeader className="gap-1 py-2">
                     <CardDescription>
-                      {t('No spells matched "{{query}}".', { query: qParam })}
+                      {t("results.empty", { query: qParam })}
                     </CardDescription>
                   </CardHeader>
                 </Card>
