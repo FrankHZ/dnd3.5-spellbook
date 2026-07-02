@@ -284,6 +284,12 @@ See `docs/harness.md` for details.
 - Use `npm run -w data-tools rules:spells:validate -- <patch.jsonl>` and
   `npm run -w data-tools rules:spells:apply -- --dry-run <patch.jsonl>` before
   applying structured missing-spell patches.
+- Run `npm run -w data-tools rules:manifest:write` after intentionally applying
+  rules DB patches to the local `rules-clean.sqlite`, then commit the updated
+  nested `data/rules-db-manifest.json` with the patch data. Use
+  `npm run -w data-tools rules:manifest:verify` to confirm the current local DB
+  still matches the manifest and that structured spell patch operations are
+  present.
 - Content-bearing local patch data, maintained source indexes, normalized import
   JSONL, and durable review decisions belong in the nested `data/` repo. Keep
   schemas, validators, generators, generated queues, run reports, and

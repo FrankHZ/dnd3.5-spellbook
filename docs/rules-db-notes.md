@@ -29,17 +29,38 @@ SQLite tables or views from `sqlite_master`.
 The server workspace keeps a compatibility wrapper at
 `npm run -w server tool:inspect-rules`.
 
+## Local Manifest
+
+The local rules DB has no internal semantic version table. Track the current
+local `rules-clean.sqlite` state with the nested data repo manifest instead:
+
+```bash
+npm run -w data-tools rules:manifest:write
+npm run -w data-tools rules:manifest:verify
+```
+
+`data/rules-db-manifest.json` records the current DB fingerprint, SQLite pragma
+values, table counts, rules patch file hashes, index-table consistency checks,
+and structured spell-patch presence checks. Generated command reports live under
+`data-tools/out/rules-manifest/`.
+
+The current manifest verifies all maintained structured spell patch operations:
+`15` total `insertSpell` operations, `15` verified, `0` missing, and `0`
+mismatched. Legacy SQL patch files are recorded by hash, and their durable
+runtime effect is checked through the presence and row-count consistency of
+`idx_spell_class_level` and `idx_spell_domain_level`.
+
 ## Current Counts
 
 Snapshot from the local `server/data/db/rules-clean.sqlite`:
 
 | Table                    |  Rows |
 | ------------------------ | ----: |
-| `dnd_spell`              |  4915 |
-| `dnd_spellclasslevel`    | 12257 |
+| `dnd_spell`              |  4926 |
+| `dnd_spellclasslevel`    | 12297 |
 | `dnd_spelldomainlevel`   |  1549 |
-| `dnd_spell_descriptors`  |  2290 |
-| `idx_spell_class_level`  | 12257 |
+| `dnd_spell_descriptors`  |  2291 |
+| `idx_spell_class_level`  | 12297 |
 | `idx_spell_domain_level` |  1549 |
 | `dnd_rulebook`           |   110 |
 | `dnd_characterclass`     |   878 |

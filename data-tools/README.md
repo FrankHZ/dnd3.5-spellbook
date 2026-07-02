@@ -38,6 +38,14 @@ npm run -w data-tools rules:spells:apply -- --dry-run spells/missing-spells.json
 npm run -w data-tools rules:spells:apply -- spells/missing-spells.jsonl
 ```
 
+Record and verify the local `rules-clean.sqlite` fingerprint against maintained
+rules patch inputs:
+
+```bash
+npm run -w data-tools rules:manifest:write
+npm run -w data-tools rules:manifest:verify
+```
+
 Inspect and generate structured patches from local `spells-full` data:
 
 ```bash
@@ -230,6 +238,13 @@ rows with local `spellId` and `rulebookId`; unresolved Chinese conflicts,
 English rules DB gaps, and sources that cannot be mapped to local rules DB rows
 are reported as skipped in
 `data-tools/out/short-desc-normalized/summary.json`.
+
+`rules:manifest:write` updates `data/rules-db-manifest.json` with the current
+local rules DB fingerprint, table counts, patch file hashes, and structured
+spell-patch presence checks. `rules:manifest:verify` fails when the local rules
+DB, patch files, index-table counts, or structured patch presence drift from
+that manifest. Command reports are generated under
+`data-tools/out/rules-manifest/`.
 
 `summaries:import` is the app DB mutation boundary for v3.4 spell summaries. It
 reads only `data/short-desc-normalized/summaries.generated.jsonl`, validates the
