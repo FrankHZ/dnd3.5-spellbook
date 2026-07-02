@@ -19,26 +19,25 @@ export function SpellFilterScopeSummary({
   const levelLabel =
     level === null
       ? nullLevelMode === "any"
-        ? t("any level")
-        : t("not selected")
+        ? t("level.any")
+        : t("level.not-selected")
       : level === "all"
-        ? t("all levels")
+        ? t("level.all")
         : String(level);
 
   return (
     <div className="rounded-md border bg-muted/30 px-3 py-2 text-xs leading-5 text-muted-foreground sm:flex sm:items-center sm:justify-between sm:gap-3 sm:text-sm">
       <div className="min-w-0">
-        {t(
-          "Filters: {{classCount}} class filters, {{domainCount}} domain filters, level {{level}}.",
+        {t("filters.summary",
           { classCount, domainCount, level: levelLabel },
         )}
       </div>
       <div className="min-w-0">
         {rulebookCount > 0
-          ? t("Rulebooks: {{count}} selected (change in Settings).", {
+          ? t("rulebooks.selected", {
               count: rulebookCount,
             })
-          : t("Rulebooks: default 3.5 core")}
+          : t("rulebooks.default-core")}
       </div>
     </div>
   );

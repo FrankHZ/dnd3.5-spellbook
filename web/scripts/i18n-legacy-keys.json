@@ -178,15 +178,6 @@
     "Variant Forms",
     "XP"
   ],
-  "spell-scope": [
-    "Filters: {{classCount}} class filters, {{domainCount}} domain filters, level {{level}}.",
-    "Rulebooks: default 3.5 core",
-    "Rulebooks: {{count}} selected (change in Settings)._one",
-    "Rulebooks: {{count}} selected (change in Settings)._other",
-    "all levels",
-    "any level",
-    "not selected"
-  ],
   "spell-search": [
     "Clear Search filters",
     "Enter at least 2 characters to run a search.",
