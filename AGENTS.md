@@ -128,11 +128,13 @@ before implementation details are safe.
 The app depends on local SQLite files configured by `server/.env`:
 
 - `RULES_DATABASE_URL`
-- `APP_DATABASE_URL`
+- `CONTENT_DATABASE_URL`
+- `APP_STATE_DATABASE_URL`
 
-These point at local files under `server/data/db/`. That tree is intentionally
-excluded from the public repo baseline. Do not replace it, move it, or assume a
-fresh clone has the same data.
+`APP_DATABASE_URL` is a transitional compatibility alias for the content DB
+only. These point at local files under `server/data/db/`. That tree is
+intentionally excluded from the public repo baseline. Do not replace it, move
+it, or assume a fresh clone has the same data.
 
 Data tools may inspect local SQLite files, but must not modify
 `server/data/db/` unless the user explicitly asked for a write-capable workflow.

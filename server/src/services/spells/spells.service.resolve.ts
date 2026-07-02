@@ -16,7 +16,7 @@ import {
   queryI18nMap,
   queryI18nSummaryMap,
   SpellI18nRow,
-} from "./spells.repo.app";
+} from "./spells.repo.content";
 import { mapSpellItem } from "./spells.mapper";
 
 type Draft =

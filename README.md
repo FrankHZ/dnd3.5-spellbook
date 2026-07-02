@@ -90,7 +90,7 @@ For local database setup and data origins, use [docs/data-setup.md](./docs/data-
 
 ```text
 .
-|- server/      Backend API, Prisma schemas, app DB import scripts, tests
+|- server/      Backend API, Prisma schemas, content DB import scripts, tests
 |- web/         Frontend app, routes, UI, i18n assets
 |- contracts/   Shared DTOs and TypeScript types
 |- data-tools/  Data inspection, parser, and rules DB tooling

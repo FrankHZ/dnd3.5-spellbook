@@ -7,7 +7,7 @@ It covers:
 - preprocessing exported CHM HTML
 - parsing spell content into matched records
 - importing dictionary-style entity translations
-- importing CHM-derived spell text into the app DB
+- importing CHM-derived spell text into the content DB
 
 For database creation and local DB roles, use [data-setup.md](./data-setup.md).
 
@@ -17,7 +17,7 @@ This workflow is for the current MVP data pipeline.
 
 At the moment:
 
-- the app DB is normally rebuilt from scratch
+- the content DB is normally rebuilt from scratch
 - Prisma seed is not the active population path
 - the active population path is the import scripts in the `server` workspace
 
@@ -31,12 +31,13 @@ npm run -w data-tools zh:parse
 npm run -w data-tools zh:parse:test
 npm run -w data-tools zh:backcheck
 npm run -w data-tools zh:qa
-npm run -w server db:app:import:zh-entities
-npm run -w server db:app:import:zh-chm
+npm run -w server db:content:import:zh-entities
+npm run -w server db:content:import:zh-chm
 ```
 
 The `server` workspace keeps compatibility wrappers for the `tool:*` commands,
-but `data-tools` owns parser and inspection tooling.
+and transitional `db:app:*` aliases forward to the content DB import commands
+where practical. New workflow docs should use the `db:content:*` names.
 
 ## Input And Output Locations
 
@@ -79,18 +80,18 @@ The parser writes into `data-tools/out/zh-parser/`:
 
 For a normal full rebuild:
 
-1. Ensure the rules DB exists and the app DB path is configured.
+1. Ensure the rules DB exists and the content DB path is configured.
 2. Run `npm install` from the repo root if needed.
 3. Run `npm run -w server db:generate`.
-4. Run `npm run -w server db:app:reset`.
+4. Run `npm run -w server db:content:reset`.
 5. Run `npm run -w data-tools zh:preprocess` if raw CHM HTML changed.
 6. Run `npm run -w data-tools zh:parse`.
 7. Run `npm run -w data-tools zh:qa`.
 8. Inspect `data-tools/out/zh-parser/stats.json`, `matched.json`, and `unmatched.json`.
-9. Run `npm run -w server db:app:import:zh-entities`.
-10. Run `npm run -w server db:app:import:zh-chm`.
+9. Run `npm run -w server db:content:import:zh-entities`.
+10. Run `npm run -w server db:content:import:zh-chm`.
 
-This order keeps the app DB aligned with the latest parser output and the latest checked-in entity translation JSON.
+This order keeps the content DB aligned with the latest parser output and the latest checked-in entity translation JSON.
 
 ## Step Details
 
@@ -168,7 +169,7 @@ itself.
 Command:
 
 ```bash
-npm run -w server db:app:import:zh-entities
+npm run -w server db:content:import:zh-entities
 ```
 
 Current script behavior:
@@ -195,7 +196,7 @@ Imported tables include:
 Command:
 
 ```bash
-npm run -w server db:app:import:zh-chm
+npm run -w server db:content:import:zh-chm
 ```
 
 Current script behavior:
@@ -211,12 +212,12 @@ This is the current MVP import step for CHM-derived spell names and descriptions
 
 ## Import Order Notes
 
-For the current MVP, the normal order after resetting the app DB is:
+For the current MVP, the normal order after resetting the content DB is:
 
 1. import entity translations
 2. import CHM spell text
 
-This keeps the app DB populated with both:
+This keeps the content DB populated with both:
 
 - dictionary-style entity overlays (`zh`, `default`)
 - spell text overlays (`zh`, `chm`)
@@ -228,7 +229,7 @@ This workflow does not:
 - rebuild the rules DB
 - create new base spell rows that are missing from the rules DB
 - treat Prisma seed as the normal data population path
-- preserve app DB contents incrementally during a full rebuild
+- preserve content DB contents incrementally during a full rebuild
 
 ## Related Files
 

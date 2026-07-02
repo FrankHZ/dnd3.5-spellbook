@@ -1,6 +1,6 @@
 import { I18nContext, Lang, RulebookId } from "@dnd/contracts";
-import { Prisma as AppPrisma, Prisma } from "prisma-app/generated/client";
-import { appPrisma } from "~/lib/app-prisma-client";
+import { Prisma as ContentPrisma, Prisma } from "prisma-content/generated/client";
+import { contentPrisma } from "~/lib/content-prisma-client";
 
 export const SELECT_SPELL_I18N_MIN = {
   spellId: true,
@@ -32,7 +32,7 @@ export type SpellI18nRow<
 }>;
 
 export type SpellI18nSummaryRow =
-  AppPrisma.I18nSpellSummaryTextGetPayload<{
+  ContentPrisma.I18nSpellSummaryTextGetPayload<{
     select: typeof SELECT_SPELL_I18N_SUMMARY;
   }>;
 
@@ -53,7 +53,7 @@ export async function queryIdsByI18nName(
   const qLower = name.toLowerCase();
   const like = `%${qLower}%`;
 
-  const idRows = await appPrisma.$queryRaw<Array<{ spellId: number }>>(
+  const idRows = await contentPrisma.$queryRaw<Array<{ spellId: number }>>(
     Prisma.sql`
         SELECT s.spellId
         FROM I18nSpellText s
@@ -74,7 +74,7 @@ export async function queryI18nDetail(
   lang: "zh",
   variant?: string,
 ) {
-  const s = await appPrisma.i18nSpellText.findUnique({
+  const s = await contentPrisma.i18nSpellText.findUnique({
     where: {
       spellId_lang_variant: {
         spellId: id,
@@ -90,7 +90,7 @@ export async function queryI18nDetail(
 
 export async function queryI18nSummaryDetail(id: number, i18n: I18nContext) {
   const target = summaryTarget(i18n);
-  const summary = await appPrisma.i18nSpellSummaryText.findUnique({
+  const summary = await contentPrisma.i18nSpellSummaryText.findUnique({
     where: {
       spellId_lang_variant: {
         spellId: id,
@@ -110,7 +110,7 @@ export async function queryI18nMap(
 ): Promise<Map<number, SpellI18nRow>> {
   const i18nMap = new Map<
     number,
-    AppPrisma.I18nSpellTextGetPayload<{
+    ContentPrisma.I18nSpellTextGetPayload<{
       select: typeof SELECT_SPELL_I18N_MIN;
     }>
   >();
@@ -133,7 +133,7 @@ export async function queryI18nSummaryMap(
   if (spellIds.length === 0) return summaryMap;
 
   const target = summaryTarget(i18n);
-  const summaries = await appPrisma.i18nSpellSummaryText.findMany({
+  const summaries = await contentPrisma.i18nSpellSummaryText.findMany({
     where: {
       spellId: { in: spellIds },
       lang: target.lang,
@@ -150,7 +150,7 @@ export async function queryI18nNamesByIds(
   lang: "zh",
   variant?: string,
 ) {
-  const s = await appPrisma.i18nSpellText.findMany({
+  const s = await contentPrisma.i18nSpellText.findMany({
     where: {
       spellId: { in: ids },
       lang,
@@ -171,7 +171,7 @@ export async function queryByExactI18nNames(
 ) {
   if (names.length === 0) return [];
 
-  const rows = await appPrisma.i18nSpellText.findMany({
+  const rows = await contentPrisma.i18nSpellText.findMany({
     where: {
       lang,
       name: { in: names },

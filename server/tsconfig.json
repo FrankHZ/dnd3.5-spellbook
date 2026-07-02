@@ -48,9 +48,11 @@
       "DATA/*": ["./data/*"],
       "~/*": ["./src/*"],
       "prisma-rules-clean/*": ["./prisma-rules-clean/*"],
-      "prisma-app/*": ["./prisma-app/*"],
+      "prisma-content/*": ["./prisma-content/*"],
+      "prisma-app-state/*": ["./prisma-app-state/*"],
       "DB_RULES/*": ["./prisma-rules-clean/generated/*"],
-      "DB_APP/*": ["./prisma-app/generated/*"]
+      "DB_CONTENT/*": ["./prisma-content/generated/*"],
+      "DB_APP_STATE/*": ["./prisma-app-state/generated/*"]
     }
   },
   "include": [

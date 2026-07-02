@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { appPrisma } from "~/lib/app-prisma-client";
+import { contentPrisma } from "~/lib/content-prisma-client";
 import { rulesPrisma } from "~/lib/rules-prisma-client";
 import zhClassJson from "DATA/i18n/classes-zh.json";
 import zhDomainJson from "DATA/i18n/domains-zh.json";
@@ -8,8 +8,8 @@ import zhDescriptorJson from "DATA/i18n/descriptors-zh.json";
 import zhSchoolJson from "DATA/i18n/schools-zh.json";
 import zhSubschoolJson from "DATA/i18n/subschools-zh.json";
 import { PrismaPromise } from "@prisma/client/runtime/client";
-import { BatchPayload } from "DB_APP/internal/prismaNamespace";
-import { Prisma } from "DB_APP/client";
+import { BatchPayload } from "DB_CONTENT/internal/prismaNamespace";
+import { Prisma } from "DB_CONTENT/client";
 
 type Entry = {
   id: number; // classId
@@ -106,7 +106,7 @@ async function importEntityI18n<Row>(cfg: {
   // 4) Import: wipe + insert
   const rows: Row[] = entries.map(makeRow);
 
-  await appPrisma.$transaction([
+  await contentPrisma.$transaction([
     deleteMany({ where: { lang, variant } }),
     createMany({ data: rows }),
   ]);
@@ -134,8 +134,8 @@ async function importClasses() {
       return m;
     },
 
-    deleteMany: appPrisma.i18nCharacterClassText.deleteMany,
-    createMany: appPrisma.i18nCharacterClassText.createMany,
+    deleteMany: contentPrisma.i18nCharacterClassText.deleteMany,
+    createMany: contentPrisma.i18nCharacterClassText.createMany,
 
     makeRow: (e) => ({
       classId: e.id,
@@ -164,8 +164,8 @@ async function importDomains() {
       return m;
     },
 
-    deleteMany: appPrisma.i18nDomainText.deleteMany,
-    createMany: appPrisma.i18nDomainText.createMany,
+    deleteMany: contentPrisma.i18nDomainText.deleteMany,
+    createMany: contentPrisma.i18nDomainText.createMany,
 
     makeRow: (e) => ({
       domainId: e.id,
@@ -193,8 +193,8 @@ async function importRulebooks() {
       return m;
     },
 
-    deleteMany: appPrisma.i18nRulebookText.deleteMany,
-    createMany: appPrisma.i18nRulebookText.createMany,
+    deleteMany: contentPrisma.i18nRulebookText.deleteMany,
+    createMany: contentPrisma.i18nRulebookText.createMany,
 
     makeRow: (e) => ({
       rulebookId: e.id,
@@ -222,8 +222,8 @@ async function importSchools() {
       return m;
     },
 
-    deleteMany: (args) => appPrisma.i18nSpellSchoolText.deleteMany(args),
-    createMany: (args) => appPrisma.i18nSpellSchoolText.createMany(args),
+    deleteMany: (args) => contentPrisma.i18nSpellSchoolText.deleteMany(args),
+    createMany: (args) => contentPrisma.i18nSpellSchoolText.createMany(args),
 
     makeRow: (e) => ({
       schoolId: e.id,
@@ -251,8 +251,8 @@ async function importSubschools() {
       return m;
     },
 
-    deleteMany: (args) => appPrisma.i18nSpellSubschoolText.deleteMany(args),
-    createMany: (args) => appPrisma.i18nSpellSubschoolText.createMany(args),
+    deleteMany: (args) => contentPrisma.i18nSpellSubschoolText.deleteMany(args),
+    createMany: (args) => contentPrisma.i18nSpellSubschoolText.createMany(args),
 
     makeRow: (e) => ({
       subschoolId: e.id,
@@ -280,8 +280,8 @@ async function importDescriptors() {
       return m;
     },
 
-    deleteMany: (args) => appPrisma.i18nDescriptorText.deleteMany(args),
-    createMany: (args) => appPrisma.i18nDescriptorText.createMany(args),
+    deleteMany: (args) => contentPrisma.i18nDescriptorText.deleteMany(args),
+    createMany: (args) => contentPrisma.i18nDescriptorText.createMany(args),
 
     makeRow: (e) => ({
       descriptorId: e.id,
@@ -308,5 +308,5 @@ main()
   })
   .finally(async () => {
     await rulesPrisma.$disconnect();
-    await appPrisma.$disconnect();
+    await contentPrisma.$disconnect();
   });

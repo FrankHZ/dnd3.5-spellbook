@@ -2,13 +2,15 @@
 
 This document describes the current local data setup for the repository.
 
-It focuses on the two SQLite databases used by the app:
+The app uses three SQLite database roles:
 
 - the rules database
-- the app database
+- the content database
+- the app-state database
 
-For deployment of already-prepared database files, use [deployment.md](./deployment.md).
-For one-time remote host setup, use [operations/bootstrap-remote.md](./operations/bootstrap-remote.md).
+For deployment of already-prepared database files, use
+[deployment.md](./deployment.md). For one-time remote host setup, use
+[operations/bootstrap-remote.md](./operations/bootstrap-remote.md).
 
 ## Local-Only Data Policy
 
@@ -19,12 +21,14 @@ That means:
 
 - the application may depend on local files during setup
 - those files are local inputs or generated artifacts
-- a fresh clone may require you to prepare those files yourself before the full workflow can run
+- a fresh clone may require you to prepare those files yourself before the full
+  workflow can run
 
 Current local data ownership:
 
 - `server/data/db/`: runtime SQLite databases used by the API
-- `server/data/i18n/`: app-owned entity translation JSON imported by server scripts
+- `server/data/i18n/`: app-owned entity translation JSON imported by server
+  scripts
 - `data/`: nested local data repo for parser and data-tool source inputs such
   as CHM HTML, upstream raw data, and rules DB patch files
 - `data-tools/out/`: generated parser reports and intermediate output
@@ -47,31 +51,54 @@ Purpose:
 The server treats this database as a prepared runtime input. Rules DB
 preparation commands live in `data-tools`, not in server startup.
 
-### App DB
+### Content DB
 
-Local file:
+Typical local file:
 
 ```text
-server/data/db/app.sqlite
+server/data/db/content.sqlite
 ```
 
 Purpose:
 
-- app-owned data
-- i18n overlay content
-- user-facing app state stored by the project
+- generated/imported app-owned content overlays
+- localized names and descriptions
+- spell short summaries
+- future normalized rules-derived runtime tables
+
+During the v3.5 split, existing local or remote environments may still point at
+`server/data/db/app.sqlite`; runtime code and content import tools accept
+`APP_DATABASE_URL` as a transitional fallback for this same content DB role.
+
+### App-State DB
+
+Typical local file:
+
+```text
+server/data/db/app-state.sqlite
+```
+
+Purpose:
+
+- future server-side users
+- future favorites, notes, syncable collections, or other user-owned state
+
+Current production behavior does not depend on app-state rows yet, but this DB
+is preserve-sensitive by ownership. Do not use content import scripts to mutate
+it.
 
 ## Data Origins
 
 ### Rules DB Origin
 
-The rules DB lineage starts from the original `dnd.sqlite` dataset from the `dndtools/dndtools` project:
+The rules DB lineage starts from the original `dnd.sqlite` dataset from the
+`dndtools/dndtools` project:
 
 - upstream source: `https://github.com/dndtools/dndtools`
 
-This repository does not treat that upstream raw database as a tracked project artifact.
-When present in this workspace's nested local data repo, keep the raw upstream
-SQLite file under:
+This repository does not treat that upstream raw database as a tracked project
+artifact. When present in this workspace's nested local data repo, keep the raw
+upstream SQLite file under:
 
 ```text
 data/upstream/dndtools/dnd.sqlite
@@ -81,49 +108,67 @@ Instead, the project works from a local processed rules database:
 
 - `server/data/db/rules-clean.sqlite`
 
-That processed database is what the backend and deployment workflow expect as the rules-side SQLite source.
+That processed database is what the backend and deployment workflow expect as
+the rules-side SQLite source.
 
-### App DB Origin
+### Content DB Origin
 
-The app DB is project-local and owned by this repository.
-
-It is created and evolved from the Prisma app schema under:
+The content DB is project-local and owned by this repository. It is created and
+evolved from the Prisma content schema under:
 
 ```text
-server/prisma-app/
+server/prisma-content/
 ```
 
-The app DB is not an upstream imported dataset. It is generated from the current schema and then optionally seeded/imported through project scripts.
+It is not an upstream imported dataset. It is generated from the current schema
+and populated through project import scripts.
 
-## Current MVP App DB Policy
+### App-State DB Origin
 
-For the current MVP stage, the app DB is treated as a rebuildable local artifact.
+The app-state DB is project-local and owned by this repository. It is created
+and evolved from the Prisma app-state schema under:
+
+```text
+server/prisma-app-state/
+```
+
+It should remain separate from generated content so future user data can be
+preserved independently.
+
+## Current MVP DB Policy
+
+For the current MVP stage, the content DB is treated as a rebuildable local
+artifact.
 
 The practical rule is:
 
-- regenerate the app DB from scratch when rebuilding local app-owned data
+- regenerate the content DB from scratch when rebuilding local app-owned content
 
-The current workflow does not treat the app DB as a long-lived migrated local store that must be incrementally preserved during development.
+The app-state DB is a separate future user/app-state boundary. It may start
+empty locally, but it should not be collapsed into the content DB.
 
 ## Environment Variables
 
-The current local server environment points to these database files in [server/.env](../server/.env):
+The current local server environment points to these database files in
+[server/.env](../server/.env):
 
 - `RULES_DATABASE_URL`
-- `APP_DATABASE_URL`
+- `CONTENT_DATABASE_URL`
+- `APP_STATE_DATABASE_URL`
 
 Current default local paths:
 
 ```dotenv
 RULES_DATABASE_URL="file:<repo>/server/data/db/rules-clean.sqlite"
-APP_DATABASE_URL="file:<repo>/server/data/db/app.sqlite"
+CONTENT_DATABASE_URL="file:<repo>/server/data/db/content.sqlite"
+APP_STATE_DATABASE_URL="file:<repo>/server/data/db/app-state.sqlite"
 ```
 
+`APP_DATABASE_URL` is temporarily accepted by runtime code and content import
+tools as a compatibility fallback for the content DB. Prefer
+`CONTENT_DATABASE_URL` for new local setup.
+
 If your local checkout lives elsewhere, update the paths accordingly.
-
-## App DB Setup
-
-The app DB is managed through Prisma in the `server` workspace.
 
 ## Rules DB Preparation
 
@@ -186,52 +231,50 @@ npm run -w data-tools spells-full:inspect -- known-misses
 npm run -w data-tools spells-full:generate -- known-misses --write-patch spells/spells-full-known-misses.jsonl
 ```
 
-### Reset / Create The App DB
+## Content DB Setup
 
 Run:
 
 ```bash
-npm run -w server db:app:reset
+npm run -w server db:content:reset
 ```
 
-This runs Prisma migrations using the explicit app Prisma config:
+This runs Prisma migrations using the explicit content Prisma config:
 
-- `server/prisma-app/prisma.config.ts`
+- `server/prisma-content/prisma.config.ts`
 
-It creates or updates the local app database referenced by `APP_DATABASE_URL`.
+It creates or updates the local content database referenced by
+`CONTENT_DATABASE_URL`.
 
-### Populate The App DB
+Populate the content DB through server import commands:
 
-For the current MVP workflow, the Prisma seed command exists but is not the normal path used to populate the app DB.
+- `npm run -w server db:content:import:zh-chm`
+- `npm run -w server db:content:import:zh-entities`
 
-The active population path is the import commands in the `server` workspace:
+Compatibility aliases named `db:app:*` currently forward to the content commands
+where practical, but new docs and scripts should use the content names.
 
-- `npm run -w server db:app:import:zh-chm`
-- `npm run -w server db:app:import:zh-entities`
-
-These are the commands currently used after rebuilding the app DB from scratch.
-
-### Seed Command Status
-
-`npm run -w server db:app:seed` exists, but it is not the active population path for the current MVP workflow.
-
-It should be treated as available infrastructure rather than the normal operational command.
-
-### Optional Seed Command
+## App-State DB Setup
 
 Run:
 
 ```bash
-npm run -w server db:app:seed
+npm run -w server db:app-state:reset
+```
+
+Optional local development seed:
+
+```bash
+npm run -w server db:app-state:seed
 ```
 
 This runs the Prisma seed configured by:
 
-- `server/prisma-app/prisma.config.ts`
+- `server/prisma-app-state/prisma.config.ts`
 
-### Generate Prisma Clients
+## Generate Prisma Clients
 
-If Prisma client output is stale or the schema changed, run:
+If Prisma client output is stale or a schema changed, run:
 
 ```bash
 npm run -w server db:generate
@@ -245,25 +288,34 @@ For a normal local setup:
 2. Ensure `server/data/db/rules-clean.sqlite` exists.
 3. Run `npm install` from the repo root.
 4. Run `npm run -w server db:generate`.
-5. Run `npm run -w server db:app:reset`.
-6. Run `npm run -w server db:app:import:zh-entities`.
-7. Run `npm run -w server db:app:import:zh-chm`.
+5. Run `npm run -w server db:content:reset`.
+6. Run `npm run -w server db:app-state:reset` if server-side user/app-state
+   storage is needed locally.
+7. Run `npm run -w server db:content:import:zh-entities`.
+8. Run `npm run -w server db:content:import:zh-chm`.
 
 After that, the backend can use:
 
 - `rules-clean.sqlite` as the rules DB
-- `app.sqlite` as the app DB
+- `content.sqlite` as the content DB
+- `app-state.sqlite` as the future app-state DB
 
 ## Notes
 
-- The rules DB is treated as a prepared local input, not something created by Prisma migrations.
-- The app DB is the opposite: it is the Prisma-managed local database for app-owned state.
-- For the current MVP, app DB rebuilds are expected to start from a fresh reset rather than incremental local preservation.
-- The current MVP data population path uses import commands, not the Prisma seed command.
-- Deployment copies database files after they exist locally; deployment is not the step that creates the app DB schema.
+- The rules DB is treated as a prepared local input, not something created by
+  Prisma migrations.
+- The content DB is the Prisma-managed local database for app-owned content.
+- The app-state DB is the Prisma-managed local database for future user-owned
+  state.
+- For the current MVP, content DB rebuilds are expected to start from a fresh
+  reset rather than incremental local preservation.
+- The current MVP content population path uses import commands, not the Prisma
+  seed command.
+- Deployment copies database files after they exist locally; deployment is not
+  the step that creates the content DB schema.
 - The public repo intentionally excludes data-bearing local artifacts such as
-  `server/data/db/`, `data/`, and `data-tools/out/`, so local users
-  must supply or recreate those files themselves.
+  `server/data/db/`, `data/`, and `data-tools/out/`, so local users must supply
+  or recreate those files themselves.
 - The root `data/` directory is a nested local Git repo in this workspace. Use
   that repo to version local source inputs without adding them to the parent
   project repo.
@@ -271,9 +323,9 @@ After that, the backend can use:
 ## Related Files
 
 - [../server/package.json](../server/package.json)
-- [../server/prisma-app/prisma.config.ts](../server/prisma-app/prisma.config.ts)
+- [../server/prisma-content/prisma.config.ts](../server/prisma-content/prisma.config.ts)
+- [../server/prisma-app-state/prisma.config.ts](../server/prisma-app-state/prisma.config.ts)
 - [../server/.env](../server/.env)
 - [deployment.md](./deployment.md)
 - [operations/bootstrap-remote.md](./operations/bootstrap-remote.md)
 - [public-repo-notes.md](./public-repo-notes.md)
-

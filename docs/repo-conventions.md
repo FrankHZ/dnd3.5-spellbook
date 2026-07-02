@@ -39,5 +39,5 @@ surface for agents.
 For the current MVP line:
 
 - deployment is manual
-- app DB rebuilds normally start from scratch
+- content DB rebuilds normally start from scratch
 - security hardening and rollback playbooks are intentionally deferred to the stable-version track

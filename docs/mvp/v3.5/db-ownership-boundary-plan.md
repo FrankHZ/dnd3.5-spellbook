@@ -1,11 +1,11 @@
 # DB Ownership Boundary Plan
 
-Status: planned v3.5 DB split.
+Status: first v3.5 implementation slice in progress.
 
 ## Problem
 
-The current `server/prisma-app/schema.prisma` is named "app DB", but in practice
-it is currently an app-owned content DB. It stores imported/local content
+The previous `server/prisma-app/schema.prisma` was named "app DB", but in
+practice it was an app-owned content DB. It stored imported/local content
 overlays such as Chinese names and descriptions. It also has placeholder
 user/app-state models (`User`, `FavoriteSpell`, `SpellNote`) that are not the
 current product's active user-data surface.
@@ -50,10 +50,10 @@ real server-side user data exists.
 
 - `rules DB`: legacy imported rules dataset and rules patches; v3.5 should
   treat this as a source input once normalized rules content exists.
-- current `app DB`: app-owned content overlay DB, despite the name.
-- target `content DB`: generated/imported app-owned content overlays and,
+- previous `app DB`: app-owned content overlay DB, despite the name.
+- current `content DB`: generated/imported app-owned content overlays and,
   after rules normalization, canonical rules-derived runtime tables.
-- target `app-state DB`: user-owned state, if server-side users, notes, synced
+- current `app-state DB`: user-owned state, if server-side users, notes, synced
   collections, or favorites become real runtime features.
 
 ## Decision
@@ -91,24 +91,27 @@ state.
 
 ## Implementation Steps
 
-1. Inventory every Prisma model in `server/prisma-app/schema.prisma`.
+1. Inventory every Prisma model in the previous `server/prisma-app/schema.prisma`.
 2. Classify each model as generated content, user/app-state, or obsolete
    placeholder.
 3. Inventory all server/data-tools scripts that read or write app DB tables.
 4. Create concrete schema and client ownership:
-   - content DB schema file and generated client path
-   - app-state DB schema file and generated client path
-   - env vars such as `CONTENT_DATABASE_URL` and `APP_STATE_DATABASE_URL`
-   - transitional handling for `APP_DATABASE_URL` if needed
+   - `server/prisma-content/schema.prisma`
+   - `server/prisma-app-state/schema.prisma`
+   - `CONTENT_DATABASE_URL`
+   - `APP_STATE_DATABASE_URL`
+   - transitional fallback from `APP_DATABASE_URL` to the content DB
 5. Move generated/imported overlay models to the content DB schema.
-6. Move, preserve, or remove placeholder user/app-state models according to
-   whether they are useful as future schema scaffolding.
+6. Move placeholder user/app-state models to the app-state schema as future
+   scaffolding.
 7. Update data-tools and import commands so write-capable content workflows only
    target the content DB.
 8. Update server services so content reads and future app-state reads use clearly
    named clients.
 9. Update local DB rebuild/setup docs and deployment docs.
-10. Define a rollback or rebuild path before any destructive local migration.
+10. Do not perform destructive local DB migration in this slice. Existing local
+    or remote content DB files can stay under the old `app.sqlite` / `app.db`
+    filename while env vars move to `CONTENT_DATABASE_URL`.
 
 Coordinate this split with `rules-content-normalization-plan.md` so normalized
 rules runtime tables land in the content DB boundary rather than creating a
@@ -127,3 +130,18 @@ third long-lived runtime DB by accident.
   user/app-state data.
 - `AGENTS.md`, `docs/data-setup.md`, and workspace READMEs point to the final DB
   ownership decision before implementation.
+
+## Implementation Notes
+
+The first implementation slice establishes the physical and code ownership
+boundary without migrating local SQLite files:
+
+- `server/prisma-content/` owns generated/imported content overlay models.
+- `server/prisma-app-state/` owns future user/app-state models.
+- `server/src/lib/content-prisma-client.ts` reads `CONTENT_DATABASE_URL`, with
+  `APP_DATABASE_URL` as a temporary compatibility fallback.
+- `server/src/lib/app-state-prisma-client.ts` reads `APP_STATE_DATABASE_URL`.
+- Content import commands and short-summary import tooling target the content
+  DB boundary.
+- Deployment still treats the existing remote `app.db` file as the content DB
+  artifact until the deferred DB deployment redesign lands.

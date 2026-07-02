@@ -8,9 +8,10 @@ It serves the spell data consumed by the frontend and also contains the Prisma s
 
 - `src/`: application source code
 - `tests/`: backend tests
-- `prisma-app/`: app database schema and config
+- `prisma-content/`: generated/imported content overlay schema and config
+- `prisma-app-state/`: future user/app-state schema and config
 - `prisma-rules-clean/`: rules-side schema and generated client setup
-- `scripts/`: app DB import and maintenance scripts
+- `scripts/`: content DB import and maintenance scripts
 - `data/`: local runtime DB files and app-owned entity translation inputs
 
 ## Main Commands
@@ -61,12 +62,18 @@ Local development currently uses:
 The main database variables are:
 
 - `RULES_DATABASE_URL`
-- `APP_DATABASE_URL`
+- `CONTENT_DATABASE_URL`
+- `APP_STATE_DATABASE_URL`
 
 These point to:
 
 - the prepared local rules DB (`rules-clean.sqlite`)
-- the Prisma-managed local app DB (`app.sqlite`)
+- the Prisma-managed local content DB (`content.sqlite` or transitional
+  `app.sqlite`)
+- the future app-state DB (`app-state.sqlite`)
+
+`APP_DATABASE_URL` is still accepted as a temporary fallback for the content DB
+so older local and remote environments keep running during the split.
 
 The canonical data setup and database lifecycle doc is:
 
