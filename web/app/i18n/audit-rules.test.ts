@@ -33,4 +33,3 @@ describe("i18n audit rules", () => {
     );
   });
 });
-
