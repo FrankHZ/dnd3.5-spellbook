@@ -37,21 +37,21 @@ documents in this order:
 - [mvp/v3.3/spells-full-import-plan.md](./mvp/v3.3/spells-full-import-plan.md)
 - [mvp/v3.3/structured-spell-patch-plan.md](./mvp/v3.3/structured-spell-patch-plan.md)
 
-## Early v3.4 Planning
+## Active v3.4 Planning
 
-Early v3.4 planning has started under `docs/mvp/v3.4/`:
+v3.4 planning and closeout coordination live under `docs/mvp/v3.4/`.
+Start with the integrated plan, then move to the focused topic doc:
 
+- [mvp/v3.4/integrated-plan.md](./mvp/v3.4/integrated-plan.md)
 - [mvp/v3.4/short-description-pipeline-plan.md](./mvp/v3.4/short-description-pipeline-plan.md)
 - [mvp/v3.4/data-harness-hardening-plan.md](./mvp/v3.4/data-harness-hardening-plan.md)
 - [mvp/v3.4/design-refresh-plan.md](./mvp/v3.4/design-refresh-plan.md)
 - [mvp/v3.4/i18next-conventions-plan.md](./mvp/v3.4/i18next-conventions-plan.md)
 
-The design refresh plan is intentionally narrower than a redesign. It uses
-`docs/design.md` to review existing components and pick low-risk styling
-improvements. The short-description plan covers source-backed summary extraction
-before runtime/UI changes. The data harness plan covers portable data-tool tests
-and local-data acceptance boundaries. The i18next plan covers frontend
-translation-key convention hardening.
+The integrated plan records the current v3.4 scope decision:
+short-description delivery, data harness hardening, and release/freeze docs are
+the closeout path. The design refresh and i18next plans remain valid focused
+plans, but they are parallel or follow-up tracks unless explicitly promoted.
 
 ## Current Operational Docs
 

@@ -92,29 +92,50 @@ future short-description import creates new target text to review.
 
 Recommended next sequence:
 
-1. **v3.4 candidate: data harness hardening**
+1. **v3.4 closeout: integrated plan**
 
-   Use `docs/mvp/v3.4/data-harness-hardening-plan.md` to add portable
-   data-tools tests and explicit local-data acceptance checks around CHM parser
-   matching, source-label normalization, structured rules patch validation, and
-   the local rules DB manifest.
+   Use `docs/mvp/v3.4/integrated-plan.md` as the coordination surface. v3.4
+   should close around the short-description pipeline, data harness hardening,
+   and freeze documentation rather than expanding into every planned frontend
+   cleanup track.
 
-2. **v3.4 candidate: frontend design refresh**
+2. **v3.4 closeout: data harness hardening**
+
+   Use `docs/mvp/v3.4/data-harness-hardening-plan.md` to add the smallest
+   durable harness slice: portable data-tools tests plus explicit local-data
+   acceptance checks around CHM parser matching, summary QA/import dry-runs,
+   structured rules patch validation, and the local rules DB manifest.
+
+3. **v3.4 closeout: acceptance and freeze docs**
+
+   Record the final validation commands and counts in a v3.4 acceptance
+   checklist and `FREEZE.md`. At minimum, rerun and record:
+
+   ```bash
+   npm run verify
+   npm run -w data-tools summaries:qa
+   npm run -w data-tools summaries:import -- --dry-run
+   npm run -w data-tools rules:manifest:verify
+   ```
+
+4. **parallel or follow-up: frontend design refresh**
 
    Use `docs/mvp/v3.4/design-refresh-plan.md` to review existing frontend
    components against `docs/design.md`, then implement small styling and
-   consistency improvements that are easy to inspect in the running app.
+   consistency improvements that are easy to inspect in the running app. This
+   is not a v3.4 freeze blocker unless explicitly promoted.
 
-3. **v3.4 candidate: frontend i18n convention cleanup**
+5. **parallel or follow-up: frontend i18n convention cleanup**
 
    Keep `i18next`, but replace raw-English translation keys with stable
-   semantic keys and make `npm run i18n:check` enforce the convention.
+   semantic keys and make `npm run i18n:check` enforce the convention. This is
+   independent from spell/content summaries and can move to v3.5.
 
    See:
 
    - `docs/mvp/v3.4/i18next-conventions-plan.md`
 
-4. **follow-up: PDF-backed short-description coverage**
+6. **follow-up: PDF-backed short-description coverage**
 
    Use `docs/mvp/v3.4/short-description-pipeline-plan.md` as the source of
    truth for the implemented extraction, normalization, import, API, and UI
@@ -126,7 +147,7 @@ Recommended next sequence:
    Further short-description coverage should be source/PDF-backed rather than
    fuzzy reuse.
 
-5. **follow-up architecture review: DB ownership boundaries**
+7. **follow-up architecture review: DB ownership boundaries**
 
    Review the current app DB after the short-description pipeline settles. Today
    it effectively acts as an app-owned content DB, despite having placeholder

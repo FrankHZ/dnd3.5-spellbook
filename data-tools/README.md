@@ -10,6 +10,7 @@ serving requests.
 
 Current v3.4 planning for data-tooling work lives in:
 
+- [../docs/mvp/v3.4/integrated-plan.md](../docs/mvp/v3.4/integrated-plan.md)
 - [../docs/mvp/v3.4/short-description-pipeline-plan.md](../docs/mvp/v3.4/short-description-pipeline-plan.md)
 - [../docs/mvp/v3.4/data-harness-hardening-plan.md](../docs/mvp/v3.4/data-harness-hardening-plan.md)
 
