@@ -12,6 +12,7 @@ export function I18nSync() {
 
   useEffect(() => {
     if (i18n.language !== lang) i18n.changeLanguage(lang);
+    document.documentElement.lang = lang;
   }, [i18n, lang]);
 
   return null;

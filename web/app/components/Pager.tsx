@@ -85,16 +85,19 @@ export default function Pager({
   };
 
   return (
-    <div className={cn("flex items-center justify-between gap-3", className)}>
+    <div
+      className={cn(
+        "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3",
+        className,
+      )}
+    >
       {showRangeText ? (
-        <div className="text-sm text-muted-foreground">
+        <div className="min-w-0 text-sm text-muted-foreground">
           {rangeText(t, page, pageSize, total)}
         </div>
-      ) : (
-        <div />
-      )}
+      ) : null}
 
-      <Pagination className="mx-0 w-auto justify-end">
+      <Pagination className="mx-0 w-full justify-start sm:w-auto sm:justify-end">
         <PaginationContent>
           <PaginationItem>
             <PaginationLink

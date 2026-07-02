@@ -214,128 +214,132 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
       });
     } catch {
       toast.error(t("Copy table"), {
-        description: t("Copy failed. Browser clipboard permission may be blocked."),
+        description: t(
+          "Copy failed. Browser clipboard permission may be blocked.",
+        ),
       });
     }
   };
 
-    return (
-      <div className="space-y-3">
-        <div className="px-1 text-sm text-muted-foreground">
-          {t("{{count}} prepared slot(s)", { count: book.entries.length })}
-        </div>
+  return (
+    <div className="space-y-3">
+      <div className="px-1 text-sm text-muted-foreground">
+        {t("{{count}} prepared slot(s)", { count: book.entries.length })}
+      </div>
 
-        <div className="flex flex-col gap-3 lg:flex-row">
-          <PreparedClassAndDomainSidebar
-            selectedClasses={selectedClasses}
-            selectedDomains={selectedDomains}
-            candidates={candidates}
-            onAdd={onAddSelected}
-            onRemove={onRemoveSelected}
-          />
-          <div className="min-w-0 flex-1">
-            <div className="sticky top-[var(--app-sticky-top-offset)] z-40 mb-3 flex justify-end">
-              <div className="w-fit max-w-full rounded-md border bg-background/90 px-3 py-2 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/80">
-                <div className="flex flex-wrap items-center gap-2">
-                  <ToggleGroup
-                    size="sm"
-                    type="single"
-                    variant="outline"
-                    value={mode}
-                    onValueChange={(v) => {
-                      if (!v) return;
-                      setMode(v as ViewMode);
-                    }}
+      <div className="flex flex-col gap-3 lg:flex-row">
+        <PreparedClassAndDomainSidebar
+          selectedClasses={selectedClasses}
+          selectedDomains={selectedDomains}
+          candidates={candidates}
+          onAdd={onAddSelected}
+          onRemove={onRemoveSelected}
+        />
+        <div className="min-w-0 flex-1">
+          <div className="sticky top-[var(--app-sticky-top-offset)] z-40 mb-3 flex justify-stretch sm:justify-end">
+            <div className="w-full rounded-md border bg-background/90 px-3 py-2 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:w-fit sm:max-w-full">
+              <div className="flex flex-wrap items-center gap-2">
+                <ToggleGroup
+                  size="sm"
+                  type="single"
+                  variant="outline"
+                  value={mode}
+                  onValueChange={(v) => {
+                    if (!v) return;
+                    setMode(v as ViewMode);
+                  }}
+                >
+                  <ToggleGroupItem
+                    value="normal"
+                    aria-label={t("Toggle normal mode")}
                   >
-                    <ToggleGroupItem
-                      value="normal"
-                      aria-label={t("Toggle normal mode")}
-                    >
-                      {t("Normal")}
-                    </ToggleGroupItem>
-                    <ToggleGroupItem
-                      value="edit"
-                      aria-label={t("Toggle edit mode")}
-                    >
-                      {t("Edit")}
-                    </ToggleGroupItem>
-                  </ToggleGroup>
+                    {t("Normal")}
+                  </ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="edit"
+                    aria-label={t("Toggle edit mode")}
+                  >
+                    {t("Edit")}
+                  </ToggleGroupItem>
+                </ToggleGroup>
 
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => preparedBook.resetUsed(book.id)}
+                  disabled={book.entries.length === 0}
+                >
+                  {t("Reset used")}
+                </Button>
+
+                <ButtonGroup>
                   <Button
-                    size="sm"
+                    size="icon-sm"
                     variant="outline"
-                    onClick={() => preparedBook.resetUsed(book.id)}
+                    onClick={onCopySimple}
                     disabled={book.entries.length === 0}
+                    aria-label={t("Copy table")}
                   >
-                    {t("Reset used")}
+                    <Copy className="h-4 w-4" />
                   </Button>
-
-                  <ButtonGroup>
-                    <Button
-                      size="icon-sm"
-                      variant="outline"
-                      onClick={onCopySimple}
-                      disabled={book.entries.length === 0}
-                      aria-label={t("Copy table")}
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    <PreparedCopyDialog
-                      entries={book.entries}
-                      columns={columns}
-                      byId={byId}
-                      selectedClassIds={selectedClassIds}
-                      selectedDomainIds={selectedDomainIds}
-                      getVisibleName={name}
-                    />
-                  </ButtonGroup>
-                  <BulkPasteDialog bookId={book.id} />
-                </div>
-              </div>
-            </div>
-
-            {book.entries.length === 0 && (
-              <Card className="gap-0">
-                <CardHeader className="gap-1 py-2">
-                  <CardDescription>{t("Empty.")}</CardDescription>
-                </CardHeader>
-              </Card>
-            )}
-
-            {book.entries.length > 0 && (
-              <>
-                {batchQuery.isLoading && (
-                  <Card className="gap-0">
-                    <CardHeader className="gap-1 py-2">
-                      <CardDescription>{t("Loading spells...")}</CardDescription>
-                    </CardHeader>
-                  </Card>
-                )}
-
-                {batchQuery.isError && (
-                  <Card className="gap-0">
-                    <CardHeader className="gap-1 py-3">
-                      <CardTitle className="text-base">
-                        {t("Some spells failed to load")}
-                      </CardTitle>
-                      <CardDescription>{t("Please try again later.")}</CardDescription>
-                    </CardHeader>
-                  </Card>
-                )}
-
-                {!batchQuery.isLoading && !batchQuery.isError && (
-                  <PreparedTable
-                    bookId={book.id}
+                  <PreparedCopyDialog
+                    entries={book.entries}
                     columns={columns}
                     byId={byId}
-                    mode={mode}
-                    rowMinHeight={DEFAULT_PREPARED_ROW_MIN_HEIGHT}
+                    selectedClassIds={selectedClassIds}
+                    selectedDomainIds={selectedDomainIds}
+                    getVisibleName={name}
                   />
-                )}
-              </>
-            )}
+                </ButtonGroup>
+                <BulkPasteDialog bookId={book.id} />
+              </div>
+            </div>
           </div>
+
+          {book.entries.length === 0 && (
+            <Card className="gap-0">
+              <CardHeader className="gap-1 py-2">
+                <CardDescription>{t("Empty.")}</CardDescription>
+              </CardHeader>
+            </Card>
+          )}
+
+          {book.entries.length > 0 && (
+            <>
+              {batchQuery.isLoading && (
+                <Card className="gap-0">
+                  <CardHeader className="gap-1 py-2">
+                    <CardDescription>{t("Loading spells...")}</CardDescription>
+                  </CardHeader>
+                </Card>
+              )}
+
+              {batchQuery.isError && (
+                <Card className="gap-0">
+                  <CardHeader className="gap-1 py-3">
+                    <CardTitle className="text-base">
+                      {t("Some spells failed to load")}
+                    </CardTitle>
+                    <CardDescription>
+                      {t("Please try again later.")}
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              )}
+
+              {!batchQuery.isLoading && !batchQuery.isError && (
+                <PreparedTable
+                  bookId={book.id}
+                  columns={columns}
+                  byId={byId}
+                  mode={mode}
+                  rowMinHeight={DEFAULT_PREPARED_ROW_MIN_HEIGHT}
+                />
+              )}
+            </>
+          )}
         </div>
       </div>
+    </div>
   );
 }

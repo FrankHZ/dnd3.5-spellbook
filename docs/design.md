@@ -23,6 +23,29 @@ Design direction:
 - Quietly polished: use restrained spacing, typography, and feedback rather
   than decorative fantasy framing.
 
+## Visual Direction
+
+The app should feel like a modern rules reference book: structured,
+print-informed, and fast to scan, without faux parchment, ornamental fantasy
+chrome, or novelty typography.
+
+Useful cues come from rulebook and rules-index structure rather than skinning:
+
+- clear title hierarchy for spell names, sections, and metadata groups
+- compact source labels, page references, abbreviations, and rulebook scope
+  indicators
+- fine separators, bordered reading surfaces, and stable metadata columns
+- rule text that feels readable and citable, with controls kept visually
+  secondary
+- restrained accent colors that suggest binding, ink, or source labels without
+  turning the app into a themed prop
+
+External references such as 5etools, Pf2eTools, Foundry sheets, or printed SRD
+style guides are useful for information structure and rules-reference
+conventions. Do not copy their visual skin wholesale. Translate useful ideas
+back into this app's Tailwind tokens, React Router routes, local UI wrappers,
+and bilingual requirements.
+
 ## Current Screen Inventory
 
 The current user-facing surface is defined by `docs/features.md` and mapped in
@@ -106,6 +129,16 @@ Current defaults:
 - Primary actions use existing button variants rather than custom one-off
   colors.
 - Icons should come from `lucide-react` when an icon is helpful.
+
+Prefer modern reference-book polish over decorative theming:
+
+- use typography scale, source badges, dividers, and metadata alignment before
+  introducing new colors or textures
+- keep backgrounds near-neutral; avoid parchment, aged paper, heavy gradients,
+  ornate borders, and large fantasy illustrations in core app screens
+- use accent colors sparingly for source, state, or navigation meaning rather
+  than as broad page washes
+- keep form controls, dialogs, sheets, and action buttons modern and predictable
 
 Future visual exploration may use Stitch, Figma, or external `DESIGN.md`
 examples for inspiration, but generated output should not be treated as the

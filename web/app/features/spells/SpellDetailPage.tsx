@@ -79,36 +79,46 @@ function SpellHeader({
   spellId: number;
   className?: string;
 }) {
+  const sourceText = page
+    ? `${rulebookAbbr ?? "—"} · p. ${page}`
+    : (rulebookAbbr ?? "—");
+
   return (
-    <div className={`space-y-2 ${className}`.trim()}>
+    <div className={`space-y-3 ${className}`.trim()}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold leading-tight">{title}</h1>
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <Badge
+              variant="outline"
+              className="rounded-sm bg-muted/30 font-mono text-[11px] uppercase text-muted-foreground"
+            >
+              {sourceText}
+            </Badge>
+            <Badge variant="secondary" className="rounded-sm text-xs">
+              {schoolText}
+            </Badge>
+          </div>
+          <h1 className="text-2xl font-semibold leading-tight tracking-normal">
+            {title}
+          </h1>
           {shortDescription ? (
-            <p className="mt-2 text-sm leading-5 text-foreground/80">
+            <p className="mt-3 max-w-3xl border-l-2 border-border pl-3 text-sm leading-6 text-foreground/80">
               {shortDescription}
             </p>
           ) : null}
-          <div className="mt-1 text-sm text-muted-foreground">
-            <span className="font-mono">{rulebookAbbr ?? "—"}</span>
-            {page ? <span> • p. {page}</span> : null}
-          </div>
-          <div className="mt-1 text-sm text-muted-foreground">
-            {schoolText}
-            {descriptors.length > 0 && (
-              <span>
-                {descriptors.map((descriptor) => (
-                  <Badge
-                    key={descriptor.key}
-                    variant="secondary"
-                    className="text-xs text-muted-foreground mx-1 "
-                  >
-                    {descriptor.label}
-                  </Badge>
-                ))}
-              </span>
-            )}
-          </div>
+          {descriptors.length > 0 ? (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {descriptors.map((descriptor) => (
+                <Badge
+                  key={descriptor.key}
+                  variant="outline"
+                  className="rounded-sm text-xs text-muted-foreground"
+                >
+                  {descriptor.label}
+                </Badge>
+              ))}
+            </div>
+          ) : null}
         </div>
         <SpellActionButtons spellId={spellId} />
       </div>
@@ -136,7 +146,7 @@ export default function SpellDetailPage() {
 
   if (!isValidId) {
     return (
-    <div className="page-side">
+      <div className="page-side">
         <Card className="gap-0">
           <CardHeader className="gap-1 py-3">
             <CardTitle>{t("Invalid spell id")}</CardTitle>

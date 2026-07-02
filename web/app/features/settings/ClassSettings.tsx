@@ -12,10 +12,10 @@ export default function ClassSettings() {
 
   return (
     <Card className="gap-0">
-      <CardHeader>
+      <CardHeader className="gap-1 py-3">
         <CardTitle>{t("Classes")}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2 py-2">
+      <CardContent className="space-y-2 pt-0">
         <Field orientation="horizontal">
           <Checkbox
             id={checkboxId}

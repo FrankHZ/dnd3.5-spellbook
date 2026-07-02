@@ -36,6 +36,11 @@ External tools such as Stitch, Figma, or public `DESIGN.md` examples may be used
 for inspiration, but production changes should be expressed through the current
 React Router, Tailwind v4, and local UI-wrapper patterns.
 
+External rules-reference apps and repos may also inform the pass. Use them to
+borrow structure, not skin: source labels, compact rules metadata, readable
+rule-text hierarchy, and scan-friendly indexes are in scope; parchment themes,
+ornamental borders, broad palette swaps, and full page rebrands are not.
+
 ## Source Material
 
 Start from:
@@ -90,6 +95,8 @@ Good candidates:
 - empty-state and validation-state consistency
 - button grouping and icon usage for repeated actions
 - badge and metadata spacing in spell rows and detail headers
+- source/page labels and section separators that make Spell Detail feel more
+  like a modern rules reference
 - top bar density and mobile menu fit
 - prepared sticky action surface readability
 - settings page visual hierarchy
@@ -98,6 +105,10 @@ Good candidates:
 Avoid changes where the main argument is only taste. If a styling change cannot
 be connected to readability, consistency, space efficiency, or bilingual fit,
 defer it.
+
+For v3.4, "rulebook style" means modern reference-book structure, not a theme
+overhaul. Defer typography experiments, global color-token changes, and
+decorative motifs unless they become explicit future work.
 
 ### 3. Implement In Small Reviewable Batches
 

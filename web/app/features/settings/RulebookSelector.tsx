@@ -99,70 +99,75 @@ export default function RulebookSelector() {
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="gap-0">
+      <CardHeader className="gap-1 py-3">
         <CardTitle>{t("Rulebooks")}</CardTitle>
         <CardDescription>
           {t("Leave empty to rely on backend default edition rulebooks.")}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 pt-0">
         {groups.map((g) => {
           const st = getEditionCheckState(g, selectedRulebookSet);
           const editionCheckboxId = `settings-edition-${g.edition.id}`;
 
           return (
-            <Card key={g.edition.id}>
-              <CardContent className="space-y-3 py-1">
-                <div className="flex items-center justify-between gap-4">
-                  <Field orientation="horizontal">
-                    <Checkbox
-                      id={editionCheckboxId}
-                      checked={
-                        st.all ? true : st.some ? "indeterminate" : false
-                      }
-                      onCheckedChange={(v) =>
-                        toggleEdition(g.edition.id, Boolean(v))
-                      }
-                    />
-                    <FieldLabel htmlFor={editionCheckboxId}>
-                      {g.edition.name}
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        ({g.edition.system}
-                        {g.edition.core ? ", core" : ""})
-                      </span>
-                    </FieldLabel>
-                  </Field>
-                  <div className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
-                    {st.count}/{st.total} {t("selected")}
-                  </div>
+            <div
+              key={g.edition.id}
+              className="space-y-3 rounded-md border bg-muted/10 px-4 py-3"
+            >
+              <div className="flex items-center justify-between gap-4">
+                <Field orientation="horizontal">
+                  <Checkbox
+                    id={editionCheckboxId}
+                    checked={st.all ? true : st.some ? "indeterminate" : false}
+                    onCheckedChange={(v) =>
+                      toggleEdition(g.edition.id, Boolean(v))
+                    }
+                  />
+                  <FieldLabel
+                    htmlFor={editionCheckboxId}
+                    className="select-text"
+                  >
+                    {g.edition.name}
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      ({g.edition.system}
+                      {g.edition.core ? ", core" : ""})
+                    </span>
+                  </FieldLabel>
+                </Field>
+                <div className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+                  {st.count}/{st.total} {t("selected")}
                 </div>
-                <Separator />
-                <FieldGroup className="grid gap-2 sm:grid-cols-2">
-                  {g.rulebooks.map((rb) => {
-                    const checked = selectedRulebookSet.has(rb.id);
-                    const rulebookCheckboxId = `settings-rulebook-${g.edition.id}-${rb.id}`;
-                    return (
-                      <Field key={rb.id} orientation="horizontal">
-                        <Checkbox
-                          id={rulebookCheckboxId}
-                          checked={checked}
-                          onCheckedChange={(v) =>
-                            toggleRulebook(rb.id, Boolean(v))
-                          }
-                        />
-                        <FieldLabel htmlFor={rulebookCheckboxId}>
-                          <span className="font-mono text-xs">{rb.abbr}</span>
-                          <span className="truncate">
-                            {metaName("rulebooks", rb)}
-                          </span>
-                        </FieldLabel>
-                      </Field>
-                    );
-                  })}
-                </FieldGroup>
-              </CardContent>
-            </Card>
+              </div>
+              <Separator />
+              <FieldGroup className="grid gap-2 sm:grid-cols-2">
+                {g.rulebooks.map((rb) => {
+                  const checked = selectedRulebookSet.has(rb.id);
+                  const rulebookCheckboxId = `settings-rulebook-${g.edition.id}-${rb.id}`;
+                  return (
+                    <Field key={rb.id} orientation="horizontal">
+                      <Checkbox
+                        id={rulebookCheckboxId}
+                        checked={checked}
+                        onCheckedChange={(v) =>
+                          toggleRulebook(rb.id, Boolean(v))
+                        }
+                      />
+                      <FieldLabel
+                        htmlFor={rulebookCheckboxId}
+                        className="select-text"
+                      >
+                        <span className="font-mono text-xs">{rb.abbr}</span>
+                        <span className="truncate">
+                          {metaName("rulebooks", rb)}
+                        </span>
+                      </FieldLabel>
+                    </Field>
+                  );
+                })}
+              </FieldGroup>
+            </div>
           );
         })}
       </CardContent>

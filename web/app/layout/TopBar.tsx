@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
-import { Menu } from "lucide-react";
+import { Menu, SearchIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   NavLink,
@@ -83,7 +83,7 @@ function TopBarSearch() {
 
   return (
     <Popover open={Boolean(error)}>
-      <div className="flex-1">
+      <div className="order-3 min-w-0 basis-full sm:order-none sm:basis-auto sm:flex-1">
         <PopoverAnchor asChild>
           <form className="flex gap-2" onSubmit={onSubmit}>
             <Input
@@ -92,8 +92,9 @@ function TopBarSearch() {
               placeholder={t("Search spells by name...")}
               aria-invalid={Boolean(error)}
             />
-            <Button type="submit" variant="outline">
-              {t("Search")}
+            <Button type="submit" variant="outline" className="shrink-0">
+              <SearchIcon className="size-4" />
+              <span className="hidden sm:inline">{t("Search")}</span>
             </Button>
           </form>
         </PopoverAnchor>
@@ -236,13 +237,16 @@ export default function TopBar() {
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur">
-      <div className="flex items-center gap-3 px-4 py-3">
-        <NavLink to="/browse" className="font-bold whitespace-nowrap">
+      <div className="flex flex-wrap items-center gap-2 px-3 py-2 sm:flex-nowrap sm:gap-3 sm:px-4 sm:py-3">
+        <NavLink
+          to="/browse"
+          className="min-w-0 flex-1 truncate text-sm font-bold sm:flex-none sm:text-base"
+        >
           {t("D&D 3.5 Spellbook")}
         </NavLink>
 
-        <TopBarSearch />
         <MobileNavMenu />
+        <TopBarSearch />
         <TopBarNav />
         <div className="hidden md:block">
           <LangToggle />
