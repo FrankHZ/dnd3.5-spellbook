@@ -1,13 +1,13 @@
 {
-  "All": "全选",
-  "Clear": "清空",
-  "Done": "完成",
-  "Failed to load rules data. Refresh to retry.": "读取规则书数据失败。刷新重试。",
-  "Filter...": "过滤",
-  "Loading rules data...": "读取规则书数据……",
-  "No items found.": "没找到！",
-  "No matches.": "没找到！",
-  "Remove {{name}}": "移除{{name}}",
-  "Selected": "已选择",
-  "View All...": "列表..."
+  "actions.clear": "清空",
+  "actions.done": "完成",
+  "actions.remove-name": "移除{{name}}",
+  "bootstrap.load-failed": "读取规则书数据失败。刷新重试。",
+  "bootstrap.loading": "读取规则书数据……",
+  "picker.all": "全选",
+  "picker.filter-placeholder": "过滤",
+  "picker.no-items": "没找到！",
+  "picker.no-matches": "没找到！",
+  "picker.selected": "已选择",
+  "picker.view-all": "列表..."
 }

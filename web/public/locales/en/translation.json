@@ -1,13 +1,13 @@
 {
-  "All": "All",
-  "Clear": "Clear",
-  "Done": "Done",
-  "Failed to load rules data. Refresh to retry.": "Failed to load rules data. Refresh to retry.",
-  "Filter...": "Filter...",
-  "Loading rules data...": "Loading rules data...",
-  "No items found.": "No items found.",
-  "No matches.": "No matches.",
-  "Remove {{name}}": "Remove {{name}}",
-  "Selected": "Selected",
-  "View All...": "View All..."
+  "actions.clear": "Clear",
+  "actions.done": "Done",
+  "actions.remove-name": "Remove {{name}}",
+  "bootstrap.load-failed": "Failed to load rules data. Refresh to retry.",
+  "bootstrap.loading": "Loading rules data...",
+  "picker.all": "All",
+  "picker.filter-placeholder": "Filter...",
+  "picker.no-items": "No items found.",
+  "picker.no-matches": "No matches.",
+  "picker.selected": "Selected",
+  "picker.view-all": "View All..."
 }

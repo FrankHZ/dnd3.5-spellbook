@@ -77,13 +77,13 @@ export function MultiSelectPicker(props: {
   }, [items, filter]);
 
   const { t } = useTranslation();
-  const resolvedPlaceholder = placeholder ?? t("Filter...");
+  const resolvedPlaceholder = placeholder ?? t("picker.filter-placeholder");
 
   // group in dialog
   const groups = React.useMemo(() => {
     const m = new Map<string, PickerItem[]>();
     for (const it of filteredItems) {
-      const g = it.group ?? t("All");
+      const g = it.group ?? t("picker.all");
       const arr = m.get(g) ?? [];
       arr.push(it);
       m.set(g, arr);
@@ -114,14 +114,14 @@ export function MultiSelectPicker(props: {
         <div className="flex items-center gap-2">
           {selectedIds.length > 0 && (
             <Button variant="ghost" size="sm" onClick={clearAll}>
-              {t("Clear")}
+              {t("actions.clear")}
             </Button>
           )}
 
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
-                {t("View All...")}
+                {t("picker.view-all")}
               </Button>
             </DialogTrigger>
 
@@ -136,7 +136,7 @@ export function MultiSelectPicker(props: {
                   onValueChange={setFilter}
                 />
                 <CommandList className="max-h-[60vh]">
-                  <CommandEmpty>{t("No matches.")}</CommandEmpty>
+                  <CommandEmpty>{t("picker.no-matches")}</CommandEmpty>
 
                   {groups.map(([groupName, groupItems]) => (
                     <CommandGroup key={groupName} heading={groupName}>
@@ -151,7 +151,7 @@ export function MultiSelectPicker(props: {
                             <span className="truncate">{it.name}</span>
                             {checked && (
                               <span className="text-xs text-muted-foreground">
-                                {t("Selected")}
+                                {t("picker.selected")}
                               </span>
                             )}
                           </CommandItem>
@@ -164,7 +164,7 @@ export function MultiSelectPicker(props: {
 
               <div className="pt-2 flex justify-end">
                 <Button variant="outline" onClick={() => setOpen(false)}>
-                  {t("Done")}
+                  {t("actions.done")}
                 </Button>
               </div>
             </DialogContent>
@@ -185,7 +185,7 @@ export function MultiSelectPicker(props: {
                       variant="ghost"
                       size="icon-xs"
                       onClick={() => remove(value.id)}
-                      aria-label={t("Remove {{name}}", { name: value.name })}
+                      aria-label={t("actions.remove-name", { name: value.name })}
                       type="button"
                     >
                       <X className="h-3 w-3" />
@@ -198,7 +198,7 @@ export function MultiSelectPicker(props: {
           </ComboboxValue>
         </ComboboxChips>
         <ComboboxContent anchor={anchor}>
-          <ComboboxEmpty>{t("No items found.")}</ComboboxEmpty>
+          <ComboboxEmpty>{t("picker.no-items")}</ComboboxEmpty>
           <ComboboxList>
             {(item: PickerItem) => (
               <ComboboxItem

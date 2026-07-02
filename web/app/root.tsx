@@ -39,12 +39,12 @@ function BootstrapBanner() {
   const boot = useBootstrap(state.includePrestige);
 
   if (boot.isLoading) {
-    return <div className="p-4 border-b">{t("Loading rules data...")}</div>;
+    return <div className="p-4 border-b">{t("bootstrap.loading")}</div>;
   }
   if (boot.error) {
     return (
       <div className="p-4 border-b text-red-600">
-        {t("Failed to load rules data. Refresh to retry.")}
+        {t("bootstrap.load-failed")}
       </div>
     );
   }

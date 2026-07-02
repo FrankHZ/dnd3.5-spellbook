@@ -121,18 +121,5 @@
     "{{resolved}} resolved | {{conflicts}} conflict(s) | {{notFound}} not found",
     "{{spellCount}} spells.",
     "{{summary}}. Total level adj: +{{adj}}."
-  ],
-  "translation": [
-    "All",
-    "Clear",
-    "Done",
-    "Failed to load rules data. Refresh to retry.",
-    "Filter...",
-    "Loading rules data...",
-    "No items found.",
-    "No matches.",
-    "Remove {{name}}",
-    "Selected",
-    "View All..."
   ]
 }
