@@ -127,6 +127,7 @@ This slice intentionally runs portable checks only:
 ```bash
 npm run build:contracts
 npm run check:contracts
+npm run -w server db:generate
 npm run build:server
 npm run typecheck:data-tools
 npm run test:data-tools
@@ -208,6 +209,7 @@ Initial implemented workflow:
 - runs on Ubuntu with Node 24.x
 - installs with `npm ci`
 - runs `npm run ci:portable`
+- generates Prisma clients from checked-in schemas before building the server
 
 Initial triggers:
 

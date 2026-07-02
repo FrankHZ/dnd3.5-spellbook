@@ -17,7 +17,7 @@
     "test:server": "npm run -w server test -- --run",
     "test:web": "npm run -w web test -- --run",
     "typecheck:web": "npm run -w web typecheck",
-    "ci:portable": "npm run build:contracts && npm run check:contracts && npm run build:server && npm run typecheck:data-tools && npm run test:data-tools && npm run test:web && npm run typecheck:web && npm run -w web build",
+    "ci:portable": "npm run build:contracts && npm run check:contracts && npm run -w server db:generate && npm run build:server && npm run typecheck:data-tools && npm run test:data-tools && npm run test:web && npm run typecheck:web && npm run -w web build",
     "i18n:sync": "npm run -w web i18n:sync",
     "i18n:check": "npm run -w web i18n:check",
     "i18n:diff": "npm run -w web i18n:diff",
