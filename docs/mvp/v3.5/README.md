@@ -18,8 +18,9 @@ separate from active v3.4 implementation branches.
    DnDTools-style source abbreviations or slugs.
 5. Review `AGENTS.md` together with feature and workflow docs so agent guidance,
    feature maps, and future module docs have clear ownership.
-6. Add CI around the current unit/API/typecheck spine, keep E2E out of initial
-   scope, and plan CD as a thin wrapper around the existing deployment scripts.
+6. Review dependencies, apply safe updates with lockfile validation, add CI
+   around the current unit/API/typecheck spine, keep E2E out of initial scope,
+   and plan CD as a thin wrapper around the existing deployment scripts.
 7. Add merge-to-main agent automation for high-level module design docs so
    ordinary feature branches can stay focused on scoped feature documentation.
 

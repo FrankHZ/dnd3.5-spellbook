@@ -17,7 +17,8 @@ and app-owned overlays into a more maintainable content platform:
 - legacy rules data becomes an upstream source, not the permanent runtime schema
 - normalized rules facets can power finer Browse/Search behavior
 - frontend consumers add those facets deliberately
-- docs and CI/CD make agent work safer instead of more ceremonial
+- dependency maintenance, docs, and CI/CD make agent work safer instead of more
+  ceremonial
 
 Large content-release goals such as bulk Chinese/English translation QA,
 `data/spells-full` completion imports, static/offline HTML artifacts, and
@@ -139,7 +140,24 @@ Expected order:
 Browse remains filter-first. Search remains name-first. Settings owns broad
 preferences, not ordinary URL-scoped facet selections.
 
-### 6. Make CI Portable
+### 6. Review And Update Dependencies
+
+Run dependency inventory and safe updates before CI and broad v3.5
+implementation branches settle around old tooling assumptions.
+
+Primary plan:
+
+- `ci-cd-and-module-docs-plan.md`
+
+Expected output:
+
+- dependency inventory across root and workspaces
+- chosen safe updates applied in a dedicated branch
+- major or risky updates explicitly deferred with a reason
+- lockfile review plus `npm run verify`, `npm run -w web build`, and
+  data-tools local acceptance when relevant
+
+### 7. Make CI Portable
 
 Add CI once the validation spine can run from a clean checkout. Do not make CI
 depend on ignored runtime DB files.
@@ -155,7 +173,7 @@ Expected output:
 - GitHub Actions on pull requests and pushes to `main`
 - browser E2E still deferred
 
-### 7. Keep CD Script-Backed
+### 8. Keep CD Script-Backed
 
 Keep deployment behavior in the tracked scripts and add only thin wrappers or
 manual dispatch around them.
@@ -171,7 +189,7 @@ Expected output:
 - automatic deploy waits until secrets, host targeting, and rollback behavior
   are explicit
 
-### 8. Clean Up Agent And Module Docs
+### 9. Clean Up Agent And Module Docs
 
 After the structural work is planned clearly, shrink `AGENTS.md` back toward an
 execution guide and add merge-to-main module-doc automation.
@@ -198,6 +216,7 @@ Expected output:
 | Backend facets vs frontend controls | rules normalization, frontend consumer | No conflict. Backend contract and metadata vocabulary land before broad UI controls. Frontend does not parse legacy DB strings. |
 | Search semantics vs Browse semantics | frontend consumer, features map | No conflict. Browse stays filter-first; Search stays name-first while accepting the same structured scope. |
 | Settings vs URL state | frontend consumer | No conflict. Settings owns broad defaults. Ordinary Browse/Search facet selections stay in URL state. |
+| Dependency updates vs feature branches | CI/CD, all implementation plans | No conflict. v3.5 should do dependency review in a dedicated branch before broad implementation, and feature branches should only carry dependency updates when explicitly blocked. |
 | CI vs local data | CI/CD, rules normalization, data harness | No conflict, but implementation must create portable fixtures or preparation commands before enabling backend API tests in CI. Ignored local DBs cannot be CI inputs. |
 | CD vs deploy scripts | CI/CD, deployment docs | No conflict. CD wrappers call tracked scripts; deploy logic stays in `docs/deployment-scripts/`. |
 | AGENTS vs docs index | agent guide, CI/CD module docs, this plan | No conflict. `docs/README.md` is the map, this plan is v3.5 coordination, and `AGENTS.md` should shrink after the review. |
@@ -233,12 +252,13 @@ metadata, likely in the content DB, and should not mutate legacy `slug` or
 `abbr`. It can ship before or after normalized spell facets as long as UI helper
 fallback behavior is tested.
 
-### CI/CD And Module Docs
+### CI/CD, Dependency Review, And Module Docs
 
-Reviewed against DB/content plans. CI must wait for portable DB fixtures or
-preparation commands. CD remains script-backed and should not become a parallel
-deployment implementation. Module-doc automation should be non-blocking and
-docs-only.
+Reviewed against DB/content plans. Dependency review should land in a dedicated
+maintenance branch before broad v3.5 implementation. CI must wait for portable
+DB fixtures or preparation commands. CD remains script-backed and should not
+become a parallel deployment implementation. Module-doc automation should be
+non-blocking and docs-only.
 
 ### Agent Guide Review
 
@@ -252,5 +272,6 @@ safety rules. Detailed sequencing belongs here, not in `AGENTS.md`.
 - Each child plan has a clear role in the delivery sequence.
 - Cross-plan boundaries are reviewed and have no unresolved ownership conflict.
 - Long-term content artifact goals remain outside v3.5 scope.
+- Dependency review and update policy is part of v3.5 infrastructure planning.
 - Future v3.5 implementation branches can choose a slice by reading this file
   first, then the relevant child plan.

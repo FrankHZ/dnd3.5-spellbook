@@ -1,4 +1,4 @@
-# CI/CD And Module Docs Automation Plan
+# CI/CD, Dependency Review, And Module Docs Automation Plan
 
 Status: planned v3.5 delivery and documentation automation review.
 
@@ -19,6 +19,11 @@ Deployment is already documented and backed by tracked scripts under
 `docs/deployment-scripts/`. v3.5 should wrap or trigger that existing behavior
 rather than inventing a separate deployment path.
 
+Dependency updates are still mostly reactive. Recent TypeScript/tooling
+deprecation warnings make this worth treating as a planned v3.5 maintenance
+lane, so dependency updates happen with inventory, lockfile review, and
+validation instead of being bundled into unrelated feature branches.
+
 ## Goals
 
 - Add a CI gate around the existing validation spine once it can run from a
@@ -26,6 +31,8 @@ rather than inventing a separate deployment path.
 - Keep browser E2E out of the initial CI scope; the project has better ROI from
   the current unit/API/typecheck suite.
 - Preserve the tracked deployment scripts as the CD source of truth.
+- Review and update dependencies intentionally before broad v3.5 implementation
+  work starts.
 - Add a merge-to-main documentation automation path that refreshes high-level
   module design docs from accepted changes.
 - Let ordinary feature branches focus on the nearest feature plan or feature
@@ -41,6 +48,10 @@ rather than inventing a separate deployment path.
 - Do not allow an agent job to push implementation code directly to `main`.
 - Do not make generated high-level docs the only source of truth for shipped
   behavior; focused feature docs and code remain review inputs.
+- Do not bundle major dependency upgrades into unrelated feature branches unless
+  a feature is explicitly blocked by that upgrade.
+- Do not chase latest versions without a validation path and a hold/defer
+  decision for risky packages.
 
 ## Existing Inputs
 
@@ -60,6 +71,14 @@ Current aggregate command:
 ```bash
 npm run verify
 ```
+
+Current dependency surfaces to review:
+
+- root `package-lock.json`
+- root and workspace `package.json` files
+- TypeScript config deprecation settings
+- React Router, Vite, Prisma, Vitest, Tailwind, ESLint/Prettier, and shared
+  TypeScript packages
 
 Current deployment scripts:
 
@@ -96,7 +115,41 @@ after inspection:
 The CI implementation should not commit real runtime DB files or raw local data
 sources.
 
-### 2. Add The CI Workflow
+### 2. Review And Update Dependencies
+
+Run a dependency inventory before broad v3.5 implementation work:
+
+```bash
+npm outdated --workspaces
+npm audit --omit=dev
+```
+
+Use audit as an advisory signal, not as an automatic upgrade mandate.
+
+Classify candidates as:
+
+- safe patch/minor updates
+- major or ecosystem updates that need focused review
+- deferred updates with a short reason
+
+Keep dependency updates in a dedicated branch, such as `codex/deps-v3-5`, unless
+a feature branch is explicitly blocked by the update.
+
+After applying chosen updates:
+
+```bash
+npm install
+npm run verify
+npm run -w web build
+```
+
+Also run `npm run -w data-tools acceptance:local` when data tooling, TypeScript,
+Prisma, parser, or SQLite-facing dependencies changed.
+
+Inspect `package-lock.json` before commit and document held-back major upgrades
+in this plan or a focused follow-up note under `docs/mvp/v3.5/`.
+
+### 3. Add The CI Workflow
 
 Add a GitHub Actions workflow after the validation spine is portable.
 
@@ -115,7 +168,7 @@ The first CI pass should avoid matrix expansion unless a concrete compatibility
 need appears. A single current Node LTS target is enough for this personal
 project stage.
 
-### 3. Keep CD Script-Backed
+### 4. Keep CD Script-Backed
 
 Keep `docs/deployment.md` and `docs/deployment-scripts/` as the deployment
 contract.
@@ -132,7 +185,7 @@ not a copy of their logic. Acceptable v3.5 shapes:
 
 The scripts themselves remain the place to change deployment behavior.
 
-### 4. Add Merge-To-Main Module Doc Automation
+### 5. Add Merge-To-Main Module Doc Automation
 
 On accepted merges to `main`, trigger an agent job that reviews the merged diff
 and refreshes high-level module design docs.
@@ -163,7 +216,7 @@ The agent job should start as non-blocking. CI should protect implementation
 quality; the module-doc job should reduce drift without blocking emergency
 fixes.
 
-### 5. Review Documentation Boundaries
+### 6. Review Documentation Boundaries
 
 Review `AGENTS.md` together with feature and module documentation so each doc
 has a narrow job:
@@ -190,6 +243,9 @@ The intended feature workflow after v3.5:
   browser E2E.
 - CI can run from a clean checkout without ignored local DB files or raw local
   data sources.
+- Dependency review is documented before broad v3.5 implementation starts.
+- Safe dependency updates are either applied with lockfile review and validation
+  or explicitly deferred with a reason.
 - CD remains backed by `docs/deployment-scripts/`; workflow wrappers do not
   duplicate deployment logic.
 - Merge-to-main module-doc automation is documented and either implemented or
@@ -206,3 +262,5 @@ The intended feature workflow after v3.5:
   automatically after `main` CI succeeds?
 - Which minimal backend test fixture strategy gives the best balance between
   portability and realism?
+- Should dependency review become a scheduled maintenance task after v3.5, or
+  stay a release-readiness checklist item?

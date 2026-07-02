@@ -171,13 +171,14 @@ topic-specific child plans.
    `.agents/skills/commit-message/SKILL.md` from the active worktree instead of
    probing user-level paths first.
 
-6. **CI/CD and module-doc automation**
+6. **CI/CD, dependency review, and module-doc automation**
 
    Use `docs/mvp/v3.5/ci-cd-and-module-docs-plan.md` to add CI around the
-   existing unit/API/typecheck validation spine, keep browser E2E out of the
-   first CI scope, preserve CD as a thin wrapper around the current deployment
-   scripts, and design a merge-to-main agent job that refreshes high-level
-   module design docs after accepted changes.
+   existing unit/API/typecheck validation spine, review and update dependencies
+   in a dedicated maintenance lane, keep browser E2E out of the first CI scope,
+   preserve CD as a thin wrapper around the current deployment scripts, and
+   design a merge-to-main agent job that refreshes high-level module design docs
+   after accepted changes.
 
 ## Later Stable Track
 

@@ -78,9 +78,9 @@ plan covers curated English rulebook abbreviations and Chinese full-name display
 labels without mutating legacy source slugs or rulebook IDs. The agent guide
 review plan covers shrinking `AGENTS.md` back into an execution guide,
 clarifying repo-local skill path resolution, and reviewing feature/workflow doc
-boundaries. The CI/CD and module-docs plan covers clean-checkout CI,
-script-backed CD, and merge-to-main agent automation for high-level module
-design docs.
+boundaries. The CI/CD, dependency review, and module-docs plan covers
+clean-checkout CI, dependency inventory and safe updates, script-backed CD, and
+merge-to-main agent automation for high-level module design docs.
 
 ## Current Operational Docs
 

@@ -54,8 +54,9 @@ Start with these files when orienting:
     contract fields.
 15. `docs/mvp/v3.5/agent-guide-review-plan.md` before broadly restructuring
     this agent guide or moving agent-facing workflow rules.
-16. `docs/mvp/v3.5/ci-cd-and-module-docs-plan.md` before adding CI workflows,
-    CD wrappers, or merge-triggered module documentation automation.
+16. `docs/mvp/v3.5/ci-cd-and-module-docs-plan.md` before dependency review or
+    updates, adding CI workflows, CD wrappers, or merge-triggered module
+    documentation automation.
 17. `docs/mvp/v3.3/FREEZE.md` for the latest frozen release snapshot.
 18. `docs/mvp/v3.3/acceptance-checklist.md` when checking v3.3 acceptance
    evidence.
