@@ -1,12 +1,12 @@
 {
-  "Browse": "浏览",
-  "Chinese": "中文",
-  "D&D 3.5 Spellbook": "D&D 3.5 法术不大全",
-  "English": "英文",
-  "Favorites": "收藏",
-  "Language": "语言",
-  "Open navigation": "打开导航",
-  "Prepared": "准备",
-  "Settings": "设置",
-  "Spellbooks": "自定义法表"
+  "brand.title": "D&D 3.5 法术不大全",
+  "language.chinese": "中文",
+  "language.english": "英文",
+  "language.label": "语言",
+  "nav.browse": "浏览",
+  "nav.favorites": "收藏",
+  "nav.open": "打开导航",
+  "nav.prepared": "准备",
+  "nav.settings": "设置",
+  "nav.spellbooks": "自定义法表"
 }

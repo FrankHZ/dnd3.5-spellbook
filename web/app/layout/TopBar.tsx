@@ -116,27 +116,27 @@ function useTopBarItems() {
   const { pathname } = useLocation();
 
   return [
-    { to: "/browse", label: t("Browse"), active: pathname === "/browse" },
+    { to: "/browse", label: t("nav.browse"), active: pathname === "/browse" },
     {
       to: "/spellbooks/default",
-      label: t("Favorites"),
+      label: t("nav.favorites"),
       active: pathname === "/spellbooks/default",
     },
     {
       to: "/spellbooks/prepared",
-      label: t("Prepared"),
+      label: t("nav.prepared"),
       active: pathname === "/spellbooks/prepared",
     },
     {
       to: "/spellbooks",
-      label: t("Spellbooks"),
+      label: t("nav.spellbooks"),
       active:
         pathname === "/spellbooks" ||
         (pathname.startsWith("/spellbooks/") &&
           pathname !== "/spellbooks/default" &&
           pathname !== "/spellbooks/prepared"),
     },
-    { to: "/settings", label: t("Settings"), active: pathname === "/settings" },
+    { to: "/settings", label: t("nav.settings"), active: pathname === "/settings" },
   ];
 }
 
@@ -172,14 +172,14 @@ function MobileNavMenu() {
           variant="outline"
           size="icon-sm"
           className="md:hidden"
-          aria-label={t("Open navigation")}
+          aria-label={t("nav.open")}
         >
           <Menu className="size-4" />
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="w-72 gap-0">
         <SheetHeader className="border-b pb-4">
-          <SheetTitle>{t("D&D 3.5 Spellbook")}</SheetTitle>
+          <SheetTitle>{t("brand.title")}</SheetTitle>
         </SheetHeader>
         <div className="flex flex-col gap-2 p-4">
           {items.map((item) => (
@@ -216,16 +216,16 @@ function LangToggle() {
       value={lang}
       variant="outline"
       size="sm"
-      aria-label={t("Language")}
+      aria-label={t("language.label")}
       onValueChange={(value) => {
         if (value !== "en" && value !== "zh") return;
         setState((s) => ({ ...s, uiPrefs: { ...s.uiPrefs, lang: value } }));
       }}
     >
-      <ToggleGroupItem value="en" aria-label={t("English")}>
+      <ToggleGroupItem value="en" aria-label={t("language.english")}>
         EN
       </ToggleGroupItem>
-      <ToggleGroupItem value="zh" aria-label={t("Chinese")}>
+      <ToggleGroupItem value="zh" aria-label={t("language.chinese")}>
         中
       </ToggleGroupItem>
     </ToggleGroup>
@@ -242,7 +242,7 @@ export default function TopBar() {
           to="/browse"
           className="min-w-0 flex-1 truncate text-sm font-bold sm:flex-none sm:text-base"
         >
-          {t("D&D 3.5 Spellbook")}
+          {t("brand.title")}
         </NavLink>
 
         <MobileNavMenu />

@@ -1,12 +1,12 @@
 {
-  "Browse": "Browse",
-  "Chinese": "Chinese",
-  "D&D 3.5 Spellbook": "D&D 3.5 Spellbook",
-  "English": "English",
-  "Favorites": "Favorites",
-  "Language": "Language",
-  "Open navigation": "Open navigation",
-  "Prepared": "Prepared",
-  "Settings": "Settings",
-  "Spellbooks": "Spellbooks"
+  "brand.title": "D&D 3.5 Spellbook",
+  "language.chinese": "Chinese",
+  "language.english": "English",
+  "language.label": "Language",
+  "nav.browse": "Browse",
+  "nav.favorites": "Favorites",
+  "nav.open": "Open navigation",
+  "nav.prepared": "Prepared",
+  "nav.settings": "Settings",
+  "nav.spellbooks": "Spellbooks"
 }
