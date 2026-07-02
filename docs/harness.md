@@ -23,8 +23,13 @@ Useful commands:
 
 ```bash
 npm run verify
+npm run ci:portable
 npm run -w data-tools test:portable
 ```
+
+`npm run ci:portable` is the clean-checkout subset used by GitHub Actions. It
+excludes backend API tests until the ignored local SQLite dependency is replaced
+with fixtures or a disposable test DB preparation command.
 
 Or run the pieces individually:
 

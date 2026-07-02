@@ -1,6 +1,8 @@
 # CI/CD, Dependency Review, And Module Docs Automation Plan
 
-Status: planned v3.5 delivery and documentation automation review.
+Status: first portable CI slice implemented; backend API fixture work,
+dependency update application, CD wrappers, and module-doc automation remain
+planned v3.5 follow-up work.
 
 ## Problem
 
@@ -115,6 +117,30 @@ after inspection:
 The CI implementation should not commit real runtime DB files or raw local data
 sources.
 
+Initial implemented slice:
+
+- root `npm run ci:portable`
+- `.github/workflows/ci.yml`
+
+This slice intentionally runs portable checks only:
+
+```bash
+npm run build:contracts
+npm run check:contracts
+npm run build:server
+npm run typecheck:data-tools
+npm run test:data-tools
+npm run test:web
+npm run typecheck:web
+npm run -w web build
+```
+
+It does not run `npm run test:server` yet because the current API tests import
+the runtime app and query ignored local SQLite files through `server/.env`.
+Keep root `npm run verify` as the local full validation command until backend
+API fixtures or disposable test DB preparation make those tests clean-checkout
+portable.
+
 ### 2. Review And Update Dependencies
 
 Run a dependency inventory before broad v3.5 implementation work:
@@ -149,16 +175,38 @@ Prisma, parser, or SQLite-facing dependencies changed.
 Inspect `package-lock.json` before commit and document held-back major upgrades
 in this plan or a focused follow-up note under `docs/mvp/v3.5/`.
 
+Initial dependency inventory, 2026-07-02:
+
+- Safe patch/minor candidates: Radix UI packages, `@tailwindcss/vite`,
+  `tailwindcss`, `radix-ui`, `immer`, `i18next-cli`, and `tsx`.
+- Major or ecosystem candidates to defer into focused branches: React Router 8,
+  Vite 8, `i18next` 26, `i18next-http-backend` 4, `react-i18next` 17,
+  `lucide-react` 1, `shadcn` 4, `vite-tsconfig-paths` 6, and `@types/node` 26.
+- `npm audit --omit=dev` reports three moderate advisories through the Prisma
+  dev dependency chain (`@prisma/dev` -> `@hono/node-server`). The suggested
+  `npm audit fix --force` would downgrade/install Prisma 6.19.3 from the
+  current Prisma 7 line, so do not apply it automatically. Recheck after a
+  Prisma 7-compatible advisory fix is available or when doing a focused Prisma
+  dependency branch.
+
 ### 3. Add The CI Workflow
 
 Add a GitHub Actions workflow after the validation spine is portable.
+
+Initial implemented workflow:
+
+- `.github/workflows/ci.yml`
+- triggers on pull requests and pushes to `main`
+- runs on Ubuntu with Node 24.x
+- installs with `npm ci`
+- runs `npm run ci:portable`
 
 Initial triggers:
 
 - `pull_request` for normal branch review
 - `push` to `main` after merges
 
-Initial checks:
+Future full checks after backend API fixtures exist:
 
 - install dependencies with `npm ci`
 - run any explicit generation step required for Prisma clients or contracts
@@ -239,10 +287,12 @@ The intended feature workflow after v3.5:
 ## Acceptance Criteria
 
 - CI runs on pull requests and pushes to `main`.
-- The initial CI gate runs the existing unit/API/typecheck spine rather than
-  browser E2E.
+- The first CI gate runs the portable subset of the existing
+  build/unit/typecheck spine rather than browser E2E.
 - CI can run from a clean checkout without ignored local DB files or raw local
   data sources.
+- Backend API tests have a documented fixture/preparation gap before they can
+  join CI.
 - Dependency review is documented before broad v3.5 implementation starts.
 - Safe dependency updates are either applied with lockfile review and validation
   or explicitly deferred with a reason.
