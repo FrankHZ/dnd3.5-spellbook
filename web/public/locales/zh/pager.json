@@ -1,6 +1,6 @@
 {
-  "Next": "后一页",
-  "Prev": "前一页",
-  "Showing {{start}}-{{end}} of {{total}}": "第{{start}}-{{end}}个，共{{total}}个",
-  "Showing 0 of 0": "共0个"
+  "actions.next": "后一页",
+  "actions.prev": "前一页",
+  "range.empty": "共0个",
+  "range.page": "第{{start}}-{{end}}个，共{{total}}个"
 }

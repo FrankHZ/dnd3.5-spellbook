@@ -1,6 +1,6 @@
 {
-  "Next": "Next",
-  "Prev": "Prev",
-  "Showing {{start}}-{{end}} of {{total}}": "Showing {{start}}-{{end}} of {{total}}",
-  "Showing 0 of 0": "Showing 0 of 0"
+  "actions.next": "Next",
+  "actions.prev": "Prev",
+  "range.empty": "Showing 0 of 0",
+  "range.page": "Showing {{start}}-{{end}} of {{total}}"
 }

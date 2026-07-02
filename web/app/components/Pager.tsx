@@ -29,10 +29,10 @@ function rangeText(
   pageSize: number,
   total: number,
 ) {
-  if (total <= 0) return t("Showing 0 of 0");
+  if (total <= 0) return t("range.empty");
   const start = (page - 1) * pageSize + 1;
   const end = Math.min(page * pageSize, total);
-  return t("Showing {{start}}-{{end}} of {{total}}", { start, end, total });
+  return t("range.page", { start, end, total });
 }
 
 function buildPageTokens(currentPage: number, totalPages: number) {
@@ -102,7 +102,7 @@ export default function Pager({
           <PaginationItem>
             <PaginationLink
               href={`?page=${Math.max(1, page - 1)}`}
-              aria-label={t("Prev")}
+              aria-label={t("actions.prev")}
               aria-disabled={!hasPrev || isBusy}
               tabIndex={!hasPrev || isBusy ? -1 : undefined}
               className={cn(
@@ -141,7 +141,7 @@ export default function Pager({
           <PaginationItem>
             <PaginationLink
               href={`?page=${Math.min(totalPages, page + 1)}`}
-              aria-label={t("Next")}
+              aria-label={t("actions.next")}
               aria-disabled={!hasNext || isBusy}
               tabIndex={!hasNext || isBusy ? -1 : undefined}
               className={cn(

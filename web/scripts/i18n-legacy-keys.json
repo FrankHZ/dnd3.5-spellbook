@@ -122,12 +122,6 @@
     "{{spellCount}} spells.",
     "{{summary}}. Total level adj: +{{adj}}."
   ],
-  "pager": [
-    "Next",
-    "Prev",
-    "Showing 0 of 0",
-    "Showing {{start}}-{{end}} of {{total}}"
-  ],
   "settings": [
     "Classes",
     "Include prestige classes (affects Browse class list)",
