@@ -8,6 +8,6 @@ export default defineConfig({
     output: "extracted/{{language}}/{{namespace}}.json",
     keySeparator: ">",
     nsSeparator: "::",
-    ignoreNamespaces: ["metamagic"],
+    ignoreNamespaces: IGNORED,
   },
 });

@@ -32,7 +32,7 @@ The current scale is already large enough to justify tightening the workflow:
 - locale source files: `web/public/locales/{en,zh}/`
 - namespaces: `translation`, `topbar`, `pager`, `collections`,
   `collections-default`, `metamagic`, `settings`, `spell-browse`,
-  `spell-search`, `spell-detail`
+  `spell-scope`, `spell-search`, `spell-detail`
 - active i18next call sites: many feature components plus root/layout helpers
 - current sync wrapper: `web/scripts/i18next-sync.ts`
 
@@ -150,6 +150,7 @@ Recommended ownership:
 - `pager`: shared pagination component
 - `settings`: Settings page and setting controls
 - `spell-browse`: Browse page and Browse-only controls
+- `spell-scope`: shared Browse/Search spell-filter scope summary
 - `spell-search`: Search page, search validation, and Search-only controls
 - `spell-detail`: Spell detail page and detail sections
 - `collections`: spellbooks, favorites, prepared books, import/export, copy
@@ -204,8 +205,9 @@ Suggested output:
   - new keys that look like raw English sentences
   - keys containing tabs or newlines
   - keys containing interpolation as part of the id
-  - locale key-set mismatch between `en` and `zh`, except approved ignored
-    namespaces
+- locale key-set mismatch between `en` and `zh`, except approved ignored
+    namespaces; compare by normalized plural base key so language-specific
+    plural categories do not create false mismatches
   - plural base keys missing `_one` or `_other` when used with `count`
 - Wire the audit into `npm run i18n:check` after the current extractor check.
 
