@@ -1,5 +1,11 @@
 {
-  "filters.summary": "筛选：{{classCount}}个职业，{{domainCount}}个领域，环数{{level}}。",
+  "classes.none": "未筛职业",
+  "classes.selected_one": "{{count}}个职业",
+  "classes.selected_other": "{{count}}个职业",
+  "domains.none": "未筛领域",
+  "domains.selected_one": "{{count}}个领域",
+  "domains.selected_other": "{{count}}个领域",
+  "filters.summary": "筛选：{{classes}}，{{domains}}，环数{{level}}。",
   "level.all": "全部环数",
   "level.any": "任意环数",
   "level.not-selected": "未选择",

@@ -24,12 +24,24 @@ export function SpellFilterScopeSummary({
       : level === "all"
         ? t("level.all")
         : String(level);
+  const classScopeLabel =
+    classCount > 0
+      ? t("classes.selected", { count: classCount })
+      : t("classes.none");
+  const domainScopeLabel =
+    domainCount > 0
+      ? t("domains.selected", { count: domainCount })
+      : t("domains.none");
 
   return (
     <div className="rounded-md border bg-muted/30 px-3 py-2 text-xs leading-5 text-muted-foreground sm:flex sm:items-center sm:justify-between sm:gap-3 sm:text-sm">
       <div className="min-w-0">
         {t("filters.summary",
-          { classCount, domainCount, level: levelLabel },
+          {
+            classes: classScopeLabel,
+            domains: domainScopeLabel,
+            level: levelLabel,
+          },
         )}
       </div>
       <div className="min-w-0">

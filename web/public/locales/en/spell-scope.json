@@ -1,5 +1,11 @@
 {
-  "filters.summary": "Filters: {{classCount}} class filters, {{domainCount}} domain filters, level {{level}}.",
+  "classes.none": "no class filter",
+  "classes.selected_one": "{{count}} class filter",
+  "classes.selected_other": "{{count}} class filters",
+  "domains.none": "no domain filter",
+  "domains.selected_one": "{{count}} domain filter",
+  "domains.selected_other": "{{count}} domain filters",
+  "filters.summary": "Filters: {{classes}}, {{domains}}, level {{level}}.",
   "level.all": "all levels",
   "level.any": "any level",
   "level.not-selected": "not selected",
