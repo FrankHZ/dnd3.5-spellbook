@@ -9,21 +9,21 @@ export default function ComponentsSection({
 }) {
   const { t } = useTranslation("spell-detail");
   const chips = [
-    components.V && t("V"),
-    components.S && t("S"),
-    components.M && t("M"),
-    components.AF && t("AF"),
-    components.DF && t("DF"),
-    components.XP && t("XP"),
-    components.metabreath && t("Metabreath"),
-    components.truename && t("Truename"),
-    components.corrupt && t("Corrupt"),
+    components.V && t("components.verbal"),
+    components.S && t("components.somatic"),
+    components.M && t("components.material"),
+    components.AF && t("components.arcane-focus"),
+    components.DF && t("components.divine-focus"),
+    components.XP && t("components.xp"),
+    components.metabreath && t("components.metabreath"),
+    components.truename && t("components.truename"),
+    components.corrupt && t("components.corrupt"),
   ].filter(Boolean) as string[];
 
   return (
     <section className="space-y-2">
       <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        {t("Components")}
+        {t("sections.components")}
       </div>
       {chips.length > 0 ? (
         <div className="flex flex-wrap gap-1">

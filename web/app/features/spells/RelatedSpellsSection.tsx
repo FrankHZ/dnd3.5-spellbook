@@ -274,7 +274,7 @@ export default function RelatedSpellsSection({
     return (
       <Card className="gap-0">
         <CardHeader className="py-3">
-          <CardDescription>{t("Loading related spells...")}</CardDescription>
+          <CardDescription>{t("related.loading")}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -292,15 +292,15 @@ export default function RelatedSpellsSection({
   }
 
   return (
-    <section className="space-y-3" aria-label={t("Related Spells")}>
+    <section className="space-y-3" aria-label={t("related.title")}>
       <div>
-        <h2 className="text-base font-semibold">{t("Related Spells")}</h2>
+        <h2 className="text-base font-semibold">{t("related.title")}</h2>
         <p className="text-sm text-muted-foreground">
-          {t("Exact-name matches and supported English variant forms.")}
+          {t("related.description")}
         </p>
       </div>
-      <RelatedSpellList title={t("Same Name")} items={sameName} />
-      <RelatedSpellList title={t("Variant Forms")} items={variants} />
+      <RelatedSpellList title={t("related.same-name")} items={sameName} />
+      <RelatedSpellList title={t("related.variant-forms")} items={variants} />
     </section>
   );
 }

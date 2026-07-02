@@ -20,20 +20,20 @@ export function MechanicsSection({ casting }: { casting: SpellCasting }) {
   return (
     <section className="space-y-2">
       <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        {t("Mechanics")}
+        {t("sections.mechanics")}
       </div>
       <div className="grid gap-2.5">
-        <Field label={t("Casting Time")} value={casting.castingTime} />
-        <Field label={t("Range")} value={casting.range} />
+        <Field label={t("mechanics.casting-time")} value={casting.castingTime} />
+        <Field label={t("mechanics.range")} value={casting.range} />
 
-        <Field label={t("Target")} value={casting.target} />
-        <Field label={t("Effect")} value={casting.effect} />
+        <Field label={t("mechanics.target")} value={casting.target} />
+        <Field label={t("mechanics.effect")} value={casting.effect} />
 
-        <Field label={t("Area")} value={casting.area} />
-        <Field label={t("Duration")} value={casting.duration} />
+        <Field label={t("mechanics.area")} value={casting.area} />
+        <Field label={t("mechanics.duration")} value={casting.duration} />
 
-        <Field label={t("Saving Throw")} value={casting.savingThrow} />
-        <Field label={t("Spell Resistance")} value={casting.spellResistance} />
+        <Field label={t("mechanics.saving-throw")} value={casting.savingThrow} />
+        <Field label={t("mechanics.spell-resistance")} value={casting.spellResistance} />
       </div>
     </section>
   );

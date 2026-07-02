@@ -149,9 +149,9 @@ export default function SpellDetailPage() {
       <div className="page-side">
         <Card className="gap-0">
           <CardHeader className="gap-1 py-3">
-            <CardTitle>{t("Invalid spell id")}</CardTitle>
+            <CardTitle>{t("errors.invalid-id-title")}</CardTitle>
             <CardDescription>
-              {t("The URL id must be a positive integer.")}
+              {t("errors.invalid-url-description")}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -166,14 +166,14 @@ export default function SpellDetailPage() {
       <div className="page-side">
         <Card className="gap-0">
           <CardHeader className="gap-1 py-3">
-            <CardTitle>{t("Spell not found")}</CardTitle>
+            <CardTitle>{t("errors.not-found-title")}</CardTitle>
             <CardDescription>
-              {t("No spell exists with id {{id}}.", { id: idNum })}
+              {t("errors.not-found-description", { id: idNum })}
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
             <Button asChild variant="outline" size="sm">
-              <Link to="/browse">{t("Back to Browse")}</Link>
+              <Link to="/browse">{t("actions.back-to-browse")}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -186,9 +186,9 @@ export default function SpellDetailPage() {
       <div className="page-side">
         <Card className="gap-0">
           <CardHeader className="gap-1 py-3">
-            <CardTitle>{t("Invalid spell id")}</CardTitle>
+            <CardTitle>{t("errors.invalid-id-title")}</CardTitle>
             <CardDescription>
-              {t("The request id is not valid.")}
+              {t("errors.invalid-request-description")}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -200,12 +200,12 @@ export default function SpellDetailPage() {
     const msg =
       query.error instanceof ApiError
         ? query.error.message
-        : t("Request failed. Please try again.");
+        : t("errors.request-failed");
     return (
       <div className="page-side">
         <Card className="gap-0">
           <CardHeader className="gap-1 py-3">
-            <CardTitle>{t("Couldn't load spell")}</CardTitle>
+            <CardTitle>{t("errors.load-title")}</CardTitle>
             <CardDescription>{msg}</CardDescription>
           </CardHeader>
         </Card>

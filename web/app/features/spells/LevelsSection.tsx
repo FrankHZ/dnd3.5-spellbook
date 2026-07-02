@@ -11,7 +11,7 @@ export default function LevelsSection({ spell }: { spell: SpellDetailView }) {
       {(spell.classLevels?.length ?? 0) > 0 ? (
         <div className="space-y-1">
           <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {t("Classes")}
+            {t("levels.classes")}
           </div>
           <div className="text-sm leading-5">
             {spell.classLevels
@@ -26,14 +26,14 @@ export default function LevelsSection({ spell }: { spell: SpellDetailView }) {
         </div>
       ) : (
         <div className="text-sm leading-5 text-muted-foreground">
-          {t("No class levels listed.")}
+          {t("levels.no-classes")}
         </div>
       )}
 
       {(spell.domainLevels?.length ?? 0) > 0 && (
         <div className="space-y-1">
           <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {t("Domains")}
+            {t("levels.domains")}
           </div>
           <div className="text-sm leading-5">
             {spell.domainLevels
