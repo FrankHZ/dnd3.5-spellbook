@@ -34,9 +34,9 @@ export function PreparedTable({
           <Card key={level} className="gap-0 overflow-hidden py-0">
             <CardHeader className="border-b bg-muted/20 px-4 py-3 [.border-b]:pb-2">
               <CardTitle className="flex items-center justify-between gap-3 text-sm font-semibold">
-                {t("Level {{level}}", { level })}
+                {t("prepared.level.title", { level })}
                 <span className="text-xs font-medium text-muted-foreground">
-                  {t("{{count}} slot(s)", {
+                  {t("prepared.table.slot-count", {
                     count: resolvedEntries.length,
                   })}
                 </span>
@@ -46,7 +46,7 @@ export function PreparedTable({
             <CardContent className="px-0 py-0">
               {resolvedEntries.length === 0 ? (
                 <PreparedTableEmptyCell
-                  label={t("Empty")}
+                  label={t("common.empty")}
                   rowMinHeight={rowMinHeight}
                 />
               ) : (

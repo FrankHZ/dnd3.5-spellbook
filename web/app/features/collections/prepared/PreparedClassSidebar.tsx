@@ -85,7 +85,7 @@ export function PreparedClassAndDomainSidebar({
             <ChevronDown className="h-4 w-4" />
           )}
           <span className={cn(collapsed && "lg:hidden")}>
-            {collapsed ? t("Show sidebar") : t("Hide sidebar")}
+            {collapsed ? t("prepared.sidebar.show") : t("prepared.sidebar.hide")}
           </span>
         </Button>
 
@@ -93,11 +93,10 @@ export function PreparedClassAndDomainSidebar({
           <div id="prepared-sidebar-panels" className="space-y-3">
             <Card className="gap-0">
               <CardHeader>
-                <CardTitle className="text-base">{t("Selected")}</CardTitle>
+                <CardTitle className="text-base">{t("prepared.sidebar.selected")}</CardTitle>
                 <CardDescription className="text-sm py-1">
                   {selected.length === 0 &&
-                    t(
-                      "None selected. Spell level uses the lowest available level.",
+                    t("prepared.sidebar.none-selected-help",
                     )}
                 </CardDescription>
               </CardHeader>
@@ -112,7 +111,7 @@ export function PreparedClassAndDomainSidebar({
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
                             <span className="shrink-0 rounded border px-1.5 py-0.5 text-[11px] text-muted-foreground">
-                              {opt.type === "class" ? t("Class") : t("Domain")}
+                              {opt.type === "class" ? t("common.class") : t("common.domain")}
                             </span>
                             <div className="min-w-0 truncate">{opt.name}</div>
                           </div>
@@ -124,7 +123,7 @@ export function PreparedClassAndDomainSidebar({
                           className="shrink-0"
                           onClick={() => onRemove(opt)}
                         >
-                          {t("Remove")}
+                          {t("actions.remove")}
                         </Button>
                       </div>
                     ))}
@@ -135,23 +134,23 @@ export function PreparedClassAndDomainSidebar({
 
             <Card className="gap-0">
               <CardHeader>
-                <CardTitle className="text-base">{t("Candidates")}</CardTitle>
+                <CardTitle className="text-base">{t("prepared.sidebar.candidates")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 pt-0">
                 {hasCandidates && (
                   <Input
                     value={candidateFilter}
                     onChange={(e) => setCandidateFilter(e.target.value)}
-                    placeholder={t("Filter candidates...")}
+                    placeholder={t("prepared.sidebar.filter-candidates")}
                   />
                 )}
                 {!hasCandidates ? (
                   <div className="text-sm text-muted-foreground">
-                    {t("No candidates.")}
+                    {t("prepared.sidebar.no-candidates")}
                   </div>
                 ) : filteredCandidates.length === 0 ? (
                   <div className="text-sm text-muted-foreground">
-                    {t("No matching candidates.")}
+                    {t("prepared.sidebar.no-matching-candidates")}
                   </div>
                 ) : (
                   <div className="max-h-64 space-y-1 overflow-auto pr-1">
@@ -164,13 +163,13 @@ export function PreparedClassAndDomainSidebar({
                           <div className="flex items-stretch gap-2">
                             <span className="inline-flex shrink-0 items-center self-stretch rounded border px-1.5 text-[11px] text-muted-foreground">
                               {candidate.type === "class"
-                                ? t("Class")
-                                : t("Domain")}
+                                ? t("common.class")
+                                : t("common.domain")}
                             </span>
                             <div className="min-w-0 flex-1">
                               <div className="truncate">{candidate.name}</div>
                               <div className="text-xs text-muted-foreground">
-                                {t("{{count}} occurrence(s)", {
+                                {t("prepared.sidebar.occurrence-count", {
                                   count: candidate.count,
                                 })}
                               </div>
@@ -184,7 +183,7 @@ export function PreparedClassAndDomainSidebar({
                           className="shrink-0"
                           onClick={() => onAdd(candidate)}
                         >
-                          {t("Add")}
+                          {t("actions.add")}
                         </Button>
                       </div>
                     ))}

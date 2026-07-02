@@ -170,7 +170,7 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
           id,
           count,
           name:
-            display || `${type === "class" ? t("Class") : t("Domain")} #${id}`,
+            display || `${type === "class" ? t("common.class") : t("common.domain")} #${id}`,
         };
       },
     );
@@ -207,15 +207,14 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
       }
       await navigator.clipboard.writeText(tsv);
       const lines = tsv.length === 0 ? 0 : tsv.split("\n").length;
-      toast.success(t("Copy table"), {
-        description: t("Copied {{count}} row(s) as simple TSV.", {
+      toast.success(t("prepared.copy.table-title"), {
+        description: t("prepared.copy.copied-simple-tsv", {
           count: lines,
         }),
       });
     } catch {
-      toast.error(t("Copy table"), {
-        description: t(
-          "Copy failed. Browser clipboard permission may be blocked.",
+      toast.error(t("prepared.copy.table-title"), {
+        description: t("prepared.copy.failed-description",
         ),
       });
     }
@@ -224,7 +223,7 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
   return (
     <div className="space-y-3">
       <div className="px-1 text-sm text-muted-foreground">
-        {t("{{count}} prepared slot(s)", { count: book.entries.length })}
+        {t("prepared.slots-count", { count: book.entries.length })}
       </div>
 
       <div className="flex flex-col gap-3 lg:flex-row">
@@ -251,15 +250,15 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
                 >
                   <ToggleGroupItem
                     value="normal"
-                    aria-label={t("Toggle normal mode")}
+                    aria-label={t("prepared.mode.toggle-normal")}
                   >
-                    {t("Normal")}
+                    {t("prepared.mode.normal")}
                   </ToggleGroupItem>
                   <ToggleGroupItem
                     value="edit"
-                    aria-label={t("Toggle edit mode")}
+                    aria-label={t("prepared.mode.toggle-edit")}
                   >
-                    {t("Edit")}
+                    {t("actions.edit")}
                   </ToggleGroupItem>
                 </ToggleGroup>
 
@@ -269,7 +268,7 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
                   onClick={() => preparedBook.resetUsed(book.id)}
                   disabled={book.entries.length === 0}
                 >
-                  {t("Reset used")}
+                  {t("prepared.reset-used")}
                 </Button>
 
                 <ButtonGroup>
@@ -278,7 +277,7 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
                     variant="outline"
                     onClick={onCopySimple}
                     disabled={book.entries.length === 0}
-                    aria-label={t("Copy table")}
+                    aria-label={t("prepared.copy.table-title")}
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
@@ -299,7 +298,7 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
           {book.entries.length === 0 && (
             <Card className="gap-0">
               <CardHeader className="gap-1 py-2">
-                <CardDescription>{t("Empty.")}</CardDescription>
+                <CardDescription>{t("common.empty-sentence")}</CardDescription>
               </CardHeader>
             </Card>
           )}
@@ -309,7 +308,7 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
               {batchQuery.isLoading && (
                 <Card className="gap-0">
                   <CardHeader className="gap-1 py-2">
-                    <CardDescription>{t("Loading spells...")}</CardDescription>
+                    <CardDescription>{t("spells.loading")}</CardDescription>
                   </CardHeader>
                 </Card>
               )}
@@ -318,10 +317,10 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
                 <Card className="gap-0">
                   <CardHeader className="gap-1 py-3">
                     <CardTitle className="text-base">
-                      {t("Some spells failed to load")}
+                      {t("spells.load-failed")}
                     </CardTitle>
                     <CardDescription>
-                      {t("Please try again later.")}
+                      {t("errors.try-again-later")}
                     </CardDescription>
                   </CardHeader>
                 </Card>

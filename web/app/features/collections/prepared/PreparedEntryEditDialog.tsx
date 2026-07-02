@@ -114,7 +114,7 @@ export function PreparedEntryEditDialog({
   );
 
   const metamagicSummary = useMemo(() => {
-    if (draftMetamagic.length === 0) return t("None");
+    if (draftMetamagic.length === 0) return t("common.none-title");
     return draftMetamagic
       .map((m) => {
         const name = m.name?.trim() || tMeta(m.key, { defaultValue: m.key });
@@ -176,8 +176,8 @@ export function PreparedEntryEditDialog({
             e.stopPropagation();
             openDialog();
           }}
-          title={t("Edit entry")}
-          aria-label={t("Edit entry")}
+          title={t("prepared.entry.edit-title")}
+          aria-label={t("prepared.entry.edit-title")}
         >
           <Pencil className={EDIT_TRIGGER_ICON_CLASS} />
         </Button>
@@ -190,8 +190,7 @@ export function PreparedEntryEditDialog({
         <DialogHeader>
           <DialogTitle>{spellName}</DialogTitle>
           <DialogDescription>
-            {t(
-              "Edit display override, metamagic tags, level override, and notes.",
+            {t("prepared.entry.edit-description",
             )}
           </DialogDescription>
         </DialogHeader>
@@ -199,35 +198,34 @@ export function PreparedEntryEditDialog({
         <FieldGroup>
           <Field>
             <FieldLabel htmlFor="prepared-display-name">
-              {t("Display Name Override")}
+              {t("prepared.entry.display-name-override")}
             </FieldLabel>
             <Input
               id="prepared-display-name"
-              placeholder={t("Optional per-entry display name")}
+              placeholder={t("prepared.entry.display-name-placeholder")}
               value={draftDisplayName}
               onChange={(e) => setDraftDisplayName(e.target.value)}
             />
             <FieldDescription>
-              {t("Leave empty to use the base spell name.")}
+              {t("prepared.entry.display-name-help")}
             </FieldDescription>
           </Field>
 
           <Field>
             <FieldLabel htmlFor="prepared-level-override">
-              {t("Level Override")}
+              {t("prepared.entry.level-override")}
             </FieldLabel>
             <Input
               id="prepared-level-override"
               type="number"
               min={0}
               step={1}
-              placeholder={t("0")}
+              placeholder={t("common.zero")}
               value={draftLevelOverride}
               onChange={(e) => setDraftLevelOverride(e.target.value)}
             />
             <FieldDescription>
-              {t(
-                "Optional final level for this entry. Leave empty to derive from base level + metamagic ({{adj}}).",
+              {t("prepared.entry.level-override-help",
                 {
                   adj: `${totalMetamagicLevelAdj >= 0 ? "+" : ""}${totalMetamagicLevelAdj}`,
                 },
@@ -236,7 +234,7 @@ export function PreparedEntryEditDialog({
           </Field>
 
           <Field>
-            <FieldLabel>{t("Metamagic")}</FieldLabel>
+            <FieldLabel>{t("prepared.entry.metamagic")}</FieldLabel>
             <div className="flex flex-wrap gap-2">
               {COMMON_METAMAGIC.map((tag) => {
                 const active = draftMetamagic.some((x) => x.key === tag.key);
@@ -261,7 +259,7 @@ export function PreparedEntryEditDialog({
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-12">
               <Input
                 className="sm:col-span-7"
-                placeholder={t("Custom metamagic name")}
+                placeholder={t("prepared.entry.custom-metamagic-name")}
                 value={customMetaName}
                 onChange={(e) => setCustomMetaName(e.target.value)}
               />
@@ -270,7 +268,7 @@ export function PreparedEntryEditDialog({
                 type="number"
                 min={0}
                 step={1}
-                placeholder={t("Adj")}
+                placeholder={t("prepared.entry.level-adj-placeholder")}
                 value={customMetaLevelAdj}
                 onChange={(e) => setCustomMetaLevelAdj(e.target.value)}
               />
@@ -283,7 +281,7 @@ export function PreparedEntryEditDialog({
                   addCustomMetamagic();
                 }}
               >
-                {t("Add")}
+                {t("actions.add")}
               </Button>
             </div>
             {draftMetamagic.length > 0 && (
@@ -303,7 +301,7 @@ export function PreparedEntryEditDialog({
                         e.stopPropagation();
                         removeMetamagicByKey(tag.key);
                       }}
-                      title={t("Remove metamagic")}
+                      title={t("prepared.entry.remove-metamagic")}
                     >
                       <span>
                         {label}
@@ -318,7 +316,7 @@ export function PreparedEntryEditDialog({
               </div>
             )}
             <FieldDescription>
-              {t("{{summary}}. Total level adj: +{{adj}}.", {
+              {t("prepared.entry.metamagic-summary-with-adj", {
                 summary: metamagicSummary,
                 adj: totalMetamagicLevelAdj,
               })}
@@ -326,11 +324,11 @@ export function PreparedEntryEditDialog({
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="prepared-notes">{t("Notes")}</FieldLabel>
+            <FieldLabel htmlFor="prepared-notes">{t("prepared.entry.notes")}</FieldLabel>
             <Textarea
               id="prepared-notes"
               rows={6}
-              placeholder={t("Add notes (metamagic, reminders, etc.)")}
+              placeholder={t("prepared.entry.notes-placeholder")}
               value={draftNotes}
               onChange={(e) => setDraftNotes(e.target.value)}
             />
@@ -339,9 +337,9 @@ export function PreparedEntryEditDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
-            {t("Cancel")}
+            {t("actions.cancel")}
           </Button>
-          <Button onClick={save}>{t("Save")}</Button>
+          <Button onClick={save}>{t("actions.save")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

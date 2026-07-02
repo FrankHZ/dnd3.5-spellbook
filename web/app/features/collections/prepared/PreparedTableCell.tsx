@@ -97,7 +97,7 @@ export function PreparedTableCell({
     hasDisplayNameOverride || hasMetamagic || hasLevelOverride || hasNote;
   const localizedMetamagicSummary = useMemo(() => {
     const metamagic = entry.metamagic ?? [];
-    if (metamagic.length === 0) return t("None");
+    if (metamagic.length === 0) return t("common.none-title");
     return metamagic
       .map((tag) => {
         const tagName =
@@ -183,7 +183,7 @@ export function PreparedTableCell({
               {hasDisplayNameOverride && (
                 <div className="space-y-1">
                   <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    {t("Base Name")}
+                    {t("prepared.table.base-name")}
                   </div>
                   <div>{summary.baseName}</div>
                 </div>
@@ -192,7 +192,7 @@ export function PreparedTableCell({
               {hasLevelOverride && (
                 <div className="space-y-1">
                   <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    {t("Level Override")}
+                    {t("prepared.entry.level-override")}
                   </div>
                   <div>{entry.levelOverride}</div>
                 </div>
@@ -201,11 +201,11 @@ export function PreparedTableCell({
               {hasMetamagic && (
                 <div className="space-y-1">
                   <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    {t("Metamagic")}
+                    {t("prepared.entry.metamagic")}
                   </div>
                   <div>{localizedMetamagicSummary}</div>
                   <div className="text-xs text-muted-foreground">
-                    {t("Total level adj: +{{adj}}", {
+                    {t("prepared.entry.total-level-adj", {
                       adj: summary.metamagicTotalAdj,
                     })}
                   </div>
@@ -215,7 +215,7 @@ export function PreparedTableCell({
               {hasNote && (
                 <div className="space-y-1">
                   <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    {t("Notes")}
+                    {t("prepared.entry.notes")}
                   </div>
                   <div className="whitespace-pre-wrap wrap-break-word text-muted-foreground">
                     {entry.notes}
@@ -236,7 +236,7 @@ export function PreparedTableCell({
             size="icon-xs"
             variant="ghost"
             className={TRAILING_ACTION_BUTTON_CLASS}
-            aria-label={t("Open spell detail")}
+            aria-label={t("spell.open-detail")}
           >
             <Link
               to={`/spells/${spell.id}`}
@@ -273,13 +273,13 @@ export function PreparedTableCell({
             }}
             title={
               entry.state === "reserved"
-                ? t("Unlock reserved")
-                : t("Lock as reserved")
+                ? t("prepared.entry.unlock-reserved")
+                : t("prepared.entry.lock-reserved")
             }
             aria-label={
               entry.state === "reserved"
-                ? t("Unlock reserved")
-                : t("Lock as reserved")
+                ? t("prepared.entry.unlock-reserved")
+                : t("prepared.entry.lock-reserved")
             }
           >
             {entry.state === "reserved" ? (
@@ -300,8 +300,8 @@ export function PreparedTableCell({
               e.stopPropagation();
               preparedBook.removeEntry(bookId, entry.entryId);
             }}
-            title={t("Remove")}
-            aria-label={t("Remove")}
+            title={t("actions.remove")}
+            aria-label={t("actions.remove")}
           >
             <Trash2 className={TRAILING_ICON_CLASS} />
           </Button>

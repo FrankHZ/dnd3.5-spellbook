@@ -29,9 +29,9 @@ export default function SpellbookDetailPage() {
       <div className="page-single">
         <Card className="gap-0">
           <CardHeader className="gap-1 py-3">
-            <CardTitle>{t("Spellbook not found")}</CardTitle>
+            <CardTitle>{t("books.not-found-title")}</CardTitle>
             <CardDescription>
-              {t("Unknown book id: {{bookId}}", { bookId })}
+              {t("books.unknown-id", { bookId })}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -55,7 +55,7 @@ export default function SpellbookDetailPage() {
           {book.kind === "spellbook" && <SpellIdBookJsonActions book={book} />}
 
           <Button asChild size="xs" variant="outline">
-            <Link to="/spellbooks">{t("Back")}</Link>
+            <Link to="/spellbooks">{t("actions.back")}</Link>
           </Button>
         </div>
       </div>

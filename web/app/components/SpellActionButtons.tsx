@@ -19,8 +19,8 @@ export function SpellActionButtons({
   const { t } = useTranslation(["collections"]);
   const inFav = spellbook.isInDefault(spellId);
   const favoriteActionLabel = inFav
-    ? t("Remove from favorites")
-    : t("Add to favorites");
+    ? t("favorites.remove")
+    : t("favorites.add");
 
   function onToggleFavorite() {
     spellbook.toggleDefault(spellId);
@@ -29,7 +29,7 @@ export function SpellActionButtons({
 
   function onPrepare() {
     prepared.add(spellId);
-    toast.success(t("Added to Prepared!"));
+    toast.success(t("prepared.added-toast"));
   }
 
   return (
@@ -57,7 +57,7 @@ export function SpellActionButtons({
       </Button>
 
       <Button variant="outline" size="sm" onClick={onPrepare}>
-        {t("Prepare", { ns: "collections" })}
+        {t("prepared.prepare-action", { ns: "collections" })}
       </Button>
     </div>
   );

@@ -37,7 +37,7 @@ export function PreparedBookJsonActions({ book }: { book: PreparedBook }) {
       try {
         parsedRaw = JSON.parse(text);
       } catch {
-        throw new Error(t("Invalid JSON file."));
+        throw new Error(t("import.invalid-json"));
       }
 
       const parsed = parsePreparedCollectionImport(parsedRaw, book.id);
@@ -55,18 +55,18 @@ export function PreparedBookJsonActions({ book }: { book: PreparedBook }) {
       });
       const missingSpellIds = [...batch.missingIds].sort((a, b) => a - b);
 
-      toast.success(t("Import complete"), {
+      toast.success(t("import.complete-title"), {
         description: [
-          `${t("Imported entries:")} ${importedEntries.length}`,
-          `${t("Invalid entries skipped:")} ${parsed.invalidEntriesCount}`,
-          `${t("Missing spellIds:")} ${
-            missingSpellIds.length > 0 ? missingSpellIds.join(", ") : t("none")
+          `${t("import.imported-entries")} ${importedEntries.length}`,
+          `${t("import.invalid-entries-skipped")} ${parsed.invalidEntriesCount}`,
+          `${t("import.missing-spell-ids")} ${
+            missingSpellIds.length > 0 ? missingSpellIds.join(", ") : t("common.none")
           }`,
         ].join(" | "),
       });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : t("Import failed.");
-      toast.error(t("Import failed"), { description: msg });
+      const msg = err instanceof Error ? err.message : t("import.failed-description");
+      toast.error(t("import.failed-title"), { description: msg });
     } finally {
       setIsImporting(false);
       if (importInputRef.current) {
@@ -77,15 +77,15 @@ export function PreparedBookJsonActions({ book }: { book: PreparedBook }) {
 
   const onExport = () => {
     downloadPreparedCollectionExport(book);
-    toast.success(t("Export JSON"), {
-      description: t("Export current collection as JSON."),
+    toast.success(t("export.json"), {
+      description: t("export.current-json-description"),
     });
   };
 
   const onClear = () => {
     preparedBook.clear(book.id);
-    toast.success(t("Clear"), {
-      description: t("Collection cleared."),
+    toast.success(t("actions.clear"), {
+      description: t("collection.cleared"),
     });
   };
 
@@ -110,11 +110,11 @@ export function PreparedBookJsonActions({ book }: { book: PreparedBook }) {
             onClick={onExport}
             disabled={isImporting}
           >
-            {t("Export JSON")}
+            {t("export.json")}
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom">
-          {t("Export current collection as JSON.")}
+          {t("export.current-json-description")}
         </TooltipContent>
       </Tooltip>
       <Tooltip>
@@ -125,11 +125,11 @@ export function PreparedBookJsonActions({ book }: { book: PreparedBook }) {
             onClick={openImportPicker}
             disabled={isImporting}
           >
-            {isImporting ? t("Importing...") : t("Import JSON")}
+            {isImporting ? t("import.in-progress") : t("import.json")}
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom">
-          {t("Import replaces the current collection.")}
+          {t("import.replace-description")}
         </TooltipContent>
       </Tooltip>
       <Button
@@ -138,7 +138,7 @@ export function PreparedBookJsonActions({ book }: { book: PreparedBook }) {
         onClick={onClear}
         disabled={isImporting || book.entries.length === 0}
       >
-        {t("Clear")}
+        {t("actions.clear")}
       </Button>
     </>
   );

@@ -16,9 +16,9 @@ export default function SpellbooksIndexPage() {
   return (
     <div className="page-single">
       <div className="space-y-1 px-1">
-        <h1 className="text-lg font-semibold">{t("Spellbooks")}</h1>
+        <h1 className="text-lg font-semibold">{t("books.title")}</h1>
         <div className="text-sm text-muted-foreground">
-          {t("Local-only collections.")}
+          {t("books.local-only-description")}
         </div>
       </div>
 
@@ -36,10 +36,10 @@ export default function SpellbooksIndexPage() {
               </CardTitle>
               <CardDescription>
                 {b.kind == "prepared"
-                  ? t("{{entryCount}} entries.", {
+                  ? t("books.entry-summary", {
                       entryCount: b.entries.length,
                     })
-                  : t("{{spellCount}} spells.", {
+                  : t("books.spell-summary", {
                       spellCount: b.spellIds.length,
                     })}
               </CardDescription>

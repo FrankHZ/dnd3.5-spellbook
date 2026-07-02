@@ -88,12 +88,12 @@ export function PreparedCopyDialog({
   const onCopy = async () => {
     try {
       await copyText(tsv);
-      toast.success(t("Copy TSV"), {
-        description: t("Copied {{count}} row(s) as TSV.", { count: lineCount }),
+      toast.success(t("prepared.copy.tsv-title"), {
+        description: t("prepared.copy.copied-tsv", { count: lineCount }),
       });
     } catch {
-      toast.error(t("Copy TSV"), {
-        description: t("Copy failed. Browser clipboard permission may be blocked."),
+      toast.error(t("prepared.copy.tsv-title"), {
+        description: t("prepared.copy.failed-description"),
       });
     }
   };
@@ -106,21 +106,21 @@ export function PreparedCopyDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button className={className} size="sm" variant="outline">
-          {t("Advanced Copy")}
+          {t("prepared.copy.advanced-title")}
         </Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{t("Advanced Copy")}</DialogTitle>
+          <DialogTitle>{t("prepared.copy.advanced-title")}</DialogTitle>
           <DialogDescription>
-            {t("Copy as TSV with optional detailed columns and row aggregation.")}
+            {t("prepared.copy.description")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <div className="text-sm font-medium">{t("Format")}</div>
+            <div className="text-sm font-medium">{t("prepared.copy.format")}</div>
             <Select
               value={format}
               onValueChange={(v) => setFormat(v as CopyFormat)}
@@ -130,10 +130,10 @@ export function PreparedCopyDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="simple">
-                  {t("Simple table (as displayed)")}
+                  {t("prepared.copy.simple-table")}
                 </SelectItem>
                 <SelectItem value="detailed">
-                  {t("Detailed TSV columns")}
+                  {t("prepared.copy.detailed-columns")}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -145,19 +145,19 @@ export function PreparedCopyDialog({
               onCheckedChange={(checked) => setAggregateRows(checked === true)}
               disabled={format !== "detailed"}
             />
-            {t("Aggregate detailed rows")}
+            {t("prepared.copy.aggregate-detailed-rows")}
           </label>
 
           <div className="rounded-md border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
-            {t("Output rows: {{count}}", { count: lineCount })}
+            {t("prepared.copy.output-rows", { count: lineCount })}
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {t("Close")}
+            {t("actions.close")}
           </Button>
-          <Button onClick={onCopy}>{t("Copy TSV")}</Button>
+          <Button onClick={onCopy}>{t("prepared.copy.tsv-title")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

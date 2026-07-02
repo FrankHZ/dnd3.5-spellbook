@@ -87,7 +87,7 @@ export function BulkPasteDialog({
       );
     },
     onError: (e: any) => {
-      setError(e?.message ?? t("Failed to resolve names"));
+      setError(e?.message ?? t("bulk-paste.resolve-failed"));
     },
   });
 
@@ -124,29 +124,29 @@ export function BulkPasteDialog({
     <Dialog open={open} onOpenChange={(v) => (v ? setOpen(true) : onClose())}>
       <DialogTrigger asChild>
         <Button className={className} size="sm" variant="outline">
-          {triggerLabel === "Bulk Paste" ? t("Bulk Paste") : triggerLabel}
+          {triggerLabel === "Bulk Paste" ? t("bulk-paste.title") : triggerLabel}
         </Button>
       </DialogTrigger>
 
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{t("Bulk Paste")}</DialogTitle>
-          <DialogDescription>{t("bulk-paste-description")}</DialogDescription>
+          <DialogTitle>{t("bulk-paste.title")}</DialogTitle>
+          <DialogDescription>{t("bulk-paste.description")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-2">
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder={t("Magic Missile\tShield\tFireball\nHaste\tFly")}
+            placeholder={t("bulk-paste.example-text")}
             rows={8}
             disabled={mutation.isPending}
           />
 
           <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <div>{t("Parsed: {{count}} name(s)", { count: names.length })}</div>
+            <div>{t("bulk-paste.parsed-count", { count: names.length })}</div>
             <div className="truncate">
-              {t("Scope: {{count}} rulebook(s)", { count: rulebookIds.length })}
+              {t("bulk-paste.rulebook-scope", { count: rulebookIds.length })}
             </div>
           </div>
 
@@ -165,13 +165,12 @@ export function BulkPasteDialog({
               <Card className="gap-0 bg-muted/30">
                 <CardHeader className="gap-1 py-2">
                   <CardTitle className="text-sm font-medium">
-                    {t("Ready to add {{count}} entry(ies)", {
+                    {t("bulk-paste.ready-count", {
                       count: addableCount,
                     })}
                   </CardTitle>
                   <CardDescription>
-                    {t(
-                      "{{resolved}} resolved | {{conflicts}} conflict(s) | {{notFound}} not found",
+                    {t("bulk-paste.resolve-summary",
                       {
                         resolved: summary.resolved,
                         conflicts: summary.conflicts,
@@ -184,8 +183,7 @@ export function BulkPasteDialog({
               <Card className="gap-0">
                 <CardHeader className="gap-1 px-4 py-2">
                   <CardDescription>
-                    {t(
-                      "Conflicts are shown here. Default is pre-picked, but we can choose a different candidate before adding.",
+                    {t("bulk-paste.conflicts-help",
                     )}
                   </CardDescription>
                 </CardHeader>
@@ -240,7 +238,7 @@ export function BulkPasteDialog({
                                               </Link>
                                               {isDefault && (
                                                 <span className="shrink-0 text-xs text-muted-foreground">
-                                                  {t("(default)")}
+                                                  {t("common.default")}
                                                 </span>
                                               )}
                                             </div>
@@ -261,7 +259,7 @@ export function BulkPasteDialog({
                                               );
                                             }}
                                           >
-                                            {picked ? t("Picked") : t("Pick")}
+                                            {picked ? t("bulk-paste.picked") : t("bulk-paste.pick")}
                                           </Button>
                                         </div>
                                       );
@@ -280,7 +278,7 @@ export function BulkPasteDialog({
               {rows.some((r) => r.status === "not_found") && (
                 <Card className="gap-0">
                   <CardHeader className="gap-1 px-4 py-1">
-                    <CardTitle className="text-sm">{t("Not found")}</CardTitle>
+                    <CardTitle className="text-sm">{t("bulk-paste.not-found-title")}</CardTitle>
                   </CardHeader>
                   <CardContent className="grid max-h-40 grid-cols-1 gap-1 overflow-auto px-4 pb-2 pt-0 sm:grid-cols-3">
                     {rows
@@ -307,7 +305,7 @@ export function BulkPasteDialog({
               onClick={onClearInput}
               disabled={mutation.isPending}
             >
-              {t("Clear Input")}
+              {t("bulk-paste.clear-input")}
             </Button>
 
             <Button
@@ -315,7 +313,7 @@ export function BulkPasteDialog({
               onClick={onClearPrepared}
               disabled={mutation.isPending}
             >
-              {t("Clear Prepared")}
+              {t("bulk-paste.clear-prepared")}
             </Button>
           </div>
 
@@ -325,18 +323,18 @@ export function BulkPasteDialog({
               onClick={onClose}
               disabled={mutation.isPending}
             >
-              {t("Close")}
+              {t("actions.close")}
             </Button>
 
             <Button onClick={onResolve} disabled={!canResolve}>
-              {mutation.isPending ? t("Resolving...") : t("Resolve")}
+              {mutation.isPending ? t("bulk-paste.resolving") : t("bulk-paste.resolve")}
             </Button>
 
             <Button
               onClick={onAddSelected}
               disabled={mutation.isPending || !rows || addableCount === 0}
             >
-              {t("Add Selected")}
+              {t("bulk-paste.add-selected")}
             </Button>
           </div>
         </DialogFooter>

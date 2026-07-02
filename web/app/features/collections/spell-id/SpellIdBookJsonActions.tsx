@@ -41,7 +41,7 @@ export function SpellIdBookJsonActions({ book }: { book: SpellIdBook }) {
       try {
         parsedRaw = JSON.parse(text);
       } catch {
-        throw new Error(t("Invalid JSON file."));
+        throw new Error(t("import.invalid-json"));
       }
 
       const parsed = parseSpellIdBookImport(parsedRaw);
@@ -64,23 +64,23 @@ export function SpellIdBookJsonActions({ book }: { book: SpellIdBook }) {
       const missingSpellIds = [...(batch?.missingIds ?? [])].sort((a, b) => a - b);
       const description = [
         importMode === "merge"
-          ? `${t("Added spellIds:")} ${addedSpellIds}`
-          : `${t("Imported spellIds:")} ${validSpellIds.length}`,
+          ? `${t("import.added-spell-ids")} ${addedSpellIds}`
+          : `${t("import.imported-spell-ids")} ${validSpellIds.length}`,
         importMode === "merge"
-          ? `${t("Already existed:")} ${alreadyExisted}`
+          ? `${t("import.already-existed")} ${alreadyExisted}`
           : null,
-        `${t("Invalid entries skipped:")} ${parsed.invalidEntriesCount}`,
-        `${t("Missing spellIds:")} ${
-          missingSpellIds.length > 0 ? missingSpellIds.join(", ") : t("none")
+        `${t("import.invalid-entries-skipped")} ${parsed.invalidEntriesCount}`,
+        `${t("import.missing-spell-ids")} ${
+          missingSpellIds.length > 0 ? missingSpellIds.join(", ") : t("common.none")
         }`,
       ]
         .filter(Boolean)
         .join(" | ");
 
-      toast.success(t("Import complete"), { description });
+      toast.success(t("import.complete-title"), { description });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : t("Import failed.");
-      toast.error(t("Import failed"), { description: msg });
+      const msg = err instanceof Error ? err.message : t("import.failed-description");
+      toast.error(t("import.failed-title"), { description: msg });
     } finally {
       setIsImporting(false);
       if (importInputRef.current) {
@@ -91,15 +91,15 @@ export function SpellIdBookJsonActions({ book }: { book: SpellIdBook }) {
 
   const onExport = () => {
     downloadSpellIdBookExport(book);
-    toast.success(t("Export JSON"), {
-      description: t("Export current collection as JSON."),
+    toast.success(t("export.json"), {
+      description: t("export.current-json-description"),
     });
   };
 
   const onClear = () => {
     spellIdBook.setSpellIds(book.id, []);
-    toast.success(t("Clear"), {
-      description: t("Collection cleared."),
+    toast.success(t("actions.clear"), {
+      description: t("collection.cleared"),
     });
   };
 
@@ -124,11 +124,11 @@ export function SpellIdBookJsonActions({ book }: { book: SpellIdBook }) {
             onClick={onExport}
             disabled={isImporting}
           >
-            {t("Export JSON")}
+            {t("export.json")}
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom">
-          {t("Export current collection as JSON.")}
+          {t("export.current-json-description")}
         </TooltipContent>
       </Tooltip>
       <Tooltip>
@@ -140,12 +140,12 @@ export function SpellIdBookJsonActions({ book }: { book: SpellIdBook }) {
             disabled={isImporting}
           >
             {isImporting && importMode === "merge"
-              ? t("Importing...")
-              : t("Import Merge")}
+              ? t("import.in-progress")
+              : t("import.merge")}
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom">
-          {t("Import adds new spellIds and ignores duplicates.")}
+          {t("import.merge-description")}
         </TooltipContent>
       </Tooltip>
       <Tooltip>
@@ -157,12 +157,12 @@ export function SpellIdBookJsonActions({ book }: { book: SpellIdBook }) {
             disabled={isImporting}
           >
             {isImporting && importMode === "replace"
-              ? t("Importing...")
-              : t("Import Replace")}
+              ? t("import.in-progress")
+              : t("import.replace")}
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom">
-          {t("Import replaces the current collection.")}
+          {t("import.replace-description")}
         </TooltipContent>
       </Tooltip>
       <Button
@@ -171,7 +171,7 @@ export function SpellIdBookJsonActions({ book }: { book: SpellIdBook }) {
         onClick={onClear}
         disabled={isImporting || book.spellIds.length === 0}
       >
-        {t("Clear")}
+        {t("actions.clear")}
       </Button>
     </>
   );
