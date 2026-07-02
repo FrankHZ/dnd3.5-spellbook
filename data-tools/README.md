@@ -98,6 +98,9 @@ npm run -w data-tools summaries:normalize
 Run short-description cleanup QA and same-name reuse candidate generation:
 
 ```bash
+npm run -w data-tools summaries:source-gap-candidates
+npm run -w data-tools summaries:source-gap-apply
+npm run -w data-tools summaries:source-gap-apply -- --write
 npm run -w data-tools summaries:reuse-candidates
 npm run -w data-tools summaries:reuse-apply
 npm run -w data-tools summaries:reuse-apply -- --write
@@ -257,8 +260,21 @@ reports under `data-tools/out/short-desc-import/`.
 JSONL. It reports summaries missing sentence-final punctuation and, with
 `--write`, appends `.` for English or `。` for Chinese. It writes
 `punctuation-summary.json` and `review-queues/summary-punctuation.jsonl` under
-`data-tools/out/short-desc-qa/`. Run it after `summaries:reuse-apply -- --write`
-so reused rows receive the same final punctuation cleanup as source rows.
+`data-tools/out/short-desc-qa/`. Run it after `summaries:source-gap-apply
+-- --write` and `summaries:reuse-apply -- --write` so reused rows receive the
+same final punctuation cleanup as source rows.
+
+`summaries:source-gap-candidates` finds English IMarvinTPA source-index rows
+that have a short description but do not match a local spell in their scoped
+source book, then looks for exact-name or established inverted-name matches
+among scoped local spells that are missing English summaries. It writes a review
+queue under `data-tools/out/short-desc-qa/review-queues/`.
+
+`summaries:source-gap-apply` consumes reviewed
+`data/short-desc-review/source-gap-reuse/*.decisions.jsonl` files. It writes
+accepted rows back into the normalized JSONL only with `--write`, preserving
+cross-book provenance through `sourceKind: "source-gap-reuse"`. Use this only
+for explicit source-gap reuse; it should not become a fuzzy source matcher.
 
 `summaries:reuse-candidates` finds same-name spell rows within the configured
 rules DB edition scope, currently `core-35` and `supplementals-35`, where one
@@ -306,6 +322,10 @@ another scoped book. The default scope is the current official 3.5 working set:
   it mutates the normalized local data JSONL.
 - `summaries:reuse-candidates` writes generated QA queues and does not mutate
   SQLite databases or normalized data.
+- `summaries:source-gap-candidates` writes generated QA queues and does not
+  mutate SQLite databases or normalized data.
+- `summaries:source-gap-apply` without `--write` writes reports only; with
+  `--write` it mutates the normalized local data JSONL.
 - `summaries:reuse-apply` without `--write` writes reports only; with `--write`
   it mutates the normalized local data JSONL.
 - `summaries:import -- --dry-run` validates and counts app DB changes without

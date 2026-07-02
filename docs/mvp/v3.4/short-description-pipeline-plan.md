@@ -510,6 +510,8 @@ Run deterministic cleanup and reuse review after normalization, not inside the
 normalizer:
 
 ```bash
+npm run -w data-tools summaries:source-gap-candidates
+npm run -w data-tools summaries:source-gap-apply -- --write
 npm run -w data-tools summaries:reuse-candidates
 npm run -w data-tools summaries:reuse-apply -- --write
 npm run -w data-tools summaries:punctuation -- --write
@@ -580,18 +582,30 @@ Post-normalization cleanup behavior:
   Reviewed decisions may provide a `summaryText` override for cases where source
   and target have the same mechanism but the target rules DB entry uses
   different numbers.
+- `summaries:source-gap-candidates` finds English IMarvinTPA source rows that
+  have short descriptions but no local spell row in their scoped source book,
+  then looks for exact-name or established inverted-name matches among scoped
+  local spells still missing English summaries.
+- `summaries:source-gap-apply` consumes explicit decisions under
+  `data/short-desc-review/source-gap-reuse/` and writes accepted
+  `source-gap-reuse` rows into the normalized JSONL with cross-book source
+  provenance. This is a reviewed reuse layer, not fuzzy matching or new rules DB
+  patching.
 - `summaries:coverage-report` generates a per-rulebook coverage report for the
   current official 3.5 working scope (`core-35`, `supplementals-35`,
   `eberron-35`, and `forgotten-realms-35`). It lists missing Chinese summaries,
   missing English summaries, missing-both rows, and source short descriptions
   whose source book row does not match a spell in the rules DB.
-- Current cleanup snapshot: punctuation QA fixed `164` rows (`39` English,
-  `125` Chinese). Same-name reuse generated `507` candidates, accepted `14`
+- Current cleanup snapshot: source-gap reuse generated and accepted `37`
+  reviewed English rows from source-index rows without scoped local source-book
+  spell matches. Punctuation QA fixed `164` rows (`39` English, `125` Chinese)
+  before source-gap reuse; the post-source-gap punctuation pass had `0` new
+  fixes. Same-name reuse generated `507` candidates, accepted `14`
   exact-description auto reuse rows, and sent `493` rows through batch review.
-- Current book-coverage snapshot for the official 3.5 working scope has `59`
-  books, `3927` rules DB spell rows, `775` missing Chinese summaries, `1310`
-  missing English summaries, `383` missing-both rows, `538` English source rows
-  with short descriptions but no scoped rules DB spell match, `151` English
+- Current book-coverage snapshot for the core plus supplemental scope has `41`
+  books, `3452` rules DB spell rows, `328` missing Chinese summaries, `1053`
+  missing English summaries, `168` missing-both rows, `465` English source rows
+  with short descriptions but no scoped rules DB spell match, `137` English
   source-book mismatch rows that match another scoped DB book, and `0` Chinese
   source rows with short descriptions but no rules DB spell match.
 
@@ -619,9 +633,11 @@ Import behavior:
   or rules DB gaps should be excluded by `summaries:normalize` before import.
 - Emit an import report with inserted, updated, unchanged, skipped, blocker, and
   language counts under `data-tools/out/short-desc-import/`.
-- Current local import baseline after applying the 11 rules DB gap patches:
-  `6,495` normalized rows imported, with the latest apply inserting `11`
-  English summary rows and leaving `6,484` unchanged.
+- Current local import baseline after applying the 11 rules DB gap patches and
+  37 reviewed source-gap reuse rows: `6,532` normalized rows imported, with the
+  latest source-gap apply inserting `37` English summary rows and leaving
+  `6,495` unchanged. A subsequent dry-run reported `0` inserted, `0` updated,
+  and `6,532` unchanged.
 
 English source policy:
 

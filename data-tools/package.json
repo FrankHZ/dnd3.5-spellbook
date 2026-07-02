@@ -20,6 +20,8 @@
     "summaries:punctuation": "tsx src/short-desc/punctuation.ts",
     "summaries:reuse-candidates": "tsx src/short-desc/reuse-candidates.ts",
     "summaries:reuse-apply": "tsx src/short-desc/reuse-apply.ts",
+    "summaries:source-gap-candidates": "tsx src/short-desc/source-gap-reuse.ts candidates",
+    "summaries:source-gap-apply": "tsx src/short-desc/source-gap-reuse.ts apply",
     "summaries:coverage-report": "tsx src/short-desc/coverage-report.ts",
     "summaries:qa": "tsx src/short-desc-qa.ts",
     "spells-full:generate": "tsx src/spells-full.ts generate",

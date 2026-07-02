@@ -266,7 +266,14 @@ See `docs/harness.md` for details.
 - Use `npm run -w data-tools summaries:punctuation` for deterministic
   sentence-final punctuation QA. Use `-- --write` only when intentionally
   updating `data/short-desc-normalized/summaries.generated.jsonl`, and run write
-  mode after `summaries:reuse-apply -- --write` so reused rows are cleaned too.
+  mode after `summaries:source-gap-apply -- --write` and
+  `summaries:reuse-apply -- --write` so reused rows are cleaned too.
+- Use `npm run -w data-tools summaries:source-gap-candidates` to find English
+  source-index rows that have short descriptions but no scoped local source-book
+  spell row, then `npm run -w data-tools summaries:source-gap-apply -- --write`
+  after explicit decisions under `data/short-desc-review/source-gap-reuse/` are
+  accepted. This is for exact-name or established inverted-name cross-book reuse
+  only, not fuzzy matching.
 - Use `npm run -w data-tools summaries:reuse-candidates` to generate same-name
   core/supplementals summary reuse queues, then
   `npm run -w data-tools summaries:reuse-apply -- --write` after auto or
