@@ -72,6 +72,7 @@ type QaSummary = {
     deferredPdf: number;
     enOutOfScope: number;
     enResolvedCandidates: number;
+    enResolvedRulesDbGaps: number;
     enResolvedSourceMismatches: number;
   };
 };
@@ -901,6 +902,12 @@ function main() {
   const enRulesDbGapRows = (enStrictDecisions ?? []).filter(
     (decision) => decision.decision === "rules_db_gap",
   );
+  const enResolvedRulesDbGapRows = enRulesDbGapRows.filter((decision) =>
+    isReviewedEnglishDecisionResolved(decision, enCandidateKeys, enSourceKeys),
+  );
+  const enUnresolvedRulesDbGapRows = enRulesDbGapRows.filter(
+    (decision) => !enResolvedRulesDbGapRows.includes(decision),
+  );
   const enSourceMismatchRows = (enStrictDecisions ?? []).filter(
     (decision) => decision.decision === "source_mismatch",
   );
@@ -944,11 +951,18 @@ function main() {
       detail: `${enUnresolvedAddCandidateRows.length} reviewed English rows still need candidate or alias normalization`,
     });
   }
-  if (enRulesDbGapRows.length > 0) {
+  if (enResolvedRulesDbGapRows.length > 0) {
+    issue(issues, "info", "en-strict35-resolved-rules-db-gaps", {
+      queue: "en-resolved-rules-db-gaps",
+      count: enResolvedRulesDbGapRows.length,
+      detail: `${enResolvedRulesDbGapRows.length} reviewed English rules DB gaps are covered by current matching rules`,
+    });
+  }
+  if (enUnresolvedRulesDbGapRows.length > 0) {
     issue(issues, "warning", "en-strict35-rules-db-gaps", {
       queue: "en-rules-db-gaps",
-      count: enRulesDbGapRows.length,
-      detail: `${enRulesDbGapRows.length} reviewed English rows appear to be rules DB gaps before short-description import`,
+      count: enUnresolvedRulesDbGapRows.length,
+      detail: `${enUnresolvedRulesDbGapRows.length} reviewed English rows appear to be rules DB gaps before short-description import`,
     });
   }
   if (enResolvedSourceMismatchRows.length > 0) {
@@ -1012,8 +1026,9 @@ function main() {
     "import-blockers": importBlockerRows,
     "en-add-candidates": enUnresolvedAddCandidateRows,
     "en-resolved-candidates": enResolvedCandidateRows,
+    "en-resolved-rules-db-gaps": enResolvedRulesDbGapRows,
     "en-resolved-source-mismatches": enResolvedSourceMismatchRows,
-    "en-rules-db-gaps": enRulesDbGapRows,
+    "en-rules-db-gaps": enUnresolvedRulesDbGapRows,
     "en-source-mismatches": enUnresolvedSourceMismatchRows,
     "en-deferred-pdf": enDeferredPdfRows,
     "en-out-of-scope": enOutOfScopeRows,
@@ -1081,11 +1096,12 @@ function main() {
     importGate: {
       blockers: importBlockerRows.length,
       enAddCandidates: enUnresolvedAddCandidateRows.length,
-      enRulesDbGaps: enRulesDbGapRows.length,
+      enRulesDbGaps: enUnresolvedRulesDbGapRows.length,
       enSourceMismatches: enUnresolvedSourceMismatchRows.length,
       deferredPdf: enDeferredPdfRows.length,
       enOutOfScope: enOutOfScopeRows.length,
       enResolvedCandidates: enResolvedCandidateRows.length,
+      enResolvedRulesDbGaps: enResolvedRulesDbGapRows.length,
       enResolvedSourceMismatches: enResolvedSourceMismatchRows.length,
     },
   };

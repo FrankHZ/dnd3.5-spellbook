@@ -362,6 +362,7 @@ data-tools/out/short-desc-qa/
    |- import-blockers.jsonl
    |- en-add-candidates.jsonl
    |- en-resolved-candidates.jsonl
+   |- en-resolved-rules-db-gaps.jsonl
    |- en-resolved-source-mismatches.jsonl
    |- en-rules-db-gaps.jsonl
    |- en-source-mismatches.jsonl
@@ -381,19 +382,22 @@ It then promotes decisions into follow-up queues:
   alias normalization and are not yet covered by the current matching rules
 - `en-resolved-candidates.jsonl` for reviewed add-candidate rows already covered
   by the current IMarvinTPA name-matching rules
+- `en-resolved-rules-db-gaps.jsonl` for reviewed rules DB gaps already covered
+  by current local rules DB rows and IMarvinTPA name-matching rules
 - `en-resolved-source-mismatches.jsonl` for reviewed source-mismatch rows that
   are already covered by conservative IMarvinTPA title-normalization rules
 - `en-rules-db-gaps.jsonl` for English rows that appear to require future rules
   DB patch work before short-description import
 
 The current local QA snapshot with review decisions has `0` errors, `3` warning
-categories, and `5` info categories. It reports `4` reviewed Chinese alias audit
+categories, and `5` info categories. It reports `3` reviewed Chinese alias audit
 entries, `80` reviewed English strict-3.5 missing candidates, `0` import
-blockers, `19` resolved English candidate-normalization rows, `12` resolved
-English source-mismatch rows, `0` remaining English add-candidate rows, `0`
-remaining English source-mismatch rows, `47` English rules DB gaps, `414`
-Chinese conflict rows, and `1,677` cross-language coverage rows. The large
-queues remain review leads unless a future import gate explicitly consumes them.
+blockers, `19` resolved English candidate-normalization rows, `11` resolved
+English rules DB gap rows, `12` resolved English source-mismatch rows, `0`
+remaining English add-candidate rows, `0` remaining English source-mismatch
+rows, `36` deferred English rules DB gaps, `414` Chinese conflict rows, and
+`1,303` cross-language coverage rows. The large queues remain review leads
+unless a future import gate explicitly consumes them.
 
 The former English import blockers are resolved for v3.4 import purposes:
 `Foe's Burning Blood` maps to local `Burning Blood` for accepted 3.5 sources,
@@ -414,7 +418,8 @@ npm run -w data-tools rules:spells:validate -- spells/short-desc-rules-gaps.gene
 npm run -w data-tools rules:spells:apply -- --dry-run spells/short-desc-rules-gaps.generated.jsonl
 ```
 
-The current local run generates and validates `11` structured spell patch
+The current local run generated, validated, and locally applied `11` structured
+spell patch
 operations from local `spells-full` parsed data: `Create Spirit Idol`,
 `Dominate Living Construct`, `Elemental Prod`, `Energy Alteration`,
 `Indisputable Possession`, `Metamagic Item`, `Power Surge`,
@@ -423,9 +428,10 @@ operations from local `spells-full` parsed data: `Create Spirit Idol`,
 class-name handling in the generator: split combined names such as
 `Sorcerer/Wizard`, map `Crusader (base)` to local `Crusader`, and skip class
 levels whose classes do not exist in the local rules DB. The remaining `36`
-rules DB gaps are still blocked before import because the local `spells-full`
-parsed source has no exact source row for them. Do not treat the generated patch
-file as applied until the rules DB write-capable workflow is explicitly run.
+rules DB gaps are deferred before import because the local `spells-full` parsed
+source has no exact source row for them, and the current Eberron/Forgotten Realms
+local source coverage is not reliable enough to synthesize replacement rules DB
+patches without direct source text.
 
 Good checks:
 
@@ -541,7 +547,7 @@ Normalization behavior:
   `source_error` decisions are accepted only when review selected a concrete
   `chosenVariantId`; this means the source group had bad variants, but the
   selected variant is considered clean enough for import.
-- The current normalized snapshot has `6,124` accepted rows: `3,186`
+- The current normalized snapshot has `6,135` accepted source rows: `3,197`
   `en/imarvin` rows and `2,938` `zh/chm` rows. Chinese normalization currently
   has no skipped rows. The prior `7` `needs_human` entries were resolved by
   comparing Chinese candidates against English short descriptions and the
@@ -579,8 +585,8 @@ Post-normalization cleanup behavior:
   `eberron-35`, and `forgotten-realms-35`). It lists missing Chinese summaries,
   missing English summaries, missing-both rows, and source short descriptions
   whose source book row does not match a spell in the rules DB.
-- Current cleanup snapshot: punctuation QA fixed `155` rows (`39` English,
-  `116` Chinese). Same-name reuse generated `507` candidates, accepted `14`
+- Current cleanup snapshot: punctuation QA fixed `164` rows (`39` English,
+  `125` Chinese). Same-name reuse generated `507` candidates, accepted `14`
   exact-description auto reuse rows, and sent `493` rows through batch review.
 - Current book-coverage snapshot for the official 3.5 working scope has `59`
   books, `3927` rules DB spell rows, `775` missing Chinese summaries, `1310`
@@ -613,8 +619,9 @@ Import behavior:
   or rules DB gaps should be excluded by `summaries:normalize` before import.
 - Emit an import report with inserted, updated, unchanged, skipped, blocker, and
   language counts under `data-tools/out/short-desc-import/`.
-- Current local import baseline: first apply imported `6,124` rows; subsequent
-  dry-run reported `0` inserted, `0` updated, and `6,124` unchanged.
+- Current local import baseline after applying the 11 rules DB gap patches:
+  `6,495` normalized rows imported, with the latest apply inserting `11`
+  English summary rows and leaving `6,484` unchanged.
 
 English source policy:
 
@@ -623,8 +630,8 @@ English source policy:
   applied and the English candidate/source report has been refreshed.
 - Treat generated `short-desc-rules-gaps` spell patches as a separate rules DB
   preparation step, not as part of summary import. The current parsed source
-  auto-generates eleven patch operations; other rules DB gaps need fuller
-  source text or parser coverage before they are patchable.
+  auto-generates eleven patch operations; other rules DB gaps are deferred until
+  fuller direct source text or parser coverage exists.
 - Preserve `sourceKey` for every imported `en/imarvin` row so imported English
   summary provenance remains durable outside transient data-tool reports.
 

@@ -215,8 +215,10 @@ decisions, records review coverage in `summary.json`, and writes follow-up
 queues such as `import-blockers.jsonl`, `en-add-candidates.jsonl`, and
 `en-rules-db-gaps.jsonl`. English add-candidate decisions that are covered by
 the current IMarvinTPA name-matching rules are moved to
-`en-resolved-candidates.jsonl`; conservative source-mismatch title aliases that
-are covered by the same matching rules are moved to
+`en-resolved-candidates.jsonl`; reviewed rules DB gaps that are now covered by
+current local rules DB rows are moved to `en-resolved-rules-db-gaps.jsonl`;
+conservative source-mismatch title aliases that are covered by the same matching
+rules are moved to
 `en-resolved-source-mismatches.jsonl`.
 
 `summaries:normalize` is the import boundary for v3.4 spell summaries. It reads

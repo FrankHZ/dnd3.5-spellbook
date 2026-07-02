@@ -256,7 +256,8 @@ See `docs/harness.md` for details.
   Validated review decisions under `data/short-desc-review/qa/` are consumed by
   the same command and promoted into follow-up queues such as `import-blockers`,
   `en-add-candidates`, `en-resolved-candidates`,
-  `en-resolved-source-mismatches`, and `en-rules-db-gaps`.
+  `en-resolved-rules-db-gaps`, `en-resolved-source-mismatches`, and
+  `en-rules-db-gaps`.
 - Use `npm run -w data-tools spells-full:generate -- short-desc-rules-gaps`
   when reviewed English short-summary gaps need local `spells-full` rules patch
   candidates before import.
