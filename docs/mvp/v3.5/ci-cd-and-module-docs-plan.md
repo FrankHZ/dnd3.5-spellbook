@@ -189,6 +189,14 @@ Initial dependency inventory, 2026-07-02:
   Prisma 7-compatible advisory fix is available or when doing a focused Prisma
   dependency branch.
 
+Applied update slice:
+
+- `npm update --workspaces` was used to refresh package-lock entries that are
+  already allowed by existing semver ranges.
+- No `package.json` dependency ranges were widened in this slice.
+- Remaining `npm outdated --workspaces` entries are pinned, major, or otherwise
+  deferred candidates listed above.
+
 ### 3. Add The CI Workflow
 
 Add a GitHub Actions workflow after the validation spine is portable.
