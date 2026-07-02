@@ -71,6 +71,9 @@ probe a user-level `.agents` path first.
 - Use this main thread as the planning and review gate for broad work. Use
   specialist agents or focused branches for domain-heavy work such as design,
   i18n, data tooling, deployment, harness, or frontend UI passes.
+- Treat `main` as remote-managed. Work on feature branches, push the branch,
+  open a PR, and let remote CI protect merges. Do not locally merge and push
+  `main` unless the user explicitly asks for a direct main update.
 - Use subagents for bounded implementation or corpus-inspection slices after
   the main agent has set the boundary. The main agent still owns review,
   merge-readiness, and source-of-truth docs.
@@ -145,17 +148,18 @@ of loading the source corpus into the main agent context.
 
 ## Validation Commands
 
-Run the smallest relevant set first:
+Run the smallest relevant local check first. Do not default to full portable CI
+for every branch while iterating; remote PR CI is the merge gate.
 
 ```bash
 npm run verify
 npm run ci:portable
 ```
 
-`npm run ci:portable` is the clean-checkout CI subset. It includes backend API
-tests against disposable fixtures, but it does not replace explicit local data
-acceptance when a change touches imported content or local SQLite-backed data
-flows.
+`npm run ci:portable` is the clean-checkout CI subset used by GitHub Actions. It
+includes backend API tests against disposable fixtures. Run it locally for
+merge-readiness spot checks or CI/debugging, not as mandatory overhead for every
+small edit.
 
 Useful pieces:
 

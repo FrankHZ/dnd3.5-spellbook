@@ -37,8 +37,6 @@ Supported targets:
 - `web`: runs portable validation, builds `web`, uploads `web/build/client/` to
   the remote staging directory, then invokes `~/deploy-web.sh`.
 - `backend-and-web`: combines the backend and web paths.
-- `db`: invokes `~/update-db.sh` only. It assumes database files were already
-  uploaded to `~/data/` by the operator.
 
 Required repository secrets:
 
@@ -54,6 +52,11 @@ Optional repository variables:
 The deploy workflow does not automatically sync changed files under
 `docs/deployment-scripts/` to the remote host. If those tracked scripts change,
 copy them to the remote targets first, then run the workflow.
+
+Database deployment is intentionally not a GitHub Actions target yet. The
+current DB update path still depends on operator-controlled SQLite file uploads
+to `~/data/`, so it should stay manual until the v3.5 content DB / app-state DB
+redesign defines a safer release artifact and activation model.
 
 ## Remote Script Sync Policy
 

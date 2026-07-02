@@ -12,9 +12,8 @@ on:
           - backend
           - web
           - backend-and-web
-          - db
       runPortableValidation:
-        description: Run portable validation before code/web deploy
+        description: Run portable validation before deploy
         required: true
         default: true
         type: boolean
@@ -40,18 +39,16 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Node
-        if: ${{ inputs.target != 'db' }}
         uses: actions/setup-node@v6
         with:
           node-version: 24.x
           cache: npm
 
       - name: Install dependencies
-        if: ${{ inputs.target != 'db' }}
         run: npm ci
 
       - name: Run portable validation
-        if: ${{ inputs.target != 'db' && inputs.runPortableValidation }}
+        if: ${{ inputs.runPortableValidation }}
         run: npm run ci:portable
 
       - name: Build web assets
@@ -111,12 +108,3 @@ jobs:
           ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
             "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
             "~/deploy-web.sh"
-
-      - name: Update database
-        if: ${{ inputs.target == 'db' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
-            "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
-            "~/update-db.sh"
