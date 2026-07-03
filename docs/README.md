@@ -41,6 +41,20 @@ The freeze document records the as-built v3.5 state. The supporting plan
 documents describe implementation rationale and are not newer than the freeze
 snapshot.
 
+## Active v3.6 Planning
+
+v3.6 planning has started under `docs/mvp/v3.6/`:
+
+- [mvp/v3.6/README.md](./mvp/v3.6/README.md)
+- [mvp/v3.6/integrated-plan.md](./mvp/v3.6/integrated-plan.md)
+- [mvp/v3.6/db-status-api-plan.md](./mvp/v3.6/db-status-api-plan.md)
+- [mvp/v3.6/ui-ux-display-update-plan.md](./mvp/v3.6/ui-ux-display-update-plan.md)
+- [mvp/v3.6/docs-structure-cleanup-plan.md](./mvp/v3.6/docs-structure-cleanup-plan.md)
+- [mvp/v3.6/normalized-rules-review-plan.md](./mvp/v3.6/normalized-rules-review-plan.md)
+
+The integrated plan classifies committed v3.6 work versus review candidates.
+Start there before opening a v3.6 implementation branch.
+
 ## v3.4 Supporting Docs
 
 The rest of `docs/mvp/v3.4/` contains the supporting plan and acceptance notes
@@ -187,6 +201,7 @@ The `docs/mvp/` directory contains version folders:
 - `v3.3`
 - `v3.4`
 - `v3.5`
+- `v3.6`
 
 Treat frozen or older version folders as historical planning or handoff records.
 Start new active work from `docs/roadmap.md` and a focused topic plan rather

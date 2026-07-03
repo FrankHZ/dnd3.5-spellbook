@@ -160,20 +160,25 @@ Recommended next sequence:
 
 1. **Open v3.6 planning**
 
-   Start from `docs/mvp/v3.5/FREEZE.md` and the review candidates below. Create
-   a focused v3.6 plan before implementation if the first slice changes DB
-   artifact verification, docs ownership, or normalized filter contracts.
+   Use `docs/mvp/v3.6/README.md` and
+   `docs/mvp/v3.6/integrated-plan.md`. The committed v3.6 scope is server DB
+   status, a UI/UX display update, and docs structure cleanup. Broader
+   normalized filters, taxonomy cleanup, normalized detail display, and
+   TypeScript module config cleanup remain review candidates until their owning
+   plans accept implementation boundaries.
 
 2. **Pick the first v3.6 implementation slice**
 
-   The strongest candidates are a server DB status API, docs directory
-   structure cleanup, or the next normalized filter contract review. Keep large
-   content QA, static/offline artifacts, and DB release artifact automation in
-   the later stable track unless explicitly promoted.
+   The safest first slice is the server DB status API because it closes the
+   v3.5 manual remote-content verification gap. The UI/UX display update should
+   be assigned to the frontend-design lane. Keep large content QA,
+   static/offline artifacts, and DB release artifact automation in the later
+   stable track unless explicitly promoted.
 
-## v3.6 Review Candidates
+## v3.6 Committed Workstreams
 
-These are follow-up candidates, not v3.5 merge blockers.
+These are planned v3.6 workstreams. Read `docs/mvp/v3.6/integrated-plan.md`
+before opening implementation branches.
 
 1. **Server DB status API**
 
@@ -183,14 +188,33 @@ These are follow-up candidates, not v3.5 merge blockers.
    remote content DB activation without maintaining a manual deployment ledger
    or requiring SSH/SQLite access for every check.
 
-2. **Normalize more filter contracts**
+2. **UI/UX display update**
+
+   Add user-facing display settings, update spell card/list presentation, review
+   current filter summary density, and continue restrained styling polish. Keep
+   display settings browser-local unless a separate app-state feature is
+   accepted.
+
+3. **Docs directory structure cleanup**
+
+   Review whether `docs/` should be reorganized so durable topic docs, module
+   docs, version plans, freeze snapshots, and historical planning records are
+   easier for future agents to distinguish. Keep frozen version folders
+   immutable during that cleanup.
+
+## v3.6 Review Candidates
+
+These are planning inputs, not committed implementation scope until an owning
+plan accepts the boundary.
+
+1. **Normalize more filter contracts**
 
    Review the generated `SpellComponent` and `SpellMechanicFacet` categories
    before exposing more filter contracts. Likely order is component flags first,
    then range categories, then casting-time categories. Target/effect/area
    filters need more normalization review before they become query vocabulary.
 
-3. **Review taxonomy normalization**
+2. **Review taxonomy normalization**
 
    Review `SpellTaxonomyFacet` before broadening taxonomy UI semantics beyond
    the first v3.5 school/subschool/descriptor filters. Current vocabulary still
@@ -206,30 +230,20 @@ These are follow-up candidates, not v3.5 merge blockers.
    instead of exposing many spell-specific "see text for ..." values as filter
    vocabulary.
 
-4. **Review normalized detail display**
+3. **Review normalized detail display**
 
    Revisit Spell Detail after the mechanics facets are reviewed. The detail page
    can show clearer component/mechanics orientation from normalized fields, but
    raw source text must remain the fallback and ordinary reading flow should not
    turn into a QA/provenance surface.
 
-5. **Review filter selection display density**
+4. **Review filter selection display density for broader filters**
 
-   Review the selected-filter display strategy before adding broader or longer
-   filter vocabularies. Current Chinese and English labels such as class,
-   domain, school, subschool, and descriptor can make multi-select chips too
-   wide when several filters are active. Prefer a compact summary, overflow
-   count, abbreviated chip label, or grouped popover pattern over expanding the
-   current chip layout inside the v3.5 taxonomy slice.
+   The committed UI/UX update can improve current summary density. Before
+   broader or longer filter vocabularies ship, review whether selected filters
+   need overflow counts, abbreviated labels, grouping, or a popover pattern.
 
-6. **Review docs directory structure**
-
-   After the v3.5 freeze, review whether `docs/` should be reorganized so
-   durable topic docs, module docs, version plans, freeze snapshots, and
-   historical planning records are easier for future agents to distinguish.
-   Keep frozen version folders immutable during that cleanup.
-
-7. **Review TypeScript module config cleanup**
+5. **Review TypeScript module config cleanup**
 
    `data-tools` has moved to `moduleResolution: "Node16"` with an explicit
    `rootDir`. The server still uses CommonJS plus `moduleResolution: "node"`
