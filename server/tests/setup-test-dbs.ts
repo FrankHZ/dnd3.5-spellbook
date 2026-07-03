@@ -2,6 +2,10 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import Database from "better-sqlite3";
+import {
+  loadPortableFixtureFile,
+  serverDbFixturePath,
+} from "./support/portable-fixtures";
 
 // Public-safe, synthetic SQLite fixtures for API tests. Keep these minimal and
 // expand them only when a server test needs a new schema shape or seed row.
@@ -223,15 +227,10 @@ function seedRulesDb() {
   db.prepare(
     "INSERT INTO dnd_dndedition (id, name, system, slug, core) VALUES (1, 'D&D 3.5 Core', 'DnD 3.5', 'core-35', 1)",
   ).run();
-  const insertRulebook = db.prepare(
-    `INSERT INTO dnd_rulebook
-      (id, dnd_edition_id, name, abbr, description, year, official_url, slug, image, published)
-      VALUES (?, 1, ?, ?, '', NULL, '', ?, NULL, NULL)`,
+  loadPortableFixtureFile(
+    db,
+    serverDbFixturePath("rules-clean", "rulebooks.jsonl"),
   );
-  insertRulebook.run(4, "Player's Handbook", "PH", "players-handbook");
-  insertRulebook.run(6, "Spell Compendium", "SC", "spell-compendium");
-  insertRulebook.run(56, "Complete Adventurer", "CAd", "complete-adventurer");
-  insertRulebook.run(86, "Complete Divine", "CD", "complete-divine");
 
   db.prepare(
     "INSERT INTO dnd_characterclass (id, name, slug, prestige, short_description, short_description_html) VALUES (1, 'Wizard', 'wizard', 0, '', '')",
@@ -514,9 +513,10 @@ function seedContentDb() {
   db.prepare(
     "INSERT INTO I18nDomainText (id, domainId, lang, variant, name) VALUES ('domain-1-zh', 1, 'zh', 'default', '魔法领域')",
   ).run();
-  db.prepare(
-    "INSERT INTO I18nRulebookText (id, rulebookId, lang, variant, name) VALUES ('rulebook-6-zh', 6, 'zh', 'default', '法术大全')",
-  ).run();
+  loadPortableFixtureFile(
+    db,
+    serverDbFixturePath("content", "i18n-rulebooks.jsonl"),
+  );
   db.prepare(
     "INSERT INTO I18nSpellSchoolText (id, schoolId, lang, variant, name) VALUES ('school-1-zh', 1, 'zh', 'default', '塑能')",
   ).run();

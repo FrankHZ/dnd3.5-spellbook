@@ -1,0 +1,4 @@
+{"op":"insert","table":"dnd_rulebook","key":"rulebook:4","data":{"id":4,"dnd_edition_id":1,"name":"Player's Handbook","abbr":"PH","description":"","year":null,"official_url":"","slug":"players-handbook","image":null,"published":null}}
+{"op":"insert","table":"dnd_rulebook","key":"rulebook:6","data":{"id":6,"dnd_edition_id":1,"name":"Spell Compendium","abbr":"SC","description":"","year":null,"official_url":"","slug":"spell-compendium","image":null,"published":null}}
+{"op":"insert","table":"dnd_rulebook","key":"rulebook:56","data":{"id":56,"dnd_edition_id":1,"name":"Complete Adventurer","abbr":"CAd","description":"","year":null,"official_url":"","slug":"complete-adventurer","image":null,"published":null}}
+{"op":"insert","table":"dnd_rulebook","key":"rulebook:86","data":{"id":86,"dnd_edition_id":1,"name":"Complete Divine","abbr":"CD","description":"","year":null,"official_url":"","slug":"complete-divine","image":null,"published":null}}

@@ -47,3 +47,10 @@ for example `spell-detail.jsonl` or `rules-content-normalization.jsonl`.
 CI uses portable fixtures under this directory. Local acceptance may point at
 real JSONL in the nested `data/` repo through environment variables, but those
 source files do not belong in the parent repo.
+
+Server API tests now load the first fixture slices from
+`rules-clean/fixtures/portable/rulebooks.jsonl` and
+`content/fixtures/portable/i18n-rulebooks.jsonl` through
+`server/tests/support/portable-fixtures.ts`. Keep migrating inline
+`server/tests/setup-test-dbs.ts` seed rows into these role-specific JSONL files
+one stable table or behavior slice at a time.
