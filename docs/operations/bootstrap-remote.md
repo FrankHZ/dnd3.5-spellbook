@@ -2,7 +2,7 @@
 
 This document defines how to prepare a brand-new Lightsail instance to host the application.
 
-It is the one-time host bootstrap companion to [../deployment.md](../deployment.md).
+It is the one-time host bootstrap companion to [./deployment.md](./deployment.md).
 
 It must be executed once for each new server.
 
@@ -145,7 +145,7 @@ sudo chown -R spellbook:spellbook /opt/spellbook
 
 ## 9. Install Canonical Remote Deploy Scripts
 
-Copy the tracked deployment scripts from the repo into the admin user's home directory so the deployment commands documented in [../deployment.md](../deployment.md) will exist on the remote host.
+Copy the tracked deployment scripts from the repo into the admin user's home directory so the deployment commands documented in [./deployment.md](./deployment.md) will exist on the remote host.
 
 ```bash
 cp ~/dnd3.5-spellbook/docs/deployment-scripts/deploy-backend.sh ~/deploy-backend.sh

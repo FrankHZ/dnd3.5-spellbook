@@ -131,8 +131,8 @@ Update these docs during migration:
 
 - `AGENTS.md`
 - `docs/README.md`
-- `docs/import-workflow.md`
-- `docs/rules-db-notes.md`
+- `docs/operations/import-workflow.md`
+- `docs/operations/rules-db-notes.md`
 - `server/README.md`
 
 Add a `data-tools/README.md` with:

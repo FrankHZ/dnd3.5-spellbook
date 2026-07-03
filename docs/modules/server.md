@@ -69,8 +69,8 @@ change.
 ## Related Docs
 
 - [../features.md](../features.md)
-- [../data-setup.md](../data-setup.md)
-- [../deployment.md](../deployment.md)
+- [../operations/data-setup.md](../operations/data-setup.md)
+- [../operations/deployment.md](../operations/deployment.md)
 - [../../server/README.md](../../server/README.md)
 - [../mvp/v3.5/db-ownership-boundary-plan.md](../mvp/v3.5/db-ownership-boundary-plan.md)
 - [../mvp/v3.5/rules-content-normalization-plan.md](../mvp/v3.5/rules-content-normalization-plan.md)

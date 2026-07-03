@@ -63,7 +63,7 @@ In development, the app code uses `import.meta.env.DEV` for development-only beh
 
 For deployment and reverse-proxy expectations, use:
 
-- [../docs/deployment.md](../docs/deployment.md)
+- [../docs/operations/deployment.md](../docs/operations/deployment.md)
 
 ## Notes
 
@@ -73,15 +73,15 @@ For deployment and reverse-proxy expectations, use:
 - Early v3.4 frontend styling work should follow
   [../docs/mvp/v3.4/design-refresh-plan.md](../docs/mvp/v3.4/design-refresh-plan.md).
 - The production build output is written under `build/`.
-- Deployment workflow and remote activation steps are documented in [../docs/deployment.md](../docs/deployment.md).
+- Deployment workflow and remote activation steps are documented in [../docs/operations/deployment.md](../docs/operations/deployment.md).
 - For current release-level behavior, start with [../docs/mvp/v3.3/FREEZE.md](../docs/mvp/v3.3/FREEZE.md).
 
 ## Related Docs
 
 - [../README.md](../README.md)
 - [../docs/README.md](../docs/README.md)
-- [../docs/deployment.md](../docs/deployment.md)
-- [../docs/data-setup.md](../docs/data-setup.md)
+- [../docs/operations/deployment.md](../docs/operations/deployment.md)
+- [../docs/operations/data-setup.md](../docs/operations/data-setup.md)
 - [../docs/design.md](../docs/design.md)
 - [../docs/frontend-map.md](../docs/frontend-map.md)
 - [../docs/i18n.md](../docs/i18n.md)

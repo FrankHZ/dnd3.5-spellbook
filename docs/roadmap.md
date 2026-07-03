@@ -106,7 +106,7 @@ See:
 - `docs/mvp/v3.3/rules-db-prep-workflow-plan.md`
 - `docs/mvp/v3.3/structured-spell-patch-plan.md`
 - `docs/mvp/v3.3/spells-full-import-plan.md`
-- `docs/rules-db-notes.md`
+- `docs/operations/rules-db-notes.md`
 
 ## Current Data State
 

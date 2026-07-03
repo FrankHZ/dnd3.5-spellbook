@@ -74,8 +74,8 @@ The main workspace commands and constraints are documented in:
 The current deployment workflow is documented in:
 
 - [docs/operations/README.md](./docs/operations/README.md)
-- [docs/deployment.md](./docs/deployment.md)
-- [docs/data-setup.md](./docs/data-setup.md)
+- [docs/operations/deployment.md](./docs/operations/deployment.md)
+- [docs/operations/data-setup.md](./docs/operations/data-setup.md)
 - [data-tools/README.md](./data-tools/README.md)
 
 Tracked shell scripts under `docs/deployment-scripts/` are the canonical deployment scripts.
@@ -86,7 +86,7 @@ deployment remains manual until the DB ownership model is redesigned.
 
 Ignored root-level `.bat` files may exist as local machine-specific convenience wrappers, but they are not part of the canonical deployment contract.
 
-For local database setup and data origins, use [docs/data-setup.md](./docs/data-setup.md).
+For local database setup and data origins, use [docs/operations/data-setup.md](./docs/operations/data-setup.md).
 
 ## Repo Layout
 

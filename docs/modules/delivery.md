@@ -71,13 +71,13 @@ DB / app-state DB redesign to define artifact ownership, activation, and
 rollback.
 
 If deployment behavior changes, change the tracked scripts and
-`docs/deployment.md` first. The workflow should stay a trigger/orchestration
+`docs/operations/deployment.md` first. The workflow should stay a trigger/orchestration
 surface.
 
 ## Related Docs
 
 - [../harness.md](../harness.md)
-- [../deployment.md](../deployment.md)
+- [../operations/deployment.md](../operations/deployment.md)
 - [../mvp/v3.5/ci-cd-and-module-docs-plan.md](../mvp/v3.5/ci-cd-and-module-docs-plan.md)
 - [./server.md](./server.md)
 - [./web.md](./web.md)

@@ -129,7 +129,7 @@ third long-lived runtime DB by accident.
   must be preserved.
 - Deployment docs explain which DB files are content artifacts and which are
   user/app-state data.
-- `AGENTS.md`, `docs/data-setup.md`, and workspace READMEs point to the final DB
+- `AGENTS.md`, `docs/operations/data-setup.md`, and workspace READMEs point to the final DB
   ownership decision before implementation.
 
 ## Implementation Notes

@@ -248,7 +248,7 @@ project stage.
 
 ### 4. Keep CD Script-Backed
 
-Keep `docs/deployment.md` and `docs/deployment-scripts/` as the deployment
+Keep `docs/operations/deployment.md` and `docs/deployment-scripts/` as the deployment
 contract.
 
 The first CD automation is a thin manual trigger around the existing scripts,

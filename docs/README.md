@@ -58,19 +58,19 @@ freeze snapshot.
 - [i18n.md](./i18n.md): i18n workflow.
 - [harness.md](./harness.md): validation strategy.
 - [stable-backlog.md](./stable-backlog.md): deferred stable-version work.
-- [public-repo-notes.md](./public-repo-notes.md): public repo exclusions and
+- [public-repo-notes.md](./operations/public-repo-notes.md): public repo exclusions and
   publication cautions.
 
 ### Operations And Data
 
 - [operations/README.md](./operations/README.md): operations map.
-- [deployment.md](./deployment.md): deployment workflow.
-- [data-setup.md](./data-setup.md): database roles, local DB setup, and
+- [deployment.md](./operations/deployment.md): deployment workflow.
+- [data-setup.md](./operations/data-setup.md): database roles, local DB setup, and
   fixtures.
-- [import-workflow.md](./import-workflow.md): maintained app-owned import
+- [import-workflow.md](./operations/import-workflow.md): maintained app-owned import
   workflow.
-- [rules-db-notes.md](./rules-db-notes.md): rules DB inspection and patch notes.
-- [repo-conventions.md](./repo-conventions.md): local wrappers and source of
+- [rules-db-notes.md](./operations/rules-db-notes.md): rules DB inspection and patch notes.
+- [repo-conventions.md](./operations/repo-conventions.md): local wrappers and source of
   truth conventions.
 
 ### Module Docs

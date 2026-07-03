@@ -27,6 +27,6 @@ plan instead of turning integrated plans into status ledgers.
 
 - Keep frozen version folders immutable except for navigation corrections.
 - Put durable current behavior in topic docs such as `docs/features.md`,
-  `docs/deployment.md`, `docs/data-setup.md`, or `docs/modules/`.
+  `docs/operations/deployment.md`, `docs/operations/data-setup.md`, or `docs/modules/`.
 - Put current work order in `docs/roadmap.md`.
 - Create new child plans from `docs/templates/version-plan.md`.

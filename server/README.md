@@ -91,7 +91,7 @@ so older local and remote environments keep running during the split.
 
 The canonical data setup and database lifecycle doc is:
 
-- [../docs/data-setup.md](../docs/data-setup.md)
+- [../docs/operations/data-setup.md](../docs/operations/data-setup.md)
 
 The `server/db/local/` tree is intentionally local-only and is not part of the
 public repo baseline. Tracked migrations and portable fixtures live under
@@ -100,7 +100,7 @@ public repo baseline. Tracked migrations and portable fixtures live under
 
 The canonical import pipeline doc is:
 
-- [../docs/import-workflow.md](../docs/import-workflow.md)
+- [../docs/operations/import-workflow.md](../docs/operations/import-workflow.md)
 
 Data tooling commands live in:
 
@@ -112,22 +112,22 @@ DB migrations at startup.
 
 For deployed runtime configuration, including `/etc/default/spellbook-api`, use:
 
-- [../docs/deployment.md](../docs/deployment.md)
+- [../docs/operations/deployment.md](../docs/operations/deployment.md)
 
 ## Notes
 
 - The server depends on `@dnd/contracts` for shared DTOs and type contracts.
 - Database setup and import workflows are project-specific; use the existing
   `server` and `data-tools` scripts rather than inventing parallel flows.
-- Deployment and database update workflows are documented in [../docs/deployment.md](../docs/deployment.md).
+- Deployment and database update workflows are documented in [../docs/operations/deployment.md](../docs/operations/deployment.md).
 - For current feature behavior, start with [../docs/features.md](../docs/features.md).
 
 ## Related Docs
 
 - [../README.md](../README.md)
 - [../docs/README.md](../docs/README.md)
-- [../docs/deployment.md](../docs/deployment.md)
-- [../docs/data-setup.md](../docs/data-setup.md)
-- [../docs/import-workflow.md](../docs/import-workflow.md)
+- [../docs/operations/deployment.md](../docs/operations/deployment.md)
+- [../docs/operations/data-setup.md](../docs/operations/data-setup.md)
+- [../docs/operations/import-workflow.md](../docs/operations/import-workflow.md)
 - [../data-tools/README.md](../data-tools/README.md)
 

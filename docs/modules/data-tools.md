@@ -63,8 +63,8 @@ rules DB manifests, parser output, or import behavior.
 ## Related Docs
 
 - [../../data-tools/README.md](../../data-tools/README.md)
-- [../data-setup.md](../data-setup.md)
-- [../import-workflow.md](../import-workflow.md)
-- [../rules-db-notes.md](../rules-db-notes.md)
+- [../operations/data-setup.md](../operations/data-setup.md)
+- [../operations/import-workflow.md](../operations/import-workflow.md)
+- [../operations/rules-db-notes.md](../operations/rules-db-notes.md)
 - [../mvp/v3.4/data-harness-hardening-plan.md](../mvp/v3.4/data-harness-hardening-plan.md)
 - [../mvp/v3.4/short-description-pipeline-plan.md](../mvp/v3.4/short-description-pipeline-plan.md)

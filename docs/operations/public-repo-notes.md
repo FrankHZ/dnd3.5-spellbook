@@ -44,5 +44,5 @@ The current public documentation baseline is still MVP-oriented:
 - [README.md](../README.md)
 - [data-setup.md](./data-setup.md)
 - [repo-conventions.md](./repo-conventions.md)
-- [stable-backlog.md](./stable-backlog.md)
+- [stable-backlog.md](../stable-backlog.md)
 

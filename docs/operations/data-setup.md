@@ -10,7 +10,7 @@ The app uses three SQLite database roles:
 
 For deployment of already-prepared database files, use
 [deployment.md](./deployment.md). For one-time remote host setup, use
-[operations/bootstrap-remote.md](./operations/bootstrap-remote.md).
+[bootstrap-remote.md](./bootstrap-remote.md).
 
 ## Local-Only Data Policy
 
@@ -171,7 +171,7 @@ patched directly in the content DB or by replacing the legacy rules baseline.
 ## Environment Variables
 
 The current local server environment points to these database files in
-[server/.env](../server/.env):
+[server/.env](../../server/.env):
 
 - `RULES_DATABASE_URL`
 - `CONTENT_DATABASE_URL`
@@ -424,11 +424,11 @@ After that, the backend can use:
 
 ## Related Files
 
-- [../server/package.json](../server/package.json)
-- [../server/prisma-content/prisma.config.ts](../server/prisma-content/prisma.config.ts)
-- [../server/prisma-app-state/prisma.config.ts](../server/prisma-app-state/prisma.config.ts)
-- [../server/db/README.md](../server/db/README.md)
-- [../server/.env](../server/.env)
+- [../../server/package.json](../../server/package.json)
+- [../../server/prisma-content/prisma.config.ts](../../server/prisma-content/prisma.config.ts)
+- [../../server/prisma-app-state/prisma.config.ts](../../server/prisma-app-state/prisma.config.ts)
+- [../../server/db/README.md](../../server/db/README.md)
+- [../../server/.env](../../server/.env)
 - [deployment.md](./deployment.md)
-- [operations/bootstrap-remote.md](./operations/bootstrap-remote.md)
+- [operations/bootstrap-remote.md](./bootstrap-remote.md)
 - [public-repo-notes.md](./public-repo-notes.md)

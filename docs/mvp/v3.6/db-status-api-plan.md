@@ -20,7 +20,7 @@ of requiring manual SSH and SQLite inspection.
 - Owning domain: server / deployment
 - Primary implementation branch or specialist: main agent or focused server
   branch
-- Related feature/module docs: `docs/data-setup.md`, `docs/deployment.md`,
+- Related feature/module docs: `docs/operations/data-setup.md`, `docs/operations/deployment.md`,
   `docs/modules/server.md`, `docs/modules/delivery.md`
 - Upstream dependency plans: v3.5 content DB and deployment freeze
 - Downstream consumer plans: deployment smoke checks, future DB artifact
@@ -83,7 +83,7 @@ future releases and hard for agents to confirm without SSH access.
 - Status: accepted.
 - Deliverable: deployment docs explain how to compare local meta and remote API
   status after manual DB upload.
-- Expected files: `docs/deployment.md`, `docs/data-setup.md`,
+- Expected files: `docs/operations/deployment.md`, `docs/operations/data-setup.md`,
   `docs/modules/server.md` as needed.
 - Validation: docs examples use the current remote placeholder style.
 

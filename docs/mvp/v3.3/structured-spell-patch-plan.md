@@ -226,8 +226,8 @@ Acceptance for the first Tome of Battle case:
 When implementing:
 
 - add the source format to `data-tools/README.md`
-- update `docs/rules-db-notes.md` with current missing candidate status
-- update `docs/data-setup.md` with the new spell patch commands
+- update `docs/operations/rules-db-notes.md` with current missing candidate status
+- update `docs/operations/data-setup.md` with the new spell patch commands
 - retire or archive `server/data/db/missing.txt` after its contents are
   represented in structured patch data or documented as non-actions
 
