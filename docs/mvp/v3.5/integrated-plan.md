@@ -1,16 +1,11 @@
 # v3.5 Integrated Plan
 
-Status: mixed coordination and as-built surface. The DB ownership split,
-normalized rules-content generation, backend parity/read-source work, portable
-backend API fixtures, CI baseline, deployment artifact boundary, module-doc
-baseline, and compact agent-guide pass are implemented. Frontend normalized
-facet consumers, rulebook display-label review, risky dependency follow-up, and
-automatic module-doc PRs remain planned follow-up work.
+Status: planning coordination surface.
 
 This plan ties the v3.5 child plans together and records the current
-cross-plan conflict review. It is not a detailed implementation checklist. Use
-it to decide sequencing, ownership, and handoff boundaries, then use each child
-plan's status line to distinguish shipped slices from remaining work.
+cross-plan conflict review. It is not an implementation checklist. Use it to
+decide sequencing, ownership, and handoff boundaries before starting a v3.5
+implementation branch.
 
 ## Objective
 

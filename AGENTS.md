@@ -211,10 +211,11 @@ manual browser smoke test of the affected pages.
 - Local UI wrappers live in `web/app/components/ui/`.
 - Server API route registration starts in `server/src/app.ts`.
 - Spell backend behavior is split under `server/src/services/spells/`.
-- Runtime database clients are generated from both Prisma schemas; regenerate
-  clients when schemas change.
+- Runtime database clients are generated from the rules-clean, content, and
+  app-state Prisma schemas; regenerate clients when schemas change.
 - Data-tool code belongs under the owning `data-tools/src/` module:
-  `shared/`, `db/`, `rules/`, `short-desc/`, `zh-parser/`, or `harness/`.
+  `shared/`, `db/`, `rules/`, `rules-content/`, `rulebooks/`,
+  `short-desc/`, `zh-parser/`, or `harness/`.
 - Classify every `data-tools/package.json` script in
   `data-tools/scripts.manifest.json`.
 - Maintained data-tool commands deserve focused helper tests. One-time or
