@@ -26,55 +26,6 @@ function execMany(db: Database.Database, statements: string[]) {
   }
 }
 
-function htmlText(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
-function insertSpell(
-  db: Database.Database,
-  input: {
-    id: number;
-    name: string;
-    slug: string;
-    rulebookId: number;
-    schoolId?: number;
-    subSchoolId?: number | null;
-    description?: string;
-  },
-) {
-  db.prepare(
-    `
-      INSERT INTO dnd_spell (
-        id, added, rulebook_id, page, name, school_id, sub_school_id,
-        verbal_component, somatic_component, material_component,
-        arcane_focus_component, divine_focus_component, xp_component,
-        casting_time, range, target, effect, area, duration,
-        saving_throw, spell_resistance, description, slug,
-        meta_breath_component, true_name_component, extra_components,
-        description_html, corrupt_component, corrupt_level,
-        verified, verified_author_id, verified_time
-      )
-      VALUES (
-        @id, '2020-01-01T00:00:00.000Z', @rulebookId, 1, @name,
-        @schoolId, @subSchoolId,
-        1, 1, 0, 0, 0, 0,
-        '1 standard action', 'Medium', 'One creature', NULL, NULL,
-        'Instantaneous', 'None', 'Yes', @description, @slug,
-        0, 0, NULL, @descriptionHtml, 0, NULL, 1, NULL, NULL
-      )
-    `,
-  ).run({
-    ...input,
-    schoolId: input.schoolId ?? 1,
-    subSchoolId: input.subSchoolId ?? null,
-    description: input.description ?? `${input.name} description.`,
-    descriptionHtml: `<p>${htmlText(input.description ?? `${input.name} description.`)}</p>`,
-  });
-}
-
 function seedRulesDb() {
   const db = new Database(rulesDbPath);
   execMany(db, [
@@ -224,112 +175,18 @@ function seedRulesDb() {
     `,
   ]);
 
-  db.prepare(
-    "INSERT INTO dnd_dndedition (id, name, system, slug, core) VALUES (1, 'D&D 3.5 Core', 'DnD 3.5', 'core-35', 1)",
-  ).run();
+  loadPortableFixtureFile(
+    db,
+    serverDbFixturePath("rules-clean", "base-lookups.jsonl"),
+  );
   loadPortableFixtureFile(
     db,
     serverDbFixturePath("rules-clean", "rulebooks.jsonl"),
   );
-
-  db.prepare(
-    "INSERT INTO dnd_characterclass (id, name, slug, prestige, short_description, short_description_html) VALUES (1, 'Wizard', 'wizard', 0, '', '')",
-  ).run();
-  db.prepare(
-    "INSERT INTO dnd_domain (id, name, slug) VALUES (1, 'Magic', 'magic')",
-  ).run();
-  db.prepare(
-    "INSERT INTO dnd_spellschool (id, name, slug) VALUES (1, 'Evocation', 'evocation')",
-  ).run();
-  db.prepare(
-    "INSERT INTO dnd_spellsubschool (id, name, slug) VALUES (1, 'Calling', 'calling')",
-  ).run();
-  db.prepare(
-    "INSERT INTO dnd_spelldescriptor (id, name, slug) VALUES (1, 'Fire', 'fire')",
-  ).run();
-
-  insertSpell(db, {
-    id: 1,
-    name: "Acid Arrow",
-    slug: "acid-arrow",
-    rulebookId: 4,
-  });
-  insertSpell(db, {
-    id: 2,
-    name: "Burning Hands",
-    slug: "burning-hands",
-    rulebookId: 4,
-  });
-  insertSpell(db, {
-    id: 100,
-    name: "Fireball",
-    slug: "fireball",
-    rulebookId: 6,
-  });
-  insertSpell(db, {
-    id: 101,
-    name: "Magic Missile",
-    slug: "magic-missile",
-    rulebookId: 4,
-  });
-  insertSpell(db, {
-    id: 887,
-    name: "Unicorn Heart",
-    slug: "unicorn-heart",
-    rulebookId: 6,
-  });
-  insertSpell(db, {
-    id: 2441,
-    name: "Summon Monster I",
-    slug: "summon-monster-i",
-    rulebookId: 6,
-    subSchoolId: 1,
-  });
-  insertSpell(db, {
-    id: 3000,
-    name: "Last Breath",
-    slug: "last-breath",
-    rulebookId: 6,
-  });
-  insertSpell(db, {
-    id: 3001,
-    name: "Last Breath",
-    slug: "last-breath-cad",
-    rulebookId: 56,
-  });
-
-  const descriptor = db.prepare(
-    "INSERT INTO dnd_spell_descriptors (id, spell_id, spelldescriptor_id) VALUES (?, ?, 1)",
+  loadPortableFixtureFile(
+    db,
+    serverDbFixturePath("rules-clean", "spell-runtime.jsonl"),
   );
-  descriptor.run(1, 2);
-  descriptor.run(2, 100);
-
-  const classLevel = db.prepare(
-    "INSERT INTO dnd_spellclasslevel (id, character_class_id, spell_id, level, extra) VALUES (?, 1, ?, ?, '')",
-  );
-  const classIndex = db.prepare(
-    "INSERT INTO idx_spell_class_level (spell_id, class_id, level, rulebook_id, edition_id, extra) VALUES (?, 1, ?, ?, 1, '')",
-  );
-  [
-    [1, 1, 3, 4],
-    [2, 2, 3, 4],
-    [3, 100, 3, 6],
-    [4, 101, 1, 4],
-    [5, 887, 3, 6],
-    [6, 2441, 1, 6],
-    [7, 3000, 4, 6],
-    [8, 3001, 4, 56],
-  ].forEach(([id, spellId, level, rulebookId]) => {
-    classLevel.run(id, spellId, level);
-    classIndex.run(spellId, level, rulebookId);
-  });
-
-  db.prepare(
-    "INSERT INTO dnd_spelldomainlevel (id, domain_id, spell_id, level, extra) VALUES (1, 1, 101, 1, '')",
-  ).run();
-  db.prepare(
-    "INSERT INTO idx_spell_domain_level (spell_id, domain_id, level, rulebook_id, edition_id, extra) VALUES (101, 1, 1, 4, 1, '')",
-  ).run();
 
   db.close();
 }
@@ -538,86 +395,14 @@ function seedContentDb() {
     `,
   ]);
 
-  const insertSpellText = db.prepare(
-    `INSERT INTO I18nSpellText
-      (id, spellId, rulebookId, lang, variant, name, descriptionHtml, descriptionText, sourceKey)
-      VALUES (?, ?, ?, 'zh', 'chm', ?, ?, ?, ?)`,
+  loadPortableFixtureFile(
+    db,
+    serverDbFixturePath("content", "i18n-spell-overlays.jsonl"),
   );
-  insertSpellText.run(
-    "spell-1-zh",
-    1,
-    4,
-    "强酸箭",
-    "<p>强酸箭描述。</p>",
-    "强酸箭描述。",
-    "fixture:spell-1",
-  );
-  insertSpellText.run(
-    "spell-887-zh",
-    887,
-    6,
-    "独角兽之心",
-    "<p>独角兽之心描述。</p>",
-    "独角兽之心描述。",
-    "fixture:spell-887",
-  );
-  insertSpellText.run(
-    "spell-100-zh",
-    100,
-    6,
-    "火球术",
-    "<p>火球术描述。</p>",
-    "火球术描述。",
-    "fixture:spell-100",
-  );
-
-  const insertSummary = db.prepare(
-    `INSERT INTO I18nSpellSummaryText
-      (id, spellId, rulebookId, lang, variant, summaryText, sourceKey, sourceName, sourceKind, reviewStatus)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'accepted')`,
-  );
-  insertSummary.run(
-    "summary-2441-en",
-    2441,
-    6,
-    "en",
-    "imarvin",
-    "Calls extraplanar creature to fight for you.",
-    "fixture:summary-2441-en",
-    "fixture",
-    "spell",
-  );
-  insertSummary.run(
-    "summary-887-zh",
-    887,
-    6,
-    "zh",
-    "chm",
-    "获得60尺速度,+4基于力量,敏捷,体质的检定；可使用一次次元门。",
-    "fixture:summary-887-zh",
-    "fixture",
-    "spell",
-  );
-
-  db.prepare(
-    "INSERT INTO I18nCharacterClassText (id, classId, lang, variant, name) VALUES ('class-1-zh', 1, 'zh', 'default', '法师')",
-  ).run();
-  db.prepare(
-    "INSERT INTO I18nDomainText (id, domainId, lang, variant, name) VALUES ('domain-1-zh', 1, 'zh', 'default', '魔法领域')",
-  ).run();
   loadPortableFixtureFile(
     db,
     serverDbFixturePath("content", "i18n-rulebooks.jsonl"),
   );
-  db.prepare(
-    "INSERT INTO I18nSpellSchoolText (id, schoolId, lang, variant, name) VALUES ('school-1-zh', 1, 'zh', 'default', '塑能')",
-  ).run();
-  db.prepare(
-    "INSERT INTO I18nSpellSubschoolText (id, subschoolId, lang, variant, name) VALUES ('subschool-1-zh', 1, 'zh', 'default', '呼唤')",
-  ).run();
-  db.prepare(
-    "INSERT INTO I18nDescriptorText (id, descriptorId, lang, variant, name) VALUES ('descriptor-1-zh', 1, 'zh', 'default', '火')",
-  ).run();
   loadPortableFixtureFile(
     db,
     serverDbFixturePath("content", "normalized-rules-spells.jsonl"),

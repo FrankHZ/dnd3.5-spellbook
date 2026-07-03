@@ -48,10 +48,7 @@ CI uses portable fixtures under this directory. Local acceptance may point at
 real JSONL in the nested `data/` repo through environment variables, but those
 source files do not belong in the parent repo.
 
-Server API tests now load fixture slices from
-`rules-clean/fixtures/portable/rulebooks.jsonl`,
-`content/fixtures/portable/i18n-rulebooks.jsonl`, and
-`content/fixtures/portable/normalized-rules-spells.jsonl` through
-`server/tests/support/portable-fixtures.ts`. Keep migrating inline
-`server/tests/setup-test-dbs.ts` seed rows into these role-specific JSONL files
-one stable table or behavior slice at a time.
+Server API tests load seed rows through
+`server/tests/support/portable-fixtures.ts`. `server/tests/setup-test-dbs.ts`
+owns disposable table DDL only; seed data belongs in role-specific JSONL files
+under `rules-clean/fixtures/portable/` and `content/fixtures/portable/`.

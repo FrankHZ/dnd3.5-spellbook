@@ -1,0 +1,6 @@
+{"op":"insert","table":"dnd_dndedition","key":"edition:1","data":{"id":1,"name":"D&D 3.5 Core","system":"DnD 3.5","slug":"core-35","core":1}}
+{"op":"insert","table":"dnd_characterclass","key":"class:1","data":{"id":1,"name":"Wizard","slug":"wizard","prestige":0,"short_description":"","short_description_html":""}}
+{"op":"insert","table":"dnd_domain","key":"domain:1","data":{"id":1,"name":"Magic","slug":"magic"}}
+{"op":"insert","table":"dnd_spellschool","key":"school:1","data":{"id":1,"name":"Evocation","slug":"evocation"}}
+{"op":"insert","table":"dnd_spellsubschool","key":"subschool:1","data":{"id":1,"name":"Calling","slug":"calling"}}
+{"op":"insert","table":"dnd_spelldescriptor","key":"descriptor:1","data":{"id":1,"name":"Fire","slug":"fire"}}
