@@ -20,7 +20,7 @@ It is not affiliated with, endorsed by, or sponsored by Wizards of the Coast.
 
 To reduce redistribution risk, data-bearing local artifacts are intentionally
 excluded from the public repository, especially runtime databases under
-`server/data/db/` and parser/source data under `data/`.
+`server/db/local/` and parser/source data under `data/`.
 
 ## Status
 

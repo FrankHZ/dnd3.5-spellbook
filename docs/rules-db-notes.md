@@ -55,7 +55,7 @@ runtime effect is checked through the presence and row-count consistency of
 
 ## Current Counts
 
-Snapshot from the local `server/data/db/rules-clean.sqlite`:
+Snapshot from the local `server/db/local/rules-clean.sqlite`:
 
 | Table                    |  Rows |
 | ------------------------ | ----: |
@@ -177,7 +177,7 @@ being written into the patch file. Running `rules:spells:apply` without
 ## Verified Manual Fixes
 
 The local `rules-clean.sqlite` already reflects the manual fixes listed in
-`server/data/db/fixes.txt` and `rules-clean-v2.0.patch.sql`.
+`server/db/local/fixes.txt` and `rules-clean-v2.0.patch.sql`.
 
 Verified spell names:
 
@@ -208,7 +208,7 @@ Verified rulebook names:
 
 ## Current Missing Candidates
 
-`server/data/db/missing.txt` originally listed five candidates. Local rules DB
+`server/db/local/missing.txt` originally listed five candidates. Local rules DB
 inspection now shows:
 
 | Candidate                   | Listed Book | Current DB Status                                 |

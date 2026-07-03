@@ -105,7 +105,7 @@ function importRows(dbPath: string, rows: SummaryRow[], dryRun: boolean) {
   try {
     if (!tableExists(db)) {
       throw new Error(
-        "I18nSpellSummaryText table is missing. Apply server/prisma-content migrations first.",
+        "I18nSpellSummaryText table is missing. Apply server/db/content migrations first.",
       );
     }
 

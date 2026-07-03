@@ -364,7 +364,7 @@ to parse legacy `dnd_spell` text columns.
 
 `rules:content:import` is the content DB mutation boundary for normalized rules
 content. It requires the rules-content generated tables from
-`server/prisma-content` migrations, including `SpellContent`,
+`server/db/content` migrations, including `SpellContent`,
 `SpellTaxonomyFacet`, and `RulesContentIssue`. Without `--dry-run`, it replaces
 only those generated tables; it does not touch i18n rows, app-state rows, the
 rules DB, or the nested local data repo.

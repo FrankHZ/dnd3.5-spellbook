@@ -8,7 +8,7 @@ Data-bearing local artifact directories are intentionally local-only.
 
 They are not part of the public repository baseline and may contain:
 
-- `server/data/db/`: processed rules-side and app SQLite databases
+- `server/db/local/`: processed rules-side and app SQLite databases
 - `data/`: nested local data repo containing upstream raw inputs, CHM-derived
   HTML, parser mappings, raw text inputs, entity translation JSON, and rules
   patch inputs

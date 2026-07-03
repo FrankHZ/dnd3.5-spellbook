@@ -26,7 +26,8 @@ That means:
 
 Current local data ownership:
 
-- `server/data/db/`: runtime SQLite databases used by the API
+- `server/db/`: tracked DB migrations, seed entry points, portable fixtures,
+  and ignored runtime SQLite databases under `server/db/local/`
 - `data/`: nested local data repo for parser and data-tool source inputs such
   as CHM HTML, upstream raw data, entity translation JSON, and rules DB patch
   files
@@ -39,7 +40,7 @@ Current local data ownership:
 Local file:
 
 ```text
-server/data/db/rules-clean.sqlite
+server/db/local/rules-clean.sqlite
 ```
 
 Purpose:
@@ -47,15 +48,17 @@ Purpose:
 - read-only gameplay and reference data
 - canonical spell and rules records consumed by the backend
 
-The server treats this database as a prepared runtime input. Rules DB
-preparation commands live in `data-tools`, not in server startup.
+The server treats this database as a prepared runtime input. For v3.5 and the
+content DB migration, the current `rules-clean.sqlite` is the locked legacy
+baseline. Do not swap it back to a fresh upstream DnDTools database during this
+migration; move future durable fixes into the content DB generation path.
 
 ### Content DB
 
 Typical local file:
 
 ```text
-server/data/db/content.sqlite
+server/db/local/content.sqlite
 ```
 
 Purpose:
@@ -65,16 +68,17 @@ Purpose:
 - spell short summaries
 - normalized rules-derived runtime tables generated from the legacy rules DB
 
-During the v3.5 split, existing local or remote environments may still point at
-`server/data/db/app.sqlite`; runtime code and content import tools accept
-`APP_DATABASE_URL` as a transitional fallback for this same content DB role.
+During the v3.5 split, existing local or remote environments may still use
+`APP_DATABASE_URL` as a transitional fallback for this same content DB role. New
+local setup should point that alias at the same file as `CONTENT_DATABASE_URL`
+rather than creating a separate `app.sqlite`.
 
 ### App-State DB
 
 Typical local file:
 
 ```text
-server/data/db/app-state.sqlite
+server/db/local/app-state.sqlite
 ```
 
 Purpose:
@@ -105,10 +109,11 @@ data/upstream/dndtools/dnd.sqlite
 
 Instead, the project works from a local processed rules database:
 
-- `server/data/db/rules-clean.sqlite`
+- `server/db/local/rules-clean.sqlite`
 
 That processed database is what the backend and deployment workflow expect as
-the rules-side SQLite source.
+the rules-side SQLite source. It is locked as the legacy baseline while runtime
+reads migrate to normalized content DB tables.
 
 ### Content DB Origin
 
@@ -119,8 +124,14 @@ evolved from the Prisma content schema under:
 server/prisma-content/
 ```
 
-It is not an upstream imported dataset. It is generated from the current schema
-and populated through project import scripts.
+Tracked content DB migrations and portable fixtures live under:
+
+```text
+server/db/content/
+```
+
+The content DB is not an upstream imported dataset. It is generated from the
+current schema and populated through project import scripts.
 
 ### App-State DB Origin
 
@@ -129,6 +140,13 @@ and evolved from the Prisma app-state schema under:
 
 ```text
 server/prisma-app-state/
+```
+
+Tracked app-state DB migrations, portable fixtures, and the development seed
+entry point live under:
+
+```text
+server/db/app-state/
 ```
 
 It should remain separate from generated content so future user data can be
@@ -146,9 +164,9 @@ The practical rule is:
 The app-state DB is a separate future user/app-state boundary. It may start
 empty locally, but it should not be collapsed into the content DB.
 
-Normalized rules content is rebuildable from the prepared local rules DB plus
-declared source patch/review inputs. It should be regenerated through
-`data-tools`, not patched directly in the content DB.
+Normalized rules content is rebuildable from the locked local rules DB plus
+declared review inputs. It should be regenerated through `data-tools`, not
+patched directly in the content DB or by replacing the legacy rules baseline.
 
 ## Environment Variables
 
@@ -162,14 +180,15 @@ The current local server environment points to these database files in
 Current default local paths:
 
 ```dotenv
-RULES_DATABASE_URL="file:<repo>/server/data/db/rules-clean.sqlite"
-CONTENT_DATABASE_URL="file:<repo>/server/data/db/content.sqlite"
-APP_STATE_DATABASE_URL="file:<repo>/server/data/db/app-state.sqlite"
+RULES_DATABASE_URL="file:<repo>/server/db/local/rules-clean.sqlite"
+CONTENT_DATABASE_URL="file:<repo>/server/db/local/content.sqlite"
+APP_STATE_DATABASE_URL="file:<repo>/server/db/local/app-state.sqlite"
 ```
 
 `APP_DATABASE_URL` is temporarily accepted by runtime code and content import
 tools as a compatibility fallback for the content DB. Prefer
-`CONTENT_DATABASE_URL` for new local setup.
+`CONTENT_DATABASE_URL` for new local setup, and point the compatibility alias at
+the same SQLite file when it is present.
 
 If your local checkout lives elsewhere, update the paths accordingly.
 
@@ -245,9 +264,12 @@ npm run -w server db:content:reset
 This runs Prisma migrations using the explicit content Prisma config:
 
 - `server/prisma-content/prisma.config.ts`
+- tracked migrations under `server/db/content/migrations/`
 
 It creates or updates the local content database referenced by
-`CONTENT_DATABASE_URL`.
+`CONTENT_DATABASE_URL`. The reset script pre-creates the SQLite file before
+running Prisma Migrate because Prisma 7.8 can otherwise report a blank schema
+engine error when the target SQLite file does not exist on Windows.
 
 Populate the content DB through server import commands:
 
@@ -289,6 +311,7 @@ npm run -w server db:app-state:seed
 This runs the Prisma seed configured by:
 
 - `server/prisma-app-state/prisma.config.ts`
+- seed entry point `server/db/app-state/seed.ts`
 
 ## Generate Prisma Clients
 
@@ -303,7 +326,7 @@ npm run -w server db:generate
 For a normal local setup:
 
 1. Ensure `server/.env` points to valid local database paths.
-2. Ensure `server/data/db/rules-clean.sqlite` exists.
+2. Ensure `server/db/local/rules-clean.sqlite` exists.
 3. Run `npm install` from the repo root.
 4. Run `npm run -w server db:generate`.
 5. Run `npm run -w server db:content:reset`.
@@ -332,8 +355,11 @@ After that, the backend can use:
 - Deployment copies database files after they exist locally; deployment is not
   the step that creates the content DB schema.
 - The public repo intentionally excludes data-bearing local artifacts such as
-  `server/data/db/`, `data/`, and `data-tools/out/`, so local users must supply
+  `server/db/local/`, `data/`, and `data-tools/out/`, so local users must supply
   or recreate those files themselves.
+- Parent-repo DB fixtures belong under `server/db/<db-role>/fixtures/portable/`
+  as public-safe JSONL. CI uses these dummy fixtures; local acceptance may point
+  to real JSONL in the nested `data/` repo through environment variables.
 - The root `data/` directory is a nested local Git repo in this workspace. Use
   that repo to version local source inputs without adding them to the parent
   project repo.
@@ -343,6 +369,7 @@ After that, the backend can use:
 - [../server/package.json](../server/package.json)
 - [../server/prisma-content/prisma.config.ts](../server/prisma-content/prisma.config.ts)
 - [../server/prisma-app-state/prisma.config.ts](../server/prisma-app-state/prisma.config.ts)
+- [../server/db/README.md](../server/db/README.md)
 - [../server/.env](../server/.env)
 - [deployment.md](./deployment.md)
 - [operations/bootstrap-remote.md](./operations/bootstrap-remote.md)

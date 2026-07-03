@@ -16,7 +16,8 @@ belongs in `docs/roadmap.md`.
 - `docs/`: durable project docs, operational docs, and MVP history.
 - `data/`: ignored nested local data repo for source inputs, maintained patch
   data, normalized import JSONL, and review decisions.
-- `server/data/db/`: ignored local runtime SQLite databases.
+- `server/db/`: tracked DB migrations, seed entry points, portable fixtures,
+  and ignored local runtime SQLite databases under `server/db/local/`.
 - `data-tools/out/`: generated reports, parser output, review queues, and other
   rebuildable intermediates.
 
@@ -140,12 +141,13 @@ The app depends on local SQLite files configured by `server/.env`:
 - `APP_STATE_DATABASE_URL`
 
 `APP_DATABASE_URL` is a transitional compatibility alias for the content DB
-only. These point at local files under `server/data/db/`. That tree is
+only. These point at local files under `server/db/local/`. That local subtree is
 intentionally excluded from the public repo baseline. Do not replace it, move
 it, or assume a fresh clone has the same data.
 
 Data tools may inspect local SQLite files, but must not modify
-`server/data/db/` unless the user explicitly asked for a write-capable workflow.
+`server/db/local/` unless the user explicitly asked for a write-capable
+workflow.
 
 Content-bearing local patch data, maintained source indexes, normalized import
 JSONL, and durable review decisions belong in the nested `data/` repo. Keep

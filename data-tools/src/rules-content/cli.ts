@@ -344,7 +344,7 @@ function assertGeneratedTables(db: Database.Database) {
   const missing = GENERATED_TABLES.filter((table) => !tableExists(db, table));
   if (missing.length > 0) {
     throw new Error(
-      `Rules content tables are missing. Apply server/prisma-content migrations first: ${missing.join(", ")}`,
+      `Rules content tables are missing. Apply server/db/content migrations first: ${missing.join(", ")}`,
     );
   }
 }

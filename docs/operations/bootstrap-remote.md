@@ -278,7 +278,7 @@ sudo systemctl reload nginx
 Database origins:
 
 - The deployed rules database (`spellbook.db`) ultimately comes from the original `dnd.sqlite` dataset available from the `dndtools/dndtools` project, after this repo's local processing pipeline.
-- The deployed app database (`app.db`) is project-local and created from the Prisma app schema in `server/`.
+- The deployed app/content database (`app.db`) is project-local and created from the Prisma content schema in `server/`.
 
 This bootstrap doc assumes you already have local database files ready to upload.
 
@@ -291,8 +291,8 @@ Before the local `remote` SSH alias is configured, upload directly to the server
 From local machine:
 
 ```bash
-scp rules-clean.sqlite admin@YOUR_SERVER_IP:~/data/spellbook.db
-scp app.sqlite         admin@YOUR_SERVER_IP:~/data/app.db
+scp server/db/local/rules-clean.sqlite admin@YOUR_SERVER_IP:~/data/spellbook.db
+scp server/db/local/content.sqlite     admin@YOUR_SERVER_IP:~/data/app.db
 ```
 
 Then on server:

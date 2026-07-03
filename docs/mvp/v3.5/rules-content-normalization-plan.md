@@ -22,13 +22,14 @@ Other fields still carry mixed semantics in string columns:
 
 Patching the legacy rules DB can fix missing rows, but it does not fix the
 underlying shape. v3.5 should make our own normalized rules content model the
-canonical runtime target and treat the legacy DB as an upstream source.
+canonical runtime target while locking the current `rules-clean.sqlite` as the
+legacy baseline used during migration.
 
 ## Goals
 
 - Build and maintain a normalized rules content model owned by this project.
-- Keep the legacy `rules-clean` DB as a read-only source input and audit trail,
-  not the schema we keep extending forever.
+- Keep the current legacy `rules-clean` DB as the frozen migration baseline and
+  audit trail, not the schema we keep extending forever.
 - Move runtime spell and metadata reads toward `CONTENT_DATABASE_URL` after the
   content DB split.
 - Preserve raw source values next to normalized facets so display text and
@@ -57,16 +58,19 @@ canonical runtime target and treat the legacy DB as an upstream source.
 
 Use three roles:
 
-- `LEGACY_RULES_DATABASE_URL` or transitional `RULES_DATABASE_URL`: cleaned
-  legacy rules DB used as a read-only source input.
+- `LEGACY_RULES_DATABASE_URL` or transitional `RULES_DATABASE_URL`: current
+  cleaned legacy rules DB, locked as the migration baseline until runtime reads
+  move fully to the content DB.
 - `CONTENT_DATABASE_URL`: canonical runtime content DB owned by this project,
   including normalized rules-derived tables and app-owned content overlays.
 - `APP_STATE_DATABASE_URL`: future user/app-state DB.
 
-This means the old rules DB is no longer the long-term runtime truth. It remains
-useful as an imported source, but data-tools should generate normalized content
-from it plus local source patches, review decisions, and source-specific
-corrections.
+This means the old rules DB is no longer the long-term runtime truth. It should
+not be replaced with a fresh upstream import during this migration, because the
+current frontend and legacy backend queries still depend on its exact prepared
+shape. Data-tools should generate normalized content from this locked baseline
+plus declared local review inputs, then future runtime work should move reads to
+the content DB rather than continuing to evolve the legacy rules DB.
 
 ## Proposed Model Areas
 
@@ -159,8 +163,8 @@ The generator should emit review queues instead of hiding parser uncertainty.
    value patterns.
 2. Define normalized content schema and fixture data in the parent repo.
 3. Keep source-bearing normalization decisions in the nested local `data/` repo.
-4. Build a generator from `rules-clean.sqlite` plus local patch/review inputs to
-   normalized content tables or JSONL.
+4. Build a generator from the locked `rules-clean.sqlite` baseline plus local
+   review inputs to normalized content tables or JSONL.
 5. Add QA reports:
    - row-count parity with legacy spell, rulebook, class/domain level, and
      descriptor tables
@@ -227,8 +231,9 @@ consumer validation are planned separately in the frontend consumer plan.
 6. Add fine-grained query contract tests, then follow
    `normalized-rules-frontend-consumer-plan.md` for frontend controls in small
    slices.
-7. Keep the legacy rules DB available as a source input, but stop treating it as
-   the place for new long-term schema fixes.
+7. Keep the legacy rules DB available as the migration baseline until parity is
+   complete, but stop treating it as the place for new long-term schema or data
+   fixes.
 
 ## Acceptance Criteria
 

@@ -87,7 +87,7 @@ type RulesManifest = {
 
 const PATCH_ROOT = path.join(localDataDir(), "rules-patches");
 const MANIFEST_PATH = path.join(localDataDir(), "rules-db-manifest.json");
-const DB_RELATIVE_PATH = path.join("server", "data", "db", "rules-clean.sqlite");
+const DB_RELATIVE_PATH = path.join("server", "db", "local", "rules-clean.sqlite");
 const REPORT_ROOT = path.join(repoRoot(), "data-tools", "out", "rules-manifest");
 const COUNT_TABLES = [
   "dnd_spell",

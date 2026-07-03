@@ -145,7 +145,7 @@ npm run -w web build
 
 `npm run test:server` now uses synthetic disposable SQLite fixtures created by
 the Vitest setup file. The fixtures cover the current API test expectations
-without reading ignored local runtime DBs from `server/data/db/`.
+without reading ignored local runtime DBs from `server/db/local/`.
 
 ### 2. Review And Update Dependencies
 

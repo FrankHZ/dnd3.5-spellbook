@@ -245,8 +245,8 @@ This reduces the blast radius and allows database replacement without shipping n
 ### Upload Local Databases
 
 ```bash
-scp .\server\data\db\rules-clean.sqlite remote:~/data/spellbook.db
-scp .\server\data\db\app.sqlite remote:~/data/app.db
+scp .\server\db\local\rules-clean.sqlite remote:~/data/spellbook.db
+scp .\server\db\local\content.sqlite remote:~/data/app.db
 ```
 
 ### Activate On Remote

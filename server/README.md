@@ -11,8 +11,9 @@ It serves the spell data consumed by the frontend and also contains the Prisma s
 - `prisma-content/`: generated/imported content overlay schema and config
 - `prisma-app-state/`: future user/app-state schema and config
 - `prisma-rules-clean/`: rules-side schema and generated client setup
+- `db/`: tracked DB migrations, seed entry points, portable fixtures, and
+  ignored local runtime SQLite files under `db/local/`
 - `scripts/`: content DB import and maintenance scripts
-- `data/`: local runtime DB files and app-owned entity translation inputs
 
 ## Main Commands
 
@@ -68,8 +69,8 @@ The main database variables are:
 These point to:
 
 - the prepared local rules DB (`rules-clean.sqlite`)
-- the Prisma-managed local content DB (`content.sqlite` or transitional
-  `app.sqlite`)
+- the Prisma-managed local content DB (`content.sqlite`; `APP_DATABASE_URL`
+  may point to this same file as a temporary alias)
 - the future app-state DB (`app-state.sqlite`)
 
 `APP_DATABASE_URL` is still accepted as a temporary fallback for the content DB
@@ -79,9 +80,10 @@ The canonical data setup and database lifecycle doc is:
 
 - [../docs/data-setup.md](../docs/data-setup.md)
 
-The `server/data/db/` tree is intentionally local-only and is not part of the
-public repo baseline. CHM/parser source data belongs to the parent workspace's
-root `data/` local repo, and parser output belongs to `data-tools/out/`.
+The `server/db/local/` tree is intentionally local-only and is not part of the
+public repo baseline. Tracked migrations and portable fixtures live under
+`server/db/`. CHM/parser source data belongs to the parent workspace's root
+`data/` local repo, and parser output belongs to `data-tools/out/`.
 
 The canonical import pipeline doc is:
 
