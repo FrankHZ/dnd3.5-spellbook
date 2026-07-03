@@ -29,6 +29,16 @@ type TestCase = {
   run: () => void;
 };
 
+type FixtureManifest = {
+  schemaVersion: number;
+  dataRoots: string[];
+  mappings: Array<{
+    dataPath: string;
+    portableFixturePaths: string[];
+    note?: string;
+  }>;
+};
+
 const tests: TestCase[] = [
   {
     name: "script manifest classifies every npm script",
@@ -91,6 +101,78 @@ const tests: TestCase[] = [
           typeof command.writeCapable,
           "boolean",
           `${name}: writeCapable must be boolean`,
+        );
+      }
+    },
+  },
+  {
+    name: "server DB fixture manifest mirrors maintained data inputs",
+    run: () => {
+      const repoRoot = path.resolve(__dirname, "..", "..", "..");
+      const manifestPath = path.join(
+        repoRoot,
+        "server",
+        "db",
+        "fixtures.manifest.json",
+      );
+      const manifest = JSON.parse(
+        fs.readFileSync(manifestPath, "utf-8"),
+      ) as FixtureManifest;
+
+      assert.equal(manifest.schemaVersion, 1);
+      assert.ok(manifest.dataRoots.length > 0);
+      assert.ok(manifest.mappings.length > 0);
+
+      const mappedDataPaths = new Set<string>();
+      for (const mapping of manifest.mappings) {
+        assert.ok(mapping.dataPath.startsWith("data/"), mapping.dataPath);
+        assert.equal(
+          mappedDataPaths.has(mapping.dataPath),
+          false,
+          `duplicate fixture data mapping: ${mapping.dataPath}`,
+        );
+        mappedDataPaths.add(mapping.dataPath);
+        assert.ok(
+          manifest.dataRoots.some((root) => isSameOrChild(root, mapping.dataPath)),
+          `${mapping.dataPath} is outside fixture manifest dataRoots`,
+        );
+        assert.ok(
+          mapping.portableFixturePaths.length > 0,
+          `${mapping.dataPath} has no portable fixture paths`,
+        );
+        for (const portablePath of mapping.portableFixturePaths) {
+          assert.ok(
+            portablePath.startsWith("server/db/"),
+            `${portablePath} must stay under server/db`,
+          );
+          assert.ok(
+            fs.existsSync(path.join(repoRoot, portablePath)),
+            `missing portable fixture for ${mapping.dataPath}: ${portablePath}`,
+          );
+        }
+      }
+
+      const dataRoot = path.join(repoRoot, "data");
+      if (!fs.existsSync(dataRoot)) return;
+
+      const maintainedDataFiles = manifest.dataRoots
+        .flatMap((root) => collectJsonlFiles(path.join(repoRoot, root)))
+        .map((filePath) => toRepoPath(repoRoot, filePath))
+        .sort();
+
+      const missingMappings = maintainedDataFiles.filter(
+        (filePath) => !mappedDataPaths.has(filePath),
+      );
+      assert.deepEqual(
+        missingMappings,
+        [],
+        "maintained data JSONL files need server DB portable fixture mappings",
+      );
+
+      for (const mappedPath of mappedDataPaths) {
+        assert.ok(
+          fs.existsSync(path.join(repoRoot, mappedPath)),
+          `fixture manifest maps a missing data repo file: ${mappedPath}`,
         );
       }
     },
@@ -463,6 +545,29 @@ const tests: TestCase[] = [
     },
   },
 ];
+
+function collectJsonlFiles(root: string): string[] {
+  if (!fs.existsSync(root)) return [];
+  const entries = fs.readdirSync(root, { withFileTypes: true });
+  const files: string[] = [];
+  for (const entry of entries) {
+    const entryPath = path.join(root, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...collectJsonlFiles(entryPath));
+    } else if (entry.isFile() && entry.name.endsWith(".jsonl")) {
+      files.push(entryPath);
+    }
+  }
+  return files;
+}
+
+function toRepoPath(repoRoot: string, filePath: string) {
+  return path.relative(repoRoot, filePath).replace(/\\/g, "/");
+}
+
+function isSameOrChild(root: string, candidate: string) {
+  return candidate === root || candidate.startsWith(`${root}/`);
+}
 
 for (const test of tests) {
   test.run();

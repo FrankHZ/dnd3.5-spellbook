@@ -414,6 +414,10 @@ After that, the backend can use:
 - Parent-repo DB fixtures belong under `server/db/<db-role>/fixtures/portable/`
   as public-safe JSONL. CI uses these dummy fixtures; local acceptance may point
   to real JSONL in the nested `data/` repo through environment variables.
+- `server/db/fixtures.manifest.json` maps maintained local data JSONL inputs to
+  their public-safe server DB portable fixture coverage. Portable CI checks the
+  parent-repo fixture paths, and local runs with the nested `data/` repo present
+  also catch maintained data JSONL files that have no manifest mapping.
 - The root `data/` directory is a nested local Git repo in this workspace. Use
   that repo to version local source inputs without adding them to the parent
   project repo.

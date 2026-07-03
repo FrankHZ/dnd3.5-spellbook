@@ -48,6 +48,13 @@ CI uses portable fixtures under this directory. Local acceptance may point at
 real JSONL in the nested `data/` repo through environment variables, but those
 source files do not belong in the parent repo.
 
+`server/db/fixtures.manifest.json` records the lightweight correspondence
+between maintained local data JSONL inputs and the public-safe portable server
+fixtures that cover the same DB role or table shape. Portable CI validates the
+manifest and the checked-in fixture files. When the nested `data/` repo exists
+locally, the same harness also scans the manifest roots and fails if a
+maintained data JSONL file has no portable fixture mapping.
+
 Server API tests load seed rows through
 `server/tests/support/portable-fixtures.ts`. `server/tests/setup-test-dbs.ts`
 owns disposable table DDL only; seed data belongs in role-specific JSONL files

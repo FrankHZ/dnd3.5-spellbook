@@ -141,6 +141,13 @@ patch JSONL/schema validation. Root `npm run test:data-tools` delegates to this
 command. It must remain independent of ignored CHM/raw source data, the nested
 `data/` repo, and SQLite databases.
 
+The portable harness also validates `server/db/fixtures.manifest.json`. In a
+clean checkout it verifies that every mapped portable fixture path exists. In a
+local workspace where the nested `data/` repo exists, it additionally scans the
+manifest's maintained data roots and fails when a real data JSONL input has no
+corresponding server DB portable fixture mapping. This is a coverage-mirror
+check only; it does not require dummy fixture rows to match real data rows.
+
 Do not treat every script under `data-tools` as equally worth testing. Use three
 lifecycles:
 
