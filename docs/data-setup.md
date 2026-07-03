@@ -313,6 +313,16 @@ This command is read-only. It writes a report under
 `data-tools/out/rules-content/` containing the content DB checksum, generated
 rules-content counts, and the latest `RulesContentBuild` row.
 
+When a server is running, inspect the runtime DB state with:
+
+```bash
+curl -fsS http://127.0.0.1:3000/api/status/db
+```
+
+Use that response to compare the active read source, sanitized DB role file
+names, `APP_DATABASE_URL` compatibility alias state, latest `RulesContentBuild`,
+and content table counts against the local `rules:content:meta` report.
+
 The server uses normalized content-backed spell reads by default once
 `CONTENT_DATABASE_URL` points at a verified content DB artifact.
 

@@ -6,3 +6,4 @@ export * from "./dto/class.js";
 export * from "./dto/domain.js";
 export * from "./dto/spell.js";
 export * from "./dto/spell.resolve.js";
+export * from "./dto/db-status.js";

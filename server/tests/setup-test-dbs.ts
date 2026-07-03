@@ -196,6 +196,23 @@ function seedContentDb() {
   const db = new Database(contentDbPath);
   execMany(db, [
     `
+      CREATE TABLE RulesContentBuild (
+        id TEXT PRIMARY KEY,
+        sourceKind TEXT NOT NULL DEFAULT 'rules-clean',
+        sourceSha256 TEXT,
+        generatorVersion TEXT NOT NULL,
+        generatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        spellCount INTEGER NOT NULL,
+        issueCount INTEGER NOT NULL,
+        parentRepoCommit TEXT,
+        dataRepoCommit TEXT,
+        rulesManifestSha256 TEXT,
+        rulesDbSha256 TEXT,
+        migrationSetSha256 TEXT,
+        buildMetaJson TEXT
+      )
+    `,
+    `
       CREATE TABLE I18nSpellText (
         id TEXT PRIMARY KEY,
         spellId INTEGER NOT NULL,
@@ -394,7 +411,39 @@ function seedContentDb() {
         issueCode TEXT
       )
     `,
+    `
+      CREATE TABLE SpellMechanicFacet (
+        id TEXT PRIMARY KEY,
+        spellId TEXT NOT NULL,
+        mechanicType TEXT NOT NULL,
+        rawText TEXT,
+        category TEXT NOT NULL,
+        amount INTEGER,
+        unit TEXT,
+        flagsJson TEXT,
+        sourceField TEXT NOT NULL,
+        reviewStatus TEXT NOT NULL DEFAULT 'accepted',
+        issueCode TEXT
+      )
+    `,
+    `
+      CREATE TABLE RulesContentIssue (
+        id TEXT PRIMARY KEY,
+        spellId TEXT,
+        sourceTable TEXT NOT NULL,
+        sourceField TEXT NOT NULL,
+        rawText TEXT,
+        issueCode TEXT NOT NULL,
+        severity TEXT NOT NULL,
+        detail TEXT
+      )
+    `,
   ]);
+
+  loadPortableFixtureFile(
+    db,
+    serverDbFixturePath("content", "rules-content-builds.jsonl"),
+  );
 
   loadPortableFixtureFile(
     db,

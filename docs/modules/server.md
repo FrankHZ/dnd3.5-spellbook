@@ -20,6 +20,8 @@ work belong in `data-tools/`.
   - `*.mapper.ts` shapes records into contract DTOs.
 - Meta, class, domain, and rulebook APIs have narrower service modules under
   `server/src/services/`.
+- The DB status API lives under `/api/status/db`; it reports read-only runtime
+  DB role/provenance state and must not upload, migrate, or activate artifacts.
 - Prisma client wrappers live in `server/src/lib/`.
 
 ## Data Ownership
@@ -35,6 +37,11 @@ The current runtime reads three SQLite connection roles:
 
 The first v3.5 split creates the physical schema/client boundary. Do not add
 server-owned user state to the content DB.
+
+`GET /api/status/db` is the operator-facing runtime check for this boundary. It
+reports sanitized file role state, the active spell read source, the latest
+`RulesContentBuild`, and normalized content table counts without exposing raw
+source data or full filesystem paths.
 
 ## Contracts
 
