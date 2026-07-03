@@ -128,8 +128,10 @@ Recommended next sequence:
 
 1. **v3.5 scope review**
 
-   Start from `docs/mvp/v3.5/integrated-plan.md`. Review whether the existing
-   v3.5 child plans still fit after the v3.4 freeze and dependency updates.
+   Use `docs/mvp/v3.5/integrated-plan.md` only when reviewing v3.5 sequencing
+   or cross-plan conflicts. It is not an implementation status ledger; ordinary
+   implementation branches should update the owning child plan and affected
+   topic docs instead.
 
 2. **Content DB / app-state DB split**
 
@@ -194,9 +196,10 @@ Recommended next sequence:
 These items are intentionally future-facing. Do not let them disrupt active
 v3.4 acceptance work unless a v3.4 implementation exposes the same boundary.
 
-Start v3.5 planning from `docs/mvp/v3.5/integrated-plan.md`. That plan owns the
-cross-plan delivery sequence and conflict review; the items below remain the
-topic-specific child plans.
+For v3.5 sequencing or cross-plan conflict review, use
+`docs/mvp/v3.5/integrated-plan.md`. For implementation progress, update the
+topic-specific child plan that owns the work; do not synchronize
+`integrated-plan.md` unless scope, sequence, ownership, or conflicts changed.
 
 1. **Content DB / app-state DB split**
 

@@ -71,7 +71,8 @@ v3.5 planning has started under `docs/mvp/v3.5/`:
 - [mvp/v3.5/ci-cd-and-module-docs-plan.md](./mvp/v3.5/ci-cd-and-module-docs-plan.md)
 
 The integrated plan ties the v3.5 child plans together and records the current
-cross-plan conflict review. The DB ownership plan covers the v3.5 split between
+cross-plan conflict review; it is not an implementation status ledger. The DB
+ownership plan covers the v3.5 split between
 generated content data and
 future user/app-state data. The rules content normalization plan covers
 promoting cleaned legacy rules data into this repo's own normalized runtime
@@ -94,6 +95,13 @@ For high-level module ownership after the v3.5 module-doc baseline, use:
 - [modules/contracts.md](./modules/contracts.md)
 - [modules/data-tools.md](./modules/data-tools.md)
 - [modules/delivery.md](./modules/delivery.md)
+
+## Templates
+
+Use these templates for new planning docs:
+
+- [templates/feature-plan.md](./templates/feature-plan.md)
+- [templates/version-plan.md](./templates/version-plan.md)
 
 ## Current Operational Docs
 

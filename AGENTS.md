@@ -59,6 +59,10 @@ Use the repo-local `$freeze-snapshot` skill before creating or updating a
 version `FREEZE.md`, recording release acceptance evidence, or moving the
 latest frozen snapshot in navigation docs.
 
+Use the repo-local `$version-plan-doc` skill before creating or broadly updating
+version planning docs under `docs/mvp/v*/`, especially when deciding whether an
+implementation branch should update `integrated-plan.md`.
+
 Repo-local skills live under `.agents/skills/` in the current worktree. When
 using repo skills such as `branch-naming` or `commit-message`, read
 `.agents/skills/<skill>/SKILL.md` relative to the active worktree root. Do not
@@ -90,6 +94,10 @@ probe a user-level `.agents` path first.
   `web`.
 - If behavior differs from documentation, update the newest topic-specific
   canonical doc rather than editing old MVP history.
+- Treat version `integrated-plan.md` files as sequencing and conflict-review
+  docs, not implementation ledgers. Ordinary implementation branches should
+  update their owning child plan, affected topic docs, and `docs/roadmap.md`
+  only when active work ordering changes.
 
 ## Feature Change Workflow
 
