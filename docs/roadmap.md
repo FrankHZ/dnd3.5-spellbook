@@ -18,7 +18,8 @@ rails, and agent/module documentation cleanup.
 v3.6 is active as a lightweight post-freeze coordination stage. Its server DB
 status API, UI/UX display, docs structure cleanup, and normalized rules review
 slices have landed. No broader v3.6 filter-contract implementation slice is
-currently promoted.
+currently promoted. v3.7 planning has started in a separate plan worktree for
+security review and dependency-maintenance work after v3.6 closeout.
 
 For final v3.5 as-built behavior and validation evidence, start at
 `docs/mvp/v3.5/FREEZE.md`.
@@ -207,6 +208,14 @@ Recommended next sequence:
    `docs/mvp/v3.6/normalized-rules-review-plan.md` to decide whether the next
    branch should promote base component flags, add a Tome of Battle source-kind
    boundary, or continue mechanics normalization.
+
+3. **Run v3.7 security review follow-up**
+
+   Use `docs/mvp/v3.7/README.md` and
+   `docs/mvp/v3.7/security-review.md`. The first recommended slice is
+   operator/status endpoint exposure plus production-safe error responses.
+   Keep authentication, user accounts, automatic DB release artifacts, and
+   broad deployment redesign out of this first pass.
 
 ## v3.6 Committed Workstreams
 

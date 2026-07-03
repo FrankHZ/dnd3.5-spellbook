@@ -14,6 +14,8 @@ It is not a full roadmap. It exists to record what is known to be intentionally 
 
 ### Security
 
+- first security review and hardening planning is active in
+  `docs/mvp/v3.7/security-review.md`
 - HTTPS / TLS
 - firewall hardening
 - SSH hardening

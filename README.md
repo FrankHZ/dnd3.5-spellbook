@@ -35,6 +35,8 @@ Start here:
   release snapshot.
 - [docs/mvp/v3.6/README.md](./docs/mvp/v3.6/README.md): active post-freeze
   planning space.
+- [docs/mvp/v3.7/README.md](./docs/mvp/v3.7/README.md): active security and
+  dependency-maintenance planning space.
 
 ## Quick Start
 
