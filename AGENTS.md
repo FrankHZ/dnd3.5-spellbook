@@ -35,7 +35,8 @@ Use these docs for orientation instead of expanding this file:
 - `docs/harness.md`: validation and harness strategy.
 - `docs/design.md`: durable UI design direction.
 - `docs/i18n.md`: frontend copy, language fallback, and locale workflow.
-- `docs/deployment.md`: deployment and environment operations.
+- `docs/operations/README.md`: deployment, data setup, and remote operations
+  map.
 
 For workspace command references, use:
 

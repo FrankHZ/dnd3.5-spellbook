@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: active; first navigation cleanup slice in progress.
 
 ## Purpose
 
@@ -54,18 +54,34 @@ context tax without rewriting frozen history.
 - `docs/modules/` owns high-level module boundaries.
 - `docs/mvp/` contains both frozen snapshots and planning history.
 - `AGENTS.md` is intentionally compact after v3.5.
+- `docs/operations/` already exists for one-time remote host bootstrap, while
+  primary operational docs such as `deployment.md` and `data-setup.md` still
+  live at the docs root and have many existing links.
+
+## Structure Decisions
+
+- Keep durable topic docs at the docs root for now. They are stable entry
+  points and moving them would create broad link churn.
+- Add `docs/mvp/README.md` so version folders have their own role and
+  maintenance rules.
+- Add `docs/operations/README.md` as an operations map while keeping current
+  operational files in place.
+- Do not move frozen MVP folders or rewrite old plan content.
+- Treat future file moves as separate accepted slices only when the link churn
+  clearly pays for itself.
 
 ## Plan
 
 ### Slice 1: Inventory
 
+- Status: implemented in this plan.
 - Deliverable: a short move/keep proposal for current docs.
-- Expected files: this plan or a temporary review note that is folded into this
-  plan before commit.
+- Expected files: this plan.
 - Validation: no file moves yet.
 
 ### Slice 2: Navigation Cleanup
 
+- Status: in progress.
 - Deliverable: update documentation map and roadmap to make current/frozen
   boundaries obvious.
 - Expected files: `docs/README.md`, `README.md`, `docs/roadmap.md`.
@@ -73,6 +89,7 @@ context tax without rewriting frozen history.
 
 ### Slice 3: Optional Moves
 
+- Status: deferred from the first pass.
 - Deliverable: only move files when the destination clearly reduces future
   confusion.
 - Expected files: topic docs or operations docs if accepted.

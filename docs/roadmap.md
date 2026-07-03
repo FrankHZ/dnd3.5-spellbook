@@ -15,6 +15,10 @@ The completed v3.5 implementation focus was content DB ownership, normalized
 rules content, first taxonomy filter consumers, rulebook labels, portable CI/CD
 rails, and agent/module documentation cleanup.
 
+v3.6 is active as a lightweight post-freeze coordination stage. Its server DB
+status API and UI/UX display slices have landed; docs structure cleanup is the
+current active slice.
+
 For final v3.5 as-built behavior and validation evidence, start at
 `docs/mvp/v3.5/FREEZE.md`.
 
@@ -38,6 +42,23 @@ The v3.5 release is frozen with:
 - portable CI through `npm run ci:portable`.
 - script-backed code/web deployment with DB upload still manual.
 - compact agent guidance and baseline module docs.
+
+The v3.6 DB status slice has landed with:
+
+- `GET /api/status/db` as a read-only runtime DB provenance endpoint.
+- sanitized database role reporting for rules/content/content alias/app-state.
+- latest `RulesContentBuild` metadata and normalized content table counts.
+- deployment/data setup docs explaining comparison with `rules:content:meta`.
+- portable fixture manifest coverage for maintained local data JSONL inputs.
+
+The v3.6 UI/UX display slice has landed with:
+
+- browser-local display settings for list density and summary/full-detail spell
+  cards.
+- compact special-component markers and restrained shared spell-card styling.
+- Browse/Search scope summary density updates.
+- clarified docs that summary spell cards are scan-only and favorite/prepare
+  actions live in full-detail card mode.
 
 The v3.4 release remains frozen with:
 
@@ -107,8 +128,8 @@ Latest v3.5 local DB/content foundation snapshot:
   content DB acceptance and artifact provenance checks without adding DB upload
   to CD
 - production uses the explicit content DB file role (`content.sqlite`) after
-  manual upload/activation; remote DB status remains an operator check until a
-  v3.6 server `db-status` API is added
+  manual upload/activation; remote runtime state can be checked through
+  `GET /api/status/db`, but DB upload remains operator-owned rather than CD
 
 Latest v3.4 local short-description acceptance snapshot:
 
@@ -158,49 +179,45 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Open v3.6 planning**
+1. **Complete v3.6 docs structure cleanup**
 
-   Use `docs/mvp/v3.6/README.md` and
-   `docs/mvp/v3.6/integrated-plan.md`. The committed v3.6 scope is server DB
-   status, a UI/UX display update, and docs structure cleanup. Broader
-   normalized filters, taxonomy cleanup, normalized detail display, and
-   TypeScript module config cleanup remain review candidates until their owning
-   plans accept implementation boundaries.
+   Use `docs/mvp/v3.6/docs-structure-cleanup-plan.md`. Keep the first pass to
+   navigation and ownership cleanup unless a file move clearly reduces future
+   confusion.
 
-2. **Pick the first v3.6 implementation slice**
+2. **Review remaining v3.6 planning tracks**
 
-   The safest first slice is the server DB status API because it closes the
-   v3.5 manual remote-content verification gap. The UI/UX display update should
-   be assigned to the frontend-design lane. Keep large content QA,
+   After docs cleanup lands, use `docs/mvp/v3.6/README.md` and
+   `docs/mvp/v3.6/integrated-plan.md` to decide whether normalized rules review
+   or a later stable-track item should be promoted. Keep large content QA,
    static/offline artifacts, and DB release artifact automation in the later
    stable track unless explicitly promoted.
 
 ## v3.6 Committed Workstreams
 
-These are planned v3.6 workstreams. Read `docs/mvp/v3.6/integrated-plan.md`
-before opening implementation branches.
+These are v3.6 workstreams. Read `docs/mvp/v3.6/integrated-plan.md` before
+opening implementation branches.
 
 1. **Server DB status API**
 
-   Add a read-only server endpoint that reports deployment-safe DB provenance:
-   active read source, content DB file role, latest `RulesContentBuild` metadata,
-   relevant schema/migration hashes, and minimal row counts. Use it to verify
-   remote content DB activation without maintaining a manual deployment ledger
-   or requiring SSH/SQLite access for every check.
+   Landed. `GET /api/status/db` reports deployment-safe DB provenance: active
+   read source, content DB file role, latest `RulesContentBuild` metadata, hash
+   fields, and minimal row counts. The endpoint verifies remote content DB
+   activation without requiring SSH/SQLite access for every check.
 
 2. **UI/UX display update**
 
-   Add user-facing display settings, update spell card/list presentation, review
-   current filter summary density, and continue restrained styling polish. Keep
+   Landed. Browser-local display settings, spell card/list presentation,
+   compact scope summaries, and restrained styling polish are in place. Keep
    display settings browser-local unless a separate app-state feature is
-   accepted.
+   accepted later.
 
 3. **Docs directory structure cleanup**
 
-   Review whether `docs/` should be reorganized so durable topic docs, module
-   docs, version plans, freeze snapshots, and historical planning records are
-   easier for future agents to distinguish. Keep frozen version folders
-   immutable during that cleanup.
+   Active. Review whether `docs/` should be reorganized so durable topic docs,
+   module docs, version plans, freeze snapshots, and historical planning
+   records are easier for future agents to distinguish. Keep frozen version
+   folders immutable during that cleanup.
 
 ## v3.6 Review Candidates
 
