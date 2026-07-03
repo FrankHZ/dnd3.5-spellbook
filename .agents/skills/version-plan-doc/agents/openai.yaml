@@ -1,0 +1,4 @@
+interface:
+  display_name: "Version Plan Doc"
+  short_description: "Shape version plan docs"
+  default_prompt: "Use $version-plan-doc when creating or updating docs/mvp version plan documents."

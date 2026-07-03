@@ -36,8 +36,16 @@ intentionally separate from the frozen v3.4 snapshot.
 
 ## Working Rule
 
-Start with `integrated-plan.md` when deciding v3.5 sequencing or reviewing
-whether child plans conflict.
+Use `integrated-plan.md` when deciding v3.5 sequencing or reviewing whether
+child plans conflict. Do not treat it as an implementation status ledger.
+
+Implementation branches should update the owning child plan, affected
+operational/topic docs, and `docs/roadmap.md` only when the active work order
+changes. They should not update `integrated-plan.md` unless version scope,
+delivery sequence, plan ownership, or cross-plan conflicts changed.
+
+Use `docs/templates/version-plan.md` and the repo-local `$version-plan-doc`
+skill when adding new version plan docs.
 
 Treat v3.5 docs as future-facing plans, not proof of shipped behavior. If a v3.5
 plan needs v3.4 facts, start from `../v3.4/FREEZE.md` instead of copying stale
