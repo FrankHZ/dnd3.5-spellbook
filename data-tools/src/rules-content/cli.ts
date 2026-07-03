@@ -56,12 +56,29 @@ type BuildProvenance = {
   buildMetaJson: string;
 };
 
+type RulesContentBuildMetaRow = {
+  id: string;
+  sourceKind: string;
+  sourceSha256: string | null;
+  generatorVersion: string;
+  generatedAt: string;
+  spellCount: number;
+  issueCount: number;
+  parentRepoCommit: string | null;
+  dataRepoCommit: string | null;
+  rulesManifestSha256: string | null;
+  rulesDbSha256: string | null;
+  migrationSetSha256: string | null;
+  buildMetaJson: unknown;
+};
+
 function usage(): never {
   console.error(`Usage:
   npm run -w data-tools rules:content:audit -- [--limit 100]
   npm run -w data-tools rules:content:generate -- [--limit 100] [--output data-tools/out/rules-content/rules-content.generated.json]
   npm run -w data-tools rules:content:import -- --dry-run [--input data-tools/out/rules-content/rules-content.generated.json]
   npm run -w data-tools rules:content:import -- [--input data-tools/out/rules-content/rules-content.generated.json]
+  npm run -w data-tools rules:content:meta
   npm run -w data-tools rules:content:parity
 
 Audit and generate normalized spell-facing content from the local read-only rules
@@ -115,6 +132,7 @@ function parseArgs(argv: string[]) {
     command !== "audit" &&
     command !== "generate" &&
     command !== "import" &&
+    command !== "meta" &&
     command !== "parity"
   ) {
     usage();
@@ -680,6 +698,92 @@ function runParity() {
   }
 }
 
+function runMeta() {
+  const contentPath = contentDbPath();
+  const db = new Database(contentPath, { readonly: true, fileMustExist: true });
+  try {
+    const report = buildContentDbMetaReport(db, contentPath);
+    const reportPath = path.join(OUT_ROOT, `${timestamp()}-content-db-meta.json`);
+    writeJson(reportPath, report);
+    console.log("Rules content DB meta OK");
+    console.log(`Content DB: ${contentPath}`);
+    console.log(`Build parent commit: ${report.rulesContentBuild?.parentRepoCommit ?? "none"}`);
+    console.log(`Report: ${reportPath}`);
+  } finally {
+    db.close();
+  }
+}
+
+function buildContentDbMetaReport(db: Database.Database, contentPath: string) {
+  const build: RulesContentBuildMetaRow | null = tableExists(db, "RulesContentBuild")
+    ? (normalizeBuildMetaRow(
+        db
+        .prepare(
+          `
+          SELECT id,
+                 sourceKind,
+                 sourceSha256,
+                 generatorVersion,
+                 generatedAt,
+                 spellCount,
+                 issueCount,
+                 parentRepoCommit,
+                 dataRepoCommit,
+                 rulesManifestSha256,
+                 rulesDbSha256,
+                 migrationSetSha256,
+                 buildMetaJson
+          FROM RulesContentBuild
+          ORDER BY generatedAt DESC
+          LIMIT 1
+        `,
+        )
+        .get() as Record<string, unknown> | undefined,
+      ))
+    : null;
+
+  return {
+    generatedAt: new Date().toISOString(),
+    contentDb: {
+      path: relativeRepoPath(contentPath),
+      sha256: sha256File(contentPath),
+    },
+    rulesContentBuild: build
+      ? {
+          ...build,
+          buildMetaJson: parseJsonString(build.buildMetaJson),
+        }
+      : null,
+    counts: Object.fromEntries(
+      GENERATED_TABLES.filter((table) => tableExists(db, table)).map((table) => [
+        table,
+        count(db, `SELECT COUNT(*) AS count FROM "${table}"`),
+      ]),
+    ),
+  };
+}
+
+function normalizeBuildMetaRow(
+  row: Record<string, unknown> | undefined,
+): RulesContentBuildMetaRow | null {
+  if (!row) return null;
+  return {
+    id: String(row.id),
+    sourceKind: String(row.sourceKind),
+    sourceSha256: nullableString(row.sourceSha256),
+    generatorVersion: String(row.generatorVersion),
+    generatedAt: String(row.generatedAt),
+    spellCount: Number(row.spellCount),
+    issueCount: Number(row.issueCount),
+    parentRepoCommit: nullableString(row.parentRepoCommit),
+    dataRepoCommit: nullableString(row.dataRepoCommit),
+    rulesManifestSha256: nullableString(row.rulesManifestSha256),
+    rulesDbSha256: nullableString(row.rulesDbSha256),
+    migrationSetSha256: nullableString(row.migrationSetSha256),
+    buildMetaJson: parseJsonString(row.buildMetaJson),
+  };
+}
+
 function buildParityReport(
   rulesDb: Database.Database,
   contentDb: Database.Database,
@@ -935,11 +1039,21 @@ function normalizeDateString(value: unknown) {
   return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toISOString();
 }
 
+function parseJsonString(value: unknown) {
+  if (typeof value !== "string" || value.length === 0) return null;
+  try {
+    return JSON.parse(value) as unknown;
+  } catch {
+    return value;
+  }
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.command === "audit") return runAudit(args.limit);
   if (args.command === "generate") return runGenerate(args.limit, args.output);
   if (args.command === "import") return runImport(args.input, args.dryRun);
+  if (args.command === "meta") return runMeta();
   if (args.command === "parity") return runParity();
   usage();
 }

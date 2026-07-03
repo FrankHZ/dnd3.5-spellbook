@@ -13,6 +13,7 @@
     "rules:content:audit": "tsx src/rules-content/cli.ts audit",
     "rules:content:generate": "tsx src/rules-content/cli.ts generate",
     "rules:content:import": "tsx src/rules-content/cli.ts import",
+    "rules:content:meta": "tsx src/rules-content/cli.ts meta",
     "rules:content:parity": "tsx src/rules-content/cli.ts parity",
     "rules:sql:apply": "tsx src/rules/sql.ts apply",
     "rules:sql:dry-run": "tsx src/rules/sql.ts dry-run",

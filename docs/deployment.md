@@ -58,6 +58,11 @@ current DB update path still depends on operator-controlled SQLite file uploads
 to `~/data/`, so it should stay manual until the v3.5 content DB / app-state DB
 redesign defines a safer release artifact and activation model.
 
+The v3.5 normalized rules-content work does not change that boundary. GitHub
+Actions deploys code/web only. Data-bearing SQLite files remain operator-owned
+artifacts; do not add generated DB uploads to CD until a separate artifact and
+rollback model is accepted.
+
 ## Remote Script Sync Policy
 
 The remote host copies of the deploy scripts are updated manually.
@@ -176,6 +181,15 @@ The current deployment scripts still upload the generated content DB as
 `app.db`. `CONTENT_DATABASE_URL` should point at that file until the v3.5 DB
 deployment redesign gives content and app-state files explicit deploy steps.
 
+Normalized rules-content reads are opt-in through:
+
+```dotenv
+SPELL_READ_SOURCE=content
+```
+
+Leave this unset for production unless the remote `app.db` has been verified to
+contain the normalized content tables and a current `RulesContentBuild` row.
+
 The backend should only listen on:
 
 ```text
@@ -249,11 +263,32 @@ scp .\server\db\local\rules-clean.sqlite remote:~/data/spellbook.db
 scp .\server\db\local\content.sqlite remote:~/data/app.db
 ```
 
+Before uploading a content DB intended for `SPELL_READ_SOURCE=content`, run the
+local gates:
+
+```bash
+npm run -w data-tools rules:content:parity
+npm run -w data-tools rules:content:meta
+```
+
+The parity gate compares the locked rules DB against the normalized content DB.
+The meta command writes a local report under `data-tools/out/rules-content/`
+with the content DB checksum, generated content counts, `RulesContentBuild`
+hashes, and parent/data repo commit ids. Keep that report for operator
+comparison; do not commit it or upload it through GitHub Actions.
+
 ### Activate On Remote
 
 ```bash
 ssh remote "~/update-db.sh"
 ```
+
+After activation, verify the remote content DB metadata out of band before
+enabling `SPELL_READ_SOURCE=content`. At minimum, compare the remote
+`RulesContentBuild.parentRepoCommit`, `dataRepoCommit`, `spellCount`,
+`issueCount`, `rulesDbSha256`, and `migrationSetSha256` with the local meta
+report. The remote DB file itself may remain named `app.db`; the metadata inside
+the file is the normalized-content provenance signal.
 
 ### What `update-db.sh` Does
 
@@ -318,6 +353,8 @@ Be aware of these characteristics in the current scripts:
 - `deploy-web.sh` deletes all existing files in `/var/www/spellbook` before copying the new build
 - `deploy-backend.sh` runs `git reset --hard` and `git clean -fd` in the remote checkout
 - backend deploy and DB update both restart the backend service
+- enabling `SPELL_READ_SOURCE=content` without a verified current `app.db` can
+  route API reads to missing or stale normalized content tables
 
 These behaviors are acceptable for the current single-operator setup, but they are intentionally not a general CI/CD system.
 

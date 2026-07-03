@@ -303,6 +303,16 @@ migration-set hash, and parent/data repo commit ids. This is provenance for
 local and remote artifact comparison; it is not a replacement for committing
 source-bearing data.
 
+Inspect the current content DB artifact metadata with:
+
+```bash
+npm run -w data-tools rules:content:meta
+```
+
+This command is read-only. It writes a report under
+`data-tools/out/rules-content/` containing the content DB checksum, generated
+rules-content counts, and the latest `RulesContentBuild` row.
+
 The server can opt into normalized content-backed spell reads with:
 
 ```dotenv
@@ -312,6 +322,18 @@ SPELL_READ_SOURCE=content
 The default remains the legacy rules-backed read path until deployment DB
 artifact policy is ready. The opt-in path requires the normalized rules content
 tables to be populated in `CONTENT_DATABASE_URL`.
+
+Before using the opt-in path against local or remote data, run:
+
+```bash
+npm run -w data-tools rules:content:parity
+npm run -w data-tools rules:content:meta
+```
+
+`rules:content:parity` proves the current local rules DB and content DB agree
+on key normalized spell counts and detail fields. `rules:content:meta` records
+the provenance needed to compare a manually uploaded remote content DB without
+committing data-bearing artifacts.
 
 ## App-State DB Setup
 

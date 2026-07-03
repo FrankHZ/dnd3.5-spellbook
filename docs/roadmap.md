@@ -92,6 +92,9 @@ Latest v3.5 local DB/content foundation snapshot:
   and parent/data repo commit metadata
 - server API tests include content-backed normalized repository parity coverage
   for representative Search, Browse/by-level, detail, batch, and resolve flows
+- `rules:content:parity` and `rules:content:meta` provide local-only normalized
+  content DB acceptance and artifact provenance checks without adding DB upload
+  to CD
 
 Latest v3.4 local short-description acceptance snapshot:
 
@@ -153,8 +156,9 @@ Recommended next sequence:
    First implementation slice is in place on the v3.5 DB branch: content and
    app-state schemas are split, migrations and local runtime DB files are under
    `server/db/`, and `APP_DATABASE_URL` remains only as a temporary content DB
-   compatibility fallback. The next DB work should be deployment/remote
-   artifact policy, not another local layout move.
+   compatibility fallback. The deployment boundary is now explicit: DB uploads
+   stay manual, CD remains code/web-only, and content DB provenance is verified
+   through local/remote meta comparison rather than committing DB artifacts.
 
 3. **Rules content normalization and frontend consumers**
 
