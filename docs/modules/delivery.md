@@ -48,11 +48,14 @@ spine stops catching the majority of regressions.
 
 ## Deployment
 
-Canonical deployment behavior lives in:
+Canonical deployment behavior and helper templates live in:
 
 - `docs/deployment-scripts/deploy-backend.sh`
 - `docs/deployment-scripts/deploy-web.sh`
 - `docs/deployment-scripts/update-db.sh`
+- `docs/deployment-scripts/sync-remote-scripts.ps1`
+- `docs/deployment-scripts/spellbook-api.env.example`
+- `.env.example`
 
 The manual deploy workflow lives at:
 

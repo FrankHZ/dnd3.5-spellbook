@@ -8,27 +8,38 @@ details.
 
 ## Current Track
 
-v3.4 is frozen. The latest release snapshot is
-`docs/mvp/v3.4/FREEZE.md`.
+v3.5 is frozen. The latest release snapshot is
+`docs/mvp/v3.5/FREEZE.md`.
 
-The completed v3.4 implementation focus was content/data reliability plus small
-frontend workflow polish:
+The completed v3.5 implementation focus was content DB ownership, normalized
+rules content, first taxonomy filter consumers, rulebook labels, portable CI/CD
+rails, and agent/module documentation cleanup.
 
-1. ship spell short-description extraction, QA, normalization, import, API
-   exposure, and first frontend consumers
-2. harden the data-tools validation surface with portable tests and explicit
-   local acceptance
-3. keep rules DB manifest verification outside server runtime
-4. land a small reference-style frontend design refresh
-5. migrate frontend UI copy to semantic i18next keys with an audit guardrail
-6. record v3.4 as-built behavior and validation evidence in the freeze snapshot
+For final v3.5 as-built behavior and validation evidence, start at
+`docs/mvp/v3.5/FREEZE.md`.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
 
 ## Recently Completed
 
-The v3.4 release is frozen with:
+The v3.5 release is frozen with:
+
+- `docs/mvp/v3.5/FREEZE.md` as the as-built snapshot.
+- separate rules, content, and app-state DB roles.
+- normalized rules-derived spell content in the content DB:
+  - `SpellContent`: `4,926`
+  - `SpellTaxonomyFacet`: `8,658`
+  - `RulesContentBuild`: `1`
+- content-backed spell reads by default, with `SPELL_READ_SOURCE=rules` as the
+  legacy rollback switch.
+- Browse/Search taxonomy filters for schools, subschools, and descriptors.
+- rulebook display-label metadata and shared frontend display helpers.
+- portable CI through `npm run ci:portable`.
+- script-backed code/web deployment with DB upload still manual.
+- compact agent guidance and baseline module docs.
+
+The v3.4 release remains frozen with:
 
 - `docs/mvp/v3.4/FREEZE.md` as the as-built snapshot.
 - `6,532` accepted local spell-summary rows in `I18nSpellSummaryText`.
@@ -95,6 +106,9 @@ Latest v3.5 local DB/content foundation snapshot:
 - `rules:content:parity` and `rules:content:meta` provide local-only normalized
   content DB acceptance and artifact provenance checks without adding DB upload
   to CD
+- production uses the explicit content DB file role (`content.sqlite`) after
+  manual upload/activation; remote DB status remains an operator check until a
+  v3.6 server `db-status` API is added
 
 Latest v3.4 local short-description acceptance snapshot:
 
@@ -144,159 +158,39 @@ target text to review.
 
 Recommended next sequence:
 
-1. **v3.5 scope review**
+1. **Open v3.6 planning**
 
-   Use `docs/mvp/v3.5/integrated-plan.md` only when reviewing v3.5 sequencing
-   or cross-plan conflicts. It is not an implementation status ledger; ordinary
-   implementation branches should update the owning child plan and affected
-   topic docs instead.
+   Start from `docs/mvp/v3.5/FREEZE.md` and the review candidates below. Create
+   a focused v3.6 plan before implementation if the first slice changes DB
+   artifact verification, docs ownership, or normalized filter contracts.
 
-2. **Content DB / app-state DB split**
+2. **Pick the first v3.6 implementation slice**
 
-   First implementation slice is in place on the v3.5 DB branch: content and
-   app-state schemas are split, migrations and local runtime DB files are under
-   `server/db/`, and `APP_DATABASE_URL` remains only as a temporary content DB
-   compatibility fallback. The deployment boundary is now explicit: DB uploads
-   stay manual, CD remains code/web-only, and content DB provenance is verified
-   through local/remote meta comparison rather than committing DB artifacts.
-
-3. **Rules content normalization and frontend consumers**
-
-   Use `docs/mvp/v3.5/rules-content-normalization-plan.md` and
-   `docs/mvp/v3.5/normalized-rules-frontend-consumer-plan.md` together. The
-   first backend/content slice already generates normalized rules content from
-   the locked `rules-clean` baseline into the content DB and includes a
-   content-backed read repository with representative parity tests. Runtime
-   spell reads now default to normalized content after the target remote content
-   DB has been manually uploaded and verified; `SPELL_READ_SOURCE=rules` is the
-   legacy rollback switch. The first taxonomy filter contract exposes
-   school/subschool/descriptor ids and vocabulary; next, add frontend URL/API
-   helper coverage and controls. Additional normalized mechanics filter
-   contracts should wait for a v3.6 normalization review.
-
-4. **completed: rulebook display-label review**
-
-   Rulebook display labels now preserve source `abbr`/`slug` identity while
-   exposing optional display metadata through contracts and a shared frontend
-   helper.
-
-5. **Dependency, CI/CD, module-doc, and agent-guide cleanup**
-
-   Use the v3.5 dependency/CI and agent-guide plans to add clean-checkout CI,
-   review dependencies, preserve CD as script-backed deployment, and shrink
-   `AGENTS.md` back toward a compact execution guide.
-
-   Current dependency/CI/CD/docs status: the first v3.5 infra slice refreshes
-   lockfile entries that fit existing semver ranges, adds clean-checkout CI,
-   runs backend API tests in CI against disposable SQLite fixtures, makes
-   `main` remote-managed through PRs, keeps local development on targeted
-   checks first, adds a manual code/web deploy workflow around the tracked
-   remote scripts, defers DB deployment until DB ownership redesign, and
-   establishes a `docs/modules/` baseline. `AGENTS.md` has been reduced to a
-   compact execution guide. Automatic module-doc PRs remain blocked on the
-   chosen agent runner/secrets. Major or ecosystem upgrades remain deferred
-   into focused branches: React Router 8, Vite 8, i18next 26,
-   i18next-http-backend 4, react-i18next 17, lucide-react 1, shadcn 4,
-   vite-tsconfig-paths 6, @types/node 26, and the Prisma dev-chain audit fix
-   once a Prisma 7-compatible path is available.
-
-6. **PDF-backed short-description coverage**
-
-   Keep this as follow-up content work unless explicitly promoted into v3.5.
-   Further short-description expansion should be source/PDF-backed rather than
-   fuzzy reuse.
-
-7. **TypeScript module config cleanup**
-
-   `data-tools` has moved to `moduleResolution: "Node16"` with an explicit
-   `rootDir`. The server still uses CommonJS plus `moduleResolution: "node"`
-   with `ignoreDeprecations: "6.0"` because direct Node16 migration exposes the
-   existing CommonJS server / ESM `@dnd/contracts` boundary. Treat the real
-   server migration as a focused follow-up: decide whether to move server to ESM
-   or add an explicit CJS-compatible contracts boundary, then remove the
-   deprecation suppression.
-
-## v3.5 Planning Candidates
-
-These items are intentionally future-facing. Do not let them disrupt active
-v3.4 acceptance work unless a v3.4 implementation exposes the same boundary.
-
-For v3.5 sequencing or cross-plan conflict review, use
-`docs/mvp/v3.5/integrated-plan.md`. For implementation progress, update the
-topic-specific child plan that owns the work; do not synchronize
-`integrated-plan.md` unless scope, sequence, ownership, or conflicts changed.
-
-1. **Content DB / app-state DB split**
-
-   Use `docs/mvp/v3.5/db-ownership-boundary-plan.md` to split generated content
-   overlays from future user/app-state data before real server-side user data
-   ships. The first v3.5 DB slice now makes that physical and tooling boundary
-   explicit through `server/db/content`, `server/db/app-state`, and ignored
-   `server/db/local` runtime files.
-
-2. **Rules content normalization**
-
-   Use `docs/mvp/v3.5/rules-content-normalization-plan.md` to generate and
-   maintain this repo's own normalized rules content model from the cleaned
-   legacy rules DB plus local review decisions. The first backend/content slice
-   is implemented, including a content-backed read repository and representative
-   backend parity tests, remote DB artifact verification, and default runtime
-   normalized content reads. The first taxonomy filter contract now covers
-   schools, subschools, and descriptors. Remaining v3.5 work is frontend
-   consumer wiring for those filters; broader normalized filter contracts such
-   as components, casting facets, range, duration, saving throws, and spell
-   resistance should be reviewed and promoted in v3.6 rather than expanding the
-   accepted v3.5 scope.
-
-3. **Normalized rules frontend consumer**
-
-   Use `docs/mvp/v3.5/normalized-rules-frontend-consumer-plan.md` before adding
-   broad Browse/Search controls for normalized rules facets. Keep URL state,
-   API helper tests, scope summaries, and mobile sidebar behavior aligned while
-   preserving Browse as filter-first and Search as name-first.
-
-4. **Rulebook display-label review**
-
-   Implemented. Use `docs/mvp/v3.5/rulebook-display-labels-plan.md` for the
-   rulebook display-label boundary: source slugs and legacy abbreviations remain
-   stable, while display labels flow through content metadata and the shared
-   frontend display helper.
-
-5. **Agent guide review**
-
-   Use `docs/mvp/v3.5/agent-guide-review-plan.md` to shrink `AGENTS.md` back
-   into a compact execution guide. In the same pass, review `docs/features.md`,
-   `docs/feature-workflow.md`, and `docs/frontend-map.md` so feature docs,
-   workflow docs, and future module docs have clear ownership. Make repo-local
-   skill path resolution explicit so agents read
-   `.agents/skills/commit-message/SKILL.md` from the active worktree instead of
-   probing user-level paths first.
-
-6. **CI/CD, dependency review, and module-doc automation**
-
-   Use `docs/mvp/v3.5/ci-cd-and-module-docs-plan.md` to add CI around the
-   existing unit/API/typecheck validation spine, review and update dependencies
-   in a dedicated maintenance lane, keep browser E2E out of the first CI scope,
-   preserve code/web CD as a thin wrapper around the current deployment scripts,
-   defer DB deployment until the DB ownership redesign, and design a
-   merge-to-main agent job that refreshes high-level module design docs after
-   accepted changes.
-
-   Treat held-back major dependency upgrades as separate follow-up branches, not
-   incidental cleanup inside DB, data, i18n, or frontend feature branches.
+   The strongest candidates are a server DB status API, docs directory
+   structure cleanup, or the next normalized filter contract review. Keep large
+   content QA, static/offline artifacts, and DB release artifact automation in
+   the later stable track unless explicitly promoted.
 
 ## v3.6 Review Candidates
 
 These are follow-up candidates, not v3.5 merge blockers.
 
-1. **Normalize more filter contracts**
+1. **Server DB status API**
+
+   Add a read-only server endpoint that reports deployment-safe DB provenance:
+   active read source, content DB file role, latest `RulesContentBuild` metadata,
+   relevant schema/migration hashes, and minimal row counts. Use it to verify
+   remote content DB activation without maintaining a manual deployment ledger
+   or requiring SSH/SQLite access for every check.
+
+2. **Normalize more filter contracts**
 
    Review the generated `SpellComponent` and `SpellMechanicFacet` categories
    before exposing more filter contracts. Likely order is component flags first,
    then range categories, then casting-time categories. Target/effect/area
    filters need more normalization review before they become query vocabulary.
 
-2. **Review taxonomy normalization**
+3. **Review taxonomy normalization**
 
    Review `SpellTaxonomyFacet` before broadening taxonomy UI semantics beyond
    the first v3.5 school/subschool/descriptor filters. Current vocabulary still
@@ -312,7 +206,14 @@ These are follow-up candidates, not v3.5 merge blockers.
    instead of exposing many spell-specific "see text for ..." values as filter
    vocabulary.
 
-3. **Review filter selection display density**
+4. **Review normalized detail display**
+
+   Revisit Spell Detail after the mechanics facets are reviewed. The detail page
+   can show clearer component/mechanics orientation from normalized fields, but
+   raw source text must remain the fallback and ordinary reading flow should not
+   turn into a QA/provenance surface.
+
+5. **Review filter selection display density**
 
    Review the selected-filter display strategy before adding broader or longer
    filter vocabularies. Current Chinese and English labels such as class,
@@ -320,6 +221,23 @@ These are follow-up candidates, not v3.5 merge blockers.
    wide when several filters are active. Prefer a compact summary, overflow
    count, abbreviated chip label, or grouped popover pattern over expanding the
    current chip layout inside the v3.5 taxonomy slice.
+
+6. **Review docs directory structure**
+
+   After the v3.5 freeze, review whether `docs/` should be reorganized so
+   durable topic docs, module docs, version plans, freeze snapshots, and
+   historical planning records are easier for future agents to distinguish.
+   Keep frozen version folders immutable during that cleanup.
+
+7. **Review TypeScript module config cleanup**
+
+   `data-tools` has moved to `moduleResolution: "Node16"` with an explicit
+   `rootDir`. The server still uses CommonJS plus `moduleResolution: "node"`
+   with `ignoreDeprecations: "6.0"` because direct Node16 migration exposes the
+   existing CommonJS server / ESM `@dnd/contracts` boundary. Treat the real
+   server migration as a focused follow-up: decide whether to move server to ESM
+   or add an explicit CJS-compatible contracts boundary, then remove the
+   deprecation suppression.
 
 ## Later Stable Track
 

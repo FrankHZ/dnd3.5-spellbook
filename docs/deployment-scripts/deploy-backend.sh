@@ -10,7 +10,9 @@ SERVICE="spellbook-api"
 WORKSPACE="server"
 
 RULES_DB_NAME="spellbook.db"
-APP_DB_NAME="app.db"
+CONTENT_DB_NAME="content.sqlite"
+LEGACY_CONTENT_DB_NAME="app.db"
+APP_STATE_DB_NAME="app-state.sqlite"
 
 echo "==> Deploy backend ($(date -u))"
 
@@ -74,7 +76,14 @@ ensure_data_dir
 
 # --- 1) Optionally update DBs from ~/data ---
 maybe_replace_db "$INCOMING_DATA_DIR/$RULES_DB_NAME" "$DATA_DIR/$RULES_DB_NAME" "rules"
-maybe_replace_db "$INCOMING_DATA_DIR/$APP_DB_NAME"   "$DATA_DIR/$APP_DB_NAME"   "app"
+
+CONTENT_DB_IN="$INCOMING_DATA_DIR/$CONTENT_DB_NAME"
+if [ ! -f "$CONTENT_DB_IN" ] && [ -f "$INCOMING_DATA_DIR/$LEGACY_CONTENT_DB_NAME" ]; then
+  echo "==> DB (content): using legacy incoming file $INCOMING_DATA_DIR/$LEGACY_CONTENT_DB_NAME"
+  CONTENT_DB_IN="$INCOMING_DATA_DIR/$LEGACY_CONTENT_DB_NAME"
+fi
+maybe_replace_db "$CONTENT_DB_IN" "$DATA_DIR/$CONTENT_DB_NAME" "content"
+maybe_replace_db "$INCOMING_DATA_DIR/$APP_STATE_DB_NAME" "$DATA_DIR/$APP_STATE_DB_NAME" "app-state"
 
 # --- 2) Update repo ---
 echo "==> Update repo"
@@ -117,8 +126,9 @@ sudo systemctl status "$SERVICE" --no-pager
 
 # --- 7) Smoke test ---
 echo "==> Smoke test"
+smoke_error=""
 for attempt in 1 2 3 4 5; do
-  if curl -fsS "http://127.0.0.1:3000/api/rulebooks" >/dev/null; then
+  if smoke_error="$(curl -fsS "http://127.0.0.1:3000/api/rulebooks" 2>&1 >/dev/null)"; then
     echo "✅ Backend deploy OK"
     exit 0
   fi
@@ -128,4 +138,7 @@ for attempt in 1 2 3 4 5; do
 done
 
 echo "Backend smoke test failed after retries" >&2
+if [ -n "$smoke_error" ]; then
+  echo "$smoke_error" >&2
+fi
 exit 1
