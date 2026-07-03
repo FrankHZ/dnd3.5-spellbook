@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: active; structure cleanup implementation in progress.
+Status: implemented pending review.
 
 ## Purpose
 
@@ -111,6 +111,8 @@ context tax without rewriting frozen history.
 - v3.5 and older `FREEZE.md` files remain intact.
 - Roadmap points to v3.6 active plans and later stable backlog without
   duplicating long plan text.
+- Operational docs live under `docs/operations/` with updated links.
+- Versioned MVP docs and closeout templates have clear entry points.
 - `git diff --check` passes.
 
 ## Doc Updates
@@ -128,3 +130,12 @@ context tax without rewriting frozen history.
 - Should old MVP planning docs stay in place or eventually move under a
   historical subfolder? Current decision: keep them in place and make
   `docs/mvp/README.md` explain their role.
+
+## Completion Notes
+
+- Added `docs/mvp/README.md` and `docs/operations/README.md`.
+- Moved operational/data/hygiene docs under `docs/operations/`.
+- Added acceptance and freeze templates under `docs/templates/`.
+- Reworked `docs/README.md`, root `README.md`, `AGENTS.md`, workspace READMEs,
+  module docs, and historical path references so navigation points at the new
+  structure.

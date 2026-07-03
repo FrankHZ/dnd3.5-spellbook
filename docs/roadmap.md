@@ -16,8 +16,8 @@ rules content, first taxonomy filter consumers, rulebook labels, portable CI/CD
 rails, and agent/module documentation cleanup.
 
 v3.6 is active as a lightweight post-freeze coordination stage. Its server DB
-status API and UI/UX display slices have landed; docs structure cleanup is the
-current active slice.
+status API and UI/UX display slices have landed; docs structure cleanup is
+implemented pending review.
 
 For final v3.5 as-built behavior and validation evidence, start at
 `docs/mvp/v3.5/FREEZE.md`.
@@ -179,11 +179,11 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Complete v3.6 docs structure cleanup**
+1. **Review v3.6 docs structure cleanup**
 
-   Use `docs/mvp/v3.6/docs-structure-cleanup-plan.md`. Keep the first pass to
-   navigation and ownership cleanup unless a file move clearly reduces future
-   confusion.
+   Use `docs/mvp/v3.6/docs-structure-cleanup-plan.md`. The implementation
+   branch reorganizes navigation, moves operations docs together, and adds
+   version closeout templates.
 
 2. **Review remaining v3.6 planning tracks**
 
@@ -214,10 +214,9 @@ opening implementation branches.
 
 3. **Docs directory structure cleanup**
 
-   Active. Review whether `docs/` should be reorganized so durable topic docs,
-   module docs, version plans, freeze snapshots, and historical planning
-   records are easier for future agents to distinguish. Keep frozen version
-   folders immutable during that cleanup.
+   Implemented pending review. The docs map now separates durable topic docs,
+   module docs, operations docs, version plans, freeze snapshots, and
+   historical records. Frozen version folders remain immutable records.
 
 ## v3.6 Review Candidates
 
