@@ -43,6 +43,8 @@ Current behavior:
 - spell list density follows browser-local Display settings, while full-detail
   card display is controlled from the Browse sidebar for the current reading
   context
+- summary spell cards are scan-only; favorite/prepare actions are shown in
+  full-detail card mode
 - spell cards can show compact special-component markers such as `M`, `AF`,
   `DF`, or `XP` beside spell names
 - results are paginated
@@ -81,6 +83,8 @@ Current behavior:
 - spell list density follows browser-local Display settings, while full-detail
   card display is controlled from the Search sidebar for the current reading
   context
+- summary spell cards are scan-only; favorite/prepare actions are shown in
+  full-detail card mode
 - spell cards can show compact special-component markers such as `M`, `AF`,
   `DF`, or `XP` beside spell names
 - results are paginated

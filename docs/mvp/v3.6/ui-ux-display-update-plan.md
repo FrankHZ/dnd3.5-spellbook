@@ -117,7 +117,8 @@ spell table display remains unchanged.
   collection contexts where the shared component applies.
 - Expected behavior:
   - stable dimensions across loading/hover/dynamic text states
-  - clear name, level/source, short description, and action affordances
+  - clear name, level/source, and short description in summary cards, with
+    favorite/prepare action affordances shown in full-detail card mode
   - compact special-component markers, inspired by SRD-style list pages such as
     `https://www.d20srd.org/srd/spellLists/sorcererWizardSpells.htm`, can show
     notable components like `M`, `F`, `DF`, `XP`, or repo-specific component
