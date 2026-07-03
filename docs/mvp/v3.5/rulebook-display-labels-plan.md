@@ -1,6 +1,7 @@
 # Rulebook Display Labels Plan
 
-Status: planned v3.5 data/content UX review.
+Status: partial v3.5 data/content UX review. Data-tools audit/report is
+implemented; API contracts and frontend consumers remain follow-up work.
 
 ## Problem
 
@@ -107,6 +108,15 @@ The audit must at least flag:
 - missing Chinese full names
 - rulebooks shown in Browse/Search/Settings without a display-label decision
 
+Current implementation:
+
+- `rulebooks:labels:audit` reads `RULES_DATABASE_URL` and
+  `CONTENT_DATABASE_URL` in read-only mode.
+- It writes
+  `data-tools/out/rulebook-labels/rulebook-label-audit.json`.
+- Portable tests cover the core review transform without requiring local DBs.
+- Local acceptance runs the audit, but root verify still stays portable.
+
 ## Implementation Notes
 
 - Extend contracts so rulebook responses or meta overlays can carry display
@@ -126,12 +136,12 @@ The audit must at least flag:
 
 ## Acceptance Criteria
 
+- Data-tools produces a reviewable rulebook-label audit report. (Implemented)
 - English UI no longer exposes reviewed legacy abbreviations such as `Sc_` as
   the primary user-facing label.
 - Chinese UI shows Chinese full rulebook names in primary rulebook display
   surfaces.
 - Rules DB `slug` and legacy `abbr` remain available for source compatibility.
-- Data-tools produces a reviewable rulebook-label audit report.
 - API contracts distinguish source abbreviation from display abbreviation.
 - Browse, Search, Settings, Spell Detail, related-spell rows, and collection
   import conflict UI all use the same display helper.

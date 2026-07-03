@@ -100,6 +100,13 @@
       "requiresSqlite": true,
       "writeCapable": false
     },
+    "rulebooks:labels:audit": {
+      "module": "rules-content",
+      "lifecycle": "local-acceptance",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
     "rules:spells:apply": {
       "module": "rules",
       "lifecycle": "maintained-local",

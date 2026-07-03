@@ -13,6 +13,7 @@ const commands: Array<{ label: string; args: string[] }> = [
   { label: "rules content audit", args: ["run", "rules:content:audit"] },
   { label: "rules content generate", args: ["run", "rules:content:generate"] },
   { label: "rules content parity", args: ["run", "rules:content:parity"] },
+  { label: "rulebook label audit", args: ["run", "rulebooks:labels:audit"] },
   { label: "short-description QA", args: ["run", "summaries:qa"] },
   {
     label: "short-description import dry-run",

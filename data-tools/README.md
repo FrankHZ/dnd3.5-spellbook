@@ -370,6 +370,15 @@ content. It requires the rules-content generated tables from
 only those generated tables; it does not touch i18n rows, app-state rows, the
 rules DB, or the nested local data repo.
 
+`rulebooks:labels:audit` is the read-only rulebook display-label review report
+for v3.5. It compares legacy `dnd_rulebook` identity fields, current
+`RulebookContent.displayAbbr/displayName`, Chinese `I18nRulebookText.name`,
+and CHM source-label mappings, then writes
+`data-tools/out/rulebook-labels/rulebook-label-audit.json`. It flags source
+abbreviation artifacts such as `Sc_`, known common-abbreviation mismatches,
+duplicate proposed display abbreviations, and missing Chinese full names without
+changing API contracts or UI consumers.
+
 `summaries:import` is the content DB mutation boundary for spell summaries. It
 reads only `data/short-desc-normalized/summaries.generated.jsonl`, validates the
 accepted normalized row shape, and upserts rows into
@@ -435,6 +444,8 @@ another scoped book. The default scope is the current official 3.5 working set:
 - `rules:content:parity` opens the rules DB and content DB read-only, compares
   full local normalized content parity, and writes a report under
   `data-tools/out/rules-content/`.
+- `rulebooks:labels:audit` opens the rules DB and content DB read-only and
+  writes a review report under `data-tools/out/rulebook-labels/`.
 - `rules:content:import -- --dry-run` validates the generated normalized content
   artifact and target content DB tables without mutating SQLite.
 - `rules:content:import` is write-capable against `CONTENT_DATABASE_URL` and

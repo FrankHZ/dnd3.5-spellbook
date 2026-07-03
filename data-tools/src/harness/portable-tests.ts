@@ -19,6 +19,7 @@ import {
   normalizeRulesContent,
   type LegacyRulesContentInput,
 } from "../rules-content/normalize";
+import { auditRulebookLabels } from "../rulebooks/labels-audit";
 
 type TestCase = {
   name: string;
@@ -271,6 +272,73 @@ const tests: TestCase[] = [
       const audit = auditNormalizedContent(normalized);
       assert.equal(audit.reviewCounts.components, 1);
       assert.equal(audit.issueCounts["component.extra.review"], 1);
+    },
+  },
+  {
+    name: "rulebook label audit flags source artifacts and missing localized names",
+    run: () => {
+      const report = auditRulebookLabels(
+        [
+          {
+            id: 1,
+            name: "Spell Compendium",
+            abbr: "Sc_",
+            slug: "spell-compendium",
+            editionSlug: "supplementals-35",
+            spellCount: 120,
+            zhName: "法术大全",
+            chmSourceLabels: ["法术大全"],
+          },
+          {
+            id: 2,
+            name: "Source With Missing Translation",
+            abbr: "SWT",
+            slug: "source-with-missing-translation",
+            editionSlug: "supplementals-35",
+            spellCount: 1,
+          },
+          {
+            id: 3,
+            name: "Source With Same Proposed Label",
+            abbr: "SWT",
+            slug: "source-with-same-proposed-label",
+            editionSlug: "supplementals-35",
+            spellCount: 1,
+            zhName: "重复缩写来源",
+          },
+          {
+            id: 4,
+            name: "Unused Source",
+            abbr: "UN",
+            slug: "unused-source",
+            editionSlug: "supplementals-35",
+            spellCount: 0,
+          },
+        ],
+        "2026-07-02T00:00:00.000Z",
+      );
+
+      const spellCompendium = report.rows.find((row) => row.rulebookId === 1);
+      assert.equal(spellCompendium?.proposedDisplayAbbr, "SpC");
+      assert.equal(spellCompendium?.status, "replace");
+      assert.ok(spellCompendium?.issues.includes("source-abbr-artifact"));
+      assert.ok(
+        spellCompendium?.issues.includes("known-common-abbr-mismatch"),
+      );
+
+      const missingTranslation = report.rows.find((row) => row.rulebookId === 2);
+      assert.equal(missingTranslation?.status, "needs-review");
+      assert.ok(missingTranslation?.issues.includes("missing-zh-name"));
+      assert.ok(
+        missingTranslation?.issues.includes("duplicate-proposed-display-abbr"),
+      );
+
+      const unused = report.rows.find((row) => row.rulebookId === 4);
+      assert.equal(unused?.status, "defer");
+      assert.equal(report.counts.replace, 1);
+      assert.equal(report.counts.needsReview, 2);
+      assert.equal(report.counts.defer, 1);
+      assert.equal(report.counts.duplicateProposedDisplayAbbrs, 2);
     },
   },
   {
