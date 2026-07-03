@@ -15,6 +15,8 @@ import {
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { SpellFilterScopeSummary } from "~/features/spells/SpellFilterScopeSummary";
+import { TaxonomyFilterSelector } from "~/features/spells/TaxonomyFilterSelector";
+import { countTaxonomyFilters } from "~/features/spells/taxonomy-filter-state";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useUserPrefs } from "~/state/user-prefs-state";
 import { useTranslation } from "react-i18next";
@@ -43,7 +45,10 @@ export default function SearchSpellsPage() {
 
   function updateSearchScope(
     patch: Partial<
-      Pick<typeof searchScope, "classIds" | "domainIds" | "level">
+      Pick<
+        typeof searchScope,
+        "classIds" | "domainIds" | "taxonomyFilters" | "level"
+      >
     >,
   ) {
     const next = buildSearchParams({
@@ -66,6 +71,7 @@ export default function SearchSpellsPage() {
         rulebookIds,
         classIds: searchScope.classIds,
         domainIds: searchScope.domainIds,
+        taxonomyFilters: searchScope.taxonomyFilters,
         level: searchScope.level,
         page: searchScope.page,
         pageSize: PAGE_SIZE,
@@ -84,6 +90,7 @@ export default function SearchSpellsPage() {
           ? searchScope.domainIds
           : undefined,
         level: searchScope.level,
+        taxonomyFilters: searchScope.taxonomyFilters,
         page: searchScope.page,
         pageSize: PAGE_SIZE,
         signal,
@@ -146,6 +153,36 @@ export default function SearchSpellsPage() {
               onChange={(level) => updateSearchScope({ level })}
               allowAnyLevel
             />
+
+            <Separator />
+
+            <TaxonomyFilterSelector
+              value={searchScope.taxonomyFilters}
+              onChangeSchools={(schoolIds) =>
+                updateSearchScope({
+                  taxonomyFilters: {
+                    ...searchScope.taxonomyFilters,
+                    schoolIds,
+                  },
+                })
+              }
+              onChangeSubschools={(subschoolIds) =>
+                updateSearchScope({
+                  taxonomyFilters: {
+                    ...searchScope.taxonomyFilters,
+                    subschoolIds,
+                  },
+                })
+              }
+              onChangeDescriptors={(descriptorIds) =>
+                updateSearchScope({
+                  taxonomyFilters: {
+                    ...searchScope.taxonomyFilters,
+                    descriptorIds,
+                  },
+                })
+              }
+            />
           </CardContent>
         </Card>
 
@@ -155,6 +192,9 @@ export default function SearchSpellsPage() {
             domainCount={searchScope.domainIds.length}
             level={searchScope.level}
             rulebookCount={rulebookIds.length}
+            taxonomyFilterCount={countTaxonomyFilters(
+              searchScope.taxonomyFilters,
+            )}
             nullLevelMode="any"
           />
 
@@ -163,8 +203,7 @@ export default function SearchSpellsPage() {
               <CardHeader className="gap-1 py-2">
                 <CardDescription>
                   {lang === "zh"
-                    ? t("errors.too-short-cjk",
-                      )
+                    ? t("errors.too-short-cjk")
                     : t("errors.too-short")}
                 </CardDescription>
               </CardHeader>

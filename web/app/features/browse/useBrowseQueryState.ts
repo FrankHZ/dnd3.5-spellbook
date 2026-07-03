@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router";
+import type { SpellTaxonomyFilterIds } from "@dnd/contracts";
 import type { LevelParam } from "~/api/spells";
+import {
+  normalizeTaxonomyFilters,
+  parseTaxonomyFilters,
+  setTaxonomyFilterParams,
+} from "~/features/spells/taxonomy-filter-state";
 import {
   normalizeIds,
   parseIdList,
@@ -13,6 +19,7 @@ export type BrowseQueryState = {
   level: LevelParam | null; // 0-9
   classIds: number[];
   domainIds: number[];
+  taxonomyFilters: SpellTaxonomyFilterIds;
   page: number;
 
   // persisted scope (NOT in URL)
@@ -22,6 +29,9 @@ export type BrowseQueryState = {
   setLevel: (next: LevelParam | null) => void;
   setClassIds: (next: number[]) => void;
   setDomainIds: (next: number[]) => void;
+  setSchoolIds: (next: number[]) => void;
+  setSubschoolIds: (next: number[]) => void;
+  setDescriptorIds: (next: number[]) => void;
   setPage: (next: number) => void;
 
   // useful flags
@@ -66,11 +76,12 @@ export function useBrowseQueryState(): BrowseQueryState {
 
     const classIds = parseIdList(searchParams.get("classIds"));
     const domainIds = parseIdList(searchParams.get("domainIds"));
+    const taxonomyFilters = parseTaxonomyFilters(searchParams);
 
     const pageRaw = parseIntParam(searchParams.get("page"));
     const page = pageRaw != null && pageRaw >= 1 ? pageRaw : 1;
 
-    return { level, classIds, domainIds, page };
+    return { level, classIds, domainIds, taxonomyFilters, page };
   }, [searchParams]);
 
   const effectiveClassIds = hasClassIds ? parsed.classIds : persistedClassIds;
@@ -187,6 +198,38 @@ export function useBrowseQueryState(): BrowseQueryState {
     [updateParams, setState],
   );
 
+  const setTaxonomyIds = useCallback(
+    (key: keyof SpellTaxonomyFilterIds, nextIds: number[]) => {
+      const ids = normalizeIds(nextIds.filter((id) => id > 0));
+      updateParams((sp) => {
+        setTaxonomyFilterParams(
+          sp,
+          normalizeTaxonomyFilters({
+            ...parsed.taxonomyFilters,
+            [key]: ids,
+          }),
+        );
+        resetPage(sp);
+      });
+    },
+    [parsed.taxonomyFilters, updateParams],
+  );
+
+  const setSchoolIds = useCallback(
+    (nextIds: number[]) => setTaxonomyIds("schoolIds", nextIds),
+    [setTaxonomyIds],
+  );
+
+  const setSubschoolIds = useCallback(
+    (nextIds: number[]) => setTaxonomyIds("subschoolIds", nextIds),
+    [setTaxonomyIds],
+  );
+
+  const setDescriptorIds = useCallback(
+    (nextIds: number[]) => setTaxonomyIds("descriptorIds", nextIds),
+    [setTaxonomyIds],
+  );
+
   const setPage = useCallback(
     (nextPage: number) => {
       const p =
@@ -210,11 +253,15 @@ export function useBrowseQueryState(): BrowseQueryState {
     level: effectiveLevel,
     classIds: effectiveClassIds,
     domainIds: effectiveDomainIds,
+    taxonomyFilters: parsed.taxonomyFilters,
     page: parsed.page,
     rulebookIds,
     setLevel,
     setClassIds,
     setDomainIds,
+    setSchoolIds,
+    setSubschoolIds,
+    setDescriptorIds,
     setPage,
     hasValidSelection,
   };

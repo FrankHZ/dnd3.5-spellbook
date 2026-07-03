@@ -5,6 +5,7 @@ type SpellFilterScopeSummaryProps = {
   domainCount: number;
   level: number | "all" | null;
   rulebookCount: number;
+  taxonomyFilterCount?: number;
   nullLevelMode: "any" | "required";
 };
 
@@ -13,6 +14,7 @@ export function SpellFilterScopeSummary({
   domainCount,
   level,
   rulebookCount,
+  taxonomyFilterCount = 0,
   nullLevelMode,
 }: SpellFilterScopeSummaryProps) {
   const { t } = useTranslation("spell-scope");
@@ -34,16 +36,19 @@ export function SpellFilterScopeSummary({
       : t("domains.none");
 
   return (
-    <div className="rounded-md border bg-muted/30 px-3 py-2 text-xs leading-5 text-muted-foreground sm:flex sm:items-center sm:justify-between sm:gap-3 sm:text-sm">
+    <div className="rounded-md border bg-muted/30 px-3 py-2 text-xs leading-5 text-muted-foreground sm:flex sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-3 sm:gap-y-1 sm:text-sm">
       <div className="min-w-0">
-        {t("filters.summary",
-          {
-            classes: classScopeLabel,
-            domains: domainScopeLabel,
-            level: levelLabel,
-          },
-        )}
+        {t("filters.summary", {
+          classes: classScopeLabel,
+          domains: domainScopeLabel,
+          level: levelLabel,
+        })}
       </div>
+      {taxonomyFilterCount > 0 ? (
+        <div className="min-w-0">
+          {t("taxonomy.selected", { count: taxonomyFilterCount })}
+        </div>
+      ) : null}
       <div className="min-w-0">
         {rulebookCount > 0
           ? t("rulebooks.selected", {

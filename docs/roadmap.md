@@ -296,6 +296,31 @@ These are follow-up candidates, not v3.5 merge blockers.
    then range categories, then casting-time categories. Target/effect/area
    filters need more normalization review before they become query vocabulary.
 
+2. **Review taxonomy normalization**
+
+   Review `SpellTaxonomyFacet` before broadening taxonomy UI semantics beyond
+   the first v3.5 school/subschool/descriptor filters. Current vocabulary still
+   mixes ordinary spell schools with Tome of Battle disciplines, and ordinary
+   subschools with maneuver categories such as boost, counter, stance, and
+   strike. Do not hardcode this split in the frontend; add an accepted
+   normalized category/source kind before grouping these filters in UI.
+
+   Also review multi-school and multi-subschool source values. Some rows are
+   still represented as combined labels rather than normalized multi-value
+   memberships. Descriptor cleanup should collapse "see text..." source-note
+   variants into a stable other/source-note category with preserved raw text,
+   instead of exposing many spell-specific "see text for ..." values as filter
+   vocabulary.
+
+3. **Review filter selection display density**
+
+   Review the selected-filter display strategy before adding broader or longer
+   filter vocabularies. Current Chinese and English labels such as class,
+   domain, school, subschool, and descriptor can make multi-select chips too
+   wide when several filters are active. Prefer a compact summary, overflow
+   count, abbreviated chip label, or grouped popover pattern over expanding the
+   current chip layout inside the v3.5 taxonomy slice.
+
 ## Later Stable Track
 
 The stable-version backlog remains intentionally deferred:

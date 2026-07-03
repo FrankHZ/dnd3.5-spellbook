@@ -14,6 +14,8 @@ import {
 } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { SpellFilterScopeSummary } from "~/features/spells/SpellFilterScopeSummary";
+import { TaxonomyFilterSelector } from "~/features/spells/TaxonomyFilterSelector";
+import { countTaxonomyFilters } from "~/features/spells/taxonomy-filter-state";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 
 import { PAGE_SIZE } from "../constants";
@@ -31,11 +33,15 @@ export default function BrowsePage() {
     level,
     classIds,
     domainIds,
+    taxonomyFilters,
     page,
     rulebookIds,
     setLevel,
     setClassIds,
     setDomainIds,
+    setSchoolIds,
+    setSubschoolIds,
+    setDescriptorIds,
     setPage,
     hasValidSelection,
   } = useBrowseQueryState();
@@ -49,6 +55,7 @@ export default function BrowsePage() {
       {
         classIds,
         domainIds,
+        taxonomyFilters,
         level,
         rulebookIds: rulebookIds.join(","),
         page,
@@ -63,6 +70,7 @@ export default function BrowsePage() {
         domainIds,
         level: level!,
         rulebookIds: rulebookIds.length ? rulebookIds : undefined,
+        taxonomyFilters,
         page,
         pageSize,
         signal,
@@ -109,6 +117,13 @@ export default function BrowsePage() {
             />
             <Separator />
             <LevelSelector value={level} onChange={setLevel} />
+            <Separator />
+            <TaxonomyFilterSelector
+              value={taxonomyFilters}
+              onChangeSchools={setSchoolIds}
+              onChangeSubschools={setSubschoolIds}
+              onChangeDescriptors={setDescriptorIds}
+            />
           </CardContent>
         </Card>
 
@@ -118,6 +133,7 @@ export default function BrowsePage() {
             domainCount={domainIds.length}
             level={level}
             rulebookCount={rulebookIds.length}
+            taxonomyFilterCount={countTaxonomyFilters(taxonomyFilters)}
             nullLevelMode="required"
           />
 
@@ -125,8 +141,7 @@ export default function BrowsePage() {
             <Card className="gap-0">
               <CardHeader className="gap-1 py-1">
                 <CardDescription>
-                  {t("validation.choose-scope-and-level",
-                  )}
+                  {t("validation.choose-scope-and-level")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
@@ -154,9 +169,7 @@ export default function BrowsePage() {
               <Card className="gap-0">
                 <CardHeader className="gap-1">
                   <CardDescription>
-                    {t("results.empty-for-level",
-                      { level },
-                    )}
+                    {t("results.empty-for-level", { level })}
                   </CardDescription>
                 </CardHeader>
               </Card>

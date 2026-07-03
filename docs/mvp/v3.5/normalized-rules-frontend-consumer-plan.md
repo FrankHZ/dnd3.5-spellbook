@@ -1,7 +1,8 @@
 # Normalized Rules Frontend Consumer Plan
 
-Status: backend contract foundation implemented for taxonomy filters; frontend
-controls remain planned v3.5 consumer work.
+Status: backend contract foundation and first Browse/Search taxonomy filter UI
+slice implemented; mechanics filters and detail normalized display remain
+planned v3.5 consumer work.
 
 ## Problem
 
@@ -211,10 +212,24 @@ vocabulary, until backend acceptance promotes them.
 
 ### Slice 2: Taxonomy Filters
 
+Status: implemented for the first UI slice.
+
 - Add school, subschool, and descriptor filters to Browse.
 - Add the same filters to Search scope.
 - Update scope summary and metadata loading.
 - Add pure frontend tests for URL parsing/building and scope derivation.
+
+Accepted boundaries:
+
+- taxonomy state is URL-driven and not stored in Settings
+- Browse keeps class/domain/level as the primary discovery workflow
+- Search keeps name lookup primary while accepting the same structured scope
+- mobile keeps taxonomy controls in a compact collapsible section
+- grouping ordinary schools separately from Tome of Battle disciplines, grouping
+  ordinary subschools separately from maneuver categories, and collapsing
+  descriptor "see text..." variants into an other/source-note bucket are
+  deferred to backend/content normalization review before the frontend changes
+  vocabulary grouping semantics
 
 ### Slice 3: Mechanics Filters
 

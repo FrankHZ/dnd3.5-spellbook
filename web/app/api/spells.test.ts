@@ -44,6 +44,26 @@ describe("spell API wrappers", () => {
     );
   });
 
+  it("builds search URLs with taxonomy filters", async () => {
+    mockedApiGet.mockResolvedValue({ items: [] } as any);
+
+    await searchSpellsByName({
+      q: "fire",
+      taxonomyFilters: {
+        schoolIds: [2, 2, 0],
+        subschoolIds: [4],
+        descriptorIds: [7, 6],
+      },
+      page: 1,
+      pageSize: 25,
+    });
+
+    expect(apiGet).toHaveBeenCalledWith(
+      "/api/spells/search?q=fire&page=1&pageSize=25&schoolIds=2&subschoolIds=4&descriptorIds=6%2C7",
+      undefined,
+    );
+  });
+
   it("builds by-level URLs with class and domain filters", async () => {
     mockedApiGet.mockResolvedValue({ groups: [] } as any);
 
@@ -57,6 +77,28 @@ describe("spell API wrappers", () => {
 
     expect(apiGet).toHaveBeenCalledWith(
       "/api/spells/by-level?classIds=1%2C2&domainIds=8&level=all&page=3&pageSize=50",
+      undefined,
+    );
+  });
+
+  it("builds by-level URLs with taxonomy filters", async () => {
+    mockedApiGet.mockResolvedValue({ groups: [] } as any);
+
+    await getSpellsByLevel({
+      classIds: [1],
+      domainIds: [],
+      level: 3,
+      taxonomyFilters: {
+        schoolIds: [2],
+        subschoolIds: [],
+        descriptorIds: [6],
+      },
+      page: 1,
+      pageSize: 50,
+    });
+
+    expect(apiGet).toHaveBeenCalledWith(
+      "/api/spells/by-level?classIds=1&level=3&schoolIds=2&descriptorIds=6&page=1&pageSize=50",
       undefined,
     );
   });

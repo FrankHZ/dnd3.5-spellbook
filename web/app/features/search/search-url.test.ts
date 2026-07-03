@@ -4,6 +4,7 @@ import {
   buildSearchParams,
   buildSearchUrl,
   buildSearchUrlWithPreservedScope,
+  hasSearchScope,
   parseSearchScope,
 } from "./search-url";
 
@@ -17,8 +18,27 @@ describe("search URL helpers", () => {
       q: "fire",
       classIds: [1, 2],
       domainIds: [8],
+      taxonomyFilters: {
+        schoolIds: [],
+        subschoolIds: [],
+        descriptorIds: [],
+      },
       level: 3,
       page: 4,
+    });
+  });
+
+  it("parses taxonomy filters from query params", () => {
+    const scope = parseSearchScope(
+      new URLSearchParams(
+        "q=fire&schoolIds=2,1,1&subschoolIds=3&descriptorIds=0,5,bad&page=2",
+      ),
+    );
+
+    expect(scope.taxonomyFilters).toEqual({
+      schoolIds: [1, 2],
+      subschoolIds: [3],
+      descriptorIds: [5],
     });
   });
 
@@ -29,9 +49,16 @@ describe("search URL helpers", () => {
         q: "fire ball",
         classIds: [2, 1, 1],
         domainIds: [8],
+        taxonomyFilters: {
+          schoolIds: [4],
+          subschoolIds: [3],
+          descriptorIds: [9, 8],
+        },
         level: "all",
       }),
-    ).toBe("/search?q=fire+ball&classIds=1%2C2&domainIds=8&level=all");
+    ).toBe(
+      "/search?q=fire+ball&classIds=1%2C2&domainIds=8&schoolIds=4&subschoolIds=3&descriptorIds=8%2C9&level=all",
+    );
   });
 
   it("omits page 1 from generated params", () => {
@@ -44,9 +71,28 @@ describe("search URL helpers", () => {
   it("builds search URLs by preserving filter scope and replacing q", () => {
     expect(
       buildSearchUrlWithPreservedScope(
-        new URLSearchParams("q=old&page=3&classIds=2,1&domainIds=8&level=all"),
+        new URLSearchParams(
+          "q=old&page=3&classIds=2,1&domainIds=8&schoolIds=5&descriptorIds=9&level=all",
+        ),
         "magic missile",
       ),
-    ).toBe("/search?q=magic+missile&classIds=1%2C2&domainIds=8&level=all");
+    ).toBe(
+      "/search?q=magic+missile&classIds=1%2C2&domainIds=8&schoolIds=5&descriptorIds=9&level=all",
+    );
+  });
+
+  it("treats taxonomy ids as structured search scope", () => {
+    expect(
+      hasSearchScope({
+        classIds: [],
+        domainIds: [],
+        taxonomyFilters: {
+          schoolIds: [],
+          subschoolIds: [],
+          descriptorIds: [9],
+        },
+        level: null,
+      }),
+    ).toBe(true);
   });
 });

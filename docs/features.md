@@ -15,12 +15,12 @@ Current behavior:
 - class and domain filters can both contribute results
 - level can be a single level or all levels
 - selected rulebooks constrain the result set
-- the API accepts normalized taxonomy filter ids for schools, subschools, and
-  descriptors; frontend controls for these filters are follow-up work
+- URL filters can constrain results by normalized school, subschool, and
+  descriptor ids
 - default rulebooks are supplied by the backend when no explicit rulebook ids
   are provided
 - the spell-list area shows a compact shared scope summary with selected
-  class/domain filter counts, level, and rulebook scope
+  class/domain filter counts, level, taxonomy filter count, and rulebook scope
 - results are paginated
 - English and Chinese UI/content modes preserve the same response shape
 
@@ -43,13 +43,16 @@ Current behavior:
 - CJK queries may search from one character
 - rulebook filtering is supported
 - URL filters can constrain search by class, domain, and level
-- the API also accepts normalized `schoolIds`, `subschoolIds`, and
-  `descriptorIds` filters using the same comma-separated id-list convention
+- URL filters can also constrain search by normalized `schoolIds`,
+  `subschoolIds`, and `descriptorIds` using the same comma-separated id-list
+  convention
 - the Search sidebar exposes editable class, domain, and level controls
+- the Search sidebar exposes the same school, subschool, and descriptor scope
+  controls as Browse without making name lookup secondary
 - header search preserves current Browse or Search filter scope while replacing
   the name query
 - the spell-list area uses the same compact scope summary as Browse, including
-  selected rulebook scope
+  active taxonomy and selected rulebook scope
 - results are paginated
 - empty or too-short usable queries return an empty result set rather than a
   failed search

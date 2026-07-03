@@ -7,7 +7,7 @@ import {
   getEditions,
   getRulebooks,
 } from "~/api/bootstrap";
-import { getMetaI18n } from "~/api/meta";
+import { getMetaI18n, getSpellFilterVocabulary } from "~/api/meta";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useUserPrefs } from "~/state/user-prefs-state";
 
@@ -60,6 +60,13 @@ export function useBootstrap(includePrestige?: boolean) {
     staleTime: 10 * 60 * 1000,
   });
 
+  const spellFilterVocabulary = useQuery({
+    queryKey: ["metaFilters", { ...queryKey }],
+    queryFn: ({ signal }) => getSpellFilterVocabulary(signal),
+    placeholderData: keepPreviousData,
+    staleTime: Infinity,
+  });
+
   // convenience
   const classById = useMemo(() => {
     const m = new Map<number, ClassView>();
@@ -81,17 +88,20 @@ export function useBootstrap(includePrestige?: boolean) {
     domains,
     domainById,
     metaI18n,
+    spellFilterVocabulary,
     isLoading:
       (editions.isPending && !editions.data) ||
       (rulebooks.isPending && !rulebooks.data) ||
       (classes.isPending && !classes.data) ||
       (domains.isPending && !domains.data) ||
-      (metaI18n.isPending && !metaI18n.data),
+      (metaI18n.isFetching && !metaI18n.data) ||
+      (spellFilterVocabulary.isPending && !spellFilterVocabulary.data),
     error:
       editions.error ||
       rulebooks.error ||
       classes.error ||
       domains.error ||
-      metaI18n.error,
+      metaI18n.error ||
+      spellFilterVocabulary.error,
   };
 }
