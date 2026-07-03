@@ -1,34 +1,31 @@
 import { useTranslation } from "react-i18next";
 import { Switch } from "~/components/ui/switch";
+import { SpellCardDetailToggle } from "~/features/spells/SpellCardDetailToggle";
+import type { SpellCardDetailMode } from "~/storage/userPrefs.type";
 
 export type GroupMode = "flat" | "grouped";
 export type CardViewMode = "simple" | "all";
 
 export function BrowseOptionsToggle({
-  cardView,
   groupMode,
-  onCardViewChange,
   onGroupModeChange,
+  cardDetailMode,
+  onCardDetailModeChange,
 }: {
-  cardView: CardViewMode;
   groupMode: GroupMode;
-  onCardViewChange: (v: CardViewMode) => void;
   onGroupModeChange: (v: GroupMode) => void;
+  cardDetailMode: SpellCardDetailMode;
+  onCardDetailModeChange: (v: SpellCardDetailMode) => void;
 }) {
   const { t } = useTranslation("spell-browse");
 
   return (
-    <div className="space-y-3">
-      <label className="flex items-center justify-between gap-3 text-sm">
-        <span className="font-medium text-foreground">{t("options.show-details")}</span>
-        <Switch
-          checked={cardView === "all"}
-          onCheckedChange={(checked) =>
-            onCardViewChange(checked ? "all" : "simple")
-          }
-        />
-      </label>
-
+    <div className="space-y-2">
+      <SpellCardDetailToggle
+        mode={cardDetailMode}
+        onModeChange={onCardDetailModeChange}
+        label={t("options.show-card-details")}
+      />
       <label className="flex items-center justify-between gap-3 text-sm">
         <span className="font-medium text-foreground">{t("options.group-by-level")}</span>
         <Switch

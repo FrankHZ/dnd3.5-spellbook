@@ -16,6 +16,7 @@ import { Separator } from "~/components/ui/separator";
 import { SpellFilterScopeSummary } from "~/features/spells/SpellFilterScopeSummary";
 import { TaxonomyFilterSelector } from "~/features/spells/TaxonomyFilterSelector";
 import { countTaxonomyFilters } from "~/features/spells/taxonomy-filter-state";
+import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 
 import { PAGE_SIZE } from "../constants";
@@ -46,7 +47,8 @@ export default function BrowsePage() {
     hasValidSelection,
   } = useBrowseQueryState();
 
-  const { cardView, setCardView, groupMode, setGroupMode } = useBrowsePrefs();
+  const { spellCardDetails, setSpellCardDetails } = useDisplayPrefs();
+  const { groupMode, setGroupMode } = useBrowsePrefs();
   const pageSize = PAGE_SIZE;
 
   const browseQuery = useQuery({
@@ -103,10 +105,10 @@ export default function BrowsePage() {
         <Card className="gap-0 self-start">
           <CardContent className="space-y-4">
             <BrowseOptionsToggle
-              cardView={cardView}
-              onCardViewChange={setCardView}
               groupMode={groupMode}
               onGroupModeChange={setGroupMode}
+              cardDetailMode={spellCardDetails}
+              onCardDetailModeChange={setSpellCardDetails}
             />
             <Separator />
             <ClassAndDomainSelector
@@ -176,9 +178,9 @@ export default function BrowsePage() {
             )}
 
           {hasValidSelection && hasSpellData && (
-            <Card className="gap-0 overflow-hidden py-2">
-              <CardContent className="space-y-3 px-0 py-1">
-                <div className="px-6">
+            <Card className="gap-0 overflow-hidden py-0">
+              <CardContent className="space-y-0 px-0 py-0">
+                <div className="px-3 py-2.5 sm:px-6">
                   <Pager
                     page={page}
                     pageSize={pageSize}
@@ -204,8 +206,7 @@ export default function BrowsePage() {
                             <SpellCard
                               key={`${group.level}-${spell.id}`}
                               spell={spell}
-                              showActions={cardView === "all"}
-                              showDetails={cardView === "all"}
+                              showActions={spellCardDetails === "full"}
                             />
                           ))}
                         </div>
@@ -216,15 +217,14 @@ export default function BrowsePage() {
                           <SpellCard
                             key={spell.id}
                             spell={spell}
-                            showActions={cardView === "all"}
-                            showDetails={cardView === "all"}
+                            showActions={spellCardDetails === "full"}
                           />
                         ))}
                 </div>
 
-                <Separator />
+                <Separator className="my-0" />
 
-                <div className="px-6">
+                <div className="px-3 py-2.5 sm:px-6">
                   <Pager
                     page={page}
                     pageSize={pageSize}

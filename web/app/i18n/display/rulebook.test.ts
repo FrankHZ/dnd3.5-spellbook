@@ -34,7 +34,7 @@ describe("rulebook display helpers", () => {
     });
   });
 
-  it("uses Chinese full names as the primary Chinese display label", () => {
+  it("uses Chinese short labels as the primary Chinese display abbreviation", () => {
     expect(
       getRulebookDisplay(
         meta,
@@ -50,6 +50,25 @@ describe("rulebook display helpers", () => {
       abbr: "法术大全",
       name: "法术大全",
       sourceAbbr: "SC",
+    });
+  });
+
+  it("strips trailing edition text from Chinese rulebook abbreviations", () => {
+    expect(
+      getRulebookDisplay(
+        {
+          ...meta,
+          rulebooks: {
+            4: { name: "玩家手册 v3.5" },
+          },
+        },
+        { id: 4, abbr: "PH", name: "Player's Handbook" },
+        "zh",
+      ),
+    ).toMatchObject({
+      abbr: "玩家手册",
+      name: "玩家手册 v3.5",
+      sourceAbbr: "PH",
     });
   });
 

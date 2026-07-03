@@ -11,7 +11,9 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { useRulebookDisplay } from "~/i18n/hooks/useRulebookDisplay";
+import { getRulebookDisplay } from "~/i18n/display/rulebook";
+import { useAppI18n } from "~/i18n/hooks/useAppI18n";
+import { useMetaI18n } from "~/i18n/hooks/useMetaI18n";
 import { useUserPrefs } from "~/state/user-prefs-state";
 import { Field, FieldGroup, FieldLabel } from "~/components/ui/field";
 
@@ -67,9 +69,21 @@ function getEditionCheckState(
   };
 }
 
+function getSettingsRulebookDisplay(
+  rulebook: Rulebook,
+  localizedName: string,
+) {
+  const abbr = rulebook.displayAbbr ?? rulebook.abbr ?? localizedName;
+  return {
+    abbr,
+    name: localizedName,
+  };
+}
+
 export default function RulebookSelector() {
   const { t } = useTranslation("settings");
-  const { rulebookDisplay } = useRulebookDisplay();
+  const { lang } = useAppI18n();
+  const meta = useMetaI18n();
   const { state, setState } = useUserPrefs();
   const boot = useBootstrap(state.includePrestige);
 
@@ -85,9 +99,12 @@ export default function RulebookSelector() {
     () =>
       groupRulebooksByEdition(
         rulebooks,
-        (rulebook) => rulebookDisplay(rulebook).abbr,
+        (rulebook) => {
+          const localized = getRulebookDisplay(meta, rulebook, lang);
+          return getSettingsRulebookDisplay(rulebook, localized.name).abbr;
+        },
       ),
-    [rulebooks, rulebookDisplay],
+    [lang, meta, rulebooks],
   );
 
   function toggleEdition(editionId: number, checked: boolean) {
@@ -159,10 +176,18 @@ export default function RulebookSelector() {
               <FieldGroup className="grid gap-2 sm:grid-cols-2">
                 {g.rulebooks.map((rb) => {
                   const checked = selectedRulebookSet.has(rb.id);
-                  const display = rulebookDisplay(rb);
+                  const localized = getRulebookDisplay(meta, rb, lang);
+                  const display = getSettingsRulebookDisplay(
+                    rb,
+                    localized.name,
+                  );
                   const rulebookCheckboxId = `settings-rulebook-${g.edition.id}-${rb.id}`;
                   return (
-                    <Field key={rb.id} orientation="horizontal">
+                    <Field
+                      key={rb.id}
+                      orientation="horizontal"
+                      className="min-w-0"
+                    >
                       <Checkbox
                         id={rulebookCheckboxId}
                         checked={checked}
@@ -172,13 +197,15 @@ export default function RulebookSelector() {
                       />
                       <FieldLabel
                         htmlFor={rulebookCheckboxId}
-                        className="select-text"
+                        className="min-w-0 flex-1 select-text"
                       >
-                        <span className="text-xs font-medium">
+                        <span className="shrink-0 text-xs font-medium">
                           {display.abbr}
                         </span>
                         {display.name !== display.abbr && (
-                          <span className="truncate">{display.name}</span>
+                          <span className="min-w-0 truncate">
+                            {display.name}
+                          </span>
                         )}
                       </FieldLabel>
                     </Field>

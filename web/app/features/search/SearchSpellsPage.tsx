@@ -14,6 +14,8 @@ import {
 } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
+import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
+import { SpellCardDetailToggle } from "~/features/spells/SpellCardDetailToggle";
 import { SpellFilterScopeSummary } from "~/features/spells/SpellFilterScopeSummary";
 import { TaxonomyFilterSelector } from "~/features/spells/TaxonomyFilterSelector";
 import { countTaxonomyFilters } from "~/features/spells/taxonomy-filter-state";
@@ -32,6 +34,7 @@ import {
 
 export default function SearchSpellsPage() {
   const { state } = useUserPrefs();
+  const { spellCardDetails, setSpellCardDetails } = useDisplayPrefs();
   const rulebookIds = state.selectedRulebookIds;
   const { queryKey } = useAppI18n();
   const { t } = useTranslation("spell-search");
@@ -121,6 +124,14 @@ export default function SearchSpellsPage() {
       <div className="grid gap-4 md:grid-cols-[320px_1fr]">
         <Card className="gap-0 self-start">
           <CardContent className="space-y-4 pt-0">
+            <SpellCardDetailToggle
+              mode={spellCardDetails}
+              onModeChange={setSpellCardDetails}
+              label={t("options.show-card-details")}
+            />
+
+            <Separator />
+
             <div className="grid gap-2">
               {hasScopedSearch ? (
                 <Button
@@ -231,9 +242,9 @@ export default function SearchSpellsPage() {
               )}
 
               {items.length > 0 && (
-                <Card className="gap-0 overflow-hidden py-2">
-                  <CardContent className="space-y-3 px-0 py-1">
-                    <div className="px-6">
+                <Card className="gap-0 overflow-hidden py-0">
+                  <CardContent className="space-y-0 px-0 py-0">
+                    <div className="px-3 py-2.5 sm:px-6">
                       <Pager
                         page={searchScope.page}
                         pageSize={pageSize}
@@ -243,17 +254,21 @@ export default function SearchSpellsPage() {
                       />
                     </div>
 
-                    <Separator />
+                    <Separator className="my-0" />
 
                     <div className="divide-y">
                       {items.map((sp) => (
-                        <SpellCard key={sp.id} spell={sp} showActions />
+                        <SpellCard
+                          key={sp.id}
+                          spell={sp}
+                          showActions={spellCardDetails === "full"}
+                        />
                       ))}
                     </div>
 
-                    <Separator />
+                    <Separator className="my-0" />
 
-                    <div className="px-6">
+                    <div className="px-3 py-2.5 sm:px-6">
                       <Pager
                         page={searchScope.page}
                         pageSize={pageSize}

@@ -6,6 +6,7 @@
   "bootstrap.loading": "读取规则书数据……",
   "picker.all": "全选",
   "picker.filter-placeholder": "过滤",
+  "picker.more-selected_other": "另{{count}}个",
   "picker.no-items": "没找到！",
   "picker.no-matches": "没找到！",
   "picker.selected": "已选择",

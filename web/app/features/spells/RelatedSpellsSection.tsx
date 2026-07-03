@@ -137,7 +137,7 @@ function RelatedSpellList({
   title: string;
   items: SpellItemView[];
 }) {
-  const { nameWithEn } = useAppI18n();
+  const { spellName } = useAppI18n();
   const { rulebookDisplay } = useRulebookDisplay();
 
   if (items.length === 0) {
@@ -155,7 +155,7 @@ function RelatedSpellList({
               className="flex items-center justify-between gap-3 p-3 text-sm"
             >
               <Button asChild variant="link" className="h-auto px-0 py-0 font-medium">
-                <Link to={`/spells/${item.id}`}>{nameWithEn(item)}</Link>
+                <Link to={`/spells/${item.id}`}>{spellName(item)}</Link>
               </Button>
               <div className="shrink-0 text-xs text-muted-foreground">
                 <span className="font-medium">

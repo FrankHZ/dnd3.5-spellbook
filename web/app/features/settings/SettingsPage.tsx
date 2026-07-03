@@ -1,4 +1,5 @@
 import ClassSettings from "~/features/settings/ClassSettings";
+import DisplaySettings from "~/features/settings/DisplaySettings";
 import RulebookSelector from "~/features/settings/RulebookSelector";
 import { useTranslation } from "react-i18next";
 
@@ -14,6 +15,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      <DisplaySettings />
       <ClassSettings />
       <RulebookSelector />
     </div>

@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { getSpellsBatch } from "~/api/spells";
+import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useCollections } from "~/state/collections-state";
 import type { PreparedBook } from "~/storage/collections.type";
@@ -40,11 +41,16 @@ type ViewMode = "normal" | "edit";
 
 export function PreparedBookDetail({ book }: { book: PreparedBook }) {
   const { t } = useTranslation("collections");
-  const { queryKey, name } = useAppI18n();
+  const { lang, queryKey, name } = useAppI18n();
   const { preparedBook } = useCollections();
   const [mode, setMode] = useState<ViewMode>("normal");
 
-  const { metaNameWithEn } = useMetaNames();
+  const { metaName, metaNameWithEn } = useMetaNames();
+  const displayPrefs = useDisplayPrefs();
+  const classDomainName =
+    lang === "zh" && displayPrefs.zhDisplay.classDomainLabelsWithEnglish
+      ? metaNameWithEn
+      : metaName;
   const { classById, domainById } = useBootstrap();
   const { selectedClassIds, selectedDomainIds } = preparedBook.getPrefs(
     book.id,
@@ -80,17 +86,17 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
     return selectedClassIds.map((id) => ({
       type: "class",
       id,
-      name: metaNameWithEn("classes", classById.get(id)),
+      name: classDomainName("classes", classById.get(id)),
     })) satisfies ClassOption[];
-  }, [selectedClassIds, metaNameWithEn, classById]);
+  }, [selectedClassIds, classDomainName, classById]);
 
   const selectedDomains = useMemo(() => {
     return selectedDomainIds.map((id) => ({
       type: "domain",
       id,
-      name: metaNameWithEn("domains", domainById.get(id)),
+      name: classDomainName("domains", domainById.get(id)),
     })) satisfies DomainOption[];
-  }, [selectedDomainIds, metaNameWithEn, domainById]);
+  }, [selectedDomainIds, classDomainName, domainById]);
 
   const spellIds = useMemo(
     () => getPreparedSpellIds(book.entries),
@@ -162,8 +168,8 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
 
         const display =
           type === "class"
-            ? metaNameWithEn("classes", classById.get(id))
-            : metaNameWithEn("domains", domainById.get(id));
+            ? classDomainName("classes", classById.get(id))
+            : classDomainName("domains", domainById.get(id));
 
         return {
           type,
@@ -191,7 +197,7 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
     selectedDomainIds,
     classById,
     domainById,
-    metaNameWithEn,
+    classDomainName,
     t,
   ]);
 

@@ -10,12 +10,14 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import type { SpellIdBook } from "~/storage/collections.type";
 
 export function SpellIdBookDetail({ book }: { book: SpellIdBook }) {
   const { t } = useTranslation("collections");
   const { queryKey } = useAppI18n();
+  const { spellCardDetails } = useDisplayPrefs();
   const ids = book.spellIds;
 
   const batchQuery = useQuery({
@@ -84,7 +86,11 @@ export function SpellIdBookDetail({ book }: { book: SpellIdBook }) {
             <Card className="gap-0 overflow-hidden py-0">
               <CardContent className="divide-y px-0 py-0">
                 {spells.map((sp) => (
-                  <SpellCard key={sp.id} spell={sp} showActions />
+                  <SpellCard
+                    key={sp.id}
+                    spell={sp}
+                    showActions={spellCardDetails === "full"}
+                  />
                 ))}
               </CardContent>
             </Card>

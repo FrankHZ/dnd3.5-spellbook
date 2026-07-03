@@ -4,6 +4,7 @@ import {
   MultiSelectPicker,
   type PickerItem,
 } from "~/components/MultiSelectPicker";
+import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 
 export function ClassAndDomainSelector({
@@ -18,7 +19,12 @@ export function ClassAndDomainSelector({
   onChangeDomains: (next: number[]) => void;
 }) {
   const boot = useBootstrap();
-  const { nameWithEn } = useAppI18n();
+  const { lang, name, nameWithEn } = useAppI18n();
+  const displayPrefs = useDisplayPrefs();
+  const displayName =
+    lang === "zh" && displayPrefs.zhDisplay.classDomainLabelsWithEnglish
+      ? nameWithEn
+      : name;
   const { t } = useTranslation("spell-browse");
 
   const classes = boot.classes.data?.items ?? [];
@@ -26,13 +32,13 @@ export function ClassAndDomainSelector({
 
   const classItems: PickerItem[] = classes.map((c) => ({
     id: c.id,
-    name: nameWithEn(c),
+    name: displayName(c),
     group: c.prestige ? t("classes.prestige") : t("classes.base"),
   }));
 
   const domainItems: PickerItem[] = domains.map((d) => ({
     id: d.id,
-    name: nameWithEn(d),
+    name: displayName(d),
   }));
 
   return (
