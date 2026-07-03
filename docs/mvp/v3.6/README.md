@@ -1,7 +1,7 @@
 # v3.6 Planning
 
-Status: active post-v3.5 coordination track. Server DB status and UI/UX display
-slices have landed; docs structure cleanup is implemented pending review.
+Status: active post-v3.5 coordination track. Server DB status, UI/UX display,
+and docs structure cleanup slices have landed.
 
 v3.6 starts from `docs/mvp/v3.5/FREEZE.md`. This folder is for the first
 post-freeze planning pass, not an implementation ledger.
@@ -12,9 +12,9 @@ post-freeze planning pass, not an implementation ledger.
    SSH/SQLite inspection.
 2. Landed: focused UI/UX update around display settings, spell cards, filter
    summary density, and styling polish.
-3. Implemented pending review: clean up the `docs/` directory structure so
-   durable topic docs, module docs, version plans, freeze snapshots, and
-   historical planning records are easier for future agents to distinguish.
+3. Landed: clean up the `docs/` directory structure so durable topic docs,
+   module docs, version plans, freeze snapshots, and historical planning records
+   are easier for future agents to distinguish.
 
 ## Review Candidates
 
