@@ -97,6 +97,8 @@ handoff records.
 
 - [templates/feature-plan.md](./templates/feature-plan.md)
 - [templates/version-plan.md](./templates/version-plan.md)
+- [templates/acceptance-checklist.md](./templates/acceptance-checklist.md)
+- [templates/freeze-snapshot.md](./templates/freeze-snapshot.md)
 
 ## Workspace References
 

@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: active; first navigation cleanup slice in progress.
+Status: active; structure cleanup implementation in progress.
 
 ## Purpose
 
@@ -54,9 +54,8 @@ context tax without rewriting frozen history.
 - `docs/modules/` owns high-level module boundaries.
 - `docs/mvp/` contains both frozen snapshots and planning history.
 - `AGENTS.md` is intentionally compact after v3.5.
-- `docs/operations/` already exists for one-time remote host bootstrap, while
-  primary operational docs such as `deployment.md` and `data-setup.md` still
-  live at the docs root and have many existing links.
+- `docs/operations/` owns deployment, data setup, import workflow, rules DB
+  notes, public-repo notes, repo conventions, and remote host bootstrap.
 
 ## Structure Decisions
 
@@ -64,8 +63,9 @@ context tax without rewriting frozen history.
   points and moving them would create broad link churn.
 - Add `docs/mvp/README.md` so version folders have their own role and
   maintenance rules.
-- Add `docs/operations/README.md` as an operations map while keeping current
-  operational files in place.
+- Move operational/data/hygiene docs under `docs/operations/` and use
+  `docs/operations/README.md` as the operations map.
+- Add reusable acceptance and freeze templates under `docs/templates/`.
 - Do not move frozen MVP folders or rewrite old plan content.
 - Treat future file moves as separate accepted slices only when the link churn
   clearly pays for itself.
@@ -81,7 +81,7 @@ context tax without rewriting frozen history.
 
 ### Slice 2: Navigation Cleanup
 
-- Status: in progress.
+- Status: implemented.
 - Deliverable: update documentation map and roadmap to make current/frozen
   boundaries obvious.
 - Expected files: `docs/README.md`, `README.md`, `docs/roadmap.md`.
@@ -89,11 +89,20 @@ context tax without rewriting frozen history.
 
 ### Slice 3: Optional Moves
 
-- Status: deferred from the first pass.
-- Deliverable: only move files when the destination clearly reduces future
+- Status: implemented for operations docs.
+- Deliverable: move files only when the destination clearly reduces future
   confusion.
-- Expected files: topic docs or operations docs if accepted.
+- Expected files: operations docs and updated references.
 - Validation: update links in docs and AGENTS/module READMEs where affected.
+
+### Slice 4: Version Closeout Templates
+
+- Status: implemented.
+- Deliverable: add reusable acceptance and freeze templates.
+- Expected files: `docs/templates/acceptance-checklist.md`,
+  `docs/templates/freeze-snapshot.md`, `docs/README.md`,
+  `docs/mvp/README.md`.
+- Validation: link/path checks and `git diff --check`.
 
 ## Acceptance Criteria
 
@@ -114,8 +123,8 @@ context tax without rewriting frozen history.
 
 ## Open Questions
 
-- Should operations docs move under `docs/operations/` beyond the bootstrap doc?
-- Should active version folders have a common acceptance/freeze checklist
-  template?
+- Operations docs moved under `docs/operations/`.
+- Acceptance and freeze templates added under `docs/templates/`.
 - Should old MVP planning docs stay in place or eventually move under a
-  historical subfolder?
+  historical subfolder? Current decision: keep them in place and make
+  `docs/mvp/README.md` explain their role.

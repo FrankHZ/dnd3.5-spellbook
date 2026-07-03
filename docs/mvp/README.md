@@ -30,3 +30,5 @@ plan instead of turning integrated plans into status ledgers.
   `docs/operations/deployment.md`, `docs/operations/data-setup.md`, or `docs/modules/`.
 - Put current work order in `docs/roadmap.md`.
 - Create new child plans from `docs/templates/version-plan.md`.
+- Create acceptance checklists and freeze snapshots from the matching templates
+  under `docs/templates/`.
