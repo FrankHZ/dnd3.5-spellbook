@@ -288,6 +288,9 @@ const tests: TestCase[] = [
             spellCount: 120,
             zhName: "法术大全",
             chmSourceLabels: ["法术大全"],
+            publicationDisplayAbbr: "SpC",
+            publicationZhName: "万法大全",
+            publicationSource: "artifacts/chm-clean/出版物.html",
           },
           {
             id: 2,
@@ -323,7 +326,7 @@ const tests: TestCase[] = [
       assert.equal(spellCompendium?.status, "replace");
       assert.ok(spellCompendium?.issues.includes("source-abbr-artifact"));
       assert.ok(
-        spellCompendium?.issues.includes("known-common-abbr-mismatch"),
+        spellCompendium?.issues.includes("publication-display-abbr-mismatch"),
       );
 
       const missingTranslation = report.rows.find((row) => row.rulebookId === 2);

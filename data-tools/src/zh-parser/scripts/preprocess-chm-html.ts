@@ -17,7 +17,7 @@ type Options = {
 const DEFAULTS: Options = {
   inputDir: "",
   outputDir: "",
-  globRe: /^.+\.htm$/i,
+  globRe: /^.+\.html?$/i,
   assumeGb2312: true,
   keepOnlyContent: true,
   stripAttrs: true,
@@ -218,7 +218,7 @@ async function main() {
   const files = scanInputHtmlFiles(opts.inputDir, opts.globRe);
 
   if (files.length === 0) {
-    console.error("No .htm files found in input dir.");
+    console.error("No .htm/.html files found in input dir.");
     process.exit(1);
   }
 

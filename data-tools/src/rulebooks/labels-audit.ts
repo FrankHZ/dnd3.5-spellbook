@@ -1,9 +1,11 @@
 import Database from "better-sqlite3";
+import * as cheerio from "cheerio";
 import fs from "node:fs";
 import path from "node:path";
 
 import { BOOK_LABEL_TO_ABBR } from "../zh-parser/mapping";
 import {
+  localDataDir,
   loadServerEnv,
   repoRoot,
   resolveServerRelativePath,
@@ -26,6 +28,9 @@ export type RulebookLabelAuditInputRow = {
   currentDisplayName?: string | null;
   currentDisplayAbbr?: string | null;
   chmSourceLabels?: string[];
+  publicationDisplayAbbr?: string | null;
+  publicationZhName?: string | null;
+  publicationSource?: string | null;
 };
 
 export type RulebookLabelAuditRow = {
@@ -38,6 +43,9 @@ export type RulebookLabelAuditRow = {
   shownInRuntimeRulebookList: boolean;
   zhName: string | null;
   chmSourceLabels: string[];
+  publicationDisplayAbbr: string | null;
+  publicationZhName: string | null;
+  publicationSource: string | null;
   currentDisplayName: string | null;
   currentDisplayAbbr: string | null;
   proposedDisplayAbbr: string | null;
@@ -59,25 +67,19 @@ export type RulebookLabelAuditReport = {
     missingZhNames: number;
     sourceArtifactAbbrs: number;
     duplicateProposedDisplayAbbrs: number;
-    knownCommonAbbrMismatches: number;
+    publicationDisplayAbbrMismatches: number;
   };
   rows: RulebookLabelAuditRow[];
 };
 
-type KnownDisplayDecision = {
-  displayAbbr: string;
-  issue: string;
-};
-
 const OUT_ROOT = path.join(repoRoot(), "data-tools", "out", "rulebook-labels");
 const DEFAULT_OUTPUT_PATH = path.join(OUT_ROOT, "rulebook-label-audit.json");
-
-const KNOWN_DISPLAY_DECISIONS: Record<string, KnownDisplayDecision> = {
-  "spell-compendium": {
-    displayAbbr: "SpC",
-    issue: "known-common-abbr-mismatch",
-  },
-};
+const CHM_PUBLICATIONS_PATH = path.join(
+  localDataDir(),
+  "artifacts",
+  "chm-clean",
+  "出版物.html",
+);
 
 function usage(): never {
   console.error(`Usage:
@@ -168,8 +170,8 @@ export function auditRulebookLabels(
       duplicateProposedDisplayAbbrs: rows.filter((row) =>
         row.issues.includes("duplicate-proposed-display-abbr"),
       ).length,
-      knownCommonAbbrMismatches: rows.filter((row) =>
-        row.issues.includes("known-common-abbr-mismatch"),
+      publicationDisplayAbbrMismatches: rows.filter((row) =>
+        row.issues.includes("publication-display-abbr-mismatch"),
       ).length,
     },
     rows,
@@ -185,7 +187,9 @@ function auditRulebookLabelRow(
   const zhName = cleanNullable(row.zhName);
   const currentDisplayName = cleanNullable(row.currentDisplayName);
   const currentDisplayAbbr = cleanNullable(row.currentDisplayAbbr);
-  const knownDecision = KNOWN_DISPLAY_DECISIONS[row.slug];
+  const publicationDisplayAbbr = cleanNullable(row.publicationDisplayAbbr);
+  const publicationZhName = cleanNullable(row.publicationZhName);
+  const publicationSource = cleanNullable(row.publicationSource);
   const hasSourceArtifact =
     /[_]/.test(row.abbr) || /[^\p{L}\p{N}&+.-]/u.test(row.abbr);
 
@@ -195,23 +199,22 @@ function auditRulebookLabelRow(
   if (hasSourceArtifact) {
     issues.push("source-abbr-artifact");
   }
-  if (knownDecision && currentDisplayAbbr !== knownDecision.displayAbbr) {
-    issues.push(knownDecision.issue);
-  }
   if (
-    shownInRuntimeRulebookList &&
-    !currentDisplayAbbr &&
-    hasSourceArtifact &&
-    !knownDecision
+    publicationDisplayAbbr &&
+    currentDisplayAbbr !== publicationDisplayAbbr &&
+    row.abbr !== publicationDisplayAbbr
   ) {
+    issues.push("publication-display-abbr-mismatch");
+  }
+  if (shownInRuntimeRulebookList && !currentDisplayAbbr && hasSourceArtifact) {
     issues.push("display-abbr-needs-review");
   }
 
   const proposedDisplayAbbr =
     currentDisplayAbbr ??
-    knownDecision?.displayAbbr ??
+    publicationDisplayAbbr ??
     proposeDisplayAbbr(row.abbr);
-  const proposedZhDisplayName = zhName;
+  const proposedZhDisplayName = zhName ?? publicationZhName;
 
   return {
     rulebookId: row.id,
@@ -225,6 +228,9 @@ function auditRulebookLabelRow(
     chmSourceLabels: [...(row.chmSourceLabels ?? [])].sort((a, b) =>
       a.localeCompare(b),
     ),
+    publicationDisplayAbbr,
+    publicationZhName,
+    publicationSource,
     currentDisplayName,
     currentDisplayAbbr,
     proposedDisplayAbbr,
@@ -236,6 +242,7 @@ function auditRulebookLabelRow(
 
 function chooseStatus(row: RulebookLabelAuditRow): RulebookLabelAuditStatus {
   if (!row.shownInRuntimeRulebookList) return "defer";
+  if (row.issues.includes("publication-display-abbr-mismatch")) return "replace";
   if (
     row.issues.includes("duplicate-proposed-display-abbr") ||
     row.issues.includes("display-abbr-needs-review") ||
@@ -243,7 +250,6 @@ function chooseStatus(row: RulebookLabelAuditRow): RulebookLabelAuditStatus {
   ) {
     return "needs-review";
   }
-  if (row.issues.includes("known-common-abbr-mismatch")) return "replace";
   if (
     !row.currentDisplayAbbr &&
     row.issues.includes("source-abbr-artifact")
@@ -340,9 +346,13 @@ function readAuditInputRows(
   );
 
   const sourceLabelsByAbbr = sourceLabelsByRulebookAbbr();
+  const publicationRowsByName = readChmPublicationRowsByName();
 
   return rulebooks.map((row): RulebookLabelAuditInputRow => {
     const displayRow = displayRows.get(row.id);
+    const publicationRow = publicationRowsByName.get(
+      normalizePublicationName(row.name),
+    );
     return {
       id: row.id,
       name: row.name,
@@ -354,8 +364,54 @@ function readAuditInputRows(
       currentDisplayName: displayRow?.displayName ?? null,
       currentDisplayAbbr: displayRow?.displayAbbr ?? null,
       chmSourceLabels: sourceLabelsByAbbr.get(row.abbr) ?? [],
+      publicationDisplayAbbr: publicationRow?.abbr ?? null,
+      publicationZhName: publicationRow?.zhName ?? null,
+      publicationSource: publicationRow?.source ?? null,
     };
   });
+}
+
+function readChmPublicationRowsByName() {
+  type PublicationRow = {
+    abbr: string;
+    name: string;
+    zhName: string;
+    source: string;
+  };
+  const byName = new Map<string, PublicationRow>();
+  if (!fs.existsSync(CHM_PUBLICATIONS_PATH)) return byName;
+
+  const html = fs.readFileSync(CHM_PUBLICATIONS_PATH, "utf8");
+  const $ = cheerio.load(html);
+  $("tr").each((_, tr) => {
+    const cols = $(tr)
+      .find("td")
+      .map((__, td) =>
+        $(td)
+          .text()
+          .replace(/\s+/g, " ")
+          .trim(),
+      )
+      .get();
+    if (cols.length < 3 || cols[0] === "缩写") return;
+    const [abbr, name, zhName] = cols;
+    if (!abbr || !name) return;
+    byName.set(normalizePublicationName(name), {
+      abbr,
+      name,
+      zhName: zhName ?? "",
+      source: path.relative(localDataDir(), CHM_PUBLICATIONS_PATH),
+    });
+  });
+  return byName;
+}
+
+function normalizePublicationName(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[’]/g, "'")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 
 function sourceLabelsByRulebookAbbr() {

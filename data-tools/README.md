@@ -373,9 +373,11 @@ rules DB, or the nested local data repo.
 `rulebooks:labels:audit` is the read-only rulebook display-label review report
 for v3.5. It compares legacy `dnd_rulebook` identity fields, current
 `RulebookContent.displayAbbr/displayName`, Chinese `I18nRulebookText.name`,
-and CHM source-label mappings, then writes
+CHM source-label mappings, and the optional cleaned CHM publication table at
+`data/artifacts/chm-clean/出版物.html`, then writes
 `data-tools/out/rulebook-labels/rulebook-label-audit.json`. It flags source
-abbreviation artifacts such as `Sc_`, known common-abbreviation mismatches,
+abbreviation artifacts such as `Sc_`, publication display-abbreviation
+mismatches,
 duplicate proposed display abbreviations, and missing Chinese full names without
 changing API contracts or UI consumers.
 
