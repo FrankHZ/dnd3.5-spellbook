@@ -11,7 +11,7 @@
   "level.title": "Level",
   "level.value": "Level {{level}}",
   "options.group-by-level": "Group by level",
-  "options.show-details": "Show details",
+  "options.show-card-details": "Show more information",
   "results.empty-for-level": "No spells found for selected classes at level {{level}}.",
   "validation.choose-scope-and-level": "Choose at least one class or domain, then set a spell level.",
   "validation.select-class-or-domain": "Select at least one class or domain.",

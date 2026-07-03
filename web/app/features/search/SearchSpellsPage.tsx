@@ -14,6 +14,8 @@ import {
 } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
+import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
+import { SpellCardDetailToggle } from "~/features/spells/SpellCardDetailToggle";
 import { SpellFilterScopeSummary } from "~/features/spells/SpellFilterScopeSummary";
 import { TaxonomyFilterSelector } from "~/features/spells/TaxonomyFilterSelector";
 import { countTaxonomyFilters } from "~/features/spells/taxonomy-filter-state";
@@ -32,6 +34,7 @@ import {
 
 export default function SearchSpellsPage() {
   const { state } = useUserPrefs();
+  const { spellCardDetails, setSpellCardDetails } = useDisplayPrefs();
   const rulebookIds = state.selectedRulebookIds;
   const { queryKey } = useAppI18n();
   const { t } = useTranslation("spell-search");
@@ -121,6 +124,14 @@ export default function SearchSpellsPage() {
       <div className="grid gap-4 md:grid-cols-[320px_1fr]">
         <Card className="gap-0 self-start">
           <CardContent className="space-y-4 pt-0">
+            <SpellCardDetailToggle
+              mode={spellCardDetails}
+              onModeChange={setSpellCardDetails}
+              label={t("options.show-card-details")}
+            />
+
+            <Separator />
+
             <div className="grid gap-2">
               {hasScopedSearch ? (
                 <Button
@@ -247,7 +258,11 @@ export default function SearchSpellsPage() {
 
                     <div className="divide-y">
                       {items.map((sp) => (
-                        <SpellCard key={sp.id} spell={sp} showActions />
+                        <SpellCard
+                          key={sp.id}
+                          spell={sp}
+                          showActions={spellCardDetails === "full"}
+                        />
                       ))}
                     </div>
 

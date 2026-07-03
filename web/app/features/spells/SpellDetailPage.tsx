@@ -130,7 +130,7 @@ function SpellHeader({
 export default function SpellDetailPage() {
   const { id } = useParams();
   const { queryKey } = useAppI18n();
-  const { lang, nameWithEn } = useAppI18n();
+  const { lang, spellName } = useAppI18n();
   const { t } = useTranslation(["spell-detail", "collections"]);
   const { metaName } = useMetaNames();
   const { rulebookDisplay } = useRulebookDisplay();
@@ -229,7 +229,7 @@ export default function SpellDetailPage() {
   return (
     <div className="page-side">
       <SpellHeader
-        title={nameWithEn(spell)}
+        title={spellName(spell)}
         rulebookLabel={source.abbr}
         page={spell.page}
         schoolText={schoolText}
@@ -255,7 +255,7 @@ export default function SpellDetailPage() {
         <div className="space-y-4">
           <div className="hidden md:block">
             <SpellHeader
-              title={nameWithEn(spell)}
+              title={spellName(spell)}
               rulebookLabel={source.abbr}
               page={spell.page}
               schoolText={schoolText}

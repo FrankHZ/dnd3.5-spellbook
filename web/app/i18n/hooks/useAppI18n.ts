@@ -22,11 +22,17 @@ export function useAppI18n() {
   const nameWithEn = <T extends WithI18nName>(s: T) =>
     getDisplayNameWithEn(s, lang);
 
+  const spellName = <T extends WithI18nName>(s: T) =>
+    lang === "zh" && state.displayPrefs.zhDisplay.spellNamesWithEnglish
+      ? getDisplayNameWithEn(s, lang)
+      : getDisplayName(s, lang);
+
   return {
     lang,
     variant,
     queryKey,
     name,
     nameWithEn,
+    spellName,
   };
 }

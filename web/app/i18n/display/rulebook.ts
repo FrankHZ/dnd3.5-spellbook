@@ -14,6 +14,15 @@ const EMPTY_RULEBOOK_DISPLAY: RulebookDisplay = {
   sourceName: "—",
 };
 
+function getLocalizedRulebookAbbr(name: string) {
+  const stripped = name
+    .replace(/\s+v?\d+(?:\.\d+)?$/i, "")
+    .replace(/\s+\d{2,4}\.\d+$/, "")
+    .trim();
+
+  return stripped || name;
+}
+
 export function getRulebookDisplay(
   meta: MetaI18nResponse | undefined,
   rulebook: RulebookMin | null | undefined,
@@ -24,7 +33,9 @@ export function getRulebookDisplay(
   const zhName = lang === "zh" ? meta?.rulebooks?.[rulebook.id]?.name : undefined;
   const name = zhName ?? rulebook.displayName ?? rulebook.name;
   const abbr =
-    lang === "zh" ? name : (rulebook.displayAbbr ?? rulebook.abbr ?? name);
+    lang === "zh"
+      ? getLocalizedRulebookAbbr(name)
+      : (rulebook.displayAbbr ?? rulebook.abbr ?? name);
 
   return {
     abbr,

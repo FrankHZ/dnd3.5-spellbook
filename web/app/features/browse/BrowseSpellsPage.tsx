@@ -16,6 +16,7 @@ import { Separator } from "~/components/ui/separator";
 import { SpellFilterScopeSummary } from "~/features/spells/SpellFilterScopeSummary";
 import { TaxonomyFilterSelector } from "~/features/spells/TaxonomyFilterSelector";
 import { countTaxonomyFilters } from "~/features/spells/taxonomy-filter-state";
+import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 
 import { PAGE_SIZE } from "../constants";
@@ -46,7 +47,8 @@ export default function BrowsePage() {
     hasValidSelection,
   } = useBrowseQueryState();
 
-  const { cardView, setCardView, groupMode, setGroupMode } = useBrowsePrefs();
+  const { spellCardDetails, setSpellCardDetails } = useDisplayPrefs();
+  const { groupMode, setGroupMode } = useBrowsePrefs();
   const pageSize = PAGE_SIZE;
 
   const browseQuery = useQuery({
@@ -103,10 +105,10 @@ export default function BrowsePage() {
         <Card className="gap-0 self-start">
           <CardContent className="space-y-4">
             <BrowseOptionsToggle
-              cardView={cardView}
-              onCardViewChange={setCardView}
               groupMode={groupMode}
               onGroupModeChange={setGroupMode}
+              cardDetailMode={spellCardDetails}
+              onCardDetailModeChange={setSpellCardDetails}
             />
             <Separator />
             <ClassAndDomainSelector
@@ -204,8 +206,7 @@ export default function BrowsePage() {
                             <SpellCard
                               key={`${group.level}-${spell.id}`}
                               spell={spell}
-                              showActions={cardView === "all"}
-                              showDetails={cardView === "all"}
+                              showActions={spellCardDetails === "full"}
                             />
                           ))}
                         </div>
@@ -216,8 +217,7 @@ export default function BrowsePage() {
                           <SpellCard
                             key={spell.id}
                             spell={spell}
-                            showActions={cardView === "all"}
-                            showDetails={cardView === "all"}
+                            showActions={spellCardDetails === "full"}
                           />
                         ))}
                 </div>

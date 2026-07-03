@@ -6,6 +6,8 @@
   "bootstrap.loading": "Loading rules data...",
   "picker.all": "All",
   "picker.filter-placeholder": "Filter...",
+  "picker.more-selected_one": "+{{count}} more",
+  "picker.more-selected_other": "+{{count}} more",
   "picker.no-items": "No items found.",
   "picker.no-matches": "No matches.",
   "picker.selected": "Selected",

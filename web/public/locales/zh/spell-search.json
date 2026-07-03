@@ -5,5 +5,6 @@
   "errors.too-short": "至少输入两个字母吧",
   "errors.too-short-cjk": "至少两个字母或者一个汉字",
   "input.placeholder": "输入名字（中英皆可）",
+  "options.show-card-details": "显示更多信息",
   "results.empty": "没有对应\"{{query}}\"的法术。"
 }

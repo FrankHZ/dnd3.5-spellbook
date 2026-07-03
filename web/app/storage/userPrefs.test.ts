@@ -83,7 +83,46 @@ describe("user preferences storage", () => {
     expect(loadState()).toEqual({
       ...DEFAULT_STATE,
       selectedRulebookIds: [1, 2],
+      displayPrefs: DEFAULT_STATE.displayPrefs,
       uiPrefs: { lang: "zh", zhVariant: "chm" },
+    });
+  });
+
+  it("loads display preferences and migrates legacy browse card view", () => {
+    localStorage.setItem(
+      LS_KEY_PREFS,
+      JSON.stringify({
+        storageVersion: 1,
+        browsePrefs: { cardView: "all" },
+        displayPrefs: { spellListDensity: "comfortable" },
+      }),
+    );
+
+    expect(loadState().displayPrefs).toEqual({
+      spellListDensity: "comfortable",
+      spellCardDetails: "full",
+      zhDisplay: DEFAULT_STATE.displayPrefs.zhDisplay,
+    });
+  });
+
+  it("merges partial Chinese display preferences", () => {
+    localStorage.setItem(
+      LS_KEY_PREFS,
+      JSON.stringify({
+        storageVersion: 1,
+        displayPrefs: {
+          zhDisplay: {
+            classDomainLabelsWithEnglish: true,
+            rulebookLabelStyle: "english",
+          },
+        },
+      }),
+    );
+
+    expect(loadState().displayPrefs.zhDisplay).toEqual({
+      ...DEFAULT_STATE.displayPrefs.zhDisplay,
+      classDomainLabelsWithEnglish: true,
+      rulebookLabelStyle: "english",
     });
   });
 

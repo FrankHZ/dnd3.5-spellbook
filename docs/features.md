@@ -40,12 +40,18 @@ Current behavior:
   are provided
 - the spell-list area shows a compact shared scope summary with selected
   class/domain filter counts, level, taxonomy filter count, and rulebook scope
+- spell list density follows browser-local Display settings, while full-detail
+  card display is controlled from the Browse sidebar for the current reading
+  context
+- spell cards can show compact special-component markers such as `M`, `AF`,
+  `DF`, or `XP` beside spell names
 - results are paginated
 - English and Chinese UI/content modes preserve the same response shape
 
 Key code:
 
 - `web/app/features/browse/BrowseSpellsPage.tsx`
+- `web/app/components/SpellCard.tsx`
 - `web/app/features/spells/SpellFilterScopeSummary.tsx`
 - `web/app/api/spells.ts`
 - `server/src/controllers/spells.controller.ts`
@@ -72,6 +78,11 @@ Current behavior:
   the name query
 - the spell-list area uses the same compact scope summary as Browse, including
   active taxonomy and selected rulebook scope
+- spell list density follows browser-local Display settings, while full-detail
+  card display is controlled from the Search sidebar for the current reading
+  context
+- spell cards can show compact special-component markers such as `M`, `AF`,
+  `DF`, or `XP` beside spell names
 - results are paginated
 - empty or too-short usable queries return an empty result set rather than a
   failed search
@@ -79,6 +90,7 @@ Current behavior:
 Key code:
 
 - `web/app/features/search/SearchSpellsPage.tsx`
+- `web/app/components/SpellCard.tsx`
 - `web/app/features/spells/SpellFilterScopeSummary.tsx`
 - `web/app/features/search/search-url.ts`
 - `web/app/features/search/validation.ts`
@@ -97,6 +109,7 @@ Current behavior:
 - invalid ids return a bad-request error
 - missing spell ids return not found
 - Chinese content overlays are applied when available
+- spell names follow the Chinese Display setting for English comparison text
 - detail pages render related spell references when matches exist
 - related results are split into same-name matches and variant-form matches
 - related result ordering is deterministic by source rulebook abbreviation,
@@ -123,8 +136,10 @@ Current behavior:
 - normalized taxonomy filter vocabulary is exposed by `GET /api/meta/filters`
 - rulebook responses preserve source `abbr` and can include curated
   `displayAbbr` / `displayName` metadata from normalized content
-- frontend rulebook display uses a shared helper so English can show curated
-  display abbreviations and Chinese can show localized full rulebook names
+- frontend rulebook display uses a shared helper so English and default Chinese
+  display can show curated/source abbreviations consistently
+- Chinese Display settings can opt into localized Chinese short rulebook labels
+  in frontend content surfaces
 - Chinese display names are available where local app data provides overlays
 - frontend bootstrapping loads metadata for selectors and labels
 
@@ -159,12 +174,14 @@ Current behavior:
 - imported ids are normalized to positive unique integers
 - ids missing from the API are excluded from persistence
 - spell-id books expose a clear action
+- spell-id book spell cards follow browser-local Display settings
 
 Key code:
 
 - `web/app/features/collections/SpellbooksIndexPage.tsx`
 - `web/app/features/collections/SpellbookDetailPage.tsx`
 - `web/app/features/collections/spell-id/SpellIdBookDetail.tsx`
+- `web/app/components/SpellCard.tsx`
 - `web/app/features/collections/spell-id/SpellIdBookJsonActions.tsx`
 - `web/app/features/collections/spell-id/spell-id-json.ts`
 - `web/app/state/collections-state.tsx`
@@ -245,20 +262,27 @@ Key code:
 
 ## Settings
 
-Users can adjust application preferences such as language, rulebook scope, and
-class-related browsing defaults.
+Users can adjust application preferences such as display density, language,
+rulebook scope, and class-related browsing defaults.
 
 Current behavior:
 
 - settings are browser-local
+- Display settings control compact versus comfortable spell-list density
+- Browse and Search sidebars expose the browser-local summary/full-detail spell
+  card toggle for context-specific scanning
+- Chinese Display settings control English comparison text for spell names,
+  class/domain labels, other filter labels, and rulebook abbreviations
 - selected rulebooks affect browse/search behavior
 - language selection affects both UI text and API query parameters
 
 Key code:
 
 - `web/app/features/settings/SettingsPage.tsx`
+- `web/app/features/settings/DisplaySettings.tsx`
 - `web/app/features/settings/RulebookSelector.tsx`
 - `web/app/features/settings/ClassSettings.tsx`
+- `web/app/features/display/useDisplayPrefs.ts`
 - `web/app/state/user-prefs-state.tsx`
 - `web/app/storage/userPrefs.ts`
 

@@ -9,16 +9,17 @@ import {
   MultiSelectPicker,
   type PickerItem,
 } from "~/components/MultiSelectPicker";
+import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { countTaxonomyFilters } from "./taxonomy-filter-state";
 
 function toPickerItem(
   item: SpellFilterVocabularyItem,
-  nameWithEn: ReturnType<typeof useAppI18n>["nameWithEn"],
+  displayName: ReturnType<typeof useAppI18n>["name"],
 ): PickerItem {
   return {
     id: item.id,
-    name: nameWithEn(item),
+    name: displayName(item),
   };
 }
 
@@ -34,18 +35,23 @@ export function TaxonomyFilterSelector({
   onChangeDescriptors: (next: number[]) => void;
 }) {
   const { t } = useTranslation("spell-filters");
-  const { nameWithEn } = useAppI18n();
+  const { lang, name, nameWithEn } = useAppI18n();
+  const displayPrefs = useDisplayPrefs();
+  const displayName =
+    lang === "zh" && displayPrefs.zhDisplay.filterFacetLabelsWithEnglish
+      ? nameWithEn
+      : name;
   const boot = useBootstrap();
   const taxonomy = boot.spellFilterVocabulary.data?.taxonomy;
   const activeCount = countTaxonomyFilters(value);
   const [open, setOpen] = useState(activeCount > 0);
 
   const schoolItems =
-    taxonomy?.schools.map((item) => toPickerItem(item, nameWithEn)) ?? [];
+    taxonomy?.schools.map((item) => toPickerItem(item, displayName)) ?? [];
   const subschoolItems =
-    taxonomy?.subschools.map((item) => toPickerItem(item, nameWithEn)) ?? [];
+    taxonomy?.subschools.map((item) => toPickerItem(item, displayName)) ?? [];
   const descriptorItems =
-    taxonomy?.descriptors.map((item) => toPickerItem(item, nameWithEn)) ?? [];
+    taxonomy?.descriptors.map((item) => toPickerItem(item, displayName)) ?? [];
 
   return (
     <details

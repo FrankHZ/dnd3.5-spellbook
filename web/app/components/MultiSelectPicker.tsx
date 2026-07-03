@@ -69,6 +69,7 @@ export function MultiSelectPicker(props: {
     const map = new Map(items.map((i) => [i.id, i]));
     return selectedIds.map((id) => map.get(id)).filter(Boolean) as PickerItem[];
   }, [items, selectedIds]);
+  const maxInlineChips = 2;
 
   const filteredItems = React.useMemo(() => {
     const q = normalize(filter);
@@ -177,21 +178,48 @@ export function MultiSelectPicker(props: {
           <ComboboxValue>
             {(values) => (
               <React.Fragment>
-                {values.map((value: PickerItem) => (
-                  <ComboboxChip key={value.id} showRemove={false}>
-                    {value.name}
+                {(values as PickerItem[])
+                  .slice(0, maxInlineChips)
+                  .map((value: PickerItem) => (
+                    <ComboboxChip
+                      key={value.id}
+                      showRemove={false}
+                      className="max-w-full"
+                    >
+                      <span className="max-w-32 truncate sm:max-w-40">
+                        {value.name}
+                      </span>
+                      <Button
+                        className="ml-1"
+                        variant="ghost"
+                        size="icon-xs"
+                        onClick={() => remove(value.id)}
+                        aria-label={t("actions.remove-name", {
+                          name: value.name,
+                        })}
+                        type="button"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </ComboboxChip>
+                  ))}
+                {values.length > maxInlineChips && (
+                  <ComboboxChip showRemove={false}>
+                    {t("picker.more-selected", {
+                      count: values.length - maxInlineChips,
+                    })}
                     <Button
                       className="ml-1"
                       variant="ghost"
                       size="icon-xs"
-                      onClick={() => remove(value.id)}
-                      aria-label={t("actions.remove-name", { name: value.name })}
+                      onClick={clearAll}
+                      aria-label={t("actions.clear")}
                       type="button"
                     >
                       <X className="h-3 w-3" />
                     </Button>
                   </ComboboxChip>
-                ))}
+                )}
                 <ComboboxChipsInput placeholder={resolvedPlaceholder} />
               </React.Fragment>
             )}

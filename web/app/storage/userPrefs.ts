@@ -1,6 +1,11 @@
 import { LS_KEY_PREFS } from "./keys";
 import type { Lang } from "@dnd/contracts";
-import { type UserPrefsState, STORAGE_VERSION } from "./userPrefs.type";
+import {
+  type BrowsePrefs,
+  type DisplayPrefs,
+  type UserPrefsState,
+  STORAGE_VERSION,
+} from "./userPrefs.type";
 import { DEFAULT_LANG, DEFAULT_ZH_VARIANT } from "~/i18n/config";
 
 export const DEFAULT_STATE: UserPrefsState = {
@@ -15,6 +20,16 @@ export const DEFAULT_STATE: UserPrefsState = {
   browsePrefs: {
     cardView: "simple",
     groupMode: "grouped",
+  },
+  displayPrefs: {
+    spellListDensity: "compact",
+    spellCardDetails: "summary",
+    zhDisplay: {
+      spellNamesWithEnglish: true,
+      classDomainLabelsWithEnglish: false,
+      filterFacetLabelsWithEnglish: false,
+      rulebookLabelStyle: "english",
+    },
   },
   uiPrefs: {
     lang: DEFAULT_LANG,
@@ -45,11 +60,34 @@ function getDefaultState(): UserPrefsState {
   };
 }
 
-function mergeState(parsed: Partial<UserPrefsState>): UserPrefsState {
+type PartialStoredPrefs = Partial<UserPrefsState> & {
+  browsePrefs?: Partial<BrowsePrefs>;
+  displayPrefs?: Partial<DisplayPrefs>;
+};
+
+function mergeState(parsed: PartialStoredPrefs): UserPrefsState {
   const defaults = getDefaultState();
+  const legacyCardDetails =
+    parsed.displayPrefs?.spellCardDetails ??
+    (parsed.browsePrefs?.cardView === "all" ? "full" : undefined);
+
   return {
     ...defaults,
     ...parsed,
+    browsePrefs: {
+      ...defaults.browsePrefs,
+      ...parsed.browsePrefs,
+    },
+    displayPrefs: {
+      ...defaults.displayPrefs,
+      ...parsed.displayPrefs,
+      zhDisplay: {
+        ...defaults.displayPrefs.zhDisplay,
+        ...parsed.displayPrefs?.zhDisplay,
+      },
+      spellCardDetails:
+        legacyCardDetails ?? defaults.displayPrefs.spellCardDetails,
+    },
     uiPrefs: {
       ...defaults.uiPrefs,
       ...parsed.uiPrefs,
