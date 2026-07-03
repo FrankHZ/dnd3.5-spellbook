@@ -12,7 +12,7 @@ import {
   querySpellsByIds,
   SELECT_SPELL_LIST,
   type SpellRow,
-} from "./spells.repo.rules";
+} from "./spells.repo.read";
 import { listByClassAndDomainLevel } from "./spells.service.by-level";
 import {
   queryI18nMap,

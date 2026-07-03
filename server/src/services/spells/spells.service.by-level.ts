@@ -7,7 +7,7 @@ import {
   queryByClassAndDomainAllLevels,
   queryByClassAndDomainWithLevel,
   SpellRow,
-} from "./spells.repo.rules";
+} from "./spells.repo.read";
 import { mapSpellItem } from "./spells.mapper";
 import { queryI18nMap, queryI18nSummaryMap } from "./spells.repo.content";
 

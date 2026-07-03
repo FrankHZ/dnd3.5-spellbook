@@ -303,6 +303,16 @@ migration-set hash, and parent/data repo commit ids. This is provenance for
 local and remote artifact comparison; it is not a replacement for committing
 source-bearing data.
 
+The server can opt into normalized content-backed spell reads with:
+
+```dotenv
+SPELL_READ_SOURCE=content
+```
+
+The default remains the legacy rules-backed read path until deployment DB
+artifact policy is ready. The opt-in path requires the normalized rules content
+tables to be populated in `CONTENT_DATABASE_URL`.
+
 ## App-State DB Setup
 
 Run:

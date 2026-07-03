@@ -10,7 +10,7 @@ import {
   fetchSpellsInOrder,
   queryByExactNames,
   SELECT_SPELL_LIST,
-} from "./spells.repo.rules";
+} from "./spells.repo.read";
 import {
   queryByExactI18nNames,
   queryI18nMap,
