@@ -171,7 +171,8 @@ Recommended next sequence:
    DB has been manually uploaded and verified; `SPELL_READ_SOURCE=rules` is the
    legacy rollback switch. The first taxonomy filter contract exposes
    school/subschool/descriptor ids and vocabulary; next, add frontend URL/API
-   helper coverage and controls before moving to mechanics filters.
+   helper coverage and controls. Additional normalized mechanics filter
+   contracts should wait for a v3.6 normalization review.
 
 4. **Rulebook display-label review**
 
@@ -241,9 +242,11 @@ topic-specific child plan that owns the work; do not synchronize
    is implemented, including a content-backed read repository and representative
    backend parity tests, remote DB artifact verification, and default runtime
    normalized content reads. The first taxonomy filter contract now covers
-   schools, subschools, and descriptors. Remaining work is frontend consumer
-   wiring for those filters, then finer filters such as components, casting
-   facets, range, duration, saving throws, and spell resistance.
+   schools, subschools, and descriptors. Remaining v3.5 work is frontend
+   consumer wiring for those filters; broader normalized filter contracts such
+   as components, casting facets, range, duration, saving throws, and spell
+   resistance should be reviewed and promoted in v3.6 rather than expanding the
+   accepted v3.5 scope.
 
 3. **Normalized rules frontend consumer**
 
@@ -281,6 +284,17 @@ topic-specific child plan that owns the work; do not synchronize
 
    Treat held-back major dependency upgrades as separate follow-up branches, not
    incidental cleanup inside DB, data, i18n, or frontend feature branches.
+
+## v3.6 Review Candidates
+
+These are follow-up candidates, not v3.5 merge blockers.
+
+1. **Normalize more filter contracts**
+
+   Review the generated `SpellComponent` and `SpellMechanicFacet` categories
+   before exposing more filter contracts. Likely order is component flags first,
+   then range categories, then casting-time categories. Target/effect/area
+   filters need more normalization review before they become query vocabulary.
 
 ## Later Stable Track
 
