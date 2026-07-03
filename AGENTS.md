@@ -73,9 +73,16 @@ probe a user-level `.agents` path first.
 
 - Prefer existing patterns over new frameworks or broad rewrites.
 - Keep changes scoped to the requested behavior.
-- Use this main thread as the planning and review gate for broad work. Use
-  specialist agents or focused branches for domain-heavy work such as design,
-  i18n, data tooling, deployment, harness, or frontend UI passes.
+- Use the main gate agent/thread as the planning, direction, and review gate
+  for broad work. The main gate owns roadmap interpretation, cross-plan
+  boundary decisions, branch acceptance, and merge readiness.
+- Use librarian agents for docs and plan PRs. Librarian work should keep docs
+  navigation, roadmap entries, version plans, AGENTS.md guidance, and plan
+  templates coherent; it should not make product or implementation decisions
+  beyond the accepted direction from the main gate.
+- Use specialist agents or focused branches for domain-heavy implementation
+  work such as design, i18n, data tooling, deployment, harness, security,
+  dependency maintenance, or frontend UI passes.
 - Treat `main` as remote-managed. Work on feature branches, push the branch,
   open a PR, and let remote CI protect merges. Do not locally merge and push
   `main` unless the user explicitly asks for a direct main update.
