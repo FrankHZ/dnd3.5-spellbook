@@ -318,7 +318,7 @@ function toLegacyShapedSpell(
     duration: spell.durationRaw,
     saving_throw: spell.savingThrowRaw,
     spell_resistance: spell.resistanceRaw,
-    corrupt_level: null,
+    corrupt_level: spell.corruptLevel ?? null,
     spellClassIndexes: listEntries
       .filter((entry) => entry.listType === "class")
       .map((entry) => ({
@@ -330,7 +330,7 @@ function toLegacyShapedSpell(
           id: entry.ownerLegacyId,
           slug: entry.ownerSlug,
           name: entry.ownerName,
-          prestige: false,
+          prestige: Boolean(entry.ownerPrestige),
         },
       })),
     spellDomainIndexes: listEntries

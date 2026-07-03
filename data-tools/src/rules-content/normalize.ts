@@ -33,6 +33,7 @@ export type LegacySpellRow = {
   metaBreathComponent: boolean;
   trueNameComponent: boolean;
   corruptComponent: boolean;
+  corruptLevel?: number | null;
   extraComponents?: string | null;
   castingTime?: string | null;
   range?: string | null;
@@ -63,6 +64,7 @@ export type LegacyListEntryRow = {
   ownerId: number;
   ownerName: string;
   ownerSlug: string;
+  ownerPrestige?: boolean | null;
   level: number;
   rulebookId?: number | null;
   extra?: string | null;
@@ -121,6 +123,7 @@ export type NormalizedSpellRow = {
   savingThrowRaw: string | null;
   resistanceRaw: string | null;
   componentsRaw: string | null;
+  corruptLevel: number | null;
   descriptionText: string;
   descriptionHtml: string | null;
   descriptionHash: string;
@@ -165,6 +168,7 @@ export type NormalizedSpellListEntryRow = {
   ownerLegacyId: number;
   ownerName: string;
   ownerSlug: string;
+  ownerPrestige: boolean | null;
   level: number;
   rulebookId: number | null;
   rawExtra: string | null;
@@ -291,6 +295,7 @@ export function normalizeRulesContent(
       savingThrowRaw: clean(spell.savingThrow),
       resistanceRaw: clean(spell.spellResistance),
       componentsRaw: clean(spell.extraComponents),
+      corruptLevel: spell.corruptLevel ?? null,
       descriptionText: spell.description,
       descriptionHtml: clean(spell.descriptionHtml),
       descriptionHash: sha256(spell.descriptionHtml ?? spell.description),
@@ -374,6 +379,7 @@ export function normalizeRulesContent(
         ownerLegacyId: entry.ownerId,
         ownerName: entry.ownerName,
         ownerSlug: entry.ownerSlug,
+        ownerPrestige: entry.ownerPrestige ?? null,
         level: entry.level,
         rulebookId: entry.rulebookId ?? null,
         rawExtra: clean(entry.extra),
