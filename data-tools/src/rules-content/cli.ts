@@ -154,6 +154,7 @@ function readLegacyInput(db: Database.Database, limit: number | null) {
     .prepare(
       `
       SELECT s.id,
+             s.added,
              s.rulebook_id AS rulebookId,
              s.page,
              s.name,
@@ -183,7 +184,10 @@ function readLegacyInput(db: Database.Database, limit: number | null) {
              s.saving_throw AS savingThrow,
              s.spell_resistance AS spellResistance,
              s.description,
-             s.description_html AS descriptionHtml
+             s.description_html AS descriptionHtml,
+             s.verified,
+             s.verified_author_id AS verifiedAuthorId,
+             s.verified_time AS verifiedTime
       FROM dnd_spell s
       JOIN dnd_spellschool school ON school.id = s.school_id
       LEFT JOIN dnd_spellsubschool subschool ON subschool.id = s.sub_school_id
@@ -282,6 +286,7 @@ function readLegacyInput(db: Database.Database, limit: number | null) {
 function coerceSpellRow(row: Record<string, unknown>): LegacySpellRow {
   return {
     id: Number(row.id),
+    added: String(row.added),
     rulebookId: Number(row.rulebookId),
     page: nullableNumber(row.page),
     name: String(row.name),
@@ -312,6 +317,9 @@ function coerceSpellRow(row: Record<string, unknown>): LegacySpellRow {
     spellResistance: nullableString(row.spellResistance),
     description: String(row.description),
     descriptionHtml: nullableString(row.descriptionHtml),
+    verified: Boolean(row.verified),
+    verifiedAuthorId: nullableNumber(row.verifiedAuthorId),
+    verifiedTime: nullableString(row.verifiedTime),
   };
 }
 

@@ -196,6 +196,11 @@ This slice intentionally does not change runtime spell queries or frontend
 consumer behavior. Import is write-capable only when run explicitly; local
 acceptance uses read-only generation and existing dry-run import gates.
 
+The follow-up backend parity slice adds a content-backed spell read repository
+for representative Search, Browse/by-level, detail, batch, and resolve flows.
+It keeps runtime API behavior on the legacy rules-backed service until the
+switch is made explicitly.
+
 ### Implemented Shape
 
 The first slice locks the current `rules-clean.sqlite` as the source baseline
@@ -212,6 +217,9 @@ fixtures, validators, tests, and docs:
 - portable tests cover the core transform without requiring the local rules DB.
 - `RulesContentBuild` records source hashes and parent/data commit metadata for
   local provenance checks without committing source data or generated DB files.
+- `spells.repo.normalized-content.ts` can hydrate normalized content rows into
+  the current spell DTO shape for parity testing without changing the active
+  runtime service path.
 
 The normalized tables added in this slice are:
 
@@ -275,15 +283,16 @@ Implemented in the first slice:
   flows.
 - Dirty legacy string values are either normalized, explicitly preserved as raw
   fallback, or emitted into review queues.
+- Current Search, Browse/by-level, spell detail, batch, and resolve behavior has
+  representative parity tests against the normalized content-backed repository.
 - Data-tools can regenerate the normalized content DB from declared inputs.
 - Documentation explains when to edit source patches/review decisions instead
   of patching the legacy rules SQLite directly.
 
 Remaining follow-up acceptance:
 
-- Current Browse, Search, spell detail, batch, and resolve behavior has parity
-  tests against representative known spells once normalized repository methods
-  exist.
+- Runtime spell reads switch to the normalized content-backed repository after
+  any remaining parity gaps are reviewed and accepted.
 - Frontend-facing contracts expose at least one new fine-grained structured
   filter backed by normalized data.
 - The first frontend consumer slice follows

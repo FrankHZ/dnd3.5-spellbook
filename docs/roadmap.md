@@ -90,6 +90,8 @@ Latest v3.5 local DB/content foundation snapshot:
   - `RulesContentBuild`: `1`
 - content DB provenance is tracked in `RulesContentBuild` through input hashes
   and parent/data repo commit metadata
+- server API tests include content-backed normalized repository parity coverage
+  for representative Search, Browse/by-level, detail, batch, and resolve flows
 
 Latest v3.4 local short-description acceptance snapshot:
 
@@ -159,9 +161,10 @@ Recommended next sequence:
    Use `docs/mvp/v3.5/rules-content-normalization-plan.md` and
    `docs/mvp/v3.5/normalized-rules-frontend-consumer-plan.md` together. The
    first backend/content slice already generates normalized rules content from
-   the locked `rules-clean` baseline into the content DB. Next, add repository
-   methods and parity tests for Browse, Search, detail, batch, and resolve
-   before switching runtime reads or exposing new frontend controls.
+   the locked `rules-clean` baseline into the content DB and includes a
+   content-backed read repository with representative parity tests. Next,
+   review remaining parity gaps, then explicitly switch runtime reads before
+   exposing new frontend controls.
 
 4. **Rulebook display-label review**
 
@@ -228,10 +231,11 @@ topic-specific child plan that owns the work; do not synchronize
    Use `docs/mvp/v3.5/rules-content-normalization-plan.md` to generate and
    maintain this repo's own normalized rules content model from the cleaned
    legacy rules DB plus local review decisions. The first backend/content slice
-   is implemented; remaining work is normalized read repositories, parity tests,
-   and then finer Browse/Search filters such as schools, descriptors,
-   components, casting facets, range, duration, saving throws, and spell
-   resistance.
+   is implemented, including a content-backed read repository and representative
+   backend parity tests. Remaining work is explicit runtime read switching,
+   contract additions, and finer Browse/Search filters such as schools,
+   descriptors, components, casting facets, range, duration, saving throws, and
+   spell resistance.
 
 3. **Normalized rules frontend consumer**
 

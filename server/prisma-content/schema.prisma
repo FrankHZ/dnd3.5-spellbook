@@ -222,7 +222,13 @@ model SpellContent {
     savingThrowRaw   String?
     resistanceRaw    String?
     componentsRaw    String?
+    descriptionText  String
+    descriptionHtml  String?
     descriptionHash  String
+    addedAt          DateTime
+    verified         Boolean @default(false)
+    verifiedAuthorId Int?
+    verifiedTime     DateTime?
     rawJson          String?
 
     @@index([canonicalName])

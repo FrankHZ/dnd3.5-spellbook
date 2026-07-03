@@ -444,6 +444,96 @@ function seedContentDb() {
         UNIQUE (descriptorId, lang, variant)
       )
     `,
+    `
+      CREATE TABLE RulebookContent (
+        id TEXT PRIMARY KEY,
+        legacyRulebookId INTEGER NOT NULL UNIQUE,
+        editionId INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        abbr TEXT NOT NULL,
+        slug TEXT NOT NULL,
+        displayName TEXT,
+        displayAbbr TEXT,
+        rawJson TEXT
+      )
+    `,
+    `
+      CREATE TABLE SpellContent (
+        id TEXT PRIMARY KEY,
+        legacySpellId INTEGER NOT NULL UNIQUE,
+        canonicalName TEXT NOT NULL,
+        slug TEXT NOT NULL,
+        sourceRulebookId INTEGER NOT NULL,
+        sourcePage INTEGER,
+        schoolRaw TEXT,
+        subschoolRaw TEXT,
+        castingTimeRaw TEXT,
+        rangeRaw TEXT,
+        targetRaw TEXT,
+        effectRaw TEXT,
+        areaRaw TEXT,
+        durationRaw TEXT,
+        savingThrowRaw TEXT,
+        resistanceRaw TEXT,
+        componentsRaw TEXT,
+        descriptionText TEXT NOT NULL,
+        descriptionHtml TEXT,
+        descriptionHash TEXT NOT NULL,
+        addedAt DATETIME NOT NULL,
+        verified BOOLEAN NOT NULL DEFAULT false,
+        verifiedAuthorId INTEGER,
+        verifiedTime DATETIME,
+        rawJson TEXT
+      )
+    `,
+    `
+      CREATE TABLE SpellTaxonomyFacet (
+        id TEXT PRIMARY KEY,
+        spellId TEXT NOT NULL,
+        facetType TEXT NOT NULL,
+        facetKey TEXT NOT NULL,
+        legacyFacetId INTEGER,
+        name TEXT NOT NULL,
+        slug TEXT,
+        sortOrder INTEGER NOT NULL DEFAULT 0,
+        rawText TEXT,
+        sourceField TEXT NOT NULL,
+        reviewStatus TEXT NOT NULL DEFAULT 'accepted',
+        issueCode TEXT
+      )
+    `,
+    `
+      CREATE TABLE SpellListEntry (
+        id TEXT PRIMARY KEY,
+        spellId TEXT NOT NULL,
+        listType TEXT NOT NULL,
+        ownerLegacyId INTEGER NOT NULL,
+        ownerName TEXT NOT NULL,
+        ownerSlug TEXT NOT NULL,
+        level INTEGER NOT NULL,
+        rulebookId INTEGER,
+        rawExtra TEXT,
+        variantLabel TEXT,
+        note TEXT,
+        sourceRowId INTEGER,
+        sourceTable TEXT NOT NULL,
+        reviewStatus TEXT NOT NULL DEFAULT 'accepted',
+        issueCode TEXT
+      )
+    `,
+    `
+      CREATE TABLE SpellComponent (
+        id TEXT PRIMARY KEY,
+        spellId TEXT NOT NULL,
+        componentType TEXT NOT NULL,
+        present BOOLEAN NOT NULL,
+        rawText TEXT,
+        detailText TEXT,
+        sourceField TEXT NOT NULL,
+        reviewStatus TEXT NOT NULL DEFAULT 'accepted',
+        issueCode TEXT
+      )
+    `,
   ]);
 
   const insertSpellText = db.prepare(
@@ -526,6 +616,10 @@ function seedContentDb() {
   db.prepare(
     "INSERT INTO I18nDescriptorText (id, descriptorId, lang, variant, name) VALUES ('descriptor-1-zh', 1, 'zh', 'default', '火')",
   ).run();
+  loadPortableFixtureFile(
+    db,
+    serverDbFixturePath("content", "normalized-rules-spells.jsonl"),
+  );
 
   db.close();
 }

@@ -13,6 +13,7 @@ export type LegacyRulebookRow = {
 
 export type LegacySpellRow = {
   id: number;
+  added: string;
   rulebookId: number;
   page?: number | null;
   name: string;
@@ -43,6 +44,9 @@ export type LegacySpellRow = {
   spellResistance?: string | null;
   description: string;
   descriptionHtml?: string | null;
+  verified: boolean;
+  verifiedAuthorId?: number | null;
+  verifiedTime?: string | null;
 };
 
 export type LegacyDescriptorRow = {
@@ -117,7 +121,13 @@ export type NormalizedSpellRow = {
   savingThrowRaw: string | null;
   resistanceRaw: string | null;
   componentsRaw: string | null;
+  descriptionText: string;
+  descriptionHtml: string | null;
   descriptionHash: string;
+  addedAt: string;
+  verified: boolean;
+  verifiedAuthorId: number | null;
+  verifiedTime: string | null;
   rawJson: string;
 };
 
@@ -281,7 +291,13 @@ export function normalizeRulesContent(
       savingThrowRaw: clean(spell.savingThrow),
       resistanceRaw: clean(spell.spellResistance),
       componentsRaw: clean(spell.extraComponents),
+      descriptionText: spell.description,
+      descriptionHtml: clean(spell.descriptionHtml),
       descriptionHash: sha256(spell.descriptionHtml ?? spell.description),
+      addedAt: spell.added,
+      verified: spell.verified,
+      verifiedAuthorId: spell.verifiedAuthorId ?? null,
+      verifiedTime: spell.verifiedTime ?? null,
       rawJson: stableJson(spell),
     };
     spells.push(normalizedSpell);

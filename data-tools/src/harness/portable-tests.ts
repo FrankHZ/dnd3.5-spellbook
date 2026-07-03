@@ -181,6 +181,7 @@ const tests: TestCase[] = [
         spells: [
           {
             id: 10,
+            added: "2020-01-01T00:00:00.000Z",
             rulebookId: 1,
             page: 231,
             name: "Fixture Spell",
@@ -211,6 +212,9 @@ const tests: TestCase[] = [
             spellResistance: "Yes",
             description: "Fixture rules text.",
             descriptionHtml: "<p>Fixture rules text.</p>",
+            verified: true,
+            verifiedAuthorId: null,
+            verifiedTime: null,
           },
         ],
         descriptors: [
@@ -234,6 +238,8 @@ const tests: TestCase[] = [
 
       const normalized = normalizeRulesContent(input, "2026-07-02T00:00:00.000Z");
       assert.equal(normalized.counts.spells, 1);
+      assert.equal(normalized.spells[0]?.descriptionText, "Fixture rules text.");
+      assert.equal(normalized.spells[0]?.verified, true);
       assert.equal(normalized.taxonomyFacets.length, 2);
       assert.ok(
         normalized.mechanicFacets.some(
