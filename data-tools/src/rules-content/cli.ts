@@ -35,6 +35,18 @@ const GENERATED_TABLES = [
   "RulebookContent",
 ] as const;
 
+const BASE_COMPONENT_TYPES = [
+  "verbal",
+  "somatic",
+  "material",
+  "arcane_focus",
+  "divine_focus",
+  "xp",
+  "metabreath",
+  "truename",
+  "corrupt",
+] as const;
+
 type BuildProvenance = {
   parentRepoCommit: string | null;
   dataRepoCommit: string | null;
@@ -50,10 +62,12 @@ function usage(): never {
   npm run -w data-tools rules:content:generate -- [--limit 100] [--output data-tools/out/rules-content/rules-content.generated.json]
   npm run -w data-tools rules:content:import -- --dry-run [--input data-tools/out/rules-content/rules-content.generated.json]
   npm run -w data-tools rules:content:import -- [--input data-tools/out/rules-content/rules-content.generated.json]
+  npm run -w data-tools rules:content:parity
 
 Audit and generate normalized spell-facing content from the local read-only rules
 DB. Import replaces only the generated rules-content tables in
-CONTENT_DATABASE_URL.
+CONTENT_DATABASE_URL. Parity compares the current rules DB and content DB without
+writing either database.
 `);
   process.exit(1);
 }
@@ -100,7 +114,8 @@ function parseArgs(argv: string[]) {
   if (
     command !== "audit" &&
     command !== "generate" &&
-    command !== "import"
+    command !== "import" &&
+    command !== "parity"
   ) {
     usage();
   }
@@ -638,11 +653,294 @@ function runImport(input: string, dryRun: boolean) {
   }
 }
 
+function runParity() {
+  const rulesDb = new Database(rulesDbPath(), {
+    readonly: true,
+    fileMustExist: true,
+  });
+  const contentDb = new Database(contentDbPath(), {
+    readonly: true,
+    fileMustExist: true,
+  });
+  try {
+    const report = buildParityReport(rulesDb, contentDb);
+    const reportPath = path.join(OUT_ROOT, `${timestamp()}-parity.json`);
+    writeJson(reportPath, report);
+    if (report.issues.some((issue) => issue.severity === "error")) {
+      console.error("Rules content parity failed");
+      console.error(`Report: ${reportPath}`);
+      process.exit(1);
+    }
+    console.log("Rules content parity OK");
+    console.log(`Spells: ${report.counts.spells.legacy}`);
+    console.log(`Report: ${reportPath}`);
+  } finally {
+    rulesDb.close();
+    contentDb.close();
+  }
+}
+
+function buildParityReport(
+  rulesDb: Database.Database,
+  contentDb: Database.Database,
+) {
+  const issues: Array<{
+    code: string;
+    severity: "error" | "warning";
+    detail: string;
+    expected?: unknown;
+    actual?: unknown;
+    samples?: unknown[];
+  }> = [];
+
+  const legacySpellRows = rulesDb
+    .prepare(
+      `
+      SELECT id,
+             name,
+             slug,
+             rulebook_id AS rulebookId,
+             page,
+             corrupt_level AS corruptLevel,
+             description,
+             description_html AS descriptionHtml,
+             added,
+             verified,
+             verified_author_id AS verifiedAuthorId,
+             verified_time AS verifiedTime
+      FROM dnd_spell
+      ORDER BY id
+    `,
+    )
+    .all() as Array<Record<string, unknown>>;
+  const contentSpellRows = contentDb
+    .prepare(
+      `
+      SELECT legacySpellId,
+             canonicalName,
+             slug,
+             sourceRulebookId,
+             sourcePage,
+             corruptLevel,
+             descriptionText,
+             descriptionHtml,
+             addedAt,
+             verified,
+             verifiedAuthorId,
+             verifiedTime
+      FROM SpellContent
+      ORDER BY legacySpellId
+    `,
+    )
+    .all() as Array<Record<string, unknown>>;
+
+  const counts = {
+    spells: compareCount(
+      issues,
+      "spell.count",
+      legacySpellRows.length,
+      contentSpellRows.length,
+      "SpellContent row count must match dnd_spell.",
+    ),
+    rulebooks: compareCount(
+      issues,
+      "rulebook.count",
+      count(rulesDb, "SELECT COUNT(*) AS count FROM dnd_rulebook"),
+      count(contentDb, "SELECT COUNT(*) AS count FROM RulebookContent"),
+      "RulebookContent row count must match dnd_rulebook.",
+    ),
+    descriptors: compareCount(
+      issues,
+      "descriptor.count",
+      count(rulesDb, "SELECT COUNT(*) AS count FROM dnd_spell_descriptors"),
+      count(
+        contentDb,
+        "SELECT COUNT(*) AS count FROM SpellTaxonomyFacet WHERE facetType = 'descriptor'",
+      ),
+      "Descriptor facet count must match dnd_spell_descriptors.",
+    ),
+    classListEntries: compareCount(
+      issues,
+      "class-list.count",
+      count(rulesDb, "SELECT COUNT(*) AS count FROM dnd_spellclasslevel"),
+      count(
+        contentDb,
+        "SELECT COUNT(*) AS count FROM SpellListEntry WHERE listType = 'class'",
+      ),
+      "Class list entry count must match dnd_spellclasslevel.",
+    ),
+    domainListEntries: compareCount(
+      issues,
+      "domain-list.count",
+      count(rulesDb, "SELECT COUNT(*) AS count FROM dnd_spelldomainlevel"),
+      count(
+        contentDb,
+        "SELECT COUNT(*) AS count FROM SpellListEntry WHERE listType = 'domain'",
+      ),
+      "Domain list entry count must match dnd_spelldomainlevel.",
+    ),
+    corruptSpells: compareCount(
+      issues,
+      "corrupt-spell.count",
+      count(
+        rulesDb,
+        "SELECT COUNT(*) AS count FROM dnd_spell WHERE corrupt_level IS NOT NULL",
+      ),
+      count(
+        contentDb,
+        "SELECT COUNT(*) AS count FROM SpellContent WHERE corruptLevel IS NOT NULL",
+      ),
+      "Corrupt spell count must match.",
+    ),
+    prestigeClassListEntries: compareCount(
+      issues,
+      "prestige-list.count",
+      count(
+        rulesDb,
+        `
+        SELECT COUNT(*) AS count
+        FROM dnd_spellclasslevel scl
+        JOIN dnd_characterclass c ON c.id = scl.character_class_id
+        WHERE c.prestige = 1
+      `,
+      ),
+      count(
+        contentDb,
+        `
+        SELECT COUNT(*) AS count
+        FROM SpellListEntry
+        WHERE listType = 'class' AND ownerPrestige = 1
+      `,
+      ),
+      "Prestige class list entry count must match.",
+    ),
+    components: compareCount(
+      issues,
+      "component-base.count",
+      legacySpellRows.length * BASE_COMPONENT_TYPES.length,
+      count(
+        contentDb,
+        "SELECT COUNT(*) AS count FROM SpellComponent WHERE componentType != 'other'",
+      ),
+      "Base component rows must include every component type for every spell.",
+    ),
+    extraComponents: compareCount(
+      issues,
+      "component-extra.count",
+      count(
+        rulesDb,
+        `
+        SELECT COUNT(*) AS count
+        FROM dnd_spell
+        WHERE extra_components IS NOT NULL AND TRIM(extra_components) != ''
+      `,
+      ),
+      count(
+        contentDb,
+        "SELECT COUNT(*) AS count FROM SpellComponent WHERE componentType = 'other'",
+      ),
+      "Extra component rows must match non-empty extra_components values.",
+    ),
+  };
+
+  const contentById = new Map(
+    contentSpellRows.map((row) => [Number(row.legacySpellId), row]),
+  );
+  const fieldMismatches = [];
+  for (const legacy of legacySpellRows) {
+    const id = Number(legacy.id);
+    const content = contentById.get(id);
+    if (!content) {
+      fieldMismatches.push({ id, reason: "missing-content-row" });
+      continue;
+    }
+    const checks: Array<[string, unknown, unknown]> = [
+      ["name", legacy.name, content.canonicalName],
+      ["slug", legacy.slug, content.slug],
+      ["rulebookId", Number(legacy.rulebookId), Number(content.sourceRulebookId)],
+      ["page", normalizeNullableNumber(legacy.page), normalizeNullableNumber(content.sourcePage)],
+      ["corruptLevel", normalizeNullableNumber(legacy.corruptLevel), normalizeNullableNumber(content.corruptLevel)],
+      ["description", legacy.description, content.descriptionText],
+      ["descriptionHtml", legacy.descriptionHtml, content.descriptionHtml],
+      ["added", normalizeDateString(legacy.added), normalizeDateString(content.addedAt)],
+      ["verified", Boolean(legacy.verified), Boolean(content.verified)],
+      ["verifiedAuthorId", normalizeNullableNumber(legacy.verifiedAuthorId), normalizeNullableNumber(content.verifiedAuthorId)],
+      ["verifiedTime", normalizeDateString(legacy.verifiedTime), normalizeDateString(content.verifiedTime)],
+    ];
+    for (const [field, expected, actual] of checks) {
+      if (expected !== actual) {
+        fieldMismatches.push({ id, field, expected, actual });
+        break;
+      }
+    }
+    if (fieldMismatches.length >= 20) break;
+  }
+
+  if (fieldMismatches.length > 0) {
+    issues.push({
+      code: "spell.field-mismatch",
+      severity: "error",
+      detail: "SpellContent key display/detail fields must match dnd_spell.",
+      samples: fieldMismatches,
+    });
+  }
+
+  return {
+    generatedAt: new Date().toISOString(),
+    ok: issues.every((issue) => issue.severity !== "error"),
+    counts,
+    issues,
+  };
+}
+
+function count(db: Database.Database, sql: string) {
+  const row = db.prepare(sql).get() as { count: number | bigint } | undefined;
+  return Number(row?.count ?? 0);
+}
+
+function compareCount(
+  issues: Array<{
+    code: string;
+    severity: "error" | "warning";
+    detail: string;
+    expected?: unknown;
+    actual?: unknown;
+    samples?: unknown[];
+  }>,
+  code: string,
+  legacy: number,
+  content: number,
+  detail: string,
+) {
+  if (legacy !== content) {
+    issues.push({
+      code,
+      severity: "error",
+      detail,
+      expected: legacy,
+      actual: content,
+    });
+  }
+  return { legacy, content };
+}
+
+function normalizeNullableNumber(value: unknown) {
+  return typeof value === "number" ? value : null;
+}
+
+function normalizeDateString(value: unknown) {
+  if (!value) return null;
+  if (value instanceof Date) return value.toISOString();
+  const parsed = new Date(String(value));
+  return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toISOString();
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.command === "audit") return runAudit(args.limit);
   if (args.command === "generate") return runGenerate(args.limit, args.output);
   if (args.command === "import") return runImport(args.input, args.dryRun);
+  if (args.command === "parity") return runParity();
   usage();
 }
 

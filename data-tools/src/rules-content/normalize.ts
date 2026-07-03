@@ -297,7 +297,7 @@ export function normalizeRulesContent(
       componentsRaw: clean(spell.extraComponents),
       corruptLevel: spell.corruptLevel ?? null,
       descriptionText: spell.description,
-      descriptionHtml: clean(spell.descriptionHtml),
+      descriptionHtml: spell.descriptionHtml ?? null,
       descriptionHash: sha256(spell.descriptionHtml ?? spell.description),
       addedAt: spell.added,
       verified: spell.verified,

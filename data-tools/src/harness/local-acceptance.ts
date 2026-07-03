@@ -12,6 +12,7 @@ const commands: Array<{ label: string; args: string[] }> = [
   { label: "rules manifest verify", args: ["run", "rules:manifest:verify"] },
   { label: "rules content audit", args: ["run", "rules:content:audit"] },
   { label: "rules content generate", args: ["run", "rules:content:generate"] },
+  { label: "rules content parity", args: ["run", "rules:content:parity"] },
   { label: "short-description QA", args: ["run", "summaries:qa"] },
   {
     label: "short-description import dry-run",

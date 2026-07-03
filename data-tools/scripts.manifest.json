@@ -86,6 +86,13 @@
       "requiresSqlite": true,
       "writeCapable": true
     },
+    "rules:content:parity": {
+      "module": "rules-content",
+      "lifecycle": "local-acceptance",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
     "rules:spells:apply": {
       "module": "rules",
       "lifecycle": "maintained-local",

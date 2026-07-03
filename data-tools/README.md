@@ -432,6 +432,9 @@ another scoped book. The default scope is the current official 3.5 working set:
   not perform write-capable imports.
 - `rules:content:audit` and `rules:content:generate` open the rules DB
   read-only and write generated reports/artifacts under `data-tools/out/`.
+- `rules:content:parity` opens the rules DB and content DB read-only, compares
+  full local normalized content parity, and writes a report under
+  `data-tools/out/rules-content/`.
 - `rules:content:import -- --dry-run` validates the generated normalized content
   artifact and target content DB tables without mutating SQLite.
 - `rules:content:import` is write-capable against `CONTENT_DATABASE_URL` and
