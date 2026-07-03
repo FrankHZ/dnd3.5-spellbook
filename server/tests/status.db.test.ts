@@ -1,6 +1,7 @@
 import request from "supertest";
 import type { DbStatusResponse } from "@dnd/contracts";
 import { app } from "../src/app";
+import { contentPrisma } from "../src/lib/content-prisma-client";
 
 describe("GET /api/status/db", () => {
   const previousReadSource = process.env.SPELL_READ_SOURCE;
@@ -78,6 +79,31 @@ describe("GET /api/status/db", () => {
       spellMechanicFacet: 0,
       rulesContentIssue: 1,
     });
+  });
+
+  it("reports missing content build metadata without failing the endpoint", async () => {
+    const latestBuild = await contentPrisma.rulesContentBuild.findFirst({
+      orderBy: [{ generatedAt: "desc" }, { id: "desc" }],
+    });
+    await contentPrisma.rulesContentBuild.deleteMany();
+
+    try {
+      const res = await request(app).get("/api/status/db");
+
+      expect(res.status).toBe(200);
+      const body = res.body as DbStatusResponse;
+      expect(body.content.status).toBe("missing_metadata");
+      expect(body.content.latestBuild).toBeNull();
+      expect(body.content.tableCounts).toMatchObject({
+        rulebookContent: 3,
+        spellContent: 7,
+        rulesContentIssue: 1,
+      });
+    } finally {
+      if (latestBuild) {
+        await contentPrisma.rulesContentBuild.create({ data: latestBuild });
+      }
+    }
   });
 
   it("reports the explicit legacy rules read-source rollback switch", async () => {
