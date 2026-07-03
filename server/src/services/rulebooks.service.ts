@@ -1,5 +1,6 @@
 import type { Edition, Rulebook } from "@dnd/contracts";
 import { DEFAULT_DND_EDITION_SLUG, DND_SYSTEM } from "../config/constant";
+import { contentPrisma } from "../lib/content-prisma-client";
 import { rulesPrisma as prisma } from "../lib/rules-prisma-client";
 
 let cachedRulebooksPromise: Promise<Rulebook[]> | null = null;
@@ -7,8 +8,8 @@ let cachedEditionsPromise: Promise<Edition[]> | null = null;
 
 async function loadRulebooks() {
   if (!cachedRulebooksPromise) {
-    cachedRulebooksPromise = prisma.rulebook
-      .findMany({
+    cachedRulebooksPromise = (async () => {
+      const rulebooks = await prisma.rulebook.findMany({
         where: { spells: { some: {} }, edition: { system: DND_SYSTEM } },
         select: {
           id: true,
@@ -26,8 +27,28 @@ async function loadRulebooks() {
           },
         },
         orderBy: [{ id: "asc" }],
-      })
-      .catch((err) => {
+      });
+      const displayRows = await contentPrisma.rulebookContent.findMany({
+        where: { legacyRulebookId: { in: rulebooks.map((row) => row.id) } },
+        select: {
+          legacyRulebookId: true,
+          displayAbbr: true,
+          displayName: true,
+        },
+      });
+      const displayByRulebookId = new Map(
+        displayRows.map((row) => [row.legacyRulebookId, row]),
+      );
+
+      return rulebooks.map((rulebook) => {
+        const display = displayByRulebookId.get(rulebook.id);
+        return {
+          ...rulebook,
+          ...(display?.displayAbbr ? { displayAbbr: display.displayAbbr } : {}),
+          ...(display?.displayName ? { displayName: display.displayName } : {}),
+        };
+      });
+    })().catch((err) => {
         cachedRulebooksPromise = null;
         throw err;
       });

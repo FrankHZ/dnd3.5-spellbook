@@ -321,6 +321,8 @@ function toLegacyShapedSpell(
       abbr: rulebook.abbr,
       name: rulebook.name,
       slug: rulebook.slug,
+      ...(rulebook.displayAbbr ? { displayAbbr: rulebook.displayAbbr } : {}),
+      ...(rulebook.displayName ? { displayName: rulebook.displayName } : {}),
     },
     spellSchool: school
       ? {

@@ -14,6 +14,8 @@ export type RulebookMin = {
   id: RulebookId;
   abbr: string;
   name: string;
+  displayAbbr?: string | undefined;
+  displayName?: string | undefined;
 };
 
 export type Rulebook = RulebookMin & {

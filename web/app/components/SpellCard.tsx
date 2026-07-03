@@ -4,6 +4,7 @@ import { SpellActionButtons } from "~/components/SpellActionButtons";
 import { Badge } from "~/components/ui/badge";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useMetaNames } from "~/i18n/hooks/useMetaNames";
+import { useRulebookDisplay } from "~/i18n/hooks/useRulebookDisplay";
 import { getSpellShortDescription } from "~/i18n/display/spell-short-description";
 
 export function SpellCard({
@@ -17,6 +18,8 @@ export function SpellCard({
 }) {
   const { lang, nameWithEn } = useAppI18n();
   const { metaName } = useMetaNames();
+  const { rulebookDisplay } = useRulebookDisplay();
+  const source = rulebookDisplay(spell.rulebook);
   const shortDescription = getSpellShortDescription(spell, lang);
   return (
     <div className="p-3 transition-colors hover:bg-muted/40">
@@ -30,9 +33,7 @@ export function SpellCard({
               {nameWithEn(spell)}
             </Link>
             <span className="inline-flex items-baseline gap-1 text-xs text-muted-foreground">
-              <span className="font-mono">
-                {spell.rulebook.abbr ?? "—"}
-              </span>
+              <span className="font-medium">{source.abbr}</span>
               <span>
                 {spell.page ? `p. ${spell.page}` : ""}
               </span>

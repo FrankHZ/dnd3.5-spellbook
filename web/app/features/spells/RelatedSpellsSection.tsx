@@ -12,6 +12,7 @@ import {
   CardHeader,
 } from "~/components/ui/card";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
+import { useRulebookDisplay } from "~/i18n/hooks/useRulebookDisplay";
 import { useUserPrefs } from "~/state/user-prefs-state";
 
 const RELATED_SEARCH_PAGE_SIZE = 50;
@@ -137,6 +138,7 @@ function RelatedSpellList({
   items: SpellItemView[];
 }) {
   const { nameWithEn } = useAppI18n();
+  const { rulebookDisplay } = useRulebookDisplay();
 
   if (items.length === 0) {
     return null;
@@ -156,7 +158,9 @@ function RelatedSpellList({
                 <Link to={`/spells/${item.id}`}>{nameWithEn(item)}</Link>
               </Button>
               <div className="shrink-0 text-xs text-muted-foreground">
-                <span className="font-mono">{item.rulebook?.abbr ?? "-"}</span>
+                <span className="font-medium">
+                  {rulebookDisplay(item.rulebook).abbr}
+                </span>
                 {item.page ? <span> - p. {item.page}</span> : null}
               </div>
             </div>

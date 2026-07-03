@@ -174,11 +174,11 @@ Recommended next sequence:
    helper coverage and controls. Additional normalized mechanics filter
    contracts should wait for a v3.6 normalization review.
 
-4. **Rulebook display-label review**
+4. **completed: rulebook display-label review**
 
-   Use `docs/mvp/v3.5/rulebook-display-labels-plan.md` to audit rulebook
-   abbreviations and localized display labels. Keep source slugs stable, but
-   improve reader-facing labels.
+   Rulebook display labels now preserve source `abbr`/`slug` identity while
+   exposing optional display metadata through contracts and a shared frontend
+   helper.
 
 5. **Dependency, CI/CD, module-doc, and agent-guide cleanup**
 
@@ -257,10 +257,10 @@ topic-specific child plan that owns the work; do not synchronize
 
 4. **Rulebook display-label review**
 
-   Use `docs/mvp/v3.5/rulebook-display-labels-plan.md` to audit rulebook
-   abbreviations and localized display labels. Keep rules DB slugs and legacy
-   source abbreviations stable, but stop treating them as the default
-   reader-facing UI labels.
+   Implemented. Use `docs/mvp/v3.5/rulebook-display-labels-plan.md` for the
+   rulebook display-label boundary: source slugs and legacy abbreviations remain
+   stable, while display labels flow through content metadata and the shared
+   frontend display helper.
 
 5. **Agent guide review**
 

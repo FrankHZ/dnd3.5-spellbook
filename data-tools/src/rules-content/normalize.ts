@@ -9,6 +9,8 @@ export type LegacyRulebookRow = {
   abbr: string;
   slug: string;
   description?: string | null;
+  displayName?: string | null;
+  displayAbbr?: string | null;
 };
 
 export type LegacySpellRow = {
@@ -263,8 +265,8 @@ export function normalizeRulesContent(
     name: row.name,
     abbr: row.abbr,
     slug: row.slug,
-    displayName: null,
-    displayAbbr: null,
+    displayName: clean(row.displayName),
+    displayAbbr: clean(row.displayAbbr),
     rawJson: stableJson(row),
   }));
 

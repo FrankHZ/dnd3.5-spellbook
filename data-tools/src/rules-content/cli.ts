@@ -15,13 +15,23 @@ import {
   type NormalizedRulesContent,
 } from "./normalize";
 import {
+  localDataDir,
   loadServerEnv,
   repoRoot,
   resolveServerRelativePath,
 } from "../shared/env";
+import {
+  normalizePublicationName,
+  readRulebookPublicationJsonlText,
+} from "../rulebooks/labels-audit";
 
 const OUT_ROOT = path.join(repoRoot(), "data-tools", "out", "rules-content");
 const DEFAULT_GENERATED_PATH = path.join(OUT_ROOT, "rules-content.generated.json");
+const RULEBOOK_PUBLICATIONS_JSONL_PATH = path.join(
+  localDataDir(),
+  "rulebook-labels",
+  "chm-publications.jsonl",
+);
 
 const GENERATED_TABLES = [
   "RulesContentBuild",
@@ -173,7 +183,9 @@ function readLegacyInput(db: Database.Database, limit: number | null) {
   const limitClause = limit ? "LIMIT ?" : "";
   const limitArgs = limit ? [limit] : [];
 
-  const rulebooks = db
+  const rulebookDisplayLabels = readRulebookDisplayLabelsByName();
+  const rulebooks = (
+    db
     .prepare(
       `
       SELECT id, dnd_edition_id AS dndEditionId, name, abbr, slug, description
@@ -181,7 +193,16 @@ function readLegacyInput(db: Database.Database, limit: number | null) {
       ORDER BY id
     `,
     )
-    .all() as LegacyRulebookRow[];
+      .all() as LegacyRulebookRow[]
+  ).map((row) => {
+    const display = rulebookDisplayLabels.get(
+      normalizePublicationName(row.name),
+    );
+    return {
+      ...row,
+      displayAbbr: display?.displayAbbr ?? null,
+    };
+  });
 
   const spells = db
     .prepare(
@@ -317,6 +338,32 @@ function readLegacyInput(db: Database.Database, limit: number | null) {
     descriptors,
     listEntries: [...classEntries, ...domainEntries],
   } satisfies LegacyRulesContentInput;
+}
+
+function readRulebookDisplayLabelsByName() {
+  const byName = new Map<string, { displayAbbr: string }>();
+  if (!fs.existsSync(RULEBOOK_PUBLICATIONS_JSONL_PATH)) return byName;
+
+  const sourcePath = path.relative(
+    localDataDir(),
+    RULEBOOK_PUBLICATIONS_JSONL_PATH,
+  );
+  const parsed = readRulebookPublicationJsonlText(
+    fs.readFileSync(RULEBOOK_PUBLICATIONS_JSONL_PATH, "utf8"),
+    sourcePath,
+  );
+  if (parsed.errors.length > 0) {
+    throw new Error(
+      `Invalid rulebook publication JSONL ${RULEBOOK_PUBLICATIONS_JSONL_PATH}:\n${parsed.errors.join("\n")}`,
+    );
+  }
+
+  for (const row of parsed.rows) {
+    byName.set(normalizePublicationName(row.englishName), {
+      displayAbbr: row.displayAbbr,
+    });
+  }
+  return byName;
 }
 
 function coerceSpellRow(row: Record<string, unknown>): LegacySpellRow {

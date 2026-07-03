@@ -77,8 +77,9 @@ Current behavior:
 - Chinese content overlays are applied when available
 - detail pages render related spell references when matches exist
 - related results are split into same-name matches and variant-form matches
-- related result ordering is deterministic by rulebook abbreviation, page, then
-  spell id
+- related result ordering is deterministic by source rulebook abbreviation,
+  page, then spell id, while visible labels use the shared rulebook display
+  helper
 
 Key code:
 
@@ -98,6 +99,10 @@ Current behavior:
 
 - metadata is exposed through dedicated API endpoints
 - normalized taxonomy filter vocabulary is exposed by `GET /api/meta/filters`
+- rulebook responses preserve source `abbr` and can include curated
+  `displayAbbr` / `displayName` metadata from normalized content
+- frontend rulebook display uses a shared helper so English can show curated
+  display abbreviations and Chinese can show localized full rulebook names
 - Chinese display names are available where local app data provides overlays
 - frontend bootstrapping loads metadata for selectors and labels
 
@@ -106,6 +111,8 @@ Key code:
 - `web/app/api/bootstrap.ts`
 - `web/app/api/meta.ts`
 - `web/app/bootstrap/useBootstrap.ts`
+- `web/app/i18n/display/rulebook.ts`
+- `web/app/i18n/hooks/useRulebookDisplay.ts`
 - `server/src/routes/meta.routes.ts`
 - `server/src/routes/rulebooks.routes.ts`
 - `server/src/routes/classes.routes.ts`

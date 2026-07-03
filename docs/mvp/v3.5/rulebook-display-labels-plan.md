@@ -1,7 +1,7 @@
 # Rulebook Display Labels Plan
 
-Status: partial v3.5 data/content UX review. Data-tools audit/report is
-implemented; API contracts and frontend consumers remain follow-up work.
+Status: implemented. Data-tools audit/report, generated content display
+abbreviations, API contract fields, and primary frontend consumers are in place.
 
 ## Problem
 
@@ -122,29 +122,41 @@ Current implementation:
 
 ## Implementation Notes
 
-- Extend contracts so rulebook responses or meta overlays can carry display
-  abbreviations separately from `abbr`.
-- Keep `RulebookMin.abbr` backward-compatible until all UI consumers switch to a
-  display helper.
-- Add a frontend helper such as `getRulebookDisplay(rulebook, meta, lang)` and
-  route SpellCard, SpellDetailPage, Settings, related-spell rows, and import
-  conflict UI through it.
-- Update sorting deliberately. Current Settings grouping sorts by `rb.abbr`;
-  switching display labels may change user-visible ordering.
-- Add API and frontend tests for:
-  - English display abbreviation override
-  - Chinese full-name display
-  - fallback when no display metadata exists
-  - no change to rulebook filtering by id
+Implemented shape:
+
+- `RulebookMin.abbr` remains the source abbreviation and source compatibility
+  field.
+- `RulebookMin.displayAbbr` and `RulebookMin.displayName` are optional
+  frontend-facing display metadata fields.
+- `RulebookContent.displayAbbr` is populated by rules-content generation when
+  accepted local publication-label data exists at
+  `data/rulebook-labels/chm-publications.jsonl`.
+- `GET /api/rulebooks` overlays `RulebookContent` display metadata onto the
+  rules DB rulebook list.
+- Normalized content spell reads include display metadata on embedded
+  `spell.rulebook` objects; the legacy rules read path remains a rollback
+  source without display fields.
+- `getRulebookDisplay(meta, rulebook, lang)` is the frontend display helper. It
+  uses curated English display abbreviations, Chinese i18n full names, and
+  source-name/source-abbreviation fallbacks.
+- Spell cards, Spell Detail headers, related-spell rows, Settings rulebook
+  selection, and prepared-spell bulk-paste conflict rows use the display helper.
+- Settings sorts rulebooks by the active display label, then by source
+  abbreviation and id for deterministic fallback order.
+- Tests cover English display abbreviation override, Chinese full-name display,
+  fallback behavior, API response shape, normalized content spell responses, and
+  normalized-vs-legacy parity without treating display-only extension fields as
+  a parity failure.
 
 ## Acceptance Criteria
 
-- Data-tools produces a reviewable rulebook-label audit report. (Implemented)
-- English UI no longer exposes reviewed legacy abbreviations such as `Sc_` as
-  the primary user-facing label.
-- Chinese UI shows Chinese full rulebook names in primary rulebook display
-  surfaces.
-- Rules DB `slug` and legacy `abbr` remain available for source compatibility.
-- API contracts distinguish source abbreviation from display abbreviation.
-- Browse, Search, Settings, Spell Detail, related-spell rows, and collection
+- [x] Data-tools produces a reviewable rulebook-label audit report.
+- [x] English UI no longer exposes reviewed legacy abbreviations such as `Sc_`
+  as the primary user-facing label when curated display data is available.
+- [x] Chinese UI shows Chinese full rulebook names in primary rulebook display
+  surfaces when i18n overlay data is available.
+- [x] Rules DB `slug` and legacy `abbr` remain available for source
+  compatibility.
+- [x] API contracts distinguish source abbreviation from display abbreviation.
+- [x] Browse, Search, Settings, Spell Detail, related-spell rows, and collection
   import conflict UI all use the same display helper.

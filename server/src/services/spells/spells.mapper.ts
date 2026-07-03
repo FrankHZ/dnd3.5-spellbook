@@ -54,6 +54,10 @@ function mapSpellOverlay(
   };
 }
 
+function optionalStringField(value: unknown): string | undefined {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
 export function mapSpellItem(
   spell: RulesPrisma.SpellGetPayload<{ select: typeof SELECT_SPELL_LIST }>,
   spellI18n: SpellNameI18nRow | null,
@@ -96,6 +100,12 @@ export function mapSpellItem(
     );
 
   const i18n = mapSpellOverlay(spellI18n, summaryI18n);
+  const rulebookDisplay = spell.rulebook as typeof spell.rulebook & {
+    displayAbbr?: unknown;
+    displayName?: unknown;
+  };
+  const displayAbbr = optionalStringField(rulebookDisplay.displayAbbr);
+  const displayName = optionalStringField(rulebookDisplay.displayName);
 
   return {
     id: spell.id,
@@ -106,6 +116,8 @@ export function mapSpellItem(
       id: spell.rulebook.id,
       abbr: spell.rulebook.abbr,
       name: spell.rulebook.name,
+      ...(displayAbbr ? { displayAbbr } : {}),
+      ...(displayName ? { displayName } : {}),
     },
     school: spell.spellSchool
       ? {

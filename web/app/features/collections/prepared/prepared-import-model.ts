@@ -36,7 +36,13 @@ export function mapResolvedRows(
       nameZhHans?: string | null;
       nameZhHant?: string | null;
     }) => string;
-    getRulebookName: (rulebook: { id: number; name: string }) => string;
+    getRulebookName: (rulebook: {
+      id: number;
+      name: string;
+      abbr: string;
+      displayAbbr?: string | undefined;
+      displayName?: string | undefined;
+    }) => string;
   },
 ): ResolvedRow[] {
   return data.results.map((r, idx) => {

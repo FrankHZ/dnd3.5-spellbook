@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { useMetaNames } from "~/i18n/hooks/useMetaNames";
+import { useRulebookDisplay } from "~/i18n/hooks/useRulebookDisplay";
 import { useUserPrefs } from "~/state/user-prefs-state";
 import { Field, FieldGroup, FieldLabel } from "~/components/ui/field";
 
@@ -20,7 +20,10 @@ type EditionGroup = {
   rulebooks: Rulebook[];
 };
 
-function groupRulebooksByEdition(rulebooks: Rulebook[]): EditionGroup[] {
+function groupRulebooksByEdition(
+  rulebooks: Rulebook[],
+  displayLabel: (rulebook: Rulebook) => string,
+): EditionGroup[] {
   const map = new Map<number, EditionGroup>();
 
   for (const rb of rulebooks) {
@@ -37,7 +40,12 @@ function groupRulebooksByEdition(rulebooks: Rulebook[]): EditionGroup[] {
   const groups = Array.from(map.values());
   // optionally sort rulebooks within group
   for (const g of groups) {
-    g.rulebooks.sort((x, y) => x.abbr.localeCompare(y.abbr));
+    g.rulebooks.sort(
+      (x, y) =>
+        displayLabel(x).localeCompare(displayLabel(y)) ||
+        x.abbr.localeCompare(y.abbr) ||
+        x.id - y.id,
+    );
   }
   return groups;
 }
@@ -61,7 +69,7 @@ function getEditionCheckState(
 
 export default function RulebookSelector() {
   const { t } = useTranslation("settings");
-  const { metaName } = useMetaNames();
+  const { rulebookDisplay } = useRulebookDisplay();
   const { state, setState } = useUserPrefs();
   const boot = useBootstrap(state.includePrestige);
 
@@ -73,7 +81,14 @@ export default function RulebookSelector() {
     [rulebookIds],
   );
 
-  const groups = useMemo(() => groupRulebooksByEdition(rulebooks), [rulebooks]);
+  const groups = useMemo(
+    () =>
+      groupRulebooksByEdition(
+        rulebooks,
+        (rulebook) => rulebookDisplay(rulebook).abbr,
+      ),
+    [rulebooks, rulebookDisplay],
+  );
 
   function toggleEdition(editionId: number, checked: boolean) {
     setState((s) => {
@@ -144,6 +159,7 @@ export default function RulebookSelector() {
               <FieldGroup className="grid gap-2 sm:grid-cols-2">
                 {g.rulebooks.map((rb) => {
                   const checked = selectedRulebookSet.has(rb.id);
+                  const display = rulebookDisplay(rb);
                   const rulebookCheckboxId = `settings-rulebook-${g.edition.id}-${rb.id}`;
                   return (
                     <Field key={rb.id} orientation="horizontal">
@@ -158,10 +174,12 @@ export default function RulebookSelector() {
                         htmlFor={rulebookCheckboxId}
                         className="select-text"
                       >
-                        <span className="font-mono text-xs">{rb.abbr}</span>
-                        <span className="truncate">
-                          {metaName("rulebooks", rb)}
+                        <span className="text-xs font-medium">
+                          {display.abbr}
                         </span>
+                        {display.name !== display.abbr && (
+                          <span className="truncate">{display.name}</span>
+                        )}
                       </FieldLabel>
                     </Field>
                   );
