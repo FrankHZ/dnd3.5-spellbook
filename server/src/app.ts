@@ -10,6 +10,7 @@ import { httpLogger } from "./logger";
 import { domainsRouter } from "./routes/domains.routes";
 import { i18nQuery } from "./middlewares/i18nQuery";
 import { metaRouter } from "./routes/meta.routes";
+import { statusRouter } from "./routes/status.routes";
 
 const app: Application = express();
 
@@ -31,6 +32,7 @@ app.use("/api/rulebooks", rulebooksRouter);
 app.use("/api/classes", classesRouter);
 app.use("/api/domains", domainsRouter);
 app.use("/api/meta", metaRouter);
+app.use("/api/status", statusRouter);
 
 // 404 + error handler (must be last)
 app.use(notFoundMiddleware);

@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: implemented first slice.
 
 ## Purpose
 
@@ -60,6 +60,7 @@ future releases and hard for agents to confirm without SSH access.
 
 ### Slice 1: Define Contract
 
+- Status: accepted.
 - Deliverable: route and DTO for DB status.
 - Expected fields:
   - active spell read source
@@ -71,28 +72,47 @@ future releases and hard for agents to confirm without SSH access.
 
 ### Slice 2: Implement Server Endpoint
 
-- Deliverable: read-only server service and route, likely under `/api/status/db`
-  or `/api/meta/db-status`.
+- Status: accepted.
+- Deliverable: read-only server service and route under `/api/status/db`.
 - Expected files: server route, controller/service, tests, contracts if shared
   DTOs are needed.
 - Validation: server API tests against disposable fixtures.
 
 ### Slice 3: Document Operator Workflow
 
+- Status: accepted.
 - Deliverable: deployment docs explain how to compare local meta and remote API
   status after manual DB upload.
 - Expected files: `docs/deployment.md`, `docs/data-setup.md`,
   `docs/modules/server.md` as needed.
 - Validation: docs examples use the current remote placeholder style.
 
+## Accepted Contract
+
+`GET /api/status/db` returns:
+
+- `activeSpellReadSource`: `content` unless `SPELL_READ_SOURCE=rules` is set.
+- `databases`: sanitized role status for `rules`, `content`, `contentAlias`,
+  and `appState`. File-backed roles report only basename-level file names,
+  configuration state, existence, and whether `APP_DATABASE_URL` matches the
+  active content DB.
+- `content.latestBuild`: latest `RulesContentBuild` metadata, including
+  parent/data commit ids and rules/content hash fields.
+- `content.tableCounts`: minimal normalized content row counts for rulebooks,
+  spells, taxonomy facets, components, mechanic facets, and content issues.
+
+The endpoint is read-only. It does not upload DB files, activate artifacts, run
+migrations, expose raw source text, or replace `rules:content:meta`.
+
 ## Acceptance Criteria
 
-- Endpoint is read-only and returns a stable response from a clean fixture DB.
-- Missing content DB metadata is reported clearly rather than crashing.
-- Remote activation can be checked by comparing endpoint output with local
+- [x] Endpoint is read-only and returns a stable response from a clean fixture
+  DB.
+- [x] Missing content DB metadata is reported clearly rather than crashing.
+- [x] Remote activation can be checked by comparing endpoint output with local
   `rules:content:meta`.
-- No data-bearing SQLite files are committed.
-- `npm run test:server` and relevant type checks pass.
+- [x] No data-bearing SQLite files are committed.
+- [x] `npm run test:server` and relevant type checks pass.
 
 ## Doc Updates
 
@@ -105,7 +125,6 @@ future releases and hard for agents to confirm without SSH access.
 
 ## Open Questions
 
-- Should the route live under status, meta, or operations naming?
-- Should file paths be redacted to roles only, or show basename-level paths?
-- Should the frontend expose this immediately, or is API/operator docs enough
-  for v3.6?
+- Route decision: use `/api/status/db`.
+- Path redaction decision: show basename-level file names only.
+- Frontend decision: API/operator docs are enough for the first v3.6 slice.

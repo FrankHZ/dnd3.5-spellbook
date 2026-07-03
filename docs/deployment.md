@@ -312,13 +312,32 @@ comparison; do not commit it or upload it through GitHub Actions.
 ssh remote "./update-db.sh"
 ```
 
-After activation, verify the remote content DB metadata out of band before
-deploying backend code that relies on the default normalized read path. At
-minimum, compare the remote `RulesContentBuild.parentRepoCommit`,
-`dataRepoCommit`, `spellCount`, `issueCount`, `rulesDbSha256`, and
-`migrationSetSha256` with the local meta report. The metadata inside
-`content.sqlite` is the normalized-content provenance signal. A v3.6 server
-`db-status` API should make this comparison visible without SSH access.
+After activation, verify the remote content DB metadata before relying on the
+default normalized read path:
+
+```bash
+curl -fsS http://127.0.0.1:3000/api/status/db
+```
+
+Compare the response with the local `rules:content:meta` report. At minimum,
+check:
+
+- `activeSpellReadSource` is `content` for normal production operation.
+- `databases.content.fileName` is `content.sqlite`.
+- `databases.content.exists` is `true`.
+- `databases.contentAlias.matchesContent` is `true` when `APP_DATABASE_URL` is
+  still configured.
+- `content.latestBuild.parentRepoCommit`
+- `content.latestBuild.dataRepoCommit`
+- `content.latestBuild.spellCount`
+- `content.latestBuild.issueCount`
+- `content.latestBuild.rulesDbSha256`
+- `content.latestBuild.migrationSetSha256`
+- `content.tableCounts`
+
+The metadata inside `content.sqlite` remains the normalized-content provenance
+signal. The API is a read-only runtime view of that state; it does not upload,
+activate, or migrate DB files.
 
 ### What `update-db.sh` Does
 

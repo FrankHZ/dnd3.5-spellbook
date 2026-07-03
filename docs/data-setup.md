@@ -313,6 +313,16 @@ This command is read-only. It writes a report under
 `data-tools/out/rules-content/` containing the content DB checksum, generated
 rules-content counts, and the latest `RulesContentBuild` row.
 
+When a server is running, inspect the runtime DB state with:
+
+```bash
+curl -fsS http://127.0.0.1:3000/api/status/db
+```
+
+Use that response to compare the active read source, sanitized DB role file
+names, `APP_DATABASE_URL` compatibility alias state, latest `RulesContentBuild`,
+and content table counts against the local `rules:content:meta` report.
+
 The server uses normalized content-backed spell reads by default once
 `CONTENT_DATABASE_URL` points at a verified content DB artifact.
 
@@ -404,6 +414,10 @@ After that, the backend can use:
 - Parent-repo DB fixtures belong under `server/db/<db-role>/fixtures/portable/`
   as public-safe JSONL. CI uses these dummy fixtures; local acceptance may point
   to real JSONL in the nested `data/` repo through environment variables.
+- `server/db/fixtures.manifest.json` maps maintained local data JSONL inputs to
+  their public-safe server DB portable fixture coverage. Portable CI checks the
+  parent-repo fixture paths, and local runs with the nested `data/` repo present
+  also catch maintained data JSONL files that have no manifest mapping.
 - The root `data/` directory is a nested local Git repo in this workspace. Use
   that repo to version local source inputs without adding them to the parent
   project repo.

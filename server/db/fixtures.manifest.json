@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "dataRoots": [
+    "data/rulebook-labels",
+    "data/short-desc-normalized",
+    "data/rules-patches/applied/spells"
+  ],
+  "mappings": [
+    {
+      "dataPath": "data/rulebook-labels/chm-publications.jsonl",
+      "portableFixturePaths": [
+        "server/db/content/fixtures/portable/normalized-rules-spells.jsonl"
+      ],
+      "note": "Rulebook display labels are represented by synthetic RulebookContent display fields."
+    },
+    {
+      "dataPath": "data/short-desc-normalized/summaries.generated.jsonl",
+      "portableFixturePaths": [
+        "server/db/content/fixtures/portable/i18n-spell-overlays.jsonl"
+      ],
+      "note": "Imported summary rows are represented by synthetic I18nSpellSummaryText rows."
+    },
+    {
+      "dataPath": "data/rules-patches/applied/spells/legacy-slug-fixes.jsonl",
+      "portableFixturePaths": [
+        "server/db/rules-clean/fixtures/portable/spell-runtime.jsonl",
+        "server/db/content/fixtures/portable/normalized-rules-spells.jsonl"
+      ],
+      "note": "Rules-side spell rows and normalized SpellContent rows keep slug fields covered."
+    },
+    {
+      "dataPath": "data/rules-patches/applied/spells/missing-spells.jsonl",
+      "portableFixturePaths": [
+        "server/db/rules-clean/fixtures/portable/spell-runtime.jsonl",
+        "server/db/content/fixtures/portable/normalized-rules-spells.jsonl"
+      ],
+      "note": "Synthetic spell rows cover inserted spell runtime and normalized content shapes."
+    },
+    {
+      "dataPath": "data/rules-patches/applied/spells/short-desc-rules-gaps.generated.jsonl",
+      "portableFixturePaths": [
+        "server/db/rules-clean/fixtures/portable/spell-runtime.jsonl",
+        "server/db/content/fixtures/portable/normalized-rules-spells.jsonl"
+      ],
+      "note": "Generated accepted rules-gap rows are represented by synthetic spell rows."
+    },
+    {
+      "dataPath": "data/rules-patches/applied/spells/spells-full-known-misses.jsonl",
+      "portableFixturePaths": [
+        "server/db/rules-clean/fixtures/portable/spell-runtime.jsonl",
+        "server/db/content/fixtures/portable/normalized-rules-spells.jsonl"
+      ],
+      "note": "Spells-full accepted additions are represented by synthetic spell rows."
+    },
+    {
+      "dataPath": "data/rules-patches/applied/spells/spider-poison-sc.jsonl",
+      "portableFixturePaths": [
+        "server/db/rules-clean/fixtures/portable/spell-runtime.jsonl",
+        "server/db/content/fixtures/portable/normalized-rules-spells.jsonl"
+      ],
+      "note": "A source-backed rules patch is represented by synthetic spell runtime and content rows."
+    }
+  ]
+}
