@@ -12,12 +12,14 @@ vi.mock("~/storage/userPrefs", () => ({
     browsePrefs: { cardView: "simple", groupMode: "grouped" },
     uiPrefs: { lang: "en", zhVariant: "chm" },
   },
+  detectPreferredLang: vi.fn(() => "en"),
   loadState: vi.fn(),
 }));
 
-import { loadState } from "~/storage/userPrefs";
+import { detectPreferredLang, loadState } from "~/storage/userPrefs";
 
 const mockedLoadState = vi.mocked(loadState);
+const mockedDetectPreferredLang = vi.mocked(detectPreferredLang);
 
 describe("i18n storage", () => {
   afterEach(() => {
@@ -59,5 +61,6 @@ describe("i18n storage", () => {
     });
 
     expect(getI18nFromStorage()).toEqual({ lang: "en" });
+    expect(mockedDetectPreferredLang).toHaveBeenCalled();
   });
 });

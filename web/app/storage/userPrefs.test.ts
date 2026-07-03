@@ -1,18 +1,61 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { LS_KEY_PREFS } from "./keys";
-import { DEFAULT_STATE, loadState, saveState } from "./userPrefs";
+import {
+  DEFAULT_STATE,
+  detectPreferredLang,
+  loadState,
+  saveState,
+} from "./userPrefs";
 import { installMemoryStorage } from "./storage-test-utils";
 
 installMemoryStorage();
 
 describe("user preferences storage", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it("loads defaults when storage is empty or invalid", () => {
-    expect(loadState()).toEqual(DEFAULT_STATE);
+    const detectedDefaultState = {
+      ...DEFAULT_STATE,
+      uiPrefs: { ...DEFAULT_STATE.uiPrefs, lang: detectPreferredLang() },
+    };
+
+    expect(loadState()).toEqual(detectedDefaultState);
 
     localStorage.setItem(LS_KEY_PREFS, "{bad json");
 
-    expect(loadState()).toEqual(DEFAULT_STATE);
+    expect(loadState()).toEqual(detectedDefaultState);
+  });
+
+  it("detects Chinese browser preference when storage is empty", () => {
+    vi.stubGlobal("navigator", {
+      languages: ["zh-CN", "en-US"],
+      language: "zh-CN",
+    });
+
+    expect(detectPreferredLang()).toBe("zh");
+    expect(loadState()).toEqual({
+      ...DEFAULT_STATE,
+      uiPrefs: { ...DEFAULT_STATE.uiPrefs, lang: "zh" },
+    });
+  });
+
+  it("keeps stored language over browser preference", () => {
+    vi.stubGlobal("navigator", {
+      languages: ["zh-CN", "en-US"],
+      language: "zh-CN",
+    });
+    localStorage.setItem(
+      LS_KEY_PREFS,
+      JSON.stringify({
+        storageVersion: 1,
+        uiPrefs: { lang: "en", zhVariant: "chm" },
+      }),
+    );
+
+    expect(loadState().uiPrefs.lang).toBe("en");
   });
 
   it("rejects unsupported storage versions", () => {
@@ -21,7 +64,10 @@ describe("user preferences storage", () => {
       JSON.stringify({ ...DEFAULT_STATE, storageVersion: 999, includePrestige: true }),
     );
 
-    expect(loadState()).toEqual(DEFAULT_STATE);
+    expect(loadState()).toEqual({
+      ...DEFAULT_STATE,
+      uiPrefs: { ...DEFAULT_STATE.uiPrefs, lang: detectPreferredLang() },
+    });
   });
 
   it("merges stored values over defaults", () => {
