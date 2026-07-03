@@ -1,5 +1,5 @@
 import type { Lang } from "@dnd/contracts";
-import { loadState } from "~/storage/userPrefs";
+import { detectPreferredLang, loadState } from "~/storage/userPrefs";
 
 import { DEFAULT_LANG } from "./config";
 
@@ -15,6 +15,6 @@ export function getI18nFromStorage(): { lang: Lang; variant?: string } {
 
     return { lang, variant };
   } catch {
-    return { lang: DEFAULT_LANG };
+    return { lang: detectPreferredLang() };
   }
 }

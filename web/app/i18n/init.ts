@@ -3,6 +3,7 @@ import Backend from "i18next-http-backend";
 import { initReactI18next } from "react-i18next";
 
 import { DEFAULT_LANG, I18N_NAMESPACES } from "./config";
+import { getI18nFromStorage } from "./storage";
 
 i18n
   .use(initReactI18next)
@@ -10,7 +11,7 @@ i18n
   .init({
     keySeparator: ">",
     nsSeparator: "::",
-    lng: DEFAULT_LANG,
+    lng: getI18nFromStorage().lang,
     fallbackLng: DEFAULT_LANG,
     ns: I18N_NAMESPACES,
     defaultNS: "translation",
