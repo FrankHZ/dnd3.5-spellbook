@@ -15,6 +15,8 @@ Current behavior:
 - class and domain filters can both contribute results
 - level can be a single level or all levels
 - selected rulebooks constrain the result set
+- the API accepts normalized taxonomy filter ids for schools, subschools, and
+  descriptors; frontend controls for these filters are follow-up work
 - default rulebooks are supplied by the backend when no explicit rulebook ids
   are provided
 - the spell-list area shows a compact shared scope summary with selected
@@ -41,6 +43,8 @@ Current behavior:
 - CJK queries may search from one character
 - rulebook filtering is supported
 - URL filters can constrain search by class, domain, and level
+- the API also accepts normalized `schoolIds`, `subschoolIds`, and
+  `descriptorIds` filters using the same comma-separated id-list convention
 - the Search sidebar exposes editable class, domain, and level controls
 - header search preserves current Browse or Search filter scope while replacing
   the name query
@@ -93,6 +97,7 @@ as filter labels and spell metadata.
 Current behavior:
 
 - metadata is exposed through dedicated API endpoints
+- normalized taxonomy filter vocabulary is exposed by `GET /api/meta/filters`
 - Chinese display names are available where local app data provides overlays
 - frontend bootstrapping loads metadata for selectors and labels
 

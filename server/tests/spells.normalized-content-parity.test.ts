@@ -17,10 +17,26 @@ import {
 } from "~/services/spells/spells.repo.normalized-content";
 import { mapSpellDetail, mapSpellItem } from "~/services/spells/spells.mapper";
 
+const emptyTaxonomyFilters = {
+  schoolIds: [],
+  subschoolIds: [],
+  descriptorIds: [],
+};
+
 describe("normalized rules content repository parity", () => {
   it("matches legacy name search ids and item DTOs", async () => {
-    const legacyIds = await queryIdsByName("fire", [4, 6], 100);
-    const normalizedIds = await queryNormalizedIdsByName("fire", [4, 6], 100);
+    const legacyIds = await queryIdsByName(
+      "fire",
+      [4, 6],
+      emptyTaxonomyFilters,
+      100,
+    );
+    const normalizedIds = await queryNormalizedIdsByName(
+      "fire",
+      [4, 6],
+      emptyTaxonomyFilters,
+      100,
+    );
 
     expect(normalizedIds).toEqual(legacyIds);
 
@@ -40,6 +56,7 @@ describe("normalized rules content repository parity", () => {
       [],
       3,
       [4],
+      emptyTaxonomyFilters,
       1,
       20,
     );
@@ -48,6 +65,7 @@ describe("normalized rules content repository parity", () => {
       [],
       3,
       [4],
+      emptyTaxonomyFilters,
       1,
       20,
     );

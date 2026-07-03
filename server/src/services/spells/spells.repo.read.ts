@@ -1,4 +1,4 @@
-import { RulebookId } from "@dnd/contracts";
+import { RulebookId, SpellTaxonomyFilterIds } from "@dnd/contracts";
 import { Prisma } from "prisma-rules-clean/generated/client";
 import {
   fetchSpellsInOrder as fetchRulesSpellsInOrder,
@@ -43,12 +43,18 @@ export async function fetchSpellsInOrder<T extends Prisma.SpellSelect>(
 export async function queryIdsByName(
   name: string,
   rulebookIds: number[],
+  taxonomyFilters: SpellTaxonomyFilterIds,
   maxCandidates: number,
 ) {
   if (activeSpellReadSource() === "content") {
-    return queryNormalizedIdsByName(name, rulebookIds, maxCandidates);
+    return queryNormalizedIdsByName(
+      name,
+      rulebookIds,
+      taxonomyFilters,
+      maxCandidates,
+    );
   }
-  return queryRulesIdsByName(name, rulebookIds, maxCandidates);
+  return queryRulesIdsByName(name, rulebookIds, taxonomyFilters, maxCandidates);
 }
 
 export async function queryByClassAndDomainWithLevel(
@@ -56,6 +62,7 @@ export async function queryByClassAndDomainWithLevel(
   domainIds: number[],
   level: number,
   rulebookIds: number[],
+  taxonomyFilters: SpellTaxonomyFilterIds,
   page: number,
   pageSize: number,
 ) {
@@ -65,6 +72,7 @@ export async function queryByClassAndDomainWithLevel(
       domainIds,
       level,
       rulebookIds,
+      taxonomyFilters,
       page,
       pageSize,
     );
@@ -74,6 +82,7 @@ export async function queryByClassAndDomainWithLevel(
     domainIds,
     level,
     rulebookIds,
+    taxonomyFilters,
     page,
     pageSize,
   );
@@ -83,6 +92,7 @@ export async function queryByClassAndDomainAllLevels(
   classIds: number[],
   domainIds: number[],
   rulebookIds: number[],
+  taxonomyFilters: SpellTaxonomyFilterIds,
   page: number,
   pageSize: number,
 ) {
@@ -91,6 +101,7 @@ export async function queryByClassAndDomainAllLevels(
       classIds,
       domainIds,
       rulebookIds,
+      taxonomyFilters,
       page,
       pageSize,
     );
@@ -99,6 +110,7 @@ export async function queryByClassAndDomainAllLevels(
     classIds,
     domainIds,
     rulebookIds,
+    taxonomyFilters,
     page,
     pageSize,
   );

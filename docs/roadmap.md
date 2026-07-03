@@ -169,8 +169,9 @@ Recommended next sequence:
    content-backed read repository with representative parity tests. Runtime
    spell reads now default to normalized content after the target remote content
    DB has been manually uploaded and verified; `SPELL_READ_SOURCE=rules` is the
-   legacy rollback switch. Next, add contract/filter work before exposing new
-   frontend controls.
+   legacy rollback switch. The first taxonomy filter contract exposes
+   school/subschool/descriptor ids and vocabulary; next, add frontend URL/API
+   helper coverage and controls before moving to mechanics filters.
 
 4. **Rulebook display-label review**
 
@@ -239,8 +240,9 @@ topic-specific child plan that owns the work; do not synchronize
    legacy rules DB plus local review decisions. The first backend/content slice
    is implemented, including a content-backed read repository and representative
    backend parity tests, remote DB artifact verification, and default runtime
-   normalized content reads. Remaining work is contract additions and finer
-   Browse/Search filters such as schools, descriptors, components, casting
+   normalized content reads. The first taxonomy filter contract now covers
+   schools, subschools, and descriptors. Remaining work is frontend consumer
+   wiring for those filters, then finer filters such as components, casting
    facets, range, duration, saving throws, and spell resistance.
 
 3. **Normalized rules frontend consumer**

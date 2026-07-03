@@ -1,6 +1,7 @@
 # Normalized Rules Frontend Consumer Plan
 
-Status: planned v3.5 frontend consumer work.
+Status: backend contract foundation implemented for taxonomy filters; frontend
+controls remain planned v3.5 consumer work.
 
 ## Problem
 
@@ -112,9 +113,9 @@ New filters should be represented as explicit URL params and typed API inputs.
 
 Candidate params:
 
-- `schoolIds`
-- `subschoolIds`
-- `descriptorIds`
+- `schoolIds` (implemented in shared contracts and server API)
+- `subschoolIds` (implemented in shared contracts and server API)
+- `descriptorIds` (implemented in shared contracts and server API)
 - `components`
 - `savingThrow`
 - `spellResistance`
@@ -140,9 +141,9 @@ frontend should not infer labels from raw DB strings.
 Bootstrap/meta endpoints should provide filter vocabularies before UI controls
 ship:
 
-- schools
-- subschools
-- descriptors
+- schools (implemented through `GET /api/meta/filters`)
+- subschools (implemented through `GET /api/meta/filters`)
+- descriptors (implemented through `GET /api/meta/filters`)
 - component categories
 - saving throw categories
 - spell resistance categories
@@ -151,6 +152,18 @@ ship:
 Localized display names should use the existing i18n/meta overlay path where
 available. If a vocabulary is generated from normalized content, document
 whether it is source-derived, curated, or both.
+
+Current backend contract:
+
+- `GET /api/spells/search` accepts `schoolIds`, `subschoolIds`, and
+  `descriptorIds` as comma-separated id lists alongside existing Search scope.
+- `GET /api/spells/by-level` accepts the same taxonomy id lists alongside
+  class/domain/level/rulebook scope.
+- Both responses echo the selected taxonomy ids.
+- `GET /api/meta/filters` returns taxonomy vocabulary from accepted normalized
+  content facets with optional localized labels.
+- Frontend URL helpers and controls are still follow-up; do not infer labels by
+  parsing raw DB strings or spell response rows.
 
 ## UI Shape
 
@@ -190,7 +203,8 @@ vocabulary, until backend acceptance promotes them.
 
 ### Slice 1: Contract And URL Foundation
 
-- Add typed DTO fields for normalized filters.
+- Add typed DTO fields for normalized filters. (Backend/shared DTO side
+  implemented for taxonomy filters)
 - Extend Search URL helpers and tests.
 - Add API helper URL-building tests.
 - Keep UI controls hidden or behind minimal wiring until backend data exists.

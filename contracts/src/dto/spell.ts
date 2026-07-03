@@ -5,6 +5,31 @@ import type { RulebookMin } from "./rulebook.js";
 
 export type SpellID = number;
 
+export type SpellTaxonomyFilterIds = {
+  schoolIds: number[];
+  subschoolIds: number[];
+  descriptorIds: number[];
+};
+
+export type SpellNameSearchQuery = SpellTaxonomyFilterIds & {
+  q: string;
+  rulebookIds: number[];
+  classIds: number[];
+  domainIds: number[];
+  level: number | "all" | null;
+  page: number;
+  pageSize: number;
+};
+
+export type SpellByLevelQuery = SpellTaxonomyFilterIds & {
+  classIds: number[];
+  domainIds: number[];
+  level: number | "all";
+  rulebookIds: number[];
+  page: number;
+  pageSize: number;
+};
+
 export type SpellItem = {
   id: SpellID;
   slug: string;
@@ -38,6 +63,9 @@ export type SpellNameSearchResponse = {
   total: number;
   q: string;
   rulebookIds: number[];
+  schoolIds: number[];
+  subschoolIds: number[];
+  descriptorIds: number[];
   items: SpellItemView[];
 };
 
@@ -53,6 +81,9 @@ export type SpellByLevelResponse = {
   classIds: number[];
   domainIds: number[];
   rulebookIds: number[];
+  schoolIds: number[];
+  subschoolIds: number[];
+  descriptorIds: number[];
   groups: SpellsByLevelGroup[];
 };
 

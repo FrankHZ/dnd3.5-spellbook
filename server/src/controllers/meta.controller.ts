@@ -20,3 +20,21 @@ export async function getMetaI18n(
     return;
   }
 }
+
+export async function getFilterVocabulary(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const i18n = getI18nContext(req);
+
+    const result = await metaService.getFilterVocabulary({ i18n });
+
+    res.status(200).json(result);
+    return;
+  } catch (err) {
+    next(err);
+    return;
+  }
+}

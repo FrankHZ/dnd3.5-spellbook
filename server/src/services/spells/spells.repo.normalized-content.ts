@@ -1,4 +1,4 @@
-import { RulebookId } from "@dnd/contracts";
+import { RulebookId, SpellTaxonomyFilterIds } from "@dnd/contracts";
 import { contentPrisma } from "../../lib/content-prisma-client";
 import { Prisma } from "prisma-content/generated/client";
 import { SpellRow } from "./spells.repo.rules";
@@ -12,9 +12,39 @@ type LegacyShapedSpell = SpellRow & {
   verified_time: Date | null;
 };
 
+function normalizedTaxonomyWhere(filters: SpellTaxonomyFilterIds) {
+  const conditions: Prisma.Sql[] = [];
+
+  const facetCondition = (facetType: string, ids: number[]) => Prisma.sql`
+    EXISTS (
+      SELECT 1
+      FROM "SpellTaxonomyFacet" tf
+      WHERE tf."spellId" = s."id"
+        AND tf."facetType" = ${facetType}
+        AND tf."reviewStatus" = 'accepted'
+        AND tf."legacyFacetId" IN (${Prisma.join(ids)})
+    )
+  `;
+
+  if (filters.schoolIds.length > 0) {
+    conditions.push(facetCondition("school", filters.schoolIds));
+  }
+  if (filters.subschoolIds.length > 0) {
+    conditions.push(facetCondition("subschool", filters.subschoolIds));
+  }
+  if (filters.descriptorIds.length > 0) {
+    conditions.push(facetCondition("descriptor", filters.descriptorIds));
+  }
+
+  return conditions.length > 0
+    ? Prisma.sql`AND ${Prisma.join(conditions, " AND ")}`
+    : Prisma.empty;
+}
+
 export async function queryNormalizedIdsByName(
   name: string,
   rulebookIds: number[],
+  taxonomyFilters: SpellTaxonomyFilterIds,
   maxCandidates: number,
 ) {
   if (rulebookIds.length === 0) return [];
@@ -23,10 +53,11 @@ export async function queryNormalizedIdsByName(
   const like = `%${qLower}%`;
   const idRows = await contentPrisma.$queryRaw<Array<{ id: number }>>(
     Prisma.sql`
-      SELECT "legacySpellId" AS id
-      FROM "SpellContent"
-      WHERE "sourceRulebookId" IN (${Prisma.join(rulebookIds)})
-        AND LOWER("canonicalName") LIKE ${like}
+      SELECT s."legacySpellId" AS id
+      FROM "SpellContent" s
+      WHERE s."sourceRulebookId" IN (${Prisma.join(rulebookIds)})
+        AND LOWER(s."canonicalName") LIKE ${like}
+        ${normalizedTaxonomyWhere(taxonomyFilters)}
       LIMIT ${maxCandidates}
     `,
   );
@@ -78,6 +109,7 @@ export async function queryNormalizedByClassAndDomainWithLevel(
   domainIds: number[],
   level: number,
   rulebookIds: number[],
+  taxonomyFilters: SpellTaxonomyFilterIds,
   page: number,
   pageSize: number,
 ) {
@@ -101,7 +133,10 @@ export async function queryNormalizedByClassAndDomainWithLevel(
             OR
             (le."listType" = 'domain' AND le."ownerLegacyId" IN (${Prisma.join(domainScope)}))
           )
-      )
+      ) u
+      JOIN "SpellContent" s ON s."id" = u."spellId"
+      WHERE 1 = 1
+        ${normalizedTaxonomyWhere(taxonomyFilters)}
     `,
   );
   const total = Number(countRows[0]?.cnt ?? 0);
@@ -122,6 +157,8 @@ export async function queryNormalizedByClassAndDomainWithLevel(
           )
       ) u
       JOIN "SpellContent" s ON s."id" = u."spellId"
+      WHERE 1 = 1
+        ${normalizedTaxonomyWhere(taxonomyFilters)}
       ORDER BY s."canonicalName" ASC, s."legacySpellId" ASC
       LIMIT ${pageSize} OFFSET ${offset}
     `,
@@ -135,6 +172,7 @@ export async function queryNormalizedByClassAndDomainAllLevels(
   classIds: number[],
   domainIds: number[],
   rulebookIds: number[],
+  taxonomyFilters: SpellTaxonomyFilterIds,
   page: number,
   pageSize: number,
 ) {
@@ -158,7 +196,10 @@ export async function queryNormalizedByClassAndDomainAllLevels(
             (le."listType" = 'domain' AND le."ownerLegacyId" IN (${Prisma.join(domainScope)}))
           )
         GROUP BY le."spellId", le."level"
-      )
+      ) u
+      JOIN "SpellContent" s ON s."id" = u."spellId"
+      WHERE 1 = 1
+        ${normalizedTaxonomyWhere(taxonomyFilters)}
     `,
   );
   const total = Number(countRows[0]?.cnt ?? 0);
@@ -181,6 +222,8 @@ export async function queryNormalizedByClassAndDomainAllLevels(
         GROUP BY le."spellId", le."level"
       ) u
       JOIN "SpellContent" s ON s."id" = u."spellId"
+      WHERE 1 = 1
+        ${normalizedTaxonomyWhere(taxonomyFilters)}
       ORDER BY u."level" ASC, s."canonicalName" ASC, s."legacySpellId" ASC
       LIMIT ${pageSize} OFFSET ${offset}
     `,
