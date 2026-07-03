@@ -46,6 +46,19 @@ Run tests:
 npm run -w server test
 ```
 
+## Spell API Filters
+
+`GET /api/spells/search` and `GET /api/spells/by-level` accept normalized
+taxonomy filters as comma-separated id lists:
+
+- `schoolIds`
+- `subschoolIds`
+- `descriptorIds`
+
+Use `GET /api/meta/filters` for the filter vocabulary. It returns stable
+id/key/slug/name values from accepted normalized content facets and overlays
+localized labels when `lang`/`variant` are provided.
+
 Generate Prisma clients:
 
 ```bash

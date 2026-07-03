@@ -11,10 +11,22 @@ import { getDefaultRulebookIds } from "~/services/rulebooks.service";
 import type {
   SpellBatchRequest,
   SpellNameSearchResponse,
+  SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
 import { getI18nContext, hasCjk } from "~/utils/i18n";
 import { LevelMode } from "~/services/spells/spells.service.by-level";
 import { ResolveSpellNamesRequest } from "@dnd/contracts";
+
+function parseTaxonomyFilterIds(query: Request["query"]): SpellTaxonomyFilterIds {
+  const positiveIntIds = (value: unknown) =>
+    parseCsvNumberList(value).filter((id) => Number.isInteger(id) && id > 0);
+
+  return {
+    schoolIds: positiveIntIds(query.schoolIds),
+    subschoolIds: positiveIntIds(query.subschoolIds),
+    descriptorIds: positiveIntIds(query.descriptorIds),
+  };
+}
 
 export async function searchSpellsByName(
   req: Request,
@@ -34,6 +46,7 @@ export async function searchSpellsByName(
     if (rulebookIds.length === 0) rulebookIds = await getDefaultRulebookIds();
     const classIds = parseCsvNumberList(req.query.classIds);
     const domainIds = parseCsvNumberList(req.query.domainIds);
+    const taxonomyFilters = parseTaxonomyFilterIds(req.query);
     const levelRaw = normalizeString(req.query.level);
     let level: number | "all" | null = null;
     if (levelRaw) {
@@ -67,6 +80,7 @@ export async function searchSpellsByName(
       res.status(200).json({
         q,
         rulebookIds,
+        ...taxonomyFilters,
         page,
         pageSize,
         total: 0,
@@ -80,6 +94,7 @@ export async function searchSpellsByName(
       rulebookIds,
       classIds,
       domainIds,
+      taxonomyFilters,
       level,
       page,
       pageSize,
@@ -105,6 +120,7 @@ export async function listSpellsByClassAndDomainLevel(
 
     const classIds = parseCsvNumberList(req.query.classIds);
     const domainIds = parseCsvNumberList(req.query.domainIds);
+    const taxonomyFilters = parseTaxonomyFilterIds(req.query);
 
     if (classIds.length === 0 && domainIds.length === 0) {
       next(
@@ -157,6 +173,7 @@ export async function listSpellsByClassAndDomainLevel(
       levelMode,
       level: levelNum,
       rulebookIds,
+      taxonomyFilters,
       page,
       pageSize,
       i18n: getI18nContext(req),

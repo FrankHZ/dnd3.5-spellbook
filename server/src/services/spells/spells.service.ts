@@ -3,6 +3,7 @@ import type {
   I18nContext,
   SpellBatchResponse,
   SpellDetailView,
+  SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
 import { mapSpellItem, mapSpellDetail } from "./spells.mapper";
 import {
@@ -29,6 +30,7 @@ export const spellsService = {
     rulebookIds: number[];
     classIds: number[];
     domainIds: number[];
+    taxonomyFilters: SpellTaxonomyFilterIds;
     level: number | "all" | null;
     page: number;
     pageSize: number;
@@ -38,6 +40,7 @@ export const spellsService = {
     const hasScope =
       input.classIds.length > 0 ||
       input.domainIds.length > 0 ||
+      hasTaxonomyScope(input.taxonomyFilters) ||
       input.level !== null;
     const maxCandidates = hasScope
       ? 2000
@@ -46,6 +49,7 @@ export const spellsService = {
     const idsEn = await queryIdsByName(
       input.q,
       input.rulebookIds,
+      input.taxonomyFilters,
       maxCandidates,
     );
     const seen = new Set<number>();
@@ -60,6 +64,7 @@ export const spellsService = {
         input.i18n.lang,
         input.q,
         input.rulebookIds,
+        input.taxonomyFilters,
         maxCandidates,
       );
       for (const id of idsI18n)
@@ -74,6 +79,7 @@ export const spellsService = {
       spells,
       input.classIds,
       input.domainIds,
+      input.taxonomyFilters,
       input.level,
     );
     scopedSpells.sort((a, b) => a.name.localeCompare(b.name) || a.id - b.id);
@@ -95,6 +101,7 @@ export const spellsService = {
       total,
       q: input.q,
       rulebookIds: input.rulebookIds,
+      ...input.taxonomyFilters,
       items: pagedSpells.map((s) =>
         mapSpellItem(
           s,
@@ -180,18 +187,33 @@ function filterByBrowseScope(
   spells: SpellRow<typeof SELECT_SPELL_LIST>[],
   classIds: number[],
   domainIds: number[],
+  taxonomyFilters: SpellTaxonomyFilterIds,
   level: number | "all" | null,
 ) {
-  if (classIds.length === 0 && domainIds.length === 0 && level === null) {
+  if (
+    classIds.length === 0 &&
+    domainIds.length === 0 &&
+    !hasTaxonomyScope(taxonomyFilters) &&
+    level === null
+  ) {
     return spells;
   }
 
   const classSet = new Set(classIds);
   const domainSet = new Set(domainIds);
+  const hasListScope =
+    classSet.size > 0 || domainSet.size > 0 || level !== null;
   const matchesLevel = (entry: { level: number }) =>
     level === null || level === "all" || entry.level === level;
 
   return spells.filter((spell) => {
+    if (!matchesTaxonomyScope(spell, taxonomyFilters)) {
+      return false;
+    }
+    if (!hasListScope) {
+      return true;
+    }
+
     const classMatch = spell.spellClassIndexes.some(
       (entry) =>
         matchesLevel(entry) &&
@@ -210,4 +232,45 @@ function filterByBrowseScope(
     if (domainSet.size > 0) return domainMatch;
     return classMatch || domainMatch;
   });
+}
+
+export function hasTaxonomyScope(filters: SpellTaxonomyFilterIds) {
+  return (
+    filters.schoolIds.length > 0 ||
+    filters.subschoolIds.length > 0 ||
+    filters.descriptorIds.length > 0
+  );
+}
+
+function matchesTaxonomyScope(
+  spell: SpellRow<typeof SELECT_SPELL_LIST>,
+  filters: SpellTaxonomyFilterIds,
+) {
+  if (filters.schoolIds.length > 0) {
+    const schoolId = spell.spellSchool?.id ?? null;
+    if (schoolId === null || !filters.schoolIds.includes(schoolId)) {
+      return false;
+    }
+  }
+
+  if (filters.subschoolIds.length > 0) {
+    const subschoolId = spell.spellSubschool?.id ?? null;
+    if (
+      subschoolId === null ||
+      !filters.subschoolIds.includes(subschoolId)
+    ) {
+      return false;
+    }
+  }
+
+  if (filters.descriptorIds.length > 0) {
+    const descriptorIds = new Set(
+      spell.spellDescriptors.map((entry) => entry.spellDescriptor.id),
+    );
+    if (!filters.descriptorIds.some((id) => descriptorIds.has(id))) {
+      return false;
+    }
+  }
+
+  return true;
 }

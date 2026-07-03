@@ -1,4 +1,9 @@
-import { I18nContext, Lang, RulebookId } from "@dnd/contracts";
+import {
+  I18nContext,
+  Lang,
+  RulebookId,
+  SpellTaxonomyFilterIds,
+} from "@dnd/contracts";
 import { Prisma as ContentPrisma, Prisma } from "prisma-content/generated/client";
 import { contentPrisma } from "~/lib/content-prisma-client";
 
@@ -43,10 +48,40 @@ function summaryTarget(i18n: I18nContext): { lang: Lang; variant: string } {
   return { lang: i18n.lang, variant: i18n.variant ?? "chm" };
 }
 
+function normalizedTaxonomyWhere(filters: SpellTaxonomyFilterIds) {
+  const conditions: Prisma.Sql[] = [];
+
+  const facetCondition = (facetType: string, ids: number[]) => Prisma.sql`
+    EXISTS (
+      SELECT 1
+      FROM "SpellTaxonomyFacet" tf
+      WHERE tf."spellId" = s."id"
+        AND tf."facetType" = ${facetType}
+        AND tf."reviewStatus" = 'accepted'
+        AND tf."legacyFacetId" IN (${Prisma.join(ids)})
+    )
+  `;
+
+  if (filters.schoolIds.length > 0) {
+    conditions.push(facetCondition("school", filters.schoolIds));
+  }
+  if (filters.subschoolIds.length > 0) {
+    conditions.push(facetCondition("subschool", filters.subschoolIds));
+  }
+  if (filters.descriptorIds.length > 0) {
+    conditions.push(facetCondition("descriptor", filters.descriptorIds));
+  }
+
+  return conditions.length > 0
+    ? Prisma.sql`AND ${Prisma.join(conditions, " AND ")}`
+    : Prisma.empty;
+}
+
 export async function queryIdsByI18nName(
   lang: Lang,
   name: string,
   rulebookIds: number[],
+  taxonomyFilters: SpellTaxonomyFilterIds,
   maxCandidates: number,
 ) {
   if (rulebookIds.length === 0) return [];
@@ -55,11 +90,13 @@ export async function queryIdsByI18nName(
 
   const idRows = await contentPrisma.$queryRaw<Array<{ spellId: number }>>(
     Prisma.sql`
-        SELECT s.spellId
-        FROM I18nSpellText s
-        WHERE s.rulebookId IN (${Prisma.join(rulebookIds)})
-          AND LOWER(s.name) LIKE ${like}
-          AND s.lang = ${lang}
+        SELECT i.spellId
+        FROM I18nSpellText i
+        JOIN "SpellContent" s ON s."legacySpellId" = i.spellId
+        WHERE i.rulebookId IN (${Prisma.join(rulebookIds)})
+          AND LOWER(i.name) LIKE ${like}
+          AND i.lang = ${lang}
+          ${normalizedTaxonomyWhere(taxonomyFilters)}
         LIMIT ${maxCandidates}
       `,
   );

@@ -1,11 +1,20 @@
-import type { I18nContext } from "@dnd/contracts"; // adjust
-import type { MetaI18nResponse } from "@dnd/contracts"; // adjust
-import { queryMetaI18nOverlays } from "./meta.repo"; // your meta.repo.ts
+import type {
+  I18nContext,
+  MetaI18nResponse,
+  SpellFilterVocabularyItem,
+  SpellFilterVocabularyResponse,
+} from "@dnd/contracts";
+import {
+  queryMetaI18nOverlays,
+  querySpellTaxonomyVocabulary,
+  type SpellTaxonomyVocabularyRow,
+} from "./meta.repo";
 
 type CacheKey = string;
 
 // Cache forever (MVP). Keyed by "lang|variant"
 const cache = new Map<CacheKey, Promise<MetaI18nResponse>>();
+const filterCache = new Map<CacheKey, Promise<SpellFilterVocabularyResponse>>();
 
 function cacheKey(i18n: I18nContext): CacheKey {
   return `${i18n.lang}|${i18n.variant ?? ""}`;
@@ -21,6 +30,32 @@ function toIdMap<T extends { id: number }, V>(
 // Helpers to normalize nullable -> optional (contract-friendly)
 function opt<T>(v: T | null | undefined): T | undefined {
   return v ?? undefined;
+}
+
+function overlayById(rows: Array<{ id: number; name?: string | undefined }>) {
+  return new Map(rows.map((row) => [row.id, row.name]));
+}
+
+function toVocabularyItems(
+  rows: SpellTaxonomyVocabularyRow[],
+  facetType: SpellTaxonomyVocabularyRow["facetType"],
+  overlays: Map<number, string | undefined>,
+): SpellFilterVocabularyItem[] {
+  return rows
+    .filter((row) => row.facetType === facetType)
+    .map((row) => {
+      const item: SpellFilterVocabularyItem = {
+        id: row.id,
+        key: row.key,
+        name: row.name,
+      };
+      if (row.slug) item.slug = row.slug;
+
+      const overlayName = overlays.get(row.id);
+      if (overlayName) item.i18n = { name: overlayName };
+
+      return item;
+    });
 }
 
 async function loadMetaI18n(i18n: I18nContext): Promise<MetaI18nResponse> {
@@ -77,6 +112,56 @@ async function loadMetaI18n(i18n: I18nContext): Promise<MetaI18nResponse> {
   };
 }
 
+async function loadFilterVocabulary(
+  i18n: I18nContext,
+): Promise<SpellFilterVocabularyResponse> {
+  const vocabularyRows = await querySpellTaxonomyVocabulary();
+  const emptyOverlays = new Map<number, string | undefined>();
+
+  let schoolOverlays = emptyOverlays;
+  let subschoolOverlays = emptyOverlays;
+  let descriptorOverlays = emptyOverlays;
+
+  if (i18n.lang !== "en") {
+    const overlays = await queryMetaI18nOverlays({
+      lang: i18n.lang,
+      variant: i18n.variant,
+    });
+    schoolOverlays = overlayById(
+      overlays.schools.map((row) => ({ id: row.schoolId, name: opt(row.name) })),
+    );
+    subschoolOverlays = overlayById(
+      overlays.subschools.map((row) => ({
+        id: row.subschoolId,
+        name: opt(row.name),
+      })),
+    );
+    descriptorOverlays = overlayById(
+      overlays.descriptors.map((row) => ({
+        id: row.descriptorId,
+        name: opt(row.name),
+      })),
+    );
+  }
+
+  return {
+    i18n: { lang: i18n.lang, variant: i18n.variant },
+    taxonomy: {
+      schools: toVocabularyItems(vocabularyRows, "school", schoolOverlays),
+      subschools: toVocabularyItems(
+        vocabularyRows,
+        "subschool",
+        subschoolOverlays,
+      ),
+      descriptors: toVocabularyItems(
+        vocabularyRows,
+        "descriptor",
+        descriptorOverlays,
+      ),
+    },
+  };
+}
+
 export const metaService = {
   async getMetaI18n(input: { i18n: I18nContext }): Promise<MetaI18nResponse> {
     const key = cacheKey(input.i18n);
@@ -91,6 +176,23 @@ export const metaService = {
     });
 
     cache.set(key, promise);
+    return await promise;
+  },
+
+  async getFilterVocabulary(input: {
+    i18n: I18nContext;
+  }): Promise<SpellFilterVocabularyResponse> {
+    const key = cacheKey(input.i18n);
+
+    const existing = filterCache.get(key);
+    if (existing) return await existing;
+
+    const promise = loadFilterVocabulary(input.i18n).catch((err) => {
+      filterCache.delete(key);
+      throw err;
+    });
+
+    filterCache.set(key, promise);
     return await promise;
   },
 };

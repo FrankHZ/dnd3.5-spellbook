@@ -51,3 +51,34 @@ export async function queryMetaI18nOverlays(input: {
 
   return { rulebooks, classes, domains, schools, subschools, descriptors };
 }
+
+export type SpellTaxonomyVocabularyRow = {
+  facetType: "school" | "subschool" | "descriptor";
+  id: number;
+  key: string;
+  slug: string | null;
+  name: string;
+};
+
+export async function querySpellTaxonomyVocabulary() {
+  const rows = await contentPrisma.$queryRaw<SpellTaxonomyVocabularyRow[]>(
+    Prisma.sql`
+      SELECT DISTINCT
+        "facetType" AS facetType,
+        "legacyFacetId" AS id,
+        "facetKey" AS key,
+        "slug" AS slug,
+        "name" AS name
+      FROM "SpellTaxonomyFacet"
+      WHERE "facetType" IN ('school', 'subschool', 'descriptor')
+        AND "legacyFacetId" IS NOT NULL
+        AND "reviewStatus" = 'accepted'
+      ORDER BY "facetType" ASC, "name" ASC, "legacyFacetId" ASC
+    `,
+  );
+
+  return rows.map((row) => ({
+    ...row,
+    id: Number(row.id),
+  }));
+}

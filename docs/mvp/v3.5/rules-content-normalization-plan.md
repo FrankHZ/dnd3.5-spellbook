@@ -1,8 +1,8 @@
 # Rules Content Normalization Plan
 
-Status: backend/content foundation and default normalized spell read path
-implemented; frontend-facing contracts and consumers remain planned follow-up
-work.
+Status: backend/content foundation, default normalized spell read path, and
+first taxonomy filter contracts implemented; frontend UI consumers remain
+planned follow-up work.
 
 ## Problem
 
@@ -247,9 +247,9 @@ backend-facing query foundation that consumer plan can build on.
 
 Candidate query filters after normalized content exists:
 
-- `schoolIds`
-- `subschoolIds`
-- `descriptorIds`
+- `schoolIds` (implemented for Search and Browse/by-level API)
+- `subschoolIds` (implemented for Search and Browse/by-level API)
+- `descriptorIds` (implemented for Search and Browse/by-level API)
 - component flags
 - casting-time category
 - range category
@@ -262,6 +262,15 @@ Search should remain a name/text query plus optional structured filters. Browse
 should remain filter-first, but it can gain the same structured facets once the
 backend supports them. Frontend controls, URL state, scope summaries, and
 consumer validation are planned separately in the frontend consumer plan.
+
+The first taxonomy contract slice exposes comma-separated id-list query params
+on `GET /api/spells/search` and `GET /api/spells/by-level`, echoes the selected
+ids in the typed response DTOs, and serves vocabulary through
+`GET /api/meta/filters`. Vocabulary rows are generated from accepted
+`SpellTaxonomyFacet` rows and include stable id/key/slug/name fields plus
+localized names from existing i18n overlays when requested. The frontend should
+consume this endpoint rather than parsing raw rules strings or spell rows for
+filter labels.
 
 ## Migration Strategy
 
@@ -292,6 +301,8 @@ Implemented in the first slice:
   representative parity tests against the normalized content-backed repository.
 - The runtime spell service uses the normalized content read path by default,
   with API tests and an explicit `SPELL_READ_SOURCE=rules` rollback switch.
+- Frontend-facing contracts expose school, subschool, and descriptor filters
+  backed by normalized taxonomy facets, with backend API contract tests.
 - Data-tools can regenerate the normalized content DB from declared inputs.
 - Documentation explains when to edit source patches/review decisions instead
   of patching the legacy rules SQLite directly.
@@ -299,6 +310,6 @@ Implemented in the first slice:
 Remaining follow-up acceptance:
 
 - Frontend-facing contracts expose at least one new fine-grained structured
-  filter backed by normalized data.
+  filter backed by normalized data. (Implemented for taxonomy filters)
 - The first frontend consumer slice follows
   `normalized-rules-frontend-consumer-plan.md`.
