@@ -22,6 +22,7 @@ Examples:
 codex/design-refresh
 codex/i18n-semantic-keys
 codex/data-short-desc-plan
+codex/docs-structure-cleanup
 codex/web-search-scope
 codex/infra-deploy-scripts
 ```
@@ -65,9 +66,11 @@ Use the most specific useful area:
 
 ## Planning And Specialist Branches
 
-Use topic branches for specialist agents:
+Use topic branches for librarian and specialist agents:
 
 ```text
+codex/docs-version-plan
+codex/docs-structure-cleanup
 codex/i18n-semantic-keys
 codex/design-refresh
 codex/data-short-desc

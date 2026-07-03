@@ -13,6 +13,7 @@ implementation plan.
 
 1. Confirm scope.
    - Read `docs/roadmap.md`.
+   - Read `docs/mvp/README.md`.
    - Read the version integrated plan and acceptance checklist.
    - Check `git status --short --branch`.
    - Do not freeze a version while known blocking branches are still unmerged.
@@ -36,6 +37,7 @@ implementation plan.
      ```
 
 3. Write or update `docs/mvp/<version>/FREEZE.md`.
+   - Start from `docs/templates/freeze-snapshot.md` for new freeze files.
    - Start with status, canonical source order, and frozen deliverables.
    - Record final as-built behavior by shipped workstream.
    - Record exact validation commands and high-signal results.
@@ -45,6 +47,7 @@ implementation plan.
 4. Update navigation surfaces together.
    - Root `README.md`.
    - `docs/README.md`.
+   - `docs/mvp/README.md` when version-folder roles or latest snapshots change.
    - `docs/roadmap.md`.
    - `AGENTS.md` when the latest frozen snapshot or active planning track
      changes.
@@ -79,58 +82,9 @@ Keep the prose short. Prefer tables for counts.
 
 ## Template
 
-Use this structure unless the existing version already has a better one:
+Use `docs/templates/freeze-snapshot.md` unless the existing version already has
+a better established structure. Use `docs/templates/acceptance-checklist.md`
+when adding a version acceptance checklist before freeze.
 
-```markdown
-# vX.Y Freeze
-
-## Status
-
-**vX.Y FROZEN**
-
-One short paragraph naming the release boundary.
-
-## Canonical Source Order
-
-1. docs/mvp/vX.Y/FREEZE.md
-2. docs/features.md
-3. docs/mvp/vX.Y/acceptance-checklist.md
-4. focused plan docs
-
-## Frozen Deliverables
-
-Numbered list of shipped workstreams.
-
-## Final As-Built Summary
-
-### 1. Workstream Name
-
-Shipped behavior:
-
-- concise behavior bullets
-
-Accepted snapshot:
-
-| Metric | Value |
-| ------ | ----: |
-
-Frozen clarification:
-
-- important boundary or non-goal
-
-## Final Validation Evidence
-
-Commands run:
-
-```bash
-...
-```
-
-Accepted results:
-
-- high-signal command summaries
-
-## Deferred Backlog
-
-- explicit non-blocking follow-up
-```
+Use current operational paths in canonical source order, for example
+`docs/operations/data-setup.md` and `docs/operations/deployment.md`.
