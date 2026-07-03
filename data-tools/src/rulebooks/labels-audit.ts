@@ -1,5 +1,4 @@
 import Database from "better-sqlite3";
-import * as cheerio from "cheerio";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -74,12 +73,20 @@ export type RulebookLabelAuditReport = {
 
 const OUT_ROOT = path.join(repoRoot(), "data-tools", "out", "rulebook-labels");
 const DEFAULT_OUTPUT_PATH = path.join(OUT_ROOT, "rulebook-label-audit.json");
-const CHM_PUBLICATIONS_PATH = path.join(
+const RULEBOOK_PUBLICATIONS_JSONL_PATH = path.join(
   localDataDir(),
-  "artifacts",
-  "chm-clean",
-  "出版物.html",
+  "rulebook-labels",
+  "chm-publications.jsonl",
 );
+
+export type RulebookPublicationJsonlRow = {
+  schemaVersion: 1;
+  source: string;
+  displayAbbr: string;
+  englishName: string;
+  zhName: string;
+  reviewStatus: "accepted";
+};
 
 function usage(): never {
   console.error(`Usage:
@@ -372,38 +379,119 @@ function readAuditInputRows(
 }
 
 function readChmPublicationRowsByName() {
-  type PublicationRow = {
-    abbr: string;
-    name: string;
-    zhName: string;
-    source: string;
-  };
-  const byName = new Map<string, PublicationRow>();
-  if (!fs.existsSync(CHM_PUBLICATIONS_PATH)) return byName;
+  const byName = new Map<
+    string,
+    { abbr: string; name: string; zhName: string; source: string }
+  >();
+  if (!fs.existsSync(RULEBOOK_PUBLICATIONS_JSONL_PATH)) return byName;
 
-  const html = fs.readFileSync(CHM_PUBLICATIONS_PATH, "utf8");
-  const $ = cheerio.load(html);
-  $("tr").each((_, tr) => {
-    const cols = $(tr)
-      .find("td")
-      .map((__, td) =>
-        $(td)
-          .text()
-          .replace(/\s+/g, " ")
-          .trim(),
-      )
-      .get();
-    if (cols.length < 3 || cols[0] === "缩写") return;
-    const [abbr, name, zhName] = cols;
-    if (!abbr || !name) return;
-    byName.set(normalizePublicationName(name), {
-      abbr,
-      name,
-      zhName: zhName ?? "",
-      source: path.relative(localDataDir(), CHM_PUBLICATIONS_PATH),
+  const sourcePath = path.relative(localDataDir(), RULEBOOK_PUBLICATIONS_JSONL_PATH);
+  const parsed = readRulebookPublicationJsonlText(
+    fs.readFileSync(RULEBOOK_PUBLICATIONS_JSONL_PATH, "utf8"),
+    sourcePath,
+  );
+  if (parsed.errors.length > 0) {
+    throw new Error(
+      `Invalid rulebook publication JSONL ${RULEBOOK_PUBLICATIONS_JSONL_PATH}:\n${parsed.errors.join("\n")}`,
+    );
+  }
+
+  for (const row of parsed.rows) {
+    byName.set(normalizePublicationName(row.englishName), {
+      abbr: row.displayAbbr,
+      name: row.englishName,
+      zhName: row.zhName,
+      source: sourcePath,
+    });
+  }
+  return byName;
+}
+
+export function readRulebookPublicationJsonlText(
+  text: string,
+  source = "rulebook-publications.jsonl",
+) {
+  const rows: RulebookPublicationJsonlRow[] = [];
+  const errors: string[] = [];
+  const seenNames = new Set<string>();
+
+  text.split(/\r?\n/).forEach((line, index) => {
+    const lineNumber = index + 1;
+    const trimmed = line.trim();
+    if (!trimmed) return;
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(trimmed);
+    } catch (error) {
+      errors.push(`${source}:${lineNumber}: invalid JSON`);
+      return;
+    }
+    if (!isRecord(parsed)) {
+      errors.push(`${source}:${lineNumber}: row must be a JSON object`);
+      return;
+    }
+
+    const schemaVersion = parsed.schemaVersion;
+    const rowSource = asNonEmptyString(parsed.source);
+    const displayAbbr = asNonEmptyString(parsed.displayAbbr);
+    const englishName = asNonEmptyString(parsed.englishName);
+    const zhName = asNonEmptyString(parsed.zhName);
+    const reviewStatus = parsed.reviewStatus;
+
+    if (schemaVersion !== 1) {
+      errors.push(`${source}:${lineNumber}: schemaVersion must be 1`);
+    }
+    if (!rowSource) errors.push(`${source}:${lineNumber}: source is required`);
+    if (!displayAbbr) {
+      errors.push(`${source}:${lineNumber}: displayAbbr is required`);
+    }
+    if (!englishName) {
+      errors.push(`${source}:${lineNumber}: englishName is required`);
+    }
+    if (!zhName) errors.push(`${source}:${lineNumber}: zhName is required`);
+    if (reviewStatus !== "accepted") {
+      errors.push(`${source}:${lineNumber}: reviewStatus must be accepted`);
+    }
+
+    if (
+      schemaVersion !== 1 ||
+      !rowSource ||
+      !displayAbbr ||
+      !englishName ||
+      !zhName ||
+      reviewStatus !== "accepted"
+    ) {
+      return;
+    }
+
+    const nameKey = normalizePublicationName(englishName);
+    if (seenNames.has(nameKey)) {
+      errors.push(`${source}:${lineNumber}: duplicate englishName ${englishName}`);
+      return;
+    }
+    seenNames.add(nameKey);
+    rows.push({
+      schemaVersion: 1,
+      source: rowSource,
+      displayAbbr,
+      englishName,
+      zhName,
+      reviewStatus: "accepted",
     });
   });
-  return byName;
+
+  return { rows, errors };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function asNonEmptyString(value: unknown) {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
 }
 
 function normalizePublicationName(value: string) {

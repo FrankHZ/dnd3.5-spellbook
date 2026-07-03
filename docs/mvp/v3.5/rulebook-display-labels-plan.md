@@ -112,9 +112,9 @@ Current implementation:
 
 - `rulebooks:labels:audit` reads `RULES_DATABASE_URL` and
   `CONTENT_DATABASE_URL` in read-only mode.
-- When present locally, it also reads the cleaned CHM publication table at
-  `data/artifacts/chm-clean/出版物.html` for display-abbreviation candidates,
-  while keeping that source artifact out of the parent repo.
+- When present locally, it also reads maintained publication-label JSONL at
+  `data/rulebook-labels/chm-publications.jsonl` for display-abbreviation
+  candidates, while keeping source artifacts out of the parent repo.
 - It writes
   `data-tools/out/rulebook-labels/rulebook-label-audit.json`.
 - Portable tests cover the core review transform without requiring local DBs.

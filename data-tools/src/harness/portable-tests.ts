@@ -19,7 +19,10 @@ import {
   normalizeRulesContent,
   type LegacyRulesContentInput,
 } from "../rules-content/normalize";
-import { auditRulebookLabels } from "../rulebooks/labels-audit";
+import {
+  auditRulebookLabels,
+  readRulebookPublicationJsonlText,
+} from "../rulebooks/labels-audit";
 
 type TestCase = {
   name: string;
@@ -342,6 +345,54 @@ const tests: TestCase[] = [
       assert.equal(report.counts.needsReview, 2);
       assert.equal(report.counts.defer, 1);
       assert.equal(report.counts.duplicateProposedDisplayAbbrs, 2);
+    },
+  },
+  {
+    name: "rulebook publication JSONL validates maintained display labels",
+    run: () => {
+      const valid = readRulebookPublicationJsonlText(
+        `${JSON.stringify({
+          schemaVersion: 1,
+          source: "chm-publications",
+          displayAbbr: "SpC",
+          englishName: "Spell Compendium",
+          zhName: "万法大全",
+          reviewStatus: "accepted",
+        })}\n`,
+        "fixture.jsonl",
+      );
+      assert.deepEqual(valid.errors, []);
+      assert.equal(valid.rows[0]?.displayAbbr, "SpC");
+
+      const duplicate = readRulebookPublicationJsonlText(
+        `${JSON.stringify(valid.rows[0])}\n${JSON.stringify(valid.rows[0])}\n`,
+        "fixture.jsonl",
+      );
+      assert.ok(
+        duplicate.errors.some((error) =>
+          error.includes("duplicate englishName"),
+        ),
+      );
+
+      const invalid = readRulebookPublicationJsonlText(
+        JSON.stringify({
+          schemaVersion: 1,
+          source: "chm-publications",
+          englishName: "Spell Compendium",
+          reviewStatus: "review",
+        }),
+        "fixture.jsonl",
+      );
+      assert.ok(
+        invalid.errors.some((error) =>
+          error.includes("displayAbbr is required"),
+        ),
+      );
+      assert.ok(
+        invalid.errors.some((error) =>
+          error.includes("reviewStatus must be accepted"),
+        ),
+      );
     },
   },
   {
