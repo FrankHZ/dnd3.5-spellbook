@@ -1,0 +1,12 @@
+{
+  "taxonomy.active-count_one": "{{count}} active",
+  "taxonomy.active-count_other": "{{count}} active",
+  "taxonomy.collapsed-hint": "School, subschool, descriptor",
+  "taxonomy.descriptors": "Descriptors",
+  "taxonomy.descriptors-placeholder": "Filter descriptors...",
+  "taxonomy.schools": "Schools",
+  "taxonomy.schools-placeholder": "Filter schools...",
+  "taxonomy.subschools": "Subschools",
+  "taxonomy.subschools-placeholder": "Filter subschools...",
+  "taxonomy.title": "Taxonomy filters"
+}

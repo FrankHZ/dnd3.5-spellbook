@@ -1,0 +1,11 @@
+{
+  "taxonomy.active-count_other": "已选{{count}}项",
+  "taxonomy.collapsed-hint": "学派、子学派、描述符",
+  "taxonomy.descriptors": "描述符",
+  "taxonomy.descriptors-placeholder": "选择描述符...",
+  "taxonomy.schools": "学派",
+  "taxonomy.schools-placeholder": "选择学派...",
+  "taxonomy.subschools": "子学派",
+  "taxonomy.subschools-placeholder": "选择子学派...",
+  "taxonomy.title": "分类筛选"
+}

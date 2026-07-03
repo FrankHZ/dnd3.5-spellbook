@@ -10,5 +10,6 @@
   "level.any": "任意环数",
   "level.not-selected": "未选择",
   "rulebooks.default-core": "规则书：默认3.5核心",
-  "rulebooks.selected_other": "规则书：已选择{{count}}本（设置里改）"
+  "rulebooks.selected_other": "规则书：已选择{{count}}本（设置里改）",
+  "taxonomy.selected_other": "分类：{{count}}个筛选"
 }

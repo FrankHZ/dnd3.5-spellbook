@@ -6,6 +6,7 @@ import type {
   SpellByLevelResponse,
   SpellDetailView,
   SpellNameSearchResponse,
+  SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
 import { apiGet, apiPost } from "./http";
 
@@ -16,6 +17,7 @@ export function getSpellsByLevel(params: {
   domainIds: number[];
   level: LevelParam;
   rulebookIds?: number[]; // omit if empty to rely on backend default edition scope
+  taxonomyFilters?: Partial<SpellTaxonomyFilterIds>;
   page: number;
   pageSize: number;
   signal?: AbortSignal;
@@ -33,6 +35,7 @@ export function getSpellsByLevel(params: {
   if (params.rulebookIds && params.rulebookIds.length > 0) {
     sp.set("rulebookIds", params.rulebookIds.join(","));
   }
+  setTaxonomyParams(sp, params.taxonomyFilters);
   sp.set("page", String(params.page));
   sp.set("pageSize", String(params.pageSize));
 
@@ -48,6 +51,7 @@ export function searchSpellsByName(params: {
   classIds?: number[];
   domainIds?: number[];
   level?: LevelParam | null;
+  taxonomyFilters?: Partial<SpellTaxonomyFilterIds>;
   page: number;
   pageSize: number;
   signal?: AbortSignal;
@@ -69,11 +73,30 @@ export function searchSpellsByName(params: {
   if (params.level != null) {
     sp.set("level", String(params.level));
   }
+  setTaxonomyParams(sp, params.taxonomyFilters);
 
   return apiGet<SpellNameSearchResponse>(
     `/api/spells/search?${sp.toString()}`,
     params.signal,
   );
+}
+
+function setTaxonomyParams(
+  sp: URLSearchParams,
+  filters?: Partial<SpellTaxonomyFilterIds>,
+) {
+  if (!filters) return;
+  const normalize = (ids: number[] | undefined) =>
+    Array.from(
+      new Set((ids ?? []).filter((id) => Number.isInteger(id) && id > 0)),
+    ).sort((a, b) => a - b);
+  const schoolIds = normalize(filters.schoolIds);
+  const subschoolIds = normalize(filters.subschoolIds);
+  const descriptorIds = normalize(filters.descriptorIds);
+
+  if (schoolIds.length) sp.set("schoolIds", schoolIds.join(","));
+  if (subschoolIds.length) sp.set("subschoolIds", subschoolIds.join(","));
+  if (descriptorIds.length) sp.set("descriptorIds", descriptorIds.join(","));
 }
 
 export function getSpellDetail(id: number, signal?: AbortSignal) {
