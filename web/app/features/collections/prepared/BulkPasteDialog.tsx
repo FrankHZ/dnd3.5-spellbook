@@ -28,7 +28,7 @@ import { Textarea } from "~/components/ui/textarea";
 import { resolveSpellNames } from "~/api/spells";
 import { useUserPrefs } from "~/state/user-prefs-state";
 import type { ResolveSpellNamesResponse } from "@dnd/contracts";
-import { useMetaNames } from "~/i18n/hooks/useMetaNames";
+import { useRulebookDisplay } from "~/i18n/hooks/useRulebookDisplay";
 import { Link } from "react-router";
 import {
   collectSelectedSpellIds,
@@ -56,7 +56,7 @@ export function BulkPasteDialog({
   const { queryKey, name } = useAppI18n();
   const { state } = useUserPrefs();
   const rulebookIds = state.selectedRulebookIds ?? [];
-  const { metaName } = useMetaNames();
+  const { rulebookDisplay } = useRulebookDisplay();
 
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
@@ -82,7 +82,7 @@ export function BulkPasteDialog({
       setRows(
         mapResolvedRows(data, {
           getCandidateName: (c) => name(c),
-          getRulebookName: (rb) => metaName("rulebooks", rb),
+          getRulebookName: (rb) => rulebookDisplay(rb).name,
         }),
       );
     },

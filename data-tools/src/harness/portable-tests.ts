@@ -180,6 +180,7 @@ const tests: TestCase[] = [
             name: "Player's Handbook",
             abbr: "PHB",
             slug: "players-handbook",
+            displayAbbr: "PH",
           },
         ],
         spells: [
@@ -242,6 +243,7 @@ const tests: TestCase[] = [
 
       const normalized = normalizeRulesContent(input, "2026-07-02T00:00:00.000Z");
       assert.equal(normalized.counts.spells, 1);
+      assert.equal(normalized.rulebooks[0]?.displayAbbr, "PH");
       assert.equal(normalized.spells[0]?.descriptionText, "Fixture rules text.");
       assert.equal(normalized.spells[0]?.verified, true);
       assert.equal(normalized.taxonomyFacets.length, 2);

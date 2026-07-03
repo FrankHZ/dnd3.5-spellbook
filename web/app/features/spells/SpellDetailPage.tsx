@@ -25,6 +25,7 @@ import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { getSpellDescription } from "~/i18n/display/spell-description";
 import { getSpellShortDescription } from "~/i18n/display/spell-short-description";
 import { useMetaNames } from "~/i18n/hooks/useMetaNames";
+import { useRulebookDisplay } from "~/i18n/hooks/useRulebookDisplay";
 import { useTranslation } from "react-i18next";
 
 function SpellDetailSkeleton() {
@@ -62,7 +63,7 @@ function SpellDetailSkeleton() {
 
 function SpellHeader({
   title,
-  rulebookAbbr,
+  rulebookLabel,
   page,
   schoolText,
   shortDescription,
@@ -71,7 +72,7 @@ function SpellHeader({
   className = "",
 }: {
   title: string;
-  rulebookAbbr?: string | null;
+  rulebookLabel: string;
   page?: number | null;
   schoolText: string;
   shortDescription?: string;
@@ -80,8 +81,8 @@ function SpellHeader({
   className?: string;
 }) {
   const sourceText = page
-    ? `${rulebookAbbr ?? "—"} · p. ${page}`
-    : (rulebookAbbr ?? "—");
+    ? `${rulebookLabel} · p. ${page}`
+    : rulebookLabel;
 
   return (
     <div className={`space-y-3 ${className}`.trim()}>
@@ -90,7 +91,7 @@ function SpellHeader({
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <Badge
               variant="outline"
-              className="rounded-sm bg-muted/30 font-mono text-[11px] uppercase text-muted-foreground"
+              className="rounded-sm bg-muted/30 text-[11px] font-medium text-muted-foreground"
             >
               {sourceText}
             </Badge>
@@ -132,6 +133,7 @@ export default function SpellDetailPage() {
   const { lang, nameWithEn } = useAppI18n();
   const { t } = useTranslation(["spell-detail", "collections"]);
   const { metaName } = useMetaNames();
+  const { rulebookDisplay } = useRulebookDisplay();
   const idNum = Number(id);
   const isValidId = Number.isInteger(idNum) && idNum > 0;
 
@@ -222,12 +224,13 @@ export default function SpellDetailPage() {
     label: metaName("descriptors", d),
   }));
   const shortDescription = getSpellShortDescription(spell, lang);
+  const source = rulebookDisplay(spell.rulebook);
 
   return (
     <div className="page-side">
       <SpellHeader
         title={nameWithEn(spell)}
-        rulebookAbbr={spell.rulebook?.abbr}
+        rulebookLabel={source.abbr}
         page={spell.page}
         schoolText={schoolText}
         shortDescription={shortDescription}
@@ -253,7 +256,7 @@ export default function SpellDetailPage() {
           <div className="hidden md:block">
             <SpellHeader
               title={nameWithEn(spell)}
-              rulebookAbbr={spell.rulebook?.abbr}
+              rulebookLabel={source.abbr}
               page={spell.page}
               schoolText={schoolText}
               shortDescription={shortDescription}

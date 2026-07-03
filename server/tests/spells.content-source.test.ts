@@ -31,6 +31,10 @@ describe("normalized content spell read source", () => {
       .query({ q: "fire", rulebookIds: "4,6" });
     expect(search.status).toBe(200);
     expect(search.body.items.map((item: any) => item.id)).toEqual([100]);
+    expect(search.body.items[0]?.rulebook).toMatchObject({
+      abbr: "SC",
+      displayAbbr: "SpC",
+    });
 
     const byLevel = await request(app)
       .get("/api/spells/by-level")

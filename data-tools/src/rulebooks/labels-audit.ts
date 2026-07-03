@@ -494,7 +494,7 @@ function asNonEmptyString(value: unknown) {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-function normalizePublicationName(value: string) {
+export function normalizePublicationName(value: string) {
   return value
     .toLowerCase()
     .replace(/[’]/g, "'")

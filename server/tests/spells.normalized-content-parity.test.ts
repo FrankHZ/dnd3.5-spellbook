@@ -23,6 +23,17 @@ const emptyTaxonomyFilters = {
   descriptorIds: [],
 };
 
+function legacyComparable<T extends { rulebook?: Record<string, unknown> }>(
+  item: T,
+) {
+  const rulebook = item.rulebook ? { ...item.rulebook } : item.rulebook;
+  if (rulebook) {
+    delete rulebook.displayAbbr;
+    delete rulebook.displayName;
+  }
+  return { ...item, rulebook };
+}
+
 describe("normalized rules content repository parity", () => {
   it("matches legacy name search ids and item DTOs", async () => {
     const legacyIds = await queryIdsByName(
@@ -45,8 +56,12 @@ describe("normalized rules content repository parity", () => {
       fetchNormalizedSpellsInOrder(normalizedIds),
     ]);
 
-    expect(normalizedRows.map((row) => mapSpellItem(row, null, null))).toEqual(
-      legacyRows.map((row) => mapSpellItem(row, null, null)),
+    expect(
+      normalizedRows
+        .map((row) => mapSpellItem(row, null, null))
+        .map(legacyComparable),
+    ).toEqual(
+      legacyRows.map((row) => mapSpellItem(row, null, null)).map(legacyComparable),
     );
   });
 
@@ -84,8 +99,8 @@ describe("normalized rules content repository parity", () => {
 
     expect(legacy).not.toBeNull();
     expect(normalized).not.toBeNull();
-    expect(mapSpellDetail(normalized!, null, null)).toEqual(
-      mapSpellDetail(legacy!, null, null),
+    expect(legacyComparable(mapSpellDetail(normalized!, null, null))).toEqual(
+      legacyComparable(mapSpellDetail(legacy!, null, null)),
     );
   });
 
