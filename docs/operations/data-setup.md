@@ -289,6 +289,7 @@ npm run -w data-tools rules:content:audit
 npm run -w data-tools rules:content:generate
 npm run -w data-tools rules:content:import -- --dry-run
 npm run -w data-tools rules:content:import
+npm run -w data-tools rules:content:review
 ```
 
 The audit and generate commands read `RULES_DATABASE_URL` and write rebuildable
@@ -296,6 +297,10 @@ artifacts under `data-tools/out/rules-content/`. The import command writes only
 the generated normalized rules content tables in `CONTENT_DATABASE_URL`; it does
 not mutate the rules DB or app-state DB. Keep raw/source patch and review inputs
 in the nested `data/` repo, not the parent repo.
+
+The review command opens the content DB read-only after import and summarizes
+normalized taxonomy, component, and mechanic facet readiness for future filter
+contracts. It is a planning/review aid, not a deploy or DB mutation step.
 
 Each successful rules-content import writes one `RulesContentBuild` row with the
 generated artifact hash, rules manifest hash, locked rules DB hash, content

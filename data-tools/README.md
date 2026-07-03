@@ -75,6 +75,7 @@ Audit and generate normalized spell-facing rules content:
 npm run -w data-tools rules:content:audit
 npm run -w data-tools rules:content:generate
 npm run -w data-tools rules:content:import -- --dry-run
+npm run -w data-tools rules:content:review
 ```
 
 `rules:content:audit` and `rules:content:generate` open the configured rules DB
@@ -84,6 +85,11 @@ of review-worthy legacy strings. `rules:content:import` reads that generated fil
 and replaces only the rules-content generated tables in `CONTENT_DATABASE_URL`;
 use `--dry-run` after applying content migrations to validate row counts without
 mutating SQLite.
+
+`rules:content:review` opens the configured content DB read-only and inventories
+the normalized taxonomy, component, and mechanic facet tables for filter-contract
+readiness review. It writes a timestamped report under
+`data-tools/out/rules-content/`.
 
 Run portable data-tools helper tests:
 
@@ -370,6 +376,12 @@ content. It requires the rules-content generated tables from
 only those generated tables; it does not touch i18n rows, app-state rows, the
 rules DB, or the nested local data repo.
 
+`rules:content:review` is the read-only content DB inventory for post-import
+normalized facet review. It reports taxonomy/component/mechanic review counts,
+issue-code counts, Tome of Battle-like taxonomy rows, and readiness hints for
+future filter-contract work. Reports stay under `data-tools/out/rules-content/`
+and are not parent-repo source artifacts.
+
 `rulebooks:labels:audit` is the read-only rulebook display-label review report
 for v3.5. It compares legacy `dnd_rulebook` identity fields, current
 `RulebookContent.displayAbbr/displayName`, Chinese `I18nRulebookText.name`,
@@ -446,6 +458,8 @@ another scoped book. The default scope is the current official 3.5 working set:
 - `rules:content:parity` opens the rules DB and content DB read-only, compares
   full local normalized content parity, and writes a report under
   `data-tools/out/rules-content/`.
+- `rules:content:review` opens the content DB read-only and writes a normalized
+  facet review report under `data-tools/out/rules-content/`.
 - `rulebooks:labels:audit` opens the rules DB and content DB read-only and
   writes a review report under `data-tools/out/rulebook-labels/`.
 - `rules:content:import -- --dry-run` validates the generated normalized content
