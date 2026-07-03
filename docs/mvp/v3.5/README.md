@@ -1,6 +1,9 @@
 # v3.5 Planning
 
-Status: active planning track after the v3.4 freeze.
+Status: active implementation track after the v3.4 freeze. The backend/content
+DB foundation and normalized rules-content read path are implemented on
+`codex/rules-content-normalization`; frontend consumers, rulebook display-label
+review, dependency follow-up, and module-doc automation remain follow-up work.
 
 v3.5 starts after v3.4 short-description, data-harness, design, i18n, and
 freeze work has been accepted. This folder is for planning work that is
@@ -47,6 +50,7 @@ delivery sequence, plan ownership, or cross-plan conflicts changed.
 Use `docs/templates/version-plan.md` and the repo-local `$version-plan-doc`
 skill when adding new version plan docs.
 
-Treat v3.5 docs as future-facing plans, not proof of shipped behavior. If a v3.5
-plan needs v3.4 facts, start from `../v3.4/FREEZE.md` instead of copying stale
-assumptions from earlier plan drafts.
+Treat v3.5 docs as mixed planning/as-built records. Check each plan's status
+line before assuming whether a section is future scope or shipped behavior. If a
+v3.5 plan needs v3.4 facts, start from `../v3.4/FREEZE.md` instead of copying
+stale assumptions from earlier plan drafts.

@@ -298,7 +298,8 @@ Implemented in the first slice:
 Remaining follow-up acceptance:
 
 - Runtime spell reads switch to the normalized content-backed repository by
-  default after deployment DB artifact policy is ready.
+  default after the target remote content DB artifact has been manually uploaded
+  and verified against `RulesContentBuild` / `rules:content:meta` provenance.
 - Frontend-facing contracts expose at least one new fine-grained structured
   filter backed by normalized data.
 - The first frontend consumer slice follows

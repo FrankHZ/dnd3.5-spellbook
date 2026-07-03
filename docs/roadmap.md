@@ -167,7 +167,8 @@ Recommended next sequence:
    first backend/content slice already generates normalized rules content from
    the locked `rules-clean` baseline into the content DB and includes a
    content-backed read repository with representative parity tests. Next,
-   review remaining parity gaps, then explicitly switch runtime reads before
+   explicitly switch runtime reads only after the target remote content DB has
+   been manually uploaded and verified, then add contract/filter work before
    exposing new frontend controls.
 
 4. **Rulebook display-label review**
@@ -236,10 +237,10 @@ topic-specific child plan that owns the work; do not synchronize
    maintain this repo's own normalized rules content model from the cleaned
    legacy rules DB plus local review decisions. The first backend/content slice
    is implemented, including a content-backed read repository and representative
-   backend parity tests. Remaining work is explicit runtime read switching,
-   contract additions, and finer Browse/Search filters such as schools,
-   descriptors, components, casting facets, range, duration, saving throws, and
-   spell resistance.
+   backend parity tests. Remaining work is remote DB artifact verification,
+   explicit default runtime read switching, contract additions, and finer
+   Browse/Search filters such as schools, descriptors, components, casting
+   facets, range, duration, saving throws, and spell resistance.
 
 3. **Normalized rules frontend consumer**
 

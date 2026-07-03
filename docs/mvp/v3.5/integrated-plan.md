@@ -1,11 +1,16 @@
 # v3.5 Integrated Plan
 
-Status: planning coordination surface.
+Status: mixed coordination and as-built surface. The DB ownership split,
+normalized rules-content generation, backend parity/read-source work, portable
+backend API fixtures, CI baseline, deployment artifact boundary, module-doc
+baseline, and compact agent-guide pass are implemented. Frontend normalized
+facet consumers, rulebook display-label review, risky dependency follow-up, and
+automatic module-doc PRs remain planned follow-up work.
 
 This plan ties the v3.5 child plans together and records the current
-cross-plan conflict review. It is not an implementation checklist. Use it to
-decide sequencing, ownership, and handoff boundaries before starting a v3.5
-implementation branch.
+cross-plan conflict review. It is not a detailed implementation checklist. Use
+it to decide sequencing, ownership, and handoff boundaries, then use each child
+plan's status line to distinguish shipped slices from remaining work.
 
 ## Objective
 
@@ -88,8 +93,8 @@ questions before merge review.
 
 ### 1. Split DB Ownership
 
-Implement the content DB and app-state DB boundary before moving runtime reads
-away from the legacy rules DB.
+Implemented. The content DB and app-state DB boundary exists before moving
+runtime reads away from the legacy rules DB by default.
 
 Primary plan:
 
@@ -103,11 +108,14 @@ Expected output:
 - clearly named content and app-state Prisma clients or equivalent DB access modules
 - docs explaining which DBs are rebuildable content artifacts and which are
   preserve-sensitive app-state data
+- tracked DB lifecycle files under `server/db/`, with ignored local runtime DBs
+  under `server/db/local/`
 
 ### 2. Generate Normalized Rules Content
 
-Generate normalized rules-derived tables into the content DB. Keep the cleaned
-legacy rules DB as a source input and audit trail.
+Implemented for spell-facing content. Normalized rules-derived tables are
+generated into the content DB while the cleaned legacy rules DB remains a source
+input and audit trail.
 
 Primary plan:
 
@@ -118,13 +126,15 @@ Expected output:
 - normalized schema for spell-facing runtime content
 - generator owned by `data-tools`
 - parity reports against current Browse/Search/detail behavior
+- full local `rules:content:parity` and `rules:content:meta` reports for
+  rules/content DB comparison and artifact provenance
 - review queues for dirty or ambiguous source values
 - raw source value preservation where normalization is incomplete
 
 ### 3. Normalize Rulebook Display Metadata
 
-Fold rulebook label decisions into the content metadata path so UI labels do not
-depend on legacy source abbreviations.
+Planned follow-up. Fold rulebook label decisions into the content metadata path
+so UI labels do not depend on legacy source abbreviations.
 
 Primary plan:
 
@@ -139,8 +149,9 @@ Expected output:
 
 ### 4. Stabilize API Contracts
 
-Expose normalized facets through typed contracts and backend API filters before
-shipping broad frontend controls.
+Partially implemented. The backend has a normalized content-backed read path and
+representative parity/API tests, but new normalized facet contract fields and
+filters remain future work.
 
 Primary plans:
 
@@ -151,14 +162,15 @@ Expected output:
 
 - explicit query params and DTO fields
 - metadata vocabularies for accepted facets
-- backend API contract tests
+- backend API contract tests for new facet filters
 - existing behavior parity tests for representative Browse, Search, detail,
   batch, and resolve flows
+- opt-in runtime read-source switch through `SPELL_READ_SOURCE=content`
 
 ### 5. Add Frontend Consumers In Slices
 
-Add controls and displays only after the contract and metadata vocabulary are
-stable.
+Planned follow-up. Add controls and displays only after the contract and
+metadata vocabulary are stable.
 
 Primary plan:
 
@@ -176,8 +188,8 @@ preferences, not ordinary URL-scoped facet selections.
 
 ### 6. Review And Update Dependencies
 
-Run dependency inventory and safe updates before CI and broad v3.5
-implementation branches settle around old tooling assumptions.
+Partially implemented. Dependency inventory and safe semver-range lockfile
+updates are recorded; risky/major dependency follow-up remains planned.
 
 Primary plan:
 
@@ -193,8 +205,8 @@ Expected output:
 
 ### 7. Make CI Portable
 
-Add CI once the validation spine can run from a clean checkout. Do not make CI
-depend on ignored runtime DB files.
+Implemented baseline. CI can run the portable validation spine from a clean
+checkout and does not depend on ignored runtime DB files.
 
 Primary plan:
 
@@ -211,8 +223,9 @@ Expected output:
 
 ### 8. Keep CD Script-Backed
 
-Keep deployment behavior in the tracked scripts and add only thin wrappers or
-manual dispatch around them.
+Implemented for code/web deployment. Deployment behavior remains in the tracked
+scripts, with thin manual workflow wrappers. DB uploads stay manual and are
+verified through content DB metadata rather than GitHub Actions.
 
 Primary plan:
 
@@ -224,15 +237,16 @@ Expected output:
 - `.github/workflows/deploy.yml` provides a manual wrapper around the tracked
   remote code/web scripts
 - workflow wrappers do not duplicate deployment logic
-- DB deployment waits for content DB / app-state DB redesign rather than
-  wrapping manual SQLite file upload as CD
+- DB deployment stays out of CD; manual SQLite uploads require
+  `rules:content:parity` and `rules:content:meta` evidence before enabling
+  normalized content reads
 - automatic deploy waits until secrets, host targeting, and rollback behavior
   are explicit
 
 ### 9. Clean Up Agent And Module Docs
 
-After the structural work is planned clearly, shrink `AGENTS.md` back toward an
-execution guide and add merge-to-main module-doc automation.
+Partially implemented. `AGENTS.md` has been reduced and module docs have a
+baseline. Merge-to-main module-doc automation remains blocked on runner/secrets.
 
 Primary plans:
 
@@ -259,7 +273,7 @@ Expected output:
 | Settings vs URL state                       | frontend consumer                                       | No conflict. Settings owns broad defaults. Ordinary Browse/Search facet selections stay in URL state.                                                                                                                             |
 | Dependency updates vs feature branches      | CI/CD, all implementation plans                         | No conflict. v3.5 should do dependency review in a dedicated branch before broad implementation, and feature branches should only carry dependency updates when explicitly blocked.                                               |
 | CI vs local data                            | CI/CD, rules normalization, data harness                | No conflict. Backend API tests now use disposable fixtures in CI; ignored local DBs remain outside portable CI inputs.                                                                                                            |
-| CD vs deploy scripts                        | CI/CD, deployment docs                                  | No conflict. CD wrappers call tracked code/web scripts; deploy logic stays in `docs/deployment-scripts/`. DB deployment is deferred until the DB ownership redesign defines a real artifact model.                                |
+| CD vs deploy scripts                        | CI/CD, deployment docs                                  | No conflict. CD wrappers call tracked code/web scripts; deploy logic stays in `docs/deployment-scripts/`. DB upload remains manual, outside CD, and normalized content DB activation depends on meta/provenance comparison.        |
 | AGENTS vs docs index                        | agent guide, CI/CD module docs, this plan               | No conflict. `docs/README.md` is the map, this plan is v3.5 coordination, and `AGENTS.md` should shrink after the review.                                                                                                         |
 | v3.5 vs long-term content artifacts         | roadmap, stable backlog                                 | No conflict. Bulk translation/proofreading QA, `data/spells-full` completion imports, static/offline HTML artifacts, content packs, and offline search indexes stay long-term unless explicitly pulled into a later version plan. |
 
@@ -267,17 +281,16 @@ Expected output:
 
 ### DB Ownership Boundary
 
-Reviewed against the other plans. The plan correctly makes the content/app-state
-split a v3.5 target and allows normalized rules-derived tables to land in the
-content DB. No change needed unless implementation chooses a transitional env
-var strategy that affects rules normalization.
+Reviewed against the other plans. The content/app-state split is implemented
+and normalized rules-derived tables land in the content DB. `APP_DATABASE_URL`
+remains only a transitional content DB alias.
 
 ### Rules Content Normalization
 
-Reviewed against the DB and frontend plans. The plan correctly treats legacy
-rules data as source input and gives frontend control rollout to the frontend
-consumer plan. No conflict with rulebook labels because labels are content
-metadata, not source identity.
+Reviewed against the DB and frontend plans. The backend/content foundation is
+implemented: normalized tables, generator/import, provenance meta, full local
+parity audit, content-backed read repository, and opt-in `SPELL_READ_SOURCE`.
+Frontend control rollout remains in the frontend consumer plan.
 
 ### Normalized Rules Frontend Consumer
 
@@ -288,10 +301,9 @@ API contract tests, and manual smoke rather than browser E2E first.
 
 ### Rulebook Display Labels
 
-Reviewed against rules normalization. The plan should be implemented as content
-metadata, likely in the content DB, and should not mutate legacy `slug` or
-`abbr`. It can ship before or after normalized spell facets as long as UI helper
-fallback behavior is tested.
+Reviewed against rules normalization. Still planned follow-up. The plan should
+be implemented as content metadata, likely in the content DB, and should not
+mutate legacy `slug` or `abbr`.
 
 ### CI/CD, Dependency Review, And Module Docs
 
@@ -300,10 +312,11 @@ maintenance branch before broad v3.5 implementation. CI has portable backend
 fixtures and should keep ignored local DBs out of clean-checkout validation.
 `main` is remote-managed through PRs, while local development uses targeted
 checks first. CD remains script-backed and should not become a parallel
-deployment implementation. DB deployment is deferred until the DB ownership
-redesign defines a release artifact and rollback model. Module-doc automation
-should be non-blocking and docs-only; the baseline docs exist, but the automatic
-PR job waits for a runner choice.
+deployment implementation. DB upload remains manual and operator-controlled;
+normalized content DB activation uses `RulesContentBuild` and
+`rules:content:meta` provenance comparison rather than GitHub Actions upload.
+Module-doc automation should be non-blocking and docs-only; the baseline docs
+exist, but the automatic PR job waits for a runner choice.
 
 ### Agent Guide Review
 
