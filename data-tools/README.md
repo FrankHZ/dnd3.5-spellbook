@@ -47,8 +47,8 @@ npm run -w data-tools inspect:rules -- schema dnd_spell
 Prepare the local rules DB:
 
 ```bash
-npm run -w data-tools rules:sql:dry-run -- legacy-sql/rules-clean-v2.0.patch.sql
-npm run -w data-tools rules:sql:apply -- legacy-sql/rules-clean-v2.0.patch.sql
+npm run -w data-tools rules:sql:dry-run -- pending/legacy-sql/example.patch.sql
+npm run -w data-tools rules:sql:apply -- pending/legacy-sql/example.patch.sql
 npm run -w data-tools rules:index:rebuild -- --dry-run
 npm run -w data-tools rules:index:rebuild
 ```
@@ -56,9 +56,9 @@ npm run -w data-tools rules:index:rebuild
 Validate and apply structured missing-spell patches:
 
 ```bash
-npm run -w data-tools rules:spells:validate -- spells/missing-spells.jsonl
-npm run -w data-tools rules:spells:apply -- --dry-run spells/missing-spells.jsonl
-npm run -w data-tools rules:spells:apply -- spells/missing-spells.jsonl
+npm run -w data-tools rules:spells:validate -- pending/spells/example.jsonl
+npm run -w data-tools rules:spells:apply -- --dry-run pending/spells/example.jsonl
+npm run -w data-tools rules:spells:apply -- pending/spells/example.jsonl
 ```
 
 Record and verify the local `rules-clean.sqlite` fingerprint against maintained
@@ -112,9 +112,9 @@ Inspect and generate structured patches from local `spells-full` data:
 
 ```bash
 npm run -w data-tools spells-full:inspect -- known-misses
-npm run -w data-tools spells-full:generate -- known-misses --write-patch spells/spells-full-known-misses.jsonl
+npm run -w data-tools spells-full:generate -- known-misses --write-patch pending/spells/spells-full-known-misses.jsonl
 npm run -w data-tools spells-full:inspect -- short-desc-rules-gaps
-npm run -w data-tools spells-full:generate -- short-desc-rules-gaps --write-patch spells/short-desc-rules-gaps.generated.jsonl
+npm run -w data-tools spells-full:generate -- short-desc-rules-gaps --write-patch pending/spells/short-desc-rules-gaps.generated.jsonl
 ```
 
 Probe IMarvinTPA for English short-description candidates:
@@ -262,7 +262,8 @@ runner rejects paths outside that directory. Use `rules:sql:dry-run` before
 `RULES_DATABASE_URL` unchanged.
 
 Structured spell patch JSONL files also live under
-`data/rules-patches/`, normally in `spells/`. The first supported
+`data/rules-patches/`, normally in `pending/spells/` before apply and
+`applied/spells/` after the locked rules baseline is updated. The first supported
 operation is `insertSpell`, which inserts the base spell row plus descriptors
 and class/domain levels, then rebuilds derived spell indexes. Validation opens
 the configured rules DB read-only; dry-run applies to a temporary copy.

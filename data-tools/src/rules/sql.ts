@@ -96,9 +96,9 @@ function runPatch(mode: Mode, patchPath: string) {
 
 function runIndexRebuild(mode: Mode) {
   const patches = [
-    "legacy-sql/create-idx-spell-class-level.sql",
-    "legacy-sql/create-idx-spell-domain-level.sql",
-    "legacy-sql/derive-spell-class-domain-mapping.sql",
+    "applied/legacy-sql/create-idx-spell-class-level.sql",
+    "applied/legacy-sql/create-idx-spell-domain-level.sql",
+    "applied/legacy-sql/derive-spell-class-domain-mapping.sql",
   ];
 
   const targetDbPath = rulesDbPath();

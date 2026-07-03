@@ -75,16 +75,16 @@ const COUNT_TABLES = [
 ] as const;
 
 const INDEX_PATCHES = [
-  "legacy-sql/create-idx-spell-class-level.sql",
-  "legacy-sql/create-idx-spell-domain-level.sql",
-  "legacy-sql/derive-spell-class-domain-mapping.sql",
+  "applied/legacy-sql/create-idx-spell-class-level.sql",
+  "applied/legacy-sql/create-idx-spell-domain-level.sql",
+  "applied/legacy-sql/derive-spell-class-domain-mapping.sql",
 ];
 
 function usage(): never {
   console.error(`Usage:
-  npm run -w data-tools rules:spells:validate -- spells/missing-spells.jsonl
-  npm run -w data-tools rules:spells:apply -- --dry-run spells/missing-spells.jsonl
-  npm run -w data-tools rules:spells:apply -- spells/missing-spells.jsonl
+  npm run -w data-tools rules:spells:validate -- pending/spells/example.jsonl
+  npm run -w data-tools rules:spells:apply -- --dry-run pending/spells/example.jsonl
+  npm run -w data-tools rules:spells:apply -- pending/spells/example.jsonl
 
 Patch paths are resolved under data/rules-patches/.
 `);

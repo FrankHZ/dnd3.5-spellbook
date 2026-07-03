@@ -196,17 +196,18 @@ If your local checkout lives elsewhere, update the paths accordingly.
 
 Rules DB preparation is owned by the `data-tools` workspace.
 
-Legacy SQL patch assets live under:
+Applied SQL patch assets live under `data/rules-patches/applied/legacy-sql/`.
+New SQL patch candidates should be authored under:
 
 ```text
-data/rules-patches/legacy-sql/
+data/rules-patches/pending/legacy-sql/
 ```
 
 Use dry-run before mutating the configured rules DB:
 
 ```bash
-npm run -w data-tools rules:sql:dry-run -- legacy-sql/rules-clean-v2.0.patch.sql
-npm run -w data-tools rules:sql:apply -- legacy-sql/rules-clean-v2.0.patch.sql
+npm run -w data-tools rules:sql:dry-run -- pending/legacy-sql/example.patch.sql
+npm run -w data-tools rules:sql:apply -- pending/legacy-sql/example.patch.sql
 npm run -w data-tools rules:index:rebuild -- --dry-run
 npm run -w data-tools rules:index:rebuild
 ```
@@ -214,18 +215,20 @@ npm run -w data-tools rules:index:rebuild
 The dry-run command copies the target DB to a temporary file and leaves
 `RULES_DATABASE_URL` unchanged.
 
-Structured missing-spell patches are JSONL files under:
+Applied structured spell JSONL patches live under
+`data/rules-patches/applied/spells/`. New structured spell patch candidates
+should be authored under:
 
 ```text
-data/rules-patches/spells/
+data/rules-patches/pending/spells/
 ```
 
 Use validation and dry-run before applying:
 
 ```bash
-npm run -w data-tools rules:spells:validate -- spells/missing-spells.jsonl
-npm run -w data-tools rules:spells:apply -- --dry-run spells/missing-spells.jsonl
-npm run -w data-tools rules:spells:apply -- spells/missing-spells.jsonl
+npm run -w data-tools rules:spells:validate -- pending/spells/example.jsonl
+npm run -w data-tools rules:spells:apply -- --dry-run pending/spells/example.jsonl
+npm run -w data-tools rules:spells:apply -- pending/spells/example.jsonl
 ```
 
 The structured spell apply command inserts rules DB base spell rows and related
@@ -250,7 +253,7 @@ Current helper commands:
 
 ```bash
 npm run -w data-tools spells-full:inspect -- known-misses
-npm run -w data-tools spells-full:generate -- known-misses --write-patch spells/spells-full-known-misses.jsonl
+npm run -w data-tools spells-full:generate -- known-misses --write-patch pending/spells/spells-full-known-misses.jsonl
 ```
 
 ## Content DB Setup

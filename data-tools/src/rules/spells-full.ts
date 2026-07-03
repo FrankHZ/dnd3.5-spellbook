@@ -129,9 +129,9 @@ const RULEBOOK_TO_SOURCE_NAME: Record<string, string> = {
 function usage(): never {
   console.error(`Usage:
   npm run -w data-tools spells-full:inspect -- known-misses
-  npm run -w data-tools spells-full:generate -- known-misses --write-patch spells/spells-full-known-misses.jsonl
+  npm run -w data-tools spells-full:generate -- known-misses --write-patch pending/spells/spells-full-known-misses.jsonl
   npm run -w data-tools spells-full:inspect -- short-desc-rules-gaps
-  npm run -w data-tools spells-full:generate -- short-desc-rules-gaps --write-patch spells/short-desc-rules-gaps.jsonl
+  npm run -w data-tools spells-full:generate -- short-desc-rules-gaps --write-patch pending/spells/short-desc-rules-gaps.jsonl
 
 spells-full source data is read from data/spells-full/spells-parsed.json.
 Patch paths are resolved under data/rules-patches/.

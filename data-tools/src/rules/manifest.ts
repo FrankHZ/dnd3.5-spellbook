@@ -29,12 +29,23 @@ type InsertSpellOperation = {
   descriptors?: string[];
 };
 
+type UpdateSpellOperation = {
+  op?: string;
+  id?: number;
+  spell?: {
+    slug?: string;
+  };
+};
+
+type SpellOperation = InsertSpellOperation | UpdateSpellOperation;
+
 type SpellOperationCheck = {
   patchPath: string;
   line: number;
   id: number | null;
   name: string | null;
   rulebook: string | null;
+  slug: string | null;
   status: "verified" | "missing" | "mismatch";
   issues: string[];
 };
@@ -86,6 +97,7 @@ type RulesManifest = {
 };
 
 const PATCH_ROOT = path.join(localDataDir(), "rules-patches");
+const APPLIED_PATCH_ROOT = path.join(PATCH_ROOT, "applied");
 const MANIFEST_PATH = path.join(localDataDir(), "rules-db-manifest.json");
 const DB_RELATIVE_PATH = path.join("server", "db", "local", "rules-clean.sqlite");
 const REPORT_ROOT = path.join(repoRoot(), "data-tools", "out", "rules-manifest");
@@ -160,9 +172,18 @@ function isInsertSpell(value: unknown): value is InsertSpellOperation {
   return typeof value === "object" && value !== null && (value as { op?: unknown }).op === "insertSpell";
 }
 
+function isUpdateSpell(value: unknown): value is UpdateSpellOperation {
+  return typeof value === "object" && value !== null && (value as { op?: unknown }).op === "updateSpell";
+}
+
+function isSpellOperation(value: unknown): value is SpellOperation {
+  return isInsertSpell(value) || isUpdateSpell(value);
+}
+
 function listPatchFiles() {
   const files: string[] = [];
   const visit = (dir: string) => {
+    if (!fs.existsSync(dir)) return;
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
@@ -172,7 +193,7 @@ function listPatchFiles() {
       }
     }
   };
-  visit(PATCH_ROOT);
+  visit(APPLIED_PATCH_ROOT);
   return files.sort((a, b) => relativeToData(a).localeCompare(relativeToData(b)));
 }
 
@@ -199,16 +220,21 @@ function verifySpellOperation(
   db: Database.Database,
   patchPath: string,
   line: number,
-  op: InsertSpellOperation,
+  op: SpellOperation,
 ): SpellOperationCheck {
   const id = typeof op.id === "number" ? op.id : null;
-  const name = typeof op.spell?.name === "string" ? op.spell.name : null;
-  const rulebook = typeof op.source?.rulebook === "string" ? op.source.rulebook : null;
+  const name = isInsertSpell(op) && typeof op.spell?.name === "string" ? op.spell.name : null;
+  const rulebook =
+    isInsertSpell(op) && typeof op.source?.rulebook === "string" ? op.source.rulebook : null;
+  const slug = typeof op.spell?.slug === "string" ? op.spell.slug : null;
   const issues: string[] = [];
 
   if (id === null) issues.push("operation id is missing");
-  if (!name) issues.push("spell name is missing");
-  if (!rulebook) issues.push("source rulebook is missing");
+  if (isInsertSpell(op)) {
+    if (!name) issues.push("spell name is missing");
+    if (!rulebook) issues.push("source rulebook is missing");
+  }
+  if (isUpdateSpell(op) && !slug) issues.push("update slug is missing");
 
   const spell =
     id === null
@@ -235,12 +261,12 @@ function verifySpellOperation(
     if (rulebook && spell.rulebook !== rulebook) {
       issues.push(`rulebook mismatch: db=${spell.rulebook}`);
     }
-    if (op.spell?.slug && spell.slug !== op.spell.slug) {
+    if (slug && spell.slug !== slug) {
       issues.push(`slug mismatch: db=${spell.slug}`);
     }
   }
 
-  for (const level of op.levels?.classes ?? []) {
+  for (const level of isInsertSpell(op) ? (op.levels?.classes ?? []) : []) {
     if (!level.class || typeof level.level !== "number") continue;
     const row = db
       .prepare(
@@ -262,7 +288,7 @@ function verifySpellOperation(
     }
   }
 
-  for (const level of op.levels?.domains ?? []) {
+  for (const level of isInsertSpell(op) ? (op.levels?.domains ?? []) : []) {
     if (!level.domain || typeof level.level !== "number") continue;
     const row = db
       .prepare(
@@ -284,7 +310,7 @@ function verifySpellOperation(
     }
   }
 
-  for (const descriptor of op.descriptors ?? []) {
+  for (const descriptor of isInsertSpell(op) ? (op.descriptors ?? []) : []) {
     const row = db
       .prepare(
         `
@@ -305,7 +331,7 @@ function verifySpellOperation(
         ? "mismatch"
         : "verified";
 
-  return { patchPath, line, id, name, rulebook, status, issues };
+  return { patchPath, line, id, name, rulebook, slug, status, issues };
 }
 
 function buildManifest() {
@@ -322,15 +348,16 @@ function buildManifest() {
         : "spell-jsonl";
 
       if (kind === "spell-jsonl") {
-        const operations = readJsonl(filePath).filter((entry) =>
-          isInsertSpell(entry.value),
-        );
+        const operations = readJsonl(filePath).flatMap((entry): Array<{
+          line: number;
+          value: SpellOperation;
+        }> => (isSpellOperation(entry.value) ? [{ line: entry.line, value: entry.value }] : []));
         const checks = operations.map((entry) =>
           verifySpellOperation(
             db,
             relativePath,
             entry.line,
-            entry.value as InsertSpellOperation,
+            entry.value,
           ),
         );
         spellChecks.push(...checks);

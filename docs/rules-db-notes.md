@@ -132,25 +132,27 @@ The existing CHM workflow still only imports Chinese overlay text into the app
 DB. It expects matched records to already have `spellId` values from the rules
 DB, so it cannot create new base spells by itself.
 
-Historical SQL patch assets live under
-`data/rules-patches/legacy-sql/`. Use data-tools dry-run/apply
+Applied historical SQL patch assets live under
+`data/rules-patches/applied/legacy-sql/`. New SQL patch candidates should start
+under `data/rules-patches/pending/legacy-sql/`. Use data-tools dry-run/apply
 commands rather than manual sqlite shell steps:
 
 ```bash
-npm run -w data-tools rules:sql:dry-run -- legacy-sql/rules-clean-v2.0.patch.sql
-npm run -w data-tools rules:sql:apply -- legacy-sql/rules-clean-v2.0.patch.sql
+npm run -w data-tools rules:sql:dry-run -- pending/legacy-sql/example.patch.sql
+npm run -w data-tools rules:sql:apply -- pending/legacy-sql/example.patch.sql
 npm run -w data-tools rules:index:rebuild -- --dry-run
 npm run -w data-tools rules:index:rebuild
 ```
 
-Structured missing-spell patch assets live under
-`data/rules-patches/spells/`. Use JSONL and the spell-specific
+Applied structured missing-spell patch assets live under
+`data/rules-patches/applied/spells/`. New candidates should start under
+`data/rules-patches/pending/spells/`. Use JSONL and the spell-specific
 validator/apply commands instead of authoring new ad hoc SQL:
 
 ```bash
-npm run -w data-tools rules:spells:validate -- spells/missing-spells.jsonl
-npm run -w data-tools rules:spells:apply -- --dry-run spells/missing-spells.jsonl
-npm run -w data-tools rules:spells:apply -- spells/missing-spells.jsonl
+npm run -w data-tools rules:spells:validate -- pending/spells/example.jsonl
+npm run -w data-tools rules:spells:apply -- --dry-run pending/spells/example.jsonl
+npm run -w data-tools rules:spells:apply -- pending/spells/example.jsonl
 ```
 
 The first supported operation is `insertSpell`. It writes one `dnd_spell` row,
@@ -163,9 +165,9 @@ into a reviewable structured patch draft:
 
 ```bash
 npm run -w data-tools spells-full:inspect -- short-desc-rules-gaps
-npm run -w data-tools spells-full:generate -- short-desc-rules-gaps --write-patch spells/short-desc-rules-gaps.generated.jsonl
-npm run -w data-tools rules:spells:validate -- spells/short-desc-rules-gaps.generated.jsonl
-npm run -w data-tools rules:spells:apply -- --dry-run spells/short-desc-rules-gaps.generated.jsonl
+npm run -w data-tools spells-full:generate -- short-desc-rules-gaps --write-patch pending/spells/short-desc-rules-gaps.generated.jsonl
+npm run -w data-tools rules:spells:validate -- pending/spells/short-desc-rules-gaps.generated.jsonl
+npm run -w data-tools rules:spells:apply -- --dry-run pending/spells/short-desc-rules-gaps.generated.jsonl
 ```
 
 This generator is intentionally conservative: rows with missing parsed source
@@ -220,14 +222,14 @@ inspection now shows:
 | `FIERY ASSAULT`             | `ToB`       | added as structured patch id `4916`              |
 
 `Fiery Assault` was added through
-`data/rules-patches/spells/missing-spells.jsonl` with source text
+`data/rules-patches/applied/spells/missing-spells.jsonl` with source text
 from Tome of Battle page 53. It imports as ToB / Desert Wind / Stance,
 Swordsage 6, descriptor Fire. The CHM overlay import now creates a zh/chm row
 for spell id `4916` with name `烈焰诀`.
 
 `Resistance Item` and `Skill Enhancement` were then generated from local
 `spells-full` parsed JSON and applied through
-`data/rules-patches/spells/spells-full-known-misses.jsonl`.
+`data/rules-patches/applied/spells/spells-full-known-misses.jsonl`.
 
 | ID     | Name                | Rulebook | CHM zh name |
 | ------ | ------------------- | -------- | ----------- |
@@ -244,7 +246,7 @@ Remaining candidate status:
   ECS spell.
 
 `Spider Poison` was added as a Spell Compendium row through
-`data/rules-patches/spells/spider-poison-sc.jsonl` after PDF source
+`data/rules-patches/applied/spells/spider-poison-sc.jsonl` after PDF source
 verification. It intentionally reuses the existing `spider-poison` slug already
 used by the older `Mag` row because the rules DB commonly uses repeated slugs
 for cross-book spell rows.
