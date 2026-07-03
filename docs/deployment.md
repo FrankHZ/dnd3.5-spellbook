@@ -181,14 +181,18 @@ The current deployment scripts still upload the generated content DB as
 `app.db`. `CONTENT_DATABASE_URL` should point at that file until the v3.5 DB
 deployment redesign gives content and app-state files explicit deploy steps.
 
-Normalized rules-content reads are opt-in through:
+Spell reads use normalized rules-content from `CONTENT_DATABASE_URL` by default
+after the remote `app.db` has been verified to contain the normalized content
+tables and a current `RulesContentBuild` row. Keep this default for normal
+production operation.
+
+Use the legacy rules DB read path only as an explicit rollback switch:
 
 ```dotenv
-SPELL_READ_SOURCE=content
+SPELL_READ_SOURCE=rules
 ```
 
-Leave this unset for production unless the remote `app.db` has been verified to
-contain the normalized content tables and a current `RulesContentBuild` row.
+Leaving `SPELL_READ_SOURCE` unset uses the normalized content-backed read path.
 
 The backend should only listen on:
 
@@ -263,8 +267,8 @@ scp .\server\db\local\rules-clean.sqlite remote:~/data/spellbook.db
 scp .\server\db\local\content.sqlite remote:~/data/app.db
 ```
 
-Before uploading a content DB intended for `SPELL_READ_SOURCE=content`, run the
-local gates:
+Before uploading a content DB intended for default normalized spell reads, run
+the local gates:
 
 ```bash
 npm run -w data-tools rules:content:parity
@@ -284,11 +288,12 @@ ssh remote "~/update-db.sh"
 ```
 
 After activation, verify the remote content DB metadata out of band before
-enabling `SPELL_READ_SOURCE=content`. At minimum, compare the remote
-`RulesContentBuild.parentRepoCommit`, `dataRepoCommit`, `spellCount`,
-`issueCount`, `rulesDbSha256`, and `migrationSetSha256` with the local meta
-report. The remote DB file itself may remain named `app.db`; the metadata inside
-the file is the normalized-content provenance signal.
+deploying backend code that relies on the default normalized read path. At
+minimum, compare the remote `RulesContentBuild.parentRepoCommit`,
+`dataRepoCommit`, `spellCount`, `issueCount`, `rulesDbSha256`, and
+`migrationSetSha256` with the local meta report. The remote DB file itself may
+remain named `app.db`; the metadata inside the file is the normalized-content
+provenance signal.
 
 ### What `update-db.sh` Does
 
@@ -353,8 +358,9 @@ Be aware of these characteristics in the current scripts:
 - `deploy-web.sh` deletes all existing files in `/var/www/spellbook` before copying the new build
 - `deploy-backend.sh` runs `git reset --hard` and `git clean -fd` in the remote checkout
 - backend deploy and DB update both restart the backend service
-- enabling `SPELL_READ_SOURCE=content` without a verified current `app.db` can
-  route API reads to missing or stale normalized content tables
+- deploying backend code that uses default normalized reads before verifying
+  the current `app.db` can route API reads to missing or stale normalized
+  content tables
 
 These behaviors are acceptable for the current single-operator setup, but they are intentionally not a general CI/CD system.
 

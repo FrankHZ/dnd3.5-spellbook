@@ -1,12 +1,9 @@
 import request from "supertest";
 import { app } from "~/app";
+import { activeSpellReadSource } from "~/services/spells/spells.repo.read";
 
-describe("SPELL_READ_SOURCE=content", () => {
+describe("normalized content spell read source", () => {
   const previousSource = process.env.SPELL_READ_SOURCE;
-
-  beforeEach(() => {
-    process.env.SPELL_READ_SOURCE = "content";
-  });
 
   afterEach(() => {
     if (previousSource === undefined) {
@@ -16,7 +13,19 @@ describe("SPELL_READ_SOURCE=content", () => {
     }
   });
 
-  it("serves representative spell API flows from normalized content", async () => {
+  it("uses normalized content by default", () => {
+    delete process.env.SPELL_READ_SOURCE;
+    expect(activeSpellReadSource()).toBe("content");
+  });
+
+  it("allows an explicit legacy rules opt-out", () => {
+    process.env.SPELL_READ_SOURCE = "rules";
+    expect(activeSpellReadSource()).toBe("rules");
+  });
+
+  it("serves representative spell API flows from normalized content by default", async () => {
+    delete process.env.SPELL_READ_SOURCE;
+
     const search = await request(app)
       .get("/api/spells/search")
       .query({ q: "fire", rulebookIds: "4,6" });

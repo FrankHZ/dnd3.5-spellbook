@@ -19,6 +19,7 @@ const appStateDbPath = path.join(fixtureRoot, "app-state-test.sqlite");
 process.env.RULES_DATABASE_URL = `file:${rulesDbPath.replace(/\\/g, "/")}`;
 process.env.CONTENT_DATABASE_URL = `file:${contentDbPath.replace(/\\/g, "/")}`;
 process.env.APP_STATE_DATABASE_URL = `file:${appStateDbPath.replace(/\\/g, "/")}`;
+process.env.SPELL_READ_SOURCE = "rules";
 
 function execMany(db: Database.Database, statements: string[]) {
   for (const statement of statements) {
