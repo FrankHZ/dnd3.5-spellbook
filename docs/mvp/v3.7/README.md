@@ -1,9 +1,11 @@
 # v3.7 Planning
 
-Status: active security review planning track after the v3.6 DB status slice.
+Status: active security and dependency-maintenance planning track after the
+v3.6 DB status slice.
 
-v3.7 is a focused security review and hardening-planning pass. It is not a
-large product deliverable, content release, or broad architecture rewrite.
+v3.7 is a focused security review, hardening-planning, and dependency
+maintenance pass. It is not a large product deliverable, content release, or
+broad architecture rewrite.
 
 ## Committed Scope
 
@@ -12,6 +14,10 @@ large product deliverable, content release, or broad architecture rewrite.
 2. Classify security findings by practical priority and implementation surface.
 3. Select small hardening slices that can land without blocking ongoing UI,
    docs, or data work.
+4. Promote major and risky dependency upgrades deferred from the v3.5
+   safe-update pass into a focused v3.7 maintenance plan.
+5. Decide the TypeScript server/CommonJS and contracts/ESM module boundary
+   before removing the current deprecation suppression.
 
 ## Review Inputs
 
@@ -20,6 +26,8 @@ large product deliverable, content release, or broad architecture rewrite.
 - deployment scripts, GitHub Actions, SSH, and Nginx bootstrap docs
 - frontend HTML rendering and browser-local state
 - dependency audit output
+- v3.5 deferred major dependency inventory
+- v3.6 TypeScript module config cleanup review candidate
 - existing stable backlog security items
 
 ## Non-Goals
@@ -28,19 +36,24 @@ large product deliverable, content release, or broad architecture rewrite.
 - Do not redesign deployment or DB artifact delivery in this branch.
 - Do not run `npm audit fix --force`; dependency changes need a separate
   review because the current audit suggestion downgrades Prisma.
+- Do not switch server module resolution or remove TypeScript deprecation
+  suppression without a focused server/contracts compatibility review.
+- Do not interrupt v3.6 UI/docs planning tracks for dependency maintenance.
 - Do not treat stable-version security hardening as finished until accepted
   implementation PRs land.
 
 ## Plans
 
 - [security-review.md](./security-review.md)
+- [dependency-upgrade-plan.md](./dependency-upgrade-plan.md)
 
 ## Working Rule
 
-Use `security-review.md` as the v3.7 source of truth for findings, priority,
-and first hardening slices.
+Use `security-review.md` as the v3.7 source of truth for security findings,
+priority, and first hardening slices. Use `dependency-upgrade-plan.md` for
+major/risky dependency inventory, sequencing, and validation boundaries.
 
 Implementation branches should update the owning security review section,
-affected operational docs, and `docs/roadmap.md` only when active ordering
-changes. Create an integrated plan only if v3.7 grows beyond this security
-review track into multiple conflicting workstreams.
+the owning dependency plan section, affected operational docs, and
+`docs/roadmap.md` only when active ordering changes. Create an integrated plan
+only if v3.7 grows into multiple conflicting workstreams.

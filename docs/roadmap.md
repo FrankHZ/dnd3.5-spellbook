@@ -217,6 +217,13 @@ Recommended next sequence:
    Keep authentication, user accounts, automatic DB release artifacts, and
    broad deployment redesign out of this first pass.
 
+4. **Run v3.7 dependency and module-boundary planning**
+
+   Use `docs/mvp/v3.7/dependency-upgrade-plan.md` to refresh dependency
+   inventory, classify major/risky upgrades, and decide the TypeScript
+   server/CommonJS versus contracts/ESM boundary before removing the current
+   deprecation suppression.
+
 ## v3.6 Committed Workstreams
 
 These are v3.6 workstreams. Read `docs/mvp/v3.6/integrated-plan.md` before
@@ -275,9 +282,10 @@ v3.6 decision: do not broaden filter contracts inside v3.6.
    `rootDir`. The server still uses CommonJS plus `moduleResolution: "node"`
    with `ignoreDeprecations: "6.0"` because direct Node16 migration exposes the
    existing CommonJS server / ESM `@dnd/contracts` boundary. Treat the real
-   server migration as a focused follow-up: decide whether to move server to ESM
-   or add an explicit CJS-compatible contracts boundary, then remove the
-   deprecation suppression.
+   server migration as deferred to
+   `docs/mvp/v3.7/dependency-upgrade-plan.md`: decide whether to move server to
+   ESM or add an explicit CJS-compatible contracts boundary, then remove the
+   deprecation suppression in a focused branch.
 
 ## Later Stable Track
 

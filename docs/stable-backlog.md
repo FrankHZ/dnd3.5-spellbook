@@ -30,6 +30,13 @@ It is not a full roadmap. It exists to record what is known to be intentionally 
 - release automation beyond the v3.5 script-backed CI/CD pass
 - stronger deployment validation and rollback drills
 
+### Maintenance
+
+- major/risky dependency upgrade and TypeScript module-boundary review is active
+  in
+  `docs/mvp/v3.7/dependency-upgrade-plan.md`
+- dependency upgrades not accepted into v3.7 focused slices remain deferred
+
 ### Content
 
 - large-scale Chinese/English translation/proofreading QA workflow

@@ -81,7 +81,8 @@ the affected child plan together.
 4. **TypeScript module config cleanup**
 
    Review the server CommonJS / contracts ESM boundary before removing the
-   current TypeScript deprecation suppression.
+   current TypeScript deprecation suppression. This is deferred to the v3.7
+   dependency-maintenance plan rather than implemented in v3.6.
 
 ### Deferred
 
@@ -149,7 +150,7 @@ Use subagents for bounded scans:
 | Spell cards vs normalized mechanics | No conflict if spell cards consume existing fields first. New mechanics display should wait for the normalized rules review. |
 | Filter density vs broader filters | No conflict. UI density work can improve current summaries before more filters are exposed. |
 | Docs cleanup vs frozen history | No conflict if `FREEZE.md` files and historical plan content remain immutable records. |
-| TypeScript config vs feature work | Potential conflict. Do the module config cleanup in a focused maintenance branch only after checking server/contracts packaging. |
+| TypeScript config vs feature work | Potential conflict. Defer the module config cleanup to the v3.7 dependency-maintenance plan, and do it in a focused branch only after checking server/contracts packaging. |
 
 ## Acceptance Criteria
 

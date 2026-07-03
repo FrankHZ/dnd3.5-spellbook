@@ -176,7 +176,9 @@ moderate advisory through Prisma CLI's `@prisma/dev` dependency on
 
 The app does not use Hono `serveStatic` at runtime, but deploy scripts currently
 install the full workspace on the host to build/generate. Track this as a
-dependency policy item rather than forcing a downgrade.
+dependency policy item rather than forcing a downgrade. General major
+dependency sequencing belongs in `dependency-upgrade-plan.md`; this finding only
+owns the security/audit decision.
 
 Recommended fix:
 

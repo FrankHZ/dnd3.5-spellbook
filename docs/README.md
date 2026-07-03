@@ -27,10 +27,11 @@ v3.7 security and dependency-maintenance planning has started under
 
 - [mvp/v3.7/README.md](./mvp/v3.7/README.md)
 - [mvp/v3.7/security-review.md](./mvp/v3.7/security-review.md)
+- [mvp/v3.7/dependency-upgrade-plan.md](./mvp/v3.7/dependency-upgrade-plan.md)
 
 Start there for current security findings, priorities, and proposed hardening
-slices. Create an integrated plan only if v3.7 grows into conflicting
-workstreams.
+slices, plus dependency and TypeScript module-boundary sequencing. Create an
+integrated plan only if v3.7 grows into conflicting workstreams.
 
 v3.6 remains the active post-v3.5 closeout and supporting planning space:
 
