@@ -1,8 +1,8 @@
 # Rules Content Normalization Plan
 
-Status: first backend/content foundation slice implemented on
-`codex/rules-content-normalization`; runtime query migration and frontend
-consumers remain planned follow-up work.
+Status: backend/content foundation and default normalized spell read path
+implemented; frontend-facing contracts and consumers remain planned follow-up
+work.
 
 ## Problem
 
@@ -198,9 +198,9 @@ acceptance uses read-only generation and existing dry-run import gates.
 
 The follow-up backend parity slice adds a content-backed spell read repository
 for representative Search, Browse/by-level, detail, batch, and resolve flows.
-Runtime API behavior stays on the legacy rules-backed service by default, but
-`SPELL_READ_SOURCE=content` can opt into the normalized content-backed spell
-read path for local acceptance and future deployment readiness checks.
+Runtime API behavior uses the normalized content-backed service by default after
+the target remote content DB artifact has been uploaded and verified. Set
+`SPELL_READ_SOURCE=rules` only as an explicit legacy read-path rollback.
 
 ### Implemented Shape
 
@@ -222,8 +222,9 @@ fixtures, validators, tests, and docs:
   the current spell DTO shape for parity testing without changing the active
   runtime service path.
 - `spells.repo.read.ts` centralizes the runtime read-source choice. The default
-  remains `rules`; `SPELL_READ_SOURCE=content` routes Search, Browse/by-level,
-  detail, batch, and resolve reads through the normalized content repository.
+  is normalized content; `SPELL_READ_SOURCE=rules` routes Search,
+  Browse/by-level, detail, batch, and resolve reads through the legacy rules
+  repository as an explicit rollback.
 
 The normalized tables added in this slice are:
 
@@ -289,17 +290,14 @@ Implemented in the first slice:
   fallback, or emitted into review queues.
 - Current Search, Browse/by-level, spell detail, batch, and resolve behavior has
   representative parity tests against the normalized content-backed repository.
-- The runtime spell service has an opt-in normalized content read path covered
-  by API tests, without changing default query semantics.
+- The runtime spell service uses the normalized content read path by default,
+  with API tests and an explicit `SPELL_READ_SOURCE=rules` rollback switch.
 - Data-tools can regenerate the normalized content DB from declared inputs.
 - Documentation explains when to edit source patches/review decisions instead
   of patching the legacy rules SQLite directly.
 
 Remaining follow-up acceptance:
 
-- Runtime spell reads switch to the normalized content-backed repository by
-  default after the target remote content DB artifact has been manually uploaded
-  and verified against `RulesContentBuild` / `rules:content:meta` provenance.
 - Frontend-facing contracts expose at least one new fine-grained structured
   filter backed by normalized data.
 - The first frontend consumer slice follows

@@ -313,17 +313,20 @@ This command is read-only. It writes a report under
 `data-tools/out/rules-content/` containing the content DB checksum, generated
 rules-content counts, and the latest `RulesContentBuild` row.
 
-The server can opt into normalized content-backed spell reads with:
+The server uses normalized content-backed spell reads by default once
+`CONTENT_DATABASE_URL` points at a verified content DB artifact.
+
+Use the legacy rules-backed read path only as an explicit rollback switch:
 
 ```dotenv
-SPELL_READ_SOURCE=content
+SPELL_READ_SOURCE=rules
 ```
 
-The default remains the legacy rules-backed read path until deployment DB
-artifact policy is ready. The opt-in path requires the normalized rules content
-tables to be populated in `CONTENT_DATABASE_URL`.
+Leaving `SPELL_READ_SOURCE` unset uses the normalized content-backed read path.
+That path requires the normalized rules content tables to be populated in
+`CONTENT_DATABASE_URL`.
 
-Before using the opt-in path against local or remote data, run:
+Before using the normalized content path against local or remote data, run:
 
 ```bash
 npm run -w data-tools rules:content:parity

@@ -20,8 +20,8 @@ sudo chmod 750 "$TARGET_DIR"
 
 sha256_or_empty() {
   local f="$1"
-  if [ -f "$f" ]; then
-    sha256sum "$f" | awk '{print $1}'
+  if sudo test -f "$f"; then
+    sudo sha256sum "$f" | awk '{print $1}'
   else
     echo ""
   fi
@@ -48,7 +48,7 @@ update_one() {
 
   echo "==> $label: updating"
 
-  if [ -f "$target" ]; then
+  if sudo test -f "$target"; then
     backup="${target}.bak.$(date -u +%Y%m%dT%H%M%SZ)"
     echo "    backing up existing -> $backup"
     sudo cp -a "$target" "$backup"

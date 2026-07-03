@@ -160,7 +160,8 @@ Expected output:
 - backend API contract tests for new facet filters
 - existing behavior parity tests for representative Browse, Search, detail,
   batch, and resolve flows
-- opt-in runtime read-source switch through `SPELL_READ_SOURCE=content`
+- default normalized content reads with `SPELL_READ_SOURCE=rules` as a legacy
+  rollback switch
 
 ### 5. Add Frontend Consumers In Slices
 
@@ -284,8 +285,8 @@ remains only a transitional content DB alias.
 
 Reviewed against the DB and frontend plans. The backend/content foundation is
 implemented: normalized tables, generator/import, provenance meta, full local
-parity audit, content-backed read repository, and opt-in `SPELL_READ_SOURCE`.
-Frontend control rollout remains in the frontend consumer plan.
+parity audit, content-backed read repository, and the default normalized read
+path. Frontend control rollout remains in the frontend consumer plan.
 
 ### Normalized Rules Frontend Consumer
 

@@ -27,7 +27,7 @@ export { SELECT_SPELL_DETAIL, SELECT_SPELL_LIST, SELECT_SPELL_MIN };
 export type { SpellRow };
 
 export function activeSpellReadSource() {
-  return process.env.SPELL_READ_SOURCE === "content" ? "content" : "rules";
+  return process.env.SPELL_READ_SOURCE === "rules" ? "rules" : "content";
 }
 
 export async function fetchSpellsInOrder<T extends Prisma.SpellSelect>(
