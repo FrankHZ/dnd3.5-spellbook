@@ -210,4 +210,3 @@ CREATE INDEX "RulesContentIssue_severity_idx" ON "RulesContentIssue"("severity")
 
 -- CreateIndex
 CREATE INDEX "RulesContentIssue_spellId_idx" ON "RulesContentIssue"("spellId");
-
