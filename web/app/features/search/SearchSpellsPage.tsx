@@ -242,9 +242,9 @@ export default function SearchSpellsPage() {
               )}
 
               {items.length > 0 && (
-                <Card className="gap-0 overflow-hidden py-2">
-                  <CardContent className="space-y-3 px-0 py-1">
-                    <div className="px-6">
+                <Card className="gap-0 overflow-hidden py-0">
+                  <CardContent className="space-y-0 px-0 py-0">
+                    <div className="px-3 py-2.5 sm:px-6">
                       <Pager
                         page={searchScope.page}
                         pageSize={pageSize}
@@ -254,7 +254,7 @@ export default function SearchSpellsPage() {
                       />
                     </div>
 
-                    <Separator />
+                    <Separator className="my-0" />
 
                     <div className="divide-y">
                       {items.map((sp) => (
@@ -266,9 +266,9 @@ export default function SearchSpellsPage() {
                       ))}
                     </div>
 
-                    <Separator />
+                    <Separator className="my-0" />
 
-                    <div className="px-6">
+                    <div className="px-3 py-2.5 sm:px-6">
                       <Pager
                         page={searchScope.page}
                         pageSize={pageSize}

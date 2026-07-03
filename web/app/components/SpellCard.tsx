@@ -73,15 +73,18 @@ export function SpellCard({
   return (
     <div
       className={cn(
-        "transition-colors hover:bg-muted/40",
-        resolvedDensity === "compact" ? "px-3 py-2.5" : "p-4",
+        "group/spell-card transition-colors hover:bg-muted/35 focus-within:bg-muted/35",
+        resolvedDensity === "compact" ? "px-3 py-2.5 sm:px-4" : "p-4",
       )}
     >
       <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+          <span className="inline-flex h-5 shrink-0 items-center rounded-sm px-1 text-[10px] font-medium leading-none tracking-wide text-muted-foreground">
+            {source.abbr}
+          </span>
           <Link
             to={`/spells/${spell.id}`}
-            className="font-medium leading-5 hover:underline"
+            className="min-w-0 font-medium leading-5 text-foreground underline-offset-3 hover:underline"
           >
             {displayName}
           </Link>
@@ -89,41 +92,44 @@ export function SpellCard({
             <Badge
               key={marker}
               variant="outline"
-              className="inline-flex h-4 items-center rounded-sm px-1.5 text-[10px] font-semibold leading-none text-muted-foreground"
+              className="inline-flex h-5 items-center rounded-sm border-foreground/25 bg-muted/45 px-1.5 text-[10px] font-semibold leading-none text-foreground/75"
             >
               {marker}
             </Badge>
           ))}
-          <span className="text-xs font-medium text-muted-foreground">
-            {source.abbr}
-          </span>
           {shortDescription && (
-            <span className="basis-full text-sm leading-5 text-foreground/80 sm:basis-auto sm:flex-1">
+            <span className="basis-full text-sm leading-5 text-muted-foreground sm:basis-auto sm:min-w-[14rem] sm:flex-1">
               {shortDescription}
             </span>
           )}
         </div>
 
         {showFullDetails && (
-          <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 flex-1 space-y-1.5 text-xs leading-5 text-muted-foreground">
-              <div className="flex flex-wrap gap-x-2 gap-y-1">
-                <span className="font-medium text-foreground/75">
+          <div className="mt-3 grid gap-3 border-l border-border/80 pl-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+            <div className="min-w-0 space-y-2 text-xs leading-5 text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="rounded-sm bg-muted/50 px-1.5 py-0.5 font-medium text-foreground/75">
                   {schoolText}
                 </span>
                 {spell.descriptors?.map((d) => (
-                  <Badge key={d.id} variant="secondary" className="text-xs">
+                  <Badge
+                    key={d.id}
+                    variant="secondary"
+                    className="rounded-sm px-1.5 text-xs font-medium"
+                  >
                     {facetName("descriptors", d)}
                   </Badge>
                 ))}
               </div>
 
               {classLevelsText && (
-                <div className="line-clamp-2">{classLevelsText}</div>
+                <div className="line-clamp-2 break-words">{classLevelsText}</div>
               )}
 
               {domainLevelsText && (
-                <div className="line-clamp-2">{domainLevelsText}</div>
+                <div className="line-clamp-2 break-words">
+                  {domainLevelsText}
+                </div>
               )}
             </div>
 

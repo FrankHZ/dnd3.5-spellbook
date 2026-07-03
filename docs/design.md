@@ -114,6 +114,22 @@ Avoid:
 - Visual decoration that competes with rule text.
 - Layouts that depend on exact English string length.
 
+### Spell Field Hierarchy
+
+Spell rows should read like a compact rules index. Keep the source abbreviation
+available early in the row, but visually quiet; it is orientation metadata, not
+the primary action. The spell name is the main scan target, but should avoid
+hero-like weight inside dense lists.
+
+Special component markers such as material, focus, divine focus, XP, truename,
+or other unusual component flags deserve more visual emphasis than source
+labels because they can change preparation, cost, or table handling. Keep these
+markers compact and near the spell name.
+
+Short descriptions should help recognition without becoming the row's visual
+center. Use muted text and flexible wrapping so the name, source, component
+markers, and description remain readable in English and Chinese.
+
 ## Visual Language
 
 The current baseline is Tailwind v4 with shadcn-style primitives and neutral

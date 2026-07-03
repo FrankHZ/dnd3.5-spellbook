@@ -7,8 +7,9 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: in progress; first display-settings and spell-list density slice is
-implemented on `codex/web-display-settings`.
+Status: implementation complete pending final review/commit; display settings,
+spell card updates, filter summary density, and restrained list styling polish
+are implemented on `codex/web-display-settings`.
 
 ## Purpose
 
@@ -127,8 +128,9 @@ spell table display remains unchanged.
 
 ### Slice 3: Filter Summary And Sidebar Density
 
-Status: partially implemented for current multi-select chip overflow. Broader
-summary redesign remains available for later display polish.
+Status: implemented for current multi-select chip overflow and shared
+Browse/Search scope summary density. Broader sidebar redesign remains deferred
+to later display polish.
 
 - Deliverable: improved selected-filter summaries and sidebar display when
   many filters or long labels are active.
@@ -136,9 +138,15 @@ summary redesign remains available for later display polish.
   - avoid overlong chip rows
   - preserve Browse as filter-first and Search as name-first
   - keep clear filter/reset affordances discoverable
+  - show class, domain, level, taxonomy, and rulebook scope as compact,
+    independently wrapping summary items
 - Validation: focused tests for summary helpers plus manual Browse/Search smoke.
 
 ### Slice 4: Styling Polish
+
+Status: implemented for shared spell-list reading surfaces; broader visual
+redesign remains deferred. Durable field-hierarchy guidance was added to
+`docs/design.md`.
 
 - Deliverable: restrained styling update aligned with `docs/design.md`.
 - Expected behavior:
@@ -146,7 +154,21 @@ summary redesign remains available for later display polish.
   - no one-note palette drift
   - no nested-card visual clutter
   - mobile and desktop text fit checks
+  - shared spell cards keep a reference-index feel with compact source badges,
+    clear title hierarchy, and stable metadata spacing
+  - source labels stay visually quiet, special component markers carry stronger
+    emphasis, and short descriptions remain secondary recognition text
 - Validation: web build and manual screenshots/smoke where useful.
+
+## Validation Notes
+
+- Focused web tests, `npm run i18n:check`, `npm run typecheck:web`, and
+  `npm run -w web build` passed during implementation.
+- EN Browse/Search summary smoke confirmed compact wrapping and no horizontal
+  overflow before the final source/component marker polish.
+- Later in-app browser screenshot attempts timed out at browser capture, so the
+  remaining review should visually spot-check Browse/Search spell rows in the
+  running dev server before merge.
 
 ## Acceptance Criteria
 
