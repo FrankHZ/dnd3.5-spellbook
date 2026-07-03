@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import crypto from "node:crypto";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -33,6 +34,15 @@ const GENERATED_TABLES = [
   "SpellContent",
   "RulebookContent",
 ] as const;
+
+type BuildProvenance = {
+  parentRepoCommit: string | null;
+  dataRepoCommit: string | null;
+  rulesManifestSha256: string | null;
+  rulesDbSha256: string | null;
+  migrationSetSha256: string | null;
+  buildMetaJson: string;
+};
 
 function usage(): never {
   console.error(`Usage:
@@ -357,7 +367,9 @@ function importGenerated(
 ) {
   assertGeneratedTables(db);
   const counts = content.counts;
-  if (dryRun) return { ...counts, inputSha256: sha256File(inputPath) };
+  const inputSha256 = sha256File(inputPath);
+  const provenance = collectBuildProvenance(inputPath);
+  if (dryRun) return { ...counts, inputSha256, provenance };
 
   const run = db.transaction(() => {
     for (const table of GENERATED_TABLES) {
@@ -367,18 +379,43 @@ function importGenerated(
     db.prepare(
       `
       INSERT INTO "RulesContentBuild" (
-        id, sourceKind, sourceSha256, generatorVersion, generatedAt, spellCount, issueCount
+        id,
+        sourceKind,
+        sourceSha256,
+        generatorVersion,
+        generatedAt,
+        spellCount,
+        issueCount,
+        parentRepoCommit,
+        dataRepoCommit,
+        rulesManifestSha256,
+        rulesDbSha256,
+        migrationSetSha256,
+        buildMetaJson
       ) VALUES (
-        @id, 'rules-clean', @sourceSha256, @generatorVersion, @generatedAt, @spellCount, @issueCount
+        @id,
+        'rules-clean',
+        @sourceSha256,
+        @generatorVersion,
+        @generatedAt,
+        @spellCount,
+        @issueCount,
+        @parentRepoCommit,
+        @dataRepoCommit,
+        @rulesManifestSha256,
+        @rulesDbSha256,
+        @migrationSetSha256,
+        @buildMetaJson
       )
     `,
     ).run({
       id: `rules-content:${content.generatedAt}`,
-      sourceSha256: sha256File(inputPath),
+      sourceSha256: inputSha256,
       generatorVersion: content.generatorVersion,
       generatedAt: content.generatedAt,
       spellCount: content.counts.spells,
       issueCount: content.counts.issues,
+      ...provenance,
     });
 
     insertRows(db, "RulebookContent", content.rulebooks);
@@ -392,7 +429,7 @@ function importGenerated(
   });
 
   run();
-  return { ...counts, inputSha256: sha256File(inputPath) };
+  return { ...counts, inputSha256, provenance };
 }
 
 function insertRows(
@@ -421,6 +458,115 @@ function toSqliteParams(row: Record<string, unknown>) {
 
 function sha256File(filePath: string) {
   return crypto.createHash("sha256").update(fs.readFileSync(filePath)).digest("hex");
+}
+
+function collectBuildProvenance(inputPath: string): BuildProvenance {
+  const root = repoRoot();
+  const dataRoot = path.join(root, "data");
+  const rulesManifestPath = path.join(dataRoot, "rules-db-manifest.json");
+  const contentMigrationsPath = path.join(root, "server", "db", "content", "migrations");
+  const rulesManifest = readJsonIfExists(rulesManifestPath);
+  const rulesDbHash =
+    readManifestDatabaseHash(rulesManifest) ?? hashFileIfExists(rulesDbPath());
+
+  const buildMeta = {
+    schema: "rules-content-build-meta.v1",
+    generatedInput: relativeRepoPath(inputPath),
+    generatedInputSha256: sha256File(inputPath),
+    rulesManifest: fs.existsSync(rulesManifestPath)
+      ? relativeRepoPath(rulesManifestPath)
+      : null,
+    rulesDb: relativeRepoPath(rulesDbPath()),
+    contentMigrations: relativeRepoPath(contentMigrationsPath),
+    parentRepoDirty: gitDirty(root),
+    dataRepoDirty: fs.existsSync(path.join(dataRoot, ".git"))
+      ? gitDirty(dataRoot)
+      : null,
+  };
+
+  return {
+    parentRepoCommit: gitCommit(root),
+    dataRepoCommit: fs.existsSync(path.join(dataRoot, ".git"))
+      ? gitCommit(dataRoot)
+      : null,
+    rulesManifestSha256: hashFileIfExists(rulesManifestPath),
+    rulesDbSha256: rulesDbHash,
+    migrationSetSha256: hashDirectoryIfExists(contentMigrationsPath),
+    buildMetaJson: JSON.stringify(buildMeta),
+  };
+}
+
+function gitCommit(cwd: string) {
+  return runGit(cwd, ["rev-parse", "HEAD"]);
+}
+
+function gitDirty(cwd: string) {
+  const status = runGit(cwd, ["status", "--porcelain"]);
+  return status === null ? null : status.length > 0;
+}
+
+function runGit(cwd: string, args: string[]) {
+  try {
+    return execFileSync("git", args, {
+      cwd,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return null;
+  }
+}
+
+function hashFileIfExists(filePath: string) {
+  return fs.existsSync(filePath) ? sha256File(filePath) : null;
+}
+
+function hashDirectoryIfExists(dirPath: string) {
+  if (!fs.existsSync(dirPath)) return null;
+  const hash = crypto.createHash("sha256");
+  for (const filePath of listFilesRecursive(dirPath)) {
+    hash.update(relativePath(dirPath, filePath), "utf8");
+    hash.update("\0");
+    hash.update(fs.readFileSync(filePath));
+    hash.update("\0");
+  }
+  return hash.digest("hex");
+}
+
+function listFilesRecursive(dirPath: string): string[] {
+  return fs
+    .readdirSync(dirPath, { withFileTypes: true })
+    .flatMap((entry) => {
+      const entryPath = path.join(dirPath, entry.name);
+      if (entry.isDirectory()) return listFilesRecursive(entryPath);
+      if (entry.isFile()) return [entryPath];
+      return [];
+    })
+    .sort((left, right) => relativePath(dirPath, left).localeCompare(relativePath(dirPath, right)));
+}
+
+function readJsonIfExists(filePath: string): unknown {
+  if (!fs.existsSync(filePath)) return null;
+  return JSON.parse(fs.readFileSync(filePath, "utf8")) as unknown;
+}
+
+function readManifestDatabaseHash(value: unknown) {
+  if (!value || typeof value !== "object") return null;
+  const database = (value as { database?: unknown }).database;
+  if (!database || typeof database !== "object") return null;
+  const sha256 = (database as { sha256?: unknown }).sha256;
+  return typeof sha256 === "string" ? sha256 : null;
+}
+
+function relativeRepoPath(filePath: string) {
+  return relativePath(repoRoot(), filePath);
+}
+
+function relativePath(from: string, to: string) {
+  const relative = path.relative(from, to);
+  return relative && !relative.startsWith("..") && !path.isAbsolute(relative)
+    ? relative.replace(/\\/g, "/")
+    : path.basename(to);
 }
 
 function runAudit(limit: number | null) {

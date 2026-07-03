@@ -297,6 +297,12 @@ the generated normalized rules content tables in `CONTENT_DATABASE_URL`; it does
 not mutate the rules DB or app-state DB. Keep raw/source patch and review inputs
 in the nested `data/` repo, not the parent repo.
 
+Each successful rules-content import writes one `RulesContentBuild` row with the
+generated artifact hash, rules manifest hash, locked rules DB hash, content
+migration-set hash, and parent/data repo commit ids. This is provenance for
+local and remote artifact comparison; it is not a replacement for committing
+source-bearing data.
+
 ## App-State DB Setup
 
 Run:

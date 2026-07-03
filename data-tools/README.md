@@ -435,7 +435,9 @@ another scoped book. The default scope is the current official 3.5 working set:
 - `rules:content:import -- --dry-run` validates the generated normalized content
   artifact and target content DB tables without mutating SQLite.
 - `rules:content:import` is write-capable against `CONTENT_DATABASE_URL` and
-  replaces only generated normalized rules content tables.
+  replaces only generated normalized rules content tables. It also records
+  `RulesContentBuild` provenance hashes and parent/data commit ids for local
+  artifact comparison.
 - `rules:spells:validate` opens the SQLite database in read-only mode and
   writes a JSON report under `data-tools/out/rules-patches/`.
 - `rules:spells:apply -- --dry-run` applies to a temporary database copy.

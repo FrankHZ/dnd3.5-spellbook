@@ -1,6 +1,7 @@
 # DB Ownership Boundary Plan
 
-Status: first v3.5 implementation slice in progress.
+Status: first v3.5 implementation slice implemented on
+`codex/rules-content-normalization`.
 
 ## Problem
 
@@ -134,14 +135,32 @@ third long-lived runtime DB by accident.
 ## Implementation Notes
 
 The first implementation slice establishes the physical and code ownership
-boundary without migrating local SQLite files:
+boundary and moves local runtime SQLite files into the ignored server DB local
+workspace:
 
-- `server/prisma-content/` owns generated/imported content overlay models.
-- `server/prisma-app-state/` owns future user/app-state models.
+- `server/db/content/migrations/` owns content DB migrations.
+- `server/db/app-state/migrations/` owns app-state DB migrations.
+- `server/db/app-state/seed.ts` owns the app-state seed.
+- `server/db/content/fixtures/portable/` and
+  `server/db/app-state/fixtures/portable/` are reserved for redacted/minimal
+  clone-friendly fixtures.
+- `server/db/local/` owns ignored local runtime SQLite files.
+- `server/prisma-content/` owns the generated/imported content schema, Prisma
+  config, and generated client output.
+- `server/prisma-app-state/` owns future user/app-state schema, Prisma config,
+  and generated client output.
 - `server/src/lib/content-prisma-client.ts` reads `CONTENT_DATABASE_URL`, with
   `APP_DATABASE_URL` as a temporary compatibility fallback.
 - `server/src/lib/app-state-prisma-client.ts` reads `APP_STATE_DATABASE_URL`.
 - Content import commands and short-summary import tooling target the content
   DB boundary.
+- `server/scripts/ensure-sqlite-file.ts` pre-creates missing SQLite files before
+  Prisma migrate commands, avoiding the current Prisma schema-engine blank-error
+  path on Windows when the target file does not exist.
 - Deployment still treats the existing remote `app.db` file as the content DB
   artifact until the deferred DB deployment redesign lands.
+
+Local data-bearing DB files are not tracked in the parent repo. The nested
+`data/` repo owns the locked `rules-clean` baseline, maintained patch decisions,
+normalized import inputs, and source-bearing review data that cannot be part of
+clean-checkout CI.

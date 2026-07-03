@@ -1,6 +1,8 @@
 # Rules Content Normalization Plan
 
-Status: planned v3.5 content-model and query-surface work.
+Status: first backend/content foundation slice implemented on
+`codex/rules-content-normalization`; runtime query migration and frontend
+consumers remain planned follow-up work.
 
 ## Problem
 
@@ -176,7 +178,7 @@ The generator should emit review queues instead of hiding parser uncertainty.
 
 ## First Implementation Slice
 
-The `codex/rules-content-normalization` branch starts with the backend/content
+The `codex/rules-content-normalization` branch implements the backend/content
 foundation only:
 
 - content DB schema tables named for durable rules content concepts, such as
@@ -193,6 +195,35 @@ foundation only:
 This slice intentionally does not change runtime spell queries or frontend
 consumer behavior. Import is write-capable only when run explicitly; local
 acceptance uses read-only generation and existing dry-run import gates.
+
+### Implemented Shape
+
+The first slice locks the current `rules-clean.sqlite` as the source baseline
+and generates normalized rules content into the content DB boundary. The local
+runtime SQLite files live under ignored `server/db/local/`; data-bearing source
+inputs and rules patch decisions live in the nested local `data/` repo.
+
+Tracked parent-repo artifacts are limited to schema, migrations, generators,
+fixtures, validators, tests, and docs:
+
+- `server/db/content/migrations/` owns content DB migrations.
+- `server/prisma-content/schema.prisma` owns generated/imported content models.
+- `data-tools/src/rules-content/` owns audit, generate, and import commands.
+- portable tests cover the core transform without requiring the local rules DB.
+- `RulesContentBuild` records source hashes and parent/data commit metadata for
+  local provenance checks without committing source data or generated DB files.
+
+The normalized tables added in this slice are:
+
+- `RulesContentBuild`
+- `RulebookContent`
+- `SpellContent`
+- `SpellAppearance`
+- `SpellTaxonomyFacet`
+- `SpellListEntry`
+- `SpellComponent`
+- `SpellMechanicFacet`
+- `RulesContentIssue`
 
 ## API And Frontend Boundary
 
@@ -237,17 +268,23 @@ consumer validation are planned separately in the frontend consumer plan.
 
 ## Acceptance Criteria
 
+Implemented in the first slice:
+
 - A normalized rules content schema exists under the content DB boundary.
 - Legacy rules DB access is read-only in normal runtime and data generation
   flows.
-- Current Browse, Search, spell detail, batch, and resolve behavior has parity
-  tests against representative known spells.
 - Dirty legacy string values are either normalized, explicitly preserved as raw
   fallback, or emitted into review queues.
+- Data-tools can regenerate the normalized content DB from declared inputs.
+- Documentation explains when to edit source patches/review decisions instead
+  of patching the legacy rules SQLite directly.
+
+Remaining follow-up acceptance:
+
+- Current Browse, Search, spell detail, batch, and resolve behavior has parity
+  tests against representative known spells once normalized repository methods
+  exist.
 - Frontend-facing contracts expose at least one new fine-grained structured
   filter backed by normalized data.
 - The first frontend consumer slice follows
   `normalized-rules-frontend-consumer-plan.md`.
-- Data-tools can regenerate the normalized content DB from declared inputs.
-- Documentation explains when to edit source patches/review decisions instead
-  of patching the legacy rules SQLite directly.

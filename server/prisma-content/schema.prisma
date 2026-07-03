@@ -170,15 +170,23 @@ model I18nRulebookText {
 }
 
 model RulesContentBuild {
-    id               String   @id
-    sourceKind       String   @default("rules-clean")
-    sourceSha256     String?
-    generatorVersion String
-    generatedAt      DateTime @default(now())
-    spellCount       Int
-    issueCount       Int
+    id                  String   @id
+    sourceKind          String   @default("rules-clean")
+    sourceSha256        String?
+    generatorVersion    String
+    generatedAt         DateTime @default(now())
+    spellCount          Int
+    issueCount          Int
+    parentRepoCommit    String?
+    dataRepoCommit      String?
+    rulesManifestSha256 String?
+    rulesDbSha256       String?
+    migrationSetSha256  String?
+    buildMetaJson       String?
 
     @@index([sourceKind, generatedAt])
+    @@index([parentRepoCommit])
+    @@index([dataRepoCommit])
 }
 
 model RulebookContent {

@@ -78,6 +78,19 @@ See:
 
 ## Current Data State
 
+Latest v3.5 local DB/content foundation snapshot:
+
+- rules DB manifest: verified, `18` spell operations, `18` verified
+- locked legacy rules baseline: `data/rules-clean/rules-clean.sqlite` in the
+  nested local data repo
+- local runtime DB files: ignored `server/db/local/*.sqlite`
+- normalized rules content import:
+  - `SpellContent`: `4,926`
+  - `RulesContentIssue`: `3,523`
+  - `RulesContentBuild`: `1`
+- content DB provenance is tracked in `RulesContentBuild` through input hashes
+  and parent/data repo commit metadata
+
 Latest v3.4 local short-description acceptance snapshot:
 
 - normalized summary rows: `6,532`
@@ -135,19 +148,20 @@ Recommended next sequence:
 
 2. **Content DB / app-state DB split**
 
-   First implementation slice is underway on the v3.5 DB branch: the previous
-   app-owned content schema is being renamed to a content DB boundary, future
-   user/app-state models are being moved to a separate app-state DB boundary,
-   and `APP_DATABASE_URL` remains only as a temporary content DB compatibility
-   fallback. This slice does not migrate local SQLite files destructively.
+   First implementation slice is in place on the v3.5 DB branch: content and
+   app-state schemas are split, migrations and local runtime DB files are under
+   `server/db/`, and `APP_DATABASE_URL` remains only as a temporary content DB
+   compatibility fallback. The next DB work should be deployment/remote
+   artifact policy, not another local layout move.
 
 3. **Rules content normalization and frontend consumers**
 
    Use `docs/mvp/v3.5/rules-content-normalization-plan.md` and
    `docs/mvp/v3.5/normalized-rules-frontend-consumer-plan.md` together. The
-   goal is to stop treating dirty legacy string columns as the runtime query
-   model and to expose finer Browse/Search facets without bloating page
-   controls.
+   first backend/content slice already generates normalized rules content from
+   the locked `rules-clean` baseline into the content DB. Next, add repository
+   methods and parity tests for Browse, Search, detail, batch, and resolve
+   before switching runtime reads or exposing new frontend controls.
 
 4. **Rulebook display-label review**
 
@@ -205,18 +219,19 @@ topic-specific child plan that owns the work; do not synchronize
 
    Use `docs/mvp/v3.5/db-ownership-boundary-plan.md` to split generated content
    overlays from future user/app-state data before real server-side user data
-   ships. The first v3.5 DB slice makes that physical and tooling boundary
-   explicit while leaving local SQLite file migration to a later, explicit
-   operation.
+   ships. The first v3.5 DB slice now makes that physical and tooling boundary
+   explicit through `server/db/content`, `server/db/app-state`, and ignored
+   `server/db/local` runtime files.
 
 2. **Rules content normalization**
 
    Use `docs/mvp/v3.5/rules-content-normalization-plan.md` to generate and
    maintain this repo's own normalized rules content model from the cleaned
-   legacy rules DB plus local review decisions. The target is to stop treating
-   dirty legacy string columns as the runtime schema and to unlock finer
-   Browse/Search filters such as schools, descriptors, components, casting
-   facets, range, duration, saving throws, and spell resistance.
+   legacy rules DB plus local review decisions. The first backend/content slice
+   is implemented; remaining work is normalized read repositories, parity tests,
+   and then finer Browse/Search filters such as schools, descriptors,
+   components, casting facets, range, duration, saving throws, and spell
+   resistance.
 
 3. **Normalized rules frontend consumer**
 
