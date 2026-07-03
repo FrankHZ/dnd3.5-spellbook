@@ -11,13 +11,18 @@ It is intentionally simple and optimized for the current stage of the project:
 
 ## Canonical Scripts
 
-The canonical deployment scripts are the tracked shell scripts in:
+The canonical deployment assets are tracked in:
 
 - `docs/deployment-scripts/deploy-backend.sh`
 - `docs/deployment-scripts/deploy-web.sh`
 - `docs/deployment-scripts/update-db.sh`
+- `docs/deployment-scripts/sync-remote-scripts.ps1`
+- `docs/deployment-scripts/spellbook-api.env.example`
+- `.env.example`
 
-These scripts are the source of truth for deployment behavior.
+The shell scripts are the source of truth for remote deployment behavior. The
+PowerShell helper only syncs those tracked scripts to the SSH host configured in
+local `.env`.
 
 Any local root-level `.bat` files are treated as ignored, machine-specific convenience wrappers only. They may call into the same workflow, but they are not canonical and should not be treated as the authoritative deploy logic.
 
@@ -67,13 +72,18 @@ rollback model is accepted.
 
 The remote host copies of the deploy scripts are updated manually.
 
-If any tracked file under `docs/deployment-scripts/` changes, recopy it to the remote host with `scp`.
+If any tracked remote shell script under `docs/deployment-scripts/` changes,
+recopy it to the remote host. The local helper reads `DEPLOY_SSH_ALIAS` from the
+ignored root `.env`, so the docs can keep using `remote` as a placeholder while
+your machine can keep its actual SSH alias private.
 
 Current remote targets:
 
 - `~/deploy-backend.sh`
 - `~/deploy-web.sh`
 - `~/update-db.sh`
+- `/etc/default/spellbook-api` for the environment values adapted from
+  `docs/deployment-scripts/spellbook-api.env.example`
 
 Example:
 
@@ -81,6 +91,14 @@ Example:
 scp docs/deployment-scripts/deploy-backend.sh remote:~/deploy-backend.sh
 scp docs/deployment-scripts/deploy-web.sh remote:~/deploy-web.sh
 scp docs/deployment-scripts/update-db.sh remote:~/update-db.sh
+```
+
+Local helper:
+
+```powershell
+Copy-Item .env.example .env
+# Edit .env and set DEPLOY_SSH_ALIAS to your real local SSH alias.
+pwsh -NoLogo -NoProfile -File docs/deployment-scripts/sync-remote-scripts.ps1
 ```
 
 There is no automatic sync for these files in the current MVP workflow.
@@ -92,10 +110,12 @@ This document uses `remote` as a placeholder SSH host alias.
 Examples such as:
 
 ```bash
-ssh remote "~/deploy-web.sh"
+ssh remote "./deploy-web.sh"
 ```
 
-assume you have an SSH config entry or equivalent host setup for your actual deployment target.
+assume you have an SSH config entry or equivalent host setup for your actual
+deployment target. Local helper scripts should read the actual alias from
+ignored `.env` instead of hardcoding it in docs or tracked scripts.
 
 ## Infrastructure Overview
 
@@ -122,7 +142,8 @@ Application directories:
   |- contracts/
   |- data/
      |- spellbook.db
-     |- app.db
+     |- content.sqlite
+     |- app-state.sqlite
   |- ...
 ```
 
@@ -172,19 +193,22 @@ PORT=3000
 HOST=127.0.0.1
 
 RULES_DATABASE_URL=file:/opt/spellbook/data/spellbook.db
-CONTENT_DATABASE_URL=file:/opt/spellbook/data/app.db
-APP_STATE_DATABASE_URL=file:/opt/spellbook/data/app-state.db
+CONTENT_DATABASE_URL=file:/opt/spellbook/data/content.sqlite
+APP_DATABASE_URL=file:/opt/spellbook/data/content.sqlite
+APP_STATE_DATABASE_URL=file:/opt/spellbook/data/app-state.sqlite
 DATABASE_URL=file:/opt/spellbook/data/spellbook.db
 ```
 
-The current deployment scripts still upload the generated content DB as
-`app.db`. `CONTENT_DATABASE_URL` should point at that file until the v3.5 DB
-deployment redesign gives content and app-state files explicit deploy steps.
+The current remote has switched to explicit content DB naming:
+`CONTENT_DATABASE_URL` points at `/opt/spellbook/data/content.sqlite`.
+`APP_DATABASE_URL` remains a compatibility alias for the same content DB only.
+The old incoming filename `~/data/app.db` is accepted by the deployment scripts
+as a temporary fallback, but new uploads should use `~/data/content.sqlite`.
 
 Spell reads use normalized rules-content from `CONTENT_DATABASE_URL` by default
-after the remote `app.db` has been verified to contain the normalized content
-tables and a current `RulesContentBuild` row. Keep this default for normal
-production operation.
+after the remote `content.sqlite` has been verified to contain the normalized
+content tables and a current `RulesContentBuild` row. Keep this default for
+normal production operation.
 
 Use the legacy rules DB read path only as an explicit rollback switch:
 
@@ -238,7 +262,7 @@ scp -r web/build/client/* remote:~/spellbook-dist
 ### Activate On Remote
 
 ```bash
-ssh remote "~/deploy-web.sh"
+ssh remote "./deploy-web.sh"
 ```
 
 ### What `deploy-web.sh` Does
@@ -264,7 +288,8 @@ This reduces the blast radius and allows database replacement without shipping n
 
 ```bash
 scp .\server\db\local\rules-clean.sqlite remote:~/data/spellbook.db
-scp .\server\db\local\content.sqlite remote:~/data/app.db
+scp .\server\db\local\content.sqlite remote:~/data/content.sqlite
+scp .\server\db\local\app-state.sqlite remote:~/data/app-state.sqlite
 ```
 
 Before uploading a content DB intended for default normalized spell reads, run
@@ -284,16 +309,16 @@ comparison; do not commit it or upload it through GitHub Actions.
 ### Activate On Remote
 
 ```bash
-ssh remote "~/update-db.sh"
+ssh remote "./update-db.sh"
 ```
 
 After activation, verify the remote content DB metadata out of band before
 deploying backend code that relies on the default normalized read path. At
 minimum, compare the remote `RulesContentBuild.parentRepoCommit`,
 `dataRepoCommit`, `spellCount`, `issueCount`, `rulesDbSha256`, and
-`migrationSetSha256` with the local meta report. The remote DB file itself may
-remain named `app.db`; the metadata inside the file is the normalized-content
-provenance signal.
+`migrationSetSha256` with the local meta report. The metadata inside
+`content.sqlite` is the normalized-content provenance signal. A v3.6 server
+`db-status` API should make this comparison visible without SSH access.
 
 ### What `update-db.sh` Does
 
@@ -309,14 +334,24 @@ The tracked script in `docs/deployment-scripts/update-db.sh` performs:
 8. Restarts `spellbook-api`
 9. Smoke-tests `http://127.0.0.1:3000/api/rulebooks` with short retries
 
+The script updates these target files when matching incoming files exist:
+
+- `~/data/spellbook.db` -> `/opt/spellbook/data/spellbook.db`
+- `~/data/content.sqlite` -> `/opt/spellbook/data/content.sqlite`
+- `~/data/app-state.sqlite` -> `/opt/spellbook/data/app-state.sqlite`
+
+For transition compatibility, `~/data/app.db` is still accepted as a legacy
+incoming content DB filename when `~/data/content.sqlite` is absent.
+
 ## Backend Deployment
 
-The backend deployment script handles code sync and can also replace databases from `~/data` if new DB files were uploaded before the deploy.
+The backend deployment script handles code sync and can also replace databases
+from `~/data` if new DB files were uploaded before the deploy.
 
 ### Activate On Remote
 
 ```bash
-ssh remote "~/deploy-backend.sh"
+ssh remote "./deploy-backend.sh"
 ```
 
 ### What `deploy-backend.sh` Does
@@ -324,7 +359,8 @@ ssh remote "~/deploy-backend.sh"
 The tracked script in `docs/deployment-scripts/deploy-backend.sh` performs:
 
 1. Ensures `/opt/spellbook/data` exists with correct ownership and permissions
-2. Optionally replaces `spellbook.db` and `app.db` from `~/data` if changed
+2. Optionally replaces `spellbook.db`, `content.sqlite`, and
+   `app-state.sqlite` from `~/data` if changed
 3. Enters `~/dnd3.5-spellbook`
 4. Runs `git reset --hard`
 5. Runs `git clean -fd`
@@ -359,7 +395,7 @@ Be aware of these characteristics in the current scripts:
 - `deploy-backend.sh` runs `git reset --hard` and `git clean -fd` in the remote checkout
 - backend deploy and DB update both restart the backend service
 - deploying backend code that uses default normalized reads before verifying
-  the current `app.db` can route API reads to missing or stale normalized
+  the current `content.sqlite` can route API reads to missing or stale normalized
   content tables
 
 These behaviors are acceptable for the current single-operator setup, but they are intentionally not a general CI/CD system.

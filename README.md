@@ -24,15 +24,15 @@ excluded from the public repository, especially runtime databases under
 
 ## Status
 
-The latest frozen stage snapshot is **v3.4**.
-v3.5 planning docs have started under `docs/mvp/v3.5/`.
+The latest frozen stage snapshot is **v3.5**.
 
 For the current work order, use [docs/roadmap.md](./docs/roadmap.md).
 For the current feature map, start with [docs/features.md](./docs/features.md).
 For current UI design notes, use [docs/design.md](./docs/design.md).
+For the v3.5 release snapshot, use [docs/mvp/v3.5/FREEZE.md](./docs/mvp/v3.5/FREEZE.md).
 For the v3.4 release snapshot, use [docs/mvp/v3.4/FREEZE.md](./docs/mvp/v3.4/FREEZE.md).
 For v3.4 supporting plans and acceptance notes, use [docs/mvp/v3.4/acceptance-checklist.md](./docs/mvp/v3.4/acceptance-checklist.md) and [docs/mvp/v3.4/integrated-plan.md](./docs/mvp/v3.4/integrated-plan.md).
-For active v3.5 planning, use [docs/mvp/v3.5/README.md](./docs/mvp/v3.5/README.md).
+For v3.5 supporting plans, use [docs/mvp/v3.5/README.md](./docs/mvp/v3.5/README.md).
 For the full documentation map, use [docs/README.md](./docs/README.md).
 
 ## Quick Start

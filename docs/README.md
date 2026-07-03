@@ -10,15 +10,36 @@ Use this file as the documentation entry point when you need to determine:
 
 ## Latest Frozen Release Snapshot
 
-The latest frozen stage snapshot is **v3.4**.
+The latest frozen stage snapshot is **v3.5**.
 
 Use it for historical comparison, regression checks, and understanding what was
 shipped at that stage:
 
-- [mvp/v3.4/FREEZE.md](./mvp/v3.4/FREEZE.md)
+- [mvp/v3.5/FREEZE.md](./mvp/v3.5/FREEZE.md)
 
-That file defines the final as-built interpretation of the v3.4 handoff set. It
+That file defines the final as-built interpretation of the v3.5 handoff set. It
 is not automatically the baseline for later active development.
+
+## v3.5 Supporting Docs
+
+The rest of `docs/mvp/v3.5/` contains the supporting plan and conflict-review
+notes for that release.
+
+When you need implementation detail beyond the freeze summary, read the v3.5
+documents in this order:
+
+- [mvp/v3.5/FREEZE.md](./mvp/v3.5/FREEZE.md)
+- [mvp/v3.5/integrated-plan.md](./mvp/v3.5/integrated-plan.md)
+- [mvp/v3.5/db-ownership-boundary-plan.md](./mvp/v3.5/db-ownership-boundary-plan.md)
+- [mvp/v3.5/rules-content-normalization-plan.md](./mvp/v3.5/rules-content-normalization-plan.md)
+- [mvp/v3.5/normalized-rules-frontend-consumer-plan.md](./mvp/v3.5/normalized-rules-frontend-consumer-plan.md)
+- [mvp/v3.5/rulebook-display-labels-plan.md](./mvp/v3.5/rulebook-display-labels-plan.md)
+- [mvp/v3.5/agent-guide-review-plan.md](./mvp/v3.5/agent-guide-review-plan.md)
+- [mvp/v3.5/ci-cd-and-module-docs-plan.md](./mvp/v3.5/ci-cd-and-module-docs-plan.md)
+
+The freeze document records the as-built v3.5 state. The supporting plan
+documents describe implementation rationale and are not newer than the freeze
+snapshot.
 
 ## v3.4 Supporting Docs
 
@@ -56,36 +77,6 @@ documents in this order:
 - [mvp/v3.3/search-browse-query-plan.md](./mvp/v3.3/search-browse-query-plan.md)
 - [mvp/v3.3/spells-full-import-plan.md](./mvp/v3.3/spells-full-import-plan.md)
 - [mvp/v3.3/structured-spell-patch-plan.md](./mvp/v3.3/structured-spell-patch-plan.md)
-
-## Active v3.5 Planning
-
-v3.5 planning has started under `docs/mvp/v3.5/`:
-
-- [mvp/v3.5/README.md](./mvp/v3.5/README.md)
-- [mvp/v3.5/integrated-plan.md](./mvp/v3.5/integrated-plan.md)
-- [mvp/v3.5/db-ownership-boundary-plan.md](./mvp/v3.5/db-ownership-boundary-plan.md)
-- [mvp/v3.5/rules-content-normalization-plan.md](./mvp/v3.5/rules-content-normalization-plan.md)
-- [mvp/v3.5/normalized-rules-frontend-consumer-plan.md](./mvp/v3.5/normalized-rules-frontend-consumer-plan.md)
-- [mvp/v3.5/rulebook-display-labels-plan.md](./mvp/v3.5/rulebook-display-labels-plan.md)
-- [mvp/v3.5/agent-guide-review-plan.md](./mvp/v3.5/agent-guide-review-plan.md)
-- [mvp/v3.5/ci-cd-and-module-docs-plan.md](./mvp/v3.5/ci-cd-and-module-docs-plan.md)
-
-The integrated plan ties the v3.5 child plans together and records the current
-cross-plan conflict review; it is not an implementation status ledger. The DB
-ownership plan covers the v3.5 split between
-generated content data and
-future user/app-state data. The rules content normalization plan covers
-promoting cleaned legacy rules data into this repo's own normalized runtime
-content model for finer query surfaces. The normalized rules frontend consumer
-plan covers how Browse, Search, Spell Detail, Prepared Spells, and Settings
-consume those facets without bloating page controls. The rulebook display-label
-plan covers curated English rulebook abbreviations and Chinese full-name display
-labels without mutating legacy source slugs or rulebook IDs. The agent guide
-review plan covers shrinking `AGENTS.md` back into an execution guide,
-clarifying repo-local skill path resolution, and reviewing feature/workflow doc
-boundaries. The CI/CD, dependency review, and module-docs plan covers
-clean-checkout CI, dependency inventory and safe updates, script-backed CD, and
-merge-to-main agent automation for high-level module design docs.
 
 For high-level module ownership after the v3.5 module-doc baseline, use:
 

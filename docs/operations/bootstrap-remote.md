@@ -217,8 +217,9 @@ PORT=3000
 HOST=127.0.0.1
 
 RULES_DATABASE_URL=file:/opt/spellbook/data/spellbook.db
-CONTENT_DATABASE_URL=file:/opt/spellbook/data/app.db
-APP_STATE_DATABASE_URL=file:/opt/spellbook/data/app-state.db
+CONTENT_DATABASE_URL=file:/opt/spellbook/data/content.sqlite
+APP_DATABASE_URL=file:/opt/spellbook/data/content.sqlite
+APP_STATE_DATABASE_URL=file:/opt/spellbook/data/app-state.sqlite
 DATABASE_URL=file:/opt/spellbook/data/spellbook.db
 ```
 
@@ -278,21 +279,27 @@ sudo systemctl reload nginx
 Database origins:
 
 - The deployed rules database (`spellbook.db`) ultimately comes from the original `dnd.sqlite` dataset available from the `dndtools/dndtools` project, after this repo's local processing pipeline.
-- The deployed app/content database (`app.db`) is project-local and created from the Prisma content schema in `server/`.
+- The deployed content database (`content.sqlite`) is project-local and created
+  from the Prisma content schema in `server/`.
+- The deployed app-state database (`app-state.sqlite`) is reserved for future
+  user/app-state data and may initially be empty.
 
 This bootstrap doc assumes you already have local database files ready to upload.
 
-If the local app database has not been created yet, generate it from the `server` workspace before proceeding.
+If the local content or app-state database has not been created yet, generate it
+from the `server` workspace before proceeding.
 
 ### 13.1 Upload Initial Databases
 
-Before the local `remote` SSH alias is configured, upload directly to the server address:
+Before the local `remote` SSH alias is configured, upload directly to the
+server address:
 
 From local machine:
 
 ```bash
 scp server/db/local/rules-clean.sqlite admin@YOUR_SERVER_IP:~/data/spellbook.db
-scp server/db/local/content.sqlite     admin@YOUR_SERVER_IP:~/data/app.db
+scp server/db/local/content.sqlite     admin@YOUR_SERVER_IP:~/data/content.sqlite
+scp server/db/local/app-state.sqlite   admin@YOUR_SERVER_IP:~/data/app-state.sqlite
 ```
 
 Then on server:
@@ -333,6 +340,9 @@ Then connect via:
 ssh remote
 ```
 
+For tracked helper scripts, keep the actual alias in the ignored root `.env`
+file as `DEPLOY_SSH_ALIAS=...` instead of hardcoding it in docs.
+
 ## 16. Final Validation Checklist
 
 - nginx running
@@ -365,9 +375,10 @@ SQLite (/opt/spellbook/data)
 
 After this point:
 
-- Use `ssh remote "~/deploy-backend.sh"` for backend code deploys
-- Use `ssh remote "~/update-db.sh"` for database updates
-- Use `scp -r web/build/client/* remote:~/spellbook-dist` followed by `ssh remote "~/deploy-web.sh"` for frontend deploys
+- Use `ssh remote "./deploy-backend.sh"` for backend code deploys
+- Use `ssh remote "./update-db.sh"` for database updates
+- Use `scp -r web/build/client/* remote:~/spellbook-dist` followed by
+  `ssh remote "./deploy-web.sh"` for frontend deploys
 
 ## Deferred Security Hardening
 

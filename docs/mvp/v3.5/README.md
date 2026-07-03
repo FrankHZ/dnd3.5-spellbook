@@ -1,12 +1,11 @@
-# v3.5 Planning
+# v3.5
 
-Status: active planning track after the v3.4 freeze.
+Status: frozen.
 
-v3.5 starts after v3.4 short-description, data-harness, design, i18n, and
-freeze work has been accepted. This folder is for planning work that is
-intentionally separate from the frozen v3.4 snapshot.
+`FREEZE.md` records the final as-built v3.5 state. The other files in this
+folder are supporting plans and conflict-review notes.
 
-## Candidate Scope
+## Frozen Scope
 
 1. Split the current app-owned content DB boundary from the future
    user/app-state DB boundary before real server-side user data ships.
@@ -26,6 +25,7 @@ intentionally separate from the frozen v3.4 snapshot.
 
 ## Plans
 
+- [FREEZE.md](./FREEZE.md)
 - [integrated-plan.md](./integrated-plan.md)
 - [db-ownership-boundary-plan.md](./db-ownership-boundary-plan.md)
 - [rules-content-normalization-plan.md](./rules-content-normalization-plan.md)
@@ -36,8 +36,10 @@ intentionally separate from the frozen v3.4 snapshot.
 
 ## Working Rule
 
-Use `integrated-plan.md` when deciding v3.5 sequencing or reviewing whether
-child plans conflict. Do not treat it as an implementation status ledger.
+Use `FREEZE.md` for shipped behavior and final acceptance evidence.
+
+Use `integrated-plan.md` only when you need v3.5 sequencing rationale or
+cross-plan conflict history. Do not treat it as an implementation status ledger.
 
 Implementation branches should update the owning child plan, affected
 operational/topic docs, and `docs/roadmap.md` only when the active work order
@@ -47,6 +49,5 @@ delivery sequence, plan ownership, or cross-plan conflicts changed.
 Use `docs/templates/version-plan.md` and the repo-local `$version-plan-doc`
 skill when adding new version plan docs.
 
-Treat v3.5 docs as future-facing plans, not proof of shipped behavior. If a v3.5
-plan needs v3.4 facts, start from `../v3.4/FREEZE.md` instead of copying stale
-assumptions from earlier plan drafts.
+Treat the supporting v3.5 plan docs as history and rationale, not newer proof
+than the freeze snapshot.

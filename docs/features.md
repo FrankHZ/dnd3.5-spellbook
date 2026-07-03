@@ -6,6 +6,25 @@ Use it as the stable functional map for maintenance and harness work. For final
 v3.3 release details and intentional deviations from earlier plans, use
 `docs/mvp/v3.3/FREEZE.md`.
 
+## Data Backing Boundary
+
+The user-facing spell, metadata, and localization features are backed by
+prepared rules/content data served through backend APIs.
+
+Current data roles:
+
+- rules-derived spell content, filter metadata, and rulebook metadata are served
+  from prepared runtime databases, not from raw source files at request time
+- normalized rules-derived runtime content and app-owned overlays such as
+  localized names, rulebook display labels, and short descriptions live in the
+  content DB
+- collection and settings features are browser-local in the current app; the
+  app-state DB has no shipped user-facing feature yet
+
+This file records user-visible behavior. Database ownership, rebuild commands,
+fixture policy, provenance tracking, and deployment activation are documented in
+`docs/data-setup.md`, `docs/import-workflow.md`, and `docs/deployment.md`.
+
 ## Browse
 
 Users can browse spells by class, domain, spell level, and selected rulebooks.

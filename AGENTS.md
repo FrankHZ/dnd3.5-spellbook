@@ -91,6 +91,9 @@ probe a user-level `.agents` path first.
 - Do not treat root-level `.bat` files as canonical. Tracked deployment scripts
   live under `docs/deployment-scripts/`; the GitHub deploy workflow should stay
   a thin wrapper around those scripts.
+- Keep root `.env` local and ignored. Use `.env.example` for non-secret helper
+  keys, and let deployment helpers read real SSH aliases from local `.env`
+  instead of hardcoding them in tracked docs or scripts.
 - If shared DTOs change, rebuild `contracts` before validating `server` or
   `web`.
 - If behavior differs from documentation, update the newest topic-specific

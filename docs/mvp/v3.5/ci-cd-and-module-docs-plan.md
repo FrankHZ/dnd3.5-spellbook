@@ -88,11 +88,14 @@ Current dependency surfaces to review:
 - React Router, Vite, Prisma, Vitest, Tailwind, ESLint/Prettier, and shared
   TypeScript packages
 
-Current deployment scripts:
+Current deployment assets:
 
 - `docs/deployment-scripts/deploy-backend.sh`
 - `docs/deployment-scripts/deploy-web.sh`
 - `docs/deployment-scripts/update-db.sh`
+- `docs/deployment-scripts/sync-remote-scripts.ps1`
+- `docs/deployment-scripts/spellbook-api.env.example`
+- `.env.example`
 
 Current documentation surfaces to review together:
 
@@ -258,6 +261,8 @@ not a copy of their logic. Current shape:
   directory, then invokes `~/deploy-web.sh`
 - SSH host/user/key are repository secrets; SSH port and web staging directory
   are optional repository variables
+- local script syncing remains manual; `sync-remote-scripts.ps1` reads the SSH
+  alias from ignored root `.env`
 
 DB deployment is deliberately deferred. The current SQLite DB update path
 depends on operator-controlled file upload to `~/data/`, which is not a good CD
