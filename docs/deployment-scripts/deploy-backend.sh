@@ -159,7 +159,15 @@ git pull --ff-only
 
 # --- 3) Install deps ---
 echo "==> Install deps"
-export NODE_OPTIONS="--max-old-space-size=256"
+NODE_MAX_OLD_SPACE_SIZE="${SPELLBOOK_NODE_MAX_OLD_SPACE_SIZE:-384}"
+case "$NODE_MAX_OLD_SPACE_SIZE" in
+  ''|*[!0-9]*)
+    echo "Invalid SPELLBOOK_NODE_MAX_OLD_SPACE_SIZE: $NODE_MAX_OLD_SPACE_SIZE" >&2
+    exit 1
+    ;;
+esac
+export NODE_OPTIONS="${NODE_OPTIONS:-} --max-old-space-size=$NODE_MAX_OLD_SPACE_SIZE"
+echo "==> Node max-old-space-size: ${NODE_MAX_OLD_SPACE_SIZE}MB"
 npm ci
 
 # --- 4) Generate + build ---
