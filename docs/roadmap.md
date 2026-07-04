@@ -320,6 +320,10 @@ The stable-version backlog remains intentionally deferred:
 - static HTML/offline artifact generation to replace old loose HTML
   distribution
 - search/index artifact generation for offline or static deployments
+- package-manager migration spike, if npm workspaces become a real bottleneck:
+  keep npm as the default for now; prefer a focused pnpm spike over Yarn if
+  install speed, disk usage, workspace filtering, or dependency isolation become
+  worth the CI/deploy/docs migration cost
 - release automation beyond the v3.5 script-backed CD pass
 - rollback playbook
 - HTTPS / TLS and host hardening
