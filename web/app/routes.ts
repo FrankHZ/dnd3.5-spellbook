@@ -11,4 +11,5 @@ export default [
   route("spellbooks/:id", "./routes/spellbooks.$id.tsx"),
 
   route("settings", "./routes/settings.tsx"),
+  route("about", "./routes/about.tsx"),
 ] satisfies RouteConfig;

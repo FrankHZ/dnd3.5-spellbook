@@ -137,6 +137,7 @@ function useTopBarItems() {
           pathname !== "/spellbooks/prepared"),
     },
     { to: "/settings", label: t("nav.settings"), active: pathname === "/settings" },
+    { to: "/about", label: t("nav.about"), active: pathname === "/about" },
   ];
 }
 

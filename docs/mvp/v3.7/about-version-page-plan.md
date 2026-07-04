@@ -7,7 +7,9 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned; ready for a focused implementation agent.
+Status: implementation complete on `codex/infra-about-version`; contracts,
+backend endpoint, frontend page, deploy metadata injection, and local validation
+are complete pending review.
 
 ## Purpose
 
@@ -83,6 +85,8 @@ files.
 
 ### Slice 1: Status Metadata Contract
 
+Status: implemented.
+
 - Deliverable: shared DTO for application/deploy metadata.
 - Expected shape:
   - frontend build metadata: version label, commit SHA, short SHA, ref, build
@@ -98,6 +102,8 @@ files.
   - `npm run check:contracts`
 
 ### Slice 2: Backend Status Endpoint
+
+Status: implemented as `GET /api/status/app`.
 
 - Deliverable: read-only backend version/status endpoint under the existing
   status route, recommended `GET /api/status/app`.
@@ -117,6 +123,8 @@ files.
   - `npm run build:server`
 
 ### Slice 3: Frontend About / Version Page
+
+Status: implemented as `/about` with desktop and mobile navigation links.
 
 - Deliverable: page route, recommended `/about`, linked from desktop and mobile
   navigation.
@@ -142,6 +150,9 @@ files.
   - `npm run i18n:check`
 
 ### Slice 4: Deploy-Time Metadata Injection
+
+Status: implemented for GitHub web/backend deploy metadata and backend runtime
+environment updates.
 
 - Deliverable: GitHub deploy workflow and tracked deploy scripts refresh version
   metadata on every deploy without manual source edits.
@@ -173,6 +184,22 @@ files.
 - Deployment docs explain what metadata is automatic through GitHub deploy and
   what fallback appears for local/manual runs.
 
+## Validation Notes
+
+- `npm run build:contracts` and `npm run check:contracts` passed.
+- Focused server tests for `/api/status/app` and `/api/status/db` passed.
+- Focused web API tests for status helpers passed.
+- `npm run test:server`, `npm run test:web`, `npm run i18n:check`,
+  `npm run build:server`, `npm run typecheck:web`, and
+  `npm run -w web build` passed.
+- Git for Windows `bash -n docs/deployment-scripts/deploy-backend.sh` passed.
+- Local smoke passed for `http://127.0.0.1:3000/health`,
+  `http://127.0.0.1:3000/api/status/app`, and
+  `http://127.0.0.1:5173/about`.
+- Browser smoke passed for `/about` in Chinese mobile-width state and English
+  desktop-width state; frontend, backend, Content DB sections rendered and
+  console error count was zero.
+
 ## Doc Updates
 
 - Update this plan when route path, endpoint path, metadata field names, or
@@ -187,11 +214,9 @@ files.
 
 ## Open Questions
 
-- Should the route label be `About`, `Version`, or `About / Version` in the UI?
-  Default recommendation: route `/about`, nav label `About`, page title
-  `Version`.
-- Should backend deploy metadata live only in process environment variables, or
-  should the remote script write a small ignored runtime env file under
-  `/opt/spellbook` before restart?
+- Route naming is settled for this slice: route `/about`, nav label `About`,
+  page title `Version`.
+- Backend deploy metadata is written into the existing runtime environment file
+  `/etc/default/spellbook-api` by the tracked deploy script before restart.
 - If the v3.7 security slice gates `/api/status/db`, should About show a
   public summary endpoint later, or should DB details become operator-only?

@@ -20,8 +20,11 @@ work belong in `data-tools/`.
   - `*.mapper.ts` shapes records into contract DTOs.
 - Meta, class, domain, and rulebook APIs have narrower service modules under
   `server/src/services/`.
-- The DB status API lives under `/api/status/db`; it reports read-only runtime
-  DB role/provenance state and must not upload, migrate, or activate artifacts.
+- The status API lives under `/api/status/*`:
+  - `/api/status/app` reports backend deploy metadata from explicit environment
+    variables with local-development fallback values.
+  - `/api/status/db` reports read-only runtime DB role/provenance state and
+    must not upload, migrate, or activate artifacts.
 - Prisma client wrappers live in `server/src/lib/`.
 
 ## Data Ownership

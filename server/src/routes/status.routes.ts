@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { getDbStatus } from "~/controllers/status.controller";
+import { getAppStatus, getDbStatus } from "~/controllers/status.controller";
 
 export const statusRouter = Router();
 
+statusRouter.get("/app", getAppStatus);
 statusRouter.get("/db", getDbStatus);

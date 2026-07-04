@@ -3,8 +3,8 @@
 ## Role
 
 `web/` owns the React Router frontend and browser-facing experience: Browse,
-Search, Spell Detail, collections, prepared spellbooks, Settings, local browser
-state, and UI i18n display behavior.
+Search, Spell Detail, collections, prepared spellbooks, Settings, About /
+Version status, local browser state, and UI i18n display behavior.
 
 ## Main Boundaries
 
@@ -28,6 +28,10 @@ state.
 Settings owns broad user preferences such as language and content scope
 defaults. Ordinary page filters should stay in URL state unless the feature plan
 explicitly promotes them to preferences.
+
+About / Version owns read-only deploy and content status display. It should use
+frontend build-time `VITE_SPELLBOOK_*` metadata plus API helpers for
+`/api/status/app` and `/api/status/db`; it is not an admin dashboard.
 
 ## Contracts And API
 

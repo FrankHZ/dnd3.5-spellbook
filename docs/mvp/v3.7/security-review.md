@@ -197,6 +197,10 @@ Acceptance:
 `.github/workflows/deploy.yml` allows manual deploys with portable validation
 disabled. It also relies on default GitHub token permissions.
 
+Status: partially addressed. The About / Version page implementation branch
+adds explicit `permissions: contents: read` to `.github/workflows/deploy.yml`.
+The validation-skip policy remains open for the dependency/deploy policy slice.
+
 Recommended fix:
 
 - Add explicit workflow `permissions: contents: read`.

@@ -65,6 +65,14 @@ That workflow is a thin wrapper for code/web deploys. The backend target invokes
 the tracked remote backend deploy script. The web target builds and uploads
 static assets, then invokes the tracked remote web deploy script.
 
+Deploy metadata for the About / Version page is owned here:
+
+- web deploys pass `VITE_SPELLBOOK_*` values into the static build
+- backend deploys pass `SPELLBOOK_BACKEND_*` values to
+  `deploy-backend.sh`
+- `deploy-backend.sh` writes non-secret backend metadata into
+  `/etc/default/spellbook-api` before restart
+
 Database deployment is not a workflow target yet. The current SQLite update path
 still relies on manual file upload to `~/data/`, so DB CD waits for the content
 DB / app-state DB redesign to define artifact ownership, activation, and
