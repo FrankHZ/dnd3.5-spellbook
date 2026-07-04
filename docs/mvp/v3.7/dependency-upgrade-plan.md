@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: inventory refreshed; upgrade branches pending.
 
 ## Purpose
 
@@ -88,13 +88,73 @@ the right place to inventory and sequence them.
 - Data, Prisma, parser, SQLite-facing, or TypeScript changes may also require
   `npm run -w data-tools acceptance:local`.
 
+## Current Inventory
+
+Inventory refreshed from the v3.7 dependency branch with:
+
+```bash
+npm outdated --workspaces --json
+npm audit --workspaces --json
+npm audit --workspaces --omit=dev --json
+```
+
+### Low-Risk Patch Or Minor Candidates
+
+These are within the current major line and can be reviewed in a small
+maintenance PR before larger ecosystem upgrades:
+
+| Package | Workspaces | Current | Wanted/Latest | Notes |
+| --- | --- | --- | --- | --- |
+| `iconv-lite` | `data-tools`, `server` | `0.7.2` | `0.7.3` | parser/server dependency; validate data-tools tests plus server tests |
+| `immer` | `web` | `11.1.9` | `11.1.11` | browser state helper dependency; validate web tests |
+| `tsx` | `data-tools`, `server` | `4.22.5` | `4.23.0` | tooling runtime; validate data-tools/server commands |
+
+`prettier` reports `3.8.1` current and `3.9.4` latest, but the current
+workspace range does not select it as `wanted`; treat it as tooling maintenance,
+not part of app runtime.
+
+### Major Or Risky Candidates
+
+Keep these in focused branches because they can affect routing, build output,
+i18n runtime behavior, icon/shadcn generated code, or TypeScript baselines:
+
+| Package | Workspaces | Current | Latest | Primary Risk |
+| --- | --- | --- | --- | --- |
+| `@react-router/dev`, `@react-router/node`, `@react-router/serve`, `react-router` | `web` | `7.18.0` | `8.1.0` | route/build/runtime behavior |
+| `vite` | `web` | `7.3.6` | `8.1.3` | build pipeline and plugin compatibility |
+| `vite-tsconfig-paths` | `server`, `web` | `5.1.4` | `6.1.1` | path resolution in tests/builds |
+| `i18next` | `web` | `25.10.10` | `26.3.4` | runtime fallback/loading semantics |
+| `i18next-http-backend` | `web` | `3.0.6` | `4.0.0` | locale loading behavior |
+| `react-i18next` | `web` | `16.6.6` | `17.0.8` | React binding behavior |
+| `lucide-react` | `web` | `0.563.0` | `1.23.0` | icon export/package changes |
+| `shadcn` | `web` | `3.8.5` | `4.13.0` | generated component/tooling behavior |
+| `@types/node` | `data-tools`, `server`, `web` | `25.9.4` / `22.20.0` | `26.1.0` | Node type baseline drift |
+| `@types/supertest` | `server` | `6.0.3` | `7.2.0` | server test type surface |
+
+### Audit Status
+
+Both full and `--omit=dev` audit commands report the same three moderate
+vulnerabilities:
+
+| Package | Path | Advisory | Current npm Fix |
+| --- | --- | --- | --- |
+| `@hono/node-server` | `prisma` -> `@prisma/dev` -> `@hono/node-server` | `GHSA-92pp-h63x-v22m`, middleware bypass via repeated slashes in `serveStatic` | `npm audit fix --force` to `prisma@6.19.3` |
+| `@prisma/dev` | transitive under `prisma` | inherits the Hono advisory | same forced Prisma downgrade |
+| `prisma` | direct dev dependency | affected range reported as `6.20.0-dev.1 - 7.9.0-dev.7` | same forced Prisma downgrade |
+
+Do not run the forced fix. This repo is on Prisma 7, and the suggested fix is a
+breaking downgrade. Track the advisory as a reviewed build/deploy exposure until
+a Prisma-7-compatible upgrade path is available or deploy dependency ownership
+changes.
+
 ## Plan
 
 ### Slice 1: Refresh Inventory
 
+- Status: complete for the current v3.7 baseline.
 - Deliverable: current `npm outdated --workspaces` and audit classification.
-- Expected files: this plan, package manifests only if a harmless inventory
-  update is accepted.
+- Expected files: this plan. Package manifests should change only in follow-up
+  upgrade branches.
 - Validation:
 
 ```bash
