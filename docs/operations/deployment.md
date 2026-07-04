@@ -16,6 +16,7 @@ The canonical deployment assets are tracked in:
 - `docs/deployment-scripts/deploy-backend.sh`
 - `docs/deployment-scripts/deploy-web.sh`
 - `docs/deployment-scripts/update-db.sh`
+- `docs/deployment-scripts/apply-nginx-site.sh`
 - `docs/deployment-scripts/sync-remote-scripts.ps1`
 - `docs/deployment-scripts/spellbook-api.env.example`
 - `.env.example`
@@ -100,6 +101,7 @@ Current remote targets:
 - `~/deploy-backend.sh`
 - `~/deploy-web.sh`
 - `~/update-db.sh`
+- `~/apply-nginx-site.sh`
 - `/etc/default/spellbook-api` for the environment values adapted from
   `docs/deployment-scripts/spellbook-api.env.example`
 
@@ -109,6 +111,7 @@ Example:
 scp docs/deployment-scripts/deploy-backend.sh remote:~/deploy-backend.sh
 scp docs/deployment-scripts/deploy-web.sh remote:~/deploy-web.sh
 scp docs/deployment-scripts/update-db.sh remote:~/update-db.sh
+scp docs/deployment-scripts/apply-nginx-site.sh remote:~/apply-nginx-site.sh
 ```
 
 Local helper:
@@ -120,6 +123,34 @@ pwsh -NoLogo -NoProfile -File docs/deployment-scripts/sync-remote-scripts.ps1
 ```
 
 There is no automatic sync for these files in the current MVP workflow.
+
+## Nginx Site Config
+
+The tracked Nginx site apply script is:
+
+- `docs/deployment-scripts/apply-nginx-site.sh`
+
+It writes `/etc/nginx/sites-available/spellbook`, enables it, removes the
+default site, runs `nginx -t`, and reloads Nginx. It preserves the current
+single-host assumptions:
+
+- static frontend root: `/var/www/spellbook`
+- API upstream: `http://127.0.0.1:3000`
+- `/locales/` returns `404` for missing locale JSON instead of falling through
+  to the SPA
+- hashed static assets receive immutable cache headers
+
+Apply after syncing scripts:
+
+```bash
+ssh remote "chmod 755 ~/apply-nginx-site.sh && ~/apply-nginx-site.sh"
+```
+
+Override only when deliberately changing host layout:
+
+```bash
+ssh remote "SPELLBOOK_FRONTEND_ROOT=/var/www/spellbook SPELLBOOK_API_UPSTREAM=http://127.0.0.1:3000 ~/apply-nginx-site.sh"
+```
 
 ## Host Placeholder
 

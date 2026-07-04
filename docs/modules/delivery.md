@@ -53,6 +53,7 @@ Canonical deployment behavior and helper templates live in:
 - `docs/deployment-scripts/deploy-backend.sh`
 - `docs/deployment-scripts/deploy-web.sh`
 - `docs/deployment-scripts/update-db.sh`
+- `docs/deployment-scripts/apply-nginx-site.sh`
 - `docs/deployment-scripts/sync-remote-scripts.ps1`
 - `docs/deployment-scripts/spellbook-api.env.example`
 - `.env.example`
@@ -83,6 +84,10 @@ Database deployment is not a workflow target yet. The current SQLite update path
 still relies on manual file upload to `~/data/`, so DB CD waits for the content
 DB / app-state DB redesign to define artifact ownership, activation, and
 rollback.
+
+Nginx site configuration is also explicit operator work. Use the tracked
+`apply-nginx-site.sh` helper after syncing remote scripts when the proxy/static
+site baseline changes.
 
 If deployment behavior changes, change the tracked scripts and
 `docs/operations/deployment.md` first. The workflow should stay a trigger/orchestration

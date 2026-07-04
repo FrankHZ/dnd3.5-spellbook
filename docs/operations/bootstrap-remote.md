@@ -151,13 +151,14 @@ Copy the tracked deployment scripts from the repo into the admin user's home dir
 cp ~/dnd3.5-spellbook/docs/deployment-scripts/deploy-backend.sh ~/deploy-backend.sh
 cp ~/dnd3.5-spellbook/docs/deployment-scripts/deploy-web.sh ~/deploy-web.sh
 cp ~/dnd3.5-spellbook/docs/deployment-scripts/update-db.sh ~/update-db.sh
-chmod 755 ~/deploy-backend.sh ~/deploy-web.sh ~/update-db.sh
+cp ~/dnd3.5-spellbook/docs/deployment-scripts/apply-nginx-site.sh ~/apply-nginx-site.sh
+chmod 755 ~/deploy-backend.sh ~/deploy-web.sh ~/update-db.sh ~/apply-nginx-site.sh
 ```
 
 Verify:
 
 ```bash
-ls -l ~/deploy-backend.sh ~/deploy-web.sh ~/update-db.sh
+ls -l ~/deploy-backend.sh ~/deploy-web.sh ~/update-db.sh ~/apply-nginx-site.sh
 ```
 
 After bootstrap, keep these files in sync manually with `scp` whenever the tracked versions under `docs/deployment-scripts/` change.
@@ -234,13 +235,14 @@ sudo chmod 600 /etc/default/spellbook-api
 
 ## 12. Configure Nginx
 
-Create site config:
+The tracked apply script writes the standard single-host site config, tests it,
+and reloads Nginx:
 
 ```bash
-sudo nano /etc/nginx/sites-available/spellbook
+~/apply-nginx-site.sh
 ```
 
-Paste:
+The generated config is:
 
 ```nginx
 server {
@@ -250,12 +252,17 @@ server {
     root /var/www/spellbook;
     index index.html;
 
-    location / {
-        try_files $uri /index.html;
-    }
+    add_header X-Content-Type-Options nosniff always;
+    add_header X-Frame-Options SAMEORIGIN always;
+    add_header Referrer-Policy strict-origin-when-cross-origin always;
 
     location /locales/ {
+        add_header Cache-Control "no-cache" always;
         try_files $uri =404;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
     }
 
     location /api/ {
@@ -265,22 +272,16 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+
+    location ~* \.(?:js|css|png|jpg|jpeg|gif|svg|ico|webp|woff2?)$ {
+        expires 7d;
+        add_header Cache-Control "public, max-age=604800, immutable" always;
+        try_files $uri =404;
     }
 }
-```
-
-Enable site:
-
-```bash
-sudo ln -s /etc/nginx/sites-available/spellbook /etc/nginx/sites-enabled/
-sudo rm /etc/nginx/sites-enabled/default
-```
-
-Test:
-
-```bash
-sudo nginx -t
-sudo systemctl reload nginx
 ```
 
 ## 13. Prepare Initial Databases
