@@ -14,6 +14,8 @@ It is not a full roadmap. It exists to record what is known to be intentionally 
 
 ### Security
 
+- first security review and hardening planning is active in
+  `docs/mvp/v3.7/security-review.md`
 - HTTPS / TLS
 - firewall hardening
 - SSH hardening
@@ -27,6 +29,13 @@ It is not a full roadmap. It exists to record what is known to be intentionally 
   distribution
 - release automation beyond the v3.5 script-backed CI/CD pass
 - stronger deployment validation and rollback drills
+
+### Maintenance
+
+- major/risky dependency upgrade and TypeScript module-boundary review is active
+  in
+  `docs/mvp/v3.7/dependency-upgrade-plan.md`
+- dependency upgrades not accepted into v3.7 focused slices remain deferred
 
 ### Content
 

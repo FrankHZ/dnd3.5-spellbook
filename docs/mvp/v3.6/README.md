@@ -27,7 +27,7 @@ implementation scope until their owning plan accepts the boundary:
 - normalized Spell Detail display polish after the backend vocabulary is
   reviewed
 - TypeScript module config cleanup for the server/CommonJS and contracts/ESM
-  boundary
+  boundary is deferred to the v3.7 dependency-maintenance plan
 
 ## Deferred Stable Track
 
