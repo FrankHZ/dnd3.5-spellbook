@@ -24,19 +24,19 @@ excluded from the public repository, especially runtime databases under
 
 ## Status
 
-The latest frozen stage snapshot is **v3.6**.
+The latest frozen stage snapshot is **v3.7**.
 
 Start here:
 
 - [docs/README.md](./docs/README.md): documentation map and precedence rules.
 - [docs/roadmap.md](./docs/roadmap.md): current work order.
 - [docs/features.md](./docs/features.md): current feature map.
-- [docs/mvp/v3.6/FREEZE.md](./docs/mvp/v3.6/FREEZE.md): latest frozen
+- [docs/mvp/v3.7/FREEZE.md](./docs/mvp/v3.7/FREEZE.md): latest frozen
   release snapshot.
-- [docs/mvp/v3.6/README.md](./docs/mvp/v3.6/README.md): frozen post-v3.5
-  stabilization stage.
-- [docs/mvp/v3.7/README.md](./docs/mvp/v3.7/README.md): active security and
-  dependency-maintenance planning space.
+- [docs/mvp/v3.7/README.md](./docs/mvp/v3.7/README.md): frozen security,
+  deploy/status visibility, and dependency-maintenance stage.
+- [docs/mvp/v3.6/FREEZE.md](./docs/mvp/v3.6/FREEZE.md): previous frozen
+  post-v3.5 stabilization snapshot.
 
 ## Quick Start
 

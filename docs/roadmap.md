@@ -8,26 +8,38 @@ details.
 
 ## Current Track
 
-v3.6 is frozen. The latest release snapshot is
-`docs/mvp/v3.6/FREEZE.md`.
+v3.7 is frozen. The latest release snapshot is
+`docs/mvp/v3.7/FREEZE.md`.
 
-The completed v3.6 focus was remote DB status visibility, browser-local display
-settings, spell-card and filter-summary polish, docs structure cleanup, and
-normalized rules follow-up review.
+The completed v3.7 focus was security hardening, deploy/status visibility,
+dependency maintenance, and deployment robustness after the v3.6 freeze.
 
-v3.7 is active as a focused security, deploy/status visibility, and
-dependency-maintenance planning track. Use `docs/mvp/v3.7/README.md`,
-`docs/mvp/v3.7/security-review.md`,
-`docs/mvp/v3.7/about-version-page-plan.md`, and
-`docs/mvp/v3.7/dependency-upgrade-plan.md` for the next small slices.
-
-For final v3.6 as-built behavior and validation evidence, start at
-`docs/mvp/v3.6/FREEZE.md`.
+No v3.8 planning folder has been opened yet. Use this roadmap and
+`docs/stable-backlog.md` to choose the next focused track.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
 
 ## Recently Completed
+
+The v3.7 release is frozen with:
+
+- `docs/mvp/v3.7/FREEZE.md` as the as-built snapshot.
+- `/about` and `GET /api/status/app` for frontend, backend, and public content
+  status.
+- production-private `GET /api/status/db` by default, with token or explicit
+  public override for operators.
+- production-safe generic 500 responses for non-`ApiError` failures.
+- Express-owned security headers and configurable production CORS allowlist.
+- deploy workflow least-privilege permissions and warning behavior for skipped
+  portable validation.
+- tracked Nginx apply helper and deployment script sync coverage.
+- backend deploy build heap defaulted to `384MB` and operator-overridable.
+- Prisma 7 generated clients aligned with the current CommonJS server runtime.
+- `npm run -w server check:runtime` wired into `npm run ci:portable`.
+- React Router, Vite, i18n, lucide/shadcn, Node type, and related dependency
+  upgrades accepted with the forced Prisma audit downgrade rejected.
+- final GitHub deploy run `28708398468` succeeded on commit `476c93d`.
 
 The v3.6 release is frozen with:
 
@@ -217,30 +229,20 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Ship the About / Version status page**
+1. **Choose the next focused version track**
 
-   Use `docs/mvp/v3.7/about-version-page-plan.md`. This is a small
-   pre-hardening deliverable: expose frontend/backend deploy metadata and public
-   content status. Detailed `GET /api/status/db` provenance is operator-facing
-   after the security hardening slice.
+   No v3.8 plan is open yet. Start from the user's next accepted feature or the
+   stable backlog, then create a small version plan only after the scope is
+   concrete.
 
-2. **Run v3.7 security review follow-up**
+2. **Triage the v3.7 non-blocking maintenance tail**
 
-   Use `docs/mvp/v3.7/README.md` and
-   `docs/mvp/v3.7/security-review.md`. The first recommended slice is
-   operator/status endpoint exposure plus production-safe error responses.
-   Keep authentication, user accounts, automatic DB release artifacts, and
-   broad deployment redesign out of this first pass.
+   `npm outdated --workspaces --json` currently reports `tsc-alias`
+   `1.8.17 -> 1.9.0`. `npm audit --workspaces --omit=dev --json` still reports
+   the reviewed Prisma dev-chain / Hono moderate advisories. Treat both as
+   explicit maintenance follow-ups, not hidden release blockers.
 
-3. **Review the v3.7 dependency maintenance branch**
-
-   Use `docs/mvp/v3.7/dependency-upgrade-plan.md`. The dependency branch has
-   refreshed the inventory, accepted the risky upgrades, replaced the Vite path
-   plugin with explicit aliases, and removed the server TypeScript deprecation
-   suppression by keeping the server runtime CommonJS while compiling and
-   resolving with NodeNext.
-
-4. **Choose the next post-v3.6 data/contract slice**
+3. **Choose the next post-v3.6 data/contract slice**
 
    Use `docs/mvp/v3.6/normalized-rules-review-plan.md` to decide whether a
    later branch should promote base component flags, add a Tome of Battle

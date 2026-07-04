@@ -8,9 +8,9 @@ new behavior.
 
 ## Current Version Folders
 
-- `v3.7`: active security and dependency-maintenance planning.
-- `v3.6`: latest frozen release snapshot and supporting plans.
-- `v3.5`: previous frozen release snapshot and supporting plans.
+- `v3.7`: latest frozen release snapshot and supporting plans.
+- `v3.6`: previous frozen release snapshot and supporting plans.
+- `v3.5`: older frozen release snapshot and supporting plans.
 - `v3.4` and older: historical release snapshots, plans, and handoff records.
 
 ## How To Read A Version Folder

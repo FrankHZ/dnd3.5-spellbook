@@ -6,8 +6,8 @@
 > `docs/roadmap.md` only when active ordering changes. Create or update an
 > integrated plan only if v3.7 grows into multiple conflicting workstreams.
 
-Status: review complete; v3.7 security hardening slices implemented on
-`codex/server-security-hardening` pending review.
+Status: frozen in `docs/mvp/v3.7/FREEZE.md`. This review is supporting
+implementation rationale, not the latest shipped-state record.
 
 Review date: 2026-07-03.
 

@@ -1,11 +1,15 @@
-# v3.7 Planning
+# v3.7
 
-Status: active security, deploy/status visibility, and
-dependency-maintenance planning track after the v3.6 freeze.
+Status: frozen security, deploy/status visibility, and
+dependency-maintenance release snapshot.
 
-v3.7 is a focused security review, hardening-planning, dependency maintenance,
-and deploy/status visibility pass. It is not a large product deliverable,
-content release, or broad architecture rewrite.
+Read [FREEZE.md](./FREEZE.md) first for shipped behavior and final validation
+evidence. The remaining files in this folder are supporting plans and rationale;
+they are not newer than the freeze snapshot.
+
+v3.7 was a focused security review, hardening-planning, dependency
+maintenance, and deploy/status visibility pass. It was not a large product
+deliverable, content release, or broad architecture rewrite.
 
 ## Committed Scope
 
