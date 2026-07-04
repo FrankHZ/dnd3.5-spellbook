@@ -7,7 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: inventory refreshed; upgrade branches pending.
+Status: dependency upgrades implemented on `codex/deps-inventory` pending
+review.
 
 ## Purpose
 
@@ -98,7 +99,37 @@ npm audit --workspaces --json
 npm audit --workspaces --omit=dev --json
 ```
 
+The upgrade branch now leaves `npm outdated --workspaces` empty. All previously
+listed patch, minor, major, and risky candidates were upgraded except no package
+was force-downgraded for the Prisma audit finding.
+
+### Implemented Upgrade Set
+
+| Package | Workspaces | Upgraded To | Validation Notes |
+| --- | --- | --- | --- |
+| `iconv-lite` | `data-tools`, `server` | `^0.7.3` | data-tools typecheck/tests and server tests pass |
+| `immer` | `web` | `^11.1.11` | web tests pass |
+| `tsx` | `data-tools`, `server` | `^4.23.0` | data-tools tests and server generation/tests pass |
+| `@types/node` | `data-tools`, `server`, `web` | `^26.1.0` | data-tools/server/web typechecks pass |
+| `@types/supertest` | `server` | `^7.2.0` | server tests pass |
+| `@react-router/dev`, `@react-router/node`, `@react-router/serve`, `react-router` | `web` | `^8.1.0` | web typecheck/tests/build pass |
+| `vite` | `web` | `^8.1.3` | web build passes |
+| `vite-tsconfig-paths` | `server`, `web` | `^6.1.1` | retained for Vitest alias resolution |
+| `i18next` | `web` | `^26.3.4` | i18n sync/check and web tests pass |
+| `i18next-http-backend` | `web` | `^4.0.0` | i18n sync/check and web build pass |
+| `react-i18next` | `web` | `^17.0.8` | web typecheck/tests pass |
+| `lucide-react` | `web` | `^1.23.0` | web typecheck/build pass |
+| `shadcn` | `web` | `^4.13.0` | web build and lockfile audit reviewed |
+| `prettier` | `web` | `^3.9.4` | tooling package only; no formatting rewrite in this branch |
+
+Vite 8 reports that native `resolve.tsconfigPaths` can replace
+`vite-tsconfig-paths`, but attempting that cleanup broke server and web Vitest
+alias resolution. Keep the plugin for now and revisit the native option in a
+focused test-config cleanup after Vitest/Vite support is smooth.
+
 ### Low-Risk Patch Or Minor Candidates
+
+Status: implemented.
 
 These are within the current major line and can be reviewed in a small
 maintenance PR before larger ecosystem upgrades:
@@ -114,6 +145,8 @@ workspace range does not select it as `wanted`; treat it as tooling maintenance,
 not part of app runtime.
 
 ### Major Or Risky Candidates
+
+Status: implemented, with `vite-tsconfig-paths` retained as noted above.
 
 Keep these in focused branches because they can affect routing, build output,
 i18n runtime behavior, icon/shadcn generated code, or TypeScript baselines:
@@ -147,6 +180,11 @@ breaking downgrade. Track the advisory as a reviewed build/deploy exposure until
 a Prisma-7-compatible upgrade path is available or deploy dependency ownership
 changes.
 
+An npm `overrides` attempt to force `@hono/node-server@1.19.13` was tested and
+removed because it did not safely resolve the Prisma-pinned transitive package
+without creating package-manager conflicts. Keep this as a Prisma-upstream or
+deploy dependency-ownership follow-up rather than a lockfile hack.
+
 ## Plan
 
 ### Slice 1: Refresh Inventory
@@ -165,6 +203,7 @@ npm audit --workspaces --omit=dev
 
 ### Slice 2: Frontend Runtime And Build Tool Review
 
+- Status: implemented.
 - Deliverable: decide ordering for React Router, Vite, Vitest, Tailwind,
   `vite-tsconfig-paths`, `lucide-react`, and shadcn-related upgrades.
 - Expected files: `web/package.json`, root/package lock, frontend config, and
@@ -180,6 +219,7 @@ npm run i18n:check
 
 ### Slice 3: i18n Runtime Review
 
+- Status: implemented.
 - Deliverable: decide whether `i18next`, `i18next-http-backend`, and
   `react-i18next` major upgrades can move together or need separate branches.
 - Expected files: i18n runtime helpers, locale workflow docs, and affected
@@ -194,6 +234,7 @@ npm run test:web
 
 ### Slice 4: Server Module Boundary Review
 
+- Status: explicitly held.
 - Deliverable: choose whether server moves to ESM, contracts adds an explicit
   CJS-compatible boundary, or the current suppression remains held with a
   documented reason.
@@ -209,8 +250,14 @@ npm run test:server
 npm run ci:portable
 ```
 
+Decision: keep the current CommonJS server config and
+`ignoreDeprecations: "6.0"` for this dependency branch. The dependency upgrades
+do not require moving the server to ESM, and a direct Node16 server migration is
+still a separate CJS/ESM package-boundary project.
+
 ### Slice 5: Prisma And Server Tooling Review
 
+- Status: audit finding explicitly held.
 - Deliverable: resolve or explicitly defer the Prisma audit finding with a
   Prisma-7-compatible path, and decide whether server module-config cleanup
   changes dependency sequencing.
@@ -226,6 +273,7 @@ npm run ci:portable
 
 ### Slice 6: Lockfile And Deployment Review
 
+- Status: implemented by dependency branch validation.
 - Deliverable: inspect lockfile churn and confirm deploy scripts still install,
   generate, build, and restart with the accepted dependency set.
 - Expected files: `package-lock.json`, deployment docs/scripts only when
