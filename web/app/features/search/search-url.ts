@@ -109,6 +109,7 @@ export function hasSearchScope(
     scope.taxonomyFilters.schoolIds.length > 0 ||
     scope.taxonomyFilters.subschoolIds.length > 0 ||
     scope.taxonomyFilters.descriptorIds.length > 0 ||
+    scope.taxonomyFilters.descriptorBuckets.length > 0 ||
     scope.level !== null
   );
 }

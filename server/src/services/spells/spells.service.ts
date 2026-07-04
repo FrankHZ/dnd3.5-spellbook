@@ -2,6 +2,7 @@ import type {
   SpellNameSearchResponse,
   I18nContext,
   SpellBatchResponse,
+  SpellComponentFilters,
   SpellDetailView,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
@@ -31,6 +32,7 @@ export const spellsService = {
     classIds: number[];
     domainIds: number[];
     taxonomyFilters: SpellTaxonomyFilterIds;
+    componentFilters: SpellComponentFilters;
     level: number | "all" | null;
     page: number;
     pageSize: number;
@@ -41,6 +43,7 @@ export const spellsService = {
       input.classIds.length > 0 ||
       input.domainIds.length > 0 ||
       hasTaxonomyScope(input.taxonomyFilters) ||
+      hasComponentScope(input.componentFilters) ||
       input.level !== null;
     const maxCandidates = hasScope
       ? 2000
@@ -50,6 +53,7 @@ export const spellsService = {
       input.q,
       input.rulebookIds,
       input.taxonomyFilters,
+      input.componentFilters,
       maxCandidates,
     );
     const seen = new Set<number>();
@@ -65,6 +69,7 @@ export const spellsService = {
         input.q,
         input.rulebookIds,
         input.taxonomyFilters,
+        input.componentFilters,
         maxCandidates,
       );
       for (const id of idsI18n)
@@ -79,7 +84,6 @@ export const spellsService = {
       spells,
       input.classIds,
       input.domainIds,
-      input.taxonomyFilters,
       input.level,
     );
     scopedSpells.sort((a, b) => a.name.localeCompare(b.name) || a.id - b.id);
@@ -102,6 +106,7 @@ export const spellsService = {
       q: input.q,
       rulebookIds: input.rulebookIds,
       ...input.taxonomyFilters,
+      ...input.componentFilters,
       items: pagedSpells.map((s) =>
         mapSpellItem(
           s,
@@ -187,13 +192,11 @@ function filterByBrowseScope(
   spells: SpellRow<typeof SELECT_SPELL_LIST>[],
   classIds: number[],
   domainIds: number[],
-  taxonomyFilters: SpellTaxonomyFilterIds,
   level: number | "all" | null,
 ) {
   if (
     classIds.length === 0 &&
     domainIds.length === 0 &&
-    !hasTaxonomyScope(taxonomyFilters) &&
     level === null
   ) {
     return spells;
@@ -207,9 +210,6 @@ function filterByBrowseScope(
     level === null || level === "all" || entry.level === level;
 
   return spells.filter((spell) => {
-    if (!matchesTaxonomyScope(spell, taxonomyFilters)) {
-      return false;
-    }
     if (!hasListScope) {
       return true;
     }
@@ -238,39 +238,11 @@ export function hasTaxonomyScope(filters: SpellTaxonomyFilterIds) {
   return (
     filters.schoolIds.length > 0 ||
     filters.subschoolIds.length > 0 ||
-    filters.descriptorIds.length > 0
+    filters.descriptorIds.length > 0 ||
+    filters.descriptorBuckets.length > 0
   );
 }
 
-function matchesTaxonomyScope(
-  spell: SpellRow<typeof SELECT_SPELL_LIST>,
-  filters: SpellTaxonomyFilterIds,
-) {
-  if (filters.schoolIds.length > 0) {
-    const schoolId = spell.spellSchool?.id ?? null;
-    if (schoolId === null || !filters.schoolIds.includes(schoolId)) {
-      return false;
-    }
-  }
-
-  if (filters.subschoolIds.length > 0) {
-    const subschoolId = spell.spellSubschool?.id ?? null;
-    if (
-      subschoolId === null ||
-      !filters.subschoolIds.includes(subschoolId)
-    ) {
-      return false;
-    }
-  }
-
-  if (filters.descriptorIds.length > 0) {
-    const descriptorIds = new Set(
-      spell.spellDescriptors.map((entry) => entry.spellDescriptor.id),
-    );
-    if (!filters.descriptorIds.some((id) => descriptorIds.has(id))) {
-      return false;
-    }
-  }
-
-  return true;
+export function hasComponentScope(filters: SpellComponentFilters) {
+  return filters.componentKeys.length > 0;
 }

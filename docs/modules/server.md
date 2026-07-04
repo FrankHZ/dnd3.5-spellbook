@@ -57,6 +57,32 @@ Server responses should use DTOs exported from `@dnd/contracts`. If a response
 shape changes, update `contracts/` first, rebuild it, and then validate both
 server and web consumers.
 
+Browse/Search normalized filter contracts are owned by the server plus
+contracts boundary. The current public normalized filter vocabulary is:
+
+- taxonomy ids: `schoolIds`, `subschoolIds`, `descriptorIds`
+- descriptor buckets: `descriptorBuckets` for public descriptor options that are
+  not legacy descriptor ids
+- base component keys: `componentKeys`
+
+`componentKeys` accepts stable normalized keys only and uses `all` semantics:
+every selected component must be present. Extra component text, mechanics
+facets, and separate Tome of Battle query params remain review-only until their
+owning plan promotes them.
+
+Taxonomy vocabulary items include `sourceKind` and `category` metadata. Tome of
+Battle disciplines and maneuver categories are marked as `sourceKind:
+"maneuver"` so frontend grouping does not need to parse raw names or keys.
+Legacy combined school/subschool labels are not public vocabulary; generated
+content splits them into base taxonomy facets, and server fallback query logic
+expands single base ids across old combined legacy ids.
+Legacy descriptor noise such as `see text...` is exposed only through the
+descriptor bucket `descriptorBuckets=other` / `key: "other"`; server fallback
+query logic expands that bucket across the old legacy descriptor ids.
+
+`GET /api/meta/filters` is the vocabulary source for frontend consumers. Do not
+make the frontend derive component or mechanics filters from raw spell fields.
+
 ## Validation
 
 Use:

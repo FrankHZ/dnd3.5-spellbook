@@ -73,7 +73,7 @@ describe("GET /api/status/db", () => {
       sourceKind: "rules-clean",
       generatorVersion: "rules-content-normalizer-fixture",
       generatedAt: "2026-07-03T00:00:00.000Z",
-      spellCount: 7,
+      spellCount: 8,
       issueCount: 1,
       parentRepoCommit: "fixture-parent-commit",
       dataRepoCommit: "fixture-data-commit",
@@ -83,9 +83,9 @@ describe("GET /api/status/db", () => {
     });
     expect(body.content.tableCounts).toMatchObject({
       rulebookContent: 3,
-      spellContent: 7,
-      spellTaxonomyFacet: 10,
-      spellComponent: 14,
+      spellContent: 8,
+      spellTaxonomyFacet: 17,
+      spellComponent: 15,
       spellMechanicFacet: 0,
       rulesContentIssue: 1,
     });
@@ -106,7 +106,7 @@ describe("GET /api/status/db", () => {
       expect(body.content.latestBuild).toBeNull();
       expect(body.content.tableCounts).toMatchObject({
         rulebookContent: 3,
-        spellContent: 7,
+        spellContent: 8,
         rulesContentIssue: 1,
       });
     } finally {

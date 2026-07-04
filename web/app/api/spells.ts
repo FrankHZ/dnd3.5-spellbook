@@ -93,10 +93,20 @@ function setTaxonomyParams(
   const schoolIds = normalize(filters.schoolIds);
   const subschoolIds = normalize(filters.subschoolIds);
   const descriptorIds = normalize(filters.descriptorIds);
+  const descriptorBuckets = Array.from(
+    new Set(
+      (filters.descriptorBuckets ?? [])
+        .map((value) => value.trim().toLowerCase())
+        .filter((value) => value === "other"),
+    ),
+  ).sort();
 
   if (schoolIds.length) sp.set("schoolIds", schoolIds.join(","));
   if (subschoolIds.length) sp.set("subschoolIds", subschoolIds.join(","));
   if (descriptorIds.length) sp.set("descriptorIds", descriptorIds.join(","));
+  if (descriptorBuckets.length) {
+    sp.set("descriptorBuckets", descriptorBuckets.join(","));
+  }
 }
 
 export function getSpellDetail(id: number, signal?: AbortSignal) {

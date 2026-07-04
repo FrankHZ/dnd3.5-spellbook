@@ -1,3 +1,8 @@
+import type {
+  SpellComponentFilterKey,
+  SpellDescriptorBucketKey,
+} from "./spell.js";
+
 export type MetaI18nResponse = {
   i18n: { lang: "en" | "zh"; variant?: string | undefined };
 
@@ -13,12 +18,37 @@ export type MetaI18nResponse = {
 
 export type SpellTaxonomyFacetType = "school" | "subschool" | "descriptor";
 
+export type SpellTaxonomySourceKind = "spell" | "maneuver";
+
+export type SpellTaxonomyVocabularyCategory =
+  | "spell_school"
+  | "spell_subschool"
+  | "spell_descriptor"
+  | "maneuver_discipline"
+  | "maneuver_category";
+
 export type SpellFilterVocabularyItem = {
-  id: number;
+  id?: number | undefined;
   key: string;
   slug?: string | undefined;
   name: string;
+  sourceKind: SpellTaxonomySourceKind;
+  category: SpellTaxonomyVocabularyCategory;
+  queryParam?:
+    | "schoolIds"
+    | "subschoolIds"
+    | "descriptorIds"
+    | "descriptorBuckets"
+    | undefined;
+  queryValue?: string | undefined;
+  bucketKey?: SpellDescriptorBucketKey | undefined;
   i18n?: { name?: string | undefined } | undefined;
+};
+
+export type SpellComponentFilterVocabularyItem = {
+  key: SpellComponentFilterKey;
+  label: string;
+  abbreviation: string;
 };
 
 export type SpellFilterVocabularyResponse = {
@@ -27,5 +57,10 @@ export type SpellFilterVocabularyResponse = {
     schools: SpellFilterVocabularyItem[];
     subschools: SpellFilterVocabularyItem[];
     descriptors: SpellFilterVocabularyItem[];
+  };
+  components: {
+    queryParam: "componentKeys";
+    mode: "all";
+    base: SpellComponentFilterVocabularyItem[];
   };
 };

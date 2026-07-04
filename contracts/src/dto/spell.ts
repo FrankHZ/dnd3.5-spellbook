@@ -5,13 +5,41 @@ import type { RulebookMin } from "./rulebook.js";
 
 export type SpellID = number;
 
+export const SPELL_DESCRIPTOR_BUCKET_KEYS = ["other"] as const;
+
+export type SpellDescriptorBucketKey =
+  (typeof SPELL_DESCRIPTOR_BUCKET_KEYS)[number];
+
 export type SpellTaxonomyFilterIds = {
   schoolIds: number[];
   subschoolIds: number[];
   descriptorIds: number[];
+  descriptorBuckets: SpellDescriptorBucketKey[];
 };
 
-export type SpellNameSearchQuery = SpellTaxonomyFilterIds & {
+export const SPELL_COMPONENT_FILTER_KEYS = [
+  "verbal",
+  "somatic",
+  "material",
+  "arcane_focus",
+  "divine_focus",
+  "xp",
+  "metabreath",
+  "truename",
+  "corrupt",
+] as const;
+
+export type SpellComponentFilterKey =
+  (typeof SPELL_COMPONENT_FILTER_KEYS)[number];
+
+export type SpellComponentFilters = {
+  componentKeys: SpellComponentFilterKey[];
+};
+
+export type SpellNormalizedFilterScope = SpellTaxonomyFilterIds &
+  SpellComponentFilters;
+
+export type SpellNameSearchQuery = SpellNormalizedFilterScope & {
   q: string;
   rulebookIds: number[];
   classIds: number[];
@@ -21,7 +49,7 @@ export type SpellNameSearchQuery = SpellTaxonomyFilterIds & {
   pageSize: number;
 };
 
-export type SpellByLevelQuery = SpellTaxonomyFilterIds & {
+export type SpellByLevelQuery = SpellNormalizedFilterScope & {
   classIds: number[];
   domainIds: number[];
   level: number | "all";
@@ -40,7 +68,12 @@ export type SpellItem = {
 
   school: { id: number; name: string; slug: string } | null;
   subSchool: { id: number; name: string; slug: string } | null;
-  descriptors: Array<{ id: number; name: string; slug: string }>;
+  descriptors: Array<{
+    id?: number | undefined;
+    key?: SpellDescriptorBucketKey | undefined;
+    name: string;
+    slug: string;
+  }>;
   components: SpellComponents;
 
   classLevels: Array<ClassLevel>;
@@ -66,6 +99,8 @@ export type SpellNameSearchResponse = {
   schoolIds: number[];
   subschoolIds: number[];
   descriptorIds: number[];
+  descriptorBuckets: SpellDescriptorBucketKey[];
+  componentKeys: SpellComponentFilterKey[];
   items: SpellItemView[];
 };
 
@@ -84,6 +119,8 @@ export type SpellByLevelResponse = {
   schoolIds: number[];
   subschoolIds: number[];
   descriptorIds: number[];
+  descriptorBuckets: SpellDescriptorBucketKey[];
+  componentKeys: SpellComponentFilterKey[];
   groups: SpellsByLevelGroup[];
 };
 

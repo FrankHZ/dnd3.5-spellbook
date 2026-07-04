@@ -1,4 +1,8 @@
-import { RulebookId, SpellTaxonomyFilterIds } from "@dnd/contracts";
+import {
+  RulebookId,
+  SpellComponentFilters,
+  SpellTaxonomyFilterIds,
+} from "@dnd/contracts";
 import { Prisma } from "prisma-rules-clean/generated/client";
 import {
   fetchSpellsInOrder as fetchRulesSpellsInOrder,
@@ -44,6 +48,7 @@ export async function queryIdsByName(
   name: string,
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
+  componentFilters: SpellComponentFilters,
   maxCandidates: number,
 ) {
   if (activeSpellReadSource() === "content") {
@@ -51,10 +56,17 @@ export async function queryIdsByName(
       name,
       rulebookIds,
       taxonomyFilters,
+      componentFilters,
       maxCandidates,
     );
   }
-  return queryRulesIdsByName(name, rulebookIds, taxonomyFilters, maxCandidates);
+  return queryRulesIdsByName(
+    name,
+    rulebookIds,
+    taxonomyFilters,
+    componentFilters,
+    maxCandidates,
+  );
 }
 
 export async function queryByClassAndDomainWithLevel(
@@ -63,6 +75,7 @@ export async function queryByClassAndDomainWithLevel(
   level: number,
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
+  componentFilters: SpellComponentFilters,
   page: number,
   pageSize: number,
 ) {
@@ -73,6 +86,7 @@ export async function queryByClassAndDomainWithLevel(
       level,
       rulebookIds,
       taxonomyFilters,
+      componentFilters,
       page,
       pageSize,
     );
@@ -83,6 +97,7 @@ export async function queryByClassAndDomainWithLevel(
     level,
     rulebookIds,
     taxonomyFilters,
+    componentFilters,
     page,
     pageSize,
   );
@@ -93,6 +108,7 @@ export async function queryByClassAndDomainAllLevels(
   domainIds: number[],
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
+  componentFilters: SpellComponentFilters,
   page: number,
   pageSize: number,
 ) {
@@ -102,6 +118,7 @@ export async function queryByClassAndDomainAllLevels(
       domainIds,
       rulebookIds,
       taxonomyFilters,
+      componentFilters,
       page,
       pageSize,
     );
@@ -111,6 +128,7 @@ export async function queryByClassAndDomainAllLevels(
     domainIds,
     rulebookIds,
     taxonomyFilters,
+    componentFilters,
     page,
     pageSize,
   );

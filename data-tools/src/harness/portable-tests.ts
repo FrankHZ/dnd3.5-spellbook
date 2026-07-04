@@ -303,9 +303,52 @@ const tests: TestCase[] = [
             verifiedAuthorId: null,
             verifiedTime: null,
           },
+          {
+            id: 11,
+            added: "2020-01-01T00:00:00.000Z",
+            rulebookId: 1,
+            page: 232,
+            name: "Combined Taxonomy Fixture",
+            slug: "combined-taxonomy-fixture",
+            schoolId: 10,
+            schoolName: "Conjuration/Evocation",
+            schoolSlug: "conjurationevocation",
+            subSchoolId: 20,
+            subSchoolName: "Creation or Calling",
+            subSchoolSlug: "creation-or-calling",
+            verbalComponent: true,
+            somaticComponent: true,
+            materialComponent: false,
+            arcaneFocusComponent: false,
+            divineFocusComponent: false,
+            xpComponent: false,
+            metaBreathComponent: false,
+            trueNameComponent: false,
+            corruptComponent: false,
+            extraComponents: null,
+            castingTime: "1 standard action",
+            range: "Medium",
+            target: "One creature",
+            effect: null,
+            area: null,
+            duration: "Instantaneous",
+            savingThrow: "None",
+            spellResistance: "Yes",
+            description: "Combined taxonomy fixture text.",
+            descriptionHtml: "<p>Combined taxonomy fixture text.</p>",
+            verified: true,
+            verifiedAuthorId: null,
+            verifiedTime: null,
+          },
         ],
         descriptors: [
           { spellId: 10, descriptorId: 3, name: "Fire", slug: "fire" },
+          {
+            spellId: 11,
+            descriptorId: 39,
+            name: "see text for summon monster I",
+            slug: "see-text-for-summon-monster-i",
+          },
         ],
         listEntries: [
           {
@@ -324,11 +367,52 @@ const tests: TestCase[] = [
       };
 
       const normalized = normalizeRulesContent(input, "2026-07-02T00:00:00.000Z");
-      assert.equal(normalized.counts.spells, 1);
+      assert.equal(normalized.counts.spells, 2);
       assert.equal(normalized.rulebooks[0]?.displayAbbr, "PH");
       assert.equal(normalized.spells[0]?.descriptionText, "Fixture rules text.");
       assert.equal(normalized.spells[0]?.verified, true);
-      assert.equal(normalized.taxonomyFacets.length, 2);
+      assert.equal(normalized.taxonomyFacets.length, 7);
+      const combinedTaxonomy = normalized.taxonomyFacets.filter(
+        (row) => row.spellId === "spell:11",
+      );
+      assert.deepEqual(
+        combinedTaxonomy
+          .filter((row) => row.facetType === "school")
+          .map((row) => row.facetKey)
+          .sort(),
+        ["conjuration", "evocation"],
+      );
+      assert.deepEqual(
+        combinedTaxonomy
+          .filter((row) => row.facetType === "subschool")
+          .map((row) => row.facetKey)
+          .sort(),
+        ["calling", "creation"],
+      );
+      assert.equal(
+        combinedTaxonomy.some((row) =>
+          ["conjurationevocation", "creation-or-calling"].includes(row.facetKey),
+        ),
+        false,
+      );
+      assert.deepEqual(
+        combinedTaxonomy
+          .filter((row) => row.facetType === "descriptor")
+          .map((row) => ({
+            legacyFacetId: row.legacyFacetId,
+            facetKey: row.facetKey,
+            name: row.name,
+            rawText: row.rawText,
+          })),
+        [
+          {
+            legacyFacetId: null,
+            facetKey: "other",
+            name: "Other",
+            rawText: "see text for summon monster I",
+          },
+        ],
+      );
       assert.ok(
         normalized.mechanicFacets.some(
           (row) =>

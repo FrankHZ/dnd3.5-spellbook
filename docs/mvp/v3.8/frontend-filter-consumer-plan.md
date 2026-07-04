@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: blocked on backend normalized query contract.
+Status: ready after backend normalized query contract review.
 
 ## Purpose
 
@@ -55,6 +55,22 @@ the server cannot support consistently.
 
 - Browse/Search already consume existing school, subschool, descriptor, class,
   domain, level, and rulebook filters.
+- Backend v3.8 contract adds `componentKeys` as the first new normalized filter
+  field. Accepted keys are `verbal`, `somatic`, `material`, `arcane_focus`,
+  `divine_focus`, `xp`, `metabreath`, `truename`, and `corrupt`.
+- Component filters use `all` semantics: selected component keys are all
+  required.
+- `GET /api/meta/filters` exposes `components.base` vocabulary with
+  `queryParam: "componentKeys"` and `mode: "all"`.
+- `GET /api/meta/filters` also marks taxonomy vocabulary with `sourceKind` and
+  `category`, so Tome of Battle disciplines and maneuver categories can be
+  grouped without frontend key parsing.
+- Combined legacy school/subschool labels are split by the backend and should
+  not be rendered as standalone filter options.
+- Legacy descriptor noise such as `see text...` is collapsed by the backend into
+  the `Other` descriptor option (`queryParam: "descriptorBuckets"`,
+  `queryValue: "other"`, `key: "other"`); frontend controls should not render
+  raw `see-text` values or send it through `descriptorIds`.
 - v3.6 display settings and spell-card density work are frozen.
 - Summary spell cards are scan-only; actions live in full-detail card mode.
 - `docs/design.md` remains the durable design direction.
@@ -116,7 +132,9 @@ the server cannot support consistently.
 ## Open Questions
 
 - Which accepted normalized filters deserve first-class controls versus compact
-  advanced filters?
+  advanced filters? Current accepted backend vocabulary is base component flags.
+- How should taxonomy controls visually separate `sourceKind: "maneuver"` items
+  from ordinary spell taxonomy without changing query semantics?
 - Should Search show every Browse-equivalent filter by default, or hide some
   newly accepted filters behind an advanced section?
 - Which spell-card polish candidates directly help filter-result scanning?

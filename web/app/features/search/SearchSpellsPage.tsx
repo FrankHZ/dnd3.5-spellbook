@@ -185,11 +185,11 @@ export default function SearchSpellsPage() {
                   },
                 })
               }
-              onChangeDescriptors={(descriptorIds) =>
+              onChangeDescriptorFilters={(descriptorFilters) =>
                 updateSearchScope({
                   taxonomyFilters: {
                     ...searchScope.taxonomyFilters,
-                    descriptorIds,
+                    ...descriptorFilters,
                   },
                 })
               }

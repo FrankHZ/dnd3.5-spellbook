@@ -32,6 +32,12 @@ export type BrowseQueryState = {
   setSchoolIds: (next: number[]) => void;
   setSubschoolIds: (next: number[]) => void;
   setDescriptorIds: (next: number[]) => void;
+  setDescriptorFilters: (
+    next: Pick<
+      SpellTaxonomyFilterIds,
+      "descriptorIds" | "descriptorBuckets"
+    >,
+  ) => void;
   setPage: (next: number) => void;
 
   // useful flags
@@ -230,6 +236,28 @@ export function useBrowseQueryState(): BrowseQueryState {
     [setTaxonomyIds],
   );
 
+  const setDescriptorFilters = useCallback(
+    (
+      next: Pick<
+        SpellTaxonomyFilterIds,
+        "descriptorIds" | "descriptorBuckets"
+      >,
+    ) => {
+      updateParams((sp) => {
+        setTaxonomyFilterParams(
+          sp,
+          normalizeTaxonomyFilters({
+            ...parsed.taxonomyFilters,
+            descriptorIds: next.descriptorIds,
+            descriptorBuckets: next.descriptorBuckets,
+          }),
+        );
+        resetPage(sp);
+      });
+    },
+    [parsed.taxonomyFilters, updateParams],
+  );
+
   const setPage = useCallback(
     (nextPage: number) => {
       const p =
@@ -262,6 +290,7 @@ export function useBrowseQueryState(): BrowseQueryState {
     setSchoolIds,
     setSubschoolIds,
     setDescriptorIds,
+    setDescriptorFilters,
     setPage,
     hasValidSelection,
   };

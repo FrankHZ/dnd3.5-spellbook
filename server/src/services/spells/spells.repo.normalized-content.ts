@@ -1,7 +1,16 @@
-import { RulebookId, SpellTaxonomyFilterIds } from "@dnd/contracts";
+import {
+  RulebookId,
+  SpellComponentFilters,
+  SpellTaxonomyFilterIds,
+} from "@dnd/contracts";
 import { contentPrisma } from "../../lib/content-prisma-client";
 import { Prisma } from "prisma-content/generated/client";
 import { SpellRow } from "./spells.repo.rules";
+import {
+  expandDescriptorBucketFilterIds,
+  expandSchoolFilterIds,
+  expandSubschoolFilterIds,
+} from "./taxonomy-normalization";
 
 type LegacyShapedSpell = SpellRow & {
   added: Date;
@@ -26,15 +35,70 @@ function normalizedTaxonomyWhere(filters: SpellTaxonomyFilterIds) {
     )
   `;
 
+  const descriptorFacetCondition = () => {
+    const descriptorConditions: Prisma.Sql[] = [];
+    const bucketLegacyIds = expandDescriptorBucketFilterIds(
+      filters.descriptorBuckets,
+    );
+
+    if (filters.descriptorIds.length > 0) {
+      descriptorConditions.push(
+        Prisma.sql`tf."legacyFacetId" IN (${Prisma.join(filters.descriptorIds)})`,
+      );
+    }
+    if (filters.descriptorBuckets.includes("other")) {
+      descriptorConditions.push(Prisma.sql`tf."facetKey" = 'other'`);
+    }
+    if (bucketLegacyIds.length > 0) {
+      descriptorConditions.push(
+        Prisma.sql`tf."legacyFacetId" IN (${Prisma.join(bucketLegacyIds)})`,
+      );
+    }
+    if (descriptorConditions.length === 0) return null;
+
+    return Prisma.sql`
+      EXISTS (
+        SELECT 1
+        FROM "SpellTaxonomyFacet" tf
+        WHERE tf."spellId" = s."id"
+          AND tf."facetType" = 'descriptor'
+          AND tf."reviewStatus" = 'accepted'
+          AND (${Prisma.join(descriptorConditions, " OR ")})
+      )
+    `;
+  };
+
   if (filters.schoolIds.length > 0) {
-    conditions.push(facetCondition("school", filters.schoolIds));
+    conditions.push(
+      facetCondition("school", expandSchoolFilterIds(filters.schoolIds)),
+    );
   }
   if (filters.subschoolIds.length > 0) {
-    conditions.push(facetCondition("subschool", filters.subschoolIds));
+    conditions.push(
+      facetCondition("subschool", expandSubschoolFilterIds(filters.subschoolIds)),
+    );
   }
-  if (filters.descriptorIds.length > 0) {
-    conditions.push(facetCondition("descriptor", filters.descriptorIds));
+  const descriptorCondition = descriptorFacetCondition();
+  if (descriptorCondition) {
+    conditions.push(descriptorCondition);
   }
+
+  return conditions.length > 0
+    ? Prisma.sql`AND ${Prisma.join(conditions, " AND ")}`
+    : Prisma.empty;
+}
+
+function normalizedComponentWhere(filters: SpellComponentFilters) {
+  const conditions = filters.componentKeys.map((componentType) => Prisma.sql`
+    EXISTS (
+      SELECT 1
+      FROM "SpellComponent" cf
+      WHERE cf."spellId" = s."id"
+        AND cf."componentType" = ${componentType}
+        AND cf."present" = true
+        AND cf."reviewStatus" = 'accepted'
+    )
+  `);
 
   return conditions.length > 0
     ? Prisma.sql`AND ${Prisma.join(conditions, " AND ")}`
@@ -45,6 +109,7 @@ export async function queryNormalizedIdsByName(
   name: string,
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
+  componentFilters: SpellComponentFilters,
   maxCandidates: number,
 ) {
   if (rulebookIds.length === 0) return [];
@@ -58,6 +123,7 @@ export async function queryNormalizedIdsByName(
       WHERE s."sourceRulebookId" IN (${Prisma.join(rulebookIds)})
         AND LOWER(s."canonicalName") LIKE ${like}
         ${normalizedTaxonomyWhere(taxonomyFilters)}
+        ${normalizedComponentWhere(componentFilters)}
       LIMIT ${maxCandidates}
     `,
   );
@@ -110,6 +176,7 @@ export async function queryNormalizedByClassAndDomainWithLevel(
   level: number,
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
+  componentFilters: SpellComponentFilters,
   page: number,
   pageSize: number,
 ) {
@@ -137,6 +204,7 @@ export async function queryNormalizedByClassAndDomainWithLevel(
       JOIN "SpellContent" s ON s."id" = u."spellId"
       WHERE 1 = 1
         ${normalizedTaxonomyWhere(taxonomyFilters)}
+        ${normalizedComponentWhere(componentFilters)}
     `,
   );
   const total = Number(countRows[0]?.cnt ?? 0);
@@ -159,6 +227,7 @@ export async function queryNormalizedByClassAndDomainWithLevel(
       JOIN "SpellContent" s ON s."id" = u."spellId"
       WHERE 1 = 1
         ${normalizedTaxonomyWhere(taxonomyFilters)}
+        ${normalizedComponentWhere(componentFilters)}
       ORDER BY s."canonicalName" ASC, s."legacySpellId" ASC
       LIMIT ${pageSize} OFFSET ${offset}
     `,
@@ -173,6 +242,7 @@ export async function queryNormalizedByClassAndDomainAllLevels(
   domainIds: number[],
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
+  componentFilters: SpellComponentFilters,
   page: number,
   pageSize: number,
 ) {
@@ -200,6 +270,7 @@ export async function queryNormalizedByClassAndDomainAllLevels(
       JOIN "SpellContent" s ON s."id" = u."spellId"
       WHERE 1 = 1
         ${normalizedTaxonomyWhere(taxonomyFilters)}
+        ${normalizedComponentWhere(componentFilters)}
     `,
   );
   const total = Number(countRows[0]?.cnt ?? 0);
@@ -224,6 +295,7 @@ export async function queryNormalizedByClassAndDomainAllLevels(
       JOIN "SpellContent" s ON s."id" = u."spellId"
       WHERE 1 = 1
         ${normalizedTaxonomyWhere(taxonomyFilters)}
+        ${normalizedComponentWhere(componentFilters)}
       ORDER BY u."level" ASC, s."canonicalName" ASC, s."legacySpellId" ASC
       LIMIT ${pageSize} OFFSET ${offset}
     `,
@@ -340,7 +412,7 @@ function toLegacyShapedSpell(
       : null,
     spellDescriptors: descriptors.map((descriptor) => ({
       spellDescriptor: {
-        id: descriptor.legacyFacetId ?? 0,
+        id: descriptor.legacyFacetId,
         name: descriptor.name,
         slug: descriptor.slug ?? descriptor.facetKey,
       },

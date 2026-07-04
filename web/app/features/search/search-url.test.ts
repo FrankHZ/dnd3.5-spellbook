@@ -22,6 +22,7 @@ describe("search URL helpers", () => {
         schoolIds: [],
         subschoolIds: [],
         descriptorIds: [],
+        descriptorBuckets: [],
       },
       level: 3,
       page: 4,
@@ -31,7 +32,7 @@ describe("search URL helpers", () => {
   it("parses taxonomy filters from query params", () => {
     const scope = parseSearchScope(
       new URLSearchParams(
-        "q=fire&schoolIds=2,1,1&subschoolIds=3&descriptorIds=0,5,bad&page=2",
+        "q=fire&schoolIds=2,1,1&subschoolIds=3&descriptorIds=0,5,bad&descriptorBuckets=other&page=2",
       ),
     );
 
@@ -39,6 +40,7 @@ describe("search URL helpers", () => {
       schoolIds: [1, 2],
       subschoolIds: [3],
       descriptorIds: [5],
+      descriptorBuckets: ["other"],
     });
   });
 
@@ -53,11 +55,12 @@ describe("search URL helpers", () => {
           schoolIds: [4],
           subschoolIds: [3],
           descriptorIds: [9, 8],
+          descriptorBuckets: ["other"],
         },
         level: "all",
       }),
     ).toBe(
-      "/search?q=fire+ball&classIds=1%2C2&domainIds=8&schoolIds=4&subschoolIds=3&descriptorIds=8%2C9&level=all",
+      "/search?q=fire+ball&classIds=1%2C2&domainIds=8&schoolIds=4&subschoolIds=3&descriptorIds=8%2C9&descriptorBuckets=other&level=all",
     );
   });
 
@@ -90,6 +93,7 @@ describe("search URL helpers", () => {
           schoolIds: [],
           subschoolIds: [],
           descriptorIds: [9],
+          descriptorBuckets: [],
         },
         level: null,
       }),

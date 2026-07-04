@@ -4,3 +4,4 @@
 {"op":"insert","table":"dnd_spellschool","key":"school:1","data":{"id":1,"name":"Evocation","slug":"evocation"}}
 {"op":"insert","table":"dnd_spellsubschool","key":"subschool:1","data":{"id":1,"name":"Calling","slug":"calling"}}
 {"op":"insert","table":"dnd_spelldescriptor","key":"descriptor:1","data":{"id":1,"name":"Fire","slug":"fire"}}
+{"op":"insert","table":"dnd_spelldescriptor","key":"descriptor:23","data":{"id":23,"name":"see text","slug":"see-text"}}
