@@ -82,6 +82,29 @@ type RulesContentBuildMetaRow = {
   buildMetaJson: unknown;
 };
 
+type CountRow = Record<string, unknown> & {
+  count: number | bigint;
+};
+
+type ReviewReadiness = {
+  family: string;
+  status: "ready" | "needs_normalization" | "defer";
+  reason: string;
+  evidence: Record<string, unknown>;
+};
+
+const TOME_OF_BATTLE_DISCIPLINES = [
+  "desert wind",
+  "devoted spirit",
+  "diamond mind",
+  "iron heart",
+  "setting sun",
+  "shadow hand",
+  "stone dragon",
+  "tiger claw",
+  "white raven",
+] as const;
+
 function usage(): never {
   console.error(`Usage:
   npm run -w data-tools rules:content:audit -- [--limit 100]
@@ -90,11 +113,13 @@ function usage(): never {
   npm run -w data-tools rules:content:import -- [--input data-tools/out/rules-content/rules-content.generated.json]
   npm run -w data-tools rules:content:meta
   npm run -w data-tools rules:content:parity
+  npm run -w data-tools rules:content:review
 
 Audit and generate normalized spell-facing content from the local read-only rules
 DB. Import replaces only the generated rules-content tables in
 CONTENT_DATABASE_URL. Parity compares the current rules DB and content DB without
-writing either database.
+writing either database. Review inventories normalized taxonomy, component, and
+mechanic facets from CONTENT_DATABASE_URL without writing the database.
 `);
   process.exit(1);
 }
@@ -143,7 +168,8 @@ function parseArgs(argv: string[]) {
     command !== "generate" &&
     command !== "import" &&
     command !== "meta" &&
-    command !== "parity"
+    command !== "parity" &&
+    command !== "review"
   ) {
     usage();
   }
@@ -761,6 +787,33 @@ function runMeta() {
   }
 }
 
+function runReview() {
+  const contentPath = contentDbPath();
+  const db = new Database(contentPath, { readonly: true, fileMustExist: true });
+  try {
+    const report = buildNormalizedRulesReviewReport(db, contentPath);
+    const reportPath = path.join(
+      OUT_ROOT,
+      `${timestamp()}-normalized-rules-review.json`,
+    );
+    writeJson(reportPath, report);
+    console.log("Normalized rules review inventory OK");
+    console.log(`Content DB: ${contentPath}`);
+    console.log(
+      `Taxonomy review rows: ${report.taxonomy.reviewStatusCounts.review ?? 0}`,
+    );
+    console.log(
+      `Component review rows: ${report.components.reviewStatusCounts.review ?? 0}`,
+    );
+    console.log(
+      `Mechanic review rows: ${report.mechanics.reviewStatusCounts.review ?? 0}`,
+    );
+    console.log(`Report: ${reportPath}`);
+  } finally {
+    db.close();
+  }
+}
+
 function buildContentDbMetaReport(db: Database.Database, contentPath: string) {
   const build: RulesContentBuildMetaRow | null = tableExists(db, "RulesContentBuild")
     ? (normalizeBuildMetaRow(
@@ -808,6 +861,332 @@ function buildContentDbMetaReport(db: Database.Database, contentPath: string) {
       ]),
     ),
   };
+}
+
+function buildNormalizedRulesReviewReport(
+  db: Database.Database,
+  contentPath: string,
+) {
+  assertGeneratedTables(db);
+  const meta = buildContentDbMetaReport(db, contentPath);
+  const taxonomyByFacetType = queryCountRows(
+    db,
+    `
+    SELECT facetType, COUNT(*) AS count
+    FROM SpellTaxonomyFacet
+    GROUP BY facetType
+    ORDER BY facetType
+  `,
+  );
+  const taxonomyByStatus = queryCountRows(
+    db,
+    `
+    SELECT reviewStatus, COUNT(*) AS count
+    FROM SpellTaxonomyFacet
+    GROUP BY reviewStatus
+    ORDER BY reviewStatus
+  `,
+  );
+  const taxonomyByIssue = queryCountRows(
+    db,
+    `
+    SELECT COALESCE(issueCode, '') AS issueCode, COUNT(*) AS count
+    FROM SpellTaxonomyFacet
+    GROUP BY COALESCE(issueCode, '')
+    ORDER BY count DESC, issueCode
+  `,
+  );
+  const taxonomyValues = queryCountRows(
+    db,
+    `
+    SELECT facetType,
+           facetKey,
+           name,
+           COALESCE(slug, '') AS slug,
+           reviewStatus,
+           COALESCE(issueCode, '') AS issueCode,
+           COUNT(*) AS count
+    FROM SpellTaxonomyFacet
+    GROUP BY facetType, facetKey, name, COALESCE(slug, ''), reviewStatus, COALESCE(issueCode, '')
+    ORDER BY facetType, count DESC, name
+  `,
+  );
+  const tomeOfBattleNames = TOME_OF_BATTLE_DISCIPLINES.map((value) =>
+    value.toLowerCase(),
+  );
+  const tomeOfBattleLikeTaxonomy =
+    tomeOfBattleNames.length === 0
+      ? []
+      : queryCountRows(
+          db,
+          `
+          SELECT facetType,
+                 facetKey,
+                 name,
+                 COALESCE(slug, '') AS slug,
+                 reviewStatus,
+                 COALESCE(issueCode, '') AS issueCode,
+                 COUNT(*) AS count
+          FROM SpellTaxonomyFacet
+          WHERE lower(name) IN (${placeholders(tomeOfBattleNames)})
+             OR lower(name) LIKE '%discipline%'
+             OR lower(name) LIKE '%maneuver%'
+          GROUP BY facetType, facetKey, name, COALESCE(slug, ''), reviewStatus, COALESCE(issueCode, '')
+          ORDER BY count DESC, facetType, name
+        `,
+          tomeOfBattleNames,
+        );
+
+  const componentByType = queryCountRows(
+    db,
+    `
+    SELECT componentType,
+           present,
+           reviewStatus,
+           COALESCE(issueCode, '') AS issueCode,
+           COUNT(*) AS count
+    FROM SpellComponent
+    GROUP BY componentType, present, reviewStatus, COALESCE(issueCode, '')
+    ORDER BY componentType, present DESC, reviewStatus, issueCode
+  `,
+  );
+  const componentReviewSamples = queryCountRows(
+    db,
+    `
+    SELECT componentType,
+           rawText,
+           reviewStatus,
+           COALESCE(issueCode, '') AS issueCode,
+           COUNT(*) AS count
+    FROM SpellComponent
+    WHERE reviewStatus = 'review' OR componentType = 'other' OR issueCode IS NOT NULL
+    GROUP BY componentType, rawText, reviewStatus, COALESCE(issueCode, '')
+    ORDER BY count DESC, componentType, rawText
+    LIMIT 100
+  `,
+  );
+
+  const mechanicByType = queryCountRows(
+    db,
+    `
+    SELECT mechanicType,
+           category,
+           reviewStatus,
+           COALESCE(issueCode, '') AS issueCode,
+           COUNT(*) AS count
+    FROM SpellMechanicFacet
+    GROUP BY mechanicType, category, reviewStatus, COALESCE(issueCode, '')
+    ORDER BY mechanicType, count DESC, category, reviewStatus, issueCode
+  `,
+  );
+  const mechanicReviewSamples = queryCountRows(
+    db,
+    `
+    SELECT mechanicType,
+           category,
+           reviewStatus,
+           COALESCE(issueCode, '') AS issueCode,
+           rawText,
+           COUNT(*) AS count
+    FROM SpellMechanicFacet
+    WHERE reviewStatus = 'review'
+       OR issueCode IS NOT NULL
+       OR category IN ('special', 'text')
+    GROUP BY mechanicType, category, reviewStatus, COALESCE(issueCode, ''), rawText
+    ORDER BY count DESC, mechanicType, category, rawText
+    LIMIT 200
+  `,
+  );
+
+  const issuesByCode = queryCountRows(
+    db,
+    `
+    SELECT issueCode,
+           severity,
+           sourceField,
+           COUNT(*) AS count
+    FROM RulesContentIssue
+    GROUP BY issueCode, severity, sourceField
+    ORDER BY count DESC, issueCode, sourceField
+  `,
+  );
+  const issueSamples = queryCountRows(
+    db,
+    `
+    SELECT issueCode,
+           severity,
+           sourceField,
+           rawText,
+           COUNT(*) AS count
+    FROM RulesContentIssue
+    GROUP BY issueCode, severity, sourceField, rawText
+    ORDER BY count DESC, issueCode, sourceField, rawText
+    LIMIT 200
+  `,
+  );
+
+  const taxonomyReviewStatusCounts = countMap(taxonomyByStatus, "reviewStatus");
+  const componentReviewStatusCounts = countMap(componentByType, "reviewStatus");
+  const componentReviewByType = groupedCountMap(
+    componentByType.filter((row) => String(row.reviewStatus) === "review"),
+    "componentType",
+  );
+  const mechanicReviewStatusCounts = countMap(mechanicByType, "reviewStatus");
+  const mechanicReviewByType = groupedCountMap(
+    mechanicByType.filter((row) => String(row.reviewStatus) === "review"),
+    "mechanicType",
+  );
+  const issueCountsByCode = groupedCountMap(issuesByCode, "issueCode");
+  const readiness = buildReviewReadiness({
+    taxonomyReviewRows: taxonomyReviewStatusCounts.review ?? 0,
+    componentReviewByType,
+    mechanicReviewByType,
+    issueCountsByCode,
+    tomeOfBattleLikeCount: sumCounts(tomeOfBattleLikeTaxonomy),
+  });
+
+  return {
+    schemaVersion: 1,
+    generatedAt: new Date().toISOString(),
+    source: {
+      contentDb: meta.contentDb,
+      rulesContentBuild: meta.rulesContentBuild,
+      tableCounts: meta.counts,
+    },
+    taxonomy: {
+      byFacetType: taxonomyByFacetType,
+      byIssue: taxonomyByIssue,
+      reviewStatusCounts: taxonomyReviewStatusCounts,
+      topValuesByFacetType: topRowsByKey(taxonomyValues, "facetType", 25),
+      tomeOfBattleLike: tomeOfBattleLikeTaxonomy,
+    },
+    components: {
+      byType: componentByType,
+      reviewStatusCounts: componentReviewStatusCounts,
+      reviewSamples: componentReviewSamples,
+    },
+    mechanics: {
+      byType: mechanicByType,
+      reviewStatusCounts: mechanicReviewStatusCounts,
+      reviewRowsByMechanicType: mechanicReviewByType,
+      reviewSamples: mechanicReviewSamples,
+    },
+    issues: {
+      byCode: issuesByCode,
+      countsByCode: issueCountsByCode,
+      samples: issueSamples,
+    },
+    readiness,
+  };
+}
+
+function buildReviewReadiness(input: {
+  taxonomyReviewRows: number;
+  componentReviewByType: Record<string, number>;
+  mechanicReviewByType: Record<string, number>;
+  issueCountsByCode: Record<string, number>;
+  tomeOfBattleLikeCount: number;
+}): ReviewReadiness[] {
+  const mechanicReview = (type: string) => input.mechanicReviewByType[type] ?? 0;
+  const componentReview = (type: string) => input.componentReviewByType[type] ?? 0;
+  const baseComponentReviewRows = BASE_COMPONENT_TYPES.reduce(
+    (total, type) => total + componentReview(type),
+    0,
+  );
+  const otherComponentReviewRows = Object.entries(input.componentReviewByType)
+    .filter(
+      ([type]) =>
+        !(BASE_COMPONENT_TYPES as readonly string[]).includes(type),
+    )
+    .reduce((total, [, count]) => total + count, 0);
+  return [
+    {
+      family: "taxonomy.school_subschool_descriptor",
+      status: input.taxonomyReviewRows === 0 ? "ready" : "needs_normalization",
+      reason:
+        input.taxonomyReviewRows === 0
+          ? "Existing taxonomy rows have no review-status debt for the current contract."
+          : "Taxonomy has review rows that should be resolved before expanding grouping semantics.",
+      evidence: {
+        reviewRows: input.taxonomyReviewRows,
+        tomeOfBattleLikeRows: input.tomeOfBattleLikeCount,
+      },
+    },
+    {
+      family: "taxonomy.tome_of_battle_source_kind",
+      status: input.tomeOfBattleLikeCount > 0 ? "needs_normalization" : "defer",
+      reason:
+        "Tome of Battle disciplines and maneuver categories need a source-kind boundary before UI grouping changes.",
+      evidence: {
+        tomeOfBattleLikeRows: input.tomeOfBattleLikeCount,
+      },
+    },
+    {
+      family: "components.base_flags",
+      status:
+        baseComponentReviewRows === 0 ? "ready" : "needs_normalization",
+      reason:
+        baseComponentReviewRows === 0
+          ? "Base component flags are typed booleans in SpellComponent and do not require frontend string parsing."
+          : "Base component flags have review rows that should be resolved before becoming public filter vocabulary.",
+      evidence: {
+        baseComponentTypes: BASE_COMPONENT_TYPES,
+        reviewRows: baseComponentReviewRows,
+      },
+    },
+    {
+      family: "components.other_or_extra",
+      status:
+        otherComponentReviewRows > 0 ? "needs_normalization" : "ready",
+      reason:
+        "Extra component text is intentionally preserved, but should not become filter vocabulary until reviewed.",
+      evidence: {
+        reviewRows: otherComponentReviewRows,
+        componentExtraIssues:
+          input.issueCountsByCode["component.extra.review"] ?? 0,
+      },
+    },
+    {
+      family: "mechanics.casting_time",
+      status: mechanicReview("casting_time") > 0 ? "needs_normalization" : "ready",
+      reason:
+        "Action-like casting-time categories are useful, but review rows must stay out of public vocabulary.",
+      evidence: {
+        reviewRows: mechanicReview("casting_time"),
+      },
+    },
+    {
+      family: "mechanics.range",
+      status: mechanicReview("range") > 0 ? "needs_normalization" : "ready",
+      reason:
+        "Range has strong normalized categories, but special/review rows need a stable fallback contract first.",
+      evidence: {
+        reviewRows: mechanicReview("range"),
+      },
+    },
+    {
+      family: "mechanics.target_effect_area",
+      status: "defer",
+      reason:
+        "Target, effect, and area remain high-volume free-text mechanics and are not ready for broad filters.",
+      evidence: {
+        targetReviewRows: mechanicReview("target"),
+        effectReviewRows: mechanicReview("effect"),
+        areaReviewRows: mechanicReview("area"),
+      },
+    },
+    {
+      family: "mechanics.duration_save_sr",
+      status: "defer",
+      reason:
+        "Duration, saving throw, and spell resistance need separate consumer semantics before becoming filters.",
+      evidence: {
+        durationReviewRows: mechanicReview("duration"),
+        savingThrowReviewRows: mechanicReview("saving_throw"),
+        spellResistanceReviewRows: mechanicReview("spell_resistance"),
+      },
+    },
+  ];
 }
 
 function normalizeBuildMetaRow(
@@ -1049,6 +1428,68 @@ function count(db: Database.Database, sql: string) {
   return Number(row?.count ?? 0);
 }
 
+function queryCountRows(
+  db: Database.Database,
+  sql: string,
+  params: unknown[] = [],
+) {
+  return (db.prepare(sql).all(...params) as CountRow[]).map((row) =>
+    normalizeCountRow(row),
+  );
+}
+
+function normalizeCountRow(row: CountRow) {
+  return Object.fromEntries(
+    Object.entries(row).map(([key, value]) => [
+      key,
+      key === "count" ? Number(value ?? 0) : value,
+    ]),
+  ) as Record<string, unknown> & { count: number };
+}
+
+function countMap(rows: Array<Record<string, unknown>>, key: string) {
+  return rows.reduce<Record<string, number>>((accumulator, row) => {
+    const mapKey = String(row[key] ?? "");
+    accumulator[mapKey] = (accumulator[mapKey] ?? 0) + Number(row.count ?? 0);
+    return accumulator;
+  }, {});
+}
+
+function groupedCountMap(rows: Array<Record<string, unknown>>, key: string) {
+  return rows.reduce<Record<string, number>>((accumulator, row) => {
+    const mapKey = String(row[key] ?? "");
+    accumulator[mapKey] = (accumulator[mapKey] ?? 0) + Number(row.count ?? 0);
+    return accumulator;
+  }, {});
+}
+
+function topRowsByKey(
+  rows: Array<Record<string, unknown>>,
+  key: string,
+  limitPerKey: number,
+) {
+  const buckets = new Map<string, Array<Record<string, unknown>>>();
+  for (const row of rows) {
+    const bucketKey = String(row[key] ?? "");
+    const bucket = buckets.get(bucketKey);
+    if (bucket) {
+      bucket.push(row);
+    } else {
+      buckets.set(bucketKey, [row]);
+    }
+  }
+  return Object.fromEntries(
+    [...buckets.entries()].map(([bucketKey, bucketRows]) => [
+      bucketKey,
+      bucketRows.slice(0, limitPerKey),
+    ]),
+  );
+}
+
+function sumCounts(rows: Array<Record<string, unknown>>) {
+  return rows.reduce((total, row) => total + Number(row.count ?? 0), 0);
+}
+
 function compareCount(
   issues: Array<{
     code: string;
@@ -1102,6 +1543,7 @@ function main() {
   if (args.command === "import") return runImport(args.input, args.dryRun);
   if (args.command === "meta") return runMeta();
   if (args.command === "parity") return runParity();
+  if (args.command === "review") return runReview();
   usage();
 }
 

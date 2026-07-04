@@ -16,7 +16,9 @@ rules content, first taxonomy filter consumers, rulebook labels, portable CI/CD
 rails, and agent/module documentation cleanup.
 
 v3.6 is active as a lightweight post-freeze coordination stage. Its server DB
-status API, UI/UX display, and docs structure cleanup slices have landed.
+status API, UI/UX display, docs structure cleanup, and normalized rules review
+slices have landed. No broader v3.6 filter-contract implementation slice is
+currently promoted.
 
 For final v3.5 as-built behavior and validation evidence, start at
 `docs/mvp/v3.5/FREEZE.md`.
@@ -58,6 +60,21 @@ The v3.6 UI/UX display slice has landed with:
 - Browse/Search scope summary density updates.
 - clarified docs that summary spell cards are scan-only and favorite/prepare
   actions live in full-detail card mode.
+
+The v3.6 normalized rules review slice has landed with:
+
+- `npm run -w data-tools rules:content:review` as the read-only content DB
+  inventory command for taxonomy, component, and mechanic facets.
+- documented review results in
+  `docs/mvp/v3.6/normalized-rules-review-plan.md`.
+- confirmation that existing school/subschool/descriptor contracts remain
+  stable.
+- base component flags accepted as the safest next filter-contract candidate,
+  but not promoted inside v3.6.
+- casting time, range, target/effect/area, duration, saving throw, and spell
+  resistance filters deferred until further normalization or fallback semantics.
+- Tome of Battle discipline/category handling deferred until a source-kind or
+  category boundary is accepted.
 
 The v3.4 release remains frozen with:
 
@@ -178,18 +195,18 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Review remaining v3.6 planning tracks**
+1. **Prepare v3.6 closeout**
 
-   Use `docs/mvp/v3.6/README.md` and `docs/mvp/v3.6/integrated-plan.md` to
-   decide whether normalized rules review or a later stable-track item should be
-   promoted. Keep large content QA, static/offline artifacts, and DB release
-   artifact automation in the later stable track unless explicitly promoted.
+   No remaining v3.6 review candidate is promoted for implementation. Create an
+   acceptance checklist from `docs/templates/acceptance-checklist.md`, then
+   prepare a freeze snapshot with the repo-local `$freeze-snapshot` skill.
 
-2. **Prepare v3.6 closeout when no remaining track is promoted**
+2. **Choose the next post-v3.6 data/contract slice**
 
-   If no further v3.6 implementation slice is accepted, create an acceptance
-   checklist from `docs/templates/acceptance-checklist.md` and prepare a freeze
-   snapshot with the repo-local `$freeze-snapshot` skill.
+   After v3.6 is frozen, use
+   `docs/mvp/v3.6/normalized-rules-review-plan.md` to decide whether the next
+   branch should promote base component flags, add a Tome of Battle source-kind
+   boundary, or continue mechanics normalization.
 
 ## v3.6 Committed Workstreams
 
@@ -218,44 +235,30 @@ opening implementation branches.
 
 ## v3.6 Review Candidates
 
-These are planning inputs, not committed implementation scope until an owning
-plan accepts the boundary.
+These were planning inputs. Normalized rules review has resolved the immediate
+v3.6 decision: do not broaden filter contracts inside v3.6.
 
 1. **Normalize more filter contracts**
 
-   Review the generated `SpellComponent` and `SpellMechanicFacet` categories
-   before exposing more filter contracts. Likely order is component flags first,
-   then range categories, then casting-time categories. Target/effect/area
-   filters need more normalization review before they become query vocabulary.
+   Reviewed. Base component flags are the safest next filter-contract candidate,
+   but they are not promoted in v3.6. Range and casting-time categories need
+   stable fallback semantics before public vocabulary exposure.
 
 2. **Review taxonomy normalization**
 
-   Review `SpellTaxonomyFacet` before broadening taxonomy UI semantics beyond
-   the first v3.5 school/subschool/descriptor filters. Current vocabulary still
-   mixes ordinary spell schools with Tome of Battle disciplines, and ordinary
-   subschools with maneuver categories such as boost, counter, stance, and
-   strike. Do not hardcode this split in the frontend; add an accepted
-   normalized category/source kind before grouping these filters in UI.
-
-   Also review multi-school and multi-subschool source values. Some rows are
-   still represented as combined labels rather than normalized multi-value
-   memberships. Descriptor cleanup should collapse "see text..." source-note
-   variants into a stable other/source-note category with preserved raw text,
-   instead of exposing many spell-specific "see text for ..." values as filter
-   vocabulary.
+   Reviewed for the current contract. Existing school/subschool/descriptor
+   vocabulary remains stable, but Tome of Battle disciplines and maneuver
+   categories need an accepted source-kind/category boundary before UI grouping
+   changes.
 
 3. **Review normalized detail display**
 
-   Revisit Spell Detail after the mechanics facets are reviewed. The detail page
-   can show clearer component/mechanics orientation from normalized fields, but
-   raw source text must remain the fallback and ordinary reading flow should not
-   turn into a QA/provenance surface.
+   Not promoted for v3.6. Raw source text remains the fallback, and normalized
+   mechanics should not become a Spell Detail QA/provenance surface.
 
 4. **Review filter selection display density for broader filters**
 
-   The committed UI/UX update can improve current summary density. Before
-   broader or longer filter vocabularies ship, review whether selected filters
-   need overflow counts, abbreviated labels, grouping, or a popover pattern.
+   Not promoted for v3.6 because no broader filter vocabulary is shipping.
 
 5. **Review TypeScript module config cleanup**
 

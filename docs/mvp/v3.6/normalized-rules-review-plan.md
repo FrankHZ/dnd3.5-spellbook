@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: review candidate.
+Status: first review inventory complete.
 
 ## Purpose
 
@@ -58,18 +58,71 @@ maintain.
 - Mechanics and component filter controls are not shipped.
 - `RulesContentIssue` contains review inventory for ambiguous source values.
 
+## Review Snapshot
+
+Command:
+
+```bash
+npm run -w data-tools rules:content:review
+```
+
+Local snapshot from `server/db/local/content.sqlite` on July 3, 2026:
+
+- `SpellContent`: 4,926 rows.
+- `SpellTaxonomyFacet`: 8,658 rows; review rows: 0.
+- `SpellComponent`: 44,474 rows; review rows: 6.
+- `SpellMechanicFacet`: 39,408 rows; review rows: 3,511.
+- `RulesContentIssue`: 3,523 rows.
+
+Review debt by issue code:
+
+- `target_effect_area.review`: 2,111 rows.
+- `casting_time.review`: 740 rows.
+- `saving_throw.review`: 277 rows.
+- `duration.review`: 170 rows.
+- `range.review`: 147 rows.
+- `spell_resistance.review`: 66 rows.
+- `component.extra.review`: 6 rows.
+- `list.extra.review`: 6 rows.
+
+Tome of Battle disciplines currently appear as accepted `school` taxonomy rows
+with 208 spell appearances. That does not block the existing
+school/subschool/descriptor contract, but it should not be treated as ordinary
+spell-school UI grouping without adding a source-kind or category boundary.
+
+## Readiness Decision
+
+- Ready: existing school/subschool/descriptor vocabulary as exposed in v3.5.
+- Ready: base component flags (`verbal`, `somatic`, `material`, `arcane_focus`,
+  `divine_focus`, `xp`, `metabreath`, `truename`, `corrupt`) as backend contract
+  vocabulary.
+- Needs normalization: extra/other component text. Keep raw text visible to
+  detail consumers, but do not expose as filter vocabulary.
+- Needs normalization: Tome of Battle discipline/category boundary. Keep current
+  taxonomy rows compatible, but add a future source-kind distinction before UI
+  grouping changes.
+- Needs normalization: casting time and range. Their accepted buckets are useful,
+  but review rows must stay out of public filter vocabularies until a stable
+  fallback contract is defined.
+- Defer: target/effect/area filters. These are still high-volume free-text
+  mechanics.
+- Defer: duration, saving throw, and spell resistance filters until each has
+  explicit consumer semantics beyond raw category display.
+
 ## Plan
 
 ### Slice 1: Dirty-Value Inventory
 
+- Status: complete for the first v3.6 review pass.
 - Deliverable: summarized reports for component, mechanic, taxonomy, and source
   note values.
 - Expected files: generated reports under `data-tools/out/` and distilled notes
   in this plan or a child plan if promoted.
-- Validation: data-tools command or focused script with documented input.
+- Validation: `npm run -w data-tools rules:content:review`.
 
 ### Slice 2: Contract Readiness Decision
 
+- Status: complete for the first v3.6 review pass.
 - Deliverable: classify each candidate filter family as ready, needs
   normalization, or defer.
 - Expected files: this plan, `docs/roadmap.md` if work order changes.
@@ -77,6 +130,7 @@ maintain.
 
 ### Slice 3: Implementation Plan If Promoted
 
+- Status: not promoted in this branch.
 - Deliverable: a focused child plan for the accepted filter/detail slice.
 - Expected files: new plan doc only if implementation scope is accepted.
 - Validation: no broad code changes in the review branch.
@@ -99,9 +153,9 @@ maintain.
 
 ## Open Questions
 
-- Are component flags ready for the next filter contract, or do mechanics facets
-  provide higher user value first?
-- Should Tome of Battle disciplines be displayed with spell schools or in a
-  separate source-kind group?
-- Which source-note variants should collapse into an `other/source-note`
-  category?
+- Which accepted component flags should become the next public query contract,
+  if any, after v3.6 closeout?
+- What exact source-kind/category shape should separate Tome of Battle
+  disciplines from ordinary spell schools?
+- Which casting-time and range special values should collapse into an
+  `other/source-note` or equivalent fallback category?
