@@ -255,6 +255,8 @@ Nginx is the public entry point on port `80`.
 Expected routing:
 
 - `/` serves static assets from `/var/www/spellbook`
+- `/locales/*` serves checked-in frontend i18n JSON files and returns `404`
+  when a locale file is missing
 - `/api/*` proxies to `http://127.0.0.1:3000`
 
 Common commands:
@@ -482,6 +484,23 @@ Check:
 - `sudo nginx -t`
 - ownership and permissions under `/var/www/spellbook`
 - that the copied frontend assets are complete
+
+### UI Shows i18n Keys
+
+If UI text renders as keys such as `page.title` or `nav.about`, first check the
+static locale files rather than restarting `spellbook-api`:
+
+```bash
+curl -i http://127.0.0.1/locales/en/about.json
+curl -i http://127.0.0.1/locales/zh/about.json
+curl -i http://127.0.0.1/locales/en-US/about.json
+```
+
+Existing locale files should return `200` with `Content-Type:
+application/json`. Missing locale files should return `404`; they should not
+return the SPA `index.html`. If a missing `/locales/...` path returns HTML,
+update the Nginx site config so `location /locales/ { try_files $uri =404; }`
+appears before the SPA fallback location.
 
 ## Current Fit
 

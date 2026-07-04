@@ -251,6 +251,10 @@ server {
         try_files $uri /index.html;
     }
 
+    location /locales/ {
+        try_files $uri =404;
+    }
+
     location /api/ {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
