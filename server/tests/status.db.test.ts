@@ -158,6 +158,31 @@ describe("GET /api/status/db", () => {
     expect(body.activeSpellReadSource).toBe("rules");
   });
 
+  it("allows production DB provenance with the operations token header", async () => {
+    process.env.NODE_ENV = "production";
+    process.env.SPELLBOOK_DB_STATUS_TOKEN = "status-secret";
+
+    const res = await request(app)
+      .get("/api/status/db")
+      .set("X-Spellbook-Operations-Token", "status-secret");
+
+    expect(res.status).toBe(200);
+    const body = res.body as DbStatusResponse;
+    expect(body.activeSpellReadSource).toBe("rules");
+  });
+
+  it("blocks production DB provenance with an invalid operations token", async () => {
+    process.env.NODE_ENV = "production";
+    process.env.SPELLBOOK_DB_STATUS_TOKEN = "status-secret";
+
+    const res = await request(app)
+      .get("/api/status/db")
+      .set("Authorization", "Bearer wrong-secret");
+
+    expect(res.status).toBe(404);
+    expect(JSON.stringify(res.body)).not.toContain("activeSpellReadSource");
+  });
+
   it("allows production DB provenance when explicitly public", async () => {
     process.env.NODE_ENV = "production";
     process.env.ENABLE_DB_STATUS_PUBLIC = "true";
