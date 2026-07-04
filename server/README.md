@@ -34,6 +34,15 @@ server tests. Local data import scripts under `server/scripts/` are run with
 `tsx` by their dedicated npm commands and are intentionally outside the server
 build so deployment does not depend on local source-data files.
 
+Smoke the compiled runtime import after a build:
+
+```bash
+npm run -w server check:runtime
+```
+
+This imports `dist/src/app.js` without starting the listener. It catches
+compiled module-format issues in the server app or generated Prisma clients.
+
 Run the built server:
 
 ```bash
