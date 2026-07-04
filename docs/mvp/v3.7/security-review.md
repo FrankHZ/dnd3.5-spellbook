@@ -119,6 +119,8 @@ Accepted Slice 1 implementation:
 - Allow production access with `SPELLBOOK_DB_STATUS_TOKEN` sent as
   `Authorization: Bearer ...` or `X-Spellbook-Operations-Token`.
 - Allow intentional public exposure with `ENABLE_DB_STATUS_PUBLIC=true`.
+- Keep public About / Version display working through the redacted content
+  summary on `GET /api/status/app`.
 
 ### P1: Stop Returning Internal 500 Error Messages
 

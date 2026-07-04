@@ -253,7 +253,8 @@ SPELLBOOK_BACKEND_GITHUB_RUN_ATTEMPT=
 ```
 
 When these values are absent, `GET /api/status/app` reports a local fallback
-instead of inspecting Git state at request time.
+instead of inspecting Git state at request time. The same public endpoint also
+returns a redacted content DB summary used by the About / Version page.
 
 Runtime database provenance is available through `GET /api/status/db`, but in
 production it is private by default because it reports database file roles,

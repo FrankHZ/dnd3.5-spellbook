@@ -130,10 +130,11 @@ Status: implemented as `/about` with desktop and mobile navigation links.
   navigation.
 - Expected behavior:
   - Shows frontend build metadata from Vite build-time environment variables.
-  - Shows backend metadata from `GET /api/status/app`.
-  - Shows content DB status by calling `GET /api/status/db`.
-  - Handles DB status failure, redaction, or future authorization failure
-    gracefully with a compact unavailable state.
+  - Shows backend metadata and redacted content DB summary from
+    `GET /api/status/app`.
+  - Keeps detailed `GET /api/status/db` provenance operator-facing after the
+    security slice gates it in production.
+  - Handles status failure gracefully with a compact unavailable state.
   - Keeps visual style consistent with the existing reference-tool UI; no hero
     or marketing page.
 - Expected files:
@@ -174,8 +175,8 @@ environment updates.
 
 ## Acceptance Criteria
 
-- `/about` or the accepted route displays frontend, backend, and DB status
-  sections.
+- `/about` or the accepted route displays frontend, backend, and public content
+  status sections.
 - Frontend build metadata changes when GitHub web deploy builds a new artifact.
 - Backend deploy metadata changes when GitHub backend deploy runs.
 - The page continues to render when DB status is unavailable or later gated.
@@ -218,5 +219,6 @@ environment updates.
   page title `Version`.
 - Backend deploy metadata is written into the existing runtime environment file
   `/etc/default/spellbook-api` by the tracked deploy script before restart.
-- If the v3.7 security slice gates `/api/status/db`, should About show a
-  public summary endpoint later, or should DB details become operator-only?
+- The v3.7 security slice resolved the DB status split: About uses the public
+  content summary from `/api/status/app`, while detailed `/api/status/db`
+  provenance is operator-facing in production.
