@@ -114,7 +114,7 @@ was force-downgraded for the Prisma audit finding.
 | `@types/supertest` | `server` | `^7.2.0` | server tests pass |
 | `@react-router/dev`, `@react-router/node`, `@react-router/serve`, `react-router` | `web` | `^8.1.0` | web typecheck/tests/build pass |
 | `vite` | `web` | `^8.1.3` | web build passes |
-| `vite-tsconfig-paths` | `server`, `web` | `^6.1.1` | retained for Vitest alias resolution |
+| Vite/Vitest path aliases | `server`, `web` | explicit `resolve.alias` config | replaces `vite-tsconfig-paths` |
 | `i18next` | `web` | `^26.3.4` | i18n sync/check and web tests pass |
 | `i18next-http-backend` | `web` | `^4.0.0` | i18n sync/check and web build pass |
 | `react-i18next` | `web` | `^17.0.8` | web typecheck/tests pass |
@@ -123,9 +123,13 @@ was force-downgraded for the Prisma audit finding.
 | `prettier` | `web` | `^3.9.4` | tooling package only; no formatting rewrite in this branch |
 
 Vite 8 reports that native `resolve.tsconfigPaths` can replace
-`vite-tsconfig-paths`, but attempting that cleanup broke server and web Vitest
-alias resolution. Keep the plugin for now and revisit the native option in a
-focused test-config cleanup after Vitest/Vite support is smooth.
+`vite-tsconfig-paths`, but the installed Vite/Vitest public config types do not
+currently expose that field and a direct attempt did not resolve aliases in
+Vitest. The accepted cleanup removes `vite-tsconfig-paths` and uses explicit
+`resolve.alias` entries instead: `~` for web/server source imports, plus the
+server Prisma generated-client aliases. This removes the deprecated
+`tsconfck` transitive dependency from the lockfile without depending on an
+untyped config option.
 
 ### Low-Risk Patch Or Minor Candidates
 
@@ -146,7 +150,8 @@ not part of app runtime.
 
 ### Major Or Risky Candidates
 
-Status: implemented, with `vite-tsconfig-paths` retained as noted above.
+Status: implemented, with `vite-tsconfig-paths` replaced by explicit Vite and
+Vitest aliases as noted above.
 
 Keep these in focused branches because they can affect routing, build output,
 i18n runtime behavior, icon/shadcn generated code, or TypeScript baselines:
@@ -155,7 +160,7 @@ i18n runtime behavior, icon/shadcn generated code, or TypeScript baselines:
 | --- | --- | --- | --- | --- |
 | `@react-router/dev`, `@react-router/node`, `@react-router/serve`, `react-router` | `web` | `7.18.0` | `8.1.0` | route/build/runtime behavior |
 | `vite` | `web` | `7.3.6` | `8.1.3` | build pipeline and plugin compatibility |
-| `vite-tsconfig-paths` | `server`, `web` | `5.1.4` | `6.1.1` | path resolution in tests/builds |
+| `vite-tsconfig-paths` | `server`, `web` | `5.1.4` | removed | replaced by explicit aliases for tests/builds |
 | `i18next` | `web` | `25.10.10` | `26.3.4` | runtime fallback/loading semantics |
 | `i18next-http-backend` | `web` | `3.0.6` | `4.0.0` | locale loading behavior |
 | `react-i18next` | `web` | `16.6.6` | `17.0.8` | React binding behavior |
@@ -185,6 +190,22 @@ removed because it did not safely resolve the Prisma-pinned transitive package
 without creating package-manager conflicts. Keep this as a Prisma-upstream or
 deploy dependency-ownership follow-up rather than a lockfile hack.
 
+### Config Deprecation Scan
+
+Status: reviewed during the dependency branch.
+
+- `server/tsconfig.json` still uses CommonJS, `moduleResolution: "node"`, and
+  `ignoreDeprecations: "6.0"`. This is an intentional hold until the
+  server/contracts CJS/ESM boundary is redesigned.
+- `web/package.json` still uses `node --experimental-strip-types` for local
+  TypeScript i18n scripts. Current Node 24 accepts both `--strip-types` and
+  `--experimental-strip-types`, and the i18n check emits no runtime warning.
+  Treat this as optional script polish, not dependency-branch scope.
+- Lockfile deprecation metadata remains only for transitive packages:
+  `better-sqlite3 -> prebuild-install` and
+  `cheerio -> encoding-sniffer -> whatwg-encoding`. These are dependency
+  ownership follow-ups rather than repo config fields.
+
 ## Plan
 
 ### Slice 1: Refresh Inventory
@@ -205,7 +226,7 @@ npm audit --workspaces --omit=dev
 
 - Status: implemented.
 - Deliverable: decide ordering for React Router, Vite, Vitest, Tailwind,
-  `vite-tsconfig-paths`, `lucide-react`, and shadcn-related upgrades.
+  Vite/Vitest path alias cleanup, `lucide-react`, and shadcn-related upgrades.
 - Expected files: `web/package.json`, root/package lock, frontend config, and
   focused frontend tests only for the accepted slice.
 - Validation:
