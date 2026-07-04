@@ -13,15 +13,23 @@ It is intended as a quick orientation guide for agents and maintainers, not a fu
 
 Purpose:
 
-- browse spells by filters such as class, domain, and level
+- browse spells by filters such as class, domain, level, taxonomy, and
+  normalized base components
 
 ### Search
 
 - page entry: `web/app/features/search/SearchSpellsPage.tsx`
+- URL helper: `web/app/features/search/search-url.ts`
 
 Purpose:
 
-- direct search-driven spell lookup
+- direct search-driven spell lookup with shared Browse-compatible filter scope
+
+Shared filter components:
+
+- taxonomy filters: `web/app/features/spells/TaxonomyFilterSelector.tsx`
+- component filters: `web/app/features/spells/ComponentFilterSelector.tsx`
+- URL/filter helpers: `web/app/features/spells/taxonomy-filter-state.ts`
 
 ### Spell Detail
 

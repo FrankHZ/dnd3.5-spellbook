@@ -1,13 +1,17 @@
 import type {
   ResolveSpellNamesRequest,
   ResolveSpellNamesResponse,
+  SpellComponentFilterKey,
+  SpellComponentFilters,
   SpellBatchRequest,
   SpellBatchResponse,
   SpellByLevelResponse,
   SpellDetailView,
   SpellNameSearchResponse,
+  SpellNormalizedFilterScope,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
+import { SPELL_COMPONENT_FILTER_KEYS } from "@dnd/contracts";
 import { apiGet, apiPost } from "./http";
 
 export type LevelParam = number | "all";
@@ -17,6 +21,7 @@ export function getSpellsByLevel(params: {
   domainIds: number[];
   level: LevelParam;
   rulebookIds?: number[]; // omit if empty to rely on backend default edition scope
+  filters?: Partial<SpellNormalizedFilterScope>;
   taxonomyFilters?: Partial<SpellTaxonomyFilterIds>;
   page: number;
   pageSize: number;
@@ -35,7 +40,7 @@ export function getSpellsByLevel(params: {
   if (params.rulebookIds && params.rulebookIds.length > 0) {
     sp.set("rulebookIds", params.rulebookIds.join(","));
   }
-  setTaxonomyParams(sp, params.taxonomyFilters);
+  setNormalizedFilterParams(sp, params.filters ?? params.taxonomyFilters);
   sp.set("page", String(params.page));
   sp.set("pageSize", String(params.pageSize));
 
@@ -51,6 +56,7 @@ export function searchSpellsByName(params: {
   classIds?: number[];
   domainIds?: number[];
   level?: LevelParam | null;
+  filters?: Partial<SpellNormalizedFilterScope>;
   taxonomyFilters?: Partial<SpellTaxonomyFilterIds>;
   page: number;
   pageSize: number;
@@ -73,7 +79,7 @@ export function searchSpellsByName(params: {
   if (params.level != null) {
     sp.set("level", String(params.level));
   }
-  setTaxonomyParams(sp, params.taxonomyFilters);
+  setNormalizedFilterParams(sp, params.filters ?? params.taxonomyFilters);
 
   return apiGet<SpellNameSearchResponse>(
     `/api/spells/search?${sp.toString()}`,
@@ -107,6 +113,28 @@ function setTaxonomyParams(
   if (descriptorBuckets.length) {
     sp.set("descriptorBuckets", descriptorBuckets.join(","));
   }
+}
+
+function setComponentParams(
+  sp: URLSearchParams,
+  filters?: Partial<SpellComponentFilters>,
+) {
+  if (!filters) return;
+  const selected = new Set(
+    (filters.componentKeys ?? []).map((value) => value.trim().toLowerCase()),
+  );
+  const componentKeys: SpellComponentFilterKey[] =
+    SPELL_COMPONENT_FILTER_KEYS.filter((key) => selected.has(key));
+
+  if (componentKeys.length) sp.set("componentKeys", componentKeys.join(","));
+}
+
+function setNormalizedFilterParams(
+  sp: URLSearchParams,
+  filters?: Partial<SpellNormalizedFilterScope>,
+) {
+  setTaxonomyParams(sp, filters);
+  setComponentParams(sp, filters);
 }
 
 export function getSpellDetail(id: number, signal?: AbortSignal) {

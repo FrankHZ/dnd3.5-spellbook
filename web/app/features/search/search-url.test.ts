@@ -18,11 +18,12 @@ describe("search URL helpers", () => {
       q: "fire",
       classIds: [1, 2],
       domainIds: [8],
-      taxonomyFilters: {
+      filters: {
         schoolIds: [],
         subschoolIds: [],
         descriptorIds: [],
         descriptorBuckets: [],
+        componentKeys: [],
       },
       level: 3,
       page: 4,
@@ -36,12 +37,23 @@ describe("search URL helpers", () => {
       ),
     );
 
-    expect(scope.taxonomyFilters).toEqual({
+    expect(scope.filters).toEqual({
       schoolIds: [1, 2],
       subschoolIds: [3],
       descriptorIds: [5],
       descriptorBuckets: ["other"],
+      componentKeys: [],
     });
+  });
+
+  it("parses component filters from query params", () => {
+    const scope = parseSearchScope(
+      new URLSearchParams(
+        "q=fire&componentKeys=material,unknown,verbal,material&page=2",
+      ),
+    );
+
+    expect(scope.filters.componentKeys).toEqual(["verbal", "material"]);
   });
 
   it("builds clean and scoped search URLs", () => {
@@ -51,16 +63,17 @@ describe("search URL helpers", () => {
         q: "fire ball",
         classIds: [2, 1, 1],
         domainIds: [8],
-        taxonomyFilters: {
+        filters: {
           schoolIds: [4],
           subschoolIds: [3],
           descriptorIds: [9, 8],
           descriptorBuckets: ["other"],
+          componentKeys: ["material", "verbal"],
         },
         level: "all",
       }),
     ).toBe(
-      "/search?q=fire+ball&classIds=1%2C2&domainIds=8&schoolIds=4&subschoolIds=3&descriptorIds=8%2C9&descriptorBuckets=other&level=all",
+      "/search?q=fire+ball&classIds=1%2C2&domainIds=8&schoolIds=4&subschoolIds=3&descriptorIds=8%2C9&descriptorBuckets=other&componentKeys=verbal%2Cmaterial&level=all",
     );
   });
 
@@ -75,12 +88,12 @@ describe("search URL helpers", () => {
     expect(
       buildSearchUrlWithPreservedScope(
         new URLSearchParams(
-          "q=old&page=3&classIds=2,1&domainIds=8&schoolIds=5&descriptorIds=9&level=all",
+          "q=old&page=3&classIds=2,1&domainIds=8&schoolIds=5&descriptorIds=9&componentKeys=material&level=all",
         ),
         "magic missile",
       ),
     ).toBe(
-      "/search?q=magic+missile&classIds=1%2C2&domainIds=8&schoolIds=5&descriptorIds=9&level=all",
+      "/search?q=magic+missile&classIds=1%2C2&domainIds=8&schoolIds=5&descriptorIds=9&componentKeys=material&level=all",
     );
   });
 
@@ -89,11 +102,29 @@ describe("search URL helpers", () => {
       hasSearchScope({
         classIds: [],
         domainIds: [],
-        taxonomyFilters: {
+        filters: {
           schoolIds: [],
           subschoolIds: [],
           descriptorIds: [9],
           descriptorBuckets: [],
+          componentKeys: [],
+        },
+        level: null,
+      }),
+    ).toBe(true);
+  });
+
+  it("treats component keys as structured search scope", () => {
+    expect(
+      hasSearchScope({
+        classIds: [],
+        domainIds: [],
+        filters: {
+          schoolIds: [],
+          subschoolIds: [],
+          descriptorIds: [],
+          descriptorBuckets: [],
+          componentKeys: ["material"],
         },
         level: null,
       }),

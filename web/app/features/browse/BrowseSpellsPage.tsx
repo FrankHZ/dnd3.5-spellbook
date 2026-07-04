@@ -13,9 +13,13 @@ import {
   CardHeader,
 } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
+import { ComponentFilterSelector } from "~/features/spells/ComponentFilterSelector";
 import { SpellFilterScopeSummary } from "~/features/spells/SpellFilterScopeSummary";
 import { TaxonomyFilterSelector } from "~/features/spells/TaxonomyFilterSelector";
-import { countTaxonomyFilters } from "~/features/spells/taxonomy-filter-state";
+import {
+  countComponentFilters,
+  countTaxonomyFilters,
+} from "~/features/spells/taxonomy-filter-state";
 import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 
@@ -34,7 +38,7 @@ export default function BrowsePage() {
     level,
     classIds,
     domainIds,
-    taxonomyFilters,
+    filters,
     page,
     rulebookIds,
     setLevel,
@@ -43,6 +47,7 @@ export default function BrowsePage() {
     setSchoolIds,
     setSubschoolIds,
     setDescriptorFilters,
+    setComponentKeys,
     setPage,
     hasValidSelection,
   } = useBrowseQueryState();
@@ -57,7 +62,7 @@ export default function BrowsePage() {
       {
         classIds,
         domainIds,
-        taxonomyFilters,
+        filters,
         level,
         rulebookIds: rulebookIds.join(","),
         page,
@@ -72,7 +77,7 @@ export default function BrowsePage() {
         domainIds,
         level: level!,
         rulebookIds: rulebookIds.length ? rulebookIds : undefined,
-        taxonomyFilters,
+        filters,
         page,
         pageSize,
         signal,
@@ -121,10 +126,15 @@ export default function BrowsePage() {
             <LevelSelector value={level} onChange={setLevel} />
             <Separator />
             <TaxonomyFilterSelector
-              value={taxonomyFilters}
+              value={filters}
               onChangeSchools={setSchoolIds}
               onChangeSubschools={setSubschoolIds}
               onChangeDescriptorFilters={setDescriptorFilters}
+            />
+            <Separator />
+            <ComponentFilterSelector
+              value={filters.componentKeys}
+              onChange={setComponentKeys}
             />
           </CardContent>
         </Card>
@@ -135,7 +145,8 @@ export default function BrowsePage() {
             domainCount={domainIds.length}
             level={level}
             rulebookCount={rulebookIds.length}
-            taxonomyFilterCount={countTaxonomyFilters(taxonomyFilters)}
+            taxonomyFilterCount={countTaxonomyFilters(filters)}
+            componentFilterCount={countComponentFilters(filters)}
             nullLevelMode="required"
           />
 

@@ -11,11 +11,13 @@ type SpellFilterScopeSummaryProps = {
   level: number | "all" | null;
   rulebookCount: number;
   taxonomyFilterCount?: number;
+  componentFilterCount?: number;
   nullLevelMode: "any" | "required";
 };
 
 type SpellFilterScopeSummaryItem = {
-  key: "classes" | "domains" | "level" | "taxonomy" | "rulebooks";
+  key:
+    "classes" | "domains" | "level" | "taxonomy" | "components" | "rulebooks";
   label: string;
   value: string;
   isActive: boolean;
@@ -27,6 +29,7 @@ export function buildSpellFilterScopeSummaryItems({
   level,
   rulebookCount,
   taxonomyFilterCount = 0,
+  componentFilterCount = 0,
   nullLevelMode,
   t,
 }: SpellFilterScopeSummaryProps & {
@@ -55,6 +58,13 @@ export function buildSpellFilterScopeSummaryItems({
           ns: "spell-scope",
         })
       : t("taxonomy.none", { ns: "spell-scope" });
+  const componentScopeLabel =
+    componentFilterCount > 0
+      ? t("components.selected", {
+          count: componentFilterCount,
+          ns: "spell-scope",
+        })
+      : t("components.none", { ns: "spell-scope" });
   const rulebookScopeLabel =
     rulebookCount > 0
       ? t("rulebooks.selected-summary", {
@@ -89,6 +99,12 @@ export function buildSpellFilterScopeSummaryItems({
       isActive: taxonomyFilterCount > 0,
     },
     {
+      key: "components",
+      label: t("labels.components", { ns: "spell-scope" }),
+      value: componentScopeLabel,
+      isActive: componentFilterCount > 0,
+    },
+    {
       key: "rulebooks",
       label: t("labels.rulebooks", { ns: "spell-scope" }),
       value: rulebookScopeLabel,
@@ -103,6 +119,7 @@ export function SpellFilterScopeSummary({
   level,
   rulebookCount,
   taxonomyFilterCount = 0,
+  componentFilterCount = 0,
   nullLevelMode,
 }: SpellFilterScopeSummaryProps) {
   const { t } = useTranslation("spell-scope");
@@ -112,6 +129,7 @@ export function SpellFilterScopeSummary({
     level,
     rulebookCount,
     taxonomyFilterCount,
+    componentFilterCount,
     nullLevelMode,
     t,
   });

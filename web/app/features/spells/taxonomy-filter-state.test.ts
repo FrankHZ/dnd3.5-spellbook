@@ -1,10 +1,16 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  countComponentFilters,
   countTaxonomyFilters,
+  hasComponentFilters,
   hasTaxonomyFilters,
+  normalizeComponentFilters,
   normalizeTaxonomyFilters,
+  normalizeNormalizedFilters,
+  parseComponentFilters,
   parseTaxonomyFilters,
+  setComponentFilterParams,
   setTaxonomyFilterParams,
 } from "./taxonomy-filter-state";
 
@@ -65,5 +71,63 @@ describe("taxonomy filter state helpers", () => {
 
     expect(hasTaxonomyFilters(filters)).toBe(true);
     expect(countTaxonomyFilters(filters)).toBe(4);
+  });
+
+  it("normalizes component filter keys in contract order", () => {
+    expect(
+      parseComponentFilters(
+        new URLSearchParams(
+          "componentKeys=material,unknown,verbal,material,arcane_focus",
+        ),
+      ),
+    ).toEqual({
+      componentKeys: ["verbal", "material", "arcane_focus"],
+    });
+
+    expect(
+      normalizeComponentFilters({
+        componentKeys: ["xp", "verbal", "xp", "bad" as any],
+      }),
+    ).toEqual({
+      componentKeys: ["verbal", "xp"],
+    });
+  });
+
+  it("sets and deletes component URL params", () => {
+    const params = new URLSearchParams("componentKeys=verbal&page=4");
+
+    setComponentFilterParams(params, {
+      componentKeys: ["material", "verbal"],
+    });
+
+    expect(String(params)).toBe("componentKeys=verbal%2Cmaterial&page=4");
+
+    setComponentFilterParams(params, { componentKeys: [] });
+
+    expect(String(params)).toBe("page=4");
+  });
+
+  it("normalizes combined filter objects", () => {
+    expect(
+      normalizeNormalizedFilters({
+        schoolIds: [3],
+        componentKeys: ["material", "verbal", "material"],
+      }),
+    ).toEqual({
+      schoolIds: [3],
+      subschoolIds: [],
+      descriptorIds: [],
+      descriptorBuckets: [],
+      componentKeys: ["verbal", "material"],
+    });
+  });
+
+  it("counts active component filters", () => {
+    const filters = {
+      componentKeys: ["verbal" as const, "somatic" as const],
+    };
+
+    expect(hasComponentFilters(filters)).toBe(true);
+    expect(countComponentFilters(filters)).toBe(2);
   });
 });

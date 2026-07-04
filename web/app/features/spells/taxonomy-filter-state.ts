@@ -1,4 +1,10 @@
-import type { SpellTaxonomyFilterIds } from "@dnd/contracts";
+import {
+  SPELL_COMPONENT_FILTER_KEYS,
+  type SpellComponentFilterKey,
+  type SpellComponentFilters,
+  type SpellNormalizedFilterScope,
+  type SpellTaxonomyFilterIds,
+} from "@dnd/contracts";
 import { normalizeIds, parseIdList, setOrDelete } from "~/lib/utils";
 
 export const emptyTaxonomyFilters = (): SpellTaxonomyFilterIds => ({
@@ -6,6 +12,15 @@ export const emptyTaxonomyFilters = (): SpellTaxonomyFilterIds => ({
   subschoolIds: [],
   descriptorIds: [],
   descriptorBuckets: [],
+});
+
+export const emptyComponentFilters = (): SpellComponentFilters => ({
+  componentKeys: [],
+});
+
+export const emptyNormalizedFilters = (): SpellNormalizedFilterScope => ({
+  ...emptyTaxonomyFilters(),
+  ...emptyComponentFilters(),
 });
 
 function normalizePositiveIds(ids: number[]) {
@@ -19,6 +34,15 @@ function normalizeDescriptorBuckets(values: string[] | undefined) {
   )
     .filter((value) => allowed.has(value))
     .sort() as SpellTaxonomyFilterIds["descriptorBuckets"];
+}
+
+function normalizeComponentKeys(
+  values: string[] | undefined,
+): SpellComponentFilterKey[] {
+  const selected = new Set(
+    (values ?? []).map((value) => value.trim().toLowerCase()),
+  );
+  return SPELL_COMPONENT_FILTER_KEYS.filter((key) => selected.has(key));
 }
 
 export function parseTaxonomyFilters(
@@ -36,6 +60,25 @@ export function parseTaxonomyFilters(
   };
 }
 
+export function parseComponentFilters(
+  params: URLSearchParams,
+): SpellComponentFilters {
+  return {
+    componentKeys: normalizeComponentKeys(
+      params.get("componentKeys")?.split(","),
+    ),
+  };
+}
+
+export function parseNormalizedFilters(
+  params: URLSearchParams,
+): SpellNormalizedFilterScope {
+  return {
+    ...parseTaxonomyFilters(params),
+    ...parseComponentFilters(params),
+  };
+}
+
 export function normalizeTaxonomyFilters(
   filters: Partial<SpellTaxonomyFilterIds>,
 ): SpellTaxonomyFilterIds {
@@ -44,6 +87,23 @@ export function normalizeTaxonomyFilters(
     subschoolIds: normalizePositiveIds(filters.subschoolIds ?? []),
     descriptorIds: normalizePositiveIds(filters.descriptorIds ?? []),
     descriptorBuckets: normalizeDescriptorBuckets(filters.descriptorBuckets),
+  };
+}
+
+export function normalizeComponentFilters(
+  filters: Partial<SpellComponentFilters>,
+): SpellComponentFilters {
+  return {
+    componentKeys: normalizeComponentKeys(filters.componentKeys),
+  };
+}
+
+export function normalizeNormalizedFilters(
+  filters: Partial<SpellNormalizedFilterScope>,
+): SpellNormalizedFilterScope {
+  return {
+    ...normalizeTaxonomyFilters(filters),
+    ...normalizeComponentFilters(filters),
   };
 }
 
@@ -76,6 +136,27 @@ export function setTaxonomyFilterParams(
   );
 }
 
+export function setComponentFilterParams(
+  params: URLSearchParams,
+  filters: Partial<SpellComponentFilters>,
+) {
+  const normalized = normalizeComponentFilters(filters);
+  setOrDelete(
+    params,
+    "componentKeys",
+    normalized.componentKeys.length ? normalized.componentKeys.join(",") : null,
+  );
+}
+
+export function setNormalizedFilterParams(
+  params: URLSearchParams,
+  filters: Partial<SpellNormalizedFilterScope>,
+) {
+  const normalized = normalizeNormalizedFilters(filters);
+  setTaxonomyFilterParams(params, normalized);
+  setComponentFilterParams(params, normalized);
+}
+
 export function hasTaxonomyFilters(filters: SpellTaxonomyFilterIds) {
   return (
     filters.schoolIds.length > 0 ||
@@ -85,6 +166,14 @@ export function hasTaxonomyFilters(filters: SpellTaxonomyFilterIds) {
   );
 }
 
+export function hasComponentFilters(filters: SpellComponentFilters) {
+  return filters.componentKeys.length > 0;
+}
+
+export function hasNormalizedFilters(filters: SpellNormalizedFilterScope) {
+  return hasTaxonomyFilters(filters) || hasComponentFilters(filters);
+}
+
 export function countTaxonomyFilters(filters: SpellTaxonomyFilterIds) {
   return (
     filters.schoolIds.length +
@@ -92,4 +181,12 @@ export function countTaxonomyFilters(filters: SpellTaxonomyFilterIds) {
     filters.descriptorIds.length +
     filters.descriptorBuckets.length
   );
+}
+
+export function countComponentFilters(filters: SpellComponentFilters) {
+  return filters.componentKeys.length;
+}
+
+export function countNormalizedFilters(filters: SpellNormalizedFilterScope) {
+  return countTaxonomyFilters(filters) + countComponentFilters(filters);
 }

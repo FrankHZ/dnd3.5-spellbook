@@ -1,6 +1,7 @@
 import type {
   SpellDescriptorBucketKey,
   SpellFilterVocabularyItem,
+  SpellTaxonomyVocabularyCategory,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
 import { useState } from "react";
@@ -21,10 +22,12 @@ const DESCRIPTOR_BUCKET_PICKER_IDS: Record<SpellDescriptorBucketKey, number> = {
 function toPickerItem(
   item: SpellFilterVocabularyItem & { id: number },
   displayName: ReturnType<typeof useAppI18n>["name"],
+  group?: string,
 ): PickerItem {
   return {
     id: item.id,
     name: displayName(item),
+    group,
   };
 }
 
@@ -46,6 +49,21 @@ function toDescriptorPickerItem(
     };
   }
   return null;
+}
+
+function taxonomyGroupKey(category: SpellTaxonomyVocabularyCategory) {
+  switch (category) {
+    case "spell_school":
+      return "taxonomy.groups.spell-school";
+    case "spell_subschool":
+      return "taxonomy.groups.spell-subschool";
+    case "spell_descriptor":
+      return "taxonomy.groups.spell-descriptor";
+    case "maneuver_discipline":
+      return "taxonomy.groups.maneuver-discipline";
+    case "maneuver_category":
+      return "taxonomy.groups.maneuver-category";
+  }
 }
 
 function splitDescriptorPickerIds(ids: number[]) {
@@ -85,22 +103,28 @@ export function TaxonomyFilterSelector({
   const taxonomy = boot.spellFilterVocabulary.data?.taxonomy;
   const activeCount = countTaxonomyFilters(value);
   const [open, setOpen] = useState(activeCount > 0);
+  const groupLabel = (item: SpellFilterVocabularyItem) =>
+    t(taxonomyGroupKey(item.category));
 
   const schoolItems =
     taxonomy?.schools
       .filter(hasVocabularyId)
-      .map((item) => toPickerItem(item, displayName)) ?? [];
+      .map((item) => toPickerItem(item, displayName, groupLabel(item))) ?? [];
   const subschoolItems =
     taxonomy?.subschools
       .filter(hasVocabularyId)
-      .map((item) => toPickerItem(item, displayName)) ?? [];
-  const descriptorItems =
-    taxonomy?.descriptors
-      .map((item) => toDescriptorPickerItem(item, displayName))
-      .filter((item): item is PickerItem => Boolean(item)) ?? [];
+      .map((item) => toPickerItem(item, displayName, groupLabel(item))) ?? [];
+  const descriptorItems: PickerItem[] = (taxonomy?.descriptors ?? []).flatMap(
+    (item) => {
+      const pickerItem = toDescriptorPickerItem(item, displayName);
+      return pickerItem ? [{ ...pickerItem, group: groupLabel(item) }] : [];
+    },
+  );
   const selectedDescriptorPickerIds = [
     ...value.descriptorIds,
-    ...value.descriptorBuckets.map((bucket) => DESCRIPTOR_BUCKET_PICKER_IDS[bucket]),
+    ...value.descriptorBuckets.map(
+      (bucket) => DESCRIPTOR_BUCKET_PICKER_IDS[bucket],
+    ),
   ];
 
   return (

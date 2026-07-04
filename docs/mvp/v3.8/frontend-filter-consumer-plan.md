@@ -7,7 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: ready after backend normalized query contract review.
+Status: first frontend consumer slice implemented; later visual/card polish can
+remain separate if needed.
 
 ## Purpose
 
@@ -131,14 +132,40 @@ the server cannot support consistently.
 
 ## Open Questions
 
-- Which accepted normalized filters deserve first-class controls versus compact
-  advanced filters? Current accepted backend vocabulary is base component flags.
-- How should taxonomy controls visually separate `sourceKind: "maneuver"` items
-  from ordinary spell taxonomy without changing query semantics?
-- Should Search show every Browse-equivalent filter by default, or hide some
-  newly accepted filters behind an advanced section?
+- First-class controls are appropriate for the accepted base component
+  vocabulary because it is small, stable, and server-provided.
+- Taxonomy controls visually separate Tome of Battle entries by grouping with
+  server-provided `sourceKind` / `category` metadata.
+- Search exposes the same accepted component controls in the sidebar while
+  staying name-first.
 - Which spell-card polish candidates directly help filter-result scanning?
 
 ## Completion Notes
 
-Use this section only after implementation review.
+### 2026-07-04 Frontend Filter Consumer Slice
+
+- Browse/Search now send normalized `filters` through the API helpers while
+  keeping legacy taxonomy helper compatibility for nearby callers.
+- URL helpers parse, normalize, canonicalize, and preserve `componentKeys`
+  alongside existing class/domain/level/taxonomy scope.
+- Browse remains filter-first and Search remains name-first; both sidebars now
+  expose server-provided base component filters with `all` semantics.
+- Active scope summary separates taxonomy and component filter counts.
+- Taxonomy picker groups spell taxonomy and Tome of Battle maneuver vocabulary
+  using server-provided metadata rather than frontend string parsing.
+- Feature and frontend-map docs record the shipped consumer behavior.
+
+Validation:
+
+- `npm run -w web test -- --run app/api/spells.test.ts app/features/search/search-url.test.ts app/features/spells/taxonomy-filter-state.test.ts`
+- `npm run typecheck:web`
+- `npm run i18n:check`
+- `npm run -w web build`
+- Browser smoke on local dev servers:
+  - Browse desktop URL/state: `componentKeys=material` appears, scope summary
+    shows component count, and toggling Verbal canonicalizes
+    `componentKeys=verbal,material`.
+  - Search desktop URL/state: taxonomy and component scope render together, and
+    submitting a new query preserves `schoolIds` and `componentKeys`.
+  - Browse mobile width 390px: sidebar remains the same flow and component
+    filters remain visible.
