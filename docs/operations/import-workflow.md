@@ -235,10 +235,10 @@ This workflow does not:
 
 - [data-setup.md](./data-setup.md)
 - [rules-db-notes.md](./rules-db-notes.md)
-- [../data-tools/README.md](../data-tools/README.md)
-- [../data-tools/package.json](../data-tools/package.json)
-- [../server/scripts/import-zh-entities.ts](../server/scripts/import-zh-entities.ts)
-- [../server/scripts/import-zh-chm.ts](../server/scripts/import-zh-chm.ts)
-- [../data-tools/src/zh-parser/cli.ts](../data-tools/src/zh-parser/cli.ts)
-- [../data-tools/src/zh-parser/scripts/preprocess-chm-html.ts](../data-tools/src/zh-parser/scripts/preprocess-chm-html.ts)
+- [../../data-tools/README.md](../../data-tools/README.md)
+- [../../data-tools/package.json](../../data-tools/package.json)
+- [../../server/scripts/import-zh-entities.ts](../../server/scripts/import-zh-entities.ts)
+- [../../server/scripts/import-zh-chm.ts](../../server/scripts/import-zh-chm.ts)
+- [../../data-tools/src/zh-parser/cli.ts](../../data-tools/src/zh-parser/cli.ts)
+- [../../data-tools/src/zh-parser/scripts/preprocess-chm-html.ts](../../data-tools/src/zh-parser/scripts/preprocess-chm-html.ts)
 

@@ -124,8 +124,8 @@ Update:
 
 - `AGENTS.md`
 - `docs/README.md`
-- `docs/data-setup.md`
-- `docs/rules-db-notes.md`
+- `docs/operations/data-setup.md`
+- `docs/operations/rules-db-notes.md`
 - `data-tools/README.md`
 - `.gitignore` if the new patch/report paths need local-only protection
 

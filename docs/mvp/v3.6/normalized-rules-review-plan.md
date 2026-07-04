@@ -20,7 +20,7 @@ normalized mechanics in Spell Detail.
 - Owning domain: db / contracts / web
 - Primary implementation branch or specialist: main agent with focused
   subagents for dirty-value reports
-- Related feature/module docs: `docs/features.md`, `docs/data-setup.md`,
+- Related feature/module docs: `docs/features.md`, `docs/operations/data-setup.md`,
   `docs/modules/server.md`, `docs/modules/web.md`
 - Upstream dependency plans: v3.5 rules content normalization and frontend
   taxonomy filters

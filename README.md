@@ -26,15 +26,15 @@ excluded from the public repository, especially runtime databases under
 
 The latest frozen stage snapshot is **v3.5**.
 
-For the current work order, use [docs/roadmap.md](./docs/roadmap.md).
-For the current feature map, start with [docs/features.md](./docs/features.md).
-For current UI design notes, use [docs/design.md](./docs/design.md).
-For the v3.5 release snapshot, use [docs/mvp/v3.5/FREEZE.md](./docs/mvp/v3.5/FREEZE.md).
-For active v3.6 planning, use [docs/mvp/v3.6/README.md](./docs/mvp/v3.6/README.md).
-For the v3.4 release snapshot, use [docs/mvp/v3.4/FREEZE.md](./docs/mvp/v3.4/FREEZE.md).
-For v3.4 supporting plans and acceptance notes, use [docs/mvp/v3.4/acceptance-checklist.md](./docs/mvp/v3.4/acceptance-checklist.md) and [docs/mvp/v3.4/integrated-plan.md](./docs/mvp/v3.4/integrated-plan.md).
-For v3.5 supporting plans, use [docs/mvp/v3.5/README.md](./docs/mvp/v3.5/README.md).
-For the full documentation map, use [docs/README.md](./docs/README.md).
+Start here:
+
+- [docs/README.md](./docs/README.md): documentation map and precedence rules.
+- [docs/roadmap.md](./docs/roadmap.md): current work order.
+- [docs/features.md](./docs/features.md): current feature map.
+- [docs/mvp/v3.5/FREEZE.md](./docs/mvp/v3.5/FREEZE.md): latest frozen
+  release snapshot.
+- [docs/mvp/v3.6/README.md](./docs/mvp/v3.6/README.md): active post-freeze
+  planning space.
 
 ## Quick Start
 
@@ -73,8 +73,9 @@ The main workspace commands and constraints are documented in:
 
 The current deployment workflow is documented in:
 
-- [docs/deployment.md](./docs/deployment.md)
-- [docs/data-setup.md](./docs/data-setup.md)
+- [docs/operations/README.md](./docs/operations/README.md)
+- [docs/operations/deployment.md](./docs/operations/deployment.md)
+- [docs/operations/data-setup.md](./docs/operations/data-setup.md)
 - [data-tools/README.md](./data-tools/README.md)
 
 Tracked shell scripts under `docs/deployment-scripts/` are the canonical deployment scripts.
@@ -85,7 +86,7 @@ deployment remains manual until the DB ownership model is redesigned.
 
 Ignored root-level `.bat` files may exist as local machine-specific convenience wrappers, but they are not part of the canonical deployment contract.
 
-For local database setup and data origins, use [docs/data-setup.md](./docs/data-setup.md).
+For local database setup and data origins, use [docs/operations/data-setup.md](./docs/operations/data-setup.md).
 
 ## Repo Layout
 
@@ -97,7 +98,7 @@ For local database setup and data origins, use [docs/data-setup.md](./docs/data-
 |- data-tools/  Data inspection, parser, and rules DB tooling
 |  `- out/      Generated parser output and data-tool reports
 |- data/        Nested local repo for upstream/source inputs and rules patches
-|- docs/        Release docs, MVP plans, handoff notes
+|- docs/        Durable docs, operations docs, module docs, and version history
 ```
 
 ## What The App Covers

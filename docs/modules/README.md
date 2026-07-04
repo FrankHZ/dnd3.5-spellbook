@@ -24,7 +24,7 @@ merge changed a durable design boundary.
 - Keep user-facing behavior in `docs/features.md`.
 - Keep feature implementation plans in the active MVP topic docs.
 - Keep workspace command details in the workspace READMEs.
-- Keep operational deployment steps in `docs/deployment.md`.
+- Keep operational deployment steps in `docs/operations/deployment.md`.
 - Update these module docs only when a merge changes durable ownership,
   contracts, validation boundaries, or cross-module data flow.
 

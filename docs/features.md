@@ -23,7 +23,7 @@ Current data roles:
 
 This file records user-visible behavior. Database ownership, rebuild commands,
 fixture policy, provenance tracking, and deployment activation are documented in
-`docs/data-setup.md`, `docs/import-workflow.md`, and `docs/deployment.md`.
+`docs/operations/data-setup.md`, `docs/operations/import-workflow.md`, and `docs/operations/deployment.md`.
 
 ## Browse
 

@@ -21,8 +21,8 @@ Use this precedence order for v3.5:
 
 1. `docs/mvp/v3.5/FREEZE.md`
 2. `docs/features.md`
-3. `docs/data-setup.md`
-4. `docs/deployment.md`
+3. `docs/operations/data-setup.md`
+4. `docs/operations/deployment.md`
 5. focused v3.5 plan documents:
    - `docs/mvp/v3.5/integrated-plan.md`
    - `docs/mvp/v3.5/db-ownership-boundary-plan.md`

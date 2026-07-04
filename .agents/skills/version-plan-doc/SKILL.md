@@ -38,7 +38,8 @@ topic docs, and `docs/roadmap.md` only when active ordering changes.
 
 ## New Plan Workflow
 
-1. Read `docs/roadmap.md` and the target version `README.md`.
+1. Read `docs/roadmap.md`, `docs/mvp/README.md`, and the target version
+   `README.md`.
 2. For child plans, copy `docs/templates/version-plan.md` and fill only the
    sections that matter.
 3. Put the plan maintenance rule at the top of new child plans.
@@ -62,8 +63,16 @@ Do not update these by default:
 - frozen older version plans
 - unrelated child plans
 
-## Template
+## Templates
 
 Use `docs/templates/version-plan.md` for new child plans. If a new document is
 an integrated plan or version README, keep the same maintenance rule but adapt
 the body to the doc role above.
+
+Use `docs/templates/acceptance-checklist.md` when creating version acceptance
+checklists. Use `docs/templates/freeze-snapshot.md` when preparing a new
+freeze snapshot draft.
+
+Operational and data workflow links now live under `docs/operations/`, for
+example `docs/operations/deployment.md` and
+`docs/operations/data-setup.md`.

@@ -1,17 +1,18 @@
 # v3.6 Planning
 
-Status: active planning track after the v3.5 freeze.
+Status: active post-v3.5 coordination track. Server DB status, UI/UX display,
+and docs structure cleanup slices have landed.
 
 v3.6 starts from `docs/mvp/v3.5/FREEZE.md`. This folder is for the first
 post-freeze planning pass, not an implementation ledger.
 
 ## Committed Scope
 
-1. Add a server DB status API so remote content DB activation can be verified
-   without SSH/SQLite inspection.
-2. Run a focused UI/UX update around display settings, spell cards, filter
+1. Landed: server DB status API for remote content DB verification without
+   SSH/SQLite inspection.
+2. Landed: focused UI/UX update around display settings, spell cards, filter
    summary density, and styling polish.
-3. Review and clean up the `docs/` directory structure so durable topic docs,
+3. Landed: clean up the `docs/` directory structure so durable topic docs,
    module docs, version plans, freeze snapshots, and historical planning records
    are easier for future agents to distinguish.
 

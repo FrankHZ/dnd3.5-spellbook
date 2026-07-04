@@ -250,7 +250,7 @@ directory is mapped to a known rulebook. For example, `九剑/` is treated as th
 CHM label for `Tome of Battle` (`ToB`).
 
 The rules DB path comes from `RULES_DATABASE_URL`; see `server/.env` and
-`docs/data-setup.md`.
+`docs/operations/data-setup.md`.
 
 `test:portable` is the clone-friendly data-tools harness. Local JSON mapping
 files under `data/chm-mapping/` are optional runtime inputs; built-in mappings

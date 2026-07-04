@@ -2,48 +2,27 @@
 
 This directory contains the durable project documentation for the repository.
 
-Use this file as the documentation entry point when you need to determine:
+Use this file to choose the right source of truth. Use `docs/roadmap.md` to
+decide what to do next after a pause.
 
-- which docs are current
-- which docs are historical
-- which document is canonical when multiple docs overlap
+## Current Entry Points
 
-## Latest Frozen Release Snapshot
+- [roadmap.md](./roadmap.md): current work order, recently completed slices,
+  and later stable backlog.
+- [features.md](./features.md): current user-facing feature map.
+- [harness.md](./harness.md): validation and harness strategy.
+- [design.md](./design.md): durable UI design direction.
+- [i18n.md](./i18n.md): frontend copy and locale workflow.
+- [modules/README.md](./modules/README.md): high-level module ownership.
+- [operations/README.md](./operations/README.md): deployment, data setup, and
+  remote operations map.
 
-The latest frozen stage snapshot is **v3.5**.
+Agents should also read the repository-root [AGENTS.md](../AGENTS.md) for
+execution rules and role boundaries.
 
-Use it for historical comparison, regression checks, and understanding what was
-shipped at that stage:
+## Active Planning
 
-- [mvp/v3.5/FREEZE.md](./mvp/v3.5/FREEZE.md)
-
-That file defines the final as-built interpretation of the v3.5 handoff set. It
-is not automatically the baseline for later active development.
-
-## v3.5 Supporting Docs
-
-The rest of `docs/mvp/v3.5/` contains the supporting plan and conflict-review
-notes for that release.
-
-When you need implementation detail beyond the freeze summary, read the v3.5
-documents in this order:
-
-- [mvp/v3.5/FREEZE.md](./mvp/v3.5/FREEZE.md)
-- [mvp/v3.5/integrated-plan.md](./mvp/v3.5/integrated-plan.md)
-- [mvp/v3.5/db-ownership-boundary-plan.md](./mvp/v3.5/db-ownership-boundary-plan.md)
-- [mvp/v3.5/rules-content-normalization-plan.md](./mvp/v3.5/rules-content-normalization-plan.md)
-- [mvp/v3.5/normalized-rules-frontend-consumer-plan.md](./mvp/v3.5/normalized-rules-frontend-consumer-plan.md)
-- [mvp/v3.5/rulebook-display-labels-plan.md](./mvp/v3.5/rulebook-display-labels-plan.md)
-- [mvp/v3.5/agent-guide-review-plan.md](./mvp/v3.5/agent-guide-review-plan.md)
-- [mvp/v3.5/ci-cd-and-module-docs-plan.md](./mvp/v3.5/ci-cd-and-module-docs-plan.md)
-
-The freeze document records the as-built v3.5 state. The supporting plan
-documents describe implementation rationale and are not newer than the freeze
-snapshot.
-
-## Active v3.6 Planning
-
-v3.6 planning has started under `docs/mvp/v3.6/`:
+v3.6 is the active post-v3.5 planning space:
 
 - [mvp/v3.6/README.md](./mvp/v3.6/README.md)
 - [mvp/v3.6/integrated-plan.md](./mvp/v3.6/integrated-plan.md)
@@ -52,47 +31,49 @@ v3.6 planning has started under `docs/mvp/v3.6/`:
 - [mvp/v3.6/docs-structure-cleanup-plan.md](./mvp/v3.6/docs-structure-cleanup-plan.md)
 - [mvp/v3.6/normalized-rules-review-plan.md](./mvp/v3.6/normalized-rules-review-plan.md)
 
-The integrated plan classifies committed v3.6 work versus review candidates.
-Start there before opening a v3.6 implementation branch.
+Use the integrated plan only for sequencing, ownership, and conflict review.
+Implementation branches should update their owning child plan and affected
+topic docs.
 
-## v3.4 Supporting Docs
+## Latest Frozen Snapshot
 
-The rest of `docs/mvp/v3.4/` contains the supporting plan and acceptance notes
-for that release.
+The latest frozen stage snapshot is **v3.5**:
 
-When you need implementation detail beyond the freeze summary, read the v3.4
-documents in this order:
+- [mvp/v3.5/FREEZE.md](./mvp/v3.5/FREEZE.md)
+- [mvp/v3.5/README.md](./mvp/v3.5/README.md)
 
-- [mvp/v3.4/FREEZE.md](./mvp/v3.4/FREEZE.md)
-- [mvp/v3.4/integrated-plan.md](./mvp/v3.4/integrated-plan.md)
-- [mvp/v3.4/acceptance-checklist.md](./mvp/v3.4/acceptance-checklist.md)
-- [mvp/v3.4/short-description-pipeline-plan.md](./mvp/v3.4/short-description-pipeline-plan.md)
-- [mvp/v3.4/data-harness-hardening-plan.md](./mvp/v3.4/data-harness-hardening-plan.md)
-- [mvp/v3.4/design-refresh-plan.md](./mvp/v3.4/design-refresh-plan.md)
-- [mvp/v3.4/i18next-conventions-plan.md](./mvp/v3.4/i18next-conventions-plan.md)
+`FREEZE.md` records the as-built v3.5 handoff state. Supporting v3.5 plan docs
+describe rationale and implementation history; they are not newer than the
+freeze snapshot.
 
-The freeze document records the as-built v3.4 state. The supporting plan
-documents describe implementation rationale and are not newer than the freeze
-snapshot.
+## Doc Areas
 
-## v3.3 Supporting Docs
+### Durable Topic Docs
 
-The rest of `docs/mvp/v3.3/` contains the supporting plan and acceptance notes
-for that release.
+- [features.md](./features.md): feature map.
+- [feature-workflow.md](./feature-workflow.md): feature intake and plan-first
+  workflow.
+- [frontend-map.md](./frontend-map.md): frontend route and feature entry map.
+- [design.md](./design.md): UI direction.
+- [i18n.md](./i18n.md): i18n workflow.
+- [harness.md](./harness.md): validation strategy.
+- [stable-backlog.md](./stable-backlog.md): deferred stable-version work.
+- [public-repo-notes.md](./operations/public-repo-notes.md): public repo exclusions and
+  publication cautions.
 
-When you need implementation detail beyond the freeze summary, read the v3.3
-documents in this order:
+### Operations And Data
 
-- [mvp/v3.3/FREEZE.md](./mvp/v3.3/FREEZE.md)
-- [mvp/v3.3/acceptance-checklist.md](./mvp/v3.3/acceptance-checklist.md)
-- [mvp/v3.3/data-tools-workspace-plan.md](./mvp/v3.3/data-tools-workspace-plan.md)
-- [mvp/v3.3/local-data-layout-plan.md](./mvp/v3.3/local-data-layout-plan.md)
-- [mvp/v3.3/rules-db-prep-workflow-plan.md](./mvp/v3.3/rules-db-prep-workflow-plan.md)
-- [mvp/v3.3/search-browse-query-plan.md](./mvp/v3.3/search-browse-query-plan.md)
-- [mvp/v3.3/spells-full-import-plan.md](./mvp/v3.3/spells-full-import-plan.md)
-- [mvp/v3.3/structured-spell-patch-plan.md](./mvp/v3.3/structured-spell-patch-plan.md)
+- [operations/README.md](./operations/README.md): operations map.
+- [deployment.md](./operations/deployment.md): deployment workflow.
+- [data-setup.md](./operations/data-setup.md): database roles, local DB setup, and
+  fixtures.
+- [import-workflow.md](./operations/import-workflow.md): maintained app-owned import
+  workflow.
+- [rules-db-notes.md](./operations/rules-db-notes.md): rules DB inspection and patch notes.
+- [repo-conventions.md](./operations/repo-conventions.md): local wrappers and source of
+  truth conventions.
 
-For high-level module ownership after the v3.5 module-doc baseline, use:
+### Module Docs
 
 - [modules/README.md](./modules/README.md)
 - [modules/server.md](./modules/server.md)
@@ -101,123 +82,34 @@ For high-level module ownership after the v3.5 module-doc baseline, use:
 - [modules/data-tools.md](./modules/data-tools.md)
 - [modules/delivery.md](./modules/delivery.md)
 
-## Templates
+### Versioned MVP Docs
 
-Use these templates for new planning docs:
+- [mvp/README.md](./mvp/README.md): versioned-doc roles and maintenance rules.
+- [mvp/v3.5/FREEZE.md](./mvp/v3.5/FREEZE.md): latest frozen release snapshot.
+- [mvp/v3.4/FREEZE.md](./mvp/v3.4/FREEZE.md): previous frozen snapshot.
+- [mvp/v3.3/FREEZE.md](./mvp/v3.3/FREEZE.md): data-tooling foundation
+  snapshot.
+
+Older version folders remain under `docs/mvp/` as historical planning and
+handoff records.
+
+### Templates
 
 - [templates/feature-plan.md](./templates/feature-plan.md)
 - [templates/version-plan.md](./templates/version-plan.md)
+- [templates/acceptance-checklist.md](./templates/acceptance-checklist.md)
+- [templates/freeze-snapshot.md](./templates/freeze-snapshot.md)
 
-## Current Operational Docs
+## Workspace References
 
-For current work ordering, use:
-
-- [roadmap.md](./roadmap.md)
-
-For deployment and environment operations, use:
-
-- [deployment.md](./deployment.md)
-- [operations/bootstrap-remote.md](./operations/bootstrap-remote.md)
-- [data-setup.md](./data-setup.md)
-- [import-workflow.md](./import-workflow.md)
-- [rules-db-notes.md](./rules-db-notes.md)
-- [roadmap.md](./roadmap.md)
-- [repo-conventions.md](./repo-conventions.md)
-- [design.md](./design.md)
-- [features.md](./features.md)
-- [harness.md](./harness.md)
-- [feature-workflow.md](./feature-workflow.md)
-- [i18n.md](./i18n.md)
-- [frontend-map.md](./frontend-map.md)
-- [stable-backlog.md](./stable-backlog.md)
-- [public-repo-notes.md](./public-repo-notes.md)
-
-Workspace command references:
-
-- [../data-tools/README.md](../data-tools/README.md)
 - [../server/README.md](../server/README.md)
 - [../web/README.md](../web/README.md)
 - [../contracts/README.md](../contracts/README.md)
-
-These documents define:
-
-- the current manual deployment workflow
-- the one-time remote host bootstrap process
-- the current local database setup and origins
-- the current MVP import pipeline for Chinese app-owned data
-- practical notes for inspecting the local rules SQLite database
-- the current active work ordering and restart path
-- the repo conventions around local wrappers and canonical docs
-- the current UI design inventory, principles, and non-roadmap design notes
-- the current user-facing feature map
-- the current validation surface and harness improvement path
-- the lightweight intake workflow for new feature requests
-- the current frontend i18n workflow and source-of-truth boundaries
-- the quick navigation map for major frontend surfaces
-- the intentionally deferred stable-version backlog
-- the public-repo exclusions and publication caveats
-- the tracked canonical deployment scripts under `docs/deployment-scripts/`
-- the current data tooling commands in `data-tools`
-
-## Agent Entry Point
-
-Agents should start at the repository-root `AGENTS.md`.
-
-That file defines:
-
-- the fastest project orientation path
-- current source-of-truth ordering
-- validation commands
-- data and generated-file cautions
-- harness priorities
-
-Keep detailed agent guidance there rather than scattering operational rules
-through old MVP plan documents.
-
-## v3.2 Supporting Docs
-
-The rest of `docs/mvp/v3.2/` contains the supporting plan and implementation handoff notes for that release.
-
-When you need implementation detail beyond the freeze summary, read the v3.2 documents in this order:
-
-1. [mvp/v3.2/FREEZE.md](./mvp/v3.2/FREEZE.md)
-2. [mvp/v3.2/ui-polish-and-public-readiness.md](./mvp/v3.2/ui-polish-and-public-readiness.md)
-3. [mvp/v3.2/ui-stabilization-and-toast.md](./mvp/v3.2/ui-stabilization-and-toast.md)
-4. [mvp/v3.2/favorites-json-import-export.md](./mvp/v3.2/favorites-json-import-export.md)
-5. [mvp/v3.2/related-spell-references.md](./mvp/v3.2/related-spell-references.md)
-6. [mvp/v3.2/plan.md](./mvp/v3.2/plan.md)
-
-## Versioned MVP Docs
-
-The `docs/mvp/` directory contains version folders:
-
-- `v1.0`
-- `v1.1`
-- `v2.0`
-- `v2.1`
-- `v3.0`
-- `v3.1`
-- `v3.2`
-- `v3.3`
-- `v3.4`
-- `v3.5`
-- `v3.6`
-
-Treat frozen or older version folders as historical planning or handoff records.
-Start new active work from `docs/roadmap.md` and a focused topic plan rather
-than treating frozen version folders as active scratch space.
-
-They are useful for:
-
-- implementation history
-- scope evolution
-- old design decisions
-
-They are not automatically the source of truth for the current app state.
+- [../data-tools/README.md](../data-tools/README.md)
 
 ## Precedence Rule
 
-When multiple docs overlap:
+When documents overlap:
 
 1. Prefer the newest focused topic doc for current behavior or workflow.
 2. Prefer active development docs for in-flight future scope.
@@ -229,13 +121,10 @@ When multiple docs overlap:
 
 ## Maintenance Rule
 
-To keep maintenance cost low:
-
-- put current canonical statements in one place
-- avoid repeating long feature descriptions across multiple README files
-- use workspace READMEs for navigation and operational context
-- use `docs/` for release-specific or cross-cutting truth
-- use root `AGENTS.md` for agent-facing execution guidance
-- when adding or moving workspaces, commands, active plans, or source-of-truth
+- Keep current canonical statements in one place.
+- Avoid repeating long feature descriptions across multiple README files.
+- Use workspace READMEs for workspace-specific commands.
+- Use root `AGENTS.md` for agent-facing execution guidance.
+- When adding or moving workspaces, commands, active plans, or source-of-truth
   docs, update root `README.md`, this index, `AGENTS.md`, and the relevant
-  workspace README together
+  workspace README together.

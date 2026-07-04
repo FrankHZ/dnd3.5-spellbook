@@ -149,9 +149,9 @@ Update these docs during migration:
 - `AGENTS.md`
 - `README.md` if the top-level layout changes
 - `docs/README.md`
-- `docs/data-setup.md`
-- `docs/import-workflow.md`
-- `docs/public-repo-notes.md`
+- `docs/operations/data-setup.md`
+- `docs/operations/import-workflow.md`
+- `docs/operations/public-repo-notes.md`
 - `data-tools/README.md`
 - `server/README.md`
 
