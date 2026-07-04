@@ -28,6 +28,8 @@ Use these docs for orientation instead of expanding this file:
 - `docs/README.md`: canonical documentation map and historical/current doc
   ownership.
 - `docs/roadmap.md`: current active work ordering after a pause.
+- `docs/mvp/v3.6/FREEZE.md`: latest frozen stage snapshot; active follow-up
+  planning starts at `docs/mvp/v3.7/README.md`.
 - `docs/features.md`: current user-facing feature map.
 - `docs/feature-workflow.md`: feature intake and implementation loop.
 - `docs/modules/README.md`: high-level module ownership and validation

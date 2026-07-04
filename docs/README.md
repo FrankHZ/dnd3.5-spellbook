@@ -22,7 +22,7 @@ execution rules and role boundaries.
 
 ## Active Planning
 
-v3.7 security and dependency-maintenance planning has started under
+v3.7 security and dependency-maintenance planning is active under
 `docs/mvp/v3.7/`:
 
 - [mvp/v3.7/README.md](./mvp/v3.7/README.md)
@@ -33,29 +33,24 @@ Start there for current security findings, priorities, and proposed hardening
 slices, plus dependency and TypeScript module-boundary sequencing. Create an
 integrated plan only if v3.7 grows into conflicting workstreams.
 
-v3.6 remains the active post-v3.5 closeout and supporting planning space:
-
-- [mvp/v3.6/README.md](./mvp/v3.6/README.md)
-- [mvp/v3.6/integrated-plan.md](./mvp/v3.6/integrated-plan.md)
-- [mvp/v3.6/db-status-api-plan.md](./mvp/v3.6/db-status-api-plan.md)
-- [mvp/v3.6/ui-ux-display-update-plan.md](./mvp/v3.6/ui-ux-display-update-plan.md)
-- [mvp/v3.6/docs-structure-cleanup-plan.md](./mvp/v3.6/docs-structure-cleanup-plan.md)
-- [mvp/v3.6/normalized-rules-review-plan.md](./mvp/v3.6/normalized-rules-review-plan.md)
-
-Use the integrated plan only for sequencing, ownership, and conflict review.
-Implementation branches should update their owning child plan and affected
-topic docs.
-
 ## Latest Frozen Snapshot
 
-The latest frozen stage snapshot is **v3.5**:
+The latest frozen stage snapshot is **v3.6**:
+
+- [mvp/v3.6/FREEZE.md](./mvp/v3.6/FREEZE.md)
+- [mvp/v3.6/README.md](./mvp/v3.6/README.md)
+
+`FREEZE.md` records the as-built v3.6 handoff state. Supporting v3.6 plan docs
+describe rationale and implementation history; they are not newer than the
+freeze snapshot.
+
+The previous frozen stage snapshot is **v3.5**:
 
 - [mvp/v3.5/FREEZE.md](./mvp/v3.5/FREEZE.md)
 - [mvp/v3.5/README.md](./mvp/v3.5/README.md)
 
-`FREEZE.md` records the as-built v3.5 handoff state. Supporting v3.5 plan docs
-describe rationale and implementation history; they are not newer than the
-freeze snapshot.
+Use older `FREEZE.md` files as historical comparison points, not active
+baselines.
 
 ## Doc Areas
 
@@ -96,8 +91,9 @@ freeze snapshot.
 ### Versioned MVP Docs
 
 - [mvp/README.md](./mvp/README.md): versioned-doc roles and maintenance rules.
-- [mvp/v3.5/FREEZE.md](./mvp/v3.5/FREEZE.md): latest frozen release snapshot.
-- [mvp/v3.4/FREEZE.md](./mvp/v3.4/FREEZE.md): previous frozen snapshot.
+- [mvp/v3.6/FREEZE.md](./mvp/v3.6/FREEZE.md): latest frozen release snapshot.
+- [mvp/v3.5/FREEZE.md](./mvp/v3.5/FREEZE.md): previous frozen snapshot.
+- [mvp/v3.4/FREEZE.md](./mvp/v3.4/FREEZE.md): older frozen snapshot.
 - [mvp/v3.3/FREEZE.md](./mvp/v3.3/FREEZE.md): data-tooling foundation
   snapshot.
 

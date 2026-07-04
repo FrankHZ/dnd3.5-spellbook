@@ -8,42 +8,45 @@ details.
 
 ## Current Track
 
-v3.5 is frozen. The latest release snapshot is
-`docs/mvp/v3.5/FREEZE.md`.
+v3.6 is frozen. The latest release snapshot is
+`docs/mvp/v3.6/FREEZE.md`.
 
-The completed v3.5 implementation focus was content DB ownership, normalized
-rules content, first taxonomy filter consumers, rulebook labels, portable CI/CD
-rails, and agent/module documentation cleanup.
+The completed v3.6 focus was remote DB status visibility, browser-local display
+settings, spell-card and filter-summary polish, docs structure cleanup, and
+normalized rules follow-up review.
 
-v3.6 is active as a lightweight post-freeze coordination stage. Its server DB
-status API, UI/UX display, docs structure cleanup, and normalized rules review
-slices have landed. No broader v3.6 filter-contract implementation slice is
-currently promoted. v3.7 planning has started in a separate plan worktree for
-security review and dependency-maintenance work after v3.6 closeout.
+v3.7 is active as a focused security and dependency-maintenance planning track.
+Use `docs/mvp/v3.7/README.md`, `docs/mvp/v3.7/security-review.md`, and
+`docs/mvp/v3.7/dependency-upgrade-plan.md` for the next security, dependency,
+and TypeScript module-boundary slices.
 
-For final v3.5 as-built behavior and validation evidence, start at
-`docs/mvp/v3.5/FREEZE.md`.
+For final v3.6 as-built behavior and validation evidence, start at
+`docs/mvp/v3.6/FREEZE.md`.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
 
 ## Recently Completed
 
-The v3.5 release is frozen with:
+The v3.6 release is frozen with:
 
-- `docs/mvp/v3.5/FREEZE.md` as the as-built snapshot.
-- separate rules, content, and app-state DB roles.
-- normalized rules-derived spell content in the content DB:
-  - `SpellContent`: `4,926`
-  - `SpellTaxonomyFacet`: `8,658`
-  - `RulesContentBuild`: `1`
-- content-backed spell reads by default, with `SPELL_READ_SOURCE=rules` as the
-  legacy rollback switch.
-- Browse/Search taxonomy filters for schools, subschools, and descriptors.
-- rulebook display-label metadata and shared frontend display helpers.
-- portable CI through `npm run ci:portable`.
-- script-backed code/web deployment with DB upload still manual.
-- compact agent guidance and baseline module docs.
+- `docs/mvp/v3.6/FREEZE.md` as the as-built snapshot.
+- `GET /api/status/db` for read-only runtime DB provenance and remote content
+  DB activation checks.
+- browser-local display settings for list density, summary/full-detail spell
+  cards, Chinese display comparisons, and compact rulebook/source labels.
+- summary spell cards as scan-only rows, with favorite/prepare actions in
+  full-detail card mode.
+- shared Browse/Search compact scope summaries for class, domain, level,
+  taxonomy, and rulebook selections.
+- operations docs, versioned-doc guidance, and acceptance/freeze templates.
+- `npm run -w data-tools rules:content:review` as the read-only normalized
+  rules inventory command.
+- stable existing school/subschool/descriptor contracts, with base component
+  flags identified as the safest next backend contract candidate.
+- Tome of Battle source-kind/category handling and broader mechanics filters
+  explicitly deferred.
+- v3.7 security and dependency-maintenance planning as the active follow-up.
 
 The v3.6 DB status slice has landed with:
 
@@ -76,6 +79,22 @@ The v3.6 normalized rules review slice has landed with:
   resistance filters deferred until further normalization or fallback semantics.
 - Tome of Battle discipline/category handling deferred until a source-kind or
   category boundary is accepted.
+
+The v3.5 release remains frozen with:
+
+- `docs/mvp/v3.5/FREEZE.md` as the as-built snapshot.
+- separate rules, content, and app-state DB roles.
+- normalized rules-derived spell content in the content DB:
+  - `SpellContent`: `4,926`
+  - `SpellTaxonomyFacet`: `8,658`
+  - `RulesContentBuild`: `1`
+- content-backed spell reads by default, with `SPELL_READ_SOURCE=rules` as the
+  legacy rollback switch.
+- Browse/Search taxonomy filters for schools, subschools, and descriptors.
+- rulebook display-label metadata and shared frontend display helpers.
+- portable CI through `npm run ci:portable`.
+- script-backed code/web deployment with DB upload still manual.
+- compact agent guidance and baseline module docs.
 
 The v3.4 release remains frozen with:
 
@@ -196,20 +215,13 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Prepare v3.6 closeout**
+1. **Choose the next post-v3.6 data/contract slice**
 
-   No remaining v3.6 review candidate is promoted for implementation. Create an
-   acceptance checklist from `docs/templates/acceptance-checklist.md`, then
-   prepare a freeze snapshot with the repo-local `$freeze-snapshot` skill.
+   Use `docs/mvp/v3.6/normalized-rules-review-plan.md` to decide whether the
+   next branch should promote base component flags, add a Tome of Battle
+   source-kind boundary, or continue mechanics normalization.
 
-2. **Choose the next post-v3.6 data/contract slice**
-
-   After v3.6 is frozen, use
-   `docs/mvp/v3.6/normalized-rules-review-plan.md` to decide whether the next
-   branch should promote base component flags, add a Tome of Battle source-kind
-   boundary, or continue mechanics normalization.
-
-3. **Run v3.7 security review follow-up**
+2. **Run v3.7 security review follow-up**
 
    Use `docs/mvp/v3.7/README.md` and
    `docs/mvp/v3.7/security-review.md`. The first recommended slice is
@@ -217,17 +229,18 @@ Recommended next sequence:
    Keep authentication, user accounts, automatic DB release artifacts, and
    broad deployment redesign out of this first pass.
 
-4. **Run v3.7 dependency and module-boundary planning**
+3. **Run v3.7 dependency and module-boundary planning**
 
    Use `docs/mvp/v3.7/dependency-upgrade-plan.md` to refresh dependency
    inventory, classify major/risky upgrades, and decide the TypeScript
    server/CommonJS versus contracts/ESM boundary before removing the current
    deprecation suppression.
 
-## v3.6 Committed Workstreams
+## v3.6 Frozen Workstreams
 
-These are v3.6 workstreams. Read `docs/mvp/v3.6/integrated-plan.md` before
-opening implementation branches.
+These are frozen v3.6 workstreams. Read `docs/mvp/v3.6/FREEZE.md` for
+as-built behavior, then use the focused plan docs only for rationale and
+follow-up context.
 
 1. **Server DB status API**
 

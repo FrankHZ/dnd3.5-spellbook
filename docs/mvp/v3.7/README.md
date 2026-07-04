@@ -1,7 +1,7 @@
 # v3.7 Planning
 
 Status: active security and dependency-maintenance planning track after the
-v3.6 DB status slice.
+v3.6 freeze.
 
 v3.7 is a focused security review, hardening-planning, and dependency
 maintenance pass. It is not a large product deliverable, content release, or
