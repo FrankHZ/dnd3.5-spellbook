@@ -8,6 +8,8 @@ new behavior.
 
 ## Current Version Folders
 
+- `v3.8`: active focused planning for normalized query contracts, frontend
+  filter consumption, and a module-boundary cleanup spike.
 - `v3.7`: latest frozen release snapshot and supporting plans.
 - `v3.6`: previous frozen release snapshot and supporting plans.
 - `v3.5`: older frozen release snapshot and supporting plans.

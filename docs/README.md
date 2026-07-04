@@ -22,9 +22,14 @@ execution rules and role boundaries.
 
 ## Active Planning
 
-No v3.8 planning folder has been opened yet. Use
-[roadmap.md](./roadmap.md) to choose the next focused track after the v3.7
-freeze.
+v3.8 planning is open:
+
+- [mvp/v3.8/README.md](./mvp/v3.8/README.md)
+- [mvp/v3.8/normalized-query-contract-plan.md](./mvp/v3.8/normalized-query-contract-plan.md)
+- [mvp/v3.8/frontend-filter-consumer-plan.md](./mvp/v3.8/frontend-filter-consumer-plan.md)
+- [mvp/v3.8/module-boundary-cleanup-spike.md](./mvp/v3.8/module-boundary-cleanup-spike.md)
+
+Use [roadmap.md](./roadmap.md) for current ordering after a pause.
 
 ## Latest Frozen Snapshot
 

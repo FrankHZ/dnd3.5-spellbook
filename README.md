@@ -31,6 +31,8 @@ Start here:
 - [docs/README.md](./docs/README.md): documentation map and precedence rules.
 - [docs/roadmap.md](./docs/roadmap.md): current work order.
 - [docs/features.md](./docs/features.md): current feature map.
+- [docs/mvp/v3.8/README.md](./docs/mvp/v3.8/README.md): active normalized
+  query/filter planning.
 - [docs/mvp/v3.7/FREEZE.md](./docs/mvp/v3.7/FREEZE.md): latest frozen
   release snapshot.
 - [docs/mvp/v3.7/README.md](./docs/mvp/v3.7/README.md): frozen security,

@@ -8,14 +8,12 @@ details.
 
 ## Current Track
 
-v3.7 is frozen. The latest release snapshot is
-`docs/mvp/v3.7/FREEZE.md`.
+v3.8 planning is open. The latest frozen release snapshot is
+`docs/mvp/v3.7/FREEZE.md`; active v3.8 planning starts at
+`docs/mvp/v3.8/README.md`.
 
-The completed v3.7 focus was security hardening, deploy/status visibility,
-dependency maintenance, and deployment robustness after the v3.6 freeze.
-
-No v3.8 planning folder has been opened yet. Use this roadmap and
-`docs/stable-backlog.md` to choose the next focused track.
+The accepted v3.8 focus is normalized query contract work followed by frontend
+filter consumption, with an independent CJS/ESM and alias cleanup spike.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
@@ -229,24 +227,33 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Choose the next focused version track**
+1. **Define the v3.8 normalized query contract**
 
-   No v3.8 plan is open yet. Start from the user's next accepted feature or the
-   stable backlog, then create a small version plan only after the scope is
-   concrete.
+   Use `docs/mvp/v3.8/normalized-query-contract-plan.md`. This is the mainline:
+   decide which normalized fields are public-query vocabulary, what fallback
+   behavior exists for ambiguous or missing normalized data, and which facets
+   stay review-only.
 
-2. **Triage the v3.7 non-blocking maintenance tail**
+2. **Implement the frontend filter consumer after the contract stabilizes**
 
-   `npm outdated --workspaces --json` currently reports `tsc-alias`
+   Use `docs/mvp/v3.8/frontend-filter-consumer-plan.md`. The frontend should
+   consume server-provided normalized vocabulary only, while keeping filter UX
+   and spell-card polish bounded.
+
+3. **Run the independent CJS/ESM and alias cleanup spike**
+
+   Use `docs/mvp/v3.8/module-boundary-cleanup-spike.md`. The spike should
+   answer whether `tsc-alias` can be dropped, how server aliases should migrate,
+   and whether the contracts runtime boundary needs changes. It should not block
+   the two product/data deliverables unless it finds an active deploy/runtime
+   risk.
+
+4. **Triage the v3.7 non-blocking maintenance tail as needed**
+
+   `npm outdated --workspaces --json` previously reported `tsc-alias`
    `1.8.17 -> 1.9.0`. `npm audit --workspaces --omit=dev --json` still reports
    the reviewed Prisma dev-chain / Hono moderate advisories. Treat both as
    explicit maintenance follow-ups, not hidden release blockers.
-
-3. **Choose the next post-v3.6 data/contract slice**
-
-   Use `docs/mvp/v3.6/normalized-rules-review-plan.md` to decide whether a
-   later branch should promote base component flags, add a Tome of Battle
-   source-kind boundary, or continue mechanics normalization.
 
 ## v3.6 Frozen Workstreams
 
