@@ -1,6 +1,7 @@
 # v3.6 Integrated Plan
 
-Status: planning coordination surface.
+Status: frozen planning coordination surface. See `FREEZE.md` for final
+as-built behavior and validation evidence.
 
 This plan ties the v3.6 child plans together and records the current
 scope split. It is not an implementation checklist. Use it to decide

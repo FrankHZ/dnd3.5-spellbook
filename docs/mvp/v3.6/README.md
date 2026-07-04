@@ -1,20 +1,26 @@
-# v3.6 Planning
+# v3.6 Freeze
 
-Status: active post-v3.5 coordination track. Server DB status, UI/UX display,
-and docs structure cleanup slices have landed.
+Status: frozen post-v3.5 stabilization stage.
 
-v3.6 starts from `docs/mvp/v3.5/FREEZE.md`. This folder is for the first
-post-freeze planning pass, not an implementation ledger.
+Start with [FREEZE.md](./FREEZE.md) for final v3.6 as-built behavior and
+validation evidence. Supporting plans explain intended scope, rationale, and
+review decisions; they are not newer than the freeze snapshot.
 
-## Committed Scope
+v3.6 started from `docs/mvp/v3.5/FREEZE.md` and closed as a lightweight
+post-freeze pass around DB status visibility, UI/UX display settings, docs
+structure cleanup, and normalized rules review.
 
-1. Landed: server DB status API for remote content DB verification without
+## Frozen Scope
+
+1. Server DB status API for remote content DB verification without
    SSH/SQLite inspection.
-2. Landed: focused UI/UX update around display settings, spell cards, filter
+2. Focused UI/UX update around display settings, spell cards, filter
    summary density, and styling polish.
-3. Landed: clean up the `docs/` directory structure so durable topic docs,
+3. Clean up the `docs/` directory structure so durable topic docs,
    module docs, version plans, freeze snapshots, and historical planning records
    are easier for future agents to distinguish.
+4. Normalized rules review for component/mechanic/taxonomy readiness decisions
+   without broadening public filter contracts in v3.6.
 
 ## Review Candidates
 
@@ -43,6 +49,8 @@ Do not pull these into v3.6 unless the roadmap is explicitly updated first:
 
 ## Plans
 
+- [FREEZE.md](./FREEZE.md)
+- [acceptance-checklist.md](./acceptance-checklist.md)
 - [integrated-plan.md](./integrated-plan.md)
 - [db-status-api-plan.md](./db-status-api-plan.md)
 - [ui-ux-display-update-plan.md](./ui-ux-display-update-plan.md)
@@ -51,13 +59,7 @@ Do not pull these into v3.6 unless the roadmap is explicitly updated first:
 
 ## Working Rule
 
-Use `integrated-plan.md` when deciding v3.6 sequencing or reviewing whether
-child plans conflict. Do not treat it as an implementation status ledger.
-
-Implementation branches should update the owning child plan, affected
-operational/topic docs, and `docs/roadmap.md` only when the active work order
-changes. They should not update `integrated-plan.md` unless version scope,
-delivery sequence, plan ownership, or cross-plan conflicts changed.
-
-Use `docs/templates/version-plan.md` and the repo-local `$version-plan-doc`
-skill when adding new v3.6 plan docs.
+Use `FREEZE.md` for shipped/as-built behavior. Use the other v3.6 files as
+historical plans and review records. Do not add new active scope to v3.6 after
+freeze; promote follow-up work through `docs/roadmap.md` and the active version
+planning docs instead.

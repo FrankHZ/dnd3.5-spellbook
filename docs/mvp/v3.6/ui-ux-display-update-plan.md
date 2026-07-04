@@ -7,9 +7,9 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: implementation complete pending final review/commit; display settings,
-spell card updates, filter summary density, and restrained list styling polish
-are implemented on `codex/web-display-settings`.
+Status: implemented and accepted. Display settings, spell card updates, filter
+summary density, and restrained list styling polish landed through
+`codex/web-display-settings`.
 
 ## Purpose
 
@@ -167,9 +167,8 @@ redesign remains deferred. Durable field-hierarchy guidance was added to
   `npm run -w web build` passed during implementation.
 - EN Browse/Search summary smoke confirmed compact wrapping and no horizontal
   overflow before the final source/component marker polish.
-- Later in-app browser screenshot attempts timed out at browser capture, so the
-  remaining review should visually spot-check Browse/Search spell rows in the
-  running dev server before merge.
+- Final freeze validation re-ran web tests, typecheck, i18n audit, and
+  production build. No further v3.6 UI slice is promoted.
 
 ## Acceptance Criteria
 
