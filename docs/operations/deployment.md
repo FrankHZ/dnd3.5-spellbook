@@ -510,6 +510,15 @@ Current operator policy:
 The backend deployment script handles code sync and can also replace databases
 from `~/data` if new DB files were uploaded before the deploy.
 
+On small hosts, backend TypeScript builds can need more heap than Node infers
+from the machine default. `deploy-backend.sh` uses
+`SPELLBOOK_NODE_MAX_OLD_SPACE_SIZE=384` by default and passes it through
+`NODE_OPTIONS`. Override it only when the remote host memory profile changes:
+
+```bash
+SPELLBOOK_NODE_MAX_OLD_SPACE_SIZE=512 ~/deploy-backend.sh
+```
+
 ### Activate On Remote
 
 ```bash
@@ -527,7 +536,7 @@ The tracked script in `docs/deployment-scripts/deploy-backend.sh` performs:
 4. Runs `git reset --hard`
 5. Runs `git clean -fd`
 6. Runs `git pull --ff-only`
-7. Runs `npm ci` with constrained `NODE_OPTIONS`
+7. Runs `npm ci` with configurable constrained `NODE_OPTIONS`
 8. Runs `npm run -w server db:generate`
 9. Runs `npm run build:contracts`
 10. Runs `npm run check:contracts`
