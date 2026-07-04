@@ -13,7 +13,7 @@ on:
           - web
           - backend-and-web
       runPortableValidation:
-        description: Run portable validation before deploy
+        description: Run portable validation before deploy; disable only for emergency rollback
         required: true
         default: true
         type: boolean
@@ -34,6 +34,7 @@ jobs:
       DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
       DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
       DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+      DEPLOY_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
       DEPLOY_SSH_PORT: ${{ vars.DEPLOY_SSH_PORT || '22' }}
       DEPLOY_REMOTE_WEB_DIST_DIR: ${{ vars.DEPLOY_REMOTE_WEB_DIST_DIR || 'spellbook-dist' }}
 
@@ -53,6 +54,10 @@ jobs:
       - name: Run portable validation
         if: ${{ inputs.runPortableValidation }}
         run: npm run ci:portable
+
+      - name: Note skipped portable validation
+        if: ${{ !inputs.runPortableValidation }}
+        run: echo "::warning::Portable validation was skipped; use only for emergency rollback."
 
       - name: Build web assets
         if: ${{ inputs.target == 'web' || inputs.target == 'backend-and-web' }}
@@ -80,7 +85,13 @@ jobs:
           chmod 700 ~/.ssh
           printf '%s\n' "$DEPLOY_SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -p "$DEPLOY_SSH_PORT" "$DEPLOY_SSH_HOST" >> ~/.ssh/known_hosts
+
+          if [ -n "${DEPLOY_SSH_KNOWN_HOSTS:-}" ]; then
+            printf '%s\n' "$DEPLOY_SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+          else
+            echo "::warning::DEPLOY_SSH_KNOWN_HOSTS is not set; falling back to ssh-keyscan trust-on-first-use."
+            ssh-keyscan -p "$DEPLOY_SSH_PORT" "$DEPLOY_SSH_HOST" >> ~/.ssh/known_hosts
+          fi
 
       - name: Upload web assets
         if: ${{ inputs.target == 'web' || inputs.target == 'backend-and-web' }}

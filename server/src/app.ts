@@ -11,11 +11,16 @@ import { domainsRouter } from "./routes/domains.routes";
 import { i18nQuery } from "./middlewares/i18nQuery";
 import { metaRouter } from "./routes/meta.routes";
 import { statusRouter } from "./routes/status.routes";
+import {
+  createCorsOptions,
+  securityHeadersMiddleware,
+} from "./middlewares/security.middleware";
 
 const app: Application = express();
 
 // Middleware
-app.use(cors()); // ok for MVP; tighten later
+app.use(securityHeadersMiddleware);
+app.use(cors(createCorsOptions()));
 app.use(express.json());
 app.use(i18nQuery);
 

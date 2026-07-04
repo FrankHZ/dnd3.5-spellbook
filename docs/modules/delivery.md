@@ -65,6 +65,12 @@ That workflow is a thin wrapper for code/web deploys. The backend target invokes
 the tracked remote backend deploy script. The web target builds and uploads
 static assets, then invokes the tracked remote web deploy script.
 
+Manual deploys run portable validation by default. Skipping validation is an
+emergency rollback option and should leave an explicit workflow warning. SSH
+host trust should prefer the pinned `DEPLOY_SSH_KNOWN_HOSTS` secret; the
+`ssh-keyscan` fallback is convenience bootstrap behavior, not the hardened
+default.
+
 Deploy metadata for the About / Version page is owned here:
 
 - web deploys pass `VITE_SPELLBOOK_*` values into the static build

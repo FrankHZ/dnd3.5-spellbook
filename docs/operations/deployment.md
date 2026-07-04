@@ -54,6 +54,16 @@ Optional repository variables:
 - `DEPLOY_SSH_PORT`, default `22`
 - `DEPLOY_REMOTE_WEB_DIST_DIR`, default `spellbook-dist`
 
+Recommended repository secrets:
+
+- `DEPLOY_SSH_KNOWN_HOSTS`: pinned SSH `known_hosts` line for the deployment
+  host. If absent, the workflow falls back to `ssh-keyscan` with a warning for
+  current convenience.
+
+Portable validation is enabled by default for every manual deploy. Disable the
+`runPortableValidation` input only for an emergency rollback where the operator
+has already accepted the risk.
+
 The workflow injects deploy metadata for the About / Version page:
 
 - web builds receive `VITE_SPELLBOOK_*` values derived from the GitHub run,
@@ -205,6 +215,9 @@ CONTENT_DATABASE_URL=file:/opt/spellbook/data/content.sqlite
 APP_DATABASE_URL=file:/opt/spellbook/data/content.sqlite
 APP_STATE_DATABASE_URL=file:/opt/spellbook/data/app-state.sqlite
 DATABASE_URL=file:/opt/spellbook/data/spellbook.db
+
+# Optional. Same-origin static web/API deployments do not need this.
+# SPELLBOOK_CORS_ORIGINS=https://spellbook.example
 ```
 
 The current remote has switched to explicit content DB naming:
@@ -273,6 +286,31 @@ The backend should only listen on:
 ```text
 127.0.0.1:3000
 ```
+
+### API Security Headers And CORS
+
+The Express API sends a baseline set of response headers on all API responses:
+
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `Referrer-Policy: no-referrer`
+- `Cross-Origin-Resource-Policy: same-origin`
+- a restrictive API-only `Content-Security-Policy`
+
+Production CORS is explicit. If `SPELLBOOK_CORS_ORIGINS` is unset in
+production, browser requests from arbitrary external origins do not receive
+`Access-Control-Allow-Origin`. Same-origin static web/API deployments continue
+to work through Nginx without CORS.
+
+Use a comma-separated allowlist only when a trusted external browser origin must
+call the API:
+
+```dotenv
+SPELLBOOK_CORS_ORIGINS=https://spellbook.example,https://www.spellbook.example
+```
+
+TLS is still an operations item. Add HSTS only after HTTPS termination is
+configured and verified for the production domain.
 
 ### Nginx
 
@@ -420,6 +458,21 @@ The script updates these target files when matching incoming files exist:
 For transition compatibility, `~/data/app.db` is still accepted as a legacy
 incoming content DB filename when `~/data/content.sqlite` is absent.
 
+### Backup Retention
+
+`update-db.sh` and `deploy-backend.sh` create timestamped backups next to the
+target DB before replacement. Keep enough backups for the current release
+window, then prune intentionally so `/opt/spellbook/data` does not grow without
+bound.
+
+Current operator policy:
+
+- keep at least the latest successful backup for each DB role
+- keep backups from recent manual deploy/update work until the release has been
+  accepted
+- prune older `*.bak.YYYYMMDDTHHMMSSZ` files manually after confirming the
+  active DB status endpoint matches the accepted local metadata
+
 ## Backend Deployment
 
 The backend deployment script handles code sync and can also replace databases
@@ -549,17 +602,18 @@ It is not yet meant to provide:
 
 ## Deferred Security Hardening
 
-Security hardening is intentionally deferred at the current MVP stage.
+The current deployment has API header/CORS defaults, private DB provenance by
+default, explicit GitHub workflow permissions, pinned-host-key support, and a
+manual backup-retention policy. It is still not a hardened stable-release
+posture.
 
-This deployment documentation does not yet cover a hardened stable-release posture such as:
+Treat these as follow-up operations work:
 
-- HTTPS / TLS termination
+- HTTPS / TLS termination and HSTS after TLS is verified
 - firewall policy and port restriction
 - fail2ban or similar intrusion controls
 - stricter SSH lockdown
 - automatic security update policy
-
-Those concerns are planned for the future stable-version track and should be treated as a follow-up, not as already-handled by the current MVP deployment flow.
 
 ## Related Files
 
