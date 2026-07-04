@@ -13,6 +13,7 @@ The repository currently has:
 
 - shared DTO compilation in `contracts`
 - runtime import smoke for the built `@dnd/contracts` package
+- runtime import smoke for the built server app and Prisma clients
 - data-tooling TypeScript checks in `data-tools`
 - backend API tests with Vitest and Supertest
 - frontend type generation and TypeScript checks
@@ -27,8 +28,9 @@ npm run ci:portable
 npm run -w data-tools test:portable
 ```
 
-`npm run ci:portable` is the clean-checkout subset used by GitHub Actions. The
-backend API tests use synthetic disposable SQLite fixtures, so they do not read
+`npm run ci:portable` is the clean-checkout subset used by GitHub Actions. It
+builds the server, imports the compiled app entry point, and then runs backend
+API tests against synthetic disposable SQLite fixtures, so it does not read
 ignored local runtime databases.
 
 Or run the pieces individually:
@@ -170,6 +172,10 @@ promoted into a maintained command.
 The root `verify` command also imports the built `@dnd/contracts` package with
 Node after `build:contracts`. This catches ESM package output that typechecks
 but cannot be resolved by runtime tools such as the web dev server.
+
+The portable CI command also runs `npm run -w server check:runtime` after the
+server build. That smoke imports `server/dist/src/app.js` so module-format
+mismatches in compiled Prisma clients are caught before deployment.
 
 The local v3.4 data acceptance bundle is:
 
