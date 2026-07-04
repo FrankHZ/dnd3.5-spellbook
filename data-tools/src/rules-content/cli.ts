@@ -1027,6 +1027,10 @@ function buildNormalizedRulesReviewReport(
 
   const taxonomyReviewStatusCounts = countMap(taxonomyByStatus, "reviewStatus");
   const componentReviewStatusCounts = countMap(componentByType, "reviewStatus");
+  const componentReviewByType = groupedCountMap(
+    componentByType.filter((row) => String(row.reviewStatus) === "review"),
+    "componentType",
+  );
   const mechanicReviewStatusCounts = countMap(mechanicByType, "reviewStatus");
   const mechanicReviewByType = groupedCountMap(
     mechanicByType.filter((row) => String(row.reviewStatus) === "review"),
@@ -1035,7 +1039,7 @@ function buildNormalizedRulesReviewReport(
   const issueCountsByCode = groupedCountMap(issuesByCode, "issueCode");
   const readiness = buildReviewReadiness({
     taxonomyReviewRows: taxonomyReviewStatusCounts.review ?? 0,
-    componentReviewRows: componentReviewStatusCounts.review ?? 0,
+    componentReviewByType,
     mechanicReviewByType,
     issueCountsByCode,
     tomeOfBattleLikeCount: sumCounts(tomeOfBattleLikeTaxonomy),
@@ -1078,12 +1082,23 @@ function buildNormalizedRulesReviewReport(
 
 function buildReviewReadiness(input: {
   taxonomyReviewRows: number;
-  componentReviewRows: number;
+  componentReviewByType: Record<string, number>;
   mechanicReviewByType: Record<string, number>;
   issueCountsByCode: Record<string, number>;
   tomeOfBattleLikeCount: number;
 }): ReviewReadiness[] {
   const mechanicReview = (type: string) => input.mechanicReviewByType[type] ?? 0;
+  const componentReview = (type: string) => input.componentReviewByType[type] ?? 0;
+  const baseComponentReviewRows = BASE_COMPONENT_TYPES.reduce(
+    (total, type) => total + componentReview(type),
+    0,
+  );
+  const otherComponentReviewRows = Object.entries(input.componentReviewByType)
+    .filter(
+      ([type]) =>
+        !(BASE_COMPONENT_TYPES as readonly string[]).includes(type),
+    )
+    .reduce((total, [, count]) => total + count, 0);
   return [
     {
       family: "taxonomy.school_subschool_descriptor",
@@ -1108,21 +1123,25 @@ function buildReviewReadiness(input: {
     },
     {
       family: "components.base_flags",
-      status: "ready",
+      status:
+        baseComponentReviewRows === 0 ? "ready" : "needs_normalization",
       reason:
-        "Base component flags are typed booleans in SpellComponent and do not require frontend string parsing.",
+        baseComponentReviewRows === 0
+          ? "Base component flags are typed booleans in SpellComponent and do not require frontend string parsing."
+          : "Base component flags have review rows that should be resolved before becoming public filter vocabulary.",
       evidence: {
         baseComponentTypes: BASE_COMPONENT_TYPES,
-        reviewRows: input.componentReviewRows,
+        reviewRows: baseComponentReviewRows,
       },
     },
     {
       family: "components.other_or_extra",
-      status: input.componentReviewRows > 0 ? "needs_normalization" : "ready",
+      status:
+        otherComponentReviewRows > 0 ? "needs_normalization" : "ready",
       reason:
         "Extra component text is intentionally preserved, but should not become filter vocabulary until reviewed.",
       evidence: {
-        reviewRows: input.componentReviewRows,
+        reviewRows: otherComponentReviewRows,
         componentExtraIssues:
           input.issueCountsByCode["component.extra.review"] ?? 0,
       },
