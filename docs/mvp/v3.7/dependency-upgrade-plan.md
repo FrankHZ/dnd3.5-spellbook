@@ -216,6 +216,21 @@ Status: reviewed during the dependency branch.
   `cheerio -> encoding-sniffer -> whatwg-encoding`. These are dependency
   ownership follow-ups rather than repo config fields.
 
+### Alias Policy Note
+
+Status: reviewed during the dependency branch.
+
+- Keep the frontend `~` alias for now. It is a React Router/Vite compile-time
+  convenience for `web/app`, and the web build has explicit Vite/Vitest alias
+  config.
+- Do not expand server-side `~` alias usage. The current server build can keep
+  it because `tsc-alias` rewrites compiled CommonJS output, but it is not a
+  native Node module specifier and it becomes noisy during a full ESM migration.
+- If a later branch moves the server package/runtime boundary to ESM, prefer
+  either explicit relative `.js` import specifiers or Node-standard `#...`
+  package imports for server internals. Treat that as a focused server import
+  graph migration, not a contracts DTO change.
+
 ## Plan
 
 ### Slice 1: Refresh Inventory
@@ -287,6 +302,10 @@ TypeScript 6 `moduleResolution: "node"` deprecation without moving the server
 to ESM and without adding a dual CJS/ESM contracts build. The only source
 change needed was replacing two dynamic `~/...` imports in the server test
 setup with NodeNext-compatible relative `.js` import specifiers.
+
+Follow-up: do not treat `~` as the preferred long-term server alias. It remains
+accepted for the current CommonJS build, but a future full-ESM server migration
+should include a server import-specifier cleanup.
 
 ### Slice 5: Prisma And Server Tooling Review
 

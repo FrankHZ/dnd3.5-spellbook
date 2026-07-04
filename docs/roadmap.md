@@ -326,6 +326,10 @@ The stable-version backlog remains intentionally deferred:
   keep npm as the default for now; prefer a focused pnpm spike over Yarn if
   install speed, disk usage, workspace filtering, or dependency isolation become
   worth the CI/deploy/docs migration cost
+- server import-specifier cleanup before any full ESM runtime migration:
+  current server `~` aliases are acceptable for the CommonJS build, but future
+  ESM work should prefer relative `.js` specifiers or Node-standard `#...`
+  package imports instead of expanding `~`
 - release automation beyond the v3.5 script-backed CD pass
 - rollback playbook
 - HTTPS / TLS and host hardening
