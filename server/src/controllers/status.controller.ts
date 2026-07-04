@@ -3,13 +3,13 @@ import type { AppStatusResponse, DbStatusResponse } from "@dnd/contracts";
 import { appStatusService } from "~/services/app-status.service";
 import { dbStatusService } from "~/services/db-status.service";
 
-export function getAppStatus(
+export async function getAppStatus(
   _req: Request,
   res: Response,
   next: NextFunction,
 ) {
   try {
-    const result = appStatusService.getAppStatus();
+    const result = await appStatusService.getAppStatus();
     res.status(200).json(result satisfies AppStatusResponse);
     return;
   } catch (err) {

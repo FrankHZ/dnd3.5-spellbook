@@ -78,6 +78,11 @@ The main database variables are:
 - `RULES_DATABASE_URL`
 - `CONTENT_DATABASE_URL`
 - `APP_STATE_DATABASE_URL`
+- `SPELLBOOK_DB_STATUS_TOKEN` for production operator access to
+  `GET /api/status/db`
+- `ENABLE_DB_STATUS_PUBLIC=true` only when DB provenance is intentionally public
+- `SPELLBOOK_CORS_ORIGINS` as a comma-separated production browser allowlist
+  when trusted external origins need API access
 
 These point to:
 

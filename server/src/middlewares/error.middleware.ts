@@ -22,12 +22,16 @@ export function errorMiddleware(
     return;
   }
 
-  // Fallback: avoid leaking internals in production; MVP keeps it simple
-  const msg = err instanceof Error ? err.message : "Unknown error";
+  const verboseFallback = process.env.NODE_ENV !== "production";
+  const fallbackError = verboseFallback
+    ? err instanceof Error
+      ? err.message
+      : "Unknown error"
+    : "Internal server error";
 
   res.status(500).json({
     message: "Internal server error",
-    error: msg,
+    error: fallbackError,
   });
   return;
 }

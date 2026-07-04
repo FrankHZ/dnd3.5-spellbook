@@ -1,13 +1,12 @@
 import type {
   AppVersionMetadata,
-  ContentDbStatus,
-  DbStatusResponse,
+  PublicContentStatus,
 } from "@dnd/contracts";
 import { useQuery } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { getAppStatus, getDbStatus } from "~/api/status";
+import { getAppStatus } from "~/api/status";
 import {
   Card,
   CardContent,
@@ -15,7 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Separator } from "~/components/ui/separator";
 import { cn } from "~/lib/utils";
 import { getFrontendVersionMetadata } from "./build-metadata";
 
@@ -113,68 +111,25 @@ function VersionSection({
   );
 }
 
-function DbSummary({ status }: { status: ContentDbStatus }) {
+function DbSummary({ status }: { status: PublicContentStatus }) {
   const { t } = useTranslation("about");
   const build = status.latestBuild;
-  const counts = status.tableCounts;
 
   return (
-    <>
-      <div className="grid gap-2 sm:grid-cols-2">
-        <StatusField label={t("db.content-status")} value={status.status} />
-        <StatusField label={t("db.build-id")} value={build?.id} />
-        <StatusField
-          label={t("db.generated-at")}
-          value={formatDate(build?.generatedAt)}
-        />
-        <StatusField
-          label={t("db.generator")}
-          value={build?.generatorVersion}
-        />
-        <StatusField label={t("db.spells")} value={build?.spellCount} />
-        <StatusField label={t("db.issues")} value={build?.issueCount} />
-        <StatusField
-          label={t("db.parent-commit")}
-          value={formatShortSha(build?.parentRepoCommit)}
-        />
-        <StatusField
-          label={t("db.data-commit")}
-          value={formatShortSha(build?.dataRepoCommit)}
-        />
-      </div>
-
-      {counts ? (
-        <>
-          <Separator />
-          <div className="grid gap-2 sm:grid-cols-3">
-            <StatusField
-              label={t("db.counts.rulebooks")}
-              value={counts.rulebookContent}
-            />
-            <StatusField
-              label={t("db.counts.spell-content")}
-              value={counts.spellContent}
-            />
-            <StatusField
-              label={t("db.counts.taxonomy")}
-              value={counts.spellTaxonomyFacet}
-            />
-            <StatusField
-              label={t("db.counts.components")}
-              value={counts.spellComponent}
-            />
-            <StatusField
-              label={t("db.counts.mechanics")}
-              value={counts.spellMechanicFacet}
-            />
-            <StatusField
-              label={t("db.counts.issues")}
-              value={counts.rulesContentIssue}
-            />
-          </div>
-        </>
-      ) : null}
-    </>
+    <div className="grid gap-2 sm:grid-cols-2">
+      <StatusField
+        label={t("db.active-read-source")}
+        value={status.activeSpellReadSource}
+      />
+      <StatusField label={t("db.content-status")} value={status.status} />
+      <StatusField
+        label={t("db.generated-at")}
+        value={formatDate(build?.generatedAt)}
+      />
+      <StatusField label={t("db.generator")} value={build?.generatorVersion} />
+      <StatusField label={t("db.spells")} value={build?.spellCount} />
+      <StatusField label={t("db.issues")} value={build?.issueCount} />
+    </div>
   );
 }
 
@@ -183,7 +138,7 @@ function DatabaseSection({
   isLoading,
   isError,
 }: {
-  data: DbStatusResponse | undefined;
+  data: PublicContentStatus | undefined;
   isLoading: boolean;
   isError: boolean;
 }) {
@@ -201,19 +156,7 @@ function DatabaseSection({
         ) : isError || !data ? (
           <CardDescription>{t("common.unavailable")}</CardDescription>
         ) : (
-          <>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <StatusField
-                label={t("db.active-read-source")}
-                value={data.activeSpellReadSource}
-              />
-              <StatusField
-                label={t("db.content-file")}
-                value={data.databases.content.fileName}
-              />
-            </div>
-            <DbSummary status={data.content} />
-          </>
+          <DbSummary status={data} />
         )}
       </CardContent>
     </Card>
@@ -227,11 +170,6 @@ export default function AboutVersionPage() {
   const appStatusQuery = useQuery({
     queryKey: ["status", "app"],
     queryFn: ({ signal }) => getAppStatus(signal),
-  });
-
-  const dbStatusQuery = useQuery({
-    queryKey: ["status", "db"],
-    queryFn: ({ signal }) => getDbStatus(signal),
   });
 
   return (
@@ -271,9 +209,9 @@ export default function AboutVersionPage() {
       />
 
       <DatabaseSection
-        data={dbStatusQuery.data}
-        isLoading={dbStatusQuery.isLoading}
-        isError={dbStatusQuery.isError}
+        data={appStatusQuery.data?.content}
+        isLoading={appStatusQuery.isLoading}
+        isError={appStatusQuery.isError}
       />
     </div>
   );

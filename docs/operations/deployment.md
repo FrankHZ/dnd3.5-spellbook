@@ -16,6 +16,7 @@ The canonical deployment assets are tracked in:
 - `docs/deployment-scripts/deploy-backend.sh`
 - `docs/deployment-scripts/deploy-web.sh`
 - `docs/deployment-scripts/update-db.sh`
+- `docs/deployment-scripts/apply-nginx-site.sh`
 - `docs/deployment-scripts/sync-remote-scripts.ps1`
 - `docs/deployment-scripts/spellbook-api.env.example`
 - `.env.example`
@@ -54,6 +55,16 @@ Optional repository variables:
 - `DEPLOY_SSH_PORT`, default `22`
 - `DEPLOY_REMOTE_WEB_DIST_DIR`, default `spellbook-dist`
 
+Recommended repository secrets:
+
+- `DEPLOY_SSH_KNOWN_HOSTS`: pinned SSH `known_hosts` line for the deployment
+  host. If absent, the workflow falls back to `ssh-keyscan` with a warning for
+  current convenience.
+
+Portable validation is enabled by default for every manual deploy. Disable the
+`runPortableValidation` input only for an emergency rollback where the operator
+has already accepted the risk.
+
 The workflow injects deploy metadata for the About / Version page:
 
 - web builds receive `VITE_SPELLBOOK_*` values derived from the GitHub run,
@@ -90,6 +101,7 @@ Current remote targets:
 - `~/deploy-backend.sh`
 - `~/deploy-web.sh`
 - `~/update-db.sh`
+- `~/apply-nginx-site.sh`
 - `/etc/default/spellbook-api` for the environment values adapted from
   `docs/deployment-scripts/spellbook-api.env.example`
 
@@ -99,6 +111,7 @@ Example:
 scp docs/deployment-scripts/deploy-backend.sh remote:~/deploy-backend.sh
 scp docs/deployment-scripts/deploy-web.sh remote:~/deploy-web.sh
 scp docs/deployment-scripts/update-db.sh remote:~/update-db.sh
+scp docs/deployment-scripts/apply-nginx-site.sh remote:~/apply-nginx-site.sh
 ```
 
 Local helper:
@@ -110,6 +123,34 @@ pwsh -NoLogo -NoProfile -File docs/deployment-scripts/sync-remote-scripts.ps1
 ```
 
 There is no automatic sync for these files in the current MVP workflow.
+
+## Nginx Site Config
+
+The tracked Nginx site apply script is:
+
+- `docs/deployment-scripts/apply-nginx-site.sh`
+
+It writes `/etc/nginx/sites-available/spellbook`, enables it, removes the
+default site, runs `nginx -t`, and reloads Nginx. It preserves the current
+single-host assumptions:
+
+- static frontend root: `/var/www/spellbook`
+- API upstream: `http://127.0.0.1:3000`
+- `/locales/` returns `404` for missing locale JSON instead of falling through
+  to the SPA
+- hashed static assets receive immutable cache headers
+
+Apply after syncing scripts:
+
+```bash
+ssh remote "chmod 755 ~/apply-nginx-site.sh && ~/apply-nginx-site.sh"
+```
+
+Override only when deliberately changing host layout:
+
+```bash
+ssh remote "SPELLBOOK_FRONTEND_ROOT=/var/www/spellbook SPELLBOOK_API_UPSTREAM=http://127.0.0.1:3000 ~/apply-nginx-site.sh"
+```
 
 ## Host Placeholder
 
@@ -205,6 +246,9 @@ CONTENT_DATABASE_URL=file:/opt/spellbook/data/content.sqlite
 APP_DATABASE_URL=file:/opt/spellbook/data/content.sqlite
 APP_STATE_DATABASE_URL=file:/opt/spellbook/data/app-state.sqlite
 DATABASE_URL=file:/opt/spellbook/data/spellbook.db
+
+# Optional. Same-origin static web/API deployments do not need this.
+# SPELLBOOK_CORS_ORIGINS=https://spellbook.example
 ```
 
 The current remote has switched to explicit content DB naming:
@@ -240,13 +284,65 @@ SPELLBOOK_BACKEND_GITHUB_RUN_ATTEMPT=
 ```
 
 When these values are absent, `GET /api/status/app` reports a local fallback
-instead of inspecting Git state at request time.
+instead of inspecting Git state at request time. The same public endpoint also
+returns a redacted content DB summary used by the About / Version page.
+
+Runtime database provenance is available through `GET /api/status/db`, but in
+production it is private by default because it reports database file roles,
+content build metadata, hashes, and table counts. Configure an operator token
+in `/etc/default/spellbook-api` when remote DB verification is needed:
+
+```dotenv
+SPELLBOOK_DB_STATUS_TOKEN=<operator-only-token>
+```
+
+Operator checks should send either:
+
+```bash
+curl -fsS -H "Authorization: Bearer $SPELLBOOK_DB_STATUS_TOKEN" \
+  http://127.0.0.1:3000/api/status/db
+```
+
+or:
+
+```bash
+curl -fsS -H "X-Spellbook-Operations-Token: $SPELLBOOK_DB_STATUS_TOKEN" \
+  http://127.0.0.1:3000/api/status/db
+```
+
+Only set `ENABLE_DB_STATUS_PUBLIC=true` when the DB provenance endpoint is
+intentionally public.
 
 The backend should only listen on:
 
 ```text
 127.0.0.1:3000
 ```
+
+### API Security Headers And CORS
+
+The Express API sends a baseline set of response headers on all API responses:
+
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `Referrer-Policy: no-referrer`
+- `Cross-Origin-Resource-Policy: same-origin`
+- a restrictive API-only `Content-Security-Policy`
+
+Production CORS is explicit. If `SPELLBOOK_CORS_ORIGINS` is unset in
+production, browser requests from arbitrary external origins do not receive
+`Access-Control-Allow-Origin`. Same-origin static web/API deployments continue
+to work through Nginx without CORS.
+
+Use a comma-separated allowlist only when a trusted external browser origin must
+call the API:
+
+```dotenv
+SPELLBOOK_CORS_ORIGINS=https://spellbook.example,https://www.spellbook.example
+```
+
+TLS is still an operations item. Add HSTS only after HTTPS termination is
+configured and verified for the production domain.
 
 ### Nginx
 
@@ -343,10 +439,12 @@ ssh remote "./update-db.sh"
 ```
 
 After activation, verify the remote content DB metadata before relying on the
-default normalized read path:
+default normalized read path. In production this endpoint requires the operator
+token unless `ENABLE_DB_STATUS_PUBLIC=true` has been intentionally set:
 
 ```bash
-curl -fsS http://127.0.0.1:3000/api/status/db
+curl -fsS -H "Authorization: Bearer $SPELLBOOK_DB_STATUS_TOKEN" \
+  http://127.0.0.1:3000/api/status/db
 ```
 
 Compare the response with the local `rules:content:meta` report. At minimum,
@@ -391,6 +489,21 @@ The script updates these target files when matching incoming files exist:
 
 For transition compatibility, `~/data/app.db` is still accepted as a legacy
 incoming content DB filename when `~/data/content.sqlite` is absent.
+
+### Backup Retention
+
+`update-db.sh` and `deploy-backend.sh` create timestamped backups next to the
+target DB before replacement. Keep enough backups for the current release
+window, then prune intentionally so `/opt/spellbook/data` does not grow without
+bound.
+
+Current operator policy:
+
+- keep at least the latest successful backup for each DB role
+- keep backups from recent manual deploy/update work until the release has been
+  accepted
+- prune older `*.bak.YYYYMMDDTHHMMSSZ` files manually after confirming the
+  active DB status endpoint matches the accepted local metadata
 
 ## Backend Deployment
 
@@ -521,17 +634,18 @@ It is not yet meant to provide:
 
 ## Deferred Security Hardening
 
-Security hardening is intentionally deferred at the current MVP stage.
+The current deployment has API header/CORS defaults, private DB provenance by
+default, explicit GitHub workflow permissions, pinned-host-key support, and a
+manual backup-retention policy. It is still not a hardened stable-release
+posture.
 
-This deployment documentation does not yet cover a hardened stable-release posture such as:
+Treat these as follow-up operations work:
 
-- HTTPS / TLS termination
+- HTTPS / TLS termination and HSTS after TLS is verified
 - firewall policy and port restriction
 - fail2ban or similar intrusion controls
 - stricter SSH lockdown
 - automatic security update policy
-
-Those concerns are planned for the future stable-version track and should be treated as a follow-up, not as already-handled by the current MVP deployment flow.
 
 ## Related Files
 

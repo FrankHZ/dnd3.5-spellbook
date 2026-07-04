@@ -1,3 +1,5 @@
+import type { ContentDbStatus, DbStatusReadSource } from "./db-status.js";
+
 export type AppVersionMetadataSource = "deploy" | "local";
 
 export type AppVersionMetadata = {
@@ -12,6 +14,20 @@ export type AppVersionMetadata = {
   githubRunAttempt?: string | undefined;
 };
 
+export type PublicContentBuildStatus = {
+  generatorVersion: string;
+  generatedAt: string;
+  spellCount: number;
+  issueCount: number;
+};
+
+export type PublicContentStatus = {
+  activeSpellReadSource: DbStatusReadSource;
+  status: ContentDbStatus["status"];
+  latestBuild: PublicContentBuildStatus | null;
+};
+
 export type AppStatusResponse = {
   backend: AppVersionMetadata;
+  content: PublicContentStatus;
 };

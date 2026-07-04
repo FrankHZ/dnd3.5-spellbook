@@ -151,13 +151,14 @@ Copy the tracked deployment scripts from the repo into the admin user's home dir
 cp ~/dnd3.5-spellbook/docs/deployment-scripts/deploy-backend.sh ~/deploy-backend.sh
 cp ~/dnd3.5-spellbook/docs/deployment-scripts/deploy-web.sh ~/deploy-web.sh
 cp ~/dnd3.5-spellbook/docs/deployment-scripts/update-db.sh ~/update-db.sh
-chmod 755 ~/deploy-backend.sh ~/deploy-web.sh ~/update-db.sh
+cp ~/dnd3.5-spellbook/docs/deployment-scripts/apply-nginx-site.sh ~/apply-nginx-site.sh
+chmod 755 ~/deploy-backend.sh ~/deploy-web.sh ~/update-db.sh ~/apply-nginx-site.sh
 ```
 
 Verify:
 
 ```bash
-ls -l ~/deploy-backend.sh ~/deploy-web.sh ~/update-db.sh
+ls -l ~/deploy-backend.sh ~/deploy-web.sh ~/update-db.sh ~/apply-nginx-site.sh
 ```
 
 After bootstrap, keep these files in sync manually with `scp` whenever the tracked versions under `docs/deployment-scripts/` change.
@@ -221,6 +222,9 @@ CONTENT_DATABASE_URL=file:/opt/spellbook/data/content.sqlite
 APP_DATABASE_URL=file:/opt/spellbook/data/content.sqlite
 APP_STATE_DATABASE_URL=file:/opt/spellbook/data/app-state.sqlite
 DATABASE_URL=file:/opt/spellbook/data/spellbook.db
+
+# Optional. Same-origin static web/API deployments do not need this.
+# SPELLBOOK_CORS_ORIGINS=https://spellbook.example
 ```
 
 Permissions:
@@ -231,13 +235,14 @@ sudo chmod 600 /etc/default/spellbook-api
 
 ## 12. Configure Nginx
 
-Create site config:
+The tracked apply script writes the standard single-host site config, tests it,
+and reloads Nginx:
 
 ```bash
-sudo nano /etc/nginx/sites-available/spellbook
+~/apply-nginx-site.sh
 ```
 
-Paste:
+The generated config is:
 
 ```nginx
 server {
@@ -247,12 +252,17 @@ server {
     root /var/www/spellbook;
     index index.html;
 
-    location / {
-        try_files $uri /index.html;
-    }
+    add_header X-Content-Type-Options nosniff always;
+    add_header X-Frame-Options SAMEORIGIN always;
+    add_header Referrer-Policy strict-origin-when-cross-origin always;
 
     location /locales/ {
+        add_header Cache-Control "no-cache" always;
         try_files $uri =404;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
     }
 
     location /api/ {
@@ -260,22 +270,18 @@ server {
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+
+    location ~* \.(?:js|css|png|jpg|jpeg|gif|svg|ico|webp|woff2?)$ {
+        expires 7d;
+        add_header Cache-Control "public, max-age=604800, immutable" always;
+        try_files $uri =404;
     }
 }
-```
-
-Enable site:
-
-```bash
-sudo ln -s /etc/nginx/sites-available/spellbook /etc/nginx/sites-enabled/
-sudo rm /etc/nginx/sites-enabled/default
-```
-
-Test:
-
-```bash
-sudo nginx -t
-sudo systemctl reload nginx
 ```
 
 ## 13. Prepare Initial Databases
@@ -384,16 +390,18 @@ After this point:
 - Use `scp -r web/build/client/* remote:~/spellbook-dist` followed by
   `ssh remote "./deploy-web.sh"` for frontend deploys
 
-## Deferred Security Hardening
+## Security Baseline And Deferred Hardening
 
-This bootstrap guide is intentionally scoped to MVP infrastructure only.
+The Express API adds a low-cost response header baseline and production CORS is
+explicit through `SPELLBOOK_CORS_ORIGINS`. Keep the backend bound to
+`127.0.0.1:3000`; Nginx should remain the only public entry point.
 
-It does not yet include the stable-version security hardening work, such as:
+This bootstrap guide still does not complete a hardened stable-release posture.
+Track these as operations follow-up rather than assuming they are covered by the
+MVP bootstrap:
 
-- HTTPS / TLS setup
+- HTTPS / TLS setup and HSTS after TLS is verified
 - firewall hardening
-- SSH hardening
-- fail2ban
+- stricter SSH lockdown
+- fail2ban or equivalent intrusion controls
 - automated security patch policy
-
-Those items are intentionally deferred and should be handled as part of the future stable release track rather than mixed into the current MVP bootstrap baseline.

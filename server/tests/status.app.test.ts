@@ -44,6 +44,11 @@ describe("GET /api/status/app", () => {
       versionLabel: "local",
       source: "local",
     });
+    expect(body.content).toMatchObject({
+      activeSpellReadSource: "rules",
+    });
+    expect(JSON.stringify(body.content)).not.toContain("spellbook.db");
+    expect(JSON.stringify(body.content)).not.toContain("content.sqlite");
   });
 
   it("returns sanitized deploy metadata from explicit environment variables", async () => {
@@ -71,5 +76,9 @@ describe("GET /api/status/app", () => {
       githubRunAttempt: "2",
     });
     expect(JSON.stringify(body)).not.toContain("do-not-leak");
+    expect(JSON.stringify(body.content)).not.toContain("rulesDbSha256");
+    expect(JSON.stringify(body.content)).not.toContain("migrationSetSha256");
+    expect(JSON.stringify(body.content)).not.toContain("parentRepoCommit");
+    expect(JSON.stringify(body.content)).not.toContain("dataRepoCommit");
   });
 });

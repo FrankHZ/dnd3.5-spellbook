@@ -62,6 +62,10 @@ $copies = @(
     @{
         Source = Join-Path $PSScriptRoot 'update-db.sh'
         Target = "${SshAlias}:~/update-db.sh"
+    },
+    @{
+        Source = Join-Path $PSScriptRoot 'apply-nginx-site.sh'
+        Target = "${SshAlias}:~/apply-nginx-site.sh"
     }
 )
 

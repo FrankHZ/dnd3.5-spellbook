@@ -220,9 +220,9 @@ Recommended next sequence:
 1. **Ship the About / Version status page**
 
    Use `docs/mvp/v3.7/about-version-page-plan.md`. This is a small
-   pre-hardening deliverable: expose frontend/backend deploy metadata and reuse
-   `GET /api/status/db` for content DB state, while tolerating later DB-status
-   gating.
+   pre-hardening deliverable: expose frontend/backend deploy metadata and public
+   content status. Detailed `GET /api/status/db` provenance is operator-facing
+   after the security hardening slice.
 
 2. **Run v3.7 security review follow-up**
 

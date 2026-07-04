@@ -53,6 +53,7 @@ Canonical deployment behavior and helper templates live in:
 - `docs/deployment-scripts/deploy-backend.sh`
 - `docs/deployment-scripts/deploy-web.sh`
 - `docs/deployment-scripts/update-db.sh`
+- `docs/deployment-scripts/apply-nginx-site.sh`
 - `docs/deployment-scripts/sync-remote-scripts.ps1`
 - `docs/deployment-scripts/spellbook-api.env.example`
 - `.env.example`
@@ -64,6 +65,12 @@ The manual deploy workflow lives at:
 That workflow is a thin wrapper for code/web deploys. The backend target invokes
 the tracked remote backend deploy script. The web target builds and uploads
 static assets, then invokes the tracked remote web deploy script.
+
+Manual deploys run portable validation by default. Skipping validation is an
+emergency rollback option and should leave an explicit workflow warning. SSH
+host trust should prefer the pinned `DEPLOY_SSH_KNOWN_HOSTS` secret; the
+`ssh-keyscan` fallback is convenience bootstrap behavior, not the hardened
+default.
 
 Deploy metadata for the About / Version page is owned here:
 
@@ -77,6 +84,10 @@ Database deployment is not a workflow target yet. The current SQLite update path
 still relies on manual file upload to `~/data/`, so DB CD waits for the content
 DB / app-state DB redesign to define artifact ownership, activation, and
 rollback.
+
+Nginx site configuration is also explicit operator work. Use the tracked
+`apply-nginx-site.sh` helper after syncing remote scripts when the proxy/static
+site baseline changes.
 
 If deployment behavior changes, change the tracked scripts and
 `docs/operations/deployment.md` first. The workflow should stay a trigger/orchestration

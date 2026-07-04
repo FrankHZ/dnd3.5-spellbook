@@ -3,21 +3,31 @@ import type { DbStatusResponse } from "@dnd/contracts";
 import { app } from "../src/app";
 import { contentPrisma } from "../src/lib/content-prisma-client";
 
+const STATUS_ENV_KEYS = [
+  "APP_DATABASE_URL",
+  "ENABLE_DB_STATUS_PUBLIC",
+  "NODE_ENV",
+  "SPELL_READ_SOURCE",
+  "SPELLBOOK_DB_STATUS_TOKEN",
+] as const;
+
 describe("GET /api/status/db", () => {
-  const previousReadSource = process.env.SPELL_READ_SOURCE;
-  const previousAppDatabaseUrl = process.env.APP_DATABASE_URL;
+  const previousEnv = new Map<string, string | undefined>();
+
+  beforeAll(() => {
+    for (const key of STATUS_ENV_KEYS) {
+      previousEnv.set(key, process.env[key]);
+    }
+  });
 
   afterEach(() => {
-    if (previousReadSource === undefined) {
-      delete process.env.SPELL_READ_SOURCE;
-    } else {
-      process.env.SPELL_READ_SOURCE = previousReadSource;
-    }
-
-    if (previousAppDatabaseUrl === undefined) {
-      delete process.env.APP_DATABASE_URL;
-    } else {
-      process.env.APP_DATABASE_URL = previousAppDatabaseUrl;
+    for (const key of STATUS_ENV_KEYS) {
+      const previous = previousEnv.get(key);
+      if (previous === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = previous;
+      }
     }
   });
 
@@ -121,6 +131,69 @@ describe("GET /api/status/db", () => {
       fileName: "legacy-app-alias.sqlite",
       exists: false,
       matchesContent: false,
+    });
+  });
+
+  it("blocks production DB provenance by default", async () => {
+    process.env.NODE_ENV = "production";
+    delete process.env.ENABLE_DB_STATUS_PUBLIC;
+    delete process.env.SPELLBOOK_DB_STATUS_TOKEN;
+
+    const res = await request(app).get("/api/status/db");
+
+    expect(res.status).toBe(404);
+    expect(JSON.stringify(res.body)).not.toContain("activeSpellReadSource");
+  });
+
+  it("allows production DB provenance with the operations token", async () => {
+    process.env.NODE_ENV = "production";
+    process.env.SPELLBOOK_DB_STATUS_TOKEN = "status-secret";
+
+    const res = await request(app)
+      .get("/api/status/db")
+      .set("Authorization", "Bearer status-secret");
+
+    expect(res.status).toBe(200);
+    const body = res.body as DbStatusResponse;
+    expect(body.activeSpellReadSource).toBe("rules");
+  });
+
+  it("allows production DB provenance with the operations token header", async () => {
+    process.env.NODE_ENV = "production";
+    process.env.SPELLBOOK_DB_STATUS_TOKEN = "status-secret";
+
+    const res = await request(app)
+      .get("/api/status/db")
+      .set("X-Spellbook-Operations-Token", "status-secret");
+
+    expect(res.status).toBe(200);
+    const body = res.body as DbStatusResponse;
+    expect(body.activeSpellReadSource).toBe("rules");
+  });
+
+  it("blocks production DB provenance with an invalid operations token", async () => {
+    process.env.NODE_ENV = "production";
+    process.env.SPELLBOOK_DB_STATUS_TOKEN = "status-secret";
+
+    const res = await request(app)
+      .get("/api/status/db")
+      .set("Authorization", "Bearer wrong-secret");
+
+    expect(res.status).toBe(404);
+    expect(JSON.stringify(res.body)).not.toContain("activeSpellReadSource");
+  });
+
+  it("allows production DB provenance when explicitly public", async () => {
+    process.env.NODE_ENV = "production";
+    process.env.ENABLE_DB_STATUS_PUBLIC = "true";
+
+    const res = await request(app).get("/api/status/db");
+
+    expect(res.status).toBe(200);
+    const body = res.body as DbStatusResponse;
+    expect(body.databases.content).toMatchObject({
+      configured: true,
+      fileName: "content-test.sqlite",
     });
   });
 });

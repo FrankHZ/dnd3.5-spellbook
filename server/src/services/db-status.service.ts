@@ -4,6 +4,7 @@ import type {
   ContentDbTableCounts,
   DbRoleStatus,
   DbStatusResponse,
+  PublicContentStatus,
   RulesContentBuildStatus,
 } from "@dnd/contracts";
 import { contentPrisma } from "~/lib/content-prisma-client";
@@ -129,6 +130,24 @@ async function getContentTableCounts(): Promise<ContentDbTableCounts> {
 }
 
 export const dbStatusService = {
+  async getPublicContentStatus(): Promise<PublicContentStatus> {
+    const content = await getContentStatus();
+    const latestBuild = content.latestBuild
+      ? {
+          generatorVersion: content.latestBuild.generatorVersion,
+          generatedAt: content.latestBuild.generatedAt,
+          spellCount: content.latestBuild.spellCount,
+          issueCount: content.latestBuild.issueCount,
+        }
+      : null;
+
+    return {
+      activeSpellReadSource: activeSpellReadSource(),
+      status: content.status,
+      latestBuild,
+    };
+  },
+
   async getDbStatus(): Promise<DbStatusResponse> {
     const contentUrl = process.env.CONTENT_DATABASE_URL ?? process.env.APP_DATABASE_URL;
     const contentAlias = dbRoleStatus(process.env.APP_DATABASE_URL);

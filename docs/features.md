@@ -298,9 +298,11 @@ Current behavior:
 
 - `/about` shows frontend build metadata from `VITE_SPELLBOOK_*` build-time
   variables
-- the page shows backend deploy metadata from `GET /api/status/app`
-- the page shows content DB read/source/build state from `GET /api/status/db`
-- missing, local, unavailable, or later-gated status data renders as a compact
+- the page shows backend deploy metadata and a public content DB summary from
+  `GET /api/status/app`
+- detailed runtime DB provenance remains operator-facing through
+  `GET /api/status/db`
+- missing, local, or unavailable status data renders as a compact
   unavailable/local state instead of blocking the page
 - the page is read-only and does not upload, activate, or mutate DB artifacts
 

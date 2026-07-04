@@ -22,9 +22,11 @@ work belong in `data-tools/`.
   `server/src/services/`.
 - The status API lives under `/api/status/*`:
   - `/api/status/app` reports backend deploy metadata from explicit environment
-    variables with local-development fallback values.
+    variables with local-development fallback values and a public content DB
+    summary for the About / Version page.
   - `/api/status/db` reports read-only runtime DB role/provenance state and
-    must not upload, migrate, or activate artifacts.
+    must not upload, migrate, or activate artifacts. In production it is
+    operator-facing by default.
 - Prisma client wrappers live in `server/src/lib/`.
 
 ## Data Ownership
@@ -45,6 +47,9 @@ server-owned user state to the content DB.
 reports sanitized file role state, the active spell read source, the latest
 `RulesContentBuild`, and normalized content table counts without exposing raw
 source data or full filesystem paths.
+
+Public UI surfaces should use the redacted content summary in
+`GET /api/status/app` instead of depending on `/api/status/db`.
 
 ## Contracts
 

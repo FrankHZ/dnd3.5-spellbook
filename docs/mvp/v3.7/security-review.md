@@ -6,7 +6,8 @@
 > `docs/roadmap.md` only when active ordering changes. Create or update an
 > integrated plan only if v3.7 grows into multiple conflicting workstreams.
 
-Status: initial review complete; hardening slices planned.
+Status: review complete; v3.7 security hardening slices implemented on
+`codex/server-security-hardening` pending review.
 
 Review date: 2026-07-03.
 
@@ -102,7 +103,7 @@ Recommended fix:
   default.
 - Keep `/health` public.
 - Keep local development behavior easy to use.
-- Document the chosen operator check in `docs/deployment.md`.
+- Document the chosen operator check in `docs/operations/deployment.md`.
 
 Acceptance:
 
@@ -110,6 +111,16 @@ Acceptance:
   intentionally enables it.
 - Local operator workflow can still compare the endpoint with
   `rules:content:meta`.
+
+Accepted Slice 1 implementation:
+
+- Keep local/test behavior open.
+- In production, keep the endpoint private by default.
+- Allow production access with `SPELLBOOK_DB_STATUS_TOKEN` sent as
+  `Authorization: Bearer ...` or `X-Spellbook-Operations-Token`.
+- Allow intentional public exposure with `ENABLE_DB_STATUS_PUBLIC=true`.
+- Keep public About / Version display working through the redacted content
+  summary on `GET /api/status/app`.
 
 ### P1: Stop Returning Internal 500 Error Messages
 
@@ -128,6 +139,12 @@ Acceptance:
 - Production 500 JSON does not expose internal exception text.
 - API tests cover production and development behavior if both modes are kept.
 
+Accepted Slice 1 implementation:
+
+- Preserve `ApiError` payloads.
+- Return generic non-`ApiError` details in production.
+- Keep verbose fallback details outside production for local/test debugging.
+
 ### P1: Add HTTP Security Header And TLS Plan
 
 The bootstrap Nginx example listens on plain HTTP and does not document security
@@ -144,8 +161,17 @@ Recommended fix:
 
 Acceptance:
 
-- Deployment docs provide a copyable hardened Nginx/header baseline.
+- Deployment docs provide a clear API header baseline and Nginx proxy guidance.
 - Local dev remains unaffected.
+
+Accepted Slice 2 implementation:
+
+- Own the API security header baseline in Express middleware.
+- Keep Nginx responsible for proxying and eventual TLS termination.
+- Document `X-Content-Type-Options`, frame blocking, referrer policy,
+  cross-origin resource policy, and API-only CSP.
+- Keep TLS/HSTS as an operations follow-up; add HSTS only after HTTPS is
+  configured and verified.
 
 ### P2: Restrict CORS And Add Low-Cost Abuse Controls
 
@@ -163,6 +189,15 @@ Acceptance:
 
 - Production CORS policy is explicit.
 - Abuse controls do not break local dev or the static web/API split.
+
+Accepted Slice 2 implementation:
+
+- Add `SPELLBOOK_CORS_ORIGINS` as a comma-separated production browser
+  allowlist.
+- Keep local/test CORS permissive when no origin allowlist is configured.
+- Keep same-origin static web/API deployments working without CORS.
+- Defer rate limiting until traffic or write endpoints make the extra moving
+  parts worthwhile.
 
 ### P2: Track Prisma CLI Audit Finding Without Force Downgrade
 
@@ -197,9 +232,9 @@ Acceptance:
 `.github/workflows/deploy.yml` allows manual deploys with portable validation
 disabled. It also relies on default GitHub token permissions.
 
-Status: partially addressed. The About / Version page implementation branch
-adds explicit `permissions: contents: read` to `.github/workflows/deploy.yml`.
-The validation-skip policy remains open for the dependency/deploy policy slice.
+Status: addressed for v3.7. The deploy workflow has explicit
+`permissions: contents: read`. Portable validation remains enabled by default;
+the skip input is documented and warned as emergency rollback only.
 
 Recommended fix:
 
@@ -212,6 +247,13 @@ Acceptance:
 
 - Deploy workflow is least-privilege by default.
 - Normal production deploys cannot silently skip validation.
+
+Accepted Slice 3 implementation:
+
+- Keep the skip input for operator escape hatch rather than removing it during
+  MVP deployment work.
+- Emit a GitHub Actions warning when portable validation is skipped.
+- Keep DB upload out of CD until DB artifact ownership and rollback are solved.
 
 ### P2: Improve SSH Host Trust And Backup Hygiene
 
@@ -230,6 +272,12 @@ Acceptance:
 - Remote deploy docs distinguish convenience bootstrap from hardened operation.
 - Backup growth has an operator policy.
 
+Accepted Slice 4 implementation:
+
+- Prefer `DEPLOY_SSH_KNOWN_HOSTS` as a pinned host-key secret in GitHub deploy.
+- Keep `ssh-keyscan` as a warning-emitting fallback for current convenience.
+- Document manual DB backup retention and pruning expectations.
+
 ## Recommended v3.7 Slices
 
 ### Slice 1: Operator Endpoint And Error Response Hardening
@@ -238,7 +286,8 @@ Acceptance:
   error responses.
 - Expected files: server middleware/tests, status route/config if needed,
   deployment docs, this review doc.
-- Validation: `npm run test:server`, `npm run build:server`.
+- Implementation branch: `codex/server-security-hardening`.
+- Validation: `npm run test:server`, `npm run -w server build`.
 
 ### Slice 2: HTTP Headers, CORS, And TLS Documentation
 
@@ -247,20 +296,25 @@ Acceptance:
   module docs if ownership changes.
 - Validation: server tests for CORS/header behavior if implemented in Express;
   docs review if Nginx-only.
+- Status: implemented on `codex/server-security-hardening`.
 
 ### Slice 3: Dependency And Deploy Policy
 
 - Deliverable: decision on Prisma audit handling, deploy permissions, and
   validation-skip policy.
 - Expected files: package/deps PR if upgrading, `.github/workflows/deploy.yml`,
-  `docs/deployment.md`.
+  `docs/operations/deployment.md`.
 - Validation: `npm audit --workspaces`, `npm run ci:portable`.
+- Status: deploy policy implemented on `codex/server-security-hardening`;
+  broader dependency upgrade decisions stay in `dependency-upgrade-plan.md`.
 
 ### Slice 4: SSH And Backup Operations Notes
 
 - Deliverable: host-key and backup-retention guidance.
-- Expected files: `docs/deployment.md`, `docs/operations/bootstrap-remote.md`.
+- Expected files: `docs/operations/deployment.md`,
+  `docs/operations/bootstrap-remote.md`.
 - Validation: docs review.
+- Status: implemented on `codex/server-security-hardening`.
 
 ## Acceptance Criteria
 
@@ -275,15 +329,13 @@ Acceptance:
 - Update this review when finding status, priority, or accepted slice ownership
   changes.
 - Update `docs/roadmap.md` when security hardening changes active work order.
-- Update `docs/deployment.md`, `docs/operations/bootstrap-remote.md`, and
-  `docs/modules/delivery.md` when deployment/security behavior changes.
+- Update `docs/operations/deployment.md`,
+  `docs/operations/bootstrap-remote.md`, and `docs/modules/delivery.md` when
+  deployment/security behavior changes.
 - Do not create `integrated-plan.md` unless v3.7 gains multiple major
   workstreams beyond security review.
 
 ## Open Questions
 
-- Should `/api/status/db` be loopback-only at Nginx, token-gated in Express, or
-  both?
-- Should security headers be owned by Nginx docs/scripts or Express middleware?
 - Should production deploy install dev dependencies on-host, or should backend
   artifacts be built before upload in a future delivery pass?

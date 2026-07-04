@@ -30,8 +30,9 @@ defaults. Ordinary page filters should stay in URL state unless the feature plan
 explicitly promotes them to preferences.
 
 About / Version owns read-only deploy and content status display. It should use
-frontend build-time `VITE_SPELLBOOK_*` metadata plus API helpers for
-`/api/status/app` and `/api/status/db`; it is not an admin dashboard.
+frontend build-time `VITE_SPELLBOOK_*` metadata plus the public
+`/api/status/app` summary; detailed `/api/status/db` provenance is
+operator-facing and should not be required for the public page.
 
 ## Contracts And API
 
