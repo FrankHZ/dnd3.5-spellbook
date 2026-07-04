@@ -1,4 +1,5 @@
 import type {
+  SpellDescriptorBucketKey,
   SpellFilterVocabularyItem,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
@@ -13,8 +14,12 @@ import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { countTaxonomyFilters } from "./taxonomy-filter-state";
 
+const DESCRIPTOR_BUCKET_PICKER_IDS: Record<SpellDescriptorBucketKey, number> = {
+  other: -1,
+};
+
 function toPickerItem(
-  item: SpellFilterVocabularyItem,
+  item: SpellFilterVocabularyItem & { id: number },
   displayName: ReturnType<typeof useAppI18n>["name"],
 ): PickerItem {
   return {
@@ -23,16 +28,51 @@ function toPickerItem(
   };
 }
 
+function hasVocabularyId(
+  item: SpellFilterVocabularyItem,
+): item is SpellFilterVocabularyItem & { id: number } {
+  return typeof item.id === "number";
+}
+
+function toDescriptorPickerItem(
+  item: SpellFilterVocabularyItem,
+  displayName: ReturnType<typeof useAppI18n>["name"],
+): PickerItem | null {
+  if (hasVocabularyId(item)) return toPickerItem(item, displayName);
+  if (item.bucketKey) {
+    return {
+      id: DESCRIPTOR_BUCKET_PICKER_IDS[item.bucketKey],
+      name: displayName(item),
+    };
+  }
+  return null;
+}
+
+function splitDescriptorPickerIds(ids: number[]) {
+  const descriptorIds = ids.filter((id) => id > 0);
+  const descriptorBuckets = ids
+    .filter((id) => id === DESCRIPTOR_BUCKET_PICKER_IDS.other)
+    .map(() => "other" as const);
+
+  return {
+    descriptorIds,
+    descriptorBuckets: Array.from(new Set(descriptorBuckets)),
+  };
+}
+
 export function TaxonomyFilterSelector({
   value,
   onChangeSchools,
   onChangeSubschools,
-  onChangeDescriptors,
+  onChangeDescriptorFilters,
 }: {
   value: SpellTaxonomyFilterIds;
   onChangeSchools: (next: number[]) => void;
   onChangeSubschools: (next: number[]) => void;
-  onChangeDescriptors: (next: number[]) => void;
+  onChangeDescriptorFilters: (next: {
+    descriptorIds: number[];
+    descriptorBuckets: SpellDescriptorBucketKey[];
+  }) => void;
 }) {
   const { t } = useTranslation("spell-filters");
   const { lang, name, nameWithEn } = useAppI18n();
@@ -47,11 +87,21 @@ export function TaxonomyFilterSelector({
   const [open, setOpen] = useState(activeCount > 0);
 
   const schoolItems =
-    taxonomy?.schools.map((item) => toPickerItem(item, displayName)) ?? [];
+    taxonomy?.schools
+      .filter(hasVocabularyId)
+      .map((item) => toPickerItem(item, displayName)) ?? [];
   const subschoolItems =
-    taxonomy?.subschools.map((item) => toPickerItem(item, displayName)) ?? [];
+    taxonomy?.subschools
+      .filter(hasVocabularyId)
+      .map((item) => toPickerItem(item, displayName)) ?? [];
   const descriptorItems =
-    taxonomy?.descriptors.map((item) => toPickerItem(item, displayName)) ?? [];
+    taxonomy?.descriptors
+      .map((item) => toDescriptorPickerItem(item, displayName))
+      .filter((item): item is PickerItem => Boolean(item)) ?? [];
+  const selectedDescriptorPickerIds = [
+    ...value.descriptorIds,
+    ...value.descriptorBuckets.map((bucket) => DESCRIPTOR_BUCKET_PICKER_IDS[bucket]),
+  ];
 
   return (
     <details
@@ -91,8 +141,10 @@ export function TaxonomyFilterSelector({
           title={t("taxonomy.descriptors")}
           placeholder={t("taxonomy.descriptors-placeholder")}
           items={descriptorItems}
-          selectedIds={value.descriptorIds}
-          onChange={onChangeDescriptors}
+          selectedIds={selectedDescriptorPickerIds}
+          onChange={(nextIds) => {
+            onChangeDescriptorFilters(splitDescriptorPickerIds(nextIds));
+          }}
           badgeVariant="outline"
         />
       </div>

@@ -113,7 +113,7 @@ export function SpellCard({
                 </span>
                 {spell.descriptors?.map((d) => (
                   <Badge
-                    key={d.id}
+                    key={d.id ?? d.key ?? d.slug}
                     variant="secondary"
                     className="rounded-sm px-1.5 text-xs font-medium"
                   >

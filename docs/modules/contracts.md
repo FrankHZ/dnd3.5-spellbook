@@ -28,6 +28,30 @@ When a shared shape changes:
 
 Server and web code should not define parallel DTOs for the same API response.
 
+Current normalized spell query contracts live in `contracts/src/dto/spell.ts`
+and metadata vocabulary lives in `contracts/src/dto/meta.ts`.
+
+- Taxonomy filters use numeric id arrays: `schoolIds`, `subschoolIds`, and
+  `descriptorIds`.
+- Descriptor taxonomy buckets that are not legacy ids use
+  `descriptorBuckets`.
+- Taxonomy vocabulary items include `sourceKind` and `category` metadata for
+  grouping ordinary spell taxonomy separately from Tome of Battle maneuver
+  disciplines/categories.
+- Combined legacy school/subschool labels should not appear as vocabulary items;
+  consumers should use the base taxonomy ids returned by the metadata endpoint.
+- Legacy descriptor noise values such as `see text...` should not appear as
+  individual vocabulary items; consumers should use the server-provided
+  `Other` descriptor item with `queryParam: "descriptorBuckets"` and
+  `queryValue: "other"`.
+- Base component filters use stable string keys through `componentKeys`.
+- `GET /api/meta/filters` exposes the component vocabulary under
+  `components.base`, including the query parameter name and `all` selection
+  mode.
+
+Do not add frontend-only filter vocabulary outside this package and the server
+metadata endpoint.
+
 ## Validation
 
 Use:

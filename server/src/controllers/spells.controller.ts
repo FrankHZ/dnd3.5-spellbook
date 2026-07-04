@@ -10,8 +10,15 @@ import { spellsService } from "~/services/spells/spells.service";
 import { getDefaultRulebookIds } from "~/services/rulebooks.service";
 import type {
   SpellBatchRequest,
+  SpellComponentFilterKey,
+  SpellComponentFilters,
+  SpellDescriptorBucketKey,
   SpellNameSearchResponse,
   SpellTaxonomyFilterIds,
+} from "@dnd/contracts";
+import {
+  SPELL_COMPONENT_FILTER_KEYS,
+  SPELL_DESCRIPTOR_BUCKET_KEYS,
 } from "@dnd/contracts";
 import { getI18nContext, hasCjk } from "~/utils/i18n";
 import { LevelMode } from "~/services/spells/spells.service.by-level";
@@ -20,12 +27,36 @@ import { ResolveSpellNamesRequest } from "@dnd/contracts";
 function parseTaxonomyFilterIds(query: Request["query"]): SpellTaxonomyFilterIds {
   const positiveIntIds = (value: unknown) =>
     parseCsvNumberList(value).filter((id) => Number.isInteger(id) && id > 0);
+  const descriptorBucketKeys = new Set<string>(SPELL_DESCRIPTOR_BUCKET_KEYS);
+  const descriptorBuckets =
+    query.descriptorBuckets === undefined || query.descriptorBuckets === null
+      ? []
+      : String(query.descriptorBuckets)
+          .split(",")
+          .map((value) => value.trim().toLowerCase())
+          .filter((value) => descriptorBucketKeys.has(value));
 
   return {
     schoolIds: positiveIntIds(query.schoolIds),
     subschoolIds: positiveIntIds(query.subschoolIds),
     descriptorIds: positiveIntIds(query.descriptorIds),
+    descriptorBuckets: Array.from(
+      new Set(descriptorBuckets),
+    ) as SpellDescriptorBucketKey[],
   };
+}
+
+function parseComponentFilters(query: Request["query"]): SpellComponentFilters {
+  const allowed = new Set<string>(SPELL_COMPONENT_FILTER_KEYS);
+  const raw = query.componentKeys;
+  if (raw === undefined || raw === null) return { componentKeys: [] };
+
+  const componentKeys = String(raw)
+    .split(",")
+    .map((value) => value.trim().toLowerCase())
+    .filter((value) => allowed.has(value)) as SpellComponentFilterKey[];
+
+  return { componentKeys: Array.from(new Set(componentKeys)) };
 }
 
 export async function searchSpellsByName(
@@ -47,6 +78,7 @@ export async function searchSpellsByName(
     const classIds = parseCsvNumberList(req.query.classIds);
     const domainIds = parseCsvNumberList(req.query.domainIds);
     const taxonomyFilters = parseTaxonomyFilterIds(req.query);
+    const componentFilters = parseComponentFilters(req.query);
     const levelRaw = normalizeString(req.query.level);
     let level: number | "all" | null = null;
     if (levelRaw) {
@@ -81,6 +113,7 @@ export async function searchSpellsByName(
         q,
         rulebookIds,
         ...taxonomyFilters,
+        ...componentFilters,
         page,
         pageSize,
         total: 0,
@@ -95,6 +128,7 @@ export async function searchSpellsByName(
       classIds,
       domainIds,
       taxonomyFilters,
+      componentFilters,
       level,
       page,
       pageSize,
@@ -121,6 +155,7 @@ export async function listSpellsByClassAndDomainLevel(
     const classIds = parseCsvNumberList(req.query.classIds);
     const domainIds = parseCsvNumberList(req.query.domainIds);
     const taxonomyFilters = parseTaxonomyFilterIds(req.query);
+    const componentFilters = parseComponentFilters(req.query);
 
     if (classIds.length === 0 && domainIds.length === 0) {
       next(
@@ -174,6 +209,7 @@ export async function listSpellsByClassAndDomainLevel(
       level: levelNum,
       rulebookIds,
       taxonomyFilters,
+      componentFilters,
       page,
       pageSize,
       i18n: getI18nContext(req),

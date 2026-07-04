@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 
-export const RULES_CONTENT_GENERATOR_VERSION = "rules-content-normalizer-v1";
+export const RULES_CONTENT_GENERATOR_VERSION = "rules-content-normalizer-v4";
 
 export type LegacyRulebookRow = {
   id: number;
@@ -250,6 +250,60 @@ const COMPONENTS: Array<{
   { type: "corrupt", field: "corruptComponent" },
 ];
 
+const COMBINED_SCHOOL_FACETS: Record<
+  string,
+  Array<{ id: number; name: string; slug: string }>
+> = {
+  "Conjuration/Evocation": [
+    { id: 2, name: "Conjuration", slug: "conjuration" },
+    { id: 5, name: "Evocation", slug: "evocation" },
+  ],
+  "Transmutation/Evocation": [
+    { id: 7, name: "Transmutation", slug: "transmutation" },
+    { id: 5, name: "Evocation", slug: "evocation" },
+  ],
+  "Conjuration/Necromancy": [
+    { id: 2, name: "Conjuration", slug: "conjuration" },
+    { id: 6, name: "Necromancy", slug: "necromancy" },
+  ],
+  "Divination/Evocation": [
+    { id: 3, name: "Divination", slug: "divination" },
+    { id: 5, name: "Evocation", slug: "evocation" },
+  ],
+  "Evocation/Transmutation": [
+    { id: 5, name: "Evocation", slug: "evocation" },
+    { id: 7, name: "Transmutation", slug: "transmutation" },
+  ],
+  "Transmutation/Divination": [
+    { id: 7, name: "Transmutation", slug: "transmutation" },
+    { id: 3, name: "Divination", slug: "divination" },
+  ],
+  "Abjuration/Evocation": [
+    { id: 1, name: "Abjuration", slug: "abjuration" },
+    { id: 5, name: "Evocation", slug: "evocation" },
+  ],
+};
+
+const COMBINED_SUBSCHOOL_FACETS: Record<
+  string,
+  Array<{ id: number; name: string; slug: string }>
+> = {
+  "Creation or Calling": [
+    { id: 2, name: "Creation", slug: "creation" },
+    { id: 3, name: "Calling", slug: "calling" },
+  ],
+  "Figment and Glamer": [
+    { id: 12, name: "Figment", slug: "figment" },
+    { id: 7, name: "Glamer", slug: "glamer" },
+  ],
+};
+
+const OTHER_DESCRIPTOR_FACET = {
+  id: null,
+  name: "Other",
+  slug: "other",
+};
+
 export function normalizeRulesContent(
   input: LegacyRulesContentInput,
   generatedAt = new Date().toISOString(),
@@ -321,49 +375,56 @@ export function normalizeRulesContent(
       sourceNote: null,
     });
 
-    taxonomyFacets.push({
-      id: `${spellId}:taxonomy:school:${spell.schoolId}:0`,
-      spellId,
-      facetType: "school",
-      facetKey: spell.schoolSlug,
-      legacyFacetId: spell.schoolId,
-      name: spell.schoolName,
-      slug: spell.schoolSlug,
-      sortOrder: 0,
-      rawText: spell.schoolName,
-      sourceField: "school_id",
-      reviewStatus: "accepted",
-      issueCode: null,
-    });
-
-    if (spell.subSchoolId && spell.subSchoolName) {
+    for (const [index, school] of schoolTaxonomyFacets(spell).entries()) {
       taxonomyFacets.push({
-        id: `${spellId}:taxonomy:subschool:${spell.subSchoolId}:0`,
+        id: `${spellId}:taxonomy:school:${school.id}:${index}`,
         spellId,
-        facetType: "subschool",
-        facetKey: spell.subSchoolSlug ?? slugify(spell.subSchoolName),
-        legacyFacetId: spell.subSchoolId,
-        name: spell.subSchoolName,
-        slug: spell.subSchoolSlug ?? null,
-        sortOrder: 0,
-        rawText: spell.subSchoolName,
-        sourceField: "sub_school_id",
+        facetType: "school",
+        facetKey: school.slug,
+        legacyFacetId: school.id,
+        name: school.name,
+        slug: school.slug,
+        sortOrder: index,
+        rawText: spell.schoolName,
+        sourceField: "school_id",
         reviewStatus: "accepted",
         issueCode: null,
       });
     }
 
+    if (spell.subSchoolId && spell.subSchoolName) {
+      for (const [index, subschool] of subSchoolTaxonomyFacets(
+        spell,
+      ).entries()) {
+        taxonomyFacets.push({
+          id: `${spellId}:taxonomy:subschool:${subschool.id}:${index}`,
+          spellId,
+          facetType: "subschool",
+          facetKey: subschool.slug,
+          legacyFacetId: subschool.id,
+          name: subschool.name,
+          slug: subschool.slug,
+          sortOrder: index,
+          rawText: spell.subSchoolName,
+          sourceField: "sub_school_id",
+          reviewStatus: "accepted",
+          issueCode: null,
+        });
+      }
+    }
+
     for (const [index, descriptor] of (
       descriptorsBySpell.get(spell.id) ?? []
     ).entries()) {
+      const descriptorFacet = descriptorTaxonomyFacet(descriptor);
       taxonomyFacets.push({
-        id: `${spellId}:taxonomy:descriptor:${descriptor.descriptorId}:${index}`,
+        id: `${spellId}:taxonomy:descriptor:${descriptorFacet.slug}:${index}`,
         spellId,
         facetType: "descriptor",
-        facetKey: descriptor.slug,
-        legacyFacetId: descriptor.descriptorId,
-        name: descriptor.name,
-        slug: descriptor.slug,
+        facetKey: descriptorFacet.slug,
+        legacyFacetId: descriptorFacet.id,
+        name: descriptorFacet.name,
+        slug: descriptorFacet.slug,
         sortOrder: index,
         rawText: descriptor.name,
         sourceField: "dnd_spell_descriptors",
@@ -580,6 +641,40 @@ export function auditNormalizedContent(content: NormalizedRulesContent) {
     dirtyListExtras: listExtras,
     issueSamples: content.issues.slice(0, 100),
   };
+}
+
+function schoolTaxonomyFacets(spell: LegacySpellRow) {
+  return (
+    COMBINED_SCHOOL_FACETS[spell.schoolName] ?? [
+      { id: spell.schoolId, name: spell.schoolName, slug: spell.schoolSlug },
+    ]
+  );
+}
+
+function subSchoolTaxonomyFacets(spell: LegacySpellRow) {
+  if (!spell.subSchoolId || !spell.subSchoolName) return [];
+  return (
+    COMBINED_SUBSCHOOL_FACETS[spell.subSchoolName] ?? [
+      {
+        id: spell.subSchoolId,
+        name: spell.subSchoolName,
+        slug: spell.subSchoolSlug ?? slugify(spell.subSchoolName),
+      },
+    ]
+  );
+}
+
+function descriptorTaxonomyFacet(descriptor: LegacyDescriptorRow) {
+  if (isOtherDescriptor(descriptor)) return OTHER_DESCRIPTOR_FACET;
+  return {
+    id: descriptor.descriptorId,
+    name: descriptor.name,
+    slug: descriptor.slug,
+  };
+}
+
+function isOtherDescriptor(descriptor: LegacyDescriptorRow) {
+  return /^see[\s-]+text\b/i.test(descriptor.name);
 }
 
 function addMechanicFacet(

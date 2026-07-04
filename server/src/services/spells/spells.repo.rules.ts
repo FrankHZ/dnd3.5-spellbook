@@ -1,6 +1,15 @@
-import { RulebookId, SpellTaxonomyFilterIds } from "@dnd/contracts";
+import {
+  RulebookId,
+  SpellComponentFilters,
+  SpellTaxonomyFilterIds,
+} from "@dnd/contracts";
 import { rulesPrisma } from "../../lib/rules-prisma-client";
 import { Prisma } from "prisma-rules-clean/generated/client";
+import {
+  expandDescriptorBucketFilterIds,
+  expandSchoolFilterIds,
+  expandSubschoolFilterIds,
+} from "./taxonomy-normalization";
 
 export const SELECT_SPELL_MIN = {
   id: true,
@@ -89,25 +98,57 @@ function rulesTaxonomyWhere(filters: SpellTaxonomyFilterIds) {
   const conditions: Prisma.Sql[] = [];
 
   if (filters.schoolIds.length > 0) {
+    const schoolIds = expandSchoolFilterIds(filters.schoolIds);
     conditions.push(
-      Prisma.sql`s.school_id IN (${Prisma.join(filters.schoolIds)})`,
+      Prisma.sql`s.school_id IN (${Prisma.join(schoolIds)})`,
     );
   }
   if (filters.subschoolIds.length > 0) {
+    const subschoolIds = expandSubschoolFilterIds(filters.subschoolIds);
     conditions.push(
-      Prisma.sql`s.sub_school_id IN (${Prisma.join(filters.subschoolIds)})`,
+      Prisma.sql`s.sub_school_id IN (${Prisma.join(subschoolIds)})`,
     );
   }
-  if (filters.descriptorIds.length > 0) {
+  const descriptorIds = Array.from(
+    new Set([
+      ...filters.descriptorIds,
+      ...expandDescriptorBucketFilterIds(filters.descriptorBuckets),
+    ]),
+  ).sort((a, b) => a - b);
+  if (descriptorIds.length > 0) {
     conditions.push(Prisma.sql`
       EXISTS (
         SELECT 1
         FROM dnd_spell_descriptors sd
         WHERE sd.spell_id = s.id
-          AND sd.spelldescriptor_id IN (${Prisma.join(filters.descriptorIds)})
+          AND sd.spelldescriptor_id IN (${Prisma.join(descriptorIds)})
       )
     `);
   }
+
+  return conditions.length > 0
+    ? Prisma.sql`AND ${Prisma.join(conditions, " AND ")}`
+    : Prisma.empty;
+}
+
+function rulesComponentWhere(filters: SpellComponentFilters) {
+  const conditions = filters.componentKeys.map((key) => {
+    if (key === "verbal") return Prisma.sql`s.verbal_component = 1`;
+    if (key === "somatic") return Prisma.sql`s.somatic_component = 1`;
+    if (key === "material") return Prisma.sql`s.material_component = 1`;
+    if (key === "arcane_focus") {
+      return Prisma.sql`s.arcane_focus_component = 1`;
+    }
+    if (key === "divine_focus") {
+      return Prisma.sql`s.divine_focus_component = 1`;
+    }
+    if (key === "xp") return Prisma.sql`s.xp_component = 1`;
+    if (key === "metabreath") {
+      return Prisma.sql`s.meta_breath_component = 1`;
+    }
+    if (key === "truename") return Prisma.sql`s.true_name_component = 1`;
+    return Prisma.sql`s.corrupt_component = 1`;
+  });
 
   return conditions.length > 0
     ? Prisma.sql`AND ${Prisma.join(conditions, " AND ")}`
@@ -134,6 +175,7 @@ export async function queryIdsByName(
   name: string,
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
+  componentFilters: SpellComponentFilters,
   maxCandidates: number,
 ) {
   if (rulebookIds.length === 0) return [];
@@ -148,6 +190,7 @@ export async function queryIdsByName(
         WHERE s.rulebook_id IN (${Prisma.join(rulebookIds)})
           AND LOWER(s.name) LIKE ${like}
           ${rulesTaxonomyWhere(taxonomyFilters)}
+          ${rulesComponentWhere(componentFilters)}
         LIMIT ${maxCandidates}
       `,
   );
@@ -161,6 +204,7 @@ export async function queryByClassAndDomainWithLevel(
   level: number,
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
+  componentFilters: SpellComponentFilters,
   page: number,
   pageSize: number,
 ) {
@@ -192,6 +236,7 @@ export async function queryByClassAndDomainWithLevel(
       JOIN dnd_spell s ON s.id = u.spell_id
       WHERE 1 = 1
         ${rulesTaxonomyWhere(taxonomyFilters)}
+        ${rulesComponentWhere(componentFilters)}
     `,
   );
   const total = Number(countRows[0]?.cnt ?? 0);
@@ -216,6 +261,7 @@ export async function queryByClassAndDomainWithLevel(
       JOIN dnd_spell s ON s.id = u.spell_id
       WHERE 1 = 1
         ${rulesTaxonomyWhere(taxonomyFilters)}
+        ${rulesComponentWhere(componentFilters)}
       ORDER BY s.name ASC, s.id ASC
       LIMIT ${pageSize} OFFSET ${offset}
     `,
@@ -233,6 +279,7 @@ export async function queryByClassAndDomainAllLevels(
   domainIds: number[],
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
+  componentFilters: SpellComponentFilters,
   page: number,
   pageSize: number,
 ) {
@@ -265,6 +312,7 @@ export async function queryByClassAndDomainAllLevels(
       JOIN dnd_spell s ON s.id = u.spell_id
       WHERE 1 = 1
         ${rulesTaxonomyWhere(taxonomyFilters)}
+        ${rulesComponentWhere(componentFilters)}
     `,
   );
   const total = Number(countRows[0]?.cnt ?? 0);
@@ -291,6 +339,7 @@ export async function queryByClassAndDomainAllLevels(
       JOIN dnd_spell s ON s.id = u.spell_id
       WHERE 1 = 1
         ${rulesTaxonomyWhere(taxonomyFilters)}
+        ${rulesComponentWhere(componentFilters)}
       ORDER BY u.level ASC, s.name ASC, s.id ASC
       LIMIT ${pageSize} OFFSET ${offset}
     `,

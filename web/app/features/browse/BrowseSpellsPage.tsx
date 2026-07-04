@@ -42,7 +42,7 @@ export default function BrowsePage() {
     setDomainIds,
     setSchoolIds,
     setSubschoolIds,
-    setDescriptorIds,
+    setDescriptorFilters,
     setPage,
     hasValidSelection,
   } = useBrowseQueryState();
@@ -124,7 +124,7 @@ export default function BrowsePage() {
               value={taxonomyFilters}
               onChangeSchools={setSchoolIds}
               onChangeSubschools={setSubschoolIds}
-              onChangeDescriptors={setDescriptorIds}
+              onChangeDescriptorFilters={setDescriptorFilters}
             />
           </CardContent>
         </Card>

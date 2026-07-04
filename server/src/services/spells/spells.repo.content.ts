@@ -2,10 +2,16 @@ import {
   I18nContext,
   Lang,
   RulebookId,
+  SpellComponentFilters,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
 import { Prisma as ContentPrisma, Prisma } from "prisma-content/generated/client";
 import { contentPrisma } from "~/lib/content-prisma-client";
+import {
+  expandDescriptorBucketFilterIds,
+  expandSchoolFilterIds,
+  expandSubschoolFilterIds,
+} from "./taxonomy-normalization";
 
 export const SELECT_SPELL_I18N_MIN = {
   spellId: true,
@@ -62,15 +68,70 @@ function normalizedTaxonomyWhere(filters: SpellTaxonomyFilterIds) {
     )
   `;
 
+  const descriptorFacetCondition = () => {
+    const descriptorConditions: Prisma.Sql[] = [];
+    const bucketLegacyIds = expandDescriptorBucketFilterIds(
+      filters.descriptorBuckets,
+    );
+
+    if (filters.descriptorIds.length > 0) {
+      descriptorConditions.push(
+        Prisma.sql`tf."legacyFacetId" IN (${Prisma.join(filters.descriptorIds)})`,
+      );
+    }
+    if (filters.descriptorBuckets.includes("other")) {
+      descriptorConditions.push(Prisma.sql`tf."facetKey" = 'other'`);
+    }
+    if (bucketLegacyIds.length > 0) {
+      descriptorConditions.push(
+        Prisma.sql`tf."legacyFacetId" IN (${Prisma.join(bucketLegacyIds)})`,
+      );
+    }
+    if (descriptorConditions.length === 0) return null;
+
+    return Prisma.sql`
+      EXISTS (
+        SELECT 1
+        FROM "SpellTaxonomyFacet" tf
+        WHERE tf."spellId" = s."id"
+          AND tf."facetType" = 'descriptor'
+          AND tf."reviewStatus" = 'accepted'
+          AND (${Prisma.join(descriptorConditions, " OR ")})
+      )
+    `;
+  };
+
   if (filters.schoolIds.length > 0) {
-    conditions.push(facetCondition("school", filters.schoolIds));
+    conditions.push(
+      facetCondition("school", expandSchoolFilterIds(filters.schoolIds)),
+    );
   }
   if (filters.subschoolIds.length > 0) {
-    conditions.push(facetCondition("subschool", filters.subschoolIds));
+    conditions.push(
+      facetCondition("subschool", expandSubschoolFilterIds(filters.subschoolIds)),
+    );
   }
-  if (filters.descriptorIds.length > 0) {
-    conditions.push(facetCondition("descriptor", filters.descriptorIds));
+  const descriptorCondition = descriptorFacetCondition();
+  if (descriptorCondition) {
+    conditions.push(descriptorCondition);
   }
+
+  return conditions.length > 0
+    ? Prisma.sql`AND ${Prisma.join(conditions, " AND ")}`
+    : Prisma.empty;
+}
+
+function normalizedComponentWhere(filters: SpellComponentFilters) {
+  const conditions = filters.componentKeys.map((componentType) => Prisma.sql`
+    EXISTS (
+      SELECT 1
+      FROM "SpellComponent" cf
+      WHERE cf."spellId" = s."id"
+        AND cf."componentType" = ${componentType}
+        AND cf."present" = true
+        AND cf."reviewStatus" = 'accepted'
+    )
+  `);
 
   return conditions.length > 0
     ? Prisma.sql`AND ${Prisma.join(conditions, " AND ")}`
@@ -82,6 +143,7 @@ export async function queryIdsByI18nName(
   name: string,
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
+  componentFilters: SpellComponentFilters,
   maxCandidates: number,
 ) {
   if (rulebookIds.length === 0) return [];
@@ -97,6 +159,7 @@ export async function queryIdsByI18nName(
           AND LOWER(i.name) LIKE ${like}
           AND i.lang = ${lang}
           ${normalizedTaxonomyWhere(taxonomyFilters)}
+          ${normalizedComponentWhere(componentFilters)}
         LIMIT ${maxCandidates}
       `,
   );

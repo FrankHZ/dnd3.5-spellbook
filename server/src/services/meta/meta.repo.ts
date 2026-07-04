@@ -1,6 +1,11 @@
 import { contentPrisma } from "~/lib/content-prisma-client";
 import { I18nContext, Lang } from "@dnd/contracts";
 import { Prisma } from "DB_CONTENT/client";
+import {
+  isCombinedTaxonomyFacet,
+  isOtherDescriptorFacet,
+  OTHER_DESCRIPTOR_VOCABULARY,
+} from "~/services/spells/taxonomy-normalization";
 
 function normalizeVariant(variant?: string) {
   return variant ?? "default";
@@ -54,10 +59,18 @@ export async function queryMetaI18nOverlays(input: {
 
 export type SpellTaxonomyVocabularyRow = {
   facetType: "school" | "subschool" | "descriptor";
-  id: number;
+  id?: number | undefined;
   key: string;
   slug: string | null;
   name: string;
+  bucketKey?: "other" | undefined;
+  queryParam?:
+    | "schoolIds"
+    | "subschoolIds"
+    | "descriptorIds"
+    | "descriptorBuckets"
+    | undefined;
+  queryValue?: string | undefined;
 };
 
 export async function querySpellTaxonomyVocabulary() {
@@ -71,14 +84,46 @@ export async function querySpellTaxonomyVocabulary() {
         "name" AS name
       FROM "SpellTaxonomyFacet"
       WHERE "facetType" IN ('school', 'subschool', 'descriptor')
-        AND "legacyFacetId" IS NOT NULL
         AND "reviewStatus" = 'accepted'
       ORDER BY "facetType" ASC, "name" ASC, "legacyFacetId" ASC
     `,
   );
 
-  return rows.map((row) => ({
-    ...row,
-    id: Number(row.id),
-  }));
+  const normalizedRows = rows
+    .map((row) => ({
+      ...row,
+      id: row.id === null ? undefined : Number(row.id),
+    }))
+    .filter(
+      (row) =>
+        !isCombinedTaxonomyFacet(row.facetType, row.id ?? null),
+    );
+
+  const hasOtherDescriptor = normalizedRows.some((row) =>
+    isOtherDescriptorFacet({
+      facetType: row.facetType,
+      legacyFacetId: row.id ?? null,
+      key: row.key,
+    }),
+  );
+
+  const publicRows = normalizedRows.filter(
+    (row) =>
+      !isOtherDescriptorFacet({
+        facetType: row.facetType,
+        legacyFacetId: row.id ?? null,
+        key: row.key,
+      }),
+  );
+
+  if (hasOtherDescriptor) {
+    publicRows.push({ id: undefined, ...OTHER_DESCRIPTOR_VOCABULARY });
+  }
+
+  return publicRows.sort(
+    (left, right) =>
+      left.facetType.localeCompare(right.facetType) ||
+      left.name.localeCompare(right.name) ||
+      (left.id ?? 0) - (right.id ?? 0),
+  );
 }

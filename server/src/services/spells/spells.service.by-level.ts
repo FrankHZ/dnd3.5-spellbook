@@ -1,6 +1,7 @@
 import {
   I18nContext,
   SpellByLevelResponse,
+  SpellComponentFilters,
   SpellItemView,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
@@ -101,6 +102,7 @@ export async function listByClassAndDomainLevel(input: {
   level: number | null;
   rulebookIds: number[];
   taxonomyFilters: SpellTaxonomyFilterIds;
+  componentFilters: SpellComponentFilters;
   page: number;
   pageSize: number;
   i18n: I18nContext;
@@ -115,6 +117,7 @@ export async function listByClassAndDomainLevel(input: {
         input.domainIds,
         input.rulebookIds,
         input.taxonomyFilters,
+        input.componentFilters,
         input.page,
         input.pageSize,
       );
@@ -135,6 +138,7 @@ export async function listByClassAndDomainLevel(input: {
       domainIds: input.domainIds,
       rulebookIds: input.rulebookIds,
       ...input.taxonomyFilters,
+      ...input.componentFilters,
       groups: groupAllLevels(items, levelsInOrder),
     };
   } else {
@@ -144,6 +148,7 @@ export async function listByClassAndDomainLevel(input: {
       input.level as number,
       input.rulebookIds,
       input.taxonomyFilters,
+      input.componentFilters,
       input.page,
       input.pageSize,
     );
@@ -175,6 +180,7 @@ export async function listByClassAndDomainLevel(input: {
       domainIds: input.domainIds,
       rulebookIds: input.rulebookIds,
       ...input.taxonomyFilters,
+      ...input.componentFilters,
       groups: groupSingleLevel(input.level as number, items),
     };
   }

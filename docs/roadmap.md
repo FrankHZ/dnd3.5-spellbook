@@ -339,6 +339,10 @@ The stable-version backlog remains intentionally deferred:
   current server `~` aliases are acceptable for the CommonJS build, but future
   ESM work should prefer relative `.js` specifiers or Node-standard `#...`
   package imports instead of expanding `~`
+- DB schema and server backend review to remove legacy fallback paths after the
+  normalized content contract settles; do not optimize for minimal migration in
+  that pass, and prefer a clean schema/query design over preserving temporary
+  compatibility layers
 - release automation beyond the v3.5 script-backed CD pass
 - rollback playbook
 - HTTPS / TLS and host hardening

@@ -1,8 +1,10 @@
 import type {
   I18nContext,
   MetaI18nResponse,
+  SpellComponentFilterVocabularyItem,
   SpellFilterVocabularyItem,
   SpellFilterVocabularyResponse,
+  SpellTaxonomyVocabularyCategory,
 } from "@dnd/contracts";
 import {
   queryMetaI18nOverlays,
@@ -11,6 +13,37 @@ import {
 } from "./meta.repo";
 
 type CacheKey = string;
+
+const COMPONENT_FILTER_VOCABULARY: SpellComponentFilterVocabularyItem[] = [
+  { key: "verbal", label: "Verbal", abbreviation: "V" },
+  { key: "somatic", label: "Somatic", abbreviation: "S" },
+  { key: "material", label: "Material", abbreviation: "M" },
+  { key: "arcane_focus", label: "Arcane Focus", abbreviation: "AF" },
+  { key: "divine_focus", label: "Divine Focus", abbreviation: "DF" },
+  { key: "xp", label: "XP Cost", abbreviation: "XP" },
+  { key: "metabreath", label: "Metabreath", abbreviation: "MB" },
+  { key: "truename", label: "Truename", abbreviation: "TN" },
+  { key: "corrupt", label: "Corrupt", abbreviation: "Corrupt" },
+];
+
+const TOME_OF_BATTLE_DISCIPLINE_KEYS = new Set([
+  "desert-wind",
+  "devoted-spirit",
+  "diamond-mind",
+  "iron-heart",
+  "setting-sun",
+  "shadow-hand",
+  "stone-dragon",
+  "tiger-claw",
+  "white-raven",
+]);
+
+const TOME_OF_BATTLE_MANEUVER_CATEGORY_KEYS = new Set([
+  "boost",
+  "counter",
+  "stance",
+  "strike",
+]);
 
 // Cache forever (MVP). Keyed by "lang|variant"
 const cache = new Map<CacheKey, Promise<MetaI18nResponse>>();
@@ -44,18 +77,53 @@ function toVocabularyItems(
   return rows
     .filter((row) => row.facetType === facetType)
     .map((row) => {
+      const category = taxonomyCategory(row);
       const item: SpellFilterVocabularyItem = {
-        id: row.id,
         key: row.key,
         name: row.name,
+        sourceKind: category.startsWith("maneuver_") ? "maneuver" : "spell",
+        category,
+        queryParam: row.queryParam ?? taxonomyQueryParam(row.facetType),
+        queryValue: row.queryValue ?? String(row.id ?? row.key),
       };
+      if (typeof row.id === "number") item.id = row.id;
+      if (row.bucketKey) item.bucketKey = row.bucketKey;
       if (row.slug) item.slug = row.slug;
 
-      const overlayName = overlays.get(row.id);
+      const overlayName =
+        typeof row.id === "number" ? overlays.get(row.id) : undefined;
       if (overlayName) item.i18n = { name: overlayName };
 
       return item;
     });
+}
+
+function taxonomyQueryParam(
+  facetType: SpellTaxonomyVocabularyRow["facetType"],
+) {
+  if (facetType === "school") return "schoolIds";
+  if (facetType === "subschool") return "subschoolIds";
+  return "descriptorIds";
+}
+
+function taxonomyCategory(
+  row: SpellTaxonomyVocabularyRow,
+): SpellTaxonomyVocabularyCategory {
+  if (
+    row.facetType === "school" &&
+    TOME_OF_BATTLE_DISCIPLINE_KEYS.has(row.key)
+  ) {
+    return "maneuver_discipline";
+  }
+  if (
+    row.facetType === "subschool" &&
+    TOME_OF_BATTLE_MANEUVER_CATEGORY_KEYS.has(row.key)
+  ) {
+    return "maneuver_category";
+  }
+  if (row.facetType === "school") return "spell_school";
+  if (row.facetType === "subschool") return "spell_subschool";
+  return "spell_descriptor";
 }
 
 async function loadMetaI18n(i18n: I18nContext): Promise<MetaI18nResponse> {
@@ -158,6 +226,11 @@ async function loadFilterVocabulary(
         "descriptor",
         descriptorOverlays,
       ),
+    },
+    components: {
+      queryParam: "componentKeys",
+      mode: "all",
+      base: COMPONENT_FILTER_VOCABULARY,
     },
   };
 }

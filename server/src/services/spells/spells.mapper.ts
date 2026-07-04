@@ -12,6 +12,10 @@ import {
   SELECT_SPELL_I18N_MIN,
   SELECT_SPELL_I18N_SUMMARY,
 } from "./spells.repo.content";
+import {
+  isOtherDescriptorFacet,
+  OTHER_DESCRIPTOR_VOCABULARY,
+} from "./taxonomy-normalization";
 
 type SpellNameI18nRow = ContentPrisma.I18nSpellTextGetPayload<{
   select: typeof SELECT_SPELL_I18N_MIN;
@@ -63,11 +67,7 @@ export function mapSpellItem(
   spellI18n: SpellNameI18nRow | null,
   summaryI18n: SpellSummaryI18nRow | null = null,
 ): SpellItemView {
-  const descriptors = (spell.spellDescriptors ?? [])
-    .map((sd: any) => sd.spellDescriptor)
-    .filter(Boolean)
-    .map((d: any) => ({ id: d.id, name: d.name, slug: d.slug }))
-    .sort((a: any, b: any) => a.name.localeCompare(b.name) || a.id - b.id);
+  const descriptors = mapDescriptors(spell.spellDescriptors ?? []);
 
   const classLevels = (spell.spellClassIndexes ?? [])
     .map((cl) => ({
@@ -205,4 +205,40 @@ export function mapSpellDetail(
   detail.i18n = i18n;
 
   return detail;
+}
+
+function mapDescriptors(spellDescriptors: any[]) {
+  const byKey = new Map<
+    string,
+    { id?: number | undefined; key?: "other" | undefined; name: string; slug: string }
+  >();
+
+  for (const entry of spellDescriptors) {
+    const descriptor = entry?.spellDescriptor;
+    if (!descriptor) continue;
+
+    const id = Number(descriptor.id);
+    const slug = String(descriptor.slug ?? "");
+    const mapped = isOtherDescriptorFacet({
+      facetType: "descriptor",
+      legacyFacetId: Number.isFinite(id) ? id : null,
+      key: slug,
+    })
+      ? {
+          key: OTHER_DESCRIPTOR_VOCABULARY.bucketKey,
+          name: OTHER_DESCRIPTOR_VOCABULARY.name,
+          slug: OTHER_DESCRIPTOR_VOCABULARY.slug,
+        }
+      : {
+          id,
+          name: String(descriptor.name),
+          slug,
+        };
+
+    byKey.set(mapped.key ?? String(mapped.id), mapped);
+  }
+
+  return Array.from(byKey.values()).sort(
+    (a, b) => a.name.localeCompare(b.name) || (a.id ?? 0) - (b.id ?? 0),
+  );
 }

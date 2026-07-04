@@ -21,6 +21,10 @@ const emptyTaxonomyFilters = {
   schoolIds: [],
   subschoolIds: [],
   descriptorIds: [],
+  descriptorBuckets: [],
+};
+const emptyComponentFilters = {
+  componentKeys: [],
 };
 
 function legacyComparable<T extends { rulebook?: Record<string, unknown> }>(
@@ -40,12 +44,14 @@ describe("normalized rules content repository parity", () => {
       "fire",
       [4, 6],
       emptyTaxonomyFilters,
+      emptyComponentFilters,
       100,
     );
     const normalizedIds = await queryNormalizedIdsByName(
       "fire",
       [4, 6],
       emptyTaxonomyFilters,
+      emptyComponentFilters,
       100,
     );
 
@@ -72,6 +78,7 @@ describe("normalized rules content repository parity", () => {
       3,
       [4],
       emptyTaxonomyFilters,
+      emptyComponentFilters,
       1,
       20,
     );
@@ -81,6 +88,7 @@ describe("normalized rules content repository parity", () => {
       3,
       [4],
       emptyTaxonomyFilters,
+      emptyComponentFilters,
       1,
       20,
     );

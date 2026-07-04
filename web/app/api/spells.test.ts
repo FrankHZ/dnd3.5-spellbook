@@ -53,13 +53,14 @@ describe("spell API wrappers", () => {
         schoolIds: [2, 2, 0],
         subschoolIds: [4],
         descriptorIds: [7, 6],
+        descriptorBuckets: ["other"],
       },
       page: 1,
       pageSize: 25,
     });
 
     expect(apiGet).toHaveBeenCalledWith(
-      "/api/spells/search?q=fire&page=1&pageSize=25&schoolIds=2&subschoolIds=4&descriptorIds=6%2C7",
+      "/api/spells/search?q=fire&page=1&pageSize=25&schoolIds=2&subschoolIds=4&descriptorIds=6%2C7&descriptorBuckets=other",
       undefined,
     );
   });
@@ -92,13 +93,14 @@ describe("spell API wrappers", () => {
         schoolIds: [2],
         subschoolIds: [],
         descriptorIds: [6],
+        descriptorBuckets: ["other"],
       },
       page: 1,
       pageSize: 50,
     });
 
     expect(apiGet).toHaveBeenCalledWith(
-      "/api/spells/by-level?classIds=1&level=3&schoolIds=2&descriptorIds=6&page=1&pageSize=50",
+      "/api/spells/by-level?classIds=1&level=3&schoolIds=2&descriptorIds=6&descriptorBuckets=other&page=1&pageSize=50",
       undefined,
     );
   });

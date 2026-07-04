@@ -25,6 +25,12 @@ structured scope where the feature map says it should. Spell Detail owns detaile
 reference rendering. Collections own local spellbook and prepared-spell browser
 state.
 
+Normalized filter controls should consume `GET /api/meta/filters` vocabulary.
+For v3.8, base component filters use server-provided `componentKeys` with `all`
+semantics, and Tome of Battle taxonomy grouping uses server-provided
+`sourceKind` / `category` metadata. Do not derive filter options by parsing raw
+spell component, taxonomy, or mechanics strings in the browser.
+
 Settings owns broad user preferences such as language and content scope
 defaults. Ordinary page filters should stay in URL state unless the feature plan
 explicitly promotes them to preferences.
