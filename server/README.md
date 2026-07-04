@@ -78,6 +78,9 @@ The main database variables are:
 - `RULES_DATABASE_URL`
 - `CONTENT_DATABASE_URL`
 - `APP_STATE_DATABASE_URL`
+- `SPELLBOOK_DB_STATUS_TOKEN` for production operator access to
+  `GET /api/status/db`
+- `ENABLE_DB_STATUS_PUBLIC=true` only when DB provenance is intentionally public
 
 These point to:
 

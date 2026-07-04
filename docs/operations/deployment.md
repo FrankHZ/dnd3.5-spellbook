@@ -242,6 +242,32 @@ SPELLBOOK_BACKEND_GITHUB_RUN_ATTEMPT=
 When these values are absent, `GET /api/status/app` reports a local fallback
 instead of inspecting Git state at request time.
 
+Runtime database provenance is available through `GET /api/status/db`, but in
+production it is private by default because it reports database file roles,
+content build metadata, hashes, and table counts. Configure an operator token
+in `/etc/default/spellbook-api` when remote DB verification is needed:
+
+```dotenv
+SPELLBOOK_DB_STATUS_TOKEN=<operator-only-token>
+```
+
+Operator checks should send either:
+
+```bash
+curl -fsS -H "Authorization: Bearer $SPELLBOOK_DB_STATUS_TOKEN" \
+  http://127.0.0.1:3000/api/status/db
+```
+
+or:
+
+```bash
+curl -fsS -H "X-Spellbook-Operations-Token: $SPELLBOOK_DB_STATUS_TOKEN" \
+  http://127.0.0.1:3000/api/status/db
+```
+
+Only set `ENABLE_DB_STATUS_PUBLIC=true` when the DB provenance endpoint is
+intentionally public.
+
 The backend should only listen on:
 
 ```text
@@ -343,10 +369,12 @@ ssh remote "./update-db.sh"
 ```
 
 After activation, verify the remote content DB metadata before relying on the
-default normalized read path:
+default normalized read path. In production this endpoint requires the operator
+token unless `ENABLE_DB_STATUS_PUBLIC=true` has been intentionally set:
 
 ```bash
-curl -fsS http://127.0.0.1:3000/api/status/db
+curl -fsS -H "Authorization: Bearer $SPELLBOOK_DB_STATUS_TOKEN" \
+  http://127.0.0.1:3000/api/status/db
 ```
 
 Compare the response with the local `rules:content:meta` report. At minimum,

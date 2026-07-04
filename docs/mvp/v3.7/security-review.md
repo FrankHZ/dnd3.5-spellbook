@@ -6,7 +6,8 @@
 > `docs/roadmap.md` only when active ordering changes. Create or update an
 > integrated plan only if v3.7 grows into multiple conflicting workstreams.
 
-Status: initial review complete; hardening slices planned.
+Status: initial review complete; Slice 1 implemented on
+`codex/server-security-hardening` pending review.
 
 Review date: 2026-07-03.
 
@@ -102,7 +103,7 @@ Recommended fix:
   default.
 - Keep `/health` public.
 - Keep local development behavior easy to use.
-- Document the chosen operator check in `docs/deployment.md`.
+- Document the chosen operator check in `docs/operations/deployment.md`.
 
 Acceptance:
 
@@ -110,6 +111,14 @@ Acceptance:
   intentionally enables it.
 - Local operator workflow can still compare the endpoint with
   `rules:content:meta`.
+
+Accepted Slice 1 implementation:
+
+- Keep local/test behavior open.
+- In production, keep the endpoint private by default.
+- Allow production access with `SPELLBOOK_DB_STATUS_TOKEN` sent as
+  `Authorization: Bearer ...` or `X-Spellbook-Operations-Token`.
+- Allow intentional public exposure with `ENABLE_DB_STATUS_PUBLIC=true`.
 
 ### P1: Stop Returning Internal 500 Error Messages
 
@@ -127,6 +136,12 @@ Acceptance:
 
 - Production 500 JSON does not expose internal exception text.
 - API tests cover production and development behavior if both modes are kept.
+
+Accepted Slice 1 implementation:
+
+- Preserve `ApiError` payloads.
+- Return generic non-`ApiError` details in production.
+- Keep verbose fallback details outside production for local/test debugging.
 
 ### P1: Add HTTP Security Header And TLS Plan
 
@@ -238,7 +253,8 @@ Acceptance:
   error responses.
 - Expected files: server middleware/tests, status route/config if needed,
   deployment docs, this review doc.
-- Validation: `npm run test:server`, `npm run build:server`.
+- Implementation branch: `codex/server-security-hardening`.
+- Validation: `npm run test:server`, `npm run -w server build`.
 
 ### Slice 2: HTTP Headers, CORS, And TLS Documentation
 
@@ -253,13 +269,14 @@ Acceptance:
 - Deliverable: decision on Prisma audit handling, deploy permissions, and
   validation-skip policy.
 - Expected files: package/deps PR if upgrading, `.github/workflows/deploy.yml`,
-  `docs/deployment.md`.
+  `docs/operations/deployment.md`.
 - Validation: `npm audit --workspaces`, `npm run ci:portable`.
 
 ### Slice 4: SSH And Backup Operations Notes
 
 - Deliverable: host-key and backup-retention guidance.
-- Expected files: `docs/deployment.md`, `docs/operations/bootstrap-remote.md`.
+- Expected files: `docs/operations/deployment.md`,
+  `docs/operations/bootstrap-remote.md`.
 - Validation: docs review.
 
 ## Acceptance Criteria
@@ -275,8 +292,9 @@ Acceptance:
 - Update this review when finding status, priority, or accepted slice ownership
   changes.
 - Update `docs/roadmap.md` when security hardening changes active work order.
-- Update `docs/deployment.md`, `docs/operations/bootstrap-remote.md`, and
-  `docs/modules/delivery.md` when deployment/security behavior changes.
+- Update `docs/operations/deployment.md`,
+  `docs/operations/bootstrap-remote.md`, and `docs/modules/delivery.md` when
+  deployment/security behavior changes.
 - Do not create `integrated-plan.md` unless v3.7 gains multiple major
   workstreams beyond security review.
 

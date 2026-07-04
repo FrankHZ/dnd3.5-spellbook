@@ -1,5 +1,7 @@
+import express from "express";
 import request from "supertest";
 import { app } from "~/app";
+import { errorMiddleware } from "~/middlewares/error.middleware";
 
 function expectApiErrorShape(body: any, message: string, error: string) {
   expect(body).toEqual({ message, error });
@@ -47,5 +49,62 @@ describe("API error response invariants", () => {
     expect(res.status).toBe(200);
     expect(res.body.page).toBe(1);
     expect(res.body.pageSize).toBe(100);
+  });
+
+  it("hides unexpected error details in production", async () => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+
+    const testApp = express();
+    testApp.get("/boom", () => {
+      throw new Error("secret sqlite path /opt/spellbook/data/content.sqlite");
+    });
+    testApp.use(errorMiddleware);
+
+    try {
+      const res = await request(testApp).get("/boom");
+
+      expect(res.status).toBe(500);
+      expectApiErrorShape(
+        res.body,
+        "Internal server error",
+        "Internal server error",
+      );
+      expect(JSON.stringify(res.body)).not.toContain("/opt/spellbook");
+    } finally {
+      if (previousNodeEnv === undefined) {
+        delete process.env.NODE_ENV;
+      } else {
+        process.env.NODE_ENV = previousNodeEnv;
+      }
+    }
+  });
+
+  it("keeps unexpected error details in non-production responses", async () => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "test";
+
+    const testApp = express();
+    testApp.get("/boom", () => {
+      throw new Error("visible local debug message");
+    });
+    testApp.use(errorMiddleware);
+
+    try {
+      const res = await request(testApp).get("/boom");
+
+      expect(res.status).toBe(500);
+      expectApiErrorShape(
+        res.body,
+        "Internal server error",
+        "visible local debug message",
+      );
+    } finally {
+      if (previousNodeEnv === undefined) {
+        delete process.env.NODE_ENV;
+      } else {
+        process.env.NODE_ENV = previousNodeEnv;
+      }
+    }
   });
 });
