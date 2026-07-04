@@ -466,8 +466,8 @@ seedContentDb();
 
 afterAll(async () => {
   const [{ rulesPrisma }, { contentPrisma }] = await Promise.all([
-    import("~/lib/rules-prisma-client"),
-    import("~/lib/content-prisma-client"),
+    import("../src/lib/rules-prisma-client.js"),
+    import("../src/lib/content-prisma-client.js"),
   ]);
   await Promise.all([rulesPrisma.$disconnect(), contentPrisma.$disconnect()]);
   fs.rmSync(fixtureRoot, { recursive: true, force: true });

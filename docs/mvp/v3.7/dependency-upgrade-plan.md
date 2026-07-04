@@ -65,8 +65,9 @@ the right place to inventory and sequence them.
 - Do not run broad framework migrations as drive-by work inside feature
   branches.
 - Do not downgrade Prisma or other core tooling only to satisfy audit output.
-- Do not remove `ignoreDeprecations` or switch server module resolution without
-  proving the server/contracts runtime import boundary.
+- Do not move the server package/runtime boundary to ESM or add a dual
+  contracts package build unless a focused runtime-boundary review proves it is
+  needed.
 - Do not make dependency upgrades a prerequisite for finishing unrelated v3.6
   planning tracks.
 
@@ -83,9 +84,10 @@ the right place to inventory and sequence them.
 - CI now has `npm run ci:portable`; use it as the clean-checkout merge gate for
   dependency branches.
 - `data-tools` already uses `moduleResolution: "Node16"` with an explicit
-  `rootDir`. The server still uses CommonJS plus `moduleResolution: "node"` and
-  `ignoreDeprecations: "6.0"` because direct Node16 migration exposes the
-  CommonJS server / ESM `@dnd/contracts` boundary.
+  `rootDir`. The server now keeps its CommonJS package/runtime boundary while
+  using TypeScript `module: "NodeNext"` and `moduleResolution: "NodeNext"`;
+  this removes the TypeScript 6 deprecation suppression without requiring a
+  contracts dual-package build.
 - Data, Prisma, parser, SQLite-facing, or TypeScript changes may also require
   `npm run -w data-tools acceptance:local`.
 
@@ -194,9 +196,17 @@ deploy dependency-ownership follow-up rather than a lockfile hack.
 
 Status: reviewed during the dependency branch.
 
-- `server/tsconfig.json` still uses CommonJS, `moduleResolution: "node"`, and
-  `ignoreDeprecations: "6.0"`. This is an intentional hold until the
-  server/contracts CJS/ESM boundary is redesigned.
+- `server/tsconfig.json` now uses `module: "NodeNext"` and
+  `moduleResolution: "NodeNext"` while `server/package.json` remains
+  `"type": "commonjs"`. TypeScript therefore emits CommonJS for server `.ts`
+  files but resolves packages with the modern Node package rules. The old
+  `ignoreDeprecations: "6.0"` suppression is removed.
+- A `module: "Node16"` experiment still reported CommonJS-to-ESM contract
+  errors. `NodeNext` is the accepted route for the current Node 24 baseline
+  because it models newer Node behavior where CommonJS can load ESM modules
+  when top-level await is not involved. The current `@dnd/contracts` usage is
+  type-heavy and portable validation passes without adding a CJS contracts
+  build.
 - `web/package.json` still uses `node --experimental-strip-types` for local
   TypeScript i18n scripts. Current Node 24 accepts both `--strip-types` and
   `--experimental-strip-types`, and the i18n check emits no runtime warning.
@@ -255,7 +265,7 @@ npm run test:web
 
 ### Slice 4: Server Module Boundary Review
 
-- Status: explicitly held.
+- Status: implemented for the dependency branch.
 - Deliverable: choose whether server moves to ESM, contracts adds an explicit
   CJS-compatible boundary, or the current suppression remains held with a
   documented reason.
@@ -271,10 +281,12 @@ npm run test:server
 npm run ci:portable
 ```
 
-Decision: keep the current CommonJS server config and
-`ignoreDeprecations: "6.0"` for this dependency branch. The dependency upgrades
-do not require moving the server to ESM, and a direct Node16 server migration is
-still a separate CJS/ESM package-boundary project.
+Decision: keep the server package/runtime boundary as CommonJS for this branch,
+but move TypeScript compilation and resolution to `NodeNext`. This removes the
+TypeScript 6 `moduleResolution: "node"` deprecation without moving the server
+to ESM and without adding a dual CJS/ESM contracts build. The only source
+change needed was replacing two dynamic `~/...` imports in the server test
+setup with NodeNext-compatible relative `.js` import specifiers.
 
 ### Slice 5: Prisma And Server Tooling Review
 
@@ -308,8 +320,8 @@ npm run ci:portable
 ## Acceptance Criteria
 
 - Current inventory is recorded with explicit classifications.
-- TypeScript module-config cleanup has a chosen server/contracts boundary or an
-  explicit deferral reason.
+- TypeScript module-config cleanup has a chosen server/contracts boundary and
+  no longer relies on the TypeScript deprecation suppression.
 - Each accepted upgrade slice has a dedicated branch and validation list.
 - Forced audit fixes are rejected or accepted with documented compatibility
   reasoning.
@@ -331,8 +343,9 @@ npm run ci:portable
 
 - Should React Router and Vite be reviewed together, or should router behavior
   be isolated from build-tool changes?
-- Should server move to ESM, or should contracts provide an explicit
-  CJS-compatible package boundary first?
+- If future runtime code needs non-erased `@dnd/contracts` values with top-level
+  await or richer runtime exports, should contracts add a CJS-compatible
+  package boundary or should the server move fully to ESM?
 - Should Prisma audit remediation wait for an upstream compatible fix, or
   should deploy/build dependency ownership change first?
 - Should dependency review become a recurring maintenance task after v3.7?

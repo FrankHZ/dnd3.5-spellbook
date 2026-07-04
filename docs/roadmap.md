@@ -232,12 +232,13 @@ Recommended next sequence:
    Keep authentication, user accounts, automatic DB release artifacts, and
    broad deployment redesign out of this first pass.
 
-3. **Run v3.7 dependency inventory refresh**
+3. **Review the v3.7 dependency maintenance branch**
 
-   Use `docs/mvp/v3.7/dependency-upgrade-plan.md` to refresh dependency
-   inventory, classify major/risky upgrades, and decide the TypeScript
-   server/CommonJS versus contracts/ESM boundary before removing the current
-   deprecation suppression.
+   Use `docs/mvp/v3.7/dependency-upgrade-plan.md`. The dependency branch has
+   refreshed the inventory, accepted the risky upgrades, replaced the Vite path
+   plugin with explicit aliases, and removed the server TypeScript deprecation
+   suppression by keeping the server runtime CommonJS while compiling and
+   resolving with NodeNext.
 
 4. **Choose the next post-v3.6 data/contract slice**
 
@@ -301,13 +302,14 @@ v3.6 decision: do not broaden filter contracts inside v3.6.
 5. **Review TypeScript module config cleanup**
 
    `data-tools` has moved to `moduleResolution: "Node16"` with an explicit
-   `rootDir`. The server still uses CommonJS plus `moduleResolution: "node"`
-   with `ignoreDeprecations: "6.0"` because direct Node16 migration exposes the
-   existing CommonJS server / ESM `@dnd/contracts` boundary. Treat the real
-   server migration as deferred to
-   `docs/mvp/v3.7/dependency-upgrade-plan.md`: decide whether to move server to
-   ESM or add an explicit CJS-compatible contracts boundary, then remove the
-   deprecation suppression in a focused branch.
+   `rootDir`. The v3.7 dependency branch accepts the minimal server cleanup:
+   keep the server package/runtime boundary as CommonJS, but compile and
+   resolve with TypeScript `module: "NodeNext"` and
+   `moduleResolution: "NodeNext"`. That removes the TypeScript 6 deprecation
+   suppression without requiring a full server ESM migration or a dual CJS/ESM
+   contracts build. Future work only needs to revisit the package boundary if
+   contracts gains runtime exports that cannot be safely consumed from the
+   CommonJS server path.
 
 ## Later Stable Track
 
