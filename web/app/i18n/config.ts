@@ -17,6 +17,7 @@ export const I18N_NAMESPACES = [
   "spell-scope",
   "spell-search",
   "spell-detail",
+  "about",
 ] as const;
 
 export type SupportedLang = (typeof SUPPORTED_LANGS)[number];

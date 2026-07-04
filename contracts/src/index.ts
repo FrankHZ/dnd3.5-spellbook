@@ -7,3 +7,4 @@ export * from "./dto/domain.js";
 export * from "./dto/spell.js";
 export * from "./dto/spell.resolve.js";
 export * from "./dto/db-status.js";
+export * from "./dto/app-status.js";

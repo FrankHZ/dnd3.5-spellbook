@@ -290,6 +290,32 @@ Key code:
 - `web/app/state/user-prefs-state.tsx`
 - `web/app/storage/userPrefs.ts`
 
+## About / Version
+
+Users and operators can view compact build and content status from the app.
+
+Current behavior:
+
+- `/about` shows frontend build metadata from `VITE_SPELLBOOK_*` build-time
+  variables
+- the page shows backend deploy metadata from `GET /api/status/app`
+- the page shows content DB read/source/build state from `GET /api/status/db`
+- missing, local, unavailable, or later-gated status data renders as a compact
+  unavailable/local state instead of blocking the page
+- the page is read-only and does not upload, activate, or mutate DB artifacts
+
+Key code:
+
+- `web/app/features/about/AboutVersionPage.tsx`
+- `web/app/features/about/build-metadata.ts`
+- `web/app/api/status.ts`
+- `server/src/routes/status.routes.ts`
+- `server/src/controllers/status.controller.ts`
+- `server/src/services/app-status.service.ts`
+- `server/src/services/db-status.service.ts`
+- `server/tests/status.app.test.ts`
+- `server/tests/status.db.test.ts`
+
 ## Feedback And UI Shell
 
 Users get global toast feedback for collection and spell actions.

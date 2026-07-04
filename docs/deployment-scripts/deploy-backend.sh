@@ -8,6 +8,7 @@ INCOMING_DATA_DIR="$HOME/data"
 
 SERVICE="spellbook-api"
 WORKSPACE="server"
+ENV_FILE="/etc/default/spellbook-api"
 
 RULES_DB_NAME="spellbook.db"
 CONTENT_DB_NAME="content.sqlite"
@@ -29,6 +30,70 @@ sha256_or_empty() {
   else
     echo ""
   fi
+}
+
+env_quote() {
+  local value="$1"
+  value="${value//\\/\\\\}"
+  value="${value//\"/\\\"}"
+  value="${value//\$/\\\$}"
+  value="${value//\`/\\\`}"
+  printf '"%s"' "$value"
+}
+
+upsert_env_var() {
+  local key="$1"
+  local value="$2"
+  local line tmp out
+  line="$key=$(env_quote "$value")"
+  tmp="$(mktemp)"
+  out="$(mktemp)"
+
+  if sudo test -f "$ENV_FILE"; then
+    sudo cat "$ENV_FILE" > "$tmp"
+  fi
+
+  awk -v key="$key" -v line="$line" '
+    index($0, key "=") == 1 { print line; done = 1; next }
+    { print }
+    END { if (!done) print line }
+  ' "$tmp" > "$out"
+
+  sudo install -m 640 -o root -g root "$out" "$ENV_FILE"
+  rm -f "$tmp" "$out"
+}
+
+write_backend_metadata() {
+  local commit short ref deployed_at version_label run_id run_attempt
+
+  commit="${SPELLBOOK_BACKEND_COMMIT_SHA:-}"
+  if [ -z "$commit" ]; then
+    commit="$(git rev-parse HEAD 2>/dev/null || true)"
+  fi
+
+  short="${SPELLBOOK_BACKEND_SHORT_SHA:-}"
+  if [ -z "$short" ] && [ -n "$commit" ]; then
+    short="${commit:0:7}"
+  fi
+
+  ref="${SPELLBOOK_BACKEND_REF:-}"
+  if [ -z "$ref" ]; then
+    ref="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+  fi
+
+  deployed_at="${SPELLBOOK_BACKEND_DEPLOYED_AT:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}"
+  version_label="${SPELLBOOK_VERSION_LABEL:-local}"
+  run_id="${SPELLBOOK_BACKEND_GITHUB_RUN_ID:-}"
+  run_attempt="${SPELLBOOK_BACKEND_GITHUB_RUN_ATTEMPT:-}"
+
+  echo "==> Update backend version metadata in $ENV_FILE"
+  upsert_env_var "SPELLBOOK_VERSION_LABEL" "$version_label"
+  upsert_env_var "SPELLBOOK_BACKEND_COMMIT_SHA" "$commit"
+  upsert_env_var "SPELLBOOK_BACKEND_SHORT_SHA" "$short"
+  upsert_env_var "SPELLBOOK_BACKEND_REF" "$ref"
+  upsert_env_var "SPELLBOOK_BACKEND_DEPLOYED_AT" "$deployed_at"
+  upsert_env_var "SPELLBOOK_BACKEND_GITHUB_RUN_ID" "$run_id"
+  upsert_env_var "SPELLBOOK_BACKEND_GITHUB_RUN_ATTEMPT" "$run_attempt"
 }
 
 maybe_replace_db() {
@@ -118,6 +183,7 @@ echo "==> Ensure ownership"
 sudo chown -R spellbook:spellbook "$TARGET"
 # Re-assert data dir perms in case anything changed
 ensure_data_dir
+write_backend_metadata
 
 # --- 6) Restart service ---
 echo "==> Restart service: $SERVICE"

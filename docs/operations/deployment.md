@@ -54,6 +54,14 @@ Optional repository variables:
 - `DEPLOY_SSH_PORT`, default `22`
 - `DEPLOY_REMOTE_WEB_DIST_DIR`, default `spellbook-dist`
 
+The workflow injects deploy metadata for the About / Version page:
+
+- web builds receive `VITE_SPELLBOOK_*` values derived from the GitHub run,
+  commit, ref, and build time
+- backend deploys pass `SPELLBOOK_BACKEND_*` values to `deploy-backend.sh`,
+  which writes the non-secret metadata into `/etc/default/spellbook-api` before
+  restarting the service
+
 The deploy workflow does not automatically sync changed files under
 `docs/deployment-scripts/` to the remote host. If those tracked scripts change,
 copy them to the remote targets first, then run the workflow.
@@ -218,6 +226,22 @@ SPELL_READ_SOURCE=rules
 
 Leaving `SPELL_READ_SOURCE` unset uses the normalized content-backed read path.
 
+Backend version metadata is optional in local/manual environments. GitHub
+backend deploys refresh it automatically:
+
+```dotenv
+SPELLBOOK_VERSION_LABEL=v3.7
+SPELLBOOK_BACKEND_COMMIT_SHA=
+SPELLBOOK_BACKEND_SHORT_SHA=
+SPELLBOOK_BACKEND_REF=
+SPELLBOOK_BACKEND_DEPLOYED_AT=
+SPELLBOOK_BACKEND_GITHUB_RUN_ID=
+SPELLBOOK_BACKEND_GITHUB_RUN_ATTEMPT=
+```
+
+When these values are absent, `GET /api/status/app` reports a local fallback
+instead of inspecting Git state at request time.
+
 The backend should only listen on:
 
 ```text
@@ -252,6 +276,10 @@ This is intentional because the remote host is not the preferred place to do the
 set VITE_API_BASE_URL=/api
 npm run -w web build
 ```
+
+GitHub web deploys also provide frontend version metadata through
+`VITE_SPELLBOOK_*` variables. Manual local builds may omit these values; the
+About / Version page then shows a local fallback for the frontend build.
 
 ### Upload
 
@@ -391,8 +419,9 @@ The tracked script in `docs/deployment-scripts/deploy-backend.sh` performs:
 11. Runs `npm run -w server build`
 12. `rsync`s the repo into `/opt/spellbook` with `--exclude 'data/'`
 13. Reapplies ownership
-14. Restarts `spellbook-api`
-15. Smoke-tests `http://127.0.0.1:3000/api/rulebooks` with short retries
+14. Writes backend deploy metadata to `/etc/default/spellbook-api`
+15. Restarts `spellbook-api`
+16. Smoke-tests `http://127.0.0.1:3000/api/rulebooks` with short retries
 
 ## Important Invariants
 
