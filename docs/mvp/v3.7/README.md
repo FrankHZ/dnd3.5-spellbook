@@ -1,11 +1,11 @@
 # v3.7 Planning
 
-Status: active security and dependency-maintenance planning track after the
-v3.6 freeze.
+Status: active security, deploy/status visibility, and
+dependency-maintenance planning track after the v3.6 freeze.
 
-v3.7 is a focused security review, hardening-planning, and dependency
-maintenance pass. It is not a large product deliverable, content release, or
-broad architecture rewrite.
+v3.7 is a focused security review, hardening-planning, dependency maintenance,
+and deploy/status visibility pass. It is not a large product deliverable,
+content release, or broad architecture rewrite.
 
 ## Committed Scope
 
@@ -14,9 +14,11 @@ broad architecture rewrite.
 2. Classify security findings by practical priority and implementation surface.
 3. Select small hardening slices that can land without blocking ongoing UI,
    docs, or data work.
-4. Promote major and risky dependency upgrades deferred from the v3.5
+4. Add a small About / Version status page so frontend, backend, and content DB
+   build state can be checked without SSH or SQLite inspection.
+5. Promote major and risky dependency upgrades deferred from the v3.5
    safe-update pass into a focused v3.7 maintenance plan.
-5. Decide the TypeScript server/CommonJS and contracts/ESM module boundary
+6. Decide the TypeScript server/CommonJS and contracts/ESM module boundary
    before removing the current deprecation suppression.
 
 ## Review Inputs
@@ -25,6 +27,7 @@ broad architecture rewrite.
 - DB status endpoint exposure and operator workflow
 - deployment scripts, GitHub Actions, SSH, and Nginx bootstrap docs
 - frontend HTML rendering and browser-local state
+- deploy-time frontend/backend version metadata
 - dependency audit output
 - v3.5 deferred major dependency inventory
 - v3.6 TypeScript module config cleanup review candidate
@@ -45,13 +48,15 @@ broad architecture rewrite.
 ## Plans
 
 - [security-review.md](./security-review.md)
+- [about-version-page-plan.md](./about-version-page-plan.md)
 - [dependency-upgrade-plan.md](./dependency-upgrade-plan.md)
 
 ## Working Rule
 
 Use `security-review.md` as the v3.7 source of truth for security findings,
-priority, and first hardening slices. Use `dependency-upgrade-plan.md` for
-major/risky dependency inventory, sequencing, and validation boundaries.
+priority, and first hardening slices. Use `about-version-page-plan.md` for the
+small deploy/status visibility deliverable. Use `dependency-upgrade-plan.md`
+for major/risky dependency inventory, sequencing, and validation boundaries.
 
 Implementation branches should update the owning security review section,
 the owning dependency plan section, affected operational docs, and

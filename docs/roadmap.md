@@ -15,10 +15,11 @@ The completed v3.6 focus was remote DB status visibility, browser-local display
 settings, spell-card and filter-summary polish, docs structure cleanup, and
 normalized rules follow-up review.
 
-v3.7 is active as a focused security and dependency-maintenance planning track.
-Use `docs/mvp/v3.7/README.md`, `docs/mvp/v3.7/security-review.md`, and
-`docs/mvp/v3.7/dependency-upgrade-plan.md` for the next security, dependency,
-and TypeScript module-boundary slices.
+v3.7 is active as a focused security, deploy/status visibility, and
+dependency-maintenance planning track. Use `docs/mvp/v3.7/README.md`,
+`docs/mvp/v3.7/security-review.md`,
+`docs/mvp/v3.7/about-version-page-plan.md`, and
+`docs/mvp/v3.7/dependency-upgrade-plan.md` for the next small slices.
 
 For final v3.6 as-built behavior and validation evidence, start at
 `docs/mvp/v3.6/FREEZE.md`.
@@ -46,7 +47,8 @@ The v3.6 release is frozen with:
   flags identified as the safest next backend contract candidate.
 - Tome of Battle source-kind/category handling and broader mechanics filters
   explicitly deferred.
-- v3.7 security and dependency-maintenance planning as the active follow-up.
+- v3.7 security, deploy/status visibility, and dependency-maintenance planning
+  as the active follow-up.
 
 The v3.6 DB status slice has landed with:
 
@@ -215,11 +217,12 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Choose the next post-v3.6 data/contract slice**
+1. **Ship the About / Version status page**
 
-   Use `docs/mvp/v3.6/normalized-rules-review-plan.md` to decide whether the
-   next branch should promote base component flags, add a Tome of Battle
-   source-kind boundary, or continue mechanics normalization.
+   Use `docs/mvp/v3.7/about-version-page-plan.md`. This is a small
+   pre-hardening deliverable: expose frontend/backend deploy metadata and reuse
+   `GET /api/status/db` for content DB state, while tolerating later DB-status
+   gating.
 
 2. **Run v3.7 security review follow-up**
 
@@ -229,12 +232,18 @@ Recommended next sequence:
    Keep authentication, user accounts, automatic DB release artifacts, and
    broad deployment redesign out of this first pass.
 
-3. **Run v3.7 dependency and module-boundary planning**
+3. **Run v3.7 dependency inventory refresh**
 
    Use `docs/mvp/v3.7/dependency-upgrade-plan.md` to refresh dependency
    inventory, classify major/risky upgrades, and decide the TypeScript
    server/CommonJS versus contracts/ESM boundary before removing the current
    deprecation suppression.
+
+4. **Choose the next post-v3.6 data/contract slice**
+
+   Use `docs/mvp/v3.6/normalized-rules-review-plan.md` to decide whether a
+   later branch should promote base component flags, add a Tome of Battle
+   source-kind boundary, or continue mechanics normalization.
 
 ## v3.6 Frozen Workstreams
 

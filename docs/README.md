@@ -22,16 +22,18 @@ execution rules and role boundaries.
 
 ## Active Planning
 
-v3.7 security and dependency-maintenance planning is active under
-`docs/mvp/v3.7/`:
+v3.7 security, deploy/status visibility, and dependency-maintenance planning is
+active under `docs/mvp/v3.7/`:
 
 - [mvp/v3.7/README.md](./mvp/v3.7/README.md)
 - [mvp/v3.7/security-review.md](./mvp/v3.7/security-review.md)
+- [mvp/v3.7/about-version-page-plan.md](./mvp/v3.7/about-version-page-plan.md)
 - [mvp/v3.7/dependency-upgrade-plan.md](./mvp/v3.7/dependency-upgrade-plan.md)
 
 Start there for current security findings, priorities, and proposed hardening
-slices, plus dependency and TypeScript module-boundary sequencing. Create an
-integrated plan only if v3.7 grows into conflicting workstreams.
+slices, the small About / Version status page, plus dependency and TypeScript
+module-boundary sequencing. Create an integrated plan only if v3.7 grows into
+conflicting workstreams.
 
 ## Latest Frozen Snapshot
 
