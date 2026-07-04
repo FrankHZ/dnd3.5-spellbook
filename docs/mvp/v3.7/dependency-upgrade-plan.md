@@ -7,8 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: dependency upgrades implemented on `codex/deps-inventory` pending
-review.
+Status: frozen in `docs/mvp/v3.7/FREEZE.md`. This plan is supporting
+implementation rationale, not the latest shipped-state record.
 
 ## Purpose
 
