@@ -7,7 +7,9 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: planned; backend handoff reviewed after PRs #32-#37. URL/API helper
+foundation exists, while public UI controls, scope summary, and Spell Detail
+display remain to implement.
 
 ## Purpose
 
@@ -68,16 +70,35 @@ URL state the server cannot support.
   `savingThrowKeys`, and `spellResistanceKeys`; exact public bucket keys,
   labels, and fallback semantics come from the contract plan and
   `GET /api/meta/filters`.
-- Existing frontend helper tests cover URL/query normalization and API helper
-  behavior for normalized filters.
+- Backend contract PRs already extended frontend URL/API helper foundations for
+  promoted mechanics params:
+  - `web/app/features/spells/taxonomy-filter-state.ts` parses, normalizes,
+    serializes, detects, and counts the five mechanics filter families.
+  - `web/app/api/spells.ts` request builders pass the unified normalized
+    filter scope through Search and Browse.
+  - Existing web helper tests cover mechanics URL/query normalization and API
+    helper behavior.
+- Browse/Search sidebar controls and scope summary have not yet exposed those
+  mechanics counts to users.
+- Content-backed Spell Detail can include accepted detail-only mechanics flags
+  under `casting.mechanics`: duration `dismissible` / `discharge`, saving
+  throw `partial` / `negates` / `harmless` / `object`, and spell resistance
+  `harmless` / `object`. Legacy detail responses must not infer these flags
+  from raw source strings.
 - New user-facing labels must go through the existing i18n workflow.
 
 ## Plan
 
 ### Slice 1: API And URL Helper Wiring
 
-- Deliverable: typed frontend API helpers, URL parse/canonicalization helpers,
-  and search/browse request builders consume accepted mechanics params.
+- Deliverable: review and complete typed frontend API helpers, URL
+  parse/canonicalization helpers, and search/browse request builders for
+  accepted mechanics params.
+- Starting state: backend contract PRs already added the five promoted
+  mechanics families to the shared frontend normalized filter state and
+  helper tests. The frontend implementation branch should reuse those helpers,
+  add only missing coverage found during UI integration, and avoid creating a
+  second query-param normalization path.
 - Expected files: `web/app/api/`, Search/Browse URL helpers, filter state
   helpers, web tests.
 - Validation:
@@ -88,6 +109,9 @@ URL state the server cannot support.
 
 - Deliverable: server-driven mechanics controls in Browse and Search sidebars,
   preserving Browse filter-first and Search name-first workflows.
+- UI boundary: controls should read bucket labels and mode from
+  `GET /api/meta/filters`; frontend code may use contract key unions only for
+  validation/canonicalization, not for user-visible vocabulary.
 - Expected files: Search/Browse feature components, shared filter UI,
   locale JSON if copy changes.
 - Validation:
@@ -99,6 +123,10 @@ URL state the server cannot support.
 
 - Deliverable: compact active-scope summaries include mechanics counts or
   labels without overwhelming class/domain/level/taxonomy/component scope.
+- Starting state: summary currently counts primary class/domain/level scope,
+  taxonomy filters, component filters, and rulebook scope; mechanics counts
+  need to be added deliberately so the summary stays compact in English and
+  Chinese.
 - Expected files: shared scope summary components and tests, `docs/design.md`
   only if durable UI guidance changes.
 - Validation:
@@ -111,6 +139,12 @@ URL state the server cannot support.
 - Deliverable: Spell Detail displays normalized mechanics fallback only where
   the backend contract explicitly supports display semantics; unsupported
   fields continue to show raw source text or remain unchanged.
+- Supported v3.9 metadata: duration `dismissible` / `discharge`, saving throw
+  `partial` / `negates` / `harmless` / `object`, and spell resistance
+  `harmless` / `object`.
+- Boundary: casting time and range remain raw text display in this slice;
+  target, effect, and area are deferred and must not gain normalized UI badges
+  without a later accepted contract.
 - Expected files: Spell Detail components and locale JSON only as needed.
 - Validation:
   - targeted web tests
@@ -124,7 +158,8 @@ URL state the server cannot support.
   consistently.
 - API helpers send only accepted query params and preserve existing scope.
 - Active scope summaries remain compact on desktop and mobile.
-- Spell Detail normalized display appears only for supported promoted fields.
+- Spell Detail normalized display appears only for supported duration, saving
+  throw, and spell resistance metadata fields.
 - Web tests, typecheck, build, i18n checks for new labels, and browser smoke
   pass before frontend handoff.
 
@@ -144,8 +179,9 @@ URL state the server cannot support.
   filters once the promoted vocabulary is known?
 - Should active scope display count mechanics as one advanced category or list
   compact labels for the first few selected buckets?
-- Which, if any, promoted mechanics fields have enough display semantics for
-  Spell Detail fallback in v3.9?
+- How should Spell Detail render the supported mechanics flags so they clarify
+  raw duration / saving throw / spell resistance text without looking like
+  additional filter chips?
 
 ## Completion Notes
 
