@@ -1,24 +1,10 @@
 {
-  "classes.none": "未筛职业",
-  "classes.selected_one": "{{count}}个职业",
-  "classes.selected_other": "{{count}}个职业",
-  "components.none": "无",
-  "components.selected_other": "{{count}}个成分",
-  "domains.none": "未筛领域",
-  "domains.selected_one": "{{count}}个领域",
-  "domains.selected_other": "{{count}}个领域",
   "labels.classes": "职业",
   "labels.components": "成分",
   "labels.domains": "领域",
-  "labels.filters": "筛选",
+  "labels.filters": "显示",
   "labels.level": "环数",
   "labels.rulebooks": "规则书",
   "labels.taxonomy": "分类",
-  "level.all": "全部环数",
-  "level.any": "任意环数",
-  "level.not-selected": "未选择",
-  "rulebooks.default-core-value": "默认3.5核心",
-  "rulebooks.selected-summary_other": "已选{{count}}本（设置）",
-  "taxonomy.none": "无",
-  "taxonomy.selected_other": "{{count}}个筛选"
+  "rulebooks.selected-summary_other": "{{count}}（设置）"
 }

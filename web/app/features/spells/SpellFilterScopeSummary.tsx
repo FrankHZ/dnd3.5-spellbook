@@ -30,87 +30,70 @@ export function buildSpellFilterScopeSummaryItems({
   rulebookCount,
   taxonomyFilterCount = 0,
   componentFilterCount = 0,
-  nullLevelMode,
   t,
 }: SpellFilterScopeSummaryProps & {
   t: SpellFilterScopeSummaryTranslate;
 }): SpellFilterScopeSummaryItem[] {
-  const levelLabel =
-    level === null
-      ? nullLevelMode === "any"
-        ? t("level.any", { ns: "spell-scope" })
-        : t("level.not-selected", { ns: "spell-scope" })
-      : level === "all"
-        ? t("level.all", { ns: "spell-scope" })
-        : String(level);
-  const classScopeLabel =
-    classCount > 0
-      ? t("classes.selected", { count: classCount, ns: "spell-scope" })
-      : t("classes.none", { ns: "spell-scope" });
-  const domainScopeLabel =
-    domainCount > 0
-      ? t("domains.selected", { count: domainCount, ns: "spell-scope" })
-      : t("domains.none", { ns: "spell-scope" });
-  const taxonomyScopeLabel =
-    taxonomyFilterCount > 0
-      ? t("taxonomy.selected", {
-          count: taxonomyFilterCount,
-          ns: "spell-scope",
-        })
-      : t("taxonomy.none", { ns: "spell-scope" });
-  const componentScopeLabel =
-    componentFilterCount > 0
-      ? t("components.selected", {
-          count: componentFilterCount,
-          ns: "spell-scope",
-        })
-      : t("components.none", { ns: "spell-scope" });
-  const rulebookScopeLabel =
-    rulebookCount > 0
-      ? t("rulebooks.selected-summary", {
-          count: rulebookCount,
-          ns: "spell-scope",
-        })
-      : t("rulebooks.default-core-value", { ns: "spell-scope" });
+  const items: SpellFilterScopeSummaryItem[] = [];
 
-  return [
-    {
+  if (classCount > 0) {
+    items.push({
       key: "classes",
       label: t("labels.classes", { ns: "spell-scope" }),
-      value: classScopeLabel,
-      isActive: classCount > 0,
-    },
-    {
+      value: String(classCount),
+      isActive: true,
+    });
+  }
+
+  if (domainCount > 0) {
+    items.push({
       key: "domains",
       label: t("labels.domains", { ns: "spell-scope" }),
-      value: domainScopeLabel,
-      isActive: domainCount > 0,
-    },
-    {
+      value: String(domainCount),
+      isActive: true,
+    });
+  }
+
+  if (typeof level === "number") {
+    items.push({
       key: "level",
       label: t("labels.level", { ns: "spell-scope" }),
-      value: levelLabel,
-      isActive: level !== null,
-    },
-    {
+      value: String(level),
+      isActive: true,
+    });
+  }
+
+  if (taxonomyFilterCount > 0) {
+    items.push({
       key: "taxonomy",
       label: t("labels.taxonomy", { ns: "spell-scope" }),
-      value: taxonomyScopeLabel,
-      isActive: taxonomyFilterCount > 0,
-    },
-    {
+      value: String(taxonomyFilterCount),
+      isActive: true,
+    });
+  }
+
+  if (componentFilterCount > 0) {
+    items.push({
       key: "components",
       label: t("labels.components", { ns: "spell-scope" }),
-      value: componentScopeLabel,
-      isActive: componentFilterCount > 0,
-    },
-    {
+      value: String(componentFilterCount),
+      isActive: true,
+    });
+  }
+
+  if (rulebookCount > 0) {
+    items.push({
       key: "rulebooks",
       label: t("labels.rulebooks", { ns: "spell-scope" }),
-      value: rulebookScopeLabel,
-      isActive: rulebookCount > 0,
-    },
-  ];
+      value: t("rulebooks.selected-summary", {
+        count: rulebookCount,
+        ns: "spell-scope",
+      }),
+      isActive: true,
+    });
+  }
+
+  return items;
 }
 
 export function SpellFilterScopeSummary({
