@@ -1,8 +1,6 @@
 import type {
   ResolveSpellNamesRequest,
   ResolveSpellNamesResponse,
-  SpellComponentFilterKey,
-  SpellComponentFilters,
   SpellBatchRequest,
   SpellBatchResponse,
   SpellByLevelResponse,
@@ -11,7 +9,7 @@ import type {
   SpellNormalizedFilterScope,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
-import { SPELL_COMPONENT_FILTER_KEYS } from "@dnd/contracts";
+import { setNormalizedFilterParams } from "~/features/spells/taxonomy-filter-state";
 import { apiGet, apiPost } from "./http";
 
 export type LevelParam = number | "all";
@@ -40,7 +38,7 @@ export function getSpellsByLevel(params: {
   if (params.rulebookIds && params.rulebookIds.length > 0) {
     sp.set("rulebookIds", params.rulebookIds.join(","));
   }
-  setNormalizedFilterParams(sp, params.filters ?? params.taxonomyFilters);
+  setNormalizedFilterParams(sp, params.filters ?? params.taxonomyFilters ?? {});
   sp.set("page", String(params.page));
   sp.set("pageSize", String(params.pageSize));
 
@@ -79,62 +77,12 @@ export function searchSpellsByName(params: {
   if (params.level != null) {
     sp.set("level", String(params.level));
   }
-  setNormalizedFilterParams(sp, params.filters ?? params.taxonomyFilters);
+  setNormalizedFilterParams(sp, params.filters ?? params.taxonomyFilters ?? {});
 
   return apiGet<SpellNameSearchResponse>(
     `/api/spells/search?${sp.toString()}`,
     params.signal,
   );
-}
-
-function setTaxonomyParams(
-  sp: URLSearchParams,
-  filters?: Partial<SpellTaxonomyFilterIds>,
-) {
-  if (!filters) return;
-  const normalize = (ids: number[] | undefined) =>
-    Array.from(
-      new Set((ids ?? []).filter((id) => Number.isInteger(id) && id > 0)),
-    ).sort((a, b) => a - b);
-  const schoolIds = normalize(filters.schoolIds);
-  const subschoolIds = normalize(filters.subschoolIds);
-  const descriptorIds = normalize(filters.descriptorIds);
-  const descriptorBuckets = Array.from(
-    new Set(
-      (filters.descriptorBuckets ?? [])
-        .map((value) => value.trim().toLowerCase())
-        .filter((value) => value === "other"),
-    ),
-  ).sort();
-
-  if (schoolIds.length) sp.set("schoolIds", schoolIds.join(","));
-  if (subschoolIds.length) sp.set("subschoolIds", subschoolIds.join(","));
-  if (descriptorIds.length) sp.set("descriptorIds", descriptorIds.join(","));
-  if (descriptorBuckets.length) {
-    sp.set("descriptorBuckets", descriptorBuckets.join(","));
-  }
-}
-
-function setComponentParams(
-  sp: URLSearchParams,
-  filters?: Partial<SpellComponentFilters>,
-) {
-  if (!filters) return;
-  const selected = new Set(
-    (filters.componentKeys ?? []).map((value) => value.trim().toLowerCase()),
-  );
-  const componentKeys: SpellComponentFilterKey[] =
-    SPELL_COMPONENT_FILTER_KEYS.filter((key) => selected.has(key));
-
-  if (componentKeys.length) sp.set("componentKeys", componentKeys.join(","));
-}
-
-function setNormalizedFilterParams(
-  sp: URLSearchParams,
-  filters?: Partial<SpellNormalizedFilterScope>,
-) {
-  setTaxonomyParams(sp, filters);
-  setComponentParams(sp, filters);
 }
 
 export function getSpellDetail(id: number, signal?: AbortSignal) {
