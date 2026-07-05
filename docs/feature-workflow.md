@@ -59,6 +59,14 @@ The sequence is:
 - Keep feature behavior in `docs/features.md` or a focused feature plan.
   Reserve `docs/modules/` for durable module ownership, validation boundaries,
   and cross-module data flow.
+- Keep specialist feature documentation narrow. A feature branch should usually
+  read and update only `AGENTS.md`, the closest `docs/features.md` entry, the
+  owning topic doc or focused plan when behavior/workflow changes, and nearby
+  code/tests.
+- Leave docs navigation, roadmap ordering, module-doc sweeps, integrated-plan
+  reconciliation, acceptance evidence, and `FREEZE.md` updates to librarian or
+  freeze-sweep branches unless the feature itself changes scope, ownership,
+  sequencing, or release state.
 
 ## Temporary Plan Lifecycle
 
