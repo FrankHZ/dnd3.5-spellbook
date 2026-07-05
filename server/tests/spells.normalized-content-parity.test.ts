@@ -29,6 +29,7 @@ const emptyComponentFilters = {
 const emptyMechanicFilters = {
   castingTimeKeys: [],
   rangeKeys: [],
+  durationKeys: [],
 };
 
 function legacyComparable<T extends { rulebook?: Record<string, unknown> }>(

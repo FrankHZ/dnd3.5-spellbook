@@ -92,14 +92,15 @@ contracts boundary. The current public normalized filter vocabulary is:
 - descriptor buckets: `descriptorBuckets` for public descriptor options that are
   not legacy descriptor ids
 - base component keys: `componentKeys`
-- accepted mechanics buckets: `castingTimeKeys` and `rangeKeys`
+- accepted mechanics buckets: `castingTimeKeys`, `rangeKeys`, and
+  `durationKeys`
 
 `componentKeys` accepts stable normalized keys only and uses `all` semantics:
-every selected component must be present. `castingTimeKeys` and `rangeKeys`
-use `any` semantics within each family and `all` semantics across selected
-families. Extra component text, unaccepted mechanics facets, and separate Tome
-of Battle query params remain review-only until their owning plan promotes
-them.
+every selected component must be present. `castingTimeKeys`, `rangeKeys`, and
+`durationKeys` use `any` semantics within each family and `all` semantics
+across selected families. Extra component text, unaccepted mechanics facets,
+and separate Tome of Battle query params remain review-only until their owning
+plan promotes them.
 
 Taxonomy vocabulary items include `sourceKind` and `category` metadata. Tome of
 Battle disciplines and maneuver categories are marked as `sourceKind:

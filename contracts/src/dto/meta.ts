@@ -2,6 +2,7 @@ import type {
   SpellCastingTimeFilterKey,
   SpellComponentFilterKey,
   SpellDescriptorBucketKey,
+  SpellDurationFilterKey,
   SpellRangeFilterKey,
 } from "./spell.js";
 
@@ -63,6 +64,11 @@ export type SpellMechanicFilterVocabularyItem =
       key: SpellRangeFilterKey;
       label: string;
       sortOrder: number;
+    }
+  | {
+      key: SpellDurationFilterKey;
+      label: string;
+      sortOrder: number;
     };
 
 export type SpellFilterVocabularyResponse = {
@@ -85,6 +91,11 @@ export type SpellFilterVocabularyResponse = {
     };
     ranges: {
       queryParam: "rangeKeys";
+      mode: "any";
+      buckets: SpellMechanicFilterVocabularyItem[];
+    };
+    durations: {
+      queryParam: "durationKeys";
       mode: "any";
       buckets: SpellMechanicFilterVocabularyItem[];
     };

@@ -1,10 +1,12 @@
 import {
   SPELL_CASTING_TIME_FILTER_KEYS,
   SPELL_COMPONENT_FILTER_KEYS,
+  SPELL_DURATION_FILTER_KEYS,
   SPELL_RANGE_FILTER_KEYS,
   type SpellCastingTimeFilterKey,
   type SpellComponentFilterKey,
   type SpellComponentFilters,
+  type SpellDurationFilterKey,
   type SpellMechanicFilters,
   type SpellNormalizedFilterScope,
   type SpellRangeFilterKey,
@@ -26,6 +28,7 @@ export const emptyComponentFilters = (): SpellComponentFilters => ({
 export const emptyMechanicFilters = (): SpellMechanicFilters => ({
   castingTimeKeys: [],
   rangeKeys: [],
+  durationKeys: [],
 });
 
 export const emptyNormalizedFilters = (): SpellNormalizedFilterScope => ({
@@ -72,6 +75,15 @@ function normalizeRangeKeys(values: string[] | undefined): SpellRangeFilterKey[]
   return SPELL_RANGE_FILTER_KEYS.filter((key) => selected.has(key));
 }
 
+function normalizeDurationKeys(
+  values: string[] | undefined,
+): SpellDurationFilterKey[] {
+  const selected = new Set(
+    (values ?? []).map((value) => value.trim().toLowerCase()),
+  );
+  return SPELL_DURATION_FILTER_KEYS.filter((key) => selected.has(key));
+}
+
 export function parseTaxonomyFilters(
   params: URLSearchParams,
 ): SpellTaxonomyFilterIds {
@@ -105,6 +117,7 @@ export function parseMechanicFilters(
       params.get("castingTimeKeys")?.split(","),
     ),
     rangeKeys: normalizeRangeKeys(params.get("rangeKeys")?.split(",")),
+    durationKeys: normalizeDurationKeys(params.get("durationKeys")?.split(",")),
   };
 }
 
@@ -143,6 +156,7 @@ export function normalizeMechanicFilters(
   return {
     castingTimeKeys: normalizeCastingTimeKeys(filters.castingTimeKeys),
     rangeKeys: normalizeRangeKeys(filters.rangeKeys),
+    durationKeys: normalizeDurationKeys(filters.durationKeys),
   };
 }
 
@@ -214,6 +228,11 @@ export function setMechanicFilterParams(
     "rangeKeys",
     normalized.rangeKeys.length ? normalized.rangeKeys.join(",") : null,
   );
+  setOrDelete(
+    params,
+    "durationKeys",
+    normalized.durationKeys.length ? normalized.durationKeys.join(",") : null,
+  );
 }
 
 export function setNormalizedFilterParams(
@@ -240,7 +259,11 @@ export function hasComponentFilters(filters: SpellComponentFilters) {
 }
 
 export function hasMechanicFilters(filters: SpellMechanicFilters) {
-  return filters.castingTimeKeys.length > 0 || filters.rangeKeys.length > 0;
+  return (
+    filters.castingTimeKeys.length > 0 ||
+    filters.rangeKeys.length > 0 ||
+    filters.durationKeys.length > 0
+  );
 }
 
 export function hasNormalizedFilters(filters: SpellNormalizedFilterScope) {
@@ -265,7 +288,11 @@ export function countComponentFilters(filters: SpellComponentFilters) {
 }
 
 export function countMechanicFilters(filters: SpellMechanicFilters) {
-  return filters.castingTimeKeys.length + filters.rangeKeys.length;
+  return (
+    filters.castingTimeKeys.length +
+    filters.rangeKeys.length +
+    filters.durationKeys.length
+  );
 }
 
 export function countNormalizedFilters(filters: SpellNormalizedFilterScope) {

@@ -117,6 +117,16 @@ describe("spell taxonomy filter contracts", () => {
         { key: "fixed", label: "Fixed distance", sortOrder: 60 },
       ]),
     });
+    expect(body.mechanics.durations).toEqual({
+      queryParam: "durationKeys",
+      mode: "any",
+      buckets: expect.arrayContaining([
+        { key: "instantaneous", label: "Instantaneous", sortOrder: 10 },
+        { key: "timed", label: "Timed", sortOrder: 20 },
+        { key: "concentration", label: "Concentration", sortOrder: 30 },
+        { key: "permanent", label: "Permanent", sortOrder: 40 },
+      ]),
+    });
   });
 
   it("filters name search by descriptor ids and echoes taxonomy scope", async () => {
@@ -220,6 +230,7 @@ describe("spell taxonomy filter contracts", () => {
         rulebookIds: "4,6",
         castingTimeKeys: "minute,standard_action,unknown",
         rangeKeys: "medium",
+        durationKeys: "timed,instantaneous,unknown",
       });
 
     expect(res.status).toBe(200);
@@ -227,6 +238,7 @@ describe("spell taxonomy filter contracts", () => {
 
     expect(body.castingTimeKeys).toEqual(["standard_action", "minute"]);
     expect(body.rangeKeys).toEqual(["medium"]);
+    expect(body.durationKeys).toEqual(["instantaneous", "timed"]);
     expect(body.items.map((item) => item.id)).toEqual([100]);
   });
 
@@ -306,6 +318,7 @@ describe("spell taxonomy filter contracts", () => {
         rulebookIds: "4,6",
         castingTimeKeys: "standard_action",
         rangeKeys: "medium",
+        durationKeys: "instantaneous",
       });
 
     expect(mechanics.status).toBe(200);
@@ -359,6 +372,7 @@ describe("spell taxonomy filter contracts", () => {
         rulebookIds: "4,6",
         castingTimeKeys: "standard_action",
         rangeKeys: "medium",
+        durationKeys: "instantaneous",
       });
 
     expect(res.status).toBe(200);
@@ -366,6 +380,7 @@ describe("spell taxonomy filter contracts", () => {
 
     expect(body.castingTimeKeys).toEqual(["standard_action"]);
     expect(body.rangeKeys).toEqual(["medium"]);
+    expect(body.durationKeys).toEqual(["instantaneous"]);
     expect(body.items.map((item) => item.id)).toEqual([100]);
   });
 });

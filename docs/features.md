@@ -40,8 +40,8 @@ Current behavior:
   `componentKeys`; Browse exposes this server-provided vocabulary in the
   sidebar
 - API filters can constrain results by accepted normalized mechanics buckets
-  through `castingTimeKeys` and `rangeKeys`; frontend controls are planned
-  separately after the backend contract settles
+  through `castingTimeKeys`, `rangeKeys`, and `durationKeys`; frontend controls
+  are planned separately after the backend contract settles
 - default rulebooks are supplied by the backend when no explicit rulebook ids
   are provided
 - the spell-list area shows a compact shared scope summary with selected
@@ -88,7 +88,7 @@ Current behavior:
   server-provided `See text` option via `descriptorBuckets=see-text` instead
   of exposing those source artifacts individually
 - API filters can also constrain search by accepted normalized mechanics
-  buckets via `castingTimeKeys` and `rangeKeys`
+  buckets via `castingTimeKeys`, `rangeKeys`, and `durationKeys`
 - the Search sidebar exposes editable class, domain, and level controls
 - the Search sidebar exposes the same school, subschool, and descriptor scope
   controls as Browse without making name lookup secondary
@@ -167,7 +167,7 @@ Current behavior:
   `GET /api/meta/filters` under `components.base`
 - accepted normalized mechanics filter vocabulary is exposed by
   `GET /api/meta/filters` under `mechanics.castingTimes` and
-  `mechanics.ranges`
+  `mechanics.ranges`, plus duration buckets under `mechanics.durations`
 - rulebook responses preserve source `abbr` and can include curated
   `displayAbbr` / `displayName` metadata from normalized content
 - frontend rulebook display uses a shared helper so English and default Chinese
