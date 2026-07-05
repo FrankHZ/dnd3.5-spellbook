@@ -169,3 +169,18 @@ Validation:
     submitting a new query preserves `schoolIds` and `componentKeys`.
   - Browse mobile width 390px: sidebar remains the same flow and component
     filters remain visible.
+
+### 2026-07-04 Filter UX Follow-Up
+
+- Added one detail-filter reset for Browse/Search so taxonomy and component
+  filters can be cleared together without resetting primary class/domain/level
+  scope.
+- Compact active-scope display is in place; no broader sidebar redesign is
+  promoted from Slice 2.
+
+Validation:
+
+- `npm run -w web test -- --run app/features/spells/TaxonomyFilterSelector.test.ts app/features/spells/ComponentFilterSelector.test.ts app/features/search/search-url.test.ts app/features/spells/taxonomy-filter-state.test.ts`
+- `npm run i18n:check`
+- `npm run typecheck:web`
+- `npm run -w web build`

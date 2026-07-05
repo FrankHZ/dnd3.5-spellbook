@@ -7,6 +7,7 @@ import type {
 } from "@dnd/contracts";
 import type { LevelParam } from "~/api/spells";
 import {
+  emptyNormalizedFilters,
   normalizeNormalizedFilters,
   parseNormalizedFilters,
   setNormalizedFilterParams,
@@ -40,6 +41,7 @@ export type BrowseQueryState = {
     next: Pick<SpellTaxonomyFilterIds, "descriptorIds" | "descriptorBuckets">,
   ) => void;
   setComponentKeys: (next: SpellComponentFilterKey[]) => void;
+  resetDetailFilters: () => void;
   setPage: (next: number) => void;
 
   // useful flags
@@ -273,6 +275,13 @@ export function useBrowseQueryState(): BrowseQueryState {
     [parsed.filters, updateParams],
   );
 
+  const resetDetailFilters = useCallback(() => {
+    updateParams((sp) => {
+      setNormalizedFilterParams(sp, emptyNormalizedFilters());
+      resetPage(sp);
+    });
+  }, [updateParams]);
+
   const setPage = useCallback(
     (nextPage: number) => {
       const p =
@@ -307,6 +316,7 @@ export function useBrowseQueryState(): BrowseQueryState {
     setDescriptorIds,
     setDescriptorFilters,
     setComponentKeys,
+    resetDetailFilters,
     setPage,
     hasValidSelection,
   };

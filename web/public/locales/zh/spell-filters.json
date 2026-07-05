@@ -3,6 +3,7 @@
   "components.collapsed-hint": "成分",
   "components.mode-all": "仅匹配包含全部已选成分的法术。",
   "components.title": "成分筛选",
+  "details.clear": "清空次要筛选",
   "taxonomy.active-count_other": "已选{{count}}项",
   "taxonomy.collapsed-hint": "学派、子学派、描述符",
   "taxonomy.descriptors": "描述符",

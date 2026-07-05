@@ -16,7 +16,7 @@ export function FilterDisclosure({
 }) {
   return (
     <details
-      className="group/filter-disclosure space-y-3"
+      className="group/filter-disclosure"
       open={open}
       onToggle={(event) => onToggle(event.currentTarget.open)}
     >
@@ -30,7 +30,7 @@ export function FilterDisclosure({
         </div>
       </summary>
 
-      <div className="space-y-3 pt-1">{children}</div>
+      <div className="mt-3 space-y-3">{children}</div>
     </details>
   );
 }

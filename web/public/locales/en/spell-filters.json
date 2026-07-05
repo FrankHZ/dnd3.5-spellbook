@@ -4,6 +4,7 @@
   "components.collapsed-hint": "Components",
   "components.mode-all": "Matches spells that include every selected component.",
   "components.title": "Component filters",
+  "details.clear": "Clear detail filters",
   "taxonomy.active-count_one": "{{count}} active",
   "taxonomy.active-count_other": "{{count}} active",
   "taxonomy.collapsed-hint": "School, subschool, descriptor",

@@ -2,7 +2,6 @@ import type { SpellComponentFilterKey } from "@dnd/contracts";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useBootstrap } from "~/bootstrap/useBootstrap";
-import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { cn } from "~/lib/utils";
 import { FilterDisclosure } from "./FilterDisclosure";
@@ -83,16 +82,6 @@ export function ComponentFilterSelector({
     >
       <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
         <span>{t("components.mode-all")}</span>
-        {activeCount > 0 && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="xs"
-            onClick={() => onChange([])}
-          >
-            {t("actions.clear", { ns: "translation" })}
-          </Button>
-        )}
       </div>
 
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">

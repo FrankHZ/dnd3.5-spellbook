@@ -22,6 +22,8 @@ import { TaxonomyFilterSelector } from "~/features/spells/TaxonomyFilterSelector
 import {
   countComponentFilters,
   countTaxonomyFilters,
+  emptyNormalizedFilters,
+  hasNormalizedFilters,
 } from "~/features/spells/taxonomy-filter-state";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useUserPrefs } from "~/state/user-prefs-state";
@@ -125,14 +127,6 @@ export default function SearchSpellsPage() {
       <div className="grid gap-4 md:grid-cols-[320px_1fr]">
         <Card className="gap-0 self-start">
           <CardContent className="space-y-4 pt-0">
-            <SpellCardDetailToggle
-              mode={spellCardDetails}
-              onModeChange={setSpellCardDetails}
-              label={t("options.show-card-details")}
-            />
-
-            <Separator />
-
             <div className="grid gap-2">
               {hasScopedSearch ? (
                 <Button
@@ -148,6 +142,14 @@ export default function SearchSpellsPage() {
                 </Button>
               )}
             </div>
+
+            <Separator />
+
+            <SpellCardDetailToggle
+              mode={spellCardDetails}
+              onModeChange={setSpellCardDetails}
+              label={t("options.show-card-details")}
+            />
 
             <Separator />
 
@@ -168,6 +170,20 @@ export default function SearchSpellsPage() {
             />
 
             <Separator />
+
+            {hasNormalizedFilters(searchScope.filters) && (
+              <div className="grid gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() =>
+                    updateSearchScope({ filters: emptyNormalizedFilters() })
+                  }
+                >
+                  {t("details.clear", { ns: "spell-filters" })}
+                </Button>
+              </div>
+            )}
 
             <TaxonomyFilterSelector
               value={searchScope.filters}
