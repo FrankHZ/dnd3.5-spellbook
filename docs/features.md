@@ -41,8 +41,8 @@ Current behavior:
   sidebar
 - API filters can constrain results by accepted normalized mechanics buckets
   through `castingTimeKeys`, `rangeKeys`, `durationKeys`, and
-  `savingThrowKeys`; frontend controls are planned separately after the backend
-  contract settles
+  `savingThrowKeys`, plus `spellResistanceKeys`; frontend controls are planned
+  separately after the backend contract settles
 - default rulebooks are supplied by the backend when no explicit rulebook ids
   are provided
 - the spell-list area shows a compact shared scope summary with selected
@@ -90,7 +90,7 @@ Current behavior:
   of exposing those source artifacts individually
 - API filters can also constrain search by accepted normalized mechanics
   buckets via `castingTimeKeys`, `rangeKeys`, `durationKeys`, and
-  `savingThrowKeys`
+  `savingThrowKeys`, plus `spellResistanceKeys`
 - the Search sidebar exposes editable class, domain, and level controls
 - the Search sidebar exposes the same school, subschool, and descriptor scope
   controls as Browse without making name lookup secondary
@@ -170,7 +170,8 @@ Current behavior:
 - accepted normalized mechanics filter vocabulary is exposed by
   `GET /api/meta/filters` under `mechanics.castingTimes` and
   `mechanics.ranges`, plus duration buckets under `mechanics.durations` and
-  saving throw buckets under `mechanics.savingThrows`
+  saving throw buckets under `mechanics.savingThrows`, and spell resistance
+  buckets under `mechanics.spellResistances`
 - rulebook responses preserve source `abbr` and can include curated
   `displayAbbr` / `displayName` metadata from normalized content
 - frontend rulebook display uses a shared helper so English and default Chinese
