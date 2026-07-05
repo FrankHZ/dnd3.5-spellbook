@@ -177,6 +177,12 @@ Validation:
   scope.
 - Compact active-scope display is in place; no broader sidebar redesign is
   promoted from Slice 2.
+- Component chip styling is shared across Browse/Search spell rows, component
+  filters, and Spell Detail. Dense rows keep compact component markers, while
+  English component filters use compact markers and Spell Detail uses the same
+  chip treatment with full component names.
+- `docs/design.md` records this as a durable chip consistency rule, while a
+  fuller design system remains deferred.
 
 Validation:
 

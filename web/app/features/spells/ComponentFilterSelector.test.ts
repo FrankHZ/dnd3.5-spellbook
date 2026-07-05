@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 import { getComponentFilterLabel } from "./ComponentFilterSelector";
 
 const detailLabels = new Map<string, string>([
-  ["components.material", "材料"],
-  ["components.arcane-focus", "器材"],
+  ["components.full.material", "材料"],
+  ["components.full.arcane-focus", "器材"],
 ]);
 
 function translateDetail(key: string) {

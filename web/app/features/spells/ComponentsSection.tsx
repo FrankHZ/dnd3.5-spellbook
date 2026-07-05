@@ -1,6 +1,8 @@
 import type { SpellComponents } from "@dnd/contracts";
 import { useTranslation } from "react-i18next";
-import { Badge } from "~/components/ui/badge";
+
+import { SpellComponentBadge } from "./SpellComponentBadge";
+import { getSpellComponentDisplayItems } from "./spell-component-markers";
 
 export default function ComponentsSection({
   components,
@@ -8,17 +10,32 @@ export default function ComponentsSection({
   components: SpellComponents;
 }) {
   const { t } = useTranslation("spell-detail");
-  const chips = [
-    components.V && t("components.verbal"),
-    components.S && t("components.somatic"),
-    components.M && t("components.material"),
-    components.AF && t("components.arcane-focus"),
-    components.DF && t("components.divine-focus"),
-    components.XP && t("components.xp"),
-    components.metabreath && t("components.metabreath"),
-    components.truename && t("components.truename"),
-    components.corrupt && t("components.corrupt"),
-  ].filter(Boolean) as string[];
+  const chips = getSpellComponentDisplayItems(components);
+
+  function getComponentFullLabel(item: (typeof chips)[number]) {
+    switch (item.id) {
+      case "verbal":
+        return t("components.full.verbal");
+      case "somatic":
+        return t("components.full.somatic");
+      case "material":
+        return t("components.full.material");
+      case "arcane-focus":
+        return t("components.full.arcane-focus");
+      case "divine-focus":
+        return t("components.full.divine-focus");
+      case "xp":
+        return t("components.full.xp");
+      case "metabreath":
+        return t("components.full.metabreath");
+      case "truename":
+        return t("components.full.truename");
+      case "corrupt":
+        return t("components.full.corrupt");
+      default:
+        return item.marker;
+    }
+  }
 
   return (
     <section className="space-y-2">
@@ -26,11 +43,11 @@ export default function ComponentsSection({
         {t("sections.components")}
       </div>
       {chips.length > 0 ? (
-        <div className="flex flex-wrap gap-1">
-          {chips.map((c) => (
-            <Badge key={c} variant="outline" className="text-xs">
-              {c}
-            </Badge>
+        <div className="flex flex-wrap gap-1.5">
+          {chips.map((item) => (
+            <SpellComponentBadge key={item.id} size="regular">
+              {getComponentFullLabel(item)}
+            </SpellComponentBadge>
           ))}
         </div>
       ) : (
