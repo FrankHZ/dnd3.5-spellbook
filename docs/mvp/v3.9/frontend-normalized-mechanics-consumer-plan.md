@@ -64,8 +64,9 @@ URL state the server cannot support.
   semantics.
 - Taxonomy controls group source/category metadata from the server instead of
   parsing frontend strings.
-- v3.9 backend work is expected to start with `casting_time` and `range`, but
-  exact public bucket keys and labels must come from the contract plan.
+- v3.9 backend work promotes `castingTimeKeys` and `rangeKeys`; exact public
+  bucket keys, labels, and fallback semantics come from the contract plan and
+  `GET /api/meta/filters`.
 - Existing frontend helper tests cover URL/query normalization and API helper
   behavior for normalized filters.
 - New user-facing labels must go through the existing i18n workflow.

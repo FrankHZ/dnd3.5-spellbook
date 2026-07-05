@@ -92,11 +92,14 @@ contracts boundary. The current public normalized filter vocabulary is:
 - descriptor buckets: `descriptorBuckets` for public descriptor options that are
   not legacy descriptor ids
 - base component keys: `componentKeys`
+- accepted mechanics buckets: `castingTimeKeys` and `rangeKeys`
 
 `componentKeys` accepts stable normalized keys only and uses `all` semantics:
-every selected component must be present. Extra component text, mechanics
-facets, and separate Tome of Battle query params remain review-only until their
-owning plan promotes them.
+every selected component must be present. `castingTimeKeys` and `rangeKeys`
+use `any` semantics within each family and `all` semantics across selected
+families. Extra component text, unaccepted mechanics facets, and separate Tome
+of Battle query params remain review-only until their owning plan promotes
+them.
 
 Taxonomy vocabulary items include `sourceKind` and `category` metadata. Tome of
 Battle disciplines and maneuver categories are marked as `sourceKind:
@@ -104,9 +107,11 @@ Battle disciplines and maneuver categories are marked as `sourceKind:
 Legacy combined school/subschool labels are not public vocabulary; generated
 content splits them into base taxonomy facets, and server fallback query logic
 expands single base ids across old combined legacy ids.
-Legacy descriptor noise such as `see text...` is exposed only through the
-descriptor bucket `descriptorBuckets=other` / `key: "other"`; server fallback
-query logic expands that bucket across the old legacy descriptor ids.
+Legacy descriptor noise such as `see text...` is exposed through the descriptor
+bucket `descriptorBuckets=see-text` / `key: "see-text"`; server fallback query
+logic expands that bucket across the old legacy descriptor ids, and spell DTOs
+may include descriptor `rawText` / `note` so detail views can explain the
+source note.
 
 `GET /api/meta/filters` is the vocabulary source for frontend consumers. Do not
 make the frontend derive component or mechanics filters from raw spell fields.

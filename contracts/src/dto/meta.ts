@@ -1,6 +1,8 @@
 import type {
+  SpellCastingTimeFilterKey,
   SpellComponentFilterKey,
   SpellDescriptorBucketKey,
+  SpellRangeFilterKey,
 } from "./spell.js";
 
 export type MetaI18nResponse = {
@@ -51,6 +53,18 @@ export type SpellComponentFilterVocabularyItem = {
   abbreviation: string;
 };
 
+export type SpellMechanicFilterVocabularyItem =
+  | {
+      key: SpellCastingTimeFilterKey;
+      label: string;
+      sortOrder: number;
+    }
+  | {
+      key: SpellRangeFilterKey;
+      label: string;
+      sortOrder: number;
+    };
+
 export type SpellFilterVocabularyResponse = {
   i18n: { lang: "en" | "zh"; variant?: string | undefined };
   taxonomy: {
@@ -62,5 +76,17 @@ export type SpellFilterVocabularyResponse = {
     queryParam: "componentKeys";
     mode: "all";
     base: SpellComponentFilterVocabularyItem[];
+  };
+  mechanics: {
+    castingTimes: {
+      queryParam: "castingTimeKeys";
+      mode: "any";
+      buckets: SpellMechanicFilterVocabularyItem[];
+    };
+    ranges: {
+      queryParam: "rangeKeys";
+      mode: "any";
+      buckets: SpellMechanicFilterVocabularyItem[];
+    };
   };
 };

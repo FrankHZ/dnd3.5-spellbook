@@ -24,6 +24,8 @@ describe("search URL helpers", () => {
         descriptorIds: [],
         descriptorBuckets: [],
         componentKeys: [],
+        castingTimeKeys: [],
+        rangeKeys: [],
       },
       level: 3,
       page: 4,
@@ -33,7 +35,7 @@ describe("search URL helpers", () => {
   it("parses taxonomy filters from query params", () => {
     const scope = parseSearchScope(
       new URLSearchParams(
-        "q=fire&schoolIds=2,1,1&subschoolIds=3&descriptorIds=0,5,bad&descriptorBuckets=other&page=2",
+        "q=fire&schoolIds=2,1,1&subschoolIds=3&descriptorIds=0,5,bad&descriptorBuckets=see-text&page=2",
       ),
     );
 
@@ -41,8 +43,10 @@ describe("search URL helpers", () => {
       schoolIds: [1, 2],
       subschoolIds: [3],
       descriptorIds: [5],
-      descriptorBuckets: ["other"],
+      descriptorBuckets: ["see-text"],
       componentKeys: [],
+      castingTimeKeys: [],
+      rangeKeys: [],
     });
   });
 
@@ -56,6 +60,20 @@ describe("search URL helpers", () => {
     expect(scope.filters.componentKeys).toEqual(["verbal", "material"]);
   });
 
+  it("parses mechanic filters from query params", () => {
+    const scope = parseSearchScope(
+      new URLSearchParams(
+        "q=fire&castingTimeKeys=minute,bad,standard_action&rangeKeys=fixed,close&page=2",
+      ),
+    );
+
+    expect(scope.filters.castingTimeKeys).toEqual([
+      "standard_action",
+      "minute",
+    ]);
+    expect(scope.filters.rangeKeys).toEqual(["close", "fixed"]);
+  });
+
   it("builds clean and scoped search URLs", () => {
     expect(buildSearchUrl({})).toBe("/search");
     expect(
@@ -67,13 +85,15 @@ describe("search URL helpers", () => {
           schoolIds: [4],
           subschoolIds: [3],
           descriptorIds: [9, 8],
-          descriptorBuckets: ["other"],
+          descriptorBuckets: ["see-text"],
           componentKeys: ["material", "verbal"],
+          castingTimeKeys: ["standard_action", "minute"],
+          rangeKeys: ["close"],
         },
         level: "all",
       }),
     ).toBe(
-      "/search?q=fire+ball&classIds=1%2C2&domainIds=8&schoolIds=4&subschoolIds=3&descriptorIds=8%2C9&descriptorBuckets=other&componentKeys=verbal%2Cmaterial",
+      "/search?q=fire+ball&classIds=1%2C2&domainIds=8&schoolIds=4&subschoolIds=3&descriptorIds=8%2C9&descriptorBuckets=see-text&componentKeys=verbal%2Cmaterial&castingTimeKeys=standard_action%2Cminute&rangeKeys=close",
     );
   });
 
@@ -117,6 +137,8 @@ describe("search URL helpers", () => {
           descriptorIds: [9],
           descriptorBuckets: [],
           componentKeys: [],
+          castingTimeKeys: [],
+          rangeKeys: [],
         },
         level: null,
       }),
@@ -134,6 +156,27 @@ describe("search URL helpers", () => {
           descriptorIds: [],
           descriptorBuckets: [],
           componentKeys: ["material"],
+          castingTimeKeys: [],
+          rangeKeys: [],
+        },
+        level: null,
+      }),
+    ).toBe(true);
+  });
+
+  it("treats mechanic keys as structured search scope", () => {
+    expect(
+      hasSearchScope({
+        classIds: [],
+        domainIds: [],
+        filters: {
+          schoolIds: [],
+          subschoolIds: [],
+          descriptorIds: [],
+          descriptorBuckets: [],
+          componentKeys: [],
+          castingTimeKeys: ["standard_action"],
+          rangeKeys: [],
         },
         level: null,
       }),

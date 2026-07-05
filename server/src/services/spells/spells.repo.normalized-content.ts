@@ -1,6 +1,7 @@
 import {
   RulebookId,
   SpellComponentFilters,
+  SpellMechanicFilters,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
 import { contentPrisma } from "#server/lib/content-prisma-client";
@@ -46,8 +47,8 @@ function normalizedTaxonomyWhere(filters: SpellTaxonomyFilterIds) {
         Prisma.sql`tf."legacyFacetId" IN (${Prisma.join(filters.descriptorIds)})`,
       );
     }
-    if (filters.descriptorBuckets.includes("other")) {
-      descriptorConditions.push(Prisma.sql`tf."facetKey" = 'other'`);
+    if (filters.descriptorBuckets.includes("see-text")) {
+      descriptorConditions.push(Prisma.sql`tf."facetKey" = 'see-text'`);
     }
     if (bucketLegacyIds.length > 0) {
       descriptorConditions.push(
@@ -105,11 +106,39 @@ function normalizedComponentWhere(filters: SpellComponentFilters) {
     : Prisma.empty;
 }
 
+function normalizedMechanicWhere(filters: SpellMechanicFilters) {
+  const conditions: Prisma.Sql[] = [];
+  const mechanicCondition = (mechanicType: string, keys: string[]) => Prisma.sql`
+    EXISTS (
+      SELECT 1
+      FROM "SpellMechanicFacet" mf
+      WHERE mf."spellId" = s."id"
+        AND mf."mechanicType" = ${mechanicType}
+        AND mf."reviewStatus" = 'accepted'
+        AND mf."category" IN (${Prisma.join(keys)})
+    )
+  `;
+
+  if (filters.castingTimeKeys.length > 0) {
+    conditions.push(
+      mechanicCondition("casting_time", filters.castingTimeKeys),
+    );
+  }
+  if (filters.rangeKeys.length > 0) {
+    conditions.push(mechanicCondition("range", filters.rangeKeys));
+  }
+
+  return conditions.length > 0
+    ? Prisma.sql`AND ${Prisma.join(conditions, " AND ")}`
+    : Prisma.empty;
+}
+
 export async function queryNormalizedIdsByName(
   name: string,
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
   componentFilters: SpellComponentFilters,
+  mechanicFilters: SpellMechanicFilters,
   maxCandidates: number,
 ) {
   if (rulebookIds.length === 0) return [];
@@ -124,6 +153,7 @@ export async function queryNormalizedIdsByName(
         AND LOWER(s."canonicalName") LIKE ${like}
         ${normalizedTaxonomyWhere(taxonomyFilters)}
         ${normalizedComponentWhere(componentFilters)}
+        ${normalizedMechanicWhere(mechanicFilters)}
       LIMIT ${maxCandidates}
     `,
   );
@@ -177,6 +207,7 @@ export async function queryNormalizedByClassAndDomainWithLevel(
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
   componentFilters: SpellComponentFilters,
+  mechanicFilters: SpellMechanicFilters,
   page: number,
   pageSize: number,
 ) {
@@ -205,6 +236,7 @@ export async function queryNormalizedByClassAndDomainWithLevel(
       WHERE 1 = 1
         ${normalizedTaxonomyWhere(taxonomyFilters)}
         ${normalizedComponentWhere(componentFilters)}
+        ${normalizedMechanicWhere(mechanicFilters)}
     `,
   );
   const total = Number(countRows[0]?.cnt ?? 0);
@@ -228,6 +260,7 @@ export async function queryNormalizedByClassAndDomainWithLevel(
       WHERE 1 = 1
         ${normalizedTaxonomyWhere(taxonomyFilters)}
         ${normalizedComponentWhere(componentFilters)}
+        ${normalizedMechanicWhere(mechanicFilters)}
       ORDER BY s."canonicalName" ASC, s."legacySpellId" ASC
       LIMIT ${pageSize} OFFSET ${offset}
     `,
@@ -243,6 +276,7 @@ export async function queryNormalizedByClassAndDomainAllLevels(
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
   componentFilters: SpellComponentFilters,
+  mechanicFilters: SpellMechanicFilters,
   page: number,
   pageSize: number,
 ) {
@@ -271,6 +305,7 @@ export async function queryNormalizedByClassAndDomainAllLevels(
       WHERE 1 = 1
         ${normalizedTaxonomyWhere(taxonomyFilters)}
         ${normalizedComponentWhere(componentFilters)}
+        ${normalizedMechanicWhere(mechanicFilters)}
     `,
   );
   const total = Number(countRows[0]?.cnt ?? 0);
@@ -296,6 +331,7 @@ export async function queryNormalizedByClassAndDomainAllLevels(
       WHERE 1 = 1
         ${normalizedTaxonomyWhere(taxonomyFilters)}
         ${normalizedComponentWhere(componentFilters)}
+        ${normalizedMechanicWhere(mechanicFilters)}
       ORDER BY u."level" ASC, s."canonicalName" ASC, s."legacySpellId" ASC
       LIMIT ${pageSize} OFFSET ${offset}
     `,
@@ -415,6 +451,7 @@ function toLegacyShapedSpell(
         id: descriptor.legacyFacetId,
         name: descriptor.name,
         slug: descriptor.slug ?? descriptor.facetKey,
+        rawText: descriptor.rawText,
       },
     })),
     verbal_component: componentPresent("verbal"),

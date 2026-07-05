@@ -2,15 +2,20 @@ import { describe, expect, it } from "vitest";
 
 import {
   countComponentFilters,
+  countMechanicFilters,
   countTaxonomyFilters,
   hasComponentFilters,
+  hasMechanicFilters,
   hasTaxonomyFilters,
   normalizeComponentFilters,
+  normalizeMechanicFilters,
   normalizeTaxonomyFilters,
   normalizeNormalizedFilters,
   parseComponentFilters,
+  parseMechanicFilters,
   parseTaxonomyFilters,
   setComponentFilterParams,
+  setMechanicFilterParams,
   setTaxonomyFilterParams,
 } from "./taxonomy-filter-state";
 
@@ -19,14 +24,14 @@ describe("taxonomy filter state helpers", () => {
     expect(
       parseTaxonomyFilters(
         new URLSearchParams(
-          "schoolIds=2,1,1&subschoolIds=0,4&descriptorIds=bad,6&descriptorBuckets=other,bad,other",
+          "schoolIds=2,1,1&subschoolIds=0,4&descriptorIds=bad,6&descriptorBuckets=see-text,bad,other",
         ),
       ),
     ).toEqual({
       schoolIds: [1, 2],
       subschoolIds: [4],
       descriptorIds: [6],
-      descriptorBuckets: ["other"],
+      descriptorBuckets: ["see-text"],
     });
   });
 
@@ -46,18 +51,18 @@ describe("taxonomy filter state helpers", () => {
 
   it("sets and deletes taxonomy URL params", () => {
     const params = new URLSearchParams(
-      "schoolIds=1&subschoolIds=2&descriptorIds=3&descriptorBuckets=other&page=4",
+      "schoolIds=1&subschoolIds=2&descriptorIds=3&descriptorBuckets=see-text&page=4",
     );
 
     setTaxonomyFilterParams(params, {
       schoolIds: [5],
       subschoolIds: [],
       descriptorIds: [9, 8],
-      descriptorBuckets: ["other"],
+      descriptorBuckets: ["see-text"],
     });
 
     expect(String(params)).toBe(
-      "schoolIds=5&descriptorIds=8%2C9&descriptorBuckets=other&page=4",
+      "schoolIds=5&descriptorIds=8%2C9&descriptorBuckets=see-text&page=4",
     );
   });
 
@@ -66,7 +71,7 @@ describe("taxonomy filter state helpers", () => {
       schoolIds: [1],
       subschoolIds: [],
       descriptorIds: [2, 3],
-      descriptorBuckets: ["other" as const],
+      descriptorBuckets: ["see-text" as const],
     };
 
     expect(hasTaxonomyFilters(filters)).toBe(true);
@@ -119,6 +124,8 @@ describe("taxonomy filter state helpers", () => {
       descriptorIds: [],
       descriptorBuckets: [],
       componentKeys: ["verbal", "material"],
+      castingTimeKeys: [],
+      rangeKeys: [],
     });
   });
 
@@ -129,5 +136,58 @@ describe("taxonomy filter state helpers", () => {
 
     expect(hasComponentFilters(filters)).toBe(true);
     expect(countComponentFilters(filters)).toBe(2);
+  });
+
+  it("normalizes mechanic filter keys in contract order", () => {
+    expect(
+      parseMechanicFilters(
+        new URLSearchParams(
+          "castingTimeKeys=minute,bad,standard_action,minute&rangeKeys=fixed,close",
+        ),
+      ),
+    ).toEqual({
+      castingTimeKeys: ["standard_action", "minute"],
+      rangeKeys: ["close", "fixed"],
+    });
+
+    expect(
+      normalizeMechanicFilters({
+        castingTimeKeys: ["hour", "swift_action", "bad" as any],
+        rangeKeys: ["unlimited", "touch", "touch"],
+      }),
+    ).toEqual({
+      castingTimeKeys: ["swift_action", "hour"],
+      rangeKeys: ["touch", "unlimited"],
+    });
+  });
+
+  it("sets and deletes mechanic URL params", () => {
+    const params = new URLSearchParams("castingTimeKeys=minute&page=4");
+
+    setMechanicFilterParams(params, {
+      castingTimeKeys: ["standard_action", "minute"],
+      rangeKeys: ["close"],
+    });
+
+    expect(String(params)).toBe(
+      "castingTimeKeys=standard_action%2Cminute&page=4&rangeKeys=close",
+    );
+
+    setMechanicFilterParams(params, {
+      castingTimeKeys: [],
+      rangeKeys: [],
+    });
+
+    expect(String(params)).toBe("page=4");
+  });
+
+  it("counts active mechanic filters", () => {
+    const filters = {
+      castingTimeKeys: ["standard_action" as const],
+      rangeKeys: ["close" as const, "medium" as const],
+    };
+
+    expect(hasMechanicFilters(filters)).toBe(true);
+    expect(countMechanicFilters(filters)).toBe(3);
   });
 });

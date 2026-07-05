@@ -7,6 +7,10 @@ import type {
   SpellTaxonomyVocabularyCategory,
 } from "@dnd/contracts";
 import {
+  CASTING_TIME_FILTER_VOCABULARY,
+  RANGE_FILTER_VOCABULARY,
+} from "#server/services/spells/mechanics-normalization";
+import {
   queryMetaI18nOverlays,
   querySpellTaxonomyVocabulary,
   type SpellTaxonomyVocabularyRow,
@@ -231,6 +235,18 @@ async function loadFilterVocabulary(
       queryParam: "componentKeys",
       mode: "all",
       base: COMPONENT_FILTER_VOCABULARY,
+    },
+    mechanics: {
+      castingTimes: {
+        queryParam: "castingTimeKeys",
+        mode: "any",
+        buckets: CASTING_TIME_FILTER_VOCABULARY,
+      },
+      ranges: {
+        queryParam: "rangeKeys",
+        mode: "any",
+        buckets: RANGE_FILTER_VOCABULARY,
+      },
     },
   };
 }

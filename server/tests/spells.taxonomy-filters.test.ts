@@ -75,19 +75,21 @@ describe("spell taxonomy filter contracts", () => {
           i18n: { name: "火" },
         }),
         expect.objectContaining({
-          key: "other",
-          slug: "other",
-          name: "Other",
+          key: "see-text",
+          slug: "see-text",
+          name: "See text",
           sourceKind: "spell",
           category: "spell_descriptor",
           queryParam: "descriptorBuckets",
-          queryValue: "other",
-          bucketKey: "other",
+          queryValue: "see-text",
+          bucketKey: "see-text",
         }),
       ]),
     );
     expect(
-      body.taxonomy.descriptors.some((item) => item.key.startsWith("see-text")),
+      body.taxonomy.descriptors.some(
+        (item) => item.key !== "see-text" && item.key.startsWith("see-text-"),
+      ),
     ).toBe(false);
     expect(body.components).toEqual({
       queryParam: "componentKeys",
@@ -96,6 +98,23 @@ describe("spell taxonomy filter contracts", () => {
         { key: "verbal", label: "Verbal", abbreviation: "V" },
         { key: "somatic", label: "Somatic", abbreviation: "S" },
         { key: "material", label: "Material", abbreviation: "M" },
+      ]),
+    });
+    expect(body.mechanics.castingTimes).toEqual({
+      queryParam: "castingTimeKeys",
+      mode: "any",
+      buckets: expect.arrayContaining([
+        { key: "standard_action", label: "Standard action", sortOrder: 40 },
+        { key: "minute", label: "Minutes", sortOrder: 70 },
+      ]),
+    });
+    expect(body.mechanics.ranges).toEqual({
+      queryParam: "rangeKeys",
+      mode: "any",
+      buckets: expect.arrayContaining([
+        { key: "close", label: "Close", sortOrder: 30 },
+        { key: "medium", label: "Medium", sortOrder: 40 },
+        { key: "fixed", label: "Fixed distance", sortOrder: 60 },
       ]),
     });
   });
@@ -118,19 +137,24 @@ describe("spell taxonomy filter contracts", () => {
     ]);
   });
 
-  it("filters name search by the synthetic other descriptor bucket", async () => {
+  it("filters name search by the synthetic see-text descriptor bucket", async () => {
     const res = await request(app)
       .get("/api/spells/search")
-      .query({ q: "magic", rulebookIds: "4", descriptorBuckets: "other" });
+      .query({ q: "magic", rulebookIds: "4", descriptorBuckets: "see-text" });
 
     expect(res.status).toBe(200);
     const body = res.body as SpellNameSearchResponse;
 
     expect(body.descriptorIds).toEqual([]);
-    expect(body.descriptorBuckets).toEqual(["other"]);
+    expect(body.descriptorBuckets).toEqual(["see-text"]);
     expect(body.items.map((item) => item.id)).toEqual([101]);
     expect(body.items[0]?.descriptors).toEqual([
-      { key: "other", name: "Other", slug: "other" },
+      {
+        key: "see-text",
+        name: "See text",
+        slug: "see-text",
+        rawText: "see text",
+      },
     ]);
   });
 
@@ -188,6 +212,24 @@ describe("spell taxonomy filter contracts", () => {
     expect(body.groups[0]?.items.map((item) => item.id)).toEqual([100]);
   });
 
+  it("filters name search by accepted mechanics buckets", async () => {
+    const res = await request(app)
+      .get("/api/spells/search")
+      .query({
+        q: "fire",
+        rulebookIds: "4,6",
+        castingTimeKeys: "minute,standard_action,unknown",
+        rangeKeys: "medium",
+      });
+
+    expect(res.status).toBe(200);
+    const body = res.body as SpellNameSearchResponse;
+
+    expect(body.castingTimeKeys).toEqual(["standard_action", "minute"]);
+    expect(body.rangeKeys).toEqual(["medium"]);
+    expect(body.items.map((item) => item.id)).toEqual([100]);
+  });
+
   it("applies taxonomy filters to the normalized content read source", async () => {
     delete process.env.SPELL_READ_SOURCE;
 
@@ -240,7 +282,7 @@ describe("spell taxonomy filter contracts", () => {
 
     const otherBucket = await request(app)
       .get("/api/spells/search")
-      .query({ q: "magic", rulebookIds: "4", descriptorBuckets: "other" });
+      .query({ q: "magic", rulebookIds: "4", descriptorBuckets: "see-text" });
 
     expect(otherBucket.status).toBe(200);
     expect(
@@ -248,7 +290,28 @@ describe("spell taxonomy filter contracts", () => {
     ).toEqual([101]);
     expect(
       (otherBucket.body as SpellNameSearchResponse).items[0]?.descriptors,
-    ).toEqual([{ key: "other", name: "Other", slug: "other" }]);
+    ).toEqual([
+      {
+        key: "see-text",
+        name: "See text",
+        slug: "see-text",
+        rawText: "see text",
+      },
+    ]);
+
+    const mechanics = await request(app)
+      .get("/api/spells/search")
+      .query({
+        q: "fire",
+        rulebookIds: "4,6",
+        castingTimeKeys: "standard_action",
+        rangeKeys: "medium",
+      });
+
+    expect(mechanics.status).toBe(200);
+    expect(
+      (mechanics.body as SpellNameSearchResponse).items.map((item) => item.id),
+    ).toEqual([100]);
   });
 
   it("applies component filters to the legacy rules read source", async () => {
@@ -271,18 +334,38 @@ describe("spell taxonomy filter contracts", () => {
     ).toEqual([100]);
   });
 
-  it("applies the other descriptor bucket to the legacy rules read source", async () => {
+  it("applies the see-text descriptor bucket to the legacy rules read source", async () => {
     process.env.SPELL_READ_SOURCE = "rules";
 
     const res = await request(app)
       .get("/api/spells/search")
-      .query({ q: "magic", rulebookIds: "4", descriptorBuckets: "other" });
+      .query({ q: "magic", rulebookIds: "4", descriptorBuckets: "see-text" });
 
     expect(res.status).toBe(200);
     const body = res.body as SpellNameSearchResponse;
 
     expect(body.descriptorIds).toEqual([]);
-    expect(body.descriptorBuckets).toEqual(["other"]);
+    expect(body.descriptorBuckets).toEqual(["see-text"]);
     expect(body.items.map((item) => item.id)).toEqual([101]);
+  });
+
+  it("applies mechanic filters to the legacy rules read source", async () => {
+    process.env.SPELL_READ_SOURCE = "rules";
+
+    const res = await request(app)
+      .get("/api/spells/search")
+      .query({
+        q: "fire",
+        rulebookIds: "4,6",
+        castingTimeKeys: "standard_action",
+        rangeKeys: "medium",
+      });
+
+    expect(res.status).toBe(200);
+    const body = res.body as SpellNameSearchResponse;
+
+    expect(body.castingTimeKeys).toEqual(["standard_action"]);
+    expect(body.rangeKeys).toEqual(["medium"]);
+    expect(body.items.map((item) => item.id)).toEqual([100]);
   });
 });

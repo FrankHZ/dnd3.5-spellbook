@@ -1,4 +1,5 @@
 import type {
+  SpellDescriptorBucketKey,
   SpellItemView,
   SpellDetailView,
   I18nSpellOverlay,
@@ -210,7 +211,14 @@ export function mapSpellDetail(
 function mapDescriptors(spellDescriptors: any[]) {
   const byKey = new Map<
     string,
-    { id?: number | undefined; key?: "other" | undefined; name: string; slug: string }
+    {
+      id?: number | undefined;
+      key?: SpellDescriptorBucketKey | undefined;
+      name: string;
+      slug: string;
+      rawText?: string | undefined;
+      note?: string | undefined;
+    }
   >();
 
   for (const entry of spellDescriptors) {
@@ -219,6 +227,11 @@ function mapDescriptors(spellDescriptors: any[]) {
 
     const id = Number(descriptor.id);
     const slug = String(descriptor.slug ?? "");
+    const rawText =
+      typeof descriptor.rawText === "string" && descriptor.rawText.length > 0
+        ? descriptor.rawText
+        : String(descriptor.name ?? "");
+    const note = seeTextDescriptorNote(rawText);
     const mapped = isOtherDescriptorFacet({
       facetType: "descriptor",
       legacyFacetId: Number.isFinite(id) ? id : null,
@@ -228,6 +241,8 @@ function mapDescriptors(spellDescriptors: any[]) {
           key: OTHER_DESCRIPTOR_VOCABULARY.bucketKey,
           name: OTHER_DESCRIPTOR_VOCABULARY.name,
           slug: OTHER_DESCRIPTOR_VOCABULARY.slug,
+          rawText,
+          ...(note ? { note } : {}),
         }
       : {
           id,
@@ -235,10 +250,16 @@ function mapDescriptors(spellDescriptors: any[]) {
           slug,
         };
 
-    byKey.set(mapped.key ?? String(mapped.id), mapped);
+    const mapKey = "key" in mapped && mapped.key ? mapped.key : String(mapped.id);
+    byKey.set(mapKey, mapped);
   }
 
   return Array.from(byKey.values()).sort(
     (a, b) => a.name.localeCompare(b.name) || (a.id ?? 0) - (b.id ?? 0),
   );
+}
+
+function seeTextDescriptorNote(rawText: string) {
+  const note = rawText.replace(/^see[\s-]+text\b[:\s-]*/i, "").trim();
+  return note.length > 0 ? note : undefined;
 }

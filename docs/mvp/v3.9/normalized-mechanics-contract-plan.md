@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: first backend contract slice in progress.
 
 ## Purpose
 
@@ -94,8 +94,33 @@ npm run -w data-tools rules:content:review
   `prisma` `6.19.3`; this remains maintenance tail and is not a v3.9 blocker.
 - v3.8 public filter vocabulary already includes taxonomy metadata and base
   component keys.
+- Current contract adjustment: descriptor noise is public as
+  `descriptorBuckets=see-text` / `key: "see-text"` rather than the broader
+  `other` label, and spell descriptor DTOs may expose `rawText` / `note` for
+  detail display.
 - The frontend must not parse legacy mechanics strings or invent filter
   vocabulary.
+
+## Accepted Public Mechanics Contract
+
+The first promoted mechanics filters are:
+
+- `castingTimeKeys`, selection mode `any` within the field:
+  `immediate_action`, `swift_action`, `free_action`, `standard_action`,
+  `full_round_action`, `round`, `minute`, `hour`
+- `rangeKeys`, selection mode `any` within the field:
+  `personal`, `touch`, `close`, `medium`, `long`, `fixed`, `unlimited`
+
+When both fields are present, they combine with `all` semantics: a spell must
+match one selected casting-time bucket and one selected range bucket.
+
+Fallback behavior:
+
+- Content-backed reads match accepted `SpellMechanicFacet` rows only.
+- Legacy rules rollback reads use conservative raw-string matching aligned with
+  the accepted bucket definitions.
+- Missing, `empty`, `special`, and review-status mechanics rows are not public
+  vocabulary and do not match promoted filters.
 
 ## Plan
 
@@ -104,6 +129,7 @@ npm run -w data-tools rules:content:review
 - Deliverable: accepted readiness classification for `casting_time` and
   `range`, including bucket keys, labels, sort order, query params, selection
   mode, and fallback behavior for ambiguous or missing values.
+- Status: implemented for the first public bucket set above.
 - Expected files: data-tools review helpers, normalized content builders,
   server tests or fixtures as needed, this plan.
 - Validation:
@@ -127,6 +153,7 @@ npm run -w data-tools rules:content:review
 
 - Deliverable: shared contracts and `GET /api/meta/filters` expose only
   accepted mechanics vocabulary with stable query params and labels.
+- Status: implemented for `castingTimeKeys` and `rangeKeys`.
 - Expected files: `contracts/src/dto/*`, server meta/filter vocabulary, server
   DTO tests.
 - Validation:
@@ -139,6 +166,7 @@ npm run -w data-tools rules:content:review
 - Deliverable: Search and Browse/by-level endpoints parse, sanitize, echo, and
   apply accepted mechanics filter params consistently for content-backed reads
   and supported fallback paths.
+- Status: implemented for content-backed reads and legacy rules rollback.
 - Expected files: `server/src/services/spells/`, request parsing helpers,
   fixtures, server API tests.
 - Validation:

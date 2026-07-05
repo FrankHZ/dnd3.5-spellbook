@@ -3,6 +3,7 @@ import {
   Lang,
   RulebookId,
   SpellComponentFilters,
+  SpellMechanicFilters,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
 import { Prisma as ContentPrisma, Prisma } from "#prisma-content/generated/client";
@@ -79,8 +80,8 @@ function normalizedTaxonomyWhere(filters: SpellTaxonomyFilterIds) {
         Prisma.sql`tf."legacyFacetId" IN (${Prisma.join(filters.descriptorIds)})`,
       );
     }
-    if (filters.descriptorBuckets.includes("other")) {
-      descriptorConditions.push(Prisma.sql`tf."facetKey" = 'other'`);
+    if (filters.descriptorBuckets.includes("see-text")) {
+      descriptorConditions.push(Prisma.sql`tf."facetKey" = 'see-text'`);
     }
     if (bucketLegacyIds.length > 0) {
       descriptorConditions.push(
@@ -138,12 +139,40 @@ function normalizedComponentWhere(filters: SpellComponentFilters) {
     : Prisma.empty;
 }
 
+function normalizedMechanicWhere(filters: SpellMechanicFilters) {
+  const conditions: Prisma.Sql[] = [];
+  const mechanicCondition = (mechanicType: string, keys: string[]) => Prisma.sql`
+    EXISTS (
+      SELECT 1
+      FROM "SpellMechanicFacet" mf
+      WHERE mf."spellId" = s."id"
+        AND mf."mechanicType" = ${mechanicType}
+        AND mf."reviewStatus" = 'accepted'
+        AND mf."category" IN (${Prisma.join(keys)})
+    )
+  `;
+
+  if (filters.castingTimeKeys.length > 0) {
+    conditions.push(
+      mechanicCondition("casting_time", filters.castingTimeKeys),
+    );
+  }
+  if (filters.rangeKeys.length > 0) {
+    conditions.push(mechanicCondition("range", filters.rangeKeys));
+  }
+
+  return conditions.length > 0
+    ? Prisma.sql`AND ${Prisma.join(conditions, " AND ")}`
+    : Prisma.empty;
+}
+
 export async function queryIdsByI18nName(
   lang: Lang,
   name: string,
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
   componentFilters: SpellComponentFilters,
+  mechanicFilters: SpellMechanicFilters,
   maxCandidates: number,
 ) {
   if (rulebookIds.length === 0) return [];
@@ -160,6 +189,7 @@ export async function queryIdsByI18nName(
           AND i.lang = ${lang}
           ${normalizedTaxonomyWhere(taxonomyFilters)}
           ${normalizedComponentWhere(componentFilters)}
+          ${normalizedMechanicWhere(mechanicFilters)}
         LIMIT ${maxCandidates}
       `,
   );

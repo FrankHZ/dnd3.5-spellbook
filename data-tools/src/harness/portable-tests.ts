@@ -407,8 +407,8 @@ const tests: TestCase[] = [
         [
           {
             legacyFacetId: null,
-            facetKey: "other",
-            name: "Other",
+            facetKey: "see-text",
+            name: "See text",
             rawText: "see text for summon monster I",
           },
         ],

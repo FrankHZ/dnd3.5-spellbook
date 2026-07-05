@@ -19,7 +19,7 @@ import { FilterDisclosure } from "./FilterDisclosure";
 import { countTaxonomyFilters } from "./taxonomy-filter-state";
 
 const DESCRIPTOR_BUCKET_PICKER_IDS: Record<SpellDescriptorBucketKey, number> = {
-  other: -1,
+  "see-text": -1,
 };
 
 const TOME_OF_BATTLE_ABBR = "ToB";
@@ -100,8 +100,8 @@ export function selectedRulebooksIncludeTomeOfBattle(
 function splitDescriptorPickerIds(ids: number[]) {
   const descriptorIds = ids.filter((id) => id > 0);
   const descriptorBuckets = ids
-    .filter((id) => id === DESCRIPTOR_BUCKET_PICKER_IDS.other)
-    .map(() => "other" as const);
+    .filter((id) => id === DESCRIPTOR_BUCKET_PICKER_IDS["see-text"])
+    .map(() => "see-text" as const);
 
   return {
     descriptorIds,

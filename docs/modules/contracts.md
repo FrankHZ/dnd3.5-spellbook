@@ -59,12 +59,18 @@ and metadata vocabulary lives in `contracts/src/dto/meta.ts`.
   consumers should use the base taxonomy ids returned by the metadata endpoint.
 - Legacy descriptor noise values such as `see text...` should not appear as
   individual vocabulary items; consumers should use the server-provided
-  `Other` descriptor item with `queryParam: "descriptorBuckets"` and
-  `queryValue: "other"`.
+  `See text` descriptor item with `queryParam: "descriptorBuckets"` and
+  `queryValue: "see-text"`. Spell descriptor DTOs can carry `rawText` and
+  `note` for detail display.
 - Base component filters use stable string keys through `componentKeys`.
 - `GET /api/meta/filters` exposes the component vocabulary under
   `components.base`, including the query parameter name and `all` selection
   mode.
+- Accepted mechanics filters use stable string keys through `castingTimeKeys`
+  and `rangeKeys`.
+- `GET /api/meta/filters` exposes mechanics vocabulary under
+  `mechanics.castingTimes` and `mechanics.ranges`, including query parameter
+  names and `any` selection mode within each family.
 
 Do not add frontend-only filter vocabulary outside this package and the server
 metadata endpoint.

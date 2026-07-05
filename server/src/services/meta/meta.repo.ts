@@ -1,5 +1,5 @@
 import { contentPrisma } from "#server/lib/content-prisma-client";
-import { I18nContext, Lang } from "@dnd/contracts";
+import { I18nContext, Lang, SpellDescriptorBucketKey } from "@dnd/contracts";
 import { Prisma } from "#prisma-content/generated/client";
 import {
   isCombinedTaxonomyFacet,
@@ -63,7 +63,7 @@ export type SpellTaxonomyVocabularyRow = {
   key: string;
   slug: string | null;
   name: string;
-  bucketKey?: "other" | undefined;
+  bucketKey?: SpellDescriptorBucketKey | undefined;
   queryParam?:
     | "schoolIds"
     | "subschoolIds"
