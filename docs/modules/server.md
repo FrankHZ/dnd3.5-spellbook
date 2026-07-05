@@ -42,6 +42,21 @@ Do not add new `~` imports or TypeScript-only `paths` aliases in the server
 package. The production build runs plain `tsc`, so runtime-resolvable import
 specifiers are part of the module boundary.
 
+`server/package.json` uses a custom `source` condition for local TS execution
+and a default condition for built runtime execution:
+
+- `npm run -w server dev` and npm-managed `tsx` maintenance scripts set
+  `NODE_OPTIONS=--conditions=source` and resolve package imports to `.ts`
+  source.
+- `npm run -w server test` uses `server/vitest.config.ts`
+  `resolve.conditions: ["source"]` so Vitest resolves package imports to
+  `.ts` source without sending source resolution through raw Node loading.
+- `npm run -w server start` and `npm run -w server check:runtime` do not set
+  the source condition and resolve package imports to `dist/`.
+
+Do not run server maintenance scripts that import server code with bare `tsx`
+unless you explicitly pass the source condition.
+
 ## Data Ownership
 
 The current runtime reads three SQLite connection roles:

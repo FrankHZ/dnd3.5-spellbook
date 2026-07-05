@@ -64,6 +64,11 @@ The cleanup should be investigated without blocking normalized query work.
   - `#prisma-app-state/*` for the app-state Prisma schema/client tree
 - `server/package.json` owns the runtime import map, and
   `server/tsconfig.json` no longer needs `paths`.
+- Development, tests, and TS maintenance scripts use a custom `source`
+  condition so package imports resolve to current `.ts` files. `tsx` entry
+  points set `NODE_OPTIONS=--conditions=source`; Vitest uses
+  `resolve.conditions: ["source"]`. Built runtime commands omit that condition
+  and resolve to `dist/`.
 - `tsc-alias` and `tsconfig-paths` are no longer server dependencies.
 - `@dnd/contracts` is primarily DTO/runtime-light exports today, and the
   current CommonJS server can consume those exports after `contracts` is built.
@@ -166,10 +171,17 @@ stateful runtime logic, top-level async work, or exports that fail
   confirming that dropping `tsc-alias` required an import-style change.
 - Server source, tests, and scripts now use `#server/*` and `#prisma-*/*`
   package imports.
+- `server/package.json` defines both `source` and default package import
+  targets. Local `tsx` npm scripts use `NODE_OPTIONS=--conditions=source`, and
+  Vitest uses source-condition resolution in `server/vitest.config.ts`, to avoid
+  stale `dist/`; production runtime checks continue to use default `dist/`
+  resolution.
 - `server/package.json` now defines the package import map and builds with
   plain `tsc`; `server/tsconfig.json` no longer defines alias `paths`.
 - `tsc-alias` and `tsconfig-paths` were removed from the server workspace.
 - Validation used:
+  - `node --conditions=source -p "require.resolve('#server/app')"`
+  - `node -p "require.resolve('#server/app')"`
   - `npx tsx -e "... import('#server/utils/i18n') ..."`
   - `npm run build:contracts`
   - `npm run check:contracts`

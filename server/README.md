@@ -36,7 +36,15 @@ build so deployment does not depend on local source-data files.
 
 Server imports use Node package imports defined in `server/package.json`:
 `#server/*` for application source and `#prisma-*/*` for generated Prisma
-client trees. The build does not run a post-build alias rewrite.
+client trees. Development and TS maintenance scripts run with
+`NODE_OPTIONS=--conditions=source` through the npm scripts in this file, while
+Vitest uses `server/vitest.config.ts` source-condition resolution. Both paths
+resolve those imports to current `.ts` source. The build does not run a
+post-build alias rewrite; built runtime commands resolve the same imports to
+`dist/`.
+
+Do not run `tsx scripts/*.ts` directly when the script imports server code.
+Use the matching npm script, or pass `NODE_OPTIONS=--conditions=source`.
 
 Smoke the compiled runtime import after a build:
 

@@ -7,32 +7,36 @@
   "imports": {
     "#server/*": {
       "types": "./src/*.ts",
+      "source": "./src/*.ts",
       "default": "./dist/src/*.js"
     },
     "#prisma-rules-clean/*": {
       "types": "./prisma-rules-clean/*.ts",
+      "source": "./prisma-rules-clean/*.ts",
       "default": "./dist/prisma-rules-clean/*.js"
     },
     "#prisma-content/*": {
       "types": "./prisma-content/*.ts",
+      "source": "./prisma-content/*.ts",
       "default": "./dist/prisma-content/*.js"
     },
     "#prisma-app-state/*": {
       "types": "./prisma-app-state/*.ts",
+      "source": "./prisma-app-state/*.ts",
       "default": "./dist/prisma-app-state/*.js"
     }
   },
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "cross-env NODE_OPTIONS=--conditions=source tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
     "check:runtime": "node scripts/check-runtime-import.cjs",
     "start": "node dist/src/index.js",
     "db:generate": "prisma generate --schema ./prisma-rules-clean/schema.prisma && prisma generate --schema ./prisma-content/schema.prisma && prisma generate --schema ./prisma-app-state/schema.prisma",
-    "db:content:reset": "tsx scripts/ensure-sqlite-file.ts CONTENT_DATABASE_URL && prisma migrate dev --name init --config ./prisma-content/prisma.config.ts",
-    "db:app-state:reset": "tsx scripts/ensure-sqlite-file.ts APP_STATE_DATABASE_URL && prisma migrate dev --name init --config ./prisma-app-state/prisma.config.ts",
+    "db:content:reset": "cross-env NODE_OPTIONS=--conditions=source tsx scripts/ensure-sqlite-file.ts CONTENT_DATABASE_URL && prisma migrate dev --name init --config ./prisma-content/prisma.config.ts",
+    "db:app-state:reset": "cross-env NODE_OPTIONS=--conditions=source tsx scripts/ensure-sqlite-file.ts APP_STATE_DATABASE_URL && prisma migrate dev --name init --config ./prisma-app-state/prisma.config.ts",
     "db:app-state:seed": "prisma db seed --config ./prisma-app-state/prisma.config.ts",
-    "db:content:import:zh-chm": "tsx scripts/import-zh-chm.ts",
-    "db:content:import:zh-entities": "tsx scripts/import-zh-entities.ts",
+    "db:content:import:zh-chm": "cross-env NODE_OPTIONS=--conditions=source tsx scripts/import-zh-chm.ts",
+    "db:content:import:zh-entities": "cross-env NODE_OPTIONS=--conditions=source tsx scripts/import-zh-entities.ts",
     "db:app:reset": "npm run db:content:reset",
     "db:app:import:zh-chm": "npm run db:content:import:zh-chm",
     "db:app:import:zh-entities": "npm run db:content:import:zh-entities",
