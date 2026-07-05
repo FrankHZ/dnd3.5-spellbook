@@ -183,6 +183,8 @@ Validation:
   chip treatment with full component names.
 - Spell Detail related-spell lists reuse the same compact summary spell row as
   Browse/Search, instead of keeping a separate link/source row treatment.
+- Spell Detail mechanics use compact metadata rows so sidebar fields scan more
+  like a reference panel without changing backend data or fallback behavior.
 - `docs/design.md` records this as a durable chip consistency rule, while a
   fuller design system remains deferred.
 
