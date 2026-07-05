@@ -88,7 +88,7 @@ type CountRow = Record<string, unknown> & {
 
 type ReviewReadiness = {
   family: string;
-  status: "ready" | "needs_normalization" | "defer";
+  status: "ready" | "needs_normalization" | "defer" | "detail_only";
   reason: string;
   evidence: Record<string, unknown>;
 };
@@ -1136,14 +1136,14 @@ function buildReviewReadiness(input: {
     },
     {
       family: "components.other_or_extra",
-      status:
-        otherComponentReviewRows > 0 ? "needs_normalization" : "ready",
+      status: "detail_only",
       reason:
-        "Extra component text is intentionally preserved, but should not become filter vocabulary until reviewed.",
+        "Extra component text is intentionally preserved for detail/raw display and is not public filter vocabulary.",
       evidence: {
         reviewRows: otherComponentReviewRows,
         componentExtraIssues:
           input.issueCountsByCode["component.extra.review"] ?? 0,
+        decision: "detail_raw_only",
       },
     },
     {

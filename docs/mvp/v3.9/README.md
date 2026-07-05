@@ -25,9 +25,10 @@ The latest frozen shipped snapshot remains `docs/mvp/v3.8/FREEZE.md`.
 
 ## Track Order
 
-1. Backend normalized mechanics contract is the mainline.
-2. Frontend normalized mechanics consumer follows only after the server exposes
-   stable vocabulary and fallback behavior.
+1. Backend normalized mechanics contract has landed for the promoted mechanics
+   fields and detail metadata.
+2. Frontend normalized mechanics consumer is the next active implementation
+   track now that the server exposes stable vocabulary and fallback behavior.
 3. Librarian plan and freeze sweeps own cross-doc navigation and version
    records. Specialist implementation branches should update only their owning
    child plan and directly affected topic docs unless scope, sequencing, or
@@ -38,14 +39,15 @@ scope, delivery sequence, or ownership.
 
 ## Immediate Candidate Decisions
 
-- First candidate spike: mechanics readiness and bucket contract. Begin with
-  `casting_time` and `range`, then promote `duration`, `savingThrow`, and
-  `spellResistance` as separate backend contract slices once each has explicit
-  consumer semantics. Defer `target` / `effect` / `area` unless a later focused
+- Backend candidate spike: mechanics readiness and bucket contract has promoted
+  `casting_time`, `range`, `duration`, `savingThrow`, and
+  `spellResistance`. Defer `target` / `effect` / `area` unless a later focused
   plan narrows them.
-- Second candidate spike: `components.other_or_extra`. Normalize and close the
-  six review rows if they are safe, or explicitly classify them before
-  mechanics expansion.
+- Component extra spike: `components.other_or_extra` is classified as
+  detail/raw only. The six remaining review rows are preserved for detail text
+  and are not public filter vocabulary.
+- Frontend candidate spike: Browse/Search should now consume the accepted
+  mechanics contract from server-provided vocabulary.
 
 ## Non-Goals
 
