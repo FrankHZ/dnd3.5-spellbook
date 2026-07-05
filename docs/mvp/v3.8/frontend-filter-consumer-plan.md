@@ -181,6 +181,8 @@ Validation:
   filters, and Spell Detail. Dense rows keep compact component markers, while
   English component filters use compact markers and Spell Detail uses the same
   chip treatment with full component names.
+- Spell Detail related-spell lists reuse the same compact summary spell row as
+  Browse/Search, instead of keeping a separate link/source row treatment.
 - `docs/design.md` records this as a durable chip consistency rule, while a
   fuller design system remains deferred.
 
