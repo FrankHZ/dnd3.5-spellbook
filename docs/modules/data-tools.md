@@ -42,6 +42,12 @@ must not depend on ignored source data or local SQLite DBs.
 Local acceptance commands may depend on the nested `data/` repo and local DBs,
 but they should remain explicit and outside root `npm run verify` or CI.
 
+`rules:content:review` is the read-only content DB inventory for normalized
+rules content. Its readiness output can mark a family as `detail_only` when
+review rows are intentionally preserved for raw/detail display and should not
+be promoted into public filter vocabulary; `components.other_or_extra` uses
+that classification.
+
 ## Validation
 
 Use:

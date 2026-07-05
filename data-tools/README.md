@@ -89,7 +89,10 @@ mutating SQLite.
 `rules:content:review` opens the configured content DB read-only and inventories
 the normalized taxonomy, component, and mechanic facet tables for filter-contract
 readiness review. It writes a timestamped report under
-`data-tools/out/rules-content/`.
+`data-tools/out/rules-content/`. Readiness status `detail_only` means the
+family is intentionally retained for raw/detail display and is not public filter
+vocabulary; for example, `components.other_or_extra` keeps extra component text
+out of filter controls.
 
 Run portable data-tools helper tests:
 

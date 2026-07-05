@@ -88,7 +88,7 @@ type CountRow = Record<string, unknown> & {
 
 type ReviewReadiness = {
   family: string;
-  status: "ready" | "needs_normalization" | "defer";
+  status: "ready" | "needs_normalization" | "defer" | "detail_only";
   reason: string;
   evidence: Record<string, unknown>;
 };
@@ -1136,32 +1136,34 @@ function buildReviewReadiness(input: {
     },
     {
       family: "components.other_or_extra",
-      status:
-        otherComponentReviewRows > 0 ? "needs_normalization" : "ready",
+      status: "detail_only",
       reason:
-        "Extra component text is intentionally preserved, but should not become filter vocabulary until reviewed.",
+        "Extra component text is intentionally preserved for detail/raw display and is not public filter vocabulary.",
       evidence: {
         reviewRows: otherComponentReviewRows,
         componentExtraIssues:
           input.issueCountsByCode["component.extra.review"] ?? 0,
+        decision: "detail_raw_only",
       },
     },
     {
       family: "mechanics.casting_time",
-      status: mechanicReview("casting_time") > 0 ? "needs_normalization" : "ready",
+      status: "ready",
       reason:
-        "Action-like casting-time categories are useful, but review rows must stay out of public vocabulary.",
+        "Casting-time public filter buckets are promoted; remaining review rows stay excluded from public vocabulary.",
       evidence: {
-        reviewRows: mechanicReview("casting_time"),
+        publicQueryParam: "castingTimeKeys",
+        reviewRowsExcludedFromVocabulary: mechanicReview("casting_time"),
       },
     },
     {
       family: "mechanics.range",
-      status: mechanicReview("range") > 0 ? "needs_normalization" : "ready",
+      status: "ready",
       reason:
-        "Range has strong normalized categories, but special/review rows need a stable fallback contract first.",
+        "Range public filter buckets are promoted; remaining review rows stay excluded from public vocabulary.",
       evidence: {
-        reviewRows: mechanicReview("range"),
+        publicQueryParam: "rangeKeys",
+        reviewRowsExcludedFromVocabulary: mechanicReview("range"),
       },
     },
     {
@@ -1177,13 +1179,20 @@ function buildReviewReadiness(input: {
     },
     {
       family: "mechanics.duration_save_sr",
-      status: "defer",
+      status: "ready",
       reason:
-        "Duration, saving throw, and spell resistance need separate consumer semantics before becoming filters.",
+        "Duration, saving throw, and spell resistance public filters are promoted; remaining review rows stay excluded from public vocabulary.",
       evidence: {
-        durationReviewRows: mechanicReview("duration"),
-        savingThrowReviewRows: mechanicReview("saving_throw"),
-        spellResistanceReviewRows: mechanicReview("spell_resistance"),
+        publicQueryParams: [
+          "durationKeys",
+          "savingThrowKeys",
+          "spellResistanceKeys",
+        ],
+        durationReviewRowsExcludedFromVocabulary: mechanicReview("duration"),
+        savingThrowReviewRowsExcludedFromVocabulary:
+          mechanicReview("saving_throw"),
+        spellResistanceReviewRowsExcludedFromVocabulary:
+          mechanicReview("spell_resistance"),
       },
     },
   ];

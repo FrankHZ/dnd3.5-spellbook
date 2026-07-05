@@ -257,26 +257,24 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Run the v3.9 normalized mechanics contract track**
-
-   Start from
-   `docs/mvp/v3.9/normalized-mechanics-contract-plan.md`. Begin with the
-   mechanics readiness and bucket contract for `casting_time` and `range`,
-   because the current review report marks them as needing normalization but
-   plausible. Close or explicitly classify the six
-   `components.other_or_extra` review rows before broad mechanics expansion.
-
-   Keep `duration`, `savingThrow`, and `spellResistance` pending explicit
-   consumer semantics. Keep `target` / `effect` / `area` deferred unless a
-   later focused plan narrows them.
-
-2. **Follow with the v3.9 frontend mechanics consumer**
+1. **Follow with the v3.9 frontend mechanics consumer**
 
    Use
-   `docs/mvp/v3.9/frontend-normalized-mechanics-consumer-plan.md` after the
-   backend contract exposes stable vocabulary and fallback behavior. Browse and
+   `docs/mvp/v3.9/frontend-normalized-mechanics-consumer-plan.md`. Browse and
    Search should consume server-provided mechanics filters through URL/API
    helpers, active scope summaries, and desktop/mobile sidebar controls.
+
+   The backend contract now exposes stable vocabulary and fallback behavior for
+   `castingTimeKeys`, `rangeKeys`, `durationKeys`, `savingThrowKeys`, and
+   `spellResistanceKeys`. It also exposes content-backed Spell Detail mechanics
+   metadata under `casting.mechanics`.
+
+2. **Keep the normalized mechanics backend contract closed**
+
+   `docs/mvp/v3.9/normalized-mechanics-contract-plan.md` is the backend source
+   of truth. `components.other_or_extra` is classified as detail/raw only, and
+   `target` / `effect` / `area` remain deferred unless a later focused plan
+   narrows them.
 
 3. **Triage the non-blocking maintenance tail as needed**
 

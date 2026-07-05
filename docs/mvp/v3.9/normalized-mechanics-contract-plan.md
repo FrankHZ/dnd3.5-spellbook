@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: first backend contract slice in progress.
+Status: backend contract implemented; frontend consumer planned separately.
 
 ## Purpose
 
@@ -44,10 +44,11 @@ and consumer behavior are clear.
 
 - Promote accepted normalized mechanics from data-tools review into shared DTOs
   and server filter vocabulary.
-- Start with `casting_time` and `range` readiness because they are plausible
-  public filters with bounded review queues.
-- Resolve or explicitly classify the six `components.other_or_extra` review
-  rows before mechanics expansion.
+- Promote `casting_time`, `range`, `duration`, `savingThrow`, and
+  `spellResistance` as public mechanics filters with explicit bucket
+  semantics.
+- Explicitly classify the six `components.other_or_extra` review rows before
+  mechanics expansion.
 - Define bucket keys, labels, query params, selection mode, and fallback
   semantics for each promoted facet.
 - Keep high-volume or unclear mechanics families review-only until their
@@ -78,14 +79,17 @@ npm run -w data-tools rules:content:review
 - Current report readiness:
   - taxonomy: ready
   - `components.base_flags`: ready
-  - `components.other_or_extra`: needs normalization with `6` review rows
-  - `mechanics.casting_time`: needs normalization with `740` review rows
-  - `mechanics.range`: needs normalization with `147` review rows
+  - `components.other_or_extra`: detail/raw only with `6` review rows; not
+    public filter vocabulary
+  - `mechanics.casting_time`: public filter implemented; `740` review rows
+    remain excluded from public vocabulary
+  - `mechanics.range`: public filter implemented; `147` review rows remain
+    excluded from public vocabulary
   - `mechanics.target_effect_area`: defer with `target` `1360`, `effect` `510`,
     and `area` `241` review rows
-  - `mechanics.duration_save_sr`: promote `duration`, `savingThrow`, and
-    `spellResistance` as separate slices; `spellResistance` has
-    `66` review rows
+  - `mechanics.duration_save_sr`: public filters implemented for `duration`,
+    `savingThrow`, and `spellResistance`; review rows remain excluded from
+    public vocabulary
 - Current known audit tail:
   `npm audit --workspaces --omit=dev --json` still reports the reviewed three
   moderate Prisma dev-chain / Hono advisories. `fixAvailable` points to
@@ -129,7 +133,7 @@ Normalized but not public filter fields:
 
 | field | normalized source | accepted rows | review rows | current decision |
 | --- | --- | ---: | ---: | --- |
-| component other/extra | `SpellComponent.other` | 134 | 6 | detail/raw text only; not filter vocabulary |
+| component other/extra | `SpellComponent.other` | 134 | 6 | detail/raw text only; not filter vocabulary; confirmed samples are long material text or combined labels |
 | target | `SpellMechanicFacet.target` | 3,566 | 1,360 | defer; high-volume mixed free text |
 | effect | `SpellMechanicFacet.effect` | 4,416 | 510 | defer; high-volume mixed free text |
 | area | `SpellMechanicFacet.area` | 4,685 | 241 | defer; high-volume mixed free text |
@@ -223,8 +227,12 @@ Recommended follow-up:
 ### Slice 2: Component Other/Extra Closure
 
 - Deliverable: normalize and close the six `components.other_or_extra` review
-  rows if safe, or explicitly classify them as review-only before mechanics
+  rows if safe, or explicitly classify them as detail/raw only before mechanics
   expansion continues.
+- Status: classified as detail/raw only. The six remaining review rows are
+  extra component prose or combined source labels, all preserved in
+  `components.extra` / raw content and intentionally excluded from public
+  filter vocabulary.
 - Expected files: component normalization rules, review decision fixtures or
   reports, focused data-tools tests.
 - Validation:
@@ -296,12 +304,6 @@ Recommended follow-up:
 
 ## Open Questions
 
-- What exact public bucket set should `casting_time` expose?
-- Should `range` bucket semantics distinguish personal, touch, fixed distance,
-  scaling distance, unlimited, and special text, or start with a smaller public
-  set?
-- Which component extra rows can be safely normalized versus classified as
-  review-only?
 - Which frontend detail fields should render `casting.mechanics` first, and how
   should localized labels explain harmless/object/dismissible flags?
 
