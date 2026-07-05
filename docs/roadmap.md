@@ -8,19 +8,41 @@ details.
 
 ## Current Track
 
-v3.8 planning is open. The latest frozen release snapshot is
-`docs/mvp/v3.7/FREEZE.md`; active v3.8 planning starts at
-`docs/mvp/v3.8/README.md`.
+v3.8 is frozen. The latest release snapshot is
+`docs/mvp/v3.8/FREEZE.md`.
 
-The accepted v3.8 focus is normalized query contract work followed by frontend
-filter consumption. Both product/data slices have landed; the remaining v3.8
-follow-up is the independent CJS/ESM and alias cleanup spike, plus release
-acceptance if the version is ready to freeze.
+No version planning branch is currently canonical. Open the next version plan
+from this roadmap and `docs/stable-backlog.md`; do not add new active scope to
+the frozen v3.8 folder.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
 
 ## Recently Completed
+
+The v3.8 release is frozen with:
+
+- `docs/mvp/v3.8/FREEZE.md` as the as-built snapshot.
+- server-provided normalized filter vocabulary consumed by Browse/Search.
+- Browse remaining filter-first and Search remaining name-first with the same
+  structured class, domain, level, taxonomy, and component scope.
+- shareable URL state for normalized taxonomy and component filters.
+- compact active-scope summaries that count primary scope, taxonomy filters,
+  component filters, and rulebook selections.
+- taxonomy controls grouped by server-provided source/category metadata, so
+  Tome of Battle entries can be separated without frontend string parsing.
+- descriptor noise collapsed through backend-provided `Other` buckets rather
+  than raw legacy `see text` labels.
+- a bounded Filter UX pass: component filters, disclosure icons, unified
+  spacing, and one detail-filter reset that clears taxonomy and component
+  filters without touching primary scope.
+- the current detail-filter UI accepted as a small v3.8 pass, not the final
+  broader filter-design system.
+- server module-boundary cleanup using Node package imports instead of
+  TypeScript-only alias rewriting.
+- `tsc-alias` and `tsconfig-paths` removed from the server workspace.
+- full server ESM and dual contracts builds explicitly deferred until the
+  current package-import boundary creates real runtime risk.
 
 The v3.7 release is frozen with:
 
@@ -41,24 +63,6 @@ The v3.7 release is frozen with:
   upgrades accepted with the forced Prisma audit downgrade rejected.
 - final GitHub deploy run `28708398468` succeeded on commit `476c93d`.
 
-The v3.8 normalized query and frontend filter consumer slices have landed with:
-
-- server-provided normalized filter vocabulary consumed by Browse/Search.
-- Browse remaining filter-first and Search remaining name-first with the same
-  structured class, domain, level, taxonomy, and component scope.
-- shareable URL state for normalized taxonomy and component filters.
-- compact active-scope summaries that count primary scope, taxonomy filters,
-  component filters, and rulebook selections.
-- taxonomy controls grouped by server-provided source/category metadata, so
-  Tome of Battle entries can be separated without frontend string parsing.
-- descriptor noise collapsed through backend-provided `Other` buckets rather
-  than raw legacy `see text` labels.
-- a bounded Filter UX pass: component filters, disclosure icons, unified
-  spacing, and one detail-filter reset that clears taxonomy and component
-  filters without touching primary scope.
-- the current detail-filter UI accepted as a small v3.8 pass, not the final
-  broader filter-design system.
-
 The v3.6 release is frozen with:
 
 - `docs/mvp/v3.6/FREEZE.md` as the as-built snapshot.
@@ -78,7 +82,7 @@ The v3.6 release is frozen with:
 - Tome of Battle source-kind/category handling and broader mechanics filters
   explicitly deferred.
 - v3.7 security, deploy/status visibility, and dependency-maintenance planning
-  as the active follow-up.
+  as the later frozen follow-up.
 
 The v3.6 DB status slice has landed with:
 
@@ -247,14 +251,15 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Prepare v3.8 acceptance or freeze when ready**
+1. **Open the next version plan from stable candidates**
 
-   Re-read `docs/mvp/v3.8/README.md` and the child plans, then decide whether
-   the normalized-query and frontend-consumer slices are enough for a v3.8
-   freeze after the cleanup spike, or whether a small acceptance-only follow-up
-   is needed. Do not expand this into a broader filter redesign.
+   Start from `docs/stable-backlog.md` and the latest v3.8 freeze. Candidate
+   areas include broader filter UX/design, additional normalized mechanics
+   filters, content artifact/versioned DB release work, static/offline
+   artifacts, and large translation/proofreading QA. Keep the next version
+   focused rather than reopening v3.8.
 
-2. **Triage the v3.7 non-blocking maintenance tail as needed**
+2. **Triage the non-blocking maintenance tail as needed**
 
    `npm audit --workspaces --omit=dev --json` still reports the reviewed Prisma
    dev-chain / Hono moderate advisories. Treat them as explicit maintenance

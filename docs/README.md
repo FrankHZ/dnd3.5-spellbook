@@ -22,7 +22,10 @@ execution rules and role boundaries.
 
 ## Active Planning
 
-v3.8 planning is open:
+No version planning branch is currently canonical after the v3.8 freeze. Use
+[roadmap.md](./roadmap.md) for next-work ordering after a pause.
+
+The latest frozen planning record is v3.8:
 
 - [mvp/v3.8/README.md](./mvp/v3.8/README.md)
 - [mvp/v3.8/normalized-query-contract-plan.md](./mvp/v3.8/normalized-query-contract-plan.md)
@@ -33,19 +36,19 @@ Use [roadmap.md](./roadmap.md) for current ordering after a pause.
 
 ## Latest Frozen Snapshot
 
-The latest frozen stage snapshot is **v3.7**:
+The latest frozen stage snapshot is **v3.8**:
 
-- [mvp/v3.7/FREEZE.md](./mvp/v3.7/FREEZE.md)
-- [mvp/v3.7/README.md](./mvp/v3.7/README.md)
+- [mvp/v3.8/FREEZE.md](./mvp/v3.8/FREEZE.md)
+- [mvp/v3.8/README.md](./mvp/v3.8/README.md)
 
-`FREEZE.md` records the as-built v3.7 handoff state. Supporting v3.7 plan docs
+`FREEZE.md` records the as-built v3.8 handoff state. Supporting v3.8 plan docs
 describe rationale and implementation history; they are not newer than the
 freeze snapshot.
 
-The previous frozen stage snapshot is **v3.6**:
+The previous frozen stage snapshot is **v3.7**:
 
-- [mvp/v3.6/FREEZE.md](./mvp/v3.6/FREEZE.md)
-- [mvp/v3.6/README.md](./mvp/v3.6/README.md)
+- [mvp/v3.7/FREEZE.md](./mvp/v3.7/FREEZE.md)
+- [mvp/v3.7/README.md](./mvp/v3.7/README.md)
 
 Use older `FREEZE.md` files as historical comparison points, not active
 baselines.
@@ -89,8 +92,9 @@ baselines.
 ### Versioned MVP Docs
 
 - [mvp/README.md](./mvp/README.md): versioned-doc roles and maintenance rules.
-- [mvp/v3.7/FREEZE.md](./mvp/v3.7/FREEZE.md): latest frozen release snapshot.
-- [mvp/v3.6/FREEZE.md](./mvp/v3.6/FREEZE.md): previous frozen snapshot.
+- [mvp/v3.8/FREEZE.md](./mvp/v3.8/FREEZE.md): latest frozen release snapshot.
+- [mvp/v3.7/FREEZE.md](./mvp/v3.7/FREEZE.md): previous frozen snapshot.
+- [mvp/v3.6/FREEZE.md](./mvp/v3.6/FREEZE.md): older frozen snapshot.
 - [mvp/v3.5/FREEZE.md](./mvp/v3.5/FREEZE.md): older frozen snapshot.
 - [mvp/v3.4/FREEZE.md](./mvp/v3.4/FREEZE.md): older frozen snapshot.
 - [mvp/v3.3/FREEZE.md](./mvp/v3.3/FREEZE.md): data-tooling foundation

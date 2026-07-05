@@ -14,8 +14,7 @@ It is not a full roadmap. It exists to record what is known to be intentionally 
 
 ### Security
 
-- first security review and hardening planning is active in
-  `docs/mvp/v3.7/security-review.md`
+- security review follow-ups beyond the frozen v3.7 hardening pass
 - HTTPS / TLS
 - firewall hardening
 - SSH hardening
@@ -32,10 +31,9 @@ It is not a full roadmap. It exists to record what is known to be intentionally 
 
 ### Maintenance
 
-- major/risky dependency upgrade and TypeScript module-boundary review is active
-  in
-  `docs/mvp/v3.7/dependency-upgrade-plan.md`
-- dependency upgrades not accepted into v3.7 focused slices remain deferred
+- dependency upgrades not accepted into focused version slices remain deferred
+- revisit full server ESM or contracts dual-package output only when the current
+  v3.8 package-import boundary stops being sufficient
 
 ### Content
 

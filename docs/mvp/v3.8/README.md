@@ -1,8 +1,8 @@
 # v3.8
 
-Status: implementation closeout.
+Status: frozen. Read `FREEZE.md` first for the v3.8 as-built snapshot.
 
-v3.8 is a focused normalized query and filter-consumer release. The mainline is
+v3.8 was a focused normalized query and filter-consumer release. The mainline is
 to settle a backend normalized filter/query contract first, then let the
 frontend consume that stable vocabulary. A separate CJS/ESM and alias cleanup
 spike can run alongside it, but should not block the contract or frontend
@@ -32,6 +32,9 @@ it proves the current boundary keeps creating real deploy/runtime risk.
 
 The module-boundary spike accepted Node package imports for server internals
 and confirmed that a full server ESM migration is not needed for v3.8.
+
+For shipped behavior, validation evidence, and deferred work, use
+[`FREEZE.md`](./FREEZE.md).
 
 ## Non-Goals
 
