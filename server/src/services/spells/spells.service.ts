@@ -4,6 +4,7 @@ import type {
   SpellBatchResponse,
   SpellComponentFilters,
   SpellDetailView,
+  SpellMechanicFilters,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
 import { mapSpellItem, mapSpellDetail } from "#server/services/spells/spells.mapper";
@@ -16,6 +17,7 @@ import {
   type SpellRow,
 } from "#server/services/spells/spells.repo.read";
 import { listByClassAndDomainLevel } from "#server/services/spells/spells.service.by-level";
+import { hasMechanicScope } from "#server/services/spells/mechanics-normalization";
 import {
   queryI18nMap,
   queryIdsByI18nName,
@@ -33,6 +35,7 @@ export const spellsService = {
     domainIds: number[];
     taxonomyFilters: SpellTaxonomyFilterIds;
     componentFilters: SpellComponentFilters;
+    mechanicFilters: SpellMechanicFilters;
     level: number | "all" | null;
     page: number;
     pageSize: number;
@@ -44,6 +47,7 @@ export const spellsService = {
       input.domainIds.length > 0 ||
       hasTaxonomyScope(input.taxonomyFilters) ||
       hasComponentScope(input.componentFilters) ||
+      hasMechanicScope(input.mechanicFilters) ||
       input.level !== null;
     const maxCandidates = hasScope
       ? 2000
@@ -54,6 +58,7 @@ export const spellsService = {
       input.rulebookIds,
       input.taxonomyFilters,
       input.componentFilters,
+      input.mechanicFilters,
       maxCandidates,
     );
     const seen = new Set<number>();
@@ -70,6 +75,7 @@ export const spellsService = {
         input.rulebookIds,
         input.taxonomyFilters,
         input.componentFilters,
+        input.mechanicFilters,
         maxCandidates,
       );
       for (const id of idsI18n)
@@ -107,6 +113,7 @@ export const spellsService = {
       rulebookIds: input.rulebookIds,
       ...input.taxonomyFilters,
       ...input.componentFilters,
+      ...input.mechanicFilters,
       items: pagedSpells.map((s) =>
         mapSpellItem(
           s,
@@ -246,3 +253,5 @@ export function hasTaxonomyScope(filters: SpellTaxonomyFilterIds) {
 export function hasComponentScope(filters: SpellComponentFilters) {
   return filters.componentKeys.length > 0;
 }
+
+export { hasMechanicScope };

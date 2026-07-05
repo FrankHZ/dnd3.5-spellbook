@@ -1,6 +1,7 @@
 import {
   RulebookId,
   SpellComponentFilters,
+  SpellMechanicFilters,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
 import { Prisma } from "#prisma-rules-clean/generated/client";
@@ -49,6 +50,7 @@ export async function queryIdsByName(
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
   componentFilters: SpellComponentFilters,
+  mechanicFilters: SpellMechanicFilters,
   maxCandidates: number,
 ) {
   if (activeSpellReadSource() === "content") {
@@ -57,6 +59,7 @@ export async function queryIdsByName(
       rulebookIds,
       taxonomyFilters,
       componentFilters,
+      mechanicFilters,
       maxCandidates,
     );
   }
@@ -65,6 +68,7 @@ export async function queryIdsByName(
     rulebookIds,
     taxonomyFilters,
     componentFilters,
+    mechanicFilters,
     maxCandidates,
   );
 }
@@ -76,6 +80,7 @@ export async function queryByClassAndDomainWithLevel(
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
   componentFilters: SpellComponentFilters,
+  mechanicFilters: SpellMechanicFilters,
   page: number,
   pageSize: number,
 ) {
@@ -87,6 +92,7 @@ export async function queryByClassAndDomainWithLevel(
       rulebookIds,
       taxonomyFilters,
       componentFilters,
+      mechanicFilters,
       page,
       pageSize,
     );
@@ -98,6 +104,7 @@ export async function queryByClassAndDomainWithLevel(
     rulebookIds,
     taxonomyFilters,
     componentFilters,
+    mechanicFilters,
     page,
     pageSize,
   );
@@ -109,6 +116,7 @@ export async function queryByClassAndDomainAllLevels(
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
   componentFilters: SpellComponentFilters,
+  mechanicFilters: SpellMechanicFilters,
   page: number,
   pageSize: number,
 ) {
@@ -119,6 +127,7 @@ export async function queryByClassAndDomainAllLevels(
       rulebookIds,
       taxonomyFilters,
       componentFilters,
+      mechanicFilters,
       page,
       pageSize,
     );
@@ -129,6 +138,7 @@ export async function queryByClassAndDomainAllLevels(
     rulebookIds,
     taxonomyFilters,
     componentFilters,
+    mechanicFilters,
     page,
     pageSize,
   );

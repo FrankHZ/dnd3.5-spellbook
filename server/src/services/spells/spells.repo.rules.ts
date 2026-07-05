@@ -1,6 +1,7 @@
 import {
   RulebookId,
   SpellComponentFilters,
+  SpellMechanicFilters,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
 import { rulesPrisma } from "#server/lib/rules-prisma-client";
@@ -155,6 +156,54 @@ function rulesComponentWhere(filters: SpellComponentFilters) {
     : Prisma.empty;
 }
 
+function rulesMechanicWhere(filters: SpellMechanicFilters) {
+  const conditions: Prisma.Sql[] = [];
+  const castingTimeConditions = filters.castingTimeKeys.map((key) => {
+    const field = Prisma.sql`LOWER(COALESCE(s.casting_time, ''))`;
+    if (key === "immediate_action") {
+      return Prisma.sql`${field} LIKE '%immediate action%'`;
+    }
+    if (key === "swift_action") {
+      return Prisma.sql`${field} LIKE '%swift action%'`;
+    }
+    if (key === "free_action") return Prisma.sql`${field} LIKE '%free action%'`;
+    if (key === "standard_action") {
+      return Prisma.sql`${field} LIKE '%standard action%'`;
+    }
+    if (key === "full_round_action") {
+      return Prisma.sql`${field} LIKE '%full-round action%'`;
+    }
+    if (key === "round") {
+      return Prisma.sql`(${field} LIKE '%round%' AND ${field} NOT LIKE '%full-round action%')`;
+    }
+    if (key === "minute") return Prisma.sql`${field} LIKE '%minute%'`;
+    return Prisma.sql`${field} LIKE '%hour%'`;
+  });
+
+  if (castingTimeConditions.length > 0) {
+    conditions.push(Prisma.sql`(${Prisma.join(castingTimeConditions, " OR ")})`);
+  }
+
+  const rangeConditions = filters.rangeKeys.map((key) => {
+    const field = Prisma.sql`LOWER(COALESCE(s.range, ''))`;
+    if (key === "personal") return Prisma.sql`${field} LIKE 'personal%'`;
+    if (key === "touch") return Prisma.sql`${field} LIKE 'touch%'`;
+    if (key === "close") return Prisma.sql`${field} LIKE 'close%'`;
+    if (key === "medium") return Prisma.sql`${field} LIKE 'medium%'`;
+    if (key === "long") return Prisma.sql`${field} LIKE 'long%'`;
+    if (key === "unlimited") return Prisma.sql`${field} LIKE 'unlimited%'`;
+    return Prisma.sql`COALESCE(s.range, '') GLOB '[0-9]*'`;
+  });
+
+  if (rangeConditions.length > 0) {
+    conditions.push(Prisma.sql`(${Prisma.join(rangeConditions, " OR ")})`);
+  }
+
+  return conditions.length > 0
+    ? Prisma.sql`AND ${Prisma.join(conditions, " AND ")}`
+    : Prisma.empty;
+}
+
 export async function fetchSpellsInOrder<T extends Prisma.SpellSelect>(
   ids: number[],
   select: T,
@@ -176,6 +225,7 @@ export async function queryIdsByName(
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
   componentFilters: SpellComponentFilters,
+  mechanicFilters: SpellMechanicFilters,
   maxCandidates: number,
 ) {
   if (rulebookIds.length === 0) return [];
@@ -191,6 +241,7 @@ export async function queryIdsByName(
           AND LOWER(s.name) LIKE ${like}
           ${rulesTaxonomyWhere(taxonomyFilters)}
           ${rulesComponentWhere(componentFilters)}
+          ${rulesMechanicWhere(mechanicFilters)}
         LIMIT ${maxCandidates}
       `,
   );
@@ -205,6 +256,7 @@ export async function queryByClassAndDomainWithLevel(
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
   componentFilters: SpellComponentFilters,
+  mechanicFilters: SpellMechanicFilters,
   page: number,
   pageSize: number,
 ) {
@@ -237,6 +289,7 @@ export async function queryByClassAndDomainWithLevel(
       WHERE 1 = 1
         ${rulesTaxonomyWhere(taxonomyFilters)}
         ${rulesComponentWhere(componentFilters)}
+        ${rulesMechanicWhere(mechanicFilters)}
     `,
   );
   const total = Number(countRows[0]?.cnt ?? 0);
@@ -262,6 +315,7 @@ export async function queryByClassAndDomainWithLevel(
       WHERE 1 = 1
         ${rulesTaxonomyWhere(taxonomyFilters)}
         ${rulesComponentWhere(componentFilters)}
+        ${rulesMechanicWhere(mechanicFilters)}
       ORDER BY s.name ASC, s.id ASC
       LIMIT ${pageSize} OFFSET ${offset}
     `,
@@ -280,6 +334,7 @@ export async function queryByClassAndDomainAllLevels(
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
   componentFilters: SpellComponentFilters,
+  mechanicFilters: SpellMechanicFilters,
   page: number,
   pageSize: number,
 ) {
@@ -313,6 +368,7 @@ export async function queryByClassAndDomainAllLevels(
       WHERE 1 = 1
         ${rulesTaxonomyWhere(taxonomyFilters)}
         ${rulesComponentWhere(componentFilters)}
+        ${rulesMechanicWhere(mechanicFilters)}
     `,
   );
   const total = Number(countRows[0]?.cnt ?? 0);
@@ -340,6 +396,7 @@ export async function queryByClassAndDomainAllLevels(
       WHERE 1 = 1
         ${rulesTaxonomyWhere(taxonomyFilters)}
         ${rulesComponentWhere(componentFilters)}
+        ${rulesMechanicWhere(mechanicFilters)}
       ORDER BY u.level ASC, s.name ASC, s.id ASC
       LIMIT ${pageSize} OFFSET ${offset}
     `,

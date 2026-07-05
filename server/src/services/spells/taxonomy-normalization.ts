@@ -17,7 +17,7 @@ const SUBSCHOOL_QUERY_ID_EXPANSIONS: Record<number, number[]> = {
 };
 
 const DESCRIPTOR_QUERY_ID_EXPANSIONS: Record<SpellDescriptorBucketKey, number[]> = {
-  other: [22, 23, 35, 37, 38, 39, 40, 43, 44],
+  "see-text": [22, 23, 35, 37, 38, 39, 40, 43, 44],
 };
 
 export const COMBINED_SCHOOL_IDS = new Set(
@@ -28,20 +28,20 @@ export const COMBINED_SUBSCHOOL_IDS = new Set(
   Object.values(SUBSCHOOL_QUERY_ID_EXPANSIONS).flat(),
 );
 
-export const OTHER_DESCRIPTOR_BUCKET: SpellDescriptorBucketKey = "other";
+export const SEE_TEXT_DESCRIPTOR_BUCKET: SpellDescriptorBucketKey = "see-text";
 
 export const OTHER_DESCRIPTOR_LEGACY_IDS = new Set(
-  DESCRIPTOR_QUERY_ID_EXPANSIONS[OTHER_DESCRIPTOR_BUCKET],
+  DESCRIPTOR_QUERY_ID_EXPANSIONS[SEE_TEXT_DESCRIPTOR_BUCKET],
 );
 
 export const OTHER_DESCRIPTOR_VOCABULARY = {
   facetType: "descriptor" as const,
-  key: "other",
-  slug: "other",
-  name: "Other",
-  bucketKey: OTHER_DESCRIPTOR_BUCKET,
+  key: "see-text",
+  slug: "see-text",
+  name: "See text",
+  bucketKey: SEE_TEXT_DESCRIPTOR_BUCKET,
   queryParam: "descriptorBuckets" as const,
-  queryValue: OTHER_DESCRIPTOR_BUCKET,
+  queryValue: SEE_TEXT_DESCRIPTOR_BUCKET,
 };
 
 export function expandSchoolFilterIds(ids: number[]) {
@@ -86,7 +86,7 @@ export function isOtherDescriptorFacet(input: {
   ) {
     return true;
   }
-  return input.key === "other" || input.key?.startsWith("see-text") === true;
+  return input.key === "see-text" || input.key?.startsWith("see-text-") === true;
 }
 
 function expandTaxonomyIds(

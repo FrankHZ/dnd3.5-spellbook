@@ -86,7 +86,7 @@ describe("GET /api/status/db", () => {
       spellContent: 8,
       spellTaxonomyFacet: 17,
       spellComponent: 15,
-      spellMechanicFacet: 0,
+      spellMechanicFacet: 6,
       rulesContentIssue: 1,
     });
   });

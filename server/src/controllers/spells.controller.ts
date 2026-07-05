@@ -13,12 +13,15 @@ import type {
   SpellComponentFilterKey,
   SpellComponentFilters,
   SpellDescriptorBucketKey,
+  SpellMechanicFilters,
   SpellNameSearchResponse,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
 import {
+  SPELL_CASTING_TIME_FILTER_KEYS,
   SPELL_COMPONENT_FILTER_KEYS,
   SPELL_DESCRIPTOR_BUCKET_KEYS,
+  SPELL_RANGE_FILTER_KEYS,
 } from "@dnd/contracts";
 import { getI18nContext, hasCjk } from "#server/utils/i18n";
 import { LevelMode } from "#server/services/spells/spells.service.by-level";
@@ -59,6 +62,29 @@ function parseComponentFilters(query: Request["query"]): SpellComponentFilters {
   return { componentKeys: Array.from(new Set(componentKeys)) };
 }
 
+function parseMechanicFilters(query: Request["query"]): SpellMechanicFilters {
+  const parseKeys = <T extends string>(
+    value: unknown,
+    allowedKeys: readonly T[],
+  ) => {
+    if (value === undefined || value === null) return [];
+    const selected = new Set(
+      String(value)
+        .split(",")
+        .map((item) => item.trim().toLowerCase()),
+    );
+    return allowedKeys.filter((key) => selected.has(key));
+  };
+
+  return {
+    castingTimeKeys: parseKeys(
+      query.castingTimeKeys,
+      SPELL_CASTING_TIME_FILTER_KEYS,
+    ),
+    rangeKeys: parseKeys(query.rangeKeys, SPELL_RANGE_FILTER_KEYS),
+  };
+}
+
 export async function searchSpellsByName(
   req: Request,
   res: Response,
@@ -79,6 +105,7 @@ export async function searchSpellsByName(
     const domainIds = parseCsvNumberList(req.query.domainIds);
     const taxonomyFilters = parseTaxonomyFilterIds(req.query);
     const componentFilters = parseComponentFilters(req.query);
+    const mechanicFilters = parseMechanicFilters(req.query);
     const levelRaw = normalizeString(req.query.level);
     let level: number | "all" | null = null;
     if (levelRaw) {
@@ -114,6 +141,7 @@ export async function searchSpellsByName(
         rulebookIds,
         ...taxonomyFilters,
         ...componentFilters,
+        ...mechanicFilters,
         page,
         pageSize,
         total: 0,
@@ -129,6 +157,7 @@ export async function searchSpellsByName(
       domainIds,
       taxonomyFilters,
       componentFilters,
+      mechanicFilters,
       level,
       page,
       pageSize,
@@ -156,6 +185,7 @@ export async function listSpellsByClassAndDomainLevel(
     const domainIds = parseCsvNumberList(req.query.domainIds);
     const taxonomyFilters = parseTaxonomyFilterIds(req.query);
     const componentFilters = parseComponentFilters(req.query);
+    const mechanicFilters = parseMechanicFilters(req.query);
 
     if (classIds.length === 0 && domainIds.length === 0) {
       next(
@@ -210,6 +240,7 @@ export async function listSpellsByClassAndDomainLevel(
       rulebookIds,
       taxonomyFilters,
       componentFilters,
+      mechanicFilters,
       page,
       pageSize,
       i18n: getI18nContext(req),

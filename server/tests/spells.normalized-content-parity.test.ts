@@ -26,6 +26,10 @@ const emptyTaxonomyFilters = {
 const emptyComponentFilters = {
   componentKeys: [],
 };
+const emptyMechanicFilters = {
+  castingTimeKeys: [],
+  rangeKeys: [],
+};
 
 function legacyComparable<T extends { rulebook?: Record<string, unknown> }>(
   item: T,
@@ -45,6 +49,7 @@ describe("normalized rules content repository parity", () => {
       [4, 6],
       emptyTaxonomyFilters,
       emptyComponentFilters,
+      emptyMechanicFilters,
       100,
     );
     const normalizedIds = await queryNormalizedIdsByName(
@@ -52,6 +57,7 @@ describe("normalized rules content repository parity", () => {
       [4, 6],
       emptyTaxonomyFilters,
       emptyComponentFilters,
+      emptyMechanicFilters,
       100,
     );
 
@@ -79,6 +85,7 @@ describe("normalized rules content repository parity", () => {
       [4],
       emptyTaxonomyFilters,
       emptyComponentFilters,
+      emptyMechanicFilters,
       1,
       20,
     );
@@ -89,6 +96,7 @@ describe("normalized rules content repository parity", () => {
       [4],
       emptyTaxonomyFilters,
       emptyComponentFilters,
+      emptyMechanicFilters,
       1,
       20,
     );
