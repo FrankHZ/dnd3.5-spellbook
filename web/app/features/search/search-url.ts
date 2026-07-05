@@ -37,7 +37,7 @@ export function parseSearchLevel(raw: string | null): LevelParam | null {
   if (raw == null) return null;
   const value = raw.trim();
   if (!value) return null;
-  if (value === "all") return "all";
+  if (value === "all") return null;
 
   const n = Number(value);
   if (!Number.isInteger(n) || n < 0 || n > 9) return null;
@@ -70,7 +70,7 @@ export function buildSearchParams(input: {
   setOrDelete(
     params,
     "level",
-    input.level == null ? null : String(input.level),
+    input.level == null || input.level === "all" ? null : String(input.level),
   );
 
   if (input.page && input.page > 1)

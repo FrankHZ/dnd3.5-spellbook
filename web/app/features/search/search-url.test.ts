@@ -73,7 +73,16 @@ describe("search URL helpers", () => {
         level: "all",
       }),
     ).toBe(
-      "/search?q=fire+ball&classIds=1%2C2&domainIds=8&schoolIds=4&subschoolIds=3&descriptorIds=8%2C9&descriptorBuckets=other&componentKeys=verbal%2Cmaterial&level=all",
+      "/search?q=fire+ball&classIds=1%2C2&domainIds=8&schoolIds=4&subschoolIds=3&descriptorIds=8%2C9&descriptorBuckets=other&componentKeys=verbal%2Cmaterial",
+    );
+  });
+
+  it("normalizes all-level search scope to any level", () => {
+    expect(
+      parseSearchScope(new URLSearchParams("q=fire&level=all")).level,
+    ).toBeNull();
+    expect(String(buildSearchParams({ q: "fire", level: "all" }))).toBe(
+      "q=fire",
     );
   });
 
@@ -93,7 +102,7 @@ describe("search URL helpers", () => {
         "magic missile",
       ),
     ).toBe(
-      "/search?q=magic+missile&classIds=1%2C2&domainIds=8&schoolIds=5&descriptorIds=9&componentKeys=material&level=all",
+      "/search?q=magic+missile&classIds=1%2C2&domainIds=8&schoolIds=5&descriptorIds=9&componentKeys=material",
     );
   });
 

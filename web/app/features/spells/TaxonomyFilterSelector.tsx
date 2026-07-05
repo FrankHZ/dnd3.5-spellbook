@@ -1,10 +1,11 @@
 import type {
+  Rulebook,
   SpellDescriptorBucketKey,
   SpellFilterVocabularyItem,
   SpellTaxonomyVocabularyCategory,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useBootstrap } from "~/bootstrap/useBootstrap";
 import {
@@ -13,11 +14,15 @@ import {
 } from "~/components/MultiSelectPicker";
 import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
+import { useUserPrefs } from "~/state/user-prefs-state";
 import { countTaxonomyFilters } from "./taxonomy-filter-state";
 
 const DESCRIPTOR_BUCKET_PICKER_IDS: Record<SpellDescriptorBucketKey, number> = {
   other: -1,
 };
+
+const TOME_OF_BATTLE_ABBR = "ToB";
+const TOME_OF_BATTLE_SLUG = "tome-of-battle-the-book-of-nine-swords";
 
 function toPickerItem(
   item: SpellFilterVocabularyItem & { id: number },
@@ -66,6 +71,31 @@ function taxonomyGroupKey(category: SpellTaxonomyVocabularyCategory) {
   }
 }
 
+export function isManeuverTaxonomyItem(item: SpellFilterVocabularyItem) {
+  return (
+    item.sourceKind === "maneuver" || item.category.startsWith("maneuver_")
+  );
+}
+
+export function isTomeOfBattleRulebook(rulebook: Rulebook) {
+  return (
+    rulebook.slug === TOME_OF_BATTLE_SLUG ||
+    rulebook.abbr === TOME_OF_BATTLE_ABBR ||
+    rulebook.displayAbbr === TOME_OF_BATTLE_ABBR
+  );
+}
+
+export function selectedRulebooksIncludeTomeOfBattle(
+  rulebooks: Rulebook[],
+  selectedRulebookIds: number[],
+) {
+  if (selectedRulebookIds.length === 0) return false;
+  const selected = new Set(selectedRulebookIds);
+  return rulebooks.some(
+    (rulebook) => selected.has(rulebook.id) && isTomeOfBattleRulebook(rulebook),
+  );
+}
+
 function splitDescriptorPickerIds(ids: number[]) {
   const descriptorIds = ids.filter((id) => id > 0);
   const descriptorBuckets = ids
@@ -94,6 +124,7 @@ export function TaxonomyFilterSelector({
 }) {
   const { t } = useTranslation("spell-filters");
   const { lang, name, nameWithEn } = useAppI18n();
+  const { state } = useUserPrefs();
   const displayPrefs = useDisplayPrefs();
   const displayName =
     lang === "zh" && displayPrefs.zhDisplay.filterFacetLabelsWithEnglish
@@ -101,17 +132,82 @@ export function TaxonomyFilterSelector({
       : name;
   const boot = useBootstrap();
   const taxonomy = boot.spellFilterVocabulary.data?.taxonomy;
+  const rulebooks = boot.rulebooks.data?.items ?? [];
+  const rulebookScopeReady =
+    state.selectedRulebookIds.length === 0 || rulebooks.length > 0;
+  const showManeuverTaxonomy = selectedRulebooksIncludeTomeOfBattle(
+    rulebooks,
+    state.selectedRulebookIds,
+  );
+  const hideManeuverTaxonomy = rulebookScopeReady && !showManeuverTaxonomy;
   const activeCount = countTaxonomyFilters(value);
   const [open, setOpen] = useState(activeCount > 0);
   const groupLabel = (item: SpellFilterVocabularyItem) =>
     t(taxonomyGroupKey(item.category));
 
+  const visibleSchools = useMemo(
+    () =>
+      (taxonomy?.schools ?? []).filter(
+        (item) => !hideManeuverTaxonomy || !isManeuverTaxonomyItem(item),
+      ),
+    [hideManeuverTaxonomy, taxonomy?.schools],
+  );
+  const visibleSubschools = useMemo(
+    () =>
+      (taxonomy?.subschools ?? []).filter(
+        (item) => !hideManeuverTaxonomy || !isManeuverTaxonomyItem(item),
+      ),
+    [hideManeuverTaxonomy, taxonomy?.subschools],
+  );
+  const visibleSchoolIds = useMemo(
+    () =>
+      new Set(visibleSchools.filter(hasVocabularyId).map((item) => item.id)),
+    [visibleSchools],
+  );
+  const visibleSubschoolIds = useMemo(
+    () =>
+      new Set(visibleSubschools.filter(hasVocabularyId).map((item) => item.id)),
+    [visibleSubschools],
+  );
+
+  useEffect(() => {
+    if (!taxonomy || !rulebookScopeReady) return;
+    const nextSchoolIds = value.schoolIds.filter((id) =>
+      visibleSchoolIds.has(id),
+    );
+    if (nextSchoolIds.length !== value.schoolIds.length) {
+      onChangeSchools(nextSchoolIds);
+    }
+  }, [
+    onChangeSchools,
+    rulebookScopeReady,
+    taxonomy,
+    value.schoolIds,
+    visibleSchoolIds,
+  ]);
+
+  useEffect(() => {
+    if (!taxonomy || !rulebookScopeReady) return;
+    const nextSubschoolIds = value.subschoolIds.filter((id) =>
+      visibleSubschoolIds.has(id),
+    );
+    if (nextSubschoolIds.length !== value.subschoolIds.length) {
+      onChangeSubschools(nextSubschoolIds);
+    }
+  }, [
+    onChangeSubschools,
+    rulebookScopeReady,
+    taxonomy,
+    value.subschoolIds,
+    visibleSubschoolIds,
+  ]);
+
   const schoolItems =
-    taxonomy?.schools
+    visibleSchools
       .filter(hasVocabularyId)
       .map((item) => toPickerItem(item, displayName, groupLabel(item))) ?? [];
   const subschoolItems =
-    taxonomy?.subschools
+    visibleSubschools
       .filter(hasVocabularyId)
       .map((item) => toPickerItem(item, displayName, groupLabel(item))) ?? [];
   const descriptorItems: PickerItem[] = (taxonomy?.descriptors ?? []).flatMap(

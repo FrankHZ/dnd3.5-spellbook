@@ -164,6 +164,7 @@ export default function SearchSpellsPage() {
               value={searchScope.level}
               onChange={(level) => updateSearchScope({ level })}
               allowAnyLevel
+              showAllLevels={false}
             />
 
             <Separator />

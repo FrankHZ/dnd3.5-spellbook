@@ -73,7 +73,8 @@ Current behavior:
 - English and other non-CJK queries require at least two characters
 - CJK queries may search from one character
 - rulebook filtering is supported
-- URL filters can constrain search by class, domain, and level
+- URL filters can constrain search by class, domain, and a specific numeric
+  level; omitted level means any level in Search
 - URL filters can also constrain search by normalized `schoolIds`,
   `subschoolIds`, and `descriptorIds` using the same comma-separated id-list
   convention
@@ -153,6 +154,8 @@ Current behavior:
 - taxonomy filter vocabulary includes `sourceKind` and `category` metadata so
   Tome of Battle disciplines and maneuver categories can be grouped separately
   from ordinary spell schools/subschools
+- Tome of Battle discipline/category options are hidden from school/subschool
+  filter controls unless the selected rulebook scope includes that rulebook
 - combined legacy school/subschool labels are split into their base taxonomy
   filters rather than shown as separate combined options
 - normalized base component filter vocabulary is exposed by
