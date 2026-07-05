@@ -222,6 +222,22 @@ function rulesMechanicWhere(filters: SpellMechanicFilters) {
     conditions.push(Prisma.sql`(${Prisma.join(durationConditions, " OR ")})`);
   }
 
+  const savingThrowConditions = filters.savingThrowKeys.map((key) => {
+    const field = Prisma.sql`LOWER(COALESCE(s.saving_throw, ''))`;
+    if (key === "none") {
+      return Prisma.sql`(${field} = '' OR ${field} = 'none' OR ${field} LIKE 'no %')`;
+    }
+    if (key === "fortitude") return Prisma.sql`${field} LIKE '%fortitude%'`;
+    if (key === "reflex") return Prisma.sql`${field} LIKE '%reflex%'`;
+    return Prisma.sql`${field} LIKE '%will%'`;
+  });
+
+  if (savingThrowConditions.length > 0) {
+    conditions.push(
+      Prisma.sql`(${Prisma.join(savingThrowConditions, " OR ")})`,
+    );
+  }
+
   return conditions.length > 0
     ? Prisma.sql`AND ${Prisma.join(conditions, " AND ")}`
     : Prisma.empty;

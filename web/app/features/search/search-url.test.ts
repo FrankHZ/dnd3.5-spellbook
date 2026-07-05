@@ -27,6 +27,7 @@ describe("search URL helpers", () => {
         castingTimeKeys: [],
         rangeKeys: [],
         durationKeys: [],
+        savingThrowKeys: [],
       },
       level: 3,
       page: 4,
@@ -49,6 +50,7 @@ describe("search URL helpers", () => {
       castingTimeKeys: [],
       rangeKeys: [],
       durationKeys: [],
+      savingThrowKeys: [],
     });
   });
 
@@ -65,7 +67,7 @@ describe("search URL helpers", () => {
   it("parses mechanic filters from query params", () => {
     const scope = parseSearchScope(
       new URLSearchParams(
-        "q=fire&castingTimeKeys=minute,bad,standard_action&rangeKeys=fixed,close&durationKeys=timed,unknown,instantaneous&page=2",
+        "q=fire&castingTimeKeys=minute,bad,standard_action&rangeKeys=fixed,close&durationKeys=timed,unknown,instantaneous&savingThrowKeys=will,bad,none&page=2",
       ),
     );
 
@@ -75,6 +77,7 @@ describe("search URL helpers", () => {
     ]);
     expect(scope.filters.rangeKeys).toEqual(["close", "fixed"]);
     expect(scope.filters.durationKeys).toEqual(["instantaneous", "timed"]);
+    expect(scope.filters.savingThrowKeys).toEqual(["none", "will"]);
   });
 
   it("builds clean and scoped search URLs", () => {
@@ -93,11 +96,12 @@ describe("search URL helpers", () => {
           castingTimeKeys: ["standard_action", "minute"],
           rangeKeys: ["close"],
           durationKeys: ["instantaneous"],
+          savingThrowKeys: ["none"],
         },
         level: "all",
       }),
     ).toBe(
-      "/search?q=fire+ball&classIds=1%2C2&domainIds=8&schoolIds=4&subschoolIds=3&descriptorIds=8%2C9&descriptorBuckets=see-text&componentKeys=verbal%2Cmaterial&castingTimeKeys=standard_action%2Cminute&rangeKeys=close&durationKeys=instantaneous",
+      "/search?q=fire+ball&classIds=1%2C2&domainIds=8&schoolIds=4&subschoolIds=3&descriptorIds=8%2C9&descriptorBuckets=see-text&componentKeys=verbal%2Cmaterial&castingTimeKeys=standard_action%2Cminute&rangeKeys=close&durationKeys=instantaneous&savingThrowKeys=none",
     );
   });
 
@@ -144,6 +148,7 @@ describe("search URL helpers", () => {
           castingTimeKeys: [],
           rangeKeys: [],
           durationKeys: [],
+          savingThrowKeys: [],
         },
         level: null,
       }),
@@ -164,6 +169,7 @@ describe("search URL helpers", () => {
           castingTimeKeys: [],
           rangeKeys: [],
           durationKeys: [],
+          savingThrowKeys: [],
         },
         level: null,
       }),
@@ -184,6 +190,7 @@ describe("search URL helpers", () => {
           castingTimeKeys: ["standard_action"],
           rangeKeys: [],
           durationKeys: [],
+          savingThrowKeys: [],
         },
         level: null,
       }),

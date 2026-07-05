@@ -51,8 +51,8 @@ URL state the server cannot support.
 
 - Do not invent frontend-only mechanics buckets.
 - Do not parse legacy mechanics strings in the browser.
-- Do not promote `target` / `effect` / `area`, `savingThrow`, or
-  `spellResistance` controls unless the backend contract accepts them.
+- Do not promote `target` / `effect` / `area` or `spellResistance` controls
+  unless the backend contract accepts them.
 - Do not make this a broad visual redesign or new settings system.
 - Do not change backend query semantics in this plan.
 
@@ -65,8 +65,9 @@ URL state the server cannot support.
 - Taxonomy controls group source/category metadata from the server instead of
   parsing frontend strings.
 - v3.9 backend work promotes `castingTimeKeys`, `rangeKeys`, and
-  `durationKeys`; exact public bucket keys, labels, and fallback semantics come
-  from the contract plan and `GET /api/meta/filters`.
+  `durationKeys`, plus `savingThrowKeys`; exact public bucket keys, labels,
+  and fallback semantics come from the contract plan and
+  `GET /api/meta/filters`.
 - Existing frontend helper tests cover URL/query normalization and API helper
   behavior for normalized filters.
 - New user-facing labels must go through the existing i18n workflow.

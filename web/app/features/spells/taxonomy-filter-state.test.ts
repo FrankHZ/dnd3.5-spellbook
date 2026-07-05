@@ -127,6 +127,7 @@ describe("taxonomy filter state helpers", () => {
       castingTimeKeys: [],
       rangeKeys: [],
       durationKeys: [],
+      savingThrowKeys: [],
     });
   });
 
@@ -150,6 +151,7 @@ describe("taxonomy filter state helpers", () => {
       castingTimeKeys: ["standard_action", "minute"],
       rangeKeys: ["close", "fixed"],
       durationKeys: [],
+      savingThrowKeys: [],
     });
 
     expect(
@@ -157,11 +159,13 @@ describe("taxonomy filter state helpers", () => {
         castingTimeKeys: ["hour", "swift_action", "bad" as any],
         rangeKeys: ["unlimited", "touch", "touch"],
         durationKeys: ["timed", "instantaneous", "bad" as any],
+        savingThrowKeys: ["will", "none", "bad" as any],
       }),
     ).toEqual({
       castingTimeKeys: ["swift_action", "hour"],
       rangeKeys: ["touch", "unlimited"],
       durationKeys: ["instantaneous", "timed"],
+      savingThrowKeys: ["none", "will"],
     });
   });
 
@@ -172,16 +176,18 @@ describe("taxonomy filter state helpers", () => {
       castingTimeKeys: ["standard_action", "minute"],
       rangeKeys: ["close"],
       durationKeys: ["instantaneous"],
+      savingThrowKeys: ["none"],
     });
 
     expect(String(params)).toBe(
-      "castingTimeKeys=standard_action%2Cminute&page=4&rangeKeys=close&durationKeys=instantaneous",
+      "castingTimeKeys=standard_action%2Cminute&page=4&rangeKeys=close&durationKeys=instantaneous&savingThrowKeys=none",
     );
 
     setMechanicFilterParams(params, {
       castingTimeKeys: [],
       rangeKeys: [],
       durationKeys: [],
+      savingThrowKeys: [],
     });
 
     expect(String(params)).toBe("page=4");
@@ -192,9 +198,10 @@ describe("taxonomy filter state helpers", () => {
       castingTimeKeys: ["standard_action" as const],
       rangeKeys: ["close" as const, "medium" as const],
       durationKeys: ["timed" as const],
+      savingThrowKeys: ["none" as const],
     };
 
     expect(hasMechanicFilters(filters)).toBe(true);
-    expect(countMechanicFilters(filters)).toBe(4);
+    expect(countMechanicFilters(filters)).toBe(5);
   });
 });

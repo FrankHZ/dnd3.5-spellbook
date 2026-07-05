@@ -23,6 +23,7 @@ import {
   SPELL_DESCRIPTOR_BUCKET_KEYS,
   SPELL_DURATION_FILTER_KEYS,
   SPELL_RANGE_FILTER_KEYS,
+  SPELL_SAVING_THROW_FILTER_KEYS,
 } from "@dnd/contracts";
 import { getI18nContext, hasCjk } from "#server/utils/i18n";
 import { LevelMode } from "#server/services/spells/spells.service.by-level";
@@ -84,6 +85,10 @@ function parseMechanicFilters(query: Request["query"]): SpellMechanicFilters {
     ),
     rangeKeys: parseKeys(query.rangeKeys, SPELL_RANGE_FILTER_KEYS),
     durationKeys: parseKeys(query.durationKeys, SPELL_DURATION_FILTER_KEYS),
+    savingThrowKeys: parseKeys(
+      query.savingThrowKeys,
+      SPELL_SAVING_THROW_FILTER_KEYS,
+    ),
   };
 }
 

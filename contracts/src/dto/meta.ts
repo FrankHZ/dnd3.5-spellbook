@@ -4,6 +4,7 @@ import type {
   SpellDescriptorBucketKey,
   SpellDurationFilterKey,
   SpellRangeFilterKey,
+  SpellSavingThrowFilterKey,
 } from "./spell.js";
 
 export type MetaI18nResponse = {
@@ -69,6 +70,11 @@ export type SpellMechanicFilterVocabularyItem =
       key: SpellDurationFilterKey;
       label: string;
       sortOrder: number;
+    }
+  | {
+      key: SpellSavingThrowFilterKey;
+      label: string;
+      sortOrder: number;
     };
 
 export type SpellFilterVocabularyResponse = {
@@ -96,6 +102,11 @@ export type SpellFilterVocabularyResponse = {
     };
     durations: {
       queryParam: "durationKeys";
+      mode: "any";
+      buckets: SpellMechanicFilterVocabularyItem[];
+    };
+    savingThrows: {
+      queryParam: "savingThrowKeys";
       mode: "any";
       buckets: SpellMechanicFilterVocabularyItem[];
     };

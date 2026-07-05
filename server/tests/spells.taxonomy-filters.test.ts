@@ -127,6 +127,16 @@ describe("spell taxonomy filter contracts", () => {
         { key: "permanent", label: "Permanent", sortOrder: 40 },
       ]),
     });
+    expect(body.mechanics.savingThrows).toEqual({
+      queryParam: "savingThrowKeys",
+      mode: "any",
+      buckets: expect.arrayContaining([
+        { key: "none", label: "No save", sortOrder: 10 },
+        { key: "fortitude", label: "Fortitude", sortOrder: 20 },
+        { key: "reflex", label: "Reflex", sortOrder: 30 },
+        { key: "will", label: "Will", sortOrder: 40 },
+      ]),
+    });
   });
 
   it("filters name search by descriptor ids and echoes taxonomy scope", async () => {
@@ -231,6 +241,7 @@ describe("spell taxonomy filter contracts", () => {
         castingTimeKeys: "minute,standard_action,unknown",
         rangeKeys: "medium",
         durationKeys: "timed,instantaneous,unknown",
+        savingThrowKeys: "will,none,unknown",
       });
 
     expect(res.status).toBe(200);
@@ -239,6 +250,7 @@ describe("spell taxonomy filter contracts", () => {
     expect(body.castingTimeKeys).toEqual(["standard_action", "minute"]);
     expect(body.rangeKeys).toEqual(["medium"]);
     expect(body.durationKeys).toEqual(["instantaneous", "timed"]);
+    expect(body.savingThrowKeys).toEqual(["none", "will"]);
     expect(body.items.map((item) => item.id)).toEqual([100]);
   });
 
@@ -319,6 +331,7 @@ describe("spell taxonomy filter contracts", () => {
         castingTimeKeys: "standard_action",
         rangeKeys: "medium",
         durationKeys: "instantaneous",
+        savingThrowKeys: "none",
       });
 
     expect(mechanics.status).toBe(200);
@@ -373,6 +386,7 @@ describe("spell taxonomy filter contracts", () => {
         castingTimeKeys: "standard_action",
         rangeKeys: "medium",
         durationKeys: "instantaneous",
+        savingThrowKeys: "none",
       });
 
     expect(res.status).toBe(200);
@@ -381,6 +395,7 @@ describe("spell taxonomy filter contracts", () => {
     expect(body.castingTimeKeys).toEqual(["standard_action"]);
     expect(body.rangeKeys).toEqual(["medium"]);
     expect(body.durationKeys).toEqual(["instantaneous"]);
+    expect(body.savingThrowKeys).toEqual(["none"]);
     expect(body.items.map((item) => item.id)).toEqual([100]);
   });
 });

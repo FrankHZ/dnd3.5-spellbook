@@ -10,6 +10,7 @@ import {
   CASTING_TIME_FILTER_VOCABULARY,
   DURATION_FILTER_VOCABULARY,
   RANGE_FILTER_VOCABULARY,
+  SAVING_THROW_FILTER_VOCABULARY,
 } from "#server/services/spells/mechanics-normalization";
 import {
   queryMetaI18nOverlays,
@@ -252,6 +253,11 @@ async function loadFilterVocabulary(
         queryParam: "durationKeys",
         mode: "any",
         buckets: DURATION_FILTER_VOCABULARY,
+      },
+      savingThrows: {
+        queryParam: "savingThrowKeys",
+        mode: "any",
+        buckets: SAVING_THROW_FILTER_VOCABULARY,
       },
     },
   };

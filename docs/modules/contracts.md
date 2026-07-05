@@ -67,10 +67,11 @@ and metadata vocabulary lives in `contracts/src/dto/meta.ts`.
   `components.base`, including the query parameter name and `all` selection
   mode.
 - Accepted mechanics filters use stable string keys through `castingTimeKeys`,
-  `rangeKeys`, and `durationKeys`.
+  `rangeKeys`, `durationKeys`, and `savingThrowKeys`.
 - `GET /api/meta/filters` exposes mechanics vocabulary under
-  `mechanics.castingTimes`, `mechanics.ranges`, and `mechanics.durations`,
-  including query parameter names and `any` selection mode within each family.
+  `mechanics.castingTimes`, `mechanics.ranges`, `mechanics.durations`, and
+  `mechanics.savingThrows`, including query parameter names and `any`
+  selection mode within each family.
 
 Do not add frontend-only filter vocabulary outside this package and the server
 metadata endpoint.
