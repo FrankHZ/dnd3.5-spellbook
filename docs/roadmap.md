@@ -8,12 +8,18 @@ details.
 
 ## Current Track
 
-v3.8 is frozen. The latest release snapshot is
-`docs/mvp/v3.8/FREEZE.md`.
+v3.9 is the active version plan:
 
-No version planning branch is currently canonical. Open the next version plan
-from this roadmap and `docs/stable-backlog.md`; do not add new active scope to
-the frozen v3.8 folder.
+- `docs/mvp/v3.9/README.md`
+- `docs/mvp/v3.9/normalized-mechanics-contract-plan.md`
+- `docs/mvp/v3.9/frontend-normalized-mechanics-consumer-plan.md`
+
+The latest frozen release snapshot remains `docs/mvp/v3.8/FREEZE.md`.
+
+v3.9 should finish normalized mechanics/query fullstack completion instead of
+reopening v3.8 polish. The primary track is to promote accepted normalized
+mechanics from data-tools review through shared contracts, server API/meta
+filters, and frontend Browse/Search controls.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
@@ -251,15 +257,28 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Open the next version plan from stable candidates**
+1. **Run the v3.9 normalized mechanics contract track**
 
-   Start from `docs/stable-backlog.md` and the latest v3.8 freeze. Candidate
-   areas include broader filter UX/design, additional normalized mechanics
-   filters, content artifact/versioned DB release work, static/offline
-   artifacts, and large translation/proofreading QA. Keep the next version
-   focused rather than reopening v3.8.
+   Start from
+   `docs/mvp/v3.9/normalized-mechanics-contract-plan.md`. Begin with the
+   mechanics readiness and bucket contract for `casting_time` and `range`,
+   because the current review report marks them as needing normalization but
+   plausible. Close or explicitly classify the six
+   `components.other_or_extra` review rows before broad mechanics expansion.
 
-2. **Triage the non-blocking maintenance tail as needed**
+   Keep `duration`, `savingThrow`, and `spellResistance` pending explicit
+   consumer semantics. Keep `target` / `effect` / `area` deferred unless a
+   later focused plan narrows them.
+
+2. **Follow with the v3.9 frontend mechanics consumer**
+
+   Use
+   `docs/mvp/v3.9/frontend-normalized-mechanics-consumer-plan.md` after the
+   backend contract exposes stable vocabulary and fallback behavior. Browse and
+   Search should consume server-provided mechanics filters through URL/API
+   helpers, active scope summaries, and desktop/mobile sidebar controls.
+
+3. **Triage the non-blocking maintenance tail as needed**
 
    `npm audit --workspaces --omit=dev --json` still reports the reviewed Prisma
    dev-chain / Hono moderate advisories. Treat them as explicit maintenance

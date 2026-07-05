@@ -24,13 +24,16 @@ excluded from the public repository, especially runtime databases under
 
 ## Status
 
-The latest frozen stage snapshot is **v3.8**.
+The active version plan is **v3.9**. The latest frozen stage snapshot is
+**v3.8**.
 
 Start here:
 
 - [docs/README.md](./docs/README.md): documentation map and precedence rules.
 - [docs/roadmap.md](./docs/roadmap.md): current work order.
 - [docs/features.md](./docs/features.md): current feature map.
+- [docs/mvp/v3.9/README.md](./docs/mvp/v3.9/README.md): active normalized
+  mechanics/query fullstack completion plan.
 - [docs/mvp/v3.8/FREEZE.md](./docs/mvp/v3.8/FREEZE.md): latest frozen
   release snapshot.
 - [docs/mvp/v3.8/README.md](./docs/mvp/v3.8/README.md): frozen normalized
