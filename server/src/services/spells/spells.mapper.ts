@@ -1,5 +1,6 @@
 import type {
   SpellDescriptorBucketKey,
+  SpellMechanicDetailMetadata,
   SpellItemView,
   SpellDetailView,
   I18nSpellOverlay,
@@ -29,6 +30,10 @@ type SpellDetailI18nRow = ContentPrisma.I18nSpellTextGetPayload<{
 type SpellSummaryI18nRow = ContentPrisma.I18nSpellSummaryTextGetPayload<{
   select: typeof SELECT_SPELL_I18N_SUMMARY;
 }>;
+
+type SpellMechanicDetailSource = {
+  mechanicDetailMetadata?: SpellMechanicDetailMetadata | undefined;
+};
 
 function mapSummary(summary: SpellSummaryI18nRow | null) {
   if (!summary) return undefined;
@@ -64,7 +69,8 @@ function optionalStringField(value: unknown): string | undefined {
 }
 
 export function mapSpellItem(
-  spell: RulesPrisma.SpellGetPayload<{ select: typeof SELECT_SPELL_LIST }>,
+  spell: RulesPrisma.SpellGetPayload<{ select: typeof SELECT_SPELL_LIST }> &
+    SpellMechanicDetailSource,
   spellI18n: SpellNameI18nRow | null,
   summaryI18n: SpellSummaryI18nRow | null = null,
 ): SpellItemView {
@@ -158,6 +164,9 @@ export function mapSpellItem(
       duration: spell.duration ?? null,
       savingThrow: spell.saving_throw ?? null,
       spellResistance: spell.spell_resistance ?? null,
+      ...(spell.mechanicDetailMetadata
+        ? { mechanics: spell.mechanicDetailMetadata }
+        : {}),
     },
     corrupt: {
       level: spell.corrupt_level ?? null,
@@ -167,7 +176,8 @@ export function mapSpellItem(
 }
 
 export function mapSpellDetail(
-  spell: RulesPrisma.SpellGetPayload<{ select: typeof SELECT_SPELL_DETAIL }>,
+  spell: RulesPrisma.SpellGetPayload<{ select: typeof SELECT_SPELL_DETAIL }> &
+    SpellMechanicDetailSource,
   spellDetailI18n: SpellDetailI18nRow | null,
   summaryI18n: SpellSummaryI18nRow | null = null,
 ): SpellDetailView {

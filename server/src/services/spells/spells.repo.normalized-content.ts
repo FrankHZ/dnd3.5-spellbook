@@ -1,7 +1,8 @@
-import {
+import type {
   RulebookId,
   SpellComponentFilters,
   SpellMechanicFilters,
+  SpellMechanicDetailMetadata,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
 import { contentPrisma } from "#server/lib/content-prisma-client";
@@ -20,7 +21,12 @@ type LegacyShapedSpell = SpellRow & {
   verified: boolean;
   verified_author_id: number | null;
   verified_time: Date | null;
+  mechanicDetailMetadata?: SpellMechanicDetailMetadata | undefined;
 };
+
+type MechanicFacetRow = Prisma.SpellMechanicFacetGetPayload<
+  Record<string, never>
+>;
 
 function normalizedTaxonomyWhere(filters: SpellTaxonomyFilterIds) {
   const conditions: Prisma.Sql[] = [];
@@ -177,7 +183,9 @@ export async function fetchNormalizedSpellsInOrder(ids: number[]) {
 }
 
 export async function queryNormalizedSpellDetail(id: number) {
-  const rows = await hydrateNormalizedSpells([id]);
+  const rows = await hydrateNormalizedSpells([id], {
+    includeMechanicDetails: true,
+  });
   return rows[0] ?? null;
 }
 
@@ -357,7 +365,10 @@ export async function queryNormalizedByClassAndDomainAllLevels(
   };
 }
 
-async function hydrateNormalizedSpells(ids: number[]) {
+async function hydrateNormalizedSpells(
+  ids: number[],
+  options: { includeMechanicDetails?: boolean } = {},
+) {
   if (ids.length === 0) return [];
 
   const spells = await contentPrisma.spellContent.findMany({
@@ -368,22 +379,39 @@ async function hydrateNormalizedSpells(ids: number[]) {
     new Set(spells.map((spell) => spell.sourceRulebookId)),
   );
 
-  const [rulebooks, facets, listEntries, components] = await Promise.all([
-    contentPrisma.rulebookContent.findMany({
-      where: { legacyRulebookId: { in: rulebookIds } },
-    }),
-    contentPrisma.spellTaxonomyFacet.findMany({
-      where: { spellId: { in: spellIds } },
-      orderBy: [{ spellId: "asc" }, { facetType: "asc" }, { sortOrder: "asc" }],
-    }),
-    contentPrisma.spellListEntry.findMany({
-      where: { spellId: { in: spellIds } },
-      orderBy: [{ spellId: "asc" }, { listType: "asc" }, { level: "asc" }],
-    }),
-    contentPrisma.spellComponent.findMany({
-      where: { spellId: { in: spellIds } },
-    }),
-  ]);
+  const [rulebooks, facets, listEntries, components, mechanicFacets] =
+    await Promise.all([
+      contentPrisma.rulebookContent.findMany({
+        where: { legacyRulebookId: { in: rulebookIds } },
+      }),
+      contentPrisma.spellTaxonomyFacet.findMany({
+        where: { spellId: { in: spellIds } },
+        orderBy: [
+          { spellId: "asc" },
+          { facetType: "asc" },
+          { sortOrder: "asc" },
+        ],
+      }),
+      contentPrisma.spellListEntry.findMany({
+        where: { spellId: { in: spellIds } },
+        orderBy: [{ spellId: "asc" }, { listType: "asc" }, { level: "asc" }],
+      }),
+      contentPrisma.spellComponent.findMany({
+        where: { spellId: { in: spellIds } },
+      }),
+      options.includeMechanicDetails
+        ? contentPrisma.spellMechanicFacet.findMany({
+            where: {
+              spellId: { in: spellIds },
+              reviewStatus: "accepted",
+              mechanicType: {
+                in: ["duration", "saving_throw", "spell_resistance"],
+              },
+            },
+            orderBy: [{ spellId: "asc" }, { mechanicType: "asc" }],
+          })
+        : Promise.resolve([]),
+    ]);
 
   const rulebookById = new Map(
     rulebooks.map((rulebook) => [rulebook.legacyRulebookId, rulebook]),
@@ -391,6 +419,10 @@ async function hydrateNormalizedSpells(ids: number[]) {
   const facetsBySpell = groupBy(facets, (facet) => facet.spellId);
   const listEntriesBySpell = groupBy(listEntries, (entry) => entry.spellId);
   const componentsBySpell = groupBy(components, (component) => component.spellId);
+  const mechanicFacetsBySpell = groupBy(
+    mechanicFacets,
+    (facet) => facet.spellId,
+  );
   const spellByLegacyId = new Map(
     spells.map((spell) => [
       spell.legacySpellId,
@@ -400,6 +432,7 @@ async function hydrateNormalizedSpells(ids: number[]) {
         facetsBySpell.get(spell.id) ?? [],
         listEntriesBySpell.get(spell.id) ?? [],
         componentsBySpell.get(spell.id) ?? [],
+        mechanicFacetsBySpell.get(spell.id) ?? [],
       ),
     ]),
   );
@@ -415,6 +448,7 @@ function toLegacyShapedSpell(
   facets: any[],
   listEntries: any[],
   components: any[],
+  mechanicFacets: MechanicFacetRow[],
 ): LegacyShapedSpell {
   if (!rulebook) {
     throw new Error(`Missing RulebookContent for spell ${spell.legacySpellId}`);
@@ -424,6 +458,7 @@ function toLegacyShapedSpell(
   const subschool =
     facets.find((facet) => facet.facetType === "subschool") ?? null;
   const descriptors = facets.filter((facet) => facet.facetType === "descriptor");
+  const mechanicDetailMetadata = buildMechanicDetailMetadata(mechanicFacets);
 
   const componentPresent = (type: string) =>
     Boolean(
@@ -517,7 +552,67 @@ function toLegacyShapedSpell(
     verified: Boolean(spell.verified),
     verified_author_id: spell.verifiedAuthorId ?? null,
     verified_time: spell.verifiedTime ? toDate(spell.verifiedTime) : null,
+    ...(mechanicDetailMetadata ? { mechanicDetailMetadata } : {}),
   } as LegacyShapedSpell;
+}
+
+function buildMechanicDetailMetadata(
+  facets: MechanicFacetRow[],
+): SpellMechanicDetailMetadata | undefined {
+  const metadata: SpellMechanicDetailMetadata = {};
+
+  for (const facet of facets) {
+    if (facet.reviewStatus !== "accepted") continue;
+
+    const flags = parseFlagsJson(facet.flagsJson);
+    if (facet.mechanicType === "duration") {
+      const duration = pickTrueFlags(flags, ["dismissible", "discharge"]);
+      if (hasKeys(duration)) metadata.duration = duration;
+    } else if (facet.mechanicType === "saving_throw") {
+      const savingThrow = pickTrueFlags(flags, [
+        "partial",
+        "negates",
+        "harmless",
+        "object",
+      ]);
+      if (hasKeys(savingThrow)) metadata.savingThrow = savingThrow;
+    } else if (facet.mechanicType === "spell_resistance") {
+      const spellResistance = pickTrueFlags(flags, ["harmless", "object"]);
+      if (hasKeys(spellResistance)) {
+        metadata.spellResistance = spellResistance;
+      }
+    }
+  }
+
+  return hasKeys(metadata) ? metadata : undefined;
+}
+
+function parseFlagsJson(value: string | null): Record<string, unknown> {
+  if (!value) return {};
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return parsed as Record<string, unknown>;
+    }
+  } catch {
+    return {};
+  }
+  return {};
+}
+
+function pickTrueFlags<const T extends string>(
+  flags: Record<string, unknown>,
+  keys: readonly T[],
+): Partial<Record<T, boolean>> {
+  const picked: Partial<Record<T, boolean>> = {};
+  for (const key of keys) {
+    if (flags[key] === true) picked[key] = true;
+  }
+  return picked;
+}
+
+function hasKeys(value: object) {
+  return Object.keys(value).length > 0;
 }
 
 function toDate(value: Date | string) {

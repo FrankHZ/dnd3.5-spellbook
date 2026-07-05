@@ -2,6 +2,16 @@ import request from "supertest";
 import { app } from "#server/app";
 
 describe("GET /api/spells/:id", () => {
+  const previousSource = process.env.SPELL_READ_SOURCE;
+
+  afterEach(() => {
+    if (previousSource === undefined) {
+      delete process.env.SPELL_READ_SOURCE;
+    } else {
+      process.env.SPELL_READ_SOURCE = previousSource;
+    }
+  });
+
   it("returns spell detail", async () => {
     const res = await request(app).get("/api/spells/1");
     expect(res.status).toBe(200);
@@ -17,6 +27,50 @@ describe("GET /api/spells/:id", () => {
       variant: "imarvin",
       shortDescription: "Calls extraplanar creature to fight for you.",
     });
+  });
+
+  it("returns accepted normalized mechanics metadata from content detail", async () => {
+    delete process.env.SPELL_READ_SOURCE;
+
+    const magicMissile = await request(app).get("/api/spells/101");
+
+    expect(magicMissile.status).toBe(200);
+    expect(magicMissile.body.casting).toMatchObject({
+      duration: "1 round/level (D)",
+      savingThrow: "Will negates (harmless)",
+      spellResistance: "No",
+      mechanics: {
+        duration: { dismissible: true },
+        savingThrow: { negates: true, harmless: true },
+      },
+    });
+    expect(magicMissile.body.casting.mechanics.spellResistance).toBeUndefined();
+
+    const fireball = await request(app).get("/api/spells/100");
+
+    expect(fireball.status).toBe(200);
+    expect(fireball.body.casting).toMatchObject({
+      spellResistance: "Yes (harmless)",
+      mechanics: {
+        spellResistance: { harmless: true },
+      },
+    });
+    expect(fireball.body.casting.mechanics.duration).toBeUndefined();
+    expect(fireball.body.casting.mechanics.savingThrow).toBeUndefined();
+  });
+
+  it("does not infer normalized mechanics metadata from legacy rules detail", async () => {
+    process.env.SPELL_READ_SOURCE = "rules";
+
+    const res = await request(app).get("/api/spells/101");
+
+    expect(res.status).toBe(200);
+    expect(res.body.casting).toMatchObject({
+      duration: "1 round/level (D)",
+      savingThrow: "Will negates (harmless)",
+      spellResistance: "No",
+    });
+    expect(res.body.casting.mechanics).toBeUndefined();
   });
 
   it("returns 404 for invalid id", async () => {
