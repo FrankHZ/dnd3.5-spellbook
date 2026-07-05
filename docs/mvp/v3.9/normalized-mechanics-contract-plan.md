@@ -127,6 +127,40 @@ Fallback behavior:
   dismissible or discharge, and saving throw flags such as partial, negates,
   harmless, or object, remain detail metadata, not public filters.
 
+## Detail Metadata Audit
+
+Local audit source: `server/db/local/content.sqlite`,
+`SpellMechanicFacet.flagsJson`, checked on 2026-07-05 after the duration and
+saving throw filter slices.
+
+Special flags are common enough to expose on spell detail pages, but they
+should stay out of public filter vocabulary unless a future consumer need
+justifies more query surface.
+
+| family | accepted rows | review rows | accepted rows with detail flags | review rows with detail flags |
+| --- | ---: | ---: | ---: | ---: |
+| duration | 4,756 | 170 | 1,065 | 23 |
+| saving throw | 4,649 | 277 | 1,907 | 48 |
+| spell resistance | 4,860 | 66 | 800 | 3 |
+
+Accepted detail flag counts:
+
+| family | detail flags |
+| --- | --- |
+| duration | `dismissible` 955, `discharge` 141 |
+| saving throw | `partial` 305, `negates` 1,602, `harmless` 621, `object` 171 |
+| spell resistance | `harmless` 672, `object` 185 |
+
+Recommended follow-up:
+
+- Add a separate mechanics detail metadata contract after the saving throw
+  filter PR merges.
+- Expose only `accepted` facet flags as structured detail metadata; keep review
+  rows/raw or special text as raw detail text only.
+- Do not bundle detail metadata with the `spellResistanceKeys` filter slice.
+- Keep frontend consumers on server-provided metadata instead of parsing legacy
+  mechanics strings.
+
 ## Plan
 
 ### Slice 1: Mechanics Readiness And Bucket Contract
