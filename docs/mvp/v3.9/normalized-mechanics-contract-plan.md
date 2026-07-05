@@ -100,6 +100,41 @@ npm run -w data-tools rules:content:review
 - The frontend must not parse legacy mechanics strings or invent filter
   vocabulary.
 
+## Normalized Field Audit
+
+Local audit source: `server/db/local/content.sqlite`, checked on 2026-07-05.
+Mechanics counts include accepted `empty` categories because normalized content
+tracks source-field coverage; public vocabulary still excludes `empty`,
+`special`, and review rows.
+
+Public server contract fields:
+
+| field | normalized source | public query/meta | accepted rows | review rows | public vocabulary | detail metadata |
+| --- | --- | --- | ---: | ---: | --- | --- |
+| school | `SpellTaxonomyFacet.school` | `schoolIds`, `taxonomy.schools` | 4,938 | 0 | 18 legacy ids | no extra detail metadata |
+| subschool | `SpellTaxonomyFacet.subschool` | `subschoolIds`, `taxonomy.subschools` | 1,443 | 0 | 18 legacy ids | no extra detail metadata |
+| descriptor | `SpellTaxonomyFacet.descriptor` | `descriptorIds`, `descriptorBuckets`, `taxonomy.descriptors` | 2,291 | 0 | 36 legacy ids plus `see-text` | `rawText` / `note` can explain `see-text` |
+| base components | `SpellComponent` base flags | `componentKeys`, `components` | 44,334 | 0 | 9 component flags | present/absent only |
+| casting time | `SpellMechanicFacet.casting_time` | `castingTimeKeys`, `mechanics.castingTimes` | 4,186 | 740 | 8 buckets | amount/unit only; no special flags |
+| range | `SpellMechanicFacet.range` | `rangeKeys`, `mechanics.ranges` | 4,779 | 147 | 7 buckets | amount/unit only; no special flags |
+| duration | `SpellMechanicFacet.duration` | `durationKeys`, `mechanics.durations` | 4,756 | 170 | 4 buckets | detail flags proposed below |
+| saving throw | `SpellMechanicFacet.saving_throw` | `savingThrowKeys`, `mechanics.savingThrows` | 4,649 | 277 | 4 buckets | detail flags proposed below |
+
+Base component accepted rows are one row per spell per base flag. Present-row
+counts are: `verbal` 4,224, `somatic` 3,986, `material` 1,330,
+`divine_focus` 1,038, `arcane_focus` 434, `xp` 105, `corrupt` 19,
+`truename` 18, and `metabreath` 9.
+
+Normalized but not public filter fields:
+
+| field | normalized source | accepted rows | review rows | current decision |
+| --- | --- | ---: | ---: | --- |
+| component other/extra | `SpellComponent.other` | 134 | 6 | detail/raw text only; not filter vocabulary |
+| spell resistance | `SpellMechanicFacet.spell_resistance` | 4,860 | 66 | defer filter until explicit consumer semantics; detail flags proposed below |
+| target | `SpellMechanicFacet.target` | 3,566 | 1,360 | defer; high-volume mixed free text |
+| effect | `SpellMechanicFacet.effect` | 4,416 | 510 | defer; high-volume mixed free text |
+| area | `SpellMechanicFacet.area` | 4,685 | 241 | defer; high-volume mixed free text |
+
 ## Accepted Public Mechanics Contract
 
 The first promoted mechanics filters are:
