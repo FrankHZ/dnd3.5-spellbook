@@ -1148,20 +1148,22 @@ function buildReviewReadiness(input: {
     },
     {
       family: "mechanics.casting_time",
-      status: mechanicReview("casting_time") > 0 ? "needs_normalization" : "ready",
+      status: "ready",
       reason:
-        "Action-like casting-time categories are useful, but review rows must stay out of public vocabulary.",
+        "Casting-time public filter buckets are promoted; remaining review rows stay excluded from public vocabulary.",
       evidence: {
-        reviewRows: mechanicReview("casting_time"),
+        publicQueryParam: "castingTimeKeys",
+        reviewRowsExcludedFromVocabulary: mechanicReview("casting_time"),
       },
     },
     {
       family: "mechanics.range",
-      status: mechanicReview("range") > 0 ? "needs_normalization" : "ready",
+      status: "ready",
       reason:
-        "Range has strong normalized categories, but special/review rows need a stable fallback contract first.",
+        "Range public filter buckets are promoted; remaining review rows stay excluded from public vocabulary.",
       evidence: {
-        reviewRows: mechanicReview("range"),
+        publicQueryParam: "rangeKeys",
+        reviewRowsExcludedFromVocabulary: mechanicReview("range"),
       },
     },
     {
@@ -1177,13 +1179,20 @@ function buildReviewReadiness(input: {
     },
     {
       family: "mechanics.duration_save_sr",
-      status: "defer",
+      status: "ready",
       reason:
-        "Duration, saving throw, and spell resistance need separate consumer semantics before becoming filters.",
+        "Duration, saving throw, and spell resistance public filters are promoted; remaining review rows stay excluded from public vocabulary.",
       evidence: {
-        durationReviewRows: mechanicReview("duration"),
-        savingThrowReviewRows: mechanicReview("saving_throw"),
-        spellResistanceReviewRows: mechanicReview("spell_resistance"),
+        publicQueryParams: [
+          "durationKeys",
+          "savingThrowKeys",
+          "spellResistanceKeys",
+        ],
+        durationReviewRowsExcludedFromVocabulary: mechanicReview("duration"),
+        savingThrowReviewRowsExcludedFromVocabulary:
+          mechanicReview("saving_throw"),
+        spellResistanceReviewRowsExcludedFromVocabulary:
+          mechanicReview("spell_resistance"),
       },
     },
   ];
