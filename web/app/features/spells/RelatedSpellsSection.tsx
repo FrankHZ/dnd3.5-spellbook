@@ -1,10 +1,9 @@
 import type { SpellDetailView, SpellItemView } from "@dnd/contracts";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
 
 import { searchSpellsByName } from "~/api/spells";
-import { Button } from "~/components/ui/button";
+import { SpellCard } from "~/components/SpellCard";
 import {
   Card,
   CardContent,
@@ -12,7 +11,6 @@ import {
   CardHeader,
 } from "~/components/ui/card";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
-import { useRulebookDisplay } from "~/i18n/hooks/useRulebookDisplay";
 import { useUserPrefs } from "~/state/user-prefs-state";
 
 const RELATED_SEARCH_PAGE_SIZE = 50;
@@ -98,7 +96,9 @@ function isVariantMatch(name: string, context: VariantMatchContext) {
     return normalizeSpellName(modifierMatch[1] ?? "") === context.baseName;
   }
 
-  const numeralMatch = normalized.match(/^(.*?)\s+(I|II|III|IV|V|VI|VII|VIII|IX)$/i);
+  const numeralMatch = normalized.match(
+    /^(.*?)\s+(I|II|III|IV|V|VI|VII|VIII|IX)$/i,
+  );
   if (!numeralMatch) {
     return false;
   }
@@ -106,7 +106,9 @@ function isVariantMatch(name: string, context: VariantMatchContext) {
   const itemBase = normalizeSpellName(numeralMatch[1] ?? "");
   const itemNumeral = (numeralMatch[2] ?? "").toUpperCase();
 
-  return itemBase === context.baseName && itemNumeral !== context.currentNumeral;
+  return (
+    itemBase === context.baseName && itemNumeral !== context.currentNumeral
+  );
 }
 
 function sortRelatedSpells(items: SpellItemView[]) {
@@ -137,9 +139,6 @@ function RelatedSpellList({
   title: string;
   items: SpellItemView[];
 }) {
-  const { spellName } = useAppI18n();
-  const { rulebookDisplay } = useRulebookDisplay();
-
   if (items.length === 0) {
     return null;
   }
@@ -150,20 +149,12 @@ function RelatedSpellList({
       <Card className="gap-0 overflow-hidden py-0">
         <CardContent className="divide-y px-0 py-0">
           {items.map((item) => (
-            <div
+            <SpellCard
               key={item.id}
-              className="flex items-center justify-between gap-3 p-3 text-sm"
-            >
-              <Button asChild variant="link" className="h-auto px-0 py-0 font-medium">
-                <Link to={`/spells/${item.id}`}>{spellName(item)}</Link>
-              </Button>
-              <div className="shrink-0 text-xs text-muted-foreground">
-                <span className="font-medium">
-                  {rulebookDisplay(item.rulebook).abbr}
-                </span>
-                {item.page ? <span> - p. {item.page}</span> : null}
-              </div>
-            </div>
+              spell={item}
+              detailMode="summary"
+              density="compact"
+            />
           ))}
         </CardContent>
       </Card>

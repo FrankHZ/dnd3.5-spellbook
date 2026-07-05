@@ -9,6 +9,7 @@ import { useRulebookDisplay } from "~/i18n/hooks/useRulebookDisplay";
 import { getSpellShortDescription } from "~/i18n/display/spell-short-description";
 import { cn } from "~/lib/utils";
 import { getSpecialComponentMarkers } from "~/features/spells/spell-component-markers";
+import { SpellComponentBadge } from "~/features/spells/SpellComponentBadge";
 import type {
   SpellCardDetailMode,
   SpellListDensity,
@@ -89,13 +90,7 @@ export function SpellCard({
             {displayName}
           </Link>
           {componentMarkers.map((marker) => (
-            <Badge
-              key={marker}
-              variant="outline"
-              className="inline-flex h-5 items-center rounded-sm border-foreground/25 bg-muted/45 px-1.5 text-[10px] font-semibold leading-none text-foreground/75"
-            >
-              {marker}
-            </Badge>
+            <SpellComponentBadge key={marker}>{marker}</SpellComponentBadge>
           ))}
           {shortDescription && (
             <span className="basis-full text-sm leading-5 text-muted-foreground sm:basis-auto sm:min-w-[14rem] sm:flex-1">
@@ -123,7 +118,9 @@ export function SpellCard({
               </div>
 
               {classLevelsText && (
-                <div className="line-clamp-2 break-words">{classLevelsText}</div>
+                <div className="line-clamp-2 break-words">
+                  {classLevelsText}
+                </div>
               )}
 
               {domainLevelsText && (

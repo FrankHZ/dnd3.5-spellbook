@@ -6,8 +6,10 @@ import type {
   SpellByLevelResponse,
   SpellDetailView,
   SpellNameSearchResponse,
+  SpellNormalizedFilterScope,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
+import { setNormalizedFilterParams } from "~/features/spells/taxonomy-filter-state";
 import { apiGet, apiPost } from "./http";
 
 export type LevelParam = number | "all";
@@ -17,6 +19,7 @@ export function getSpellsByLevel(params: {
   domainIds: number[];
   level: LevelParam;
   rulebookIds?: number[]; // omit if empty to rely on backend default edition scope
+  filters?: Partial<SpellNormalizedFilterScope>;
   taxonomyFilters?: Partial<SpellTaxonomyFilterIds>;
   page: number;
   pageSize: number;
@@ -35,7 +38,7 @@ export function getSpellsByLevel(params: {
   if (params.rulebookIds && params.rulebookIds.length > 0) {
     sp.set("rulebookIds", params.rulebookIds.join(","));
   }
-  setTaxonomyParams(sp, params.taxonomyFilters);
+  setNormalizedFilterParams(sp, params.filters ?? params.taxonomyFilters ?? {});
   sp.set("page", String(params.page));
   sp.set("pageSize", String(params.pageSize));
 
@@ -51,6 +54,7 @@ export function searchSpellsByName(params: {
   classIds?: number[];
   domainIds?: number[];
   level?: LevelParam | null;
+  filters?: Partial<SpellNormalizedFilterScope>;
   taxonomyFilters?: Partial<SpellTaxonomyFilterIds>;
   page: number;
   pageSize: number;
@@ -73,40 +77,12 @@ export function searchSpellsByName(params: {
   if (params.level != null) {
     sp.set("level", String(params.level));
   }
-  setTaxonomyParams(sp, params.taxonomyFilters);
+  setNormalizedFilterParams(sp, params.filters ?? params.taxonomyFilters ?? {});
 
   return apiGet<SpellNameSearchResponse>(
     `/api/spells/search?${sp.toString()}`,
     params.signal,
   );
-}
-
-function setTaxonomyParams(
-  sp: URLSearchParams,
-  filters?: Partial<SpellTaxonomyFilterIds>,
-) {
-  if (!filters) return;
-  const normalize = (ids: number[] | undefined) =>
-    Array.from(
-      new Set((ids ?? []).filter((id) => Number.isInteger(id) && id > 0)),
-    ).sort((a, b) => a - b);
-  const schoolIds = normalize(filters.schoolIds);
-  const subschoolIds = normalize(filters.subschoolIds);
-  const descriptorIds = normalize(filters.descriptorIds);
-  const descriptorBuckets = Array.from(
-    new Set(
-      (filters.descriptorBuckets ?? [])
-        .map((value) => value.trim().toLowerCase())
-        .filter((value) => value === "other"),
-    ),
-  ).sort();
-
-  if (schoolIds.length) sp.set("schoolIds", schoolIds.join(","));
-  if (subschoolIds.length) sp.set("subschoolIds", subschoolIds.join(","));
-  if (descriptorIds.length) sp.set("descriptorIds", descriptorIds.join(","));
-  if (descriptorBuckets.length) {
-    sp.set("descriptorBuckets", descriptorBuckets.join(","));
-  }
 }
 
 export function getSpellDetail(id: number, signal?: AbortSignal) {

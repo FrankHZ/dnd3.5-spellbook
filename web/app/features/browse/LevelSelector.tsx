@@ -6,10 +6,12 @@ export function LevelSelector({
   value,
   onChange,
   allowAnyLevel = false,
+  showAllLevels = true,
 }: {
   value: number | "all" | null;
   onChange: (next: number | "all" | null) => void;
   allowAnyLevel?: boolean;
+  showAllLevels?: boolean;
 }) {
   const { t } = useTranslation("spell-browse");
   const level = value;
@@ -28,15 +30,17 @@ export function LevelSelector({
           {t("level.any-level")}
         </Button>
       )}
-      <Button
-        type="button"
-        variant={level === "all" ? "default" : "outline"}
-        size="sm"
-        className="w-full justify-center"
-        onClick={() => onChange("all")}
-      >
-        {t("level.all-levels")}
-      </Button>
+      {showAllLevels && (
+        <Button
+          type="button"
+          variant={level === "all" ? "default" : "outline"}
+          size="sm"
+          className="w-full justify-center"
+          onClick={() => onChange("all")}
+        >
+          {t("level.all-levels")}
+        </Button>
+      )}
       <div className="grid grid-cols-5 gap-2">
         {Array.from({ length: 10 }, (_, i) => (
           <Button

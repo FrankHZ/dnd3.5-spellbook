@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router";
-import type { SpellTaxonomyFilterIds } from "@dnd/contracts";
+import type {
+  SpellComponentFilterKey,
+  SpellNormalizedFilterScope,
+  SpellTaxonomyFilterIds,
+} from "@dnd/contracts";
 import type { LevelParam } from "~/api/spells";
 import {
-  normalizeTaxonomyFilters,
-  parseTaxonomyFilters,
-  setTaxonomyFilterParams,
+  emptyNormalizedFilters,
+  normalizeNormalizedFilters,
+  parseNormalizedFilters,
+  setNormalizedFilterParams,
 } from "~/features/spells/taxonomy-filter-state";
 import {
   normalizeIds,
@@ -19,7 +24,7 @@ export type BrowseQueryState = {
   level: LevelParam | null; // 0-9
   classIds: number[];
   domainIds: number[];
-  taxonomyFilters: SpellTaxonomyFilterIds;
+  filters: SpellNormalizedFilterScope;
   page: number;
 
   // persisted scope (NOT in URL)
@@ -33,11 +38,10 @@ export type BrowseQueryState = {
   setSubschoolIds: (next: number[]) => void;
   setDescriptorIds: (next: number[]) => void;
   setDescriptorFilters: (
-    next: Pick<
-      SpellTaxonomyFilterIds,
-      "descriptorIds" | "descriptorBuckets"
-    >,
+    next: Pick<SpellTaxonomyFilterIds, "descriptorIds" | "descriptorBuckets">,
   ) => void;
+  setComponentKeys: (next: SpellComponentFilterKey[]) => void;
+  resetDetailFilters: () => void;
   setPage: (next: number) => void;
 
   // useful flags
@@ -82,12 +86,12 @@ export function useBrowseQueryState(): BrowseQueryState {
 
     const classIds = parseIdList(searchParams.get("classIds"));
     const domainIds = parseIdList(searchParams.get("domainIds"));
-    const taxonomyFilters = parseTaxonomyFilters(searchParams);
+    const filters = parseNormalizedFilters(searchParams);
 
     const pageRaw = parseIntParam(searchParams.get("page"));
     const page = pageRaw != null && pageRaw >= 1 ? pageRaw : 1;
 
-    return { level, classIds, domainIds, taxonomyFilters, page };
+    return { level, classIds, domainIds, filters, page };
   }, [searchParams]);
 
   const effectiveClassIds = hasClassIds ? parsed.classIds : persistedClassIds;
@@ -208,17 +212,17 @@ export function useBrowseQueryState(): BrowseQueryState {
     (key: keyof SpellTaxonomyFilterIds, nextIds: number[]) => {
       const ids = normalizeIds(nextIds.filter((id) => id > 0));
       updateParams((sp) => {
-        setTaxonomyFilterParams(
+        setNormalizedFilterParams(
           sp,
-          normalizeTaxonomyFilters({
-            ...parsed.taxonomyFilters,
+          normalizeNormalizedFilters({
+            ...parsed.filters,
             [key]: ids,
           }),
         );
         resetPage(sp);
       });
     },
-    [parsed.taxonomyFilters, updateParams],
+    [parsed.filters, updateParams],
   );
 
   const setSchoolIds = useCallback(
@@ -238,16 +242,13 @@ export function useBrowseQueryState(): BrowseQueryState {
 
   const setDescriptorFilters = useCallback(
     (
-      next: Pick<
-        SpellTaxonomyFilterIds,
-        "descriptorIds" | "descriptorBuckets"
-      >,
+      next: Pick<SpellTaxonomyFilterIds, "descriptorIds" | "descriptorBuckets">,
     ) => {
       updateParams((sp) => {
-        setTaxonomyFilterParams(
+        setNormalizedFilterParams(
           sp,
-          normalizeTaxonomyFilters({
-            ...parsed.taxonomyFilters,
+          normalizeNormalizedFilters({
+            ...parsed.filters,
             descriptorIds: next.descriptorIds,
             descriptorBuckets: next.descriptorBuckets,
           }),
@@ -255,8 +256,31 @@ export function useBrowseQueryState(): BrowseQueryState {
         resetPage(sp);
       });
     },
-    [parsed.taxonomyFilters, updateParams],
+    [parsed.filters, updateParams],
   );
+
+  const setComponentKeys = useCallback(
+    (componentKeys: SpellComponentFilterKey[]) => {
+      updateParams((sp) => {
+        setNormalizedFilterParams(
+          sp,
+          normalizeNormalizedFilters({
+            ...parsed.filters,
+            componentKeys,
+          }),
+        );
+        resetPage(sp);
+      });
+    },
+    [parsed.filters, updateParams],
+  );
+
+  const resetDetailFilters = useCallback(() => {
+    updateParams((sp) => {
+      setNormalizedFilterParams(sp, emptyNormalizedFilters());
+      resetPage(sp);
+    });
+  }, [updateParams]);
 
   const setPage = useCallback(
     (nextPage: number) => {
@@ -281,7 +305,7 @@ export function useBrowseQueryState(): BrowseQueryState {
     level: effectiveLevel,
     classIds: effectiveClassIds,
     domainIds: effectiveDomainIds,
-    taxonomyFilters: parsed.taxonomyFilters,
+    filters: parsed.filters,
     page: parsed.page,
     rulebookIds,
     setLevel,
@@ -291,6 +315,8 @@ export function useBrowseQueryState(): BrowseQueryState {
     setSubschoolIds,
     setDescriptorIds,
     setDescriptorFilters,
+    setComponentKeys,
+    resetDetailFilters,
     setPage,
     hasValidSelection,
   };

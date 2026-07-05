@@ -126,6 +126,12 @@ or other unusual component flags deserve more visual emphasis than source
 labels because they can change preparation, cost, or table handling. Keep these
 markers compact and near the spell name.
 
+Use the shared spell component badge treatment for component chips across spell
+rows, component filters, and Spell Detail. Dense list/filter surfaces may use
+compact component abbreviations, especially in English sidebar filters where
+full labels are too wide. Spell Detail should use the same visual chip language
+with full component names so the reading surface stays explicit.
+
 Short descriptions should help recognition without becoming the row's visual
 center. Use muted text and flexible wrapping so the name, source, component
 markers, and description remain readable in English and Chinese.

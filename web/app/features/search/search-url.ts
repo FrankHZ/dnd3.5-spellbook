@@ -1,9 +1,10 @@
 import type { LevelParam } from "~/api/spells";
-import type { SpellTaxonomyFilterIds } from "@dnd/contracts";
+import type { SpellNormalizedFilterScope } from "@dnd/contracts";
 import {
-  normalizeTaxonomyFilters,
-  parseTaxonomyFilters,
-  setTaxonomyFilterParams,
+  hasNormalizedFilters,
+  normalizeNormalizedFilters,
+  parseNormalizedFilters,
+  setNormalizedFilterParams,
 } from "~/features/spells/taxonomy-filter-state";
 import {
   normalizeIds,
@@ -16,7 +17,7 @@ export type SearchScope = {
   q: string;
   classIds: number[];
   domainIds: number[];
-  taxonomyFilters: SpellTaxonomyFilterIds;
+  filters: SpellNormalizedFilterScope;
   level: LevelParam | null;
   page: number;
 };
@@ -26,7 +27,7 @@ export function parseSearchScope(params: URLSearchParams): SearchScope {
     q: (params.get("q") ?? "").trim(),
     classIds: parseIdList(params.get("classIds")),
     domainIds: parseIdList(params.get("domainIds")),
-    taxonomyFilters: parseTaxonomyFilters(params),
+    filters: parseNormalizedFilters(params),
     level: parseSearchLevel(params.get("level")),
     page: Math.max(1, parseIntParam(params.get("page")) ?? 1),
   };
@@ -36,7 +37,7 @@ export function parseSearchLevel(raw: string | null): LevelParam | null {
   if (raw == null) return null;
   const value = raw.trim();
   if (!value) return null;
-  if (value === "all") return "all";
+  if (value === "all") return null;
 
   const n = Number(value);
   if (!Number.isInteger(n) || n < 0 || n > 9) return null;
@@ -47,7 +48,7 @@ export function buildSearchParams(input: {
   q?: string | null;
   classIds?: number[] | null;
   domainIds?: number[] | null;
-  taxonomyFilters?: Partial<SpellTaxonomyFilterIds> | null;
+  filters?: Partial<SpellNormalizedFilterScope> | null;
   level?: LevelParam | null;
   page?: number | null;
 }) {
@@ -62,14 +63,14 @@ export function buildSearchParams(input: {
     "domainIds",
     domainIds.length ? domainIds.join(",") : null,
   );
-  setTaxonomyFilterParams(
+  setNormalizedFilterParams(
     params,
-    normalizeTaxonomyFilters(input.taxonomyFilters ?? {}),
+    normalizeNormalizedFilters(input.filters ?? {}),
   );
   setOrDelete(
     params,
     "level",
-    input.level == null ? null : String(input.level),
+    input.level == null || input.level === "all" ? null : String(input.level),
   );
 
   if (input.page && input.page > 1)
@@ -92,24 +93,18 @@ export function buildSearchUrlWithPreservedScope(
     q,
     classIds: scope.classIds,
     domainIds: scope.domainIds,
-    taxonomyFilters: scope.taxonomyFilters,
+    filters: scope.filters,
     level: scope.level,
   });
 }
 
 export function hasSearchScope(
-  scope: Pick<
-    SearchScope,
-    "classIds" | "domainIds" | "taxonomyFilters" | "level"
-  >,
+  scope: Pick<SearchScope, "classIds" | "domainIds" | "filters" | "level">,
 ) {
   return (
     scope.classIds.length > 0 ||
     scope.domainIds.length > 0 ||
-    scope.taxonomyFilters.schoolIds.length > 0 ||
-    scope.taxonomyFilters.subschoolIds.length > 0 ||
-    scope.taxonomyFilters.descriptorIds.length > 0 ||
-    scope.taxonomyFilters.descriptorBuckets.length > 0 ||
+    hasNormalizedFilters(scope.filters) ||
     scope.level !== null
   );
 }

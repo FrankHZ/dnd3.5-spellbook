@@ -13,7 +13,9 @@ v3.8 planning is open. The latest frozen release snapshot is
 `docs/mvp/v3.8/README.md`.
 
 The accepted v3.8 focus is normalized query contract work followed by frontend
-filter consumption, with an independent CJS/ESM and alias cleanup spike.
+filter consumption. Both product/data slices have landed; the remaining v3.8
+follow-up is the independent CJS/ESM and alias cleanup spike, plus release
+acceptance if the version is ready to freeze.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
@@ -38,6 +40,24 @@ The v3.7 release is frozen with:
 - React Router, Vite, i18n, lucide/shadcn, Node type, and related dependency
   upgrades accepted with the forced Prisma audit downgrade rejected.
 - final GitHub deploy run `28708398468` succeeded on commit `476c93d`.
+
+The v3.8 normalized query and frontend filter consumer slices have landed with:
+
+- server-provided normalized filter vocabulary consumed by Browse/Search.
+- Browse remaining filter-first and Search remaining name-first with the same
+  structured class, domain, level, taxonomy, and component scope.
+- shareable URL state for normalized taxonomy and component filters.
+- compact active-scope summaries that count primary scope, taxonomy filters,
+  component filters, and rulebook selections.
+- taxonomy controls grouped by server-provided source/category metadata, so
+  Tome of Battle entries can be separated without frontend string parsing.
+- descriptor noise collapsed through backend-provided `Other` buckets rather
+  than raw legacy `see text` labels.
+- a bounded Filter UX pass: component filters, disclosure icons, unified
+  spacing, and one detail-filter reset that clears taxonomy and component
+  filters without touching primary scope.
+- the current detail-filter UI accepted as a small v3.8 pass, not the final
+  broader filter-design system.
 
 The v3.6 release is frozen with:
 
@@ -227,20 +247,7 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Define the v3.8 normalized query contract**
-
-   Use `docs/mvp/v3.8/normalized-query-contract-plan.md`. This is the mainline:
-   decide which normalized fields are public-query vocabulary, what fallback
-   behavior exists for ambiguous or missing normalized data, and which facets
-   stay review-only.
-
-2. **Implement the frontend filter consumer after the contract stabilizes**
-
-   Use `docs/mvp/v3.8/frontend-filter-consumer-plan.md`. The frontend should
-   consume server-provided normalized vocabulary only, while keeping filter UX
-   and spell-card polish bounded.
-
-3. **Run the independent CJS/ESM and alias cleanup spike**
+1. **Run the independent CJS/ESM and alias cleanup spike**
 
    Use `docs/mvp/v3.8/module-boundary-cleanup-spike.md`. The spike should
    answer whether `tsc-alias` can be dropped, how server aliases should migrate,
@@ -248,7 +255,14 @@ Recommended next sequence:
    the two product/data deliverables unless it finds an active deploy/runtime
    risk.
 
-4. **Triage the v3.7 non-blocking maintenance tail as needed**
+2. **Prepare v3.8 acceptance or freeze when ready**
+
+   Re-read `docs/mvp/v3.8/README.md` and the child plans, then decide whether
+   the normalized-query and frontend-consumer slices are enough for a v3.8
+   freeze after the cleanup spike, or whether a small acceptance-only follow-up
+   is needed. Do not expand this into a broader filter redesign.
+
+3. **Triage the v3.7 non-blocking maintenance tail as needed**
 
    `npm outdated --workspaces --json` previously reported `tsc-alias`
    `1.8.17 -> 1.9.0`. `npm audit --workspaces --omit=dev --json` still reports
@@ -343,6 +357,11 @@ The stable-version backlog remains intentionally deferred:
   normalized content contract settles; do not optimize for minimal migration in
   that pass, and prefer a clean schema/query design over preserving temporary
   compatibility layers
+- complete filter UX design for future normalized detail filters: the v3.8
+  sidebar works for the current small taxonomy/component set, but a larger
+  filter vocabulary needs a deliberate model for grouping, density, chip
+  labels, reset behavior, mobile disclosure, scope summaries, and how advanced
+  filters differ from primary Browse/Search scope
 - release automation beyond the v3.5 script-backed CD pass
 - rollback playbook
 - HTTPS / TLS and host hardening

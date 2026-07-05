@@ -37,12 +37,13 @@ Current behavior:
 - URL filters can constrain results by normalized school, subschool, and
   descriptor ids
 - API filters can constrain results by normalized base spell components through
-  `componentKeys`; frontend controls for this vocabulary are tracked in v3.8
-  frontend filter-consumer work
+  `componentKeys`; Browse exposes this server-provided vocabulary in the
+  sidebar
 - default rulebooks are supplied by the backend when no explicit rulebook ids
   are provided
 - the spell-list area shows a compact shared scope summary with selected
-  class/domain filter counts, level, taxonomy filter count, and rulebook scope
+  class/domain filter counts, level, taxonomy filter count, component filter
+  count, and rulebook scope
 - spell list density follows browser-local Display settings, while full-detail
   card display is controlled from the Browse sidebar for the current reading
   context
@@ -72,7 +73,8 @@ Current behavior:
 - English and other non-CJK queries require at least two characters
 - CJK queries may search from one character
 - rulebook filtering is supported
-- URL filters can constrain search by class, domain, and level
+- URL filters can constrain search by class, domain, and a specific numeric
+  level; omitted level means any level in Search
 - URL filters can also constrain search by normalized `schoolIds`,
   `subschoolIds`, and `descriptorIds` using the same comma-separated id-list
   convention
@@ -85,10 +87,12 @@ Current behavior:
 - the Search sidebar exposes editable class, domain, and level controls
 - the Search sidebar exposes the same school, subschool, and descriptor scope
   controls as Browse without making name lookup secondary
+- the Search sidebar also exposes the same normalized base component controls as
+  Browse
 - header search preserves current Browse or Search filter scope while replacing
   the name query
 - the spell-list area uses the same compact scope summary as Browse, including
-  active taxonomy and selected rulebook scope
+  active taxonomy, active component filters, and selected rulebook scope
 - spell list density follows browser-local Display settings, while full-detail
   card display is controlled from the Search sidebar for the current reading
   context
@@ -150,6 +154,8 @@ Current behavior:
 - taxonomy filter vocabulary includes `sourceKind` and `category` metadata so
   Tome of Battle disciplines and maneuver categories can be grouped separately
   from ordinary spell schools/subschools
+- Tome of Battle discipline/category options are hidden from school/subschool
+  filter controls unless the selected rulebook scope includes that rulebook
 - combined legacy school/subschool labels are split into their base taxonomy
   filters rather than shown as separate combined options
 - normalized base component filter vocabulary is exposed by

@@ -1,23 +1,11 @@
 {
-  "classes.none": "no class filter",
-  "classes.selected_one": "{{count}} class filter",
-  "classes.selected_other": "{{count}} class filters",
-  "domains.none": "no domain filter",
-  "domains.selected_one": "{{count}} domain filter",
-  "domains.selected_other": "{{count}} domain filters",
   "labels.classes": "Classes",
+  "labels.components": "Components",
   "labels.domains": "Domains",
-  "labels.filters": "Filters",
+  "labels.filters": "Showing",
   "labels.level": "Level",
   "labels.rulebooks": "Rulebooks",
   "labels.taxonomy": "Taxonomy",
-  "level.all": "all levels",
-  "level.any": "any level",
-  "level.not-selected": "not selected",
-  "rulebooks.default-core-value": "default 3.5 core",
-  "rulebooks.selected-summary_one": "{{count}} selected (Settings)",
-  "rulebooks.selected-summary_other": "{{count}} selected (Settings)",
-  "taxonomy.none": "none",
-  "taxonomy.selected_one": "{{count}} active filter",
-  "taxonomy.selected_other": "{{count}} active filters"
+  "rulebooks.selected-summary_one": "{{count}} (Settings)",
+  "rulebooks.selected-summary_other": "{{count}} (Settings)"
 }
