@@ -133,6 +133,11 @@ function normalizedMechanicWhere(filters: SpellMechanicFilters) {
   if (filters.savingThrowKeys.length > 0) {
     conditions.push(mechanicCondition("saving_throw", filters.savingThrowKeys));
   }
+  if (filters.spellResistanceKeys.length > 0) {
+    conditions.push(
+      mechanicCondition("spell_resistance", filters.spellResistanceKeys),
+    );
+  }
 
   return conditions.length > 0
     ? Prisma.sql`AND ${Prisma.join(conditions, " AND ")}`

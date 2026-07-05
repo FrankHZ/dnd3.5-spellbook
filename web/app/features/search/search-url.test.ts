@@ -28,6 +28,7 @@ describe("search URL helpers", () => {
         rangeKeys: [],
         durationKeys: [],
         savingThrowKeys: [],
+        spellResistanceKeys: [],
       },
       level: 3,
       page: 4,
@@ -51,6 +52,7 @@ describe("search URL helpers", () => {
       rangeKeys: [],
       durationKeys: [],
       savingThrowKeys: [],
+      spellResistanceKeys: [],
     });
   });
 
@@ -67,7 +69,7 @@ describe("search URL helpers", () => {
   it("parses mechanic filters from query params", () => {
     const scope = parseSearchScope(
       new URLSearchParams(
-        "q=fire&castingTimeKeys=minute,bad,standard_action&rangeKeys=fixed,close&durationKeys=timed,unknown,instantaneous&savingThrowKeys=will,bad,none&page=2",
+        "q=fire&castingTimeKeys=minute,bad,standard_action&rangeKeys=fixed,close&durationKeys=timed,unknown,instantaneous&savingThrowKeys=will,bad,none&spellResistanceKeys=no,bad,yes&page=2",
       ),
     );
 
@@ -78,6 +80,7 @@ describe("search URL helpers", () => {
     expect(scope.filters.rangeKeys).toEqual(["close", "fixed"]);
     expect(scope.filters.durationKeys).toEqual(["instantaneous", "timed"]);
     expect(scope.filters.savingThrowKeys).toEqual(["none", "will"]);
+    expect(scope.filters.spellResistanceKeys).toEqual(["yes", "no"]);
   });
 
   it("builds clean and scoped search URLs", () => {
@@ -97,11 +100,12 @@ describe("search URL helpers", () => {
           rangeKeys: ["close"],
           durationKeys: ["instantaneous"],
           savingThrowKeys: ["none"],
+          spellResistanceKeys: ["yes"],
         },
         level: "all",
       }),
     ).toBe(
-      "/search?q=fire+ball&classIds=1%2C2&domainIds=8&schoolIds=4&subschoolIds=3&descriptorIds=8%2C9&descriptorBuckets=see-text&componentKeys=verbal%2Cmaterial&castingTimeKeys=standard_action%2Cminute&rangeKeys=close&durationKeys=instantaneous&savingThrowKeys=none",
+      "/search?q=fire+ball&classIds=1%2C2&domainIds=8&schoolIds=4&subschoolIds=3&descriptorIds=8%2C9&descriptorBuckets=see-text&componentKeys=verbal%2Cmaterial&castingTimeKeys=standard_action%2Cminute&rangeKeys=close&durationKeys=instantaneous&savingThrowKeys=none&spellResistanceKeys=yes",
     );
   });
 
@@ -149,6 +153,7 @@ describe("search URL helpers", () => {
           rangeKeys: [],
           durationKeys: [],
           savingThrowKeys: [],
+          spellResistanceKeys: [],
         },
         level: null,
       }),
@@ -170,6 +175,7 @@ describe("search URL helpers", () => {
           rangeKeys: [],
           durationKeys: [],
           savingThrowKeys: [],
+          spellResistanceKeys: [],
         },
         level: null,
       }),
@@ -191,6 +197,7 @@ describe("search URL helpers", () => {
           rangeKeys: [],
           durationKeys: [],
           savingThrowKeys: [],
+          spellResistanceKeys: [],
         },
         level: null,
       }),

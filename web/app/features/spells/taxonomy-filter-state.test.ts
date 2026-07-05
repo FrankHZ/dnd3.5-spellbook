@@ -128,6 +128,7 @@ describe("taxonomy filter state helpers", () => {
       rangeKeys: [],
       durationKeys: [],
       savingThrowKeys: [],
+      spellResistanceKeys: [],
     });
   });
 
@@ -152,6 +153,7 @@ describe("taxonomy filter state helpers", () => {
       rangeKeys: ["close", "fixed"],
       durationKeys: [],
       savingThrowKeys: [],
+      spellResistanceKeys: [],
     });
 
     expect(
@@ -160,12 +162,14 @@ describe("taxonomy filter state helpers", () => {
         rangeKeys: ["unlimited", "touch", "touch"],
         durationKeys: ["timed", "instantaneous", "bad" as any],
         savingThrowKeys: ["will", "none", "bad" as any],
+        spellResistanceKeys: ["no", "yes", "bad" as any],
       }),
     ).toEqual({
       castingTimeKeys: ["swift_action", "hour"],
       rangeKeys: ["touch", "unlimited"],
       durationKeys: ["instantaneous", "timed"],
       savingThrowKeys: ["none", "will"],
+      spellResistanceKeys: ["yes", "no"],
     });
   });
 
@@ -177,10 +181,11 @@ describe("taxonomy filter state helpers", () => {
       rangeKeys: ["close"],
       durationKeys: ["instantaneous"],
       savingThrowKeys: ["none"],
+      spellResistanceKeys: ["yes"],
     });
 
     expect(String(params)).toBe(
-      "castingTimeKeys=standard_action%2Cminute&page=4&rangeKeys=close&durationKeys=instantaneous&savingThrowKeys=none",
+      "castingTimeKeys=standard_action%2Cminute&page=4&rangeKeys=close&durationKeys=instantaneous&savingThrowKeys=none&spellResistanceKeys=yes",
     );
 
     setMechanicFilterParams(params, {
@@ -188,6 +193,7 @@ describe("taxonomy filter state helpers", () => {
       rangeKeys: [],
       durationKeys: [],
       savingThrowKeys: [],
+      spellResistanceKeys: [],
     });
 
     expect(String(params)).toBe("page=4");
@@ -199,9 +205,10 @@ describe("taxonomy filter state helpers", () => {
       rangeKeys: ["close" as const, "medium" as const],
       durationKeys: ["timed" as const],
       savingThrowKeys: ["none" as const],
+      spellResistanceKeys: ["yes" as const],
     };
 
     expect(hasMechanicFilters(filters)).toBe(true);
-    expect(countMechanicFilters(filters)).toBe(5);
+    expect(countMechanicFilters(filters)).toBe(6);
   });
 });

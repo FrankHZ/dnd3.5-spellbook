@@ -137,6 +137,14 @@ describe("spell taxonomy filter contracts", () => {
         { key: "will", label: "Will", sortOrder: 40 },
       ]),
     });
+    expect(body.mechanics.spellResistances).toEqual({
+      queryParam: "spellResistanceKeys",
+      mode: "any",
+      buckets: expect.arrayContaining([
+        { key: "yes", label: "Yes", sortOrder: 10 },
+        { key: "no", label: "No", sortOrder: 20 },
+      ]),
+    });
   });
 
   it("filters name search by descriptor ids and echoes taxonomy scope", async () => {
@@ -242,6 +250,7 @@ describe("spell taxonomy filter contracts", () => {
         rangeKeys: "medium",
         durationKeys: "timed,instantaneous,unknown",
         savingThrowKeys: "will,none,unknown",
+        spellResistanceKeys: "no,yes,unknown",
       });
 
     expect(res.status).toBe(200);
@@ -251,6 +260,7 @@ describe("spell taxonomy filter contracts", () => {
     expect(body.rangeKeys).toEqual(["medium"]);
     expect(body.durationKeys).toEqual(["instantaneous", "timed"]);
     expect(body.savingThrowKeys).toEqual(["none", "will"]);
+    expect(body.spellResistanceKeys).toEqual(["yes", "no"]);
     expect(body.items.map((item) => item.id)).toEqual([100]);
   });
 
@@ -332,12 +342,31 @@ describe("spell taxonomy filter contracts", () => {
         rangeKeys: "medium",
         durationKeys: "instantaneous",
         savingThrowKeys: "none",
+        spellResistanceKeys: "yes",
       });
 
     expect(mechanics.status).toBe(200);
     expect(
       (mechanics.body as SpellNameSearchResponse).items.map((item) => item.id),
     ).toEqual([100]);
+
+    const spellResistanceNo = await request(app)
+      .get("/api/spells/search")
+      .query({
+        q: "magic",
+        rulebookIds: "4",
+        spellResistanceKeys: "no",
+      });
+
+    expect(spellResistanceNo.status).toBe(200);
+    expect(
+      (spellResistanceNo.body as SpellNameSearchResponse).spellResistanceKeys,
+    ).toEqual(["no"]);
+    expect(
+      (spellResistanceNo.body as SpellNameSearchResponse).items.map(
+        (item) => item.id,
+      ),
+    ).toEqual([101]);
   });
 
   it("applies component filters to the legacy rules read source", async () => {
@@ -387,6 +416,7 @@ describe("spell taxonomy filter contracts", () => {
         rangeKeys: "medium",
         durationKeys: "instantaneous",
         savingThrowKeys: "none",
+        spellResistanceKeys: "yes",
       });
 
     expect(res.status).toBe(200);
@@ -396,6 +426,7 @@ describe("spell taxonomy filter contracts", () => {
     expect(body.rangeKeys).toEqual(["medium"]);
     expect(body.durationKeys).toEqual(["instantaneous"]);
     expect(body.savingThrowKeys).toEqual(["none"]);
+    expect(body.spellResistanceKeys).toEqual(["yes"]);
     expect(body.items.map((item) => item.id)).toEqual([100]);
   });
 });

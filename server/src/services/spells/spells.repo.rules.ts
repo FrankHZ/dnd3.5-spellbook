@@ -238,6 +238,20 @@ function rulesMechanicWhere(filters: SpellMechanicFilters) {
     );
   }
 
+  const spellResistanceConditions = filters.spellResistanceKeys.map((key) => {
+    const field = Prisma.sql`LOWER(COALESCE(s.spell_resistance, ''))`;
+    if (key === "yes") {
+      return Prisma.sql`(${field} = 'yes' OR ${field} LIKE 'yes %')`;
+    }
+    return Prisma.sql`(${field} = 'no' OR ${field} LIKE 'no %')`;
+  });
+
+  if (spellResistanceConditions.length > 0) {
+    conditions.push(
+      Prisma.sql`(${Prisma.join(spellResistanceConditions, " OR ")})`,
+    );
+  }
+
   return conditions.length > 0
     ? Prisma.sql`AND ${Prisma.join(conditions, " AND ")}`
     : Prisma.empty;
