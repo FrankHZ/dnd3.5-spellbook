@@ -4,6 +4,7 @@ import type {
   SpellDescriptorBucketKey,
   SpellDurationFilterKey,
   SpellRangeFilterKey,
+  SpellResistanceFilterKey,
   SpellSavingThrowFilterKey,
 } from "./spell.js";
 
@@ -75,6 +76,11 @@ export type SpellMechanicFilterVocabularyItem =
       key: SpellSavingThrowFilterKey;
       label: string;
       sortOrder: number;
+    }
+  | {
+      key: SpellResistanceFilterKey;
+      label: string;
+      sortOrder: number;
     };
 
 export type SpellFilterVocabularyResponse = {
@@ -107,6 +113,11 @@ export type SpellFilterVocabularyResponse = {
     };
     savingThrows: {
       queryParam: "savingThrowKeys";
+      mode: "any";
+      buckets: SpellMechanicFilterVocabularyItem[];
+    };
+    spellResistances: {
+      queryParam: "spellResistanceKeys";
       mode: "any";
       buckets: SpellMechanicFilterVocabularyItem[];
     };

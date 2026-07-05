@@ -31,6 +31,7 @@ const emptyMechanicFilters = {
   rangeKeys: [],
   durationKeys: [],
   savingThrowKeys: [],
+  spellResistanceKeys: [],
 };
 
 function legacyComparable<T extends { rulebook?: Record<string, unknown> }>(

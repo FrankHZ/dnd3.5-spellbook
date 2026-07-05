@@ -11,6 +11,7 @@ import {
   DURATION_FILTER_VOCABULARY,
   RANGE_FILTER_VOCABULARY,
   SAVING_THROW_FILTER_VOCABULARY,
+  SPELL_RESISTANCE_FILTER_VOCABULARY,
 } from "#server/services/spells/mechanics-normalization";
 import {
   queryMetaI18nOverlays,
@@ -258,6 +259,11 @@ async function loadFilterVocabulary(
         queryParam: "savingThrowKeys",
         mode: "any",
         buckets: SAVING_THROW_FILTER_VOCABULARY,
+      },
+      spellResistances: {
+        queryParam: "spellResistanceKeys",
+        mode: "any",
+        buckets: SPELL_RESISTANCE_FILTER_VOCABULARY,
       },
     },
   };

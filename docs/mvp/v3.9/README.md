@@ -39,9 +39,10 @@ scope, delivery sequence, or ownership.
 ## Immediate Candidate Decisions
 
 - First candidate spike: mechanics readiness and bucket contract. Begin with
-  `casting_time` and `range`. Require explicit consumer semantics before
-  promoting `duration`, `savingThrow`, or `spellResistance`; defer
-  `target` / `effect` / `area` unless a later focused plan narrows them.
+  `casting_time` and `range`, then promote `duration`, `savingThrow`, and
+  `spellResistance` as separate backend contract slices once each has explicit
+  consumer semantics. Defer `target` / `effect` / `area` unless a later focused
+  plan narrows them.
 - Second candidate spike: `components.other_or_extra`. Normalize and close the
   six review rows if they are safe, or explicitly classify them before
   mechanics expansion.

@@ -23,6 +23,7 @@ import {
   SPELL_DESCRIPTOR_BUCKET_KEYS,
   SPELL_DURATION_FILTER_KEYS,
   SPELL_RANGE_FILTER_KEYS,
+  SPELL_RESISTANCE_FILTER_KEYS,
   SPELL_SAVING_THROW_FILTER_KEYS,
 } from "@dnd/contracts";
 import { getI18nContext, hasCjk } from "#server/utils/i18n";
@@ -88,6 +89,10 @@ function parseMechanicFilters(query: Request["query"]): SpellMechanicFilters {
     savingThrowKeys: parseKeys(
       query.savingThrowKeys,
       SPELL_SAVING_THROW_FILTER_KEYS,
+    ),
+    spellResistanceKeys: parseKeys(
+      query.spellResistanceKeys,
+      SPELL_RESISTANCE_FILTER_KEYS,
     ),
   };
 }

@@ -57,7 +57,6 @@ and consumer behavior are clear.
 
 - Do not add frontend controls in this plan.
 - Do not promote `target` / `effect` / `area` in the first pass.
-- Do not promote `spellResistance` before its consumer semantics are explicit.
 - Do not add content artifact/versioned DB release automation, static/offline
   generation, large translation QA, broad security/deploy hardening, dependency
   audit cleanup, or full server ESM migration unless one becomes a direct
@@ -84,9 +83,9 @@ npm run -w data-tools rules:content:review
   - `mechanics.range`: needs normalization with `147` review rows
   - `mechanics.target_effect_area`: defer with `target` `1360`, `effect` `510`,
     and `area` `241` review rows
-  - `mechanics.duration_save_sr`: promote `duration` and `savingThrow` as
-    separate slices; `spellResistance` remains deferred pending explicit
-    consumer semantics, with `spellResistance` `66` review rows
+  - `mechanics.duration_save_sr`: promote `duration`, `savingThrow`, and
+    `spellResistance` as separate slices; `spellResistance` has
+    `66` review rows
 - Current known audit tail:
   `npm audit --workspaces --omit=dev --json` still reports the reviewed three
   moderate Prisma dev-chain / Hono advisories. `fixAvailable` points to
@@ -119,6 +118,7 @@ Public server contract fields:
 | range | `SpellMechanicFacet.range` | `rangeKeys`, `mechanics.ranges` | 4,779 | 147 | 7 buckets | amount/unit only; no special flags |
 | duration | `SpellMechanicFacet.duration` | `durationKeys`, `mechanics.durations` | 4,756 | 170 | 4 buckets | detail flags proposed below |
 | saving throw | `SpellMechanicFacet.saving_throw` | `savingThrowKeys`, `mechanics.savingThrows` | 4,649 | 277 | 4 buckets | detail flags proposed below |
+| spell resistance | `SpellMechanicFacet.spell_resistance` | `spellResistanceKeys`, `mechanics.spellResistances` | 4,860 | 66 | 2 buckets | detail flags proposed below |
 
 Base component accepted rows are one row per spell per base flag. Present-row
 counts are: `verbal` 4,224, `somatic` 3,986, `material` 1,330,
@@ -130,7 +130,6 @@ Normalized but not public filter fields:
 | field | normalized source | accepted rows | review rows | current decision |
 | --- | --- | ---: | ---: | --- |
 | component other/extra | `SpellComponent.other` | 134 | 6 | detail/raw text only; not filter vocabulary |
-| spell resistance | `SpellMechanicFacet.spell_resistance` | 4,860 | 66 | defer filter until explicit consumer semantics; detail flags proposed below |
 | target | `SpellMechanicFacet.target` | 3,566 | 1,360 | defer; high-volume mixed free text |
 | effect | `SpellMechanicFacet.effect` | 4,416 | 510 | defer; high-volume mixed free text |
 | area | `SpellMechanicFacet.area` | 4,685 | 241 | defer; high-volume mixed free text |
@@ -148,6 +147,8 @@ The first promoted mechanics filters are:
   `instantaneous`, `timed`, `concentration`, `permanent`
 - `savingThrowKeys`, selection mode `any` within the field:
   `none`, `fortitude`, `reflex`, `will`
+- `spellResistanceKeys`, selection mode `any` within the field:
+  `yes`, `no`
 
 When multiple fields are present, they combine with `all` semantics: a spell
 must match one selected bucket in each selected mechanics family.
@@ -160,7 +161,8 @@ Fallback behavior:
 - Missing, `empty`, `special`, and review-status mechanics rows are not public
   vocabulary and do not match promoted filters. Duration flags such as
   dismissible or discharge, and saving throw flags such as partial, negates,
-  harmless, or object, remain detail metadata, not public filters.
+  harmless, or object, and spell resistance flags such as harmless or object,
+  remain detail metadata, not public filters.
 
 ## Detail Metadata Audit
 
@@ -192,7 +194,7 @@ Recommended follow-up:
   filter PR merges.
 - Expose only `accepted` facet flags as structured detail metadata; keep review
   rows/raw or special text as raw detail text only.
-- Do not bundle detail metadata with the `spellResistanceKeys` filter slice.
+- Keep mechanics detail metadata separate from public filter slices.
 - Keep frontend consumers on server-provided metadata instead of parsing legacy
   mechanics strings.
 
@@ -227,8 +229,8 @@ Recommended follow-up:
 
 - Deliverable: shared contracts and `GET /api/meta/filters` expose only
   accepted mechanics vocabulary with stable query params and labels.
-- Status: implemented for `castingTimeKeys`, `rangeKeys`, `durationKeys`, and
-  `savingThrowKeys`.
+- Status: implemented for `castingTimeKeys`, `rangeKeys`, `durationKeys`,
+  `savingThrowKeys`, and `spellResistanceKeys`.
 - Expected files: `contracts/src/dto/*`, server meta/filter vocabulary, server
   DTO tests.
 - Validation:
@@ -289,8 +291,8 @@ Recommended follow-up:
   set?
 - Which component extra rows can be safely normalized versus classified as
   review-only?
-- What explicit consumer semantics would make `spellResistance` safe to promote
-  later?
+- Which mechanics detail flags should be exposed on Spell Detail first, and
+  should they use a nested metadata object or field-specific DTO shape?
 
 ## Completion Notes
 

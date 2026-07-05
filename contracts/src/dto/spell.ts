@@ -83,11 +83,17 @@ export const SPELL_SAVING_THROW_FILTER_KEYS = [
 export type SpellSavingThrowFilterKey =
   (typeof SPELL_SAVING_THROW_FILTER_KEYS)[number];
 
+export const SPELL_RESISTANCE_FILTER_KEYS = ["yes", "no"] as const;
+
+export type SpellResistanceFilterKey =
+  (typeof SPELL_RESISTANCE_FILTER_KEYS)[number];
+
 export type SpellMechanicFilters = {
   castingTimeKeys: SpellCastingTimeFilterKey[];
   rangeKeys: SpellRangeFilterKey[];
   durationKeys: SpellDurationFilterKey[];
   savingThrowKeys: SpellSavingThrowFilterKey[];
+  spellResistanceKeys: SpellResistanceFilterKey[];
 };
 
 export type SpellNormalizedFilterScope = SpellTaxonomyFilterIds &
@@ -162,6 +168,7 @@ export type SpellNameSearchResponse = {
   rangeKeys: SpellRangeFilterKey[];
   durationKeys: SpellDurationFilterKey[];
   savingThrowKeys: SpellSavingThrowFilterKey[];
+  spellResistanceKeys: SpellResistanceFilterKey[];
   items: SpellItemView[];
 };
 
@@ -186,6 +193,7 @@ export type SpellByLevelResponse = {
   rangeKeys: SpellRangeFilterKey[];
   durationKeys: SpellDurationFilterKey[];
   savingThrowKeys: SpellSavingThrowFilterKey[];
+  spellResistanceKeys: SpellResistanceFilterKey[];
   groups: SpellsByLevelGroup[];
 };
 

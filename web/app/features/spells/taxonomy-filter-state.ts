@@ -3,6 +3,7 @@ import {
   SPELL_COMPONENT_FILTER_KEYS,
   SPELL_DURATION_FILTER_KEYS,
   SPELL_RANGE_FILTER_KEYS,
+  SPELL_RESISTANCE_FILTER_KEYS,
   SPELL_SAVING_THROW_FILTER_KEYS,
   type SpellCastingTimeFilterKey,
   type SpellComponentFilterKey,
@@ -11,6 +12,7 @@ import {
   type SpellMechanicFilters,
   type SpellNormalizedFilterScope,
   type SpellRangeFilterKey,
+  type SpellResistanceFilterKey,
   type SpellSavingThrowFilterKey,
   type SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
@@ -32,6 +34,7 @@ export const emptyMechanicFilters = (): SpellMechanicFilters => ({
   rangeKeys: [],
   durationKeys: [],
   savingThrowKeys: [],
+  spellResistanceKeys: [],
 });
 
 export const emptyNormalizedFilters = (): SpellNormalizedFilterScope => ({
@@ -96,6 +99,15 @@ function normalizeSavingThrowKeys(
   return SPELL_SAVING_THROW_FILTER_KEYS.filter((key) => selected.has(key));
 }
 
+function normalizeSpellResistanceKeys(
+  values: string[] | undefined,
+): SpellResistanceFilterKey[] {
+  const selected = new Set(
+    (values ?? []).map((value) => value.trim().toLowerCase()),
+  );
+  return SPELL_RESISTANCE_FILTER_KEYS.filter((key) => selected.has(key));
+}
+
 export function parseTaxonomyFilters(
   params: URLSearchParams,
 ): SpellTaxonomyFilterIds {
@@ -132,6 +144,9 @@ export function parseMechanicFilters(
     durationKeys: normalizeDurationKeys(params.get("durationKeys")?.split(",")),
     savingThrowKeys: normalizeSavingThrowKeys(
       params.get("savingThrowKeys")?.split(","),
+    ),
+    spellResistanceKeys: normalizeSpellResistanceKeys(
+      params.get("spellResistanceKeys")?.split(","),
     ),
   };
 }
@@ -173,6 +188,9 @@ export function normalizeMechanicFilters(
     rangeKeys: normalizeRangeKeys(filters.rangeKeys),
     durationKeys: normalizeDurationKeys(filters.durationKeys),
     savingThrowKeys: normalizeSavingThrowKeys(filters.savingThrowKeys),
+    spellResistanceKeys: normalizeSpellResistanceKeys(
+      filters.spellResistanceKeys,
+    ),
   };
 }
 
@@ -256,6 +274,13 @@ export function setMechanicFilterParams(
       ? normalized.savingThrowKeys.join(",")
       : null,
   );
+  setOrDelete(
+    params,
+    "spellResistanceKeys",
+    normalized.spellResistanceKeys.length
+      ? normalized.spellResistanceKeys.join(",")
+      : null,
+  );
 }
 
 export function setNormalizedFilterParams(
@@ -286,7 +311,8 @@ export function hasMechanicFilters(filters: SpellMechanicFilters) {
     filters.castingTimeKeys.length > 0 ||
     filters.rangeKeys.length > 0 ||
     filters.durationKeys.length > 0 ||
-    filters.savingThrowKeys.length > 0
+    filters.savingThrowKeys.length > 0 ||
+    filters.spellResistanceKeys.length > 0
   );
 }
 
@@ -316,7 +342,8 @@ export function countMechanicFilters(filters: SpellMechanicFilters) {
     filters.castingTimeKeys.length +
     filters.rangeKeys.length +
     filters.durationKeys.length +
-    filters.savingThrowKeys.length
+    filters.savingThrowKeys.length +
+    filters.spellResistanceKeys.length
   );
 }
 

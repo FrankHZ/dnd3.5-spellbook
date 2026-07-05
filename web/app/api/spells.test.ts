@@ -59,13 +59,14 @@ describe("spell API wrappers", () => {
         rangeKeys: ["fixed", "close"],
         durationKeys: ["timed", "instantaneous"],
         savingThrowKeys: ["will", "none", "bad" as any],
+        spellResistanceKeys: ["no", "yes", "bad" as any],
       },
       page: 1,
       pageSize: 25,
     });
 
     expect(apiGet).toHaveBeenCalledWith(
-      "/api/spells/search?q=fire&page=1&pageSize=25&schoolIds=2&subschoolIds=4&descriptorIds=6%2C7&descriptorBuckets=see-text&componentKeys=verbal%2Cmaterial&castingTimeKeys=standard_action%2Cminute&rangeKeys=close%2Cfixed&durationKeys=instantaneous%2Ctimed&savingThrowKeys=none%2Cwill",
+      "/api/spells/search?q=fire&page=1&pageSize=25&schoolIds=2&subschoolIds=4&descriptorIds=6%2C7&descriptorBuckets=see-text&componentKeys=verbal%2Cmaterial&castingTimeKeys=standard_action%2Cminute&rangeKeys=close%2Cfixed&durationKeys=instantaneous%2Ctimed&savingThrowKeys=none%2Cwill&spellResistanceKeys=yes%2Cno",
       undefined,
     );
   });
@@ -104,13 +105,14 @@ describe("spell API wrappers", () => {
         rangeKeys: ["medium"],
         durationKeys: ["instantaneous"],
         savingThrowKeys: ["none"],
+        spellResistanceKeys: ["yes"],
       },
       page: 1,
       pageSize: 50,
     });
 
     expect(apiGet).toHaveBeenCalledWith(
-      "/api/spells/by-level?classIds=1&level=3&schoolIds=2&descriptorIds=6&descriptorBuckets=see-text&componentKeys=somatic&castingTimeKeys=standard_action&rangeKeys=medium&durationKeys=instantaneous&savingThrowKeys=none&page=1&pageSize=50",
+      "/api/spells/by-level?classIds=1&level=3&schoolIds=2&descriptorIds=6&descriptorBuckets=see-text&componentKeys=somatic&castingTimeKeys=standard_action&rangeKeys=medium&durationKeys=instantaneous&savingThrowKeys=none&spellResistanceKeys=yes&page=1&pageSize=50",
       undefined,
     );
   });
