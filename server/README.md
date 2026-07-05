@@ -34,6 +34,10 @@ server tests. Local data import scripts under `server/scripts/` are run with
 `tsx` by their dedicated npm commands and are intentionally outside the server
 build so deployment does not depend on local source-data files.
 
+Server imports use Node package imports defined in `server/package.json`:
+`#server/*` for application source and `#prisma-*/*` for generated Prisma
+client trees. The build does not run a post-build alias rewrite.
+
 Smoke the compiled runtime import after a build:
 
 ```bash
@@ -41,7 +45,8 @@ npm run -w server check:runtime
 ```
 
 This imports `dist/src/app.js` without starting the listener. It catches
-compiled module-format issues in the server app or generated Prisma clients.
+compiled module-format issues in the server app, package imports, contracts
+runtime consumption, or generated Prisma clients.
 
 Run the built server:
 
@@ -131,6 +136,8 @@ For deployed runtime configuration, including `/etc/default/spellbook-api`, use:
 ## Notes
 
 - The server depends on `@dnd/contracts` for shared DTOs and type contracts.
+- Rebuild `contracts` before validating server changes that import shared
+  runtime values or DTOs.
 - Database setup and import workflows are project-specific; use the existing
   `server` and `data-tools` scripts rather than inventing parallel flows.
 - Deployment and database update workflows are documented in [../docs/operations/deployment.md](../docs/operations/deployment.md).

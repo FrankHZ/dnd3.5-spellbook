@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { type NextFunction, type Request, type Response } from "express";
-import { ApiError } from "~/utils/errors";
+import { ApiError } from "#server/utils/errors";
 
 const TOKEN_HEADER = "x-spellbook-operations-token";
 

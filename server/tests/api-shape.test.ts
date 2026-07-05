@@ -1,5 +1,5 @@
 import request from "supertest";
-import { app } from "~/app";
+import { app } from "#server/app";
 
 function expectPositiveInteger(value: unknown) {
   expect(typeof value).toBe("number");

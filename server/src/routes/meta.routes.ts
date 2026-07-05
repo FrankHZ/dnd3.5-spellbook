@@ -2,7 +2,7 @@ import { Router } from "express";
 import {
   getFilterVocabulary,
   getMetaI18n,
-} from "~/controllers/meta.controller";
+} from "#server/controllers/meta.controller";
 
 export const metaRouter = Router();
 

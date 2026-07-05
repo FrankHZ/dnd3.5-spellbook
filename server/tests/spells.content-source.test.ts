@@ -1,6 +1,6 @@
 import request from "supertest";
-import { app } from "~/app";
-import { activeSpellReadSource } from "~/services/spells/spells.repo.read";
+import { app } from "#server/app";
+import { activeSpellReadSource } from "#server/services/spells/spells.repo.read";
 
 describe("normalized content spell read source", () => {
   const previousSource = process.env.SPELL_READ_SOURCE;

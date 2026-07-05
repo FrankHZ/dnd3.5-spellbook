@@ -1,6 +1,6 @@
 import { I18nContext, Lang } from "@dnd/contracts";
 import { Request } from "express";
-import { SUPPORTED_LANGS } from "~/config/constant";
+import { SUPPORTED_LANGS } from "#server/config/constant";
 
 const allowedLangs = new Set<Lang>(SUPPORTED_LANGS);
 

@@ -1,13 +1,13 @@
 import { type Request, type Response, type NextFunction } from "express";
-import { ApiError } from "~/utils/errors";
+import { ApiError } from "#server/utils/errors";
 import {
   clampInt,
   normalizeString,
   parseCsvNumberList,
   parseIntOrDefault,
-} from "~/utils/parse";
-import { spellsService } from "~/services/spells/spells.service";
-import { getDefaultRulebookIds } from "~/services/rulebooks.service";
+} from "#server/utils/parse";
+import { spellsService } from "#server/services/spells/spells.service";
+import { getDefaultRulebookIds } from "#server/services/rulebooks.service";
 import type {
   SpellBatchRequest,
   SpellComponentFilterKey,
@@ -20,8 +20,8 @@ import {
   SPELL_COMPONENT_FILTER_KEYS,
   SPELL_DESCRIPTOR_BUCKET_KEYS,
 } from "@dnd/contracts";
-import { getI18nContext, hasCjk } from "~/utils/i18n";
-import { LevelMode } from "~/services/spells/spells.service.by-level";
+import { getI18nContext, hasCjk } from "#server/utils/i18n";
+import { LevelMode } from "#server/services/spells/spells.service.by-level";
 import { ResolveSpellNamesRequest } from "@dnd/contracts";
 
 function parseTaxonomyFilterIds(query: Request["query"]): SpellTaxonomyFilterIds {

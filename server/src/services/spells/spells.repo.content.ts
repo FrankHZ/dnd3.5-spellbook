@@ -5,13 +5,13 @@ import {
   SpellComponentFilters,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
-import { Prisma as ContentPrisma, Prisma } from "prisma-content/generated/client";
-import { contentPrisma } from "~/lib/content-prisma-client";
+import { Prisma as ContentPrisma, Prisma } from "#prisma-content/generated/client";
+import { contentPrisma } from "#server/lib/content-prisma-client";
 import {
   expandDescriptorBucketFilterIds,
   expandSchoolFilterIds,
   expandSubschoolFilterIds,
-} from "./taxonomy-normalization";
+} from "#server/services/spells/taxonomy-normalization";
 
 export const SELECT_SPELL_I18N_MIN = {
   spellId: true,

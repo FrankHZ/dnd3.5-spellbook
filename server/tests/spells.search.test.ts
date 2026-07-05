@@ -1,5 +1,5 @@
 import request from "supertest";
-import { app } from "../src/app";
+import { app } from "#server/app";
 
 describe("GET /api/spells/search", () => {
   it("searches spells by name", async () => {

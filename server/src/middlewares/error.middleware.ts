@@ -1,6 +1,6 @@
 import { type Request, type Response, type NextFunction } from "express";
-import { ApiError } from "../utils/errors";
-import { logger } from "../logger";
+import { ApiError } from "#server/utils/errors";
+import { logger } from "#server/logger";
 
 export function errorMiddleware(
   err: unknown,

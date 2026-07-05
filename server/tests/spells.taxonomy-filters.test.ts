@@ -4,7 +4,7 @@ import type {
   SpellFilterVocabularyResponse,
   SpellNameSearchResponse,
 } from "@dnd/contracts";
-import { app } from "~/app";
+import { app } from "#server/app";
 
 describe("spell taxonomy filter contracts", () => {
   const previousSource = process.env.SPELL_READ_SOURCE;

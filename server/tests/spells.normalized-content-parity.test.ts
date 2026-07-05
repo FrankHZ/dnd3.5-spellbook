@@ -6,7 +6,7 @@ import {
   querySpellDetail,
   querySpellsByIds,
   SELECT_SPELL_LIST,
-} from "~/services/spells/spells.repo.rules";
+} from "#server/services/spells/spells.repo.rules";
 import {
   fetchNormalizedSpellsInOrder,
   queryNormalizedByClassAndDomainWithLevel,
@@ -14,8 +14,8 @@ import {
   queryNormalizedIdsByName,
   queryNormalizedSpellDetail,
   queryNormalizedSpellsByIds,
-} from "~/services/spells/spells.repo.normalized-content";
-import { mapSpellDetail, mapSpellItem } from "~/services/spells/spells.mapper";
+} from "#server/services/spells/spells.repo.normalized-content";
+import { mapSpellDetail, mapSpellItem } from "#server/services/spells/spells.mapper";
 
 const emptyTaxonomyFilters = {
   schoolIds: [],

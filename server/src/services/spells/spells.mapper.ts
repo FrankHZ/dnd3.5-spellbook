@@ -4,18 +4,18 @@ import type {
   I18nSpellOverlay,
   I18nSpellDetailOverlay,
 } from "@dnd/contracts";
-import { Prisma as RulesPrisma } from "DB_RULES/client";
-import { Prisma as ContentPrisma } from "DB_CONTENT/client";
-import { SELECT_SPELL_DETAIL, SELECT_SPELL_LIST } from "./spells.repo.rules";
+import { Prisma as RulesPrisma } from "#prisma-rules-clean/generated/client";
+import { Prisma as ContentPrisma } from "#prisma-content/generated/client";
+import { SELECT_SPELL_DETAIL, SELECT_SPELL_LIST } from "#server/services/spells/spells.repo.rules";
 import {
   SELECT_SPELL_I18N_DETAIL,
   SELECT_SPELL_I18N_MIN,
   SELECT_SPELL_I18N_SUMMARY,
-} from "./spells.repo.content";
+} from "#server/services/spells/spells.repo.content";
 import {
   isOtherDescriptorFacet,
   OTHER_DESCRIPTOR_VOCABULARY,
-} from "./taxonomy-normalization";
+} from "#server/services/spells/taxonomy-normalization";
 
 type SpellNameI18nRow = ContentPrisma.I18nSpellTextGetPayload<{
   select: typeof SELECT_SPELL_I18N_MIN;

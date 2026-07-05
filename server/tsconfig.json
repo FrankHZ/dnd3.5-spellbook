@@ -42,16 +42,7 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "paths": {
-      "~/*": ["./src/*"],
-      "prisma-rules-clean/*": ["./prisma-rules-clean/*"],
-      "prisma-content/*": ["./prisma-content/*"],
-      "prisma-app-state/*": ["./prisma-app-state/*"],
-      "DB_RULES/*": ["./prisma-rules-clean/generated/*"],
-      "DB_CONTENT/*": ["./prisma-content/generated/*"],
-      "DB_APP_STATE/*": ["./prisma-app-state/generated/*"]
-    }
+    "resolveJsonModule": true
   },
   "include": [
     "src/**/*.ts",

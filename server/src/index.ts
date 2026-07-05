@@ -1,7 +1,7 @@
 import "dotenv/config";
-import { app } from "./app";
-import { logger } from "./logger";
-import { rulesPrisma } from "./lib/rules-prisma-client";
+import { app } from "#server/app";
+import { logger } from "#server/logger";
+import { rulesPrisma } from "#server/lib/rules-prisma-client";
 
 const port = Number(process.env.PORT ?? 3000);
 

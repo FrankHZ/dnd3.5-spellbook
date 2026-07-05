@@ -3,13 +3,13 @@ import {
   SpellComponentFilters,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
-import { rulesPrisma } from "../../lib/rules-prisma-client";
-import { Prisma } from "prisma-rules-clean/generated/client";
+import { rulesPrisma } from "#server/lib/rules-prisma-client";
+import { Prisma } from "#prisma-rules-clean/generated/client";
 import {
   expandDescriptorBucketFilterIds,
   expandSchoolFilterIds,
   expandSubschoolFilterIds,
-} from "./taxonomy-normalization";
+} from "#server/services/spells/taxonomy-normalization";
 
 export const SELECT_SPELL_MIN = {
   id: true,

@@ -1,5 +1,5 @@
 import request from "supertest";
-import { app } from "~/app";
+import { app } from "#server/app";
 import type { MetaI18nResponse } from "@dnd/contracts";
 
 describe("GET /api/meta/i18n", () => {

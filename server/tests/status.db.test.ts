@@ -1,7 +1,7 @@
 import request from "supertest";
 import type { DbStatusResponse } from "@dnd/contracts";
-import { app } from "../src/app";
-import { contentPrisma } from "../src/lib/content-prisma-client";
+import { app } from "#server/app";
+import { contentPrisma } from "#server/lib/content-prisma-client";
 
 const STATUS_ENV_KEYS = [
   "APP_DATABASE_URL",

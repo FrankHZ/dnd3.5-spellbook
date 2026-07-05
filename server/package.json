@@ -4,9 +4,27 @@
   "description": "A modern **Dungeons & Dragons 3.5 spellbook web application** built with a **React + Express** stack, powered by a legacy SQLite dataset and extended with **bilingual (English / Chinese) spell support**.",
   "main": "index.js",
   "type": "commonjs",
+  "imports": {
+    "#server/*": {
+      "types": "./src/*.ts",
+      "default": "./dist/src/*.js"
+    },
+    "#prisma-rules-clean/*": {
+      "types": "./prisma-rules-clean/*.ts",
+      "default": "./dist/prisma-rules-clean/*.js"
+    },
+    "#prisma-content/*": {
+      "types": "./prisma-content/*.ts",
+      "default": "./dist/prisma-content/*.js"
+    },
+    "#prisma-app-state/*": {
+      "types": "./prisma-app-state/*.ts",
+      "default": "./dist/prisma-app-state/*.js"
+    }
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
+    "build": "tsc -p tsconfig.json",
     "check:runtime": "node scripts/check-runtime-import.cjs",
     "start": "node dist/src/index.js",
     "db:generate": "prisma generate --schema ./prisma-rules-clean/schema.prisma && prisma generate --schema ./prisma-content/schema.prisma && prisma generate --schema ./prisma-app-state/schema.prisma",
@@ -42,8 +60,7 @@
     "iconv-lite": "^0.7.3",
     "pino": "^10.3.0",
     "pino-http": "^11.0.0",
-    "sanitize-html": "^2.17.0",
-    "tsconfig-paths": "^4.2.0"
+    "sanitize-html": "^2.17.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
@@ -58,7 +75,6 @@
     "prisma": "^7.3.0",
     "supertest": "^7.2.2",
     "ts-node": "^10.9.2",
-    "tsc-alias": "^1.8.16",
     "tsx": "^4.23.0",
     "typescript": "^6.0.3",
     "vitest": "^4.0.18"

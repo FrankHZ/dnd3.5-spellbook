@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { listRulebooks, listRulebookEditions } from '../controllers/rulebooks.controller';
+import { listRulebooks, listRulebookEditions } from '#server/controllers/rulebooks.controller';
 
 const rulebooksRouter = Router();
 

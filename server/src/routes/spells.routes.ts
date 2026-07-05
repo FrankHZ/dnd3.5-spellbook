@@ -5,7 +5,7 @@ import {
   getSpellDetail,
   batchSpells,
   resolveSpellNames,
-} from "~/controllers/spells.controller";
+} from "#server/controllers/spells.controller";
 
 const spellsRouter = Router();
 

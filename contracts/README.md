@@ -27,7 +27,9 @@ npm run -w @dnd/contracts clean
 
 - If shared DTOs change, rebuild this workspace before validating dependent work in `server` or `web`.
 - Keep this package focused on shared contracts, not runtime app logic.
-- Release-level behavior is documented in [../docs/mvp/v3.2/FREEZE.md](../docs/mvp/v3.2/FREEZE.md); this workspace should only define the shared contract surface needed to support it.
+- The package is ESM. The CommonJS server can consume current runtime-light
+  exports as long as `npm run check:contracts` and
+  `npm run -w server check:runtime` pass after a build.
 
 ## Related Docs
 

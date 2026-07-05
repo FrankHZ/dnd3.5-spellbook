@@ -7,8 +7,8 @@ import type {
   PublicContentStatus,
   RulesContentBuildStatus,
 } from "@dnd/contracts";
-import { contentPrisma } from "~/lib/content-prisma-client";
-import { activeSpellReadSource } from "~/services/spells/spells.repo.read";
+import { contentPrisma } from "#server/lib/content-prisma-client";
+import { activeSpellReadSource } from "#server/services/spells/spells.repo.read";
 
 function optional(value: string | null | undefined) {
   return value && value.length > 0 ? value : undefined;

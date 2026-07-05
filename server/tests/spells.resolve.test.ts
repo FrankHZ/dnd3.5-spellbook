@@ -1,5 +1,5 @@
 import request from "supertest";
-import { app } from "~/app";
+import { app } from "#server/app";
 
 describe("POST /api/spells/resolve", () => {
   it("returns resolved / ambiguous / not_found structure", async () => {

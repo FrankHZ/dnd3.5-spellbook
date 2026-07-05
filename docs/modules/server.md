@@ -29,6 +29,19 @@ work belong in `data-tools/`.
     operator-facing by default.
 - Prisma client wrappers live in `server/src/lib/`.
 
+## Module Imports
+
+Server source uses Node package imports owned by `server/package.json`:
+
+- `#server/*` maps to `server/src/*`.
+- `#prisma-rules-clean/*` maps to the rules-clean Prisma schema/client tree.
+- `#prisma-content/*` maps to the content Prisma schema/client tree.
+- `#prisma-app-state/*` maps to the app-state Prisma schema/client tree.
+
+Do not add new `~` imports or TypeScript-only `paths` aliases in the server
+package. The production build runs plain `tsc`, so runtime-resolvable import
+specifiers are part of the module boundary.
+
 ## Data Ownership
 
 The current runtime reads three SQLite connection roles:
@@ -92,6 +105,7 @@ npm run build:contracts
 npm run check:contracts
 npm run -w server db:generate
 npm run build:server
+npm run -w server check:runtime
 npm run test:server
 ```
 

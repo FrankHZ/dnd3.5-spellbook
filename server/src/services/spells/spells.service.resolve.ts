@@ -10,14 +10,14 @@ import {
   fetchSpellsInOrder,
   queryByExactNames,
   SELECT_SPELL_LIST,
-} from "./spells.repo.read";
+} from "#server/services/spells/spells.repo.read";
 import {
   queryByExactI18nNames,
   queryI18nMap,
   queryI18nSummaryMap,
   SpellI18nRow,
-} from "./spells.repo.content";
-import { mapSpellItem } from "./spells.mapper";
+} from "#server/services/spells/spells.repo.content";
+import { mapSpellItem } from "#server/services/spells/spells.mapper";
 
 type Draft =
   | {
