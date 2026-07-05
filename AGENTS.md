@@ -85,9 +85,18 @@ probe a user-level `.agents` path first.
   navigation, roadmap entries, version plans, AGENTS.md guidance, and plan
   templates coherent; it should not make product or implementation decisions
   beyond the accepted direction from the main gate.
+- Use librarian agents for freeze sweeps by default. Freeze work owns
+  cross-doc consistency, latest-snapshot navigation, acceptance evidence, and
+  `FREEZE.md` updates after implementation branches have been accepted.
 - Use specialist agents or focused branches for domain-heavy implementation
   work such as design, i18n, data tooling, deployment, harness, security,
   dependency maintenance, or frontend UI passes.
+- Keep specialist feature branches on a small documentation contract: read
+  `AGENTS.md`, the closest `docs/features.md` entry, the owning topic doc when
+  behavior or workflow changes, and nearby code/tests. Do not make specialist
+  branches chase docs navigation, roadmap ordering, module docs, integrated
+  plans, or freeze snapshots unless the branch changes scope, ownership,
+  sequencing, or release state.
 - Treat `main` as remote-managed. Work on feature branches, push the branch,
   open a PR, and let remote CI protect merges. Do not locally merge and push
   `main` unless the user explicitly asks for a direct main update.
