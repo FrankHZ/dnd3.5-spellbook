@@ -5,7 +5,7 @@ import type { RulebookMin } from "./rulebook.js";
 
 export type SpellID = number;
 
-export const SPELL_DESCRIPTOR_BUCKET_KEYS = ["other"] as const;
+export const SPELL_DESCRIPTOR_BUCKET_KEYS = ["see-text"] as const;
 
 export type SpellDescriptorBucketKey =
   (typeof SPELL_DESCRIPTOR_BUCKET_KEYS)[number];
@@ -36,8 +36,41 @@ export type SpellComponentFilters = {
   componentKeys: SpellComponentFilterKey[];
 };
 
+export const SPELL_CASTING_TIME_FILTER_KEYS = [
+  "immediate_action",
+  "swift_action",
+  "free_action",
+  "standard_action",
+  "full_round_action",
+  "round",
+  "minute",
+  "hour",
+] as const;
+
+export type SpellCastingTimeFilterKey =
+  (typeof SPELL_CASTING_TIME_FILTER_KEYS)[number];
+
+export const SPELL_RANGE_FILTER_KEYS = [
+  "personal",
+  "touch",
+  "close",
+  "medium",
+  "long",
+  "fixed",
+  "unlimited",
+] as const;
+
+export type SpellRangeFilterKey =
+  (typeof SPELL_RANGE_FILTER_KEYS)[number];
+
+export type SpellMechanicFilters = {
+  castingTimeKeys: SpellCastingTimeFilterKey[];
+  rangeKeys: SpellRangeFilterKey[];
+};
+
 export type SpellNormalizedFilterScope = SpellTaxonomyFilterIds &
-  SpellComponentFilters;
+  SpellComponentFilters &
+  SpellMechanicFilters;
 
 export type SpellNameSearchQuery = SpellNormalizedFilterScope & {
   q: string;
@@ -73,6 +106,8 @@ export type SpellItem = {
     key?: SpellDescriptorBucketKey | undefined;
     name: string;
     slug: string;
+    rawText?: string | undefined;
+    note?: string | undefined;
   }>;
   components: SpellComponents;
 
@@ -101,6 +136,8 @@ export type SpellNameSearchResponse = {
   descriptorIds: number[];
   descriptorBuckets: SpellDescriptorBucketKey[];
   componentKeys: SpellComponentFilterKey[];
+  castingTimeKeys: SpellCastingTimeFilterKey[];
+  rangeKeys: SpellRangeFilterKey[];
   items: SpellItemView[];
 };
 
@@ -121,6 +158,8 @@ export type SpellByLevelResponse = {
   descriptorIds: number[];
   descriptorBuckets: SpellDescriptorBucketKey[];
   componentKeys: SpellComponentFilterKey[];
+  castingTimeKeys: SpellCastingTimeFilterKey[];
+  rangeKeys: SpellRangeFilterKey[];
   groups: SpellsByLevelGroup[];
 };
 

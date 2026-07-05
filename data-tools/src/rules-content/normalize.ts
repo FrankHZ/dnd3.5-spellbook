@@ -300,8 +300,8 @@ const COMBINED_SUBSCHOOL_FACETS: Record<
 
 const OTHER_DESCRIPTOR_FACET = {
   id: null,
-  name: "Other",
-  slug: "other",
+  name: "See text",
+  slug: "see-text",
 };
 
 export function normalizeRulesContent(

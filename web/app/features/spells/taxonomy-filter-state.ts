@@ -1,8 +1,13 @@
 import {
+  SPELL_CASTING_TIME_FILTER_KEYS,
   SPELL_COMPONENT_FILTER_KEYS,
+  SPELL_RANGE_FILTER_KEYS,
+  type SpellCastingTimeFilterKey,
   type SpellComponentFilterKey,
   type SpellComponentFilters,
+  type SpellMechanicFilters,
   type SpellNormalizedFilterScope,
+  type SpellRangeFilterKey,
   type SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
 import { normalizeIds, parseIdList, setOrDelete } from "~/lib/utils";
@@ -18,9 +23,15 @@ export const emptyComponentFilters = (): SpellComponentFilters => ({
   componentKeys: [],
 });
 
+export const emptyMechanicFilters = (): SpellMechanicFilters => ({
+  castingTimeKeys: [],
+  rangeKeys: [],
+});
+
 export const emptyNormalizedFilters = (): SpellNormalizedFilterScope => ({
   ...emptyTaxonomyFilters(),
   ...emptyComponentFilters(),
+  ...emptyMechanicFilters(),
 });
 
 function normalizePositiveIds(ids: number[]) {
@@ -28,7 +39,7 @@ function normalizePositiveIds(ids: number[]) {
 }
 
 function normalizeDescriptorBuckets(values: string[] | undefined) {
-  const allowed = new Set(["other"]);
+  const allowed = new Set(["see-text"]);
   return Array.from(
     new Set((values ?? []).map((value) => value.trim().toLowerCase())),
   )
@@ -43,6 +54,22 @@ function normalizeComponentKeys(
     (values ?? []).map((value) => value.trim().toLowerCase()),
   );
   return SPELL_COMPONENT_FILTER_KEYS.filter((key) => selected.has(key));
+}
+
+function normalizeCastingTimeKeys(
+  values: string[] | undefined,
+): SpellCastingTimeFilterKey[] {
+  const selected = new Set(
+    (values ?? []).map((value) => value.trim().toLowerCase()),
+  );
+  return SPELL_CASTING_TIME_FILTER_KEYS.filter((key) => selected.has(key));
+}
+
+function normalizeRangeKeys(values: string[] | undefined): SpellRangeFilterKey[] {
+  const selected = new Set(
+    (values ?? []).map((value) => value.trim().toLowerCase()),
+  );
+  return SPELL_RANGE_FILTER_KEYS.filter((key) => selected.has(key));
 }
 
 export function parseTaxonomyFilters(
@@ -70,12 +97,24 @@ export function parseComponentFilters(
   };
 }
 
+export function parseMechanicFilters(
+  params: URLSearchParams,
+): SpellMechanicFilters {
+  return {
+    castingTimeKeys: normalizeCastingTimeKeys(
+      params.get("castingTimeKeys")?.split(","),
+    ),
+    rangeKeys: normalizeRangeKeys(params.get("rangeKeys")?.split(",")),
+  };
+}
+
 export function parseNormalizedFilters(
   params: URLSearchParams,
 ): SpellNormalizedFilterScope {
   return {
     ...parseTaxonomyFilters(params),
     ...parseComponentFilters(params),
+    ...parseMechanicFilters(params),
   };
 }
 
@@ -98,12 +137,22 @@ export function normalizeComponentFilters(
   };
 }
 
+export function normalizeMechanicFilters(
+  filters: Partial<SpellMechanicFilters>,
+): SpellMechanicFilters {
+  return {
+    castingTimeKeys: normalizeCastingTimeKeys(filters.castingTimeKeys),
+    rangeKeys: normalizeRangeKeys(filters.rangeKeys),
+  };
+}
+
 export function normalizeNormalizedFilters(
   filters: Partial<SpellNormalizedFilterScope>,
 ): SpellNormalizedFilterScope {
   return {
     ...normalizeTaxonomyFilters(filters),
     ...normalizeComponentFilters(filters),
+    ...normalizeMechanicFilters(filters),
   };
 }
 
@@ -148,6 +197,25 @@ export function setComponentFilterParams(
   );
 }
 
+export function setMechanicFilterParams(
+  params: URLSearchParams,
+  filters: Partial<SpellMechanicFilters>,
+) {
+  const normalized = normalizeMechanicFilters(filters);
+  setOrDelete(
+    params,
+    "castingTimeKeys",
+    normalized.castingTimeKeys.length
+      ? normalized.castingTimeKeys.join(",")
+      : null,
+  );
+  setOrDelete(
+    params,
+    "rangeKeys",
+    normalized.rangeKeys.length ? normalized.rangeKeys.join(",") : null,
+  );
+}
+
 export function setNormalizedFilterParams(
   params: URLSearchParams,
   filters: Partial<SpellNormalizedFilterScope>,
@@ -155,6 +223,7 @@ export function setNormalizedFilterParams(
   const normalized = normalizeNormalizedFilters(filters);
   setTaxonomyFilterParams(params, normalized);
   setComponentFilterParams(params, normalized);
+  setMechanicFilterParams(params, normalized);
 }
 
 export function hasTaxonomyFilters(filters: SpellTaxonomyFilterIds) {
@@ -170,8 +239,16 @@ export function hasComponentFilters(filters: SpellComponentFilters) {
   return filters.componentKeys.length > 0;
 }
 
+export function hasMechanicFilters(filters: SpellMechanicFilters) {
+  return filters.castingTimeKeys.length > 0 || filters.rangeKeys.length > 0;
+}
+
 export function hasNormalizedFilters(filters: SpellNormalizedFilterScope) {
-  return hasTaxonomyFilters(filters) || hasComponentFilters(filters);
+  return (
+    hasTaxonomyFilters(filters) ||
+    hasComponentFilters(filters) ||
+    hasMechanicFilters(filters)
+  );
 }
 
 export function countTaxonomyFilters(filters: SpellTaxonomyFilterIds) {
@@ -187,6 +264,14 @@ export function countComponentFilters(filters: SpellComponentFilters) {
   return filters.componentKeys.length;
 }
 
+export function countMechanicFilters(filters: SpellMechanicFilters) {
+  return filters.castingTimeKeys.length + filters.rangeKeys.length;
+}
+
 export function countNormalizedFilters(filters: SpellNormalizedFilterScope) {
-  return countTaxonomyFilters(filters) + countComponentFilters(filters);
+  return (
+    countTaxonomyFilters(filters) +
+    countComponentFilters(filters) +
+    countMechanicFilters(filters)
+  );
 }
