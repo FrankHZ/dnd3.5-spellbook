@@ -21,6 +21,7 @@ import {
   SPELL_CASTING_TIME_FILTER_KEYS,
   SPELL_COMPONENT_FILTER_KEYS,
   SPELL_DESCRIPTOR_BUCKET_KEYS,
+  SPELL_DURATION_FILTER_KEYS,
   SPELL_RANGE_FILTER_KEYS,
 } from "@dnd/contracts";
 import { getI18nContext, hasCjk } from "#server/utils/i18n";
@@ -82,6 +83,7 @@ function parseMechanicFilters(query: Request["query"]): SpellMechanicFilters {
       SPELL_CASTING_TIME_FILTER_KEYS,
     ),
     rangeKeys: parseKeys(query.rangeKeys, SPELL_RANGE_FILTER_KEYS),
+    durationKeys: parseKeys(query.durationKeys, SPELL_DURATION_FILTER_KEYS),
   };
 }
 

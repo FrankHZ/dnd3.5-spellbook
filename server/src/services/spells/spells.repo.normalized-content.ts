@@ -127,6 +127,9 @@ function normalizedMechanicWhere(filters: SpellMechanicFilters) {
   if (filters.rangeKeys.length > 0) {
     conditions.push(mechanicCondition("range", filters.rangeKeys));
   }
+  if (filters.durationKeys.length > 0) {
+    conditions.push(mechanicCondition("duration", filters.durationKeys));
+  }
 
   return conditions.length > 0
     ? Prisma.sql`AND ${Prisma.join(conditions, " AND ")}`

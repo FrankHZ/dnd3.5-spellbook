@@ -199,6 +199,29 @@ function rulesMechanicWhere(filters: SpellMechanicFilters) {
     conditions.push(Prisma.sql`(${Prisma.join(rangeConditions, " OR ")})`);
   }
 
+  const durationConditions = filters.durationKeys.map((key) => {
+    const field = Prisma.sql`LOWER(COALESCE(s.duration, ''))`;
+    if (key === "instantaneous") {
+      return Prisma.sql`${field} LIKE '%instantaneous%'`;
+    }
+    if (key === "permanent") return Prisma.sql`${field} LIKE '%permanent%'`;
+    if (key === "concentration") {
+      return Prisma.sql`${field} LIKE '%concentration%'`;
+    }
+    return Prisma.sql`
+      (
+        ${field} GLOB '*[0-9]*'
+        AND ${field} NOT LIKE '%instantaneous%'
+        AND ${field} NOT LIKE '%permanent%'
+        AND ${field} NOT LIKE '%concentration%'
+      )
+    `;
+  });
+
+  if (durationConditions.length > 0) {
+    conditions.push(Prisma.sql`(${Prisma.join(durationConditions, " OR ")})`);
+  }
+
   return conditions.length > 0
     ? Prisma.sql`AND ${Prisma.join(conditions, " AND ")}`
     : Prisma.empty;

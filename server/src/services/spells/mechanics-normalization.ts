@@ -1,10 +1,12 @@
 import type {
   SpellCastingTimeFilterKey,
+  SpellDurationFilterKey,
   SpellMechanicFilters,
   SpellRangeFilterKey,
 } from "@dnd/contracts";
 import {
   SPELL_CASTING_TIME_FILTER_KEYS,
+  SPELL_DURATION_FILTER_KEYS,
   SPELL_RANGE_FILTER_KEYS,
 } from "@dnd/contracts";
 
@@ -37,8 +39,20 @@ export const RANGE_FILTER_VOCABULARY: Array<{
   { key: "unlimited", label: "Unlimited", sortOrder: 70 },
 ];
 
+export const DURATION_FILTER_VOCABULARY: Array<{
+  key: SpellDurationFilterKey;
+  label: string;
+  sortOrder: number;
+}> = [
+  { key: "instantaneous", label: "Instantaneous", sortOrder: 10 },
+  { key: "timed", label: "Timed", sortOrder: 20 },
+  { key: "concentration", label: "Concentration", sortOrder: 30 },
+  { key: "permanent", label: "Permanent", sortOrder: 40 },
+];
+
 const CASTING_TIME_KEY_SET = new Set<string>(SPELL_CASTING_TIME_FILTER_KEYS);
 const RANGE_KEY_SET = new Set<string>(SPELL_RANGE_FILTER_KEYS);
+const DURATION_KEY_SET = new Set<string>(SPELL_DURATION_FILTER_KEYS);
 
 export function normalizeMechanicFilters(
   filters: Partial<SpellMechanicFilters>,
@@ -54,11 +68,20 @@ export function normalizeMechanicFilters(
       SPELL_RANGE_FILTER_KEYS,
       RANGE_KEY_SET,
     ),
+    durationKeys: normalizeKeys(
+      filters.durationKeys,
+      SPELL_DURATION_FILTER_KEYS,
+      DURATION_KEY_SET,
+    ),
   };
 }
 
 export function hasMechanicScope(filters: SpellMechanicFilters) {
-  return filters.castingTimeKeys.length > 0 || filters.rangeKeys.length > 0;
+  return (
+    filters.castingTimeKeys.length > 0 ||
+    filters.rangeKeys.length > 0 ||
+    filters.durationKeys.length > 0
+  );
 }
 
 function normalizeKeys<T extends string>(

@@ -8,6 +8,7 @@ import type {
 } from "@dnd/contracts";
 import {
   CASTING_TIME_FILTER_VOCABULARY,
+  DURATION_FILTER_VOCABULARY,
   RANGE_FILTER_VOCABULARY,
 } from "#server/services/spells/mechanics-normalization";
 import {
@@ -246,6 +247,11 @@ async function loadFilterVocabulary(
         queryParam: "rangeKeys",
         mode: "any",
         buckets: RANGE_FILTER_VOCABULARY,
+      },
+      durations: {
+        queryParam: "durationKeys",
+        mode: "any",
+        buckets: DURATION_FILTER_VOCABULARY,
       },
     },
   };

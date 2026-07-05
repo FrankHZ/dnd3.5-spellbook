@@ -26,6 +26,7 @@ describe("search URL helpers", () => {
         componentKeys: [],
         castingTimeKeys: [],
         rangeKeys: [],
+        durationKeys: [],
       },
       level: 3,
       page: 4,
@@ -47,6 +48,7 @@ describe("search URL helpers", () => {
       componentKeys: [],
       castingTimeKeys: [],
       rangeKeys: [],
+      durationKeys: [],
     });
   });
 
@@ -63,7 +65,7 @@ describe("search URL helpers", () => {
   it("parses mechanic filters from query params", () => {
     const scope = parseSearchScope(
       new URLSearchParams(
-        "q=fire&castingTimeKeys=minute,bad,standard_action&rangeKeys=fixed,close&page=2",
+        "q=fire&castingTimeKeys=minute,bad,standard_action&rangeKeys=fixed,close&durationKeys=timed,unknown,instantaneous&page=2",
       ),
     );
 
@@ -72,6 +74,7 @@ describe("search URL helpers", () => {
       "minute",
     ]);
     expect(scope.filters.rangeKeys).toEqual(["close", "fixed"]);
+    expect(scope.filters.durationKeys).toEqual(["instantaneous", "timed"]);
   });
 
   it("builds clean and scoped search URLs", () => {
@@ -89,11 +92,12 @@ describe("search URL helpers", () => {
           componentKeys: ["material", "verbal"],
           castingTimeKeys: ["standard_action", "minute"],
           rangeKeys: ["close"],
+          durationKeys: ["instantaneous"],
         },
         level: "all",
       }),
     ).toBe(
-      "/search?q=fire+ball&classIds=1%2C2&domainIds=8&schoolIds=4&subschoolIds=3&descriptorIds=8%2C9&descriptorBuckets=see-text&componentKeys=verbal%2Cmaterial&castingTimeKeys=standard_action%2Cminute&rangeKeys=close",
+      "/search?q=fire+ball&classIds=1%2C2&domainIds=8&schoolIds=4&subschoolIds=3&descriptorIds=8%2C9&descriptorBuckets=see-text&componentKeys=verbal%2Cmaterial&castingTimeKeys=standard_action%2Cminute&rangeKeys=close&durationKeys=instantaneous",
     );
   });
 
@@ -139,6 +143,7 @@ describe("search URL helpers", () => {
           componentKeys: [],
           castingTimeKeys: [],
           rangeKeys: [],
+          durationKeys: [],
         },
         level: null,
       }),
@@ -158,6 +163,7 @@ describe("search URL helpers", () => {
           componentKeys: ["material"],
           castingTimeKeys: [],
           rangeKeys: [],
+          durationKeys: [],
         },
         level: null,
       }),
@@ -177,6 +183,7 @@ describe("search URL helpers", () => {
           componentKeys: [],
           castingTimeKeys: ["standard_action"],
           rangeKeys: [],
+          durationKeys: [],
         },
         level: null,
       }),

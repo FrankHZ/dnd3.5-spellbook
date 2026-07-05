@@ -126,6 +126,7 @@ describe("taxonomy filter state helpers", () => {
       componentKeys: ["verbal", "material"],
       castingTimeKeys: [],
       rangeKeys: [],
+      durationKeys: [],
     });
   });
 
@@ -148,16 +149,19 @@ describe("taxonomy filter state helpers", () => {
     ).toEqual({
       castingTimeKeys: ["standard_action", "minute"],
       rangeKeys: ["close", "fixed"],
+      durationKeys: [],
     });
 
     expect(
       normalizeMechanicFilters({
         castingTimeKeys: ["hour", "swift_action", "bad" as any],
         rangeKeys: ["unlimited", "touch", "touch"],
+        durationKeys: ["timed", "instantaneous", "bad" as any],
       }),
     ).toEqual({
       castingTimeKeys: ["swift_action", "hour"],
       rangeKeys: ["touch", "unlimited"],
+      durationKeys: ["instantaneous", "timed"],
     });
   });
 
@@ -167,15 +171,17 @@ describe("taxonomy filter state helpers", () => {
     setMechanicFilterParams(params, {
       castingTimeKeys: ["standard_action", "minute"],
       rangeKeys: ["close"],
+      durationKeys: ["instantaneous"],
     });
 
     expect(String(params)).toBe(
-      "castingTimeKeys=standard_action%2Cminute&page=4&rangeKeys=close",
+      "castingTimeKeys=standard_action%2Cminute&page=4&rangeKeys=close&durationKeys=instantaneous",
     );
 
     setMechanicFilterParams(params, {
       castingTimeKeys: [],
       rangeKeys: [],
+      durationKeys: [],
     });
 
     expect(String(params)).toBe("page=4");
@@ -185,9 +191,10 @@ describe("taxonomy filter state helpers", () => {
     const filters = {
       castingTimeKeys: ["standard_action" as const],
       rangeKeys: ["close" as const, "medium" as const],
+      durationKeys: ["timed" as const],
     };
 
     expect(hasMechanicFilters(filters)).toBe(true);
-    expect(countMechanicFilters(filters)).toBe(3);
+    expect(countMechanicFilters(filters)).toBe(4);
   });
 });
