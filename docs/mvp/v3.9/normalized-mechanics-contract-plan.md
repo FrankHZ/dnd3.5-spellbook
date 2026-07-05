@@ -57,8 +57,7 @@ and consumer behavior are clear.
 
 - Do not add frontend controls in this plan.
 - Do not promote `target` / `effect` / `area` in the first pass.
-- Do not promote `savingThrow` or `spellResistance` before their consumer
-  semantics are explicit.
+- Do not promote `spellResistance` before its consumer semantics are explicit.
 - Do not add content artifact/versioned DB release automation, static/offline
   generation, large translation QA, broad security/deploy hardening, dependency
   audit cleanup, or full server ESM migration unless one becomes a direct
@@ -85,10 +84,9 @@ npm run -w data-tools rules:content:review
   - `mechanics.range`: needs normalization with `147` review rows
   - `mechanics.target_effect_area`: defer with `target` `1360`, `effect` `510`,
     and `area` `241` review rows
-  - `mechanics.duration_save_sr`: promote `duration` as a separate first slice;
-    `savingThrow` and `spellResistance` remain deferred pending explicit
-    consumer semantics, with `savingThrow` `277` and `spellResistance` `66`
-    review rows
+  - `mechanics.duration_save_sr`: promote `duration` and `savingThrow` as
+    separate slices; `spellResistance` remains deferred pending explicit
+    consumer semantics, with `spellResistance` `66` review rows
 - Current known audit tail:
   `npm audit --workspaces --omit=dev --json` still reports the reviewed three
   moderate Prisma dev-chain / Hono advisories. `fixAvailable` points to
@@ -113,6 +111,8 @@ The first promoted mechanics filters are:
   `personal`, `touch`, `close`, `medium`, `long`, `fixed`, `unlimited`
 - `durationKeys`, selection mode `any` within the field:
   `instantaneous`, `timed`, `concentration`, `permanent`
+- `savingThrowKeys`, selection mode `any` within the field:
+  `none`, `fortitude`, `reflex`, `will`
 
 When multiple fields are present, they combine with `all` semantics: a spell
 must match one selected bucket in each selected mechanics family.
@@ -124,7 +124,8 @@ Fallback behavior:
   the accepted bucket definitions.
 - Missing, `empty`, `special`, and review-status mechanics rows are not public
   vocabulary and do not match promoted filters. Duration flags such as
-  dismissible or discharge remain detail metadata, not public filters.
+  dismissible or discharge, and saving throw flags such as partial, negates,
+  harmless, or object, remain detail metadata, not public filters.
 
 ## Plan
 
@@ -157,7 +158,8 @@ Fallback behavior:
 
 - Deliverable: shared contracts and `GET /api/meta/filters` expose only
   accepted mechanics vocabulary with stable query params and labels.
-- Status: implemented for `castingTimeKeys`, `rangeKeys`, and `durationKeys`.
+- Status: implemented for `castingTimeKeys`, `rangeKeys`, `durationKeys`, and
+  `savingThrowKeys`.
 - Expected files: `contracts/src/dto/*`, server meta/filter vocabulary, server
   DTO tests.
 - Validation:
@@ -218,8 +220,8 @@ Fallback behavior:
   set?
 - Which component extra rows can be safely normalized versus classified as
   review-only?
-- What explicit consumer semantics would make `savingThrow` or
-  `spellResistance` safe to promote later?
+- What explicit consumer semantics would make `spellResistance` safe to promote
+  later?
 
 ## Completion Notes
 

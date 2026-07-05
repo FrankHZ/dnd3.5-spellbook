@@ -73,10 +73,21 @@ export const SPELL_DURATION_FILTER_KEYS = [
 export type SpellDurationFilterKey =
   (typeof SPELL_DURATION_FILTER_KEYS)[number];
 
+export const SPELL_SAVING_THROW_FILTER_KEYS = [
+  "none",
+  "fortitude",
+  "reflex",
+  "will",
+] as const;
+
+export type SpellSavingThrowFilterKey =
+  (typeof SPELL_SAVING_THROW_FILTER_KEYS)[number];
+
 export type SpellMechanicFilters = {
   castingTimeKeys: SpellCastingTimeFilterKey[];
   rangeKeys: SpellRangeFilterKey[];
   durationKeys: SpellDurationFilterKey[];
+  savingThrowKeys: SpellSavingThrowFilterKey[];
 };
 
 export type SpellNormalizedFilterScope = SpellTaxonomyFilterIds &
@@ -150,6 +161,7 @@ export type SpellNameSearchResponse = {
   castingTimeKeys: SpellCastingTimeFilterKey[];
   rangeKeys: SpellRangeFilterKey[];
   durationKeys: SpellDurationFilterKey[];
+  savingThrowKeys: SpellSavingThrowFilterKey[];
   items: SpellItemView[];
 };
 
@@ -173,6 +185,7 @@ export type SpellByLevelResponse = {
   castingTimeKeys: SpellCastingTimeFilterKey[];
   rangeKeys: SpellRangeFilterKey[];
   durationKeys: SpellDurationFilterKey[];
+  savingThrowKeys: SpellSavingThrowFilterKey[];
   groups: SpellsByLevelGroup[];
 };
 
