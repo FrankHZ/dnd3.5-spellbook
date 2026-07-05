@@ -1,6 +1,6 @@
 # v3.8
 
-Status: planning open.
+Status: implementation closeout.
 
 v3.8 is a focused normalized query and filter-consumer release. The mainline is
 to settle a backend normalized filter/query contract first, then let the
@@ -29,6 +29,9 @@ deliverables unless it finds an active deploy/runtime risk.
 The frontend branch should not invent filter vocabulary or parse legacy source
 strings. The infrastructure spike should not force a full ESM migration unless
 it proves the current boundary keeps creating real deploy/runtime risk.
+
+The module-boundary spike accepted Node package imports for server internals
+and confirmed that a full server ESM migration is not needed for v3.8.
 
 ## Non-Goals
 

@@ -16,6 +16,23 @@ state, or UI behavior in this package.
   `contracts/src/i18n.ts`.
 - Generated output lives under `contracts/dist/`.
 
+## Runtime Packaging
+
+`@dnd/contracts` is an ESM package with runtime-light DTO/helper exports. The
+CommonJS server consumes the built package through its normal package export
+and guards that boundary with:
+
+```bash
+npm run build:contracts
+npm run check:contracts
+npm run build:server
+npm run -w server check:runtime
+```
+
+Do not add a dual CJS/ESM build unless contracts gains runtime behavior that
+breaks this guarded path. Keep contracts free of server data access, frontend
+state, top-level async work, and environment-dependent side effects.
+
 ## Change Flow
 
 When a shared shape changes:

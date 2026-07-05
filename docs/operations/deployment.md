@@ -556,7 +556,8 @@ These should remain true unless the deployment model is deliberately changed:
 - the backend environment is defined by `/etc/default/spellbook-api`
 - the backend binds only to `127.0.0.1:3000`
 - Nginx is the only public service on port `80`
-- backend builds use `tsc` plus `tsc-alias`
+- backend builds use plain `tsc`; server package imports must resolve through
+  `server/package.json`
 - deployment remains explicit and manual
 
 ## Operational Risks
@@ -588,7 +589,9 @@ Check:
 Check:
 
 - that `npm run -w server build` completed successfully
-- that `tsc-alias` is part of the build output path
+- that `npm run -w server check:runtime` passes after the build
+- that any new server import uses runtime-resolvable package imports such as
+  `#server/*` or `#prisma-*/*`
 - that `/opt/spellbook` received the updated `dist/` output
 
 ### Git Pull Fails During Backend Deploy

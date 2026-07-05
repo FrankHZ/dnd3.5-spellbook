@@ -1,7 +1,7 @@
 import type { Edition, Rulebook } from "@dnd/contracts";
-import { DEFAULT_DND_EDITION_SLUG, DND_SYSTEM } from "../config/constant";
-import { contentPrisma } from "../lib/content-prisma-client";
-import { rulesPrisma as prisma } from "../lib/rules-prisma-client";
+import { DEFAULT_DND_EDITION_SLUG, DND_SYSTEM } from "#server/config/constant";
+import { contentPrisma } from "#server/lib/content-prisma-client";
+import { rulesPrisma as prisma } from "#server/lib/rules-prisma-client";
 
 let cachedRulebooksPromise: Promise<Rulebook[]> | null = null;
 let cachedEditionsPromise: Promise<Edition[]> | null = null;

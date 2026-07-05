@@ -1,11 +1,11 @@
-import { rulesPrisma } from "~/lib/rules-prisma-client";
+import { rulesPrisma } from "#server/lib/rules-prisma-client";
 import {
   ClassView,
   I18nContext,
   I18nNameOverlay,
   ClassListResponse,
 } from "@dnd/contracts";
-import { contentPrisma } from "~/lib/content-prisma-client";
+import { contentPrisma } from "#server/lib/content-prisma-client";
 
 export const classesService = {
   async listClasses(input: {

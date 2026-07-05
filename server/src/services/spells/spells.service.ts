@@ -6,7 +6,7 @@ import type {
   SpellDetailView,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
-import { mapSpellItem, mapSpellDetail } from "./spells.mapper";
+import { mapSpellItem, mapSpellDetail } from "#server/services/spells/spells.mapper";
 import {
   fetchSpellsInOrder,
   queryIdsByName,
@@ -14,16 +14,16 @@ import {
   querySpellsByIds,
   SELECT_SPELL_LIST,
   type SpellRow,
-} from "./spells.repo.read";
-import { listByClassAndDomainLevel } from "./spells.service.by-level";
+} from "#server/services/spells/spells.repo.read";
+import { listByClassAndDomainLevel } from "#server/services/spells/spells.service.by-level";
 import {
   queryI18nMap,
   queryIdsByI18nName,
   queryI18nDetail,
   queryI18nSummaryDetail,
   queryI18nSummaryMap,
-} from "./spells.repo.content";
-import { resolveSpellNames } from "./spells.service.resolve";
+} from "#server/services/spells/spells.repo.content";
+import { resolveSpellNames } from "#server/services/spells/spells.service.resolve";
 
 export const spellsService = {
   async searchByName(input: {

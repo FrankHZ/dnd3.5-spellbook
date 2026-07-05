@@ -34,6 +34,18 @@ server tests. Local data import scripts under `server/scripts/` are run with
 `tsx` by their dedicated npm commands and are intentionally outside the server
 build so deployment does not depend on local source-data files.
 
+Server imports use Node package imports defined in `server/package.json`:
+`#server/*` for application source and `#prisma-*/*` for generated Prisma
+client trees. Development and TS maintenance scripts run with
+`NODE_OPTIONS=--conditions=source` through the npm scripts in this file, while
+Vitest uses `server/vitest.config.ts` source-condition resolution. Both paths
+resolve those imports to current `.ts` source. The build does not run a
+post-build alias rewrite; built runtime commands resolve the same imports to
+`dist/`.
+
+Do not run `tsx scripts/*.ts` directly when the script imports server code.
+Use the matching npm script, or pass `NODE_OPTIONS=--conditions=source`.
+
 Smoke the compiled runtime import after a build:
 
 ```bash
@@ -41,7 +53,8 @@ npm run -w server check:runtime
 ```
 
 This imports `dist/src/app.js` without starting the listener. It catches
-compiled module-format issues in the server app or generated Prisma clients.
+compiled module-format issues in the server app, package imports, contracts
+runtime consumption, or generated Prisma clients.
 
 Run the built server:
 
@@ -131,6 +144,8 @@ For deployed runtime configuration, including `/etc/default/spellbook-api`, use:
 ## Notes
 
 - The server depends on `@dnd/contracts` for shared DTOs and type contracts.
+- Rebuild `contracts` before validating server changes that import shared
+  runtime values or DTOs.
 - Database setup and import workflows are project-specific; use the existing
   `server` and `data-tools` scripts rather than inventing parallel flows.
 - Deployment and database update workflows are documented in [../docs/operations/deployment.md](../docs/operations/deployment.md).

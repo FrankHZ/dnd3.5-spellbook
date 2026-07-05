@@ -1,5 +1,5 @@
 import request from "supertest";
-import { app } from "../src/app";
+import { app } from "#server/app";
 
 describe("POST /api/spells/batch", () => {
   it("returns items in input order and missingIds", async () => {

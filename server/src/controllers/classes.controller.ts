@@ -1,8 +1,8 @@
 import { type Request, type Response, type NextFunction } from "express";
-import { classesService } from "../services/classes.service";
-import { parseBoolean, parseCsvNumberList } from "../utils/parse";
-import { getDefaultRulebookIds } from "../services/rulebooks.service";
-import { getI18nContext } from "~/utils/i18n";
+import { classesService } from "#server/services/classes.service";
+import { parseBoolean, parseCsvNumberList } from "#server/utils/parse";
+import { getDefaultRulebookIds } from "#server/services/rulebooks.service";
+import { getI18nContext } from "#server/utils/i18n";
 
 export async function listClasses(
   req: Request,

@@ -9,9 +9,9 @@ import {
   queryByClassAndDomainAllLevels,
   queryByClassAndDomainWithLevel,
   SpellRow,
-} from "./spells.repo.read";
-import { mapSpellItem } from "./spells.mapper";
-import { queryI18nMap, queryI18nSummaryMap } from "./spells.repo.content";
+} from "#server/services/spells/spells.repo.read";
+import { mapSpellItem } from "#server/services/spells/spells.mapper";
+import { queryI18nMap, queryI18nSummaryMap } from "#server/services/spells/spells.repo.content";
 
 type HasLevel = { level: number };
 type SpellClassIndex = SpellRow["spellClassIndexes"][number];

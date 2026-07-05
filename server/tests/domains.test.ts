@@ -1,5 +1,5 @@
 import request from "supertest";
-import { app } from "../src/app";
+import { app } from "#server/app";
 
 describe("GET /api/domains", () => {
   it("returns base domains by default", async () => {

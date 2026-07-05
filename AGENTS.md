@@ -225,6 +225,13 @@ manual browser smoke test of the affected pages.
 - API calls should go through `web/app/api/`.
 - Local UI wrappers live in `web/app/components/ui/`.
 - Server API route registration starts in `server/src/app.ts`.
+- Server internal imports use `#server/*`; generated Prisma client imports use
+  `#prisma-rules-clean/*`, `#prisma-content/*`, or `#prisma-app-state/*`.
+  Do not add new server `~` aliases or TypeScript-only `paths` aliases.
+  Local TS execution must use the server npm scripts or
+  `NODE_OPTIONS=--conditions=source`; built runtime commands intentionally
+  omit that condition and resolve imports to `dist/`. Server tests use
+  `server/vitest.config.ts` source-condition resolution, not `NODE_OPTIONS`.
 - Spell backend behavior is split under `server/src/services/spells/`.
 - Runtime database clients are generated from the rules-clean, content, and
   app-state Prisma schemas; regenerate clients when schemas change.

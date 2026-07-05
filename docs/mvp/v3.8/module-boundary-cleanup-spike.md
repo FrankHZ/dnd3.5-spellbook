@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned independent spike.
+Status: implemented; pending review.
 
 ## Purpose
 
@@ -56,10 +56,42 @@ The cleanup should be investigated without blocking normalized query work.
 
 - The server package runtime remains CommonJS.
 - TypeScript compilation/resolution uses NodeNext after v3.7.
-- `tsc-alias` still rewrites server aliases after build.
-- `@dnd/contracts` is primarily DTO/runtime-light exports today.
-- Roadmap guidance prefers relative `.js` specifiers or Node-standard `#...`
-  package imports over expanding `~` if future ESM work proceeds.
+- Server source now uses Node package imports instead of TypeScript-only path
+  aliases:
+  - `#server/*` for `server/src/*`
+  - `#prisma-rules-clean/*` for the rules-clean Prisma schema/client tree
+  - `#prisma-content/*` for the content Prisma schema/client tree
+  - `#prisma-app-state/*` for the app-state Prisma schema/client tree
+- `server/package.json` owns the runtime import map, and
+  `server/tsconfig.json` no longer needs `paths`.
+- Development, tests, and TS maintenance scripts use a custom `source`
+  condition so package imports resolve to current `.ts` files. `tsx` entry
+  points set `NODE_OPTIONS=--conditions=source`; Vitest uses
+  `resolve.conditions: ["source"]`. Built runtime commands omit that condition
+  and resolve to `dist/`.
+- `tsc-alias` and `tsconfig-paths` are no longer server dependencies.
+- `@dnd/contracts` is primarily DTO/runtime-light exports today, and the
+  current CommonJS server can consume those exports after `contracts` is built.
+
+## Decision
+
+Accept Node package imports as the server import style for this codebase.
+
+The initial probe showed that pure `tsc` output could not run while source
+still used `~` and Prisma path aliases: compiled output kept unresolved
+non-relative specifiers such as `~/controllers/spells.controller`. After
+migrating server source, tests, and maintenance scripts to package imports, the
+server build can run with plain `tsc -p tsconfig.json` and no post-build alias
+rewrite.
+
+Do not force a full server ESM runtime migration for v3.8. The package remains
+CommonJS, but TypeScript keeps NodeNext compilation/resolution so package
+imports and the ESM `@dnd/contracts` boundary are checked consistently.
+
+Do not add a dual CJS/ESM `contracts` build now. The current runtime-light
+exports are safe under the guarded server path. Revisit only if contracts gains
+stateful runtime logic, top-level async work, or exports that fail
+`npm run -w server check:runtime`.
 
 ## Plan
 
@@ -103,12 +135,15 @@ The cleanup should be investigated without blocking normalized query work.
 
 ## Acceptance Criteria
 
-- The spike answers whether `tsc-alias` can be dropped now.
+- The spike answers whether `tsc-alias` can be dropped now. Accepted: yes,
+  after migrating server imports to package imports.
 - The recommendation names the preferred server import style for future work.
+  Accepted: use Node package imports, not `~`.
 - Contracts runtime consumption is either confirmed safe or assigned a concrete
-  follow-up.
+  follow-up. Accepted: confirmed safe with `build:contracts`,
+  `check:contracts`, `build:server`, and `check:runtime`.
 - Normalized query and frontend consumer work remain unblocked unless an active
-  deploy/runtime risk is found.
+  deploy/runtime risk is found. Accepted: no blocking risk found.
 
 ## Doc Updates
 
@@ -122,12 +157,36 @@ The cleanup should be investigated without blocking normalized query work.
 
 ## Open Questions
 
-- Is keeping `tsc-alias` acceptable if `check:runtime` continues to guard
-  deploy output?
-- Are Node `#...` imports a cleaner migration than relative `.js` specifiers
-  for the server package?
-- Does contracts need runtime packaging changes before it grows beyond DTOs?
+- If contracts grows beyond DTO/runtime-light exports, should it add a dual
+  package build or should the server move fully to ESM first?
+- Should any future data-tools/server shared runtime helpers live in contracts,
+  or in a new workspace with an explicit runtime package boundary?
 
 ## Completion Notes
 
-Use this section only after implementation review.
+- Alias inventory found `~`, `DB_RULES`, `DB_CONTENT`, `DB_APP_STATE`, and
+  direct Prisma generated-client aliases across server source, tests, and
+  maintenance scripts.
+- A no-migration `tsc` probe failed at runtime with unresolved `~` imports,
+  confirming that dropping `tsc-alias` required an import-style change.
+- Server source, tests, and scripts now use `#server/*` and `#prisma-*/*`
+  package imports.
+- `server/package.json` defines both `source` and default package import
+  targets. Local `tsx` npm scripts use `NODE_OPTIONS=--conditions=source`, and
+  Vitest uses source-condition resolution in `server/vitest.config.ts`, to avoid
+  stale `dist/`; production runtime checks continue to use default `dist/`
+  resolution.
+- `server/package.json` now defines the package import map and builds with
+  plain `tsc`; `server/tsconfig.json` no longer defines alias `paths`.
+- `tsc-alias` and `tsconfig-paths` were removed from the server workspace.
+- Validation used:
+  - `node --conditions=source -p "require.resolve('#server/app')"`
+  - `node -p "require.resolve('#server/app')"`
+  - `npx tsx -e "... import('#server/utils/i18n') ..."`
+  - `npm run build:contracts`
+  - `npm run check:contracts`
+  - `npm run -w server db:generate`
+  - `npm run build:server`
+  - `npm run -w server check:runtime`
+  - `npm run test:server`
+  - `npm run ci:portable`

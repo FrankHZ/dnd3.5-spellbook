@@ -3,7 +3,7 @@ import {
   SpellComponentFilters,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
-import { Prisma } from "prisma-rules-clean/generated/client";
+import { Prisma } from "#prisma-rules-clean/generated/client";
 import {
   fetchSpellsInOrder as fetchRulesSpellsInOrder,
   queryByClassAndDomainAllLevels as queryRulesByClassAndDomainAllLevels,
@@ -16,7 +16,7 @@ import {
   SELECT_SPELL_LIST,
   SELECT_SPELL_MIN,
   type SpellRow,
-} from "./spells.repo.rules";
+} from "#server/services/spells/spells.repo.rules";
 import {
   fetchNormalizedSpellsInOrder,
   queryNormalizedByClassAndDomainAllLevels,
@@ -25,7 +25,7 @@ import {
   queryNormalizedIdsByName,
   queryNormalizedSpellDetail,
   queryNormalizedSpellsByIds,
-} from "./spells.repo.normalized-content";
+} from "#server/services/spells/spells.repo.normalized-content";
 
 export { SELECT_SPELL_DETAIL, SELECT_SPELL_LIST, SELECT_SPELL_MIN };
 export type { SpellRow };

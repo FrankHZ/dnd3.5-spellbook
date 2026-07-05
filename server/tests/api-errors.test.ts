@@ -1,7 +1,7 @@
 import express from "express";
 import request from "supertest";
-import { app } from "~/app";
-import { errorMiddleware } from "~/middlewares/error.middleware";
+import { app } from "#server/app";
+import { errorMiddleware } from "#server/middlewares/error.middleware";
 
 function expectApiErrorShape(body: any, message: string, error: string) {
   expect(body).toEqual({ message, error });

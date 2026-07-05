@@ -1,4 +1,4 @@
-import { contentPrisma } from "~/lib/content-prisma-client";
+import { contentPrisma } from "#server/lib/content-prisma-client";
 import fs from "node:fs";
 import path from "node:path";
 import { load } from "cheerio";

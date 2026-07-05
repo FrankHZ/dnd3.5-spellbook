@@ -1,5 +1,5 @@
 import request from "supertest";
-import { app } from "../src/app";
+import { app } from "#server/app";
 import type { RulebookListResponse } from "@dnd/contracts";
 
 describe("GET /api/rulebooks", () => {

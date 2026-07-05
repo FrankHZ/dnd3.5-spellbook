@@ -27,6 +27,25 @@ function execMany(db: Database.Database, statements: string[]) {
   }
 }
 
+function removeFixtureRoot() {
+  try {
+    fs.rmSync(fixtureRoot, {
+      recursive: true,
+      force: true,
+      maxRetries: 5,
+      retryDelay: 100,
+    });
+  } catch (error) {
+    const code =
+      error instanceof Error && "code" in error ? error.code : undefined;
+    if (process.platform === "win32" && (code === "EPERM" || code === "EBUSY")) {
+      console.warn(`Skipped locked test fixture cleanup: ${fixtureRoot}`);
+      return;
+    }
+    throw error;
+  }
+}
+
 function seedRulesDb() {
   const db = new Database(rulesDbPath);
   execMany(db, [
@@ -466,9 +485,9 @@ seedContentDb();
 
 afterAll(async () => {
   const [{ rulesPrisma }, { contentPrisma }] = await Promise.all([
-    import("../src/lib/rules-prisma-client.js"),
-    import("../src/lib/content-prisma-client.js"),
+    import("#server/lib/rules-prisma-client"),
+    import("#server/lib/content-prisma-client"),
   ]);
   await Promise.all([rulesPrisma.$disconnect(), contentPrisma.$disconnect()]);
-  fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  removeFixtureRoot();
 });

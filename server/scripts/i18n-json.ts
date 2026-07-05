@@ -1,4 +1,4 @@
-import { rulesPrisma } from "~/lib/rules-prisma-client";
+import { rulesPrisma } from "#server/lib/rules-prisma-client";
 import path from "node:path";
 import { writeFileSync } from "node:fs";
 

@@ -1,8 +1,8 @@
 import { type Request, type Response, type NextFunction } from "express";
-import { parseCsvNumberList } from "../utils/parse";
-import { getDefaultRulebookIds } from "../services/rulebooks.service";
-import { domainsService } from "../services/domains.service";
-import { getI18nContext } from "~/utils/i18n";
+import { parseCsvNumberList } from "#server/utils/parse";
+import { getDefaultRulebookIds } from "#server/services/rulebooks.service";
+import { domainsService } from "#server/services/domains.service";
+import { getI18nContext } from "#server/utils/i18n";
 
 export async function listDomains(
   req: Request,

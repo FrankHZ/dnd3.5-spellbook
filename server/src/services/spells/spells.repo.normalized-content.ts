@@ -3,14 +3,14 @@ import {
   SpellComponentFilters,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
-import { contentPrisma } from "../../lib/content-prisma-client";
-import { Prisma } from "prisma-content/generated/client";
-import { SpellRow } from "./spells.repo.rules";
+import { contentPrisma } from "#server/lib/content-prisma-client";
+import { Prisma } from "#prisma-content/generated/client";
+import { SpellRow } from "#server/services/spells/spells.repo.rules";
 import {
   expandDescriptorBucketFilterIds,
   expandSchoolFilterIds,
   expandSubschoolFilterIds,
-} from "./taxonomy-normalization";
+} from "#server/services/spells/taxonomy-normalization";
 
 type LegacyShapedSpell = SpellRow & {
   added: Date;

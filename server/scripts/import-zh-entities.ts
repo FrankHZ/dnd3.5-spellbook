@@ -1,11 +1,11 @@
 import "dotenv/config";
 import fs from "node:fs";
 import path from "node:path";
-import { contentPrisma } from "~/lib/content-prisma-client";
-import { rulesPrisma } from "~/lib/rules-prisma-client";
+import { contentPrisma } from "#server/lib/content-prisma-client";
+import { rulesPrisma } from "#server/lib/rules-prisma-client";
 import { PrismaPromise } from "@prisma/client/runtime/client";
-import { BatchPayload } from "DB_CONTENT/internal/prismaNamespace";
-import { Prisma } from "DB_CONTENT/client";
+import { BatchPayload } from "#prisma-content/generated/internal/prismaNamespace";
+import { Prisma } from "#prisma-content/generated/client";
 
 type Entry = {
   id: number; // classId

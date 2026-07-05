@@ -1,5 +1,5 @@
 import request from "supertest";
-import { app } from "~/app";
+import { app } from "#server/app";
 
 const ENV_KEYS = ["NODE_ENV", "SPELLBOOK_CORS_ORIGINS"] as const;
 

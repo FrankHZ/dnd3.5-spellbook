@@ -1,7 +1,7 @@
 // src/controllers/meta.controller.ts
 import { type Request, type Response, type NextFunction } from "express";
-import { metaService } from "~/services/meta/meta.service";
-import { getI18nContext } from "~/utils/i18n";
+import { metaService } from "#server/services/meta/meta.service";
+import { getI18nContext } from "#server/utils/i18n";
 
 export async function getMetaI18n(
   req: Request,

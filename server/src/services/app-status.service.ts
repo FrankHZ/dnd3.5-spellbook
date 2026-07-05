@@ -1,5 +1,5 @@
 import type { AppVersionMetadata } from "@dnd/contracts";
-import { dbStatusService } from "~/services/db-status.service";
+import { dbStatusService } from "#server/services/db-status.service";
 
 function envValue(name: string): string | undefined {
   const value = process.env[name]?.trim();

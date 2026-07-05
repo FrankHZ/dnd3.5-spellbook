@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { listDomains } from "../controllers/domains.controller";
+import { listDomains } from "#server/controllers/domains.controller";
 
 const domainsRouter = Router();
 

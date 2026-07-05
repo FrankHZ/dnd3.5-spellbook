@@ -1,5 +1,5 @@
 import request from "supertest";
-import { app } from "~/app";
+import { app } from "#server/app";
 
 describe("GET /api/spells/by-level", () => {
   it("lists spells for class + single level (grouped)", async () => {

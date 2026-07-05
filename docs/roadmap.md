@@ -247,27 +247,18 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Run the independent CJS/ESM and alias cleanup spike**
-
-   Use `docs/mvp/v3.8/module-boundary-cleanup-spike.md`. The spike should
-   answer whether `tsc-alias` can be dropped, how server aliases should migrate,
-   and whether the contracts runtime boundary needs changes. It should not block
-   the two product/data deliverables unless it finds an active deploy/runtime
-   risk.
-
-2. **Prepare v3.8 acceptance or freeze when ready**
+1. **Prepare v3.8 acceptance or freeze when ready**
 
    Re-read `docs/mvp/v3.8/README.md` and the child plans, then decide whether
    the normalized-query and frontend-consumer slices are enough for a v3.8
    freeze after the cleanup spike, or whether a small acceptance-only follow-up
    is needed. Do not expand this into a broader filter redesign.
 
-3. **Triage the v3.7 non-blocking maintenance tail as needed**
+2. **Triage the v3.7 non-blocking maintenance tail as needed**
 
-   `npm outdated --workspaces --json` previously reported `tsc-alias`
-   `1.8.17 -> 1.9.0`. `npm audit --workspaces --omit=dev --json` still reports
-   the reviewed Prisma dev-chain / Hono moderate advisories. Treat both as
-   explicit maintenance follow-ups, not hidden release blockers.
+   `npm audit --workspaces --omit=dev --json` still reports the reviewed Prisma
+   dev-chain / Hono moderate advisories. Treat them as explicit maintenance
+   follow-ups, not hidden release blockers.
 
 ## v3.6 Frozen Workstreams
 
@@ -349,10 +340,8 @@ The stable-version backlog remains intentionally deferred:
   keep npm as the default for now; prefer a focused pnpm spike over Yarn if
   install speed, disk usage, workspace filtering, or dependency isolation become
   worth the CI/deploy/docs migration cost
-- server import-specifier cleanup before any full ESM runtime migration:
-  current server `~` aliases are acceptable for the CommonJS build, but future
-  ESM work should prefer relative `.js` specifiers or Node-standard `#...`
-  package imports instead of expanding `~`
+- full server ESM runtime migration only if the CommonJS server plus package
+  imports boundary starts creating real deploy/runtime risk
 - DB schema and server backend review to remove legacy fallback paths after the
   normalized content contract settles; do not optimize for minimal migration in
   that pass, and prefer a clean schema/query design over preserving temporary

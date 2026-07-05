@@ -1,11 +1,11 @@
-import { contentPrisma } from "~/lib/content-prisma-client";
+import { contentPrisma } from "#server/lib/content-prisma-client";
 import { I18nContext, Lang } from "@dnd/contracts";
-import { Prisma } from "DB_CONTENT/client";
+import { Prisma } from "#prisma-content/generated/client";
 import {
   isCombinedTaxonomyFacet,
   isOtherDescriptorFacet,
   OTHER_DESCRIPTOR_VOCABULARY,
-} from "~/services/spells/taxonomy-normalization";
+} from "#server/services/spells/taxonomy-normalization";
 
 function normalizeVariant(variant?: string) {
   return variant ?? "default";

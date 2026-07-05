@@ -1,5 +1,5 @@
 import { type Request, type Response, type NextFunction } from "express";
-import { rulebooksService } from "../services/rulebooks.service";
+import { rulebooksService } from "#server/services/rulebooks.service";
 import type { EditionListResponse, RulebookListResponse } from "@dnd/contracts";
 
 export async function listRulebooks(

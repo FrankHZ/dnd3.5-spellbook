@@ -10,7 +10,7 @@ import {
   queryMetaI18nOverlays,
   querySpellTaxonomyVocabulary,
   type SpellTaxonomyVocabularyRow,
-} from "./meta.repo";
+} from "#server/services/meta/meta.repo";
 
 type CacheKey = string;
 

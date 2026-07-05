@@ -1,6 +1,6 @@
 import request from "supertest";
 import type { AppStatusResponse } from "@dnd/contracts";
-import { app } from "../src/app";
+import { app } from "#server/app";
 
 const METADATA_ENV_KEYS = [
   "SPELLBOOK_VERSION_LABEL",
