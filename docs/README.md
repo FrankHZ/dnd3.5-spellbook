@@ -22,8 +22,12 @@ execution rules and role boundaries.
 
 ## Active Planning
 
-No version planning branch is currently canonical after the v3.8 freeze. Use
-[roadmap.md](./roadmap.md) for next-work ordering after a pause.
+v3.9 is the active version plan for normalized mechanics/query fullstack
+completion:
+
+- [mvp/v3.9/README.md](./mvp/v3.9/README.md)
+- [mvp/v3.9/normalized-mechanics-contract-plan.md](./mvp/v3.9/normalized-mechanics-contract-plan.md)
+- [mvp/v3.9/frontend-normalized-mechanics-consumer-plan.md](./mvp/v3.9/frontend-normalized-mechanics-consumer-plan.md)
 
 The latest frozen planning record is v3.8:
 
@@ -92,6 +96,8 @@ baselines.
 ### Versioned MVP Docs
 
 - [mvp/README.md](./mvp/README.md): versioned-doc roles and maintenance rules.
+- [mvp/v3.9/README.md](./mvp/v3.9/README.md): active normalized
+  mechanics/query fullstack completion plan.
 - [mvp/v3.8/FREEZE.md](./mvp/v3.8/FREEZE.md): latest frozen release snapshot.
 - [mvp/v3.7/FREEZE.md](./mvp/v3.7/FREEZE.md): previous frozen snapshot.
 - [mvp/v3.6/FREEZE.md](./mvp/v3.6/FREEZE.md): older frozen snapshot.
