@@ -139,6 +139,9 @@ Current behavior:
 - related result ordering is deterministic by source rulebook abbreviation,
   page, then spell id, while visible labels use the shared rulebook display
   helper
+- content-backed detail responses can include accepted normalized mechanics
+  flags under `casting.mechanics` for duration, saving throw, and spell
+  resistance notes; legacy raw strings remain the displayed fallback text
 
 Key code:
 
@@ -172,6 +175,9 @@ Current behavior:
   `mechanics.ranges`, plus duration buckets under `mechanics.durations` and
   saving throw buckets under `mechanics.savingThrows`, and spell resistance
   buckets under `mechanics.spellResistances`
+- Spell Detail exposes accepted duration, saving throw, and spell resistance
+  flags as optional `casting.mechanics` metadata when served from normalized
+  content
 - rulebook responses preserve source `abbr` and can include curated
   `displayAbbr` / `displayName` metadata from normalized content
 - frontend rulebook display uses a shared helper so English and default Chinese
