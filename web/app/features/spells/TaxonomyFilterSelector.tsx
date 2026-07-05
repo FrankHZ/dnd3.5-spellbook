@@ -15,6 +15,7 @@ import {
 import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useUserPrefs } from "~/state/user-prefs-state";
+import { FilterDisclosure } from "./FilterDisclosure";
 import { countTaxonomyFilters } from "./taxonomy-filter-state";
 
 const DESCRIPTOR_BUCKET_PICKER_IDS: Record<SpellDescriptorBucketKey, number> = {
@@ -224,50 +225,42 @@ export function TaxonomyFilterSelector({
   ];
 
   return (
-    <details
-      className="group space-y-3"
+    <FilterDisclosure
+      title={t("taxonomy.title")}
+      summary={
+        activeCount > 0
+          ? t("taxonomy.active-count", { count: activeCount })
+          : t("taxonomy.collapsed-hint")
+      }
       open={open}
-      onToggle={(event) => setOpen(event.currentTarget.open)}
+      onToggle={setOpen}
     >
-      <summary className="cursor-pointer list-none rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground">
-        <div className="flex items-center justify-between gap-3">
-          <span>{t("taxonomy.title")}</span>
-          <span className="text-xs font-normal text-muted-foreground group-hover:text-accent-foreground">
-            {activeCount > 0
-              ? t("taxonomy.active-count", { count: activeCount })
-              : t("taxonomy.collapsed-hint")}
-          </span>
-        </div>
-      </summary>
-
-      <div className="space-y-3 pt-1">
-        <MultiSelectPicker
-          title={t("taxonomy.schools")}
-          placeholder={t("taxonomy.schools-placeholder")}
-          items={schoolItems}
-          selectedIds={value.schoolIds}
-          onChange={onChangeSchools}
-          badgeVariant="outline"
-        />
-        <MultiSelectPicker
-          title={t("taxonomy.subschools")}
-          placeholder={t("taxonomy.subschools-placeholder")}
-          items={subschoolItems}
-          selectedIds={value.subschoolIds}
-          onChange={onChangeSubschools}
-          badgeVariant="outline"
-        />
-        <MultiSelectPicker
-          title={t("taxonomy.descriptors")}
-          placeholder={t("taxonomy.descriptors-placeholder")}
-          items={descriptorItems}
-          selectedIds={selectedDescriptorPickerIds}
-          onChange={(nextIds) => {
-            onChangeDescriptorFilters(splitDescriptorPickerIds(nextIds));
-          }}
-          badgeVariant="outline"
-        />
-      </div>
-    </details>
+      <MultiSelectPicker
+        title={t("taxonomy.schools")}
+        placeholder={t("taxonomy.schools-placeholder")}
+        items={schoolItems}
+        selectedIds={value.schoolIds}
+        onChange={onChangeSchools}
+        badgeVariant="outline"
+      />
+      <MultiSelectPicker
+        title={t("taxonomy.subschools")}
+        placeholder={t("taxonomy.subschools-placeholder")}
+        items={subschoolItems}
+        selectedIds={value.subschoolIds}
+        onChange={onChangeSubschools}
+        badgeVariant="outline"
+      />
+      <MultiSelectPicker
+        title={t("taxonomy.descriptors")}
+        placeholder={t("taxonomy.descriptors-placeholder")}
+        items={descriptorItems}
+        selectedIds={selectedDescriptorPickerIds}
+        onChange={(nextIds) => {
+          onChangeDescriptorFilters(splitDescriptorPickerIds(nextIds));
+        }}
+        badgeVariant="outline"
+      />
+    </FilterDisclosure>
   );
 }
