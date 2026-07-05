@@ -192,8 +192,14 @@ Recommended follow-up:
 
 - Add a separate mechanics detail metadata contract after the saving throw
   filter PR merges.
+  - Status: implemented for content-backed Spell Detail under
+    `casting.mechanics`.
 - Expose only `accepted` facet flags as structured detail metadata; keep review
   rows/raw or special text as raw detail text only.
+  - Status: implemented for `duration.dismissible`, `duration.discharge`,
+    `savingThrow.partial`, `savingThrow.negates`, `savingThrow.harmless`,
+    `savingThrow.object`, `spellResistance.harmless`, and
+    `spellResistance.object`.
 - Keep mechanics detail metadata separate from public filter slices.
 - Keep frontend consumers on server-provided metadata instead of parsing legacy
   mechanics strings.
@@ -256,6 +262,9 @@ Recommended follow-up:
 - Deliverable: frontend-ready contract summary for promoted mechanics fields,
   including vocabulary shape, query params, all/any semantics, label/i18n
   expectations, and unsupported detail-display fields.
+- Status: backend contract also exposes accepted detail-only mechanics flags on
+  content-backed Spell Detail as optional `casting.mechanics` metadata. Frontend
+  detail display remains a separate consumer slice.
 - Expected files: this plan and the frontend consumer plan.
 - Validation: docs review before frontend implementation starts.
 
@@ -270,6 +279,8 @@ Recommended follow-up:
   classified.
 - Shared DTOs compile and check after contract changes.
 - Server API tests cover accepted meta vocabulary and query behavior.
+- Server API tests cover content-backed Spell Detail mechanics metadata without
+  inferring flags from legacy raw strings.
 - Frontend consumer work can proceed without parsing legacy mechanics strings.
 
 ## Doc Updates
@@ -291,8 +302,8 @@ Recommended follow-up:
   set?
 - Which component extra rows can be safely normalized versus classified as
   review-only?
-- Which mechanics detail flags should be exposed on Spell Detail first, and
-  should they use a nested metadata object or field-specific DTO shape?
+- Which frontend detail fields should render `casting.mechanics` first, and how
+  should localized labels explain harmless/object/dismissible flags?
 
 ## Completion Notes
 

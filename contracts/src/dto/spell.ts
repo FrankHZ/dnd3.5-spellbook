@@ -219,6 +219,24 @@ export type SpellCasting = {
   duration?: string | null;
   savingThrow?: string | null;
   spellResistance?: string | null;
+  mechanics?: SpellMechanicDetailMetadata | undefined;
+};
+
+export type SpellMechanicDetailMetadata = {
+  duration?: {
+    dismissible?: boolean | undefined;
+    discharge?: boolean | undefined;
+  };
+  savingThrow?: {
+    partial?: boolean | undefined;
+    negates?: boolean | undefined;
+    harmless?: boolean | undefined;
+    object?: boolean | undefined;
+  };
+  spellResistance?: {
+    harmless?: boolean | undefined;
+    object?: boolean | undefined;
+  };
 };
 
 type SpellLevelBase = {

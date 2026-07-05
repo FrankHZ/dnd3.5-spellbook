@@ -73,6 +73,10 @@ and metadata vocabulary lives in `contracts/src/dto/meta.ts`.
   `mechanics.castingTimes`, `mechanics.ranges`, `mechanics.durations`, and
   `mechanics.savingThrows`, plus `mechanics.spellResistances`, including query
   parameter names and `any` selection mode within each family.
+- Spell Detail can expose accepted detail-only mechanics flags under optional
+  `SpellCasting.mechanics`: duration `dismissible` / `discharge`, saving throw
+  `partial` / `negates` / `harmless` / `object`, and spell resistance
+  `harmless` / `object`.
 
 Do not add frontend-only filter vocabulary outside this package and the server
 metadata endpoint.
