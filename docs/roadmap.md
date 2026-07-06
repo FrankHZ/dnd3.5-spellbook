@@ -8,23 +8,36 @@ details.
 
 ## Current Track
 
-v3.9 is the active version plan:
+There is no active version plan in this repo snapshot.
 
-- `docs/mvp/v3.9/README.md`
-- `docs/mvp/v3.9/normalized-mechanics-contract-plan.md`
-- `docs/mvp/v3.9/frontend-normalized-mechanics-consumer-plan.md`
-
-The latest frozen release snapshot remains `docs/mvp/v3.8/FREEZE.md`.
-
-v3.9 should finish normalized mechanics/query fullstack completion instead of
-reopening v3.8 polish. The primary track is to promote accepted normalized
-mechanics from data-tools review through shared contracts, server API/meta
-filters, and frontend Browse/Search controls.
+The latest frozen release snapshot is `docs/mvp/v3.9/FREEZE.md`.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
 
 ## Recently Completed
+
+The v3.9 release is frozen with:
+
+- `docs/mvp/v3.9/FREEZE.md` as the as-built snapshot.
+- backend normalized mechanics query contracts for `castingTimeKeys`,
+  `rangeKeys`, `durationKeys`, `savingThrowKeys`, and
+  `spellResistanceKeys`.
+- server-provided mechanics vocabulary consumed by Search and Browse/by-level
+  endpoints.
+- content-backed reads matching accepted `SpellMechanicFacet` rows, with
+  conservative legacy rules rollback matching.
+- `components.other_or_extra` classified as detail/raw text only rather than
+  public filter vocabulary.
+- `target`, `effect`, and `area` deferred because their source text remains
+  high-volume and mixed.
+- Browse/Search Advanced filters consuming server-provided mechanics vocabulary
+  without frontend legacy string parsing.
+- compact mechanics counts in Browse/Search scope summaries.
+- content-backed Spell Detail displaying supported `casting.mechanics` flags
+  for duration, saving throw, and spell resistance.
+- local final validation through `npm run ci:portable`, `npm run i18n:check`,
+  and `npm run -w data-tools rules:content:review`.
 
 The v3.8 release is frozen with:
 
@@ -257,25 +270,18 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Open the v3.9 freeze sweep**
+1. **Open the next version plan from the stable backlog**
 
-   The normalized mechanics backend contract and frontend consumer are merged.
-   A librarian freeze branch should run acceptance from `main`, create
-   `docs/mvp/v3.9/FREEZE.md`, and update the navigation surfaces listed in the
-   `$freeze-snapshot` skill.
+   Start from the stable backlog and the deferred v3.9 follow-up candidates.
+   Keep new work in a fresh version folder instead of editing v3.9 plan docs
+   as if they were still active.
 
-   The backend contract now exposes stable vocabulary and fallback behavior for
-   `castingTimeKeys`, `rangeKeys`, `durationKeys`, `savingThrowKeys`, and
-   `spellResistanceKeys`. It also exposes content-backed Spell Detail mechanics
-   metadata under `casting.mechanics`.
+2. **Choose whether the next slice is filter polish or backend normalization**
 
-2. **Preserve non-blocking follow-up candidates**
-
-   Freeze should keep the follow-ups from
-   `docs/mvp/v3.9/frontend-normalized-mechanics-consumer-plan.md` visible as
-   deferred work, not unresolved v3.9 blockers. That includes localized
-   mechanics bucket labels, later Advanced filters polish, query-param helper
-   consolidation, and deferred `target` / `effect` / `area` filters.
+   Good candidates are localized mechanics bucket labels, later Advanced
+   filters polish, query-param helper consolidation, and a focused backend
+   review for `target` / `effect` / `area` only if public bucket and fallback
+   semantics are accepted first.
 
 3. **Triage the non-blocking maintenance tail as needed**
 

@@ -1,13 +1,14 @@
 # v3.9
 
-Status: active plan.
+Status: frozen. See `FREEZE.md` for the as-built v3.9 handoff.
 
 v3.9 is a focused normalized mechanics and query fullstack completion release.
 The mainline is to finish the next accepted mechanics contract in data-tools,
 shared DTOs, server API query/meta filters, and frontend Browse/Search
 controls. This is not a reopen of v3.8 polish.
 
-The latest frozen shipped snapshot remains `docs/mvp/v3.8/FREEZE.md`.
+The canonical shipped snapshot for this version is
+`docs/mvp/v3.9/FREEZE.md`.
 
 ## Committed Scope
 
@@ -63,12 +64,14 @@ scope, delivery sequence, or ownership.
 
 ## Plans
 
+- [FREEZE.md](./FREEZE.md)
 - [normalized-mechanics-contract-plan.md](./normalized-mechanics-contract-plan.md)
 - [frontend-normalized-mechanics-consumer-plan.md](./frontend-normalized-mechanics-consumer-plan.md)
 
 ## Acceptance And Validation
 
-Expected validation for the full v3.9 line:
+Final validation for the full v3.9 line is recorded in `FREEZE.md`. Expected
+validation for the line was:
 
 - data-tools review and acceptance for promoted normalized facets
 - `npm run build:contracts` and `npm run check:contracts` when shared DTOs
