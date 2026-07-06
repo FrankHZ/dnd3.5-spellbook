@@ -2,7 +2,7 @@
   "advanced.active-count_other": "已选{{count}}项",
   "advanced.apply": "应用",
   "advanced.cancel": "取消",
-  "advanced.description": "先调整分类、成分和机制筛选，应用后再更新 URL。",
+  "advanced.description": "选择需要的分类、成分和机制条件，确认后一起应用到结果。",
   "advanced.inactive": "无",
   "advanced.reset": "重置",
   "advanced.title": "次级筛选",

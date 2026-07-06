@@ -3,7 +3,7 @@
   "advanced.active-count_other": "{{count}} active",
   "advanced.apply": "Apply",
   "advanced.cancel": "Cancel",
-  "advanced.description": "Adjust taxonomy, component, and mechanics filters before applying them to the URL.",
+  "advanced.description": "Choose extra taxonomy, component, and mechanics filters, then apply them to the results together.",
   "advanced.inactive": "None",
   "advanced.reset": "Reset",
   "advanced.title": "Advanced filters",
