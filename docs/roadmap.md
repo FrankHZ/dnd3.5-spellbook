@@ -8,9 +8,16 @@ details.
 
 ## Current Track
 
-There is no active version plan in this repo snapshot.
+v3.10 is the active final MVP closeout plan:
+
+- `docs/mvp/v3.10/README.md`
+- `docs/mvp/v3.10/filter-i18n-plan.md`
+- `docs/mvp/v3.10/ui-ux-cohesion-plan.md`
 
 The latest frozen release snapshot is `docs/mvp/v3.9/FREEZE.md`.
+
+v3.10 should close user-visible completeness and consistency only. It should
+not pull large stable-track engineering back into MVP scope.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
@@ -270,20 +277,26 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Open the next version plan from the stable backlog**
+1. **Filter i18n complete pass**
 
-   Start from the stable backlog and the deferred v3.9 follow-up candidates.
-   Keep new work in a fresh version folder instead of editing v3.9 plan docs
-   as if they were still active.
+   The i18n specialist should implement frontend display adapters keyed by
+   stable server vocabulary, with server labels as fallback. Scope includes
+   taxonomy/component/mechanics filters, scope summaries, and supported Spell
+   Detail mechanics notes.
 
-2. **Choose whether the next slice is filter polish or backend normalization**
+2. **UI/UX cohesion pass**
 
-   Good candidates are localized mechanics bucket labels, later Advanced
-   filters polish, query-param helper consolidation, and a focused backend
-   review for `target` / `effect` / `area` only if public bucket and fallback
-   semantics are accepted first.
+   The frontend-design specialist should align layout density, action
+   placement, state display, and mobile stacking across the primary MVP
+   surfaces after filter i18n lands.
 
-3. **Triage the non-blocking maintenance tail as needed**
+3. **MVP closeout acceptance and freeze**
+
+   The librarian should run final acceptance across English/Chinese UI,
+   desktop/mobile layouts, Browse/Search/Detail/collections/prepared/settings/
+   about, then create the v3.10 freeze snapshot.
+
+4. **Triage the non-blocking maintenance tail as needed**
 
    `npm audit --workspaces --omit=dev --json` still reports the reviewed Prisma
    dev-chain / Hono moderate advisories. Treat them as explicit maintenance
