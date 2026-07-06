@@ -50,7 +50,14 @@ About / Status:
    Owns the user-facing status page, frontend/backend/content version display,
    and a stable public status contract for the split frontend/API topology.
 
-3. **Release acceptance and freeze**
+3. **Release Ready Doc Sweep**
+
+   Owns the final cross-doc quality gate. It verifies that current canonical
+   docs no longer describe the MVP-era deployment topology as current truth and
+   that release docs, operations docs, module docs, and navigation agree before
+   freeze.
+
+4. **Release acceptance and freeze**
 
    Owns production smoke tests, Cloudflare/remote verification, final docs, and
    the v1.0 release freeze snapshot after implementation branches land.
@@ -73,6 +80,7 @@ delivery sequence, ownership, or accepted release scope.
 
 - [domain-and-deployment-plan.md](./domain-and-deployment-plan.md)
 - [about-and-status-plan.md](./about-and-status-plan.md)
+- [release-ready-doc-sweep-plan.md](./release-ready-doc-sweep-plan.md)
 
 ## Release Acceptance
 
@@ -94,6 +102,9 @@ v1.0 release acceptance should include:
   normal production frontend path.
 - About / Status reports frontend build, API origin, backend version, public
   content DB status, and relevant update times.
+- Release-ready doc sweep confirms root README, docs index, roadmap,
+  AGENTS.md, feature docs, design docs, operations docs, module docs, and this
+  release README agree before freeze.
 
 ## External Platform Assumptions
 
@@ -142,6 +153,10 @@ Reference docs for implementation review:
   deploy as the production frontend path; preserve backend deploy.
 - `docs/README.md`: keep release-plan navigation discoverable.
 - `AGENTS.md`: keep MVP-vs-release planning roles explicit.
+- Final release-ready doc sweep: verify root README, docs index, roadmap,
+  AGENTS.md, `docs/features.md`, `docs/design.md`, `docs/operations/*`,
+  `docs/modules/*`, and this release README do not retain MVP-era deployment
+  topology as current truth.
 
 ## Handoff Rule
 
