@@ -117,12 +117,12 @@ descriptors, and active filter-scope chips. Use `SpellComponentBadge` only for
 spell components. This keeps Browse/Search cards, scope summaries, and Spell
 Detail from inventing separate badge treatments for the same metadata roles.
 
-For Browse/Search filter sidebars, use the shared left drawer wrapper. The
-drawer stays open by default on desktop and can collapse to a narrow rail; on
-mobile it opens over the results so users can get back to the list without
-scrolling past every filter. Keep the Browse/Search interaction model aligned
-through this single drawer pattern rather than separate mobile-only filter
-surfaces.
+For Browse/Search filter sidebars, use the shared collapsible card wrapper. The
+sidebar stays open by default on desktop and can collapse to a narrow rail that
+matches the prepared-spellbook sidebar pattern. On mobile, keep the filter
+controls as a top-of-page card that defaults collapsed so users can reach
+results without scrolling past every filter. Reserve sheet/drawer behavior for
+secondary filter panels such as Advanced filters.
 
 ## Information Density
 

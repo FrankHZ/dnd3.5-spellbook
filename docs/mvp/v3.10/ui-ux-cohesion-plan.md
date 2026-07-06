@@ -171,9 +171,10 @@ Implementation branch:
 - Made Browse/Search display toggles more resistant to longer localized labels.
 - Moved the Advanced filters sheet to open from the left, matching its sidebar
   trigger location, and replaced the Browse/Search filter card with a shared
-  left drawer. The drawer is open by default on desktop, collapses to a narrow
-  rail when hidden, and opens over the results on mobile so Browse/Search keep
-  one consistent sidebar model.
+  collapsible card sidebar. The sidebar is open by default on desktop,
+  collapses to a prepared-style narrow rail when hidden, and defaults collapsed
+  as a top-of-page card on mobile so Advanced filters remain the only
+  drawer-like filter surface.
 - Added a shared `StatusCard` for empty, loading, validation, and error states
   across Browse, Search, Spell Detail, and collection workflows.
 - Made spellbook index cards whole-card links with consistent hover and focus

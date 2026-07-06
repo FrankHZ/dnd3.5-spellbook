@@ -32,7 +32,7 @@ Shared filter components:
 - taxonomy filters: `web/app/features/spells/TaxonomyFilterSelector.tsx`
 - component filters: `web/app/features/spells/ComponentFilterSelector.tsx`
 - mechanics filters: `web/app/features/spells/MechanicsFilterSelector.tsx`
-- filter sidebar drawer:
+- collapsible filter sidebar card:
   `web/app/features/spells/FilterSidebarCard.tsx`
 - spell metadata badges:
   `web/app/features/spells/SpellMetaBadge.tsx`,
