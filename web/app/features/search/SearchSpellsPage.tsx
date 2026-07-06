@@ -16,6 +16,7 @@ import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
 import { AdvancedSpellFiltersPanel } from "~/features/spells/AdvancedSpellFiltersPanel";
+import { FilterSidebarCard } from "~/features/spells/FilterSidebarCard";
 import { SpellCardDetailToggle } from "~/features/spells/SpellCardDetailToggle";
 import { SpellFilterScopeSummary } from "~/features/spells/SpellFilterScopeSummary";
 import {
@@ -123,58 +124,52 @@ export default function SearchSpellsPage() {
   return (
     <div className="page-side">
       <div className="grid gap-4 md:grid-cols-[320px_1fr]">
-        <Card className="gap-0 self-start">
-          <CardContent className="space-y-4 pt-0">
-            <div className="grid gap-2">
-              {hasScopedSearch ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={clearSearchScope}
-                >
-                  {t("actions.clear-filters")}
-                </Button>
-              ) : (
-                <Button type="button" variant="ghost" disabled>
-                  {t("actions.clear-filters")}
-                </Button>
-              )}
-            </div>
+        <FilterSidebarCard defaultOpen={false}>
+          <div className="grid gap-2">
+            {hasScopedSearch ? (
+              <Button type="button" variant="ghost" onClick={clearSearchScope}>
+                {t("actions.clear-filters")}
+              </Button>
+            ) : (
+              <Button type="button" variant="ghost" disabled>
+                {t("actions.clear-filters")}
+              </Button>
+            )}
+          </div>
 
-            <Separator />
+          <Separator />
 
-            <SpellCardDetailToggle
-              mode={spellCardDetails}
-              onModeChange={setSpellCardDetails}
-              label={t("options.show-card-details")}
-            />
+          <SpellCardDetailToggle
+            mode={spellCardDetails}
+            onModeChange={setSpellCardDetails}
+            label={t("options.show-card-details")}
+          />
 
-            <Separator />
+          <Separator />
 
-            <ClassAndDomainSelector
-              classIds={searchScope.classIds}
-              domainIds={searchScope.domainIds}
-              onChangeClasses={(classIds) => updateSearchScope({ classIds })}
-              onChangeDomains={(domainIds) => updateSearchScope({ domainIds })}
-            />
+          <ClassAndDomainSelector
+            classIds={searchScope.classIds}
+            domainIds={searchScope.domainIds}
+            onChangeClasses={(classIds) => updateSearchScope({ classIds })}
+            onChangeDomains={(domainIds) => updateSearchScope({ domainIds })}
+          />
 
-            <Separator />
+          <Separator />
 
-            <LevelSelector
-              value={searchScope.level}
-              onChange={(level) => updateSearchScope({ level })}
-              allowAnyLevel
-              showAllLevels={false}
-            />
+          <LevelSelector
+            value={searchScope.level}
+            onChange={(level) => updateSearchScope({ level })}
+            allowAnyLevel
+            showAllLevels={false}
+          />
 
-            <Separator />
+          <Separator />
 
-            <AdvancedSpellFiltersPanel
-              value={searchScope.filters}
-              onApply={(filters) => updateSearchScope({ filters })}
-            />
-          </CardContent>
-        </Card>
+          <AdvancedSpellFiltersPanel
+            value={searchScope.filters}
+            onApply={(filters) => updateSearchScope({ filters })}
+          />
+        </FilterSidebarCard>
 
         <div className="space-y-3">
           <SpellFilterScopeSummary

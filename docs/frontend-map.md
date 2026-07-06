@@ -32,6 +32,8 @@ Shared filter components:
 - taxonomy filters: `web/app/features/spells/TaxonomyFilterSelector.tsx`
 - component filters: `web/app/features/spells/ComponentFilterSelector.tsx`
 - mechanics filters: `web/app/features/spells/MechanicsFilterSelector.tsx`
+- collapsible filter sidebar:
+  `web/app/features/spells/FilterSidebarCard.tsx`
 - URL/filter helpers: `web/app/features/spells/taxonomy-filter-state.ts`
 
 ### Spell Detail

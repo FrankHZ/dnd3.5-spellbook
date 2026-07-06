@@ -14,6 +14,7 @@ import {
 } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { AdvancedSpellFiltersPanel } from "~/features/spells/AdvancedSpellFiltersPanel";
+import { FilterSidebarCard } from "~/features/spells/FilterSidebarCard";
 import { SpellFilterScopeSummary } from "~/features/spells/SpellFilterScopeSummary";
 import {
   countComponentFilters,
@@ -104,30 +105,28 @@ export default function BrowsePage() {
   return (
     <div className="page-side">
       <div className="grid gap-4 md:grid-cols-[320px_1fr]">
-        <Card className="gap-0 self-start">
-          <CardContent className="space-y-4">
-            <BrowseOptionsToggle
-              groupMode={groupMode}
-              onGroupModeChange={setGroupMode}
-              cardDetailMode={spellCardDetails}
-              onCardDetailModeChange={setSpellCardDetails}
-            />
-            <Separator />
-            <ClassAndDomainSelector
-              classIds={classIds}
-              domainIds={domainIds}
-              onChangeClasses={setClassIds}
-              onChangeDomains={setDomainIds}
-            />
-            <Separator />
-            <LevelSelector value={level} onChange={setLevel} />
-            <Separator />
-            <AdvancedSpellFiltersPanel
-              value={filters}
-              onApply={setNormalizedFilters}
-            />
-          </CardContent>
-        </Card>
+        <FilterSidebarCard defaultOpen>
+          <BrowseOptionsToggle
+            groupMode={groupMode}
+            onGroupModeChange={setGroupMode}
+            cardDetailMode={spellCardDetails}
+            onCardDetailModeChange={setSpellCardDetails}
+          />
+          <Separator />
+          <ClassAndDomainSelector
+            classIds={classIds}
+            domainIds={domainIds}
+            onChangeClasses={setClassIds}
+            onChangeDomains={setDomainIds}
+          />
+          <Separator />
+          <LevelSelector value={level} onChange={setLevel} />
+          <Separator />
+          <AdvancedSpellFiltersPanel
+            value={filters}
+            onApply={setNormalizedFilters}
+          />
+        </FilterSidebarCard>
 
         <div className="space-y-3">
           <SpellFilterScopeSummary

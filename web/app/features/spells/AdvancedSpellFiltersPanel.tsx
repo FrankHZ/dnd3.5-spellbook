@@ -68,7 +68,7 @@ export function AdvancedSpellFiltersPanel({
       </SheetTrigger>
 
       <SheetContent
-        side="right"
+        side="left"
         className="w-[min(100vw,42rem)] max-w-none gap-0 p-0 sm:max-w-xl"
       >
         <SheetHeader className="border-b pr-12">

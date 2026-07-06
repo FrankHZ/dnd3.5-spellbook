@@ -99,6 +99,12 @@ description, and action alignment. Feature-specific reading surfaces such as
 Spell Detail may keep their own header when source badges, actions, or rule
 metadata need a custom hierarchy.
 
+For Browse/Search filter sidebars, use the shared collapsible sidebar wrapper
+so mobile users can get back to results without scrolling past every filter.
+Browse may default the wrapper open to preserve filter-first discovery, while
+Search may default it closed because name lookup is the primary workflow. Keep
+the desktop sidebar visible.
+
 ## Information Density
 
 The app should feel compact but not cramped.

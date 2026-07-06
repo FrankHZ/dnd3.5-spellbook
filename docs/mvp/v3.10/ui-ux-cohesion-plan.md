@@ -163,6 +163,11 @@ Implementation branch:
 - Tightened Advanced filters footer layout into a reset-left/actions-right
   action bar that still stacks on mobile.
 - Made Browse/Search display toggles more resistant to longer localized labels.
+- Moved the Advanced filters sheet to open from the left, matching its sidebar
+  trigger location, and added a shared mobile-collapsible filter sidebar.
+  Browse keeps the filter-first sidebar open by default; Search defaults the
+  sidebar closed on mobile so results are reachable without scrolling through
+  all filters.
 - Updated `docs/design.md` and `docs/frontend-map.md` with the small shared
   page-header pattern.
 
