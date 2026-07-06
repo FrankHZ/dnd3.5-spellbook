@@ -89,6 +89,12 @@ probe a user-level `.agents` path first.
 - Use librarian agents for freeze sweeps by default. Freeze work owns
   cross-doc consistency, latest-snapshot navigation, acceptance evidence, and
   `FREEZE.md` updates after implementation branches have been accepted.
+  At the current project scale, freeze sweeps also own routine closeout
+  hygiene: clearing stale "ready for review" wording, moving roadmap next work
+  to the next active step, preserving non-blocking follow-up candidates, and
+  aligning navigation docs. Do not split a separate pre-freeze branch for those
+  chores unless the cleanup changes release scope, ownership, or implementation
+  behavior.
 - Use specialist agents or focused branches for domain-heavy implementation
   work such as design, i18n, data tooling, deployment, harness, security,
   dependency maintenance, or frontend UI passes.

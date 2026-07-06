@@ -70,6 +70,11 @@ The sequence is:
   reconciliation, acceptance evidence, and `FREEZE.md` updates to librarian or
   freeze-sweep branches unless the feature itself changes scope, ownership,
   sequencing, or release state.
+- Current freeze sweeps are also responsible for routine post-merge closeout
+  wording such as clearing stale PR review status, moving roadmap next work, and
+  preserving non-blocking follow-up candidates as deferred work. Do not create a
+  separate pre-freeze branch for those chores unless the cleanup changes scope,
+  ownership, sequencing, or shipped behavior.
 
 ## Temporary Plan Lifecycle
 

@@ -9,6 +9,14 @@ Use this skill to freeze a version after implementation branches have been
 reviewed and merged. The output is a concise as-built snapshot, not another
 implementation plan.
 
+At the current project scale, the freeze sweep is also the normal place for
+routine closeout hygiene after the final implementation PR merges. This includes
+clearing stale "ready for review" wording, moving roadmap next work to the next
+active step, preserving non-blocking follow-up candidates as deferred work, and
+aligning navigation docs. Do not create a separate pre-freeze branch for these
+chores unless the cleanup changes release scope, ownership boundaries, delivery
+sequence, or implementation behavior.
+
 ## Workflow
 
 1. Confirm scope.
@@ -51,6 +59,8 @@ implementation plan.
    - `docs/roadmap.md`.
    - `AGENTS.md` when the latest frozen snapshot or active planning track
      changes.
+   - Current version README and child plans when they still contain stale
+     active-implementation or review-pending wording.
 
 5. Verify documentation-only changes.
    - Run `git diff --check`.
@@ -79,6 +89,8 @@ Keep the prose short. Prefer tables for counts.
 - Do not put new active work into frozen version folders.
 - Do not hide unfinished work. Move it into roadmap, vNext plans, or stable
   backlog as explicit deferred scope.
+- Do not split routine closeout wording, navigation, or deferred-follow-up
+  cleanup into a separate pre-freeze branch at the current project scale.
 
 ## Template
 
