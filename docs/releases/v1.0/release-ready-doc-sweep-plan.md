@@ -44,6 +44,8 @@ This should be a final quality gate, not another implementation bucket.
   surface.
 - Keep old MVP docs historical instead of editing them into current release
   truth.
+- Decide and document whether any public-facing external docs surface, such as
+  GitHub Wiki, is needed for v1.0. Repository docs remain canonical either way.
 
 ## Non-Goals
 
@@ -51,6 +53,9 @@ This should be a final quality gate, not another implementation bucket.
 - Do not make this branch responsible for implementing Cloudflare Pages, API
   CORS/TLS, or About / Status changes.
 - Do not rewrite historical MVP snapshots except for navigation corrections.
+- Do not migrate canonical release docs out of the repository.
+- Do not make GitHub Wiki or another external docs surface a parallel source of
+  truth for release planning.
 - Do not pull stable-backlog content artifact, translation QA, static/offline,
   or backend normalization work into v1.0.
 
@@ -58,6 +63,9 @@ This should be a final quality gate, not another implementation bucket.
 
 - `docs/mvp/` contains MVP-stage planning and freeze records.
 - `docs/releases/` is the formal post-MVP release planning surface.
+- GitHub Wiki can be useful as a public reader entry point, but it is not part
+  of PR review, CI, freeze snapshots, or agent-loaded repo context. If used, it
+  should summarize and link back to repo docs.
 - v1.0 plans the production split:
   - Cloudflare Pages frontend at `https://d20spellcodex.com`
   - backend API at `https://api.d20spellcodex.com`
@@ -111,6 +119,21 @@ This should be a final quality gate, not another implementation bucket.
   - accepted implementation evidence is linked or summarized
   - no unresolved documentation mismatch remains a release blocker
 
+### Slice 5: Public Docs Surface Decision
+
+- Deliverable: decide whether v1.0 needs an external public docs surface such
+  as GitHub Wiki, and document the chosen boundary.
+- Expected decision:
+  - repo `docs/` remains canonical
+  - GitHub Wiki, if enabled, is a short public index or reader-facing summary
+    that links back to canonical repo docs
+  - release implementation and freeze work do not depend on manually syncing a
+    second docs source
+- Validation:
+  - docs navigation states the source of truth
+  - any external docs surface is checked only as a release-readiness item, not
+    as an implementation blocker unless the release explicitly depends on it
+
 ## Acceptance Criteria
 
 - Root README, docs index, roadmap, AGENTS.md, features, design, operations
@@ -121,6 +144,9 @@ This should be a final quality gate, not another implementation bucket.
   infrastructure, not the normal production static frontend host.
 - About / Status is represented as the release status surface.
 - Old MVP docs remain historical and are not edited into current release truth.
+- Repo `docs/` remains the canonical release documentation source.
+- Any GitHub Wiki or external docs surface is either explicitly out of scope or
+  documented as a non-canonical public index that links back to repo docs.
 - Documentation navigation, deployment docs, module ownership docs, and release
   README all agree before v1.0 freeze.
 - `git diff --check` passes.
