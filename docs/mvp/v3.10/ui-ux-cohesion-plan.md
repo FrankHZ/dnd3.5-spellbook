@@ -164,10 +164,10 @@ Implementation branch:
   action bar that still stacks on mobile.
 - Made Browse/Search display toggles more resistant to longer localized labels.
 - Moved the Advanced filters sheet to open from the left, matching its sidebar
-  trigger location, and added a shared mobile-collapsible filter sidebar.
-  Browse keeps the filter-first sidebar open by default; Search defaults the
-  sidebar closed on mobile so results are reachable without scrolling through
-  all filters.
+  trigger location, and replaced the Browse/Search filter card with a shared
+  left drawer. The drawer is open by default on desktop, collapses to a narrow
+  rail when hidden, and opens over the results on mobile so Browse/Search keep
+  one consistent sidebar model.
 - Updated `docs/design.md` and `docs/frontend-map.md` with the small shared
   page-header pattern.
 

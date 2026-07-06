@@ -104,8 +104,8 @@ export default function BrowsePage() {
 
   return (
     <div className="page-side">
-      <div className="grid gap-4 md:grid-cols-[320px_1fr]">
-        <FilterSidebarCard defaultOpen>
+      <div className="grid gap-4 md:grid-cols-[auto_minmax(0,1fr)]">
+        <FilterSidebarCard>
           <BrowseOptionsToggle
             groupMode={groupMode}
             onGroupModeChange={setGroupMode}

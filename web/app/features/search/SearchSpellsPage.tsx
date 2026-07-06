@@ -123,8 +123,8 @@ export default function SearchSpellsPage() {
 
   return (
     <div className="page-side">
-      <div className="grid gap-4 md:grid-cols-[320px_1fr]">
-        <FilterSidebarCard defaultOpen={false}>
+      <div className="grid gap-4 md:grid-cols-[auto_minmax(0,1fr)]">
+        <FilterSidebarCard>
           <div className="grid gap-2">
             {hasScopedSearch ? (
               <Button type="button" variant="ghost" onClick={clearSearchScope}>
