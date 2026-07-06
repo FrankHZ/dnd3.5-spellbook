@@ -69,8 +69,9 @@ version `FREEZE.md`, recording release acceptance evidence, or moving the
 latest frozen snapshot in navigation docs.
 
 Use the repo-local `$version-plan-doc` skill before creating or broadly updating
-version planning docs under `docs/mvp/v*/`, especially when deciding whether an
-implementation branch should update `integrated-plan.md`.
+version or release planning docs under `docs/mvp/v*/` or `docs/releases/`,
+especially when deciding whether an implementation branch should update
+`integrated-plan.md`.
 
 Repo-local skills live under `.agents/skills/` in the current worktree. When
 using repo skills such as `branch-naming` or `commit-message`, read

@@ -1,5 +1,12 @@
 # v1.0 Release Ready Doc Sweep Plan
 
+> Plan maintenance rule: integrated plans are for early sequencing and
+> cross-plan conflict review, not implementation ledgers. Implementation
+> branches should update this owning topic plan, affected operational docs, and
+> `docs/roadmap.md` only when active ordering changes. Do not update
+> `integrated-plan.md` unless version scope, delivery sequence, ownership
+> boundaries, or cross-plan conflicts change.
+
 Status: planned.
 
 ## Purpose
