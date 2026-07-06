@@ -172,6 +172,8 @@ Implementation branch:
   across Browse, Search, Spell Detail, and collection workflows.
 - Made spellbook index cards whole-card links with consistent hover and focus
   affordances.
+- Normalized spellbook/prepared page-header actions to small buttons instead of
+  extra-small controls, keeping compact buttons for dense toolbars and rows.
 - Updated `docs/design.md` and `docs/frontend-map.md` with the small shared
   page-header and status-card patterns.
 

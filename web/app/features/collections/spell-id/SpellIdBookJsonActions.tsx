@@ -119,7 +119,7 @@ export function SpellIdBookJsonActions({ book }: { book: SpellIdBook }) {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            size="xs"
+            size="sm"
             variant="outline"
             onClick={onExport}
             disabled={isImporting}
@@ -134,7 +134,7 @@ export function SpellIdBookJsonActions({ book }: { book: SpellIdBook }) {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            size="xs"
+            size="sm"
             variant="outline"
             onClick={() => openImportPicker("merge")}
             disabled={isImporting}
@@ -151,7 +151,7 @@ export function SpellIdBookJsonActions({ book }: { book: SpellIdBook }) {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            size="xs"
+            size="sm"
             variant="destructive"
             onClick={() => openImportPicker("replace")}
             disabled={isImporting}
@@ -166,7 +166,7 @@ export function SpellIdBookJsonActions({ book }: { book: SpellIdBook }) {
         </TooltipContent>
       </Tooltip>
       <Button
-        size="xs"
+        size="sm"
         variant="destructive"
         onClick={onClear}
         disabled={isImporting || book.spellIds.length === 0}

@@ -105,7 +105,7 @@ export function PreparedBookJsonActions({ book }: { book: PreparedBook }) {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            size="xs"
+            size="sm"
             variant="outline"
             onClick={onExport}
             disabled={isImporting}
@@ -120,7 +120,7 @@ export function PreparedBookJsonActions({ book }: { book: PreparedBook }) {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            size="xs"
+            size="sm"
             variant="destructive"
             onClick={openImportPicker}
             disabled={isImporting}
@@ -133,7 +133,7 @@ export function PreparedBookJsonActions({ book }: { book: PreparedBook }) {
         </TooltipContent>
       </Tooltip>
       <Button
-        size="xs"
+        size="sm"
         variant="destructive"
         onClick={onClear}
         disabled={isImporting || book.entries.length === 0}

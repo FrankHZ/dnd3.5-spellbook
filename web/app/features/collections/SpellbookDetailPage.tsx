@@ -46,7 +46,7 @@ export default function SpellbookDetailPage() {
               <SpellIdBookJsonActions book={book} />
             )}
 
-            <Button asChild size="xs" variant="outline">
+            <Button asChild size="sm" variant="outline">
               <Link to="/spellbooks">{t("actions.back")}</Link>
             </Button>
           </>

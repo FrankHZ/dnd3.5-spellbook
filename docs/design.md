@@ -105,6 +105,12 @@ blocks. Keep status copy concise and put recovery actions in the card action
 area so Browse, Search, Spell Detail, and collection workflows present these
 states consistently.
 
+For page-level actions in headers, use normal small buttons (`size="sm"`) so
+import/export, destructive collection actions, and navigation controls remain
+legible. Reserve extra-small and icon-only buttons for dense table rows,
+segmented toolbars, and repeated inline controls where compactness is part of
+the workflow.
+
 For Browse/Search filter sidebars, use the shared left drawer wrapper. The
 drawer stays open by default on desktop and can collapse to a narrow rail; on
 mobile it opens over the results so users can get back to the list without
