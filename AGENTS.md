@@ -54,6 +54,9 @@ Version folders under `docs/mvp/` are stage records and active plan spaces. A
 later development. Treat plan documents as intended scope, not as proof of
 shipped behavior.
 
+Formal post-MVP release planning belongs under `docs/releases/`. Keep
+`docs/mvp/` for MVP-stage history and final MVP closeout records.
+
 ## Repo-Local Skills
 
 Use the repo-local `$branch-naming` skill before creating, renaming, or
@@ -66,8 +69,9 @@ version `FREEZE.md`, recording release acceptance evidence, or moving the
 latest frozen snapshot in navigation docs.
 
 Use the repo-local `$version-plan-doc` skill before creating or broadly updating
-version planning docs under `docs/mvp/v*/`, especially when deciding whether an
-implementation branch should update `integrated-plan.md`.
+version or release planning docs under `docs/mvp/v*/` or `docs/releases/`,
+especially when deciding whether an implementation branch should update
+`integrated-plan.md`.
 
 Repo-local skills live under `.agents/skills/` in the current worktree. When
 using repo skills such as `branch-naming` or `commit-message`, read
@@ -267,6 +271,7 @@ manual browser smoke test of the affected pages.
 - `docs/modules/` is the high-level module design surface.
 - `docs/mvp/` is stage history plus active plan space; frozen version folders
   should not become the daily agent working surface.
+- `docs/releases/` is the formal post-MVP release planning surface.
 - New agent or harness guidance belongs in `AGENTS.md` or `docs/harness.md`,
   not inside old MVP plan files.
 - Current work ordering after a pause belongs in `docs/roadmap.md`, while
