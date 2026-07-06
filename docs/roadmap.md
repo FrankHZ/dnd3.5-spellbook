@@ -257,25 +257,25 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Review and merge the v3.9 frontend mechanics consumer**
+1. **Open the v3.9 freeze sweep**
 
-   Use
-   `docs/mvp/v3.9/frontend-normalized-mechanics-consumer-plan.md`. PR #39 is
-   ready for review with Browse/Search server-provided mechanics filters,
-   URL/API helper coverage, compact active scope summaries, Advanced filters
-   draft/apply behavior, and limited Spell Detail mechanics fallback.
+   The normalized mechanics backend contract and frontend consumer are merged.
+   A librarian freeze branch should run acceptance from `main`, create
+   `docs/mvp/v3.9/FREEZE.md`, and update the navigation surfaces listed in the
+   `$freeze-snapshot` skill.
 
    The backend contract now exposes stable vocabulary and fallback behavior for
    `castingTimeKeys`, `rangeKeys`, `durationKeys`, `savingThrowKeys`, and
    `spellResistanceKeys`. It also exposes content-backed Spell Detail mechanics
    metadata under `casting.mechanics`.
 
-2. **Keep the normalized mechanics backend contract closed**
+2. **Preserve non-blocking follow-up candidates**
 
-   `docs/mvp/v3.9/normalized-mechanics-contract-plan.md` is the backend source
-   of truth. `components.other_or_extra` is classified as detail/raw only, and
-   `target` / `effect` / `area` remain deferred unless a later focused plan
-   narrows them.
+   Freeze should keep the follow-ups from
+   `docs/mvp/v3.9/frontend-normalized-mechanics-consumer-plan.md` visible as
+   deferred work, not unresolved v3.9 blockers. That includes localized
+   mechanics bucket labels, later Advanced filters polish, query-param helper
+   consolidation, and deferred `target` / `effect` / `area` filters.
 
 3. **Triage the non-blocking maintenance tail as needed**
 

@@ -30,11 +30,18 @@
 - Typecheck/build:
 - Browser smoke:
 
+## Follow-Up Candidates
+
+- Capture useful but non-blocking follow-up work here during implementation.
+  Move durable items into the owning feature/topic doc before deleting this
+  temporary plan.
+
 ## Implementation Checklist
 
 - [ ] Read existing entry points and nearby tests
 - [ ] Implement the smallest behavior change
 - [ ] Update or add the nearest tests
+- [ ] Move non-blocking follow-up candidates into the owning durable doc
 - [ ] Update durable docs if behavior or workflow changed
 - [ ] Run validation
 - [ ] Delete this temporary plan before commit, unless explicitly archived
