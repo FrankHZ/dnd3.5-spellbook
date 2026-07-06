@@ -30,7 +30,7 @@ import { useTranslation } from "react-i18next";
 
 function SpellDetailSkeleton() {
   return (
-    <div className="mx-auto max-w-6xl space-y-4 p-4">
+    <div className="page-side">
       <div className="space-y-2 md:hidden">
         <Skeleton className="h-8 w-2/3" />
         <Skeleton className="h-4 w-1/3" />

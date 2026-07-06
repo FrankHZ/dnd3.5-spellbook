@@ -120,17 +120,18 @@ export function AdvancedSpellFiltersPanel({
           </div>
         </div>
 
-        <SheetFooter className="border-t sm:flex-row sm:justify-between">
+        <SheetFooter className="grid gap-2 border-t sm:grid-cols-[1fr_auto] sm:items-center">
           <Button
             type="button"
             variant="ghost"
+            className="justify-self-start"
             data-testid="advanced-spell-filters-reset"
             onClick={() => setDraft(emptyNormalizedFilters())}
             disabled={draftCount === 0}
           >
             {t("advanced.reset")}
           </Button>
-          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
             <SheetClose asChild>
               <Button type="button" variant="outline">
                 {t("advanced.cancel")}

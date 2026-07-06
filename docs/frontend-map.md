@@ -84,6 +84,7 @@ Purpose:
 ### Shared Components
 
 - reusable app components: `web/app/components/`
+- simple page titles/actions: `web/app/components/PageHeader.tsx`
 - local shadcn wrappers: `web/app/components/ui/`
 
 ### API Client

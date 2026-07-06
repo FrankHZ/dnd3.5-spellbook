@@ -93,6 +93,12 @@ without requiring hidden duplicate flows.
 Do not introduce landing-page sections, hero blocks, oversized headings, or
 decorative page bands for core app screens.
 
+For simple page titles, use the shared `PageHeader` component so settings,
+collections, about/status, and similar utility screens keep the same title,
+description, and action alignment. Feature-specific reading surfaces such as
+Spell Detail may keep their own header when source badges, actions, or rule
+metadata need a custom hierarchy.
+
 ## Information Density
 
 The app should feel compact but not cramped.

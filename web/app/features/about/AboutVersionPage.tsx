@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { PageHeader } from "~/components/PageHeader";
 import { cn } from "~/lib/utils";
 import { getFrontendVersionMetadata } from "./build-metadata";
 
@@ -174,21 +175,24 @@ export default function AboutVersionPage() {
 
   return (
     <div className="page-single">
-      <div className="space-y-1 px-1">
-        <h2 className="text-lg font-semibold">{t("page.title")}</h2>
-        <div className="text-sm text-muted-foreground">
-          {t("page.description")}
-        </div>
-        <a
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-          href={REPOSITORY_URL}
-          rel="noreferrer"
-          target="_blank"
-        >
-          {t("page.repository")}
-          <ExternalLink className="size-3.5" aria-hidden="true" />
-        </a>
-      </div>
+      <PageHeader
+        title={t("page.title")}
+        description={
+          <>
+            {t("page.description")}
+            <br />
+            <a
+              className="inline-flex items-center gap-1.5 text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              href={REPOSITORY_URL}
+              rel="noreferrer"
+              target="_blank"
+            >
+              {t("page.repository")}
+              <ExternalLink className="size-3.5" aria-hidden="true" />
+            </a>
+          </>
+        }
+      />
 
       <VersionSection
         title={t("frontend.title")}

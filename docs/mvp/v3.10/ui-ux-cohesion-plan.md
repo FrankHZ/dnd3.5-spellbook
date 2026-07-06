@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: ready for review in `codex/design-ui-ux-cohesion`.
 
 ## Purpose
 
@@ -148,7 +148,31 @@ non-blocking work discovered during the branch. Keep each item short, explain
 why it is outside the current acceptance gate, and move any real release
 blocker back into `Acceptance Criteria` instead.
 
+- Full component-library extraction remains out of scope. This pass may add
+  small shared app components when they remove visible inconsistency, but it
+  should not turn into a design-system documentation project.
+
 ## Completion Notes
 
-Use this section only after implementation review. Keep it short and link to
-merged PRs, validation evidence, or freeze snapshots instead of pasting logs.
+Implementation branch:
+
+- Added `PageHeader` for simple page titles, descriptions, and actions across
+  settings, collections, and about/status surfaces.
+- Aligned Spell Detail loading with the same `.page-side` shell as the loaded
+  detail page.
+- Tightened Advanced filters footer layout into a reset-left/actions-right
+  action bar that still stacks on mobile.
+- Made Browse/Search display toggles more resistant to longer localized labels.
+- Updated `docs/design.md` and `docs/frontend-map.md` with the small shared
+  page-header pattern.
+
+Validation:
+
+- `npm run typecheck:web`
+- `npm run i18n:check`
+- `npm run -w web test -- --run`
+- `npm run -w web build`
+- `git diff --check`
+- Browser smoke on Browse, Search, Spell Detail, collections, settings, and
+  about/status at desktop and mobile widths; Advanced filters opened on desktop
+  and mobile without horizontal overflow.

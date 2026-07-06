@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { PageHeader } from "~/components/PageHeader";
 import { useCollections } from "~/state/collections-state";
 import { getBook } from "~/storage/collections";
 import { PreparedBookDetail } from "./prepared/PreparedBookDetail";
@@ -43,22 +44,23 @@ export default function SpellbookDetailPage() {
 
   return (
     <div className={pageClass}>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-lg font-semibold">
-            {getCollectionDisplayName(book, tDefault)}
-          </h1>
-        </div>
+      <PageHeader
+        title={getCollectionDisplayName(book, tDefault)}
+        actions={
+          <>
+            {book.kind === "prepared" && (
+              <PreparedBookJsonActions book={book} />
+            )}
+            {book.kind === "spellbook" && (
+              <SpellIdBookJsonActions book={book} />
+            )}
 
-        <div className="flex flex-wrap items-center gap-2">
-          {book.kind === "prepared" && <PreparedBookJsonActions book={book} />}
-          {book.kind === "spellbook" && <SpellIdBookJsonActions book={book} />}
-
-          <Button asChild size="xs" variant="outline">
-            <Link to="/spellbooks">{t("actions.back")}</Link>
-          </Button>
-        </div>
-      </div>
+            <Button asChild size="xs" variant="outline">
+              <Link to="/spellbooks">{t("actions.back")}</Link>
+            </Button>
+          </>
+        }
+      />
 
       {book.kind === "spellbook" && <SpellIdBookDetail book={book} />}
       {book.kind === "prepared" && <PreparedBookDetail book={book} />}
