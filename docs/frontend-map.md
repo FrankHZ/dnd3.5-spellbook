@@ -34,6 +34,9 @@ Shared filter components:
 - mechanics filters: `web/app/features/spells/MechanicsFilterSelector.tsx`
 - filter sidebar drawer:
   `web/app/features/spells/FilterSidebarCard.tsx`
+- spell metadata badges:
+  `web/app/features/spells/SpellMetaBadge.tsx`,
+  `web/app/features/spells/SpellComponentBadge.tsx`
 - URL/filter helpers: `web/app/features/spells/taxonomy-filter-state.ts`
 
 ### Spell Detail

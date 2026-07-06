@@ -1,7 +1,6 @@
 import type { SpellItemView } from "@dnd/contracts";
 import { Link } from "react-router";
 import { SpellActionButtons } from "~/components/SpellActionButtons";
-import { Badge } from "~/components/ui/badge";
 import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useMetaNames } from "~/i18n/hooks/useMetaNames";
@@ -10,6 +9,7 @@ import { getSpellShortDescription } from "~/i18n/display/spell-short-description
 import { cn } from "~/lib/utils";
 import { getSpecialComponentMarkers } from "~/features/spells/spell-component-markers";
 import { SpellComponentBadge } from "~/features/spells/SpellComponentBadge";
+import { SpellMetaBadge } from "~/features/spells/SpellMetaBadge";
 import type {
   SpellCardDetailMode,
   SpellListDensity,
@@ -80,9 +80,7 @@ export function SpellCard({
     >
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
-          <span className="inline-flex h-5 shrink-0 items-center rounded-sm px-1 text-[10px] font-medium leading-none tracking-wide text-muted-foreground">
-            {source.abbr}
-          </span>
+          <SpellMetaBadge kind="source">{source.abbr}</SpellMetaBadge>
           <Link
             to={`/spells/${spell.id}`}
             className="min-w-0 font-medium leading-5 text-foreground underline-offset-3 hover:underline"
@@ -103,17 +101,16 @@ export function SpellCard({
           <div className="mt-3 grid gap-3 border-l border-border/80 pl-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
             <div className="min-w-0 space-y-2 text-xs leading-5 text-muted-foreground">
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="rounded-sm bg-muted/50 px-1.5 py-0.5 font-medium text-foreground/75">
+                <SpellMetaBadge kind="taxonomy">
                   {schoolText}
-                </span>
+                </SpellMetaBadge>
                 {spell.descriptors?.map((d) => (
-                  <Badge
+                  <SpellMetaBadge
                     key={d.id ?? d.key ?? d.slug}
-                    variant="secondary"
-                    className="rounded-sm px-1.5 text-xs font-medium"
+                    kind="descriptor"
                   >
                     {facetName("descriptors", d)}
-                  </Badge>
+                  </SpellMetaBadge>
                 ))}
               </div>
 

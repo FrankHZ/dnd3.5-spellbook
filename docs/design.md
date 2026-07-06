@@ -111,6 +111,12 @@ legible. Reserve extra-small and icon-only buttons for dense table rows,
 segmented toolbars, and repeated inline controls where compactness is part of
 the workflow.
 
+For spell metadata badges, keep the vocabulary small and semantic. Use
+`SpellMetaBadge` for source labels, taxonomy labels such as school/subschool,
+descriptors, and active filter-scope chips. Use `SpellComponentBadge` only for
+spell components. This keeps Browse/Search cards, scope summaries, and Spell
+Detail from inventing separate badge treatments for the same metadata roles.
+
 For Browse/Search filter sidebars, use the shared left drawer wrapper. The
 drawer stays open by default on desktop and can collapse to a narrow rail; on
 mobile it opens over the results so users can get back to the list without

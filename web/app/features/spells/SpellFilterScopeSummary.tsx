@@ -1,5 +1,7 @@
 import { useTranslation } from "react-i18next";
 
+import { SpellMetaBadge } from "./SpellMetaBadge";
+
 type SpellFilterScopeSummaryTranslate = (
   key: string,
   options?: { count?: number; ns: "spell-scope" },
@@ -146,10 +148,11 @@ export function SpellFilterScopeSummary({
           {t("labels.filters")}
         </span>
         {summaryItems.map((item) => (
-          <span
+          <SpellMetaBadge
             key={item.key}
+            kind="scope"
             aria-label={`${item.label}: ${item.value}`}
-            className="inline-flex max-w-full min-w-0 items-center gap-1 rounded-sm border bg-background/70 px-2 py-0.5"
+            className="max-w-full gap-1"
           >
             <span className="shrink-0 text-muted-foreground/75">
               {item.label}:
@@ -163,7 +166,7 @@ export function SpellFilterScopeSummary({
             >
               {item.value}
             </span>
-          </span>
+          </SpellMetaBadge>
         ))}
       </div>
     </div>

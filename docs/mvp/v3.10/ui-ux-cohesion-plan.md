@@ -174,8 +174,11 @@ Implementation branch:
   affordances.
 - Normalized spellbook/prepared page-header actions to small buttons instead of
   extra-small controls, keeping compact buttons for dense toolbars and rows.
+- Added `SpellMetaBadge` for source, taxonomy, descriptor, and active-scope
+  metadata so Browse/Search cards, scope summaries, and Spell Detail share one
+  badge vocabulary alongside the existing component badge.
 - Updated `docs/design.md` and `docs/frontend-map.md` with the small shared
-  page-header and status-card patterns.
+  page-header, status-card, and spell metadata badge patterns.
 
 Validation:
 

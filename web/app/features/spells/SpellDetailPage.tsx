@@ -5,7 +5,6 @@ import { ApiError } from "~/api/http";
 import { SpellActionButtons } from "~/components/SpellActionButtons";
 import { StatusCard } from "~/components/StatusCard";
 import { getSpellDetail } from "~/api/spells";
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -22,6 +21,7 @@ import { getSpellShortDescription } from "~/i18n/display/spell-short-description
 import { useMetaNames } from "~/i18n/hooks/useMetaNames";
 import { useRulebookDisplay } from "~/i18n/hooks/useRulebookDisplay";
 import { useTranslation } from "react-i18next";
+import { SpellMetaBadge } from "./SpellMetaBadge";
 
 function SpellDetailSkeleton() {
   return (
@@ -84,15 +84,12 @@ function SpellHeader({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="mb-2 flex flex-wrap items-center gap-2">
-            <Badge
-              variant="outline"
-              className="rounded-sm bg-muted/30 text-[11px] font-medium text-muted-foreground"
-            >
+            <SpellMetaBadge kind="source" size="regular">
               {sourceText}
-            </Badge>
-            <Badge variant="secondary" className="rounded-sm text-xs">
+            </SpellMetaBadge>
+            <SpellMetaBadge kind="taxonomy" size="regular">
               {schoolText}
-            </Badge>
+            </SpellMetaBadge>
           </div>
           <h1 className="text-2xl font-semibold leading-tight tracking-normal">
             {title}
@@ -105,13 +102,13 @@ function SpellHeader({
           {descriptors.length > 0 ? (
             <div className="mt-3 flex flex-wrap gap-1.5">
               {descriptors.map((descriptor) => (
-                <Badge
+                <SpellMetaBadge
                   key={descriptor.key}
-                  variant="outline"
-                  className="rounded-sm text-xs text-muted-foreground"
+                  kind="descriptor"
+                  size="regular"
                 >
                   {descriptor.label}
-                </Badge>
+                </SpellMetaBadge>
               ))}
             </div>
           ) : null}
