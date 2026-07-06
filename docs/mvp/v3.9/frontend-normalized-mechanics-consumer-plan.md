@@ -7,10 +7,11 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: landed in PR #39. Backend handoff was reviewed after PRs #32-#37;
-URL/API helper foundation, public Browse/Search controls, compact scope
-summaries, and limited Spell Detail display fallback are implemented. Follow-up
-UI/i18n polish candidates are recorded below and are not v3.9 freeze blockers.
+Status: frozen in v3.9 after landing in PR #39. Backend handoff was reviewed
+after PRs #32-#37; URL/API helper foundation, public Browse/Search controls,
+compact scope summaries, and limited Spell Detail display fallback are
+implemented. Follow-up UI/i18n polish candidates are recorded below and are not
+v3.9 freeze blockers.
 
 ## Purpose
 

@@ -22,14 +22,17 @@ execution rules and role boundaries.
 
 ## Active Planning
 
-v3.9 is the active version plan for normalized mechanics/query fullstack
-completion:
+There is no active version plan in this repo snapshot. Use
+[roadmap.md](./roadmap.md) for current ordering after a pause.
 
+The latest frozen planning record is v3.9:
+
+- [mvp/v3.9/FREEZE.md](./mvp/v3.9/FREEZE.md)
 - [mvp/v3.9/README.md](./mvp/v3.9/README.md)
 - [mvp/v3.9/normalized-mechanics-contract-plan.md](./mvp/v3.9/normalized-mechanics-contract-plan.md)
 - [mvp/v3.9/frontend-normalized-mechanics-consumer-plan.md](./mvp/v3.9/frontend-normalized-mechanics-consumer-plan.md)
 
-The latest frozen planning record is v3.8:
+The previous frozen planning record is v3.8:
 
 - [mvp/v3.8/README.md](./mvp/v3.8/README.md)
 - [mvp/v3.8/normalized-query-contract-plan.md](./mvp/v3.8/normalized-query-contract-plan.md)
@@ -40,16 +43,21 @@ Use [roadmap.md](./roadmap.md) for current ordering after a pause.
 
 ## Latest Frozen Snapshot
 
-The latest frozen stage snapshot is **v3.8**:
+The latest frozen stage snapshot is **v3.9**:
+
+- [mvp/v3.9/FREEZE.md](./mvp/v3.9/FREEZE.md)
+- [mvp/v3.9/README.md](./mvp/v3.9/README.md)
+
+`FREEZE.md` records the as-built v3.9 handoff state. Supporting v3.9 plan docs
+describe rationale and implementation history; they are not newer than the
+freeze snapshot.
+
+The previous frozen stage snapshot is **v3.8**:
 
 - [mvp/v3.8/FREEZE.md](./mvp/v3.8/FREEZE.md)
 - [mvp/v3.8/README.md](./mvp/v3.8/README.md)
 
-`FREEZE.md` records the as-built v3.8 handoff state. Supporting v3.8 plan docs
-describe rationale and implementation history; they are not newer than the
-freeze snapshot.
-
-The previous frozen stage snapshot is **v3.7**:
+The older frozen stage snapshot before that is **v3.7**:
 
 - [mvp/v3.7/FREEZE.md](./mvp/v3.7/FREEZE.md)
 - [mvp/v3.7/README.md](./mvp/v3.7/README.md)
@@ -96,9 +104,10 @@ baselines.
 ### Versioned MVP Docs
 
 - [mvp/README.md](./mvp/README.md): versioned-doc roles and maintenance rules.
-- [mvp/v3.9/README.md](./mvp/v3.9/README.md): active normalized
-  mechanics/query fullstack completion plan.
-- [mvp/v3.8/FREEZE.md](./mvp/v3.8/FREEZE.md): latest frozen release snapshot.
+- [mvp/v3.9/FREEZE.md](./mvp/v3.9/FREEZE.md): latest frozen release snapshot.
+- [mvp/v3.9/README.md](./mvp/v3.9/README.md): frozen normalized
+  mechanics/query fullstack planning record.
+- [mvp/v3.8/FREEZE.md](./mvp/v3.8/FREEZE.md): previous frozen release snapshot.
 - [mvp/v3.7/FREEZE.md](./mvp/v3.7/FREEZE.md): previous frozen snapshot.
 - [mvp/v3.6/FREEZE.md](./mvp/v3.6/FREEZE.md): older frozen snapshot.
 - [mvp/v3.5/FREEZE.md](./mvp/v3.5/FREEZE.md): older frozen snapshot.

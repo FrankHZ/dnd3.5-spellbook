@@ -7,7 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: backend contract implemented; frontend consumer planned separately.
+Status: frozen in v3.9. Backend contract is implemented, and the frontend
+consumer has landed separately. See `FREEZE.md` for the as-built handoff.
 
 ## Purpose
 
@@ -302,12 +303,18 @@ Recommended follow-up:
 - Do not update `integrated-plan.md` unless this plan conflicts with another
   v3.9 workstream.
 
-## Open Questions
+## Follow-Up Candidates
 
-- Which frontend detail fields should render `casting.mechanics` first, and how
-  should localized labels explain harmless/object/dismissible flags?
+These are intentionally outside the v3.9 backend contract acceptance gate:
+
+- Localize mechanics bucket labels and supported detail metadata labels in a
+  later frontend/i18n pass.
+- Revisit `target`, `effect`, and `area` only after a later backend contract
+  accepts public buckets and fallback behavior for those high-volume fields.
+- Keep component extra text and review-only mechanics rows as detail/audit
+  inventory unless a later consumer need justifies more public vocabulary.
 
 ## Completion Notes
 
-Use this section only after implementation review. Keep it short and link to
-merged PRs, validation evidence, or freeze snapshots instead of pasting logs.
+Frozen in v3.9. The final accepted behavior and validation evidence are
+recorded in `FREEZE.md`.

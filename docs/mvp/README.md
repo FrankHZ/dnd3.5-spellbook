@@ -8,9 +8,9 @@ new behavior.
 
 ## Current Version Folders
 
-- `v3.9`: active normalized mechanics/query fullstack completion plan.
-- `v3.8`: latest frozen release snapshot and supporting plans.
-- `v3.7`: previous frozen release snapshot and supporting plans.
+- `v3.9`: latest frozen release snapshot and supporting plans.
+- `v3.8`: previous frozen release snapshot and supporting plans.
+- `v3.7`: older frozen release snapshot and supporting plans.
 - `v3.6`: older frozen release snapshot and supporting plans.
 - `v3.5`: older frozen release snapshot and supporting plans.
 - `v3.4` and older: historical release snapshots, plans, and handoff records.

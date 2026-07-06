@@ -28,11 +28,10 @@ Use these docs for orientation instead of expanding this file:
 - `docs/README.md`: canonical documentation map and historical/current doc
   ownership.
 - `docs/roadmap.md`: current active work ordering after a pause.
-- `docs/mvp/v3.9/README.md`: active normalized mechanics/query fullstack
-  completion plan.
-- `docs/mvp/v3.8/FREEZE.md`: latest frozen stage snapshot.
-- `docs/mvp/v3.8/README.md`: frozen focused plan for normalized query/filter
-  work and the module-boundary cleanup spike.
+- `docs/mvp/v3.9/FREEZE.md`: latest frozen stage snapshot.
+- `docs/mvp/v3.9/README.md`: frozen focused plan for normalized
+  mechanics/query fullstack completion.
+- `docs/mvp/v3.8/FREEZE.md`: previous frozen stage snapshot.
 - `docs/features.md`: current user-facing feature map.
 - `docs/feature-workflow.md`: feature intake and implementation loop.
 - `docs/modules/README.md`: high-level module ownership and validation
