@@ -26,10 +26,23 @@ reference rendering. Collections own local spellbook and prepared-spell browser
 state.
 
 Normalized filter controls should consume `GET /api/meta/filters` vocabulary.
-For v3.8, base component filters use server-provided `componentKeys` with `all`
-semantics, and Tome of Battle taxonomy grouping uses server-provided
-`sourceKind` / `category` metadata. Do not derive filter options by parsing raw
-spell component, taxonomy, or mechanics strings in the browser.
+Base component filters use server-provided `componentKeys` with `all`
+semantics. Mechanics filters use server-provided casting time, range,
+duration, saving throw, and spell resistance buckets with `any` semantics
+within each mechanics family and combined scope across selected families. Tome
+of Battle taxonomy grouping uses server-provided `sourceKind` / `category`
+metadata. Do not derive filter options by parsing raw spell component,
+taxonomy, or mechanics strings in the browser.
+
+Secondary normalized filters in Browse/Search should be edited through the
+shared Advanced filters panel. The panel owns local draft state and writes the
+URL only when the user applies the draft, so long filter lists do not cause
+repeated navigation or scroll resets while users are checking boxes.
+
+Spell Detail may render accepted content-backed `casting.mechanics` flags as
+secondary notes for duration, saving throw, and spell resistance. It should not
+infer structured mechanic notes from legacy raw strings or promote deferred
+target, effect, or area values into normalized UI.
 
 Settings owns broad user preferences such as language and content scope
 defaults. Ordinary page filters should stay in URL state unless the feature plan

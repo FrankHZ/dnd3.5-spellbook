@@ -12,12 +12,19 @@ type SpellFilterScopeSummaryProps = {
   rulebookCount: number;
   taxonomyFilterCount?: number;
   componentFilterCount?: number;
+  mechanicFilterCount?: number;
   nullLevelMode: "any" | "required";
 };
 
 type SpellFilterScopeSummaryItem = {
   key:
-    "classes" | "domains" | "level" | "taxonomy" | "components" | "rulebooks";
+    | "classes"
+    | "domains"
+    | "level"
+    | "taxonomy"
+    | "components"
+    | "mechanics"
+    | "rulebooks";
   label: string;
   value: string;
   isActive: boolean;
@@ -30,6 +37,7 @@ export function buildSpellFilterScopeSummaryItems({
   rulebookCount,
   taxonomyFilterCount = 0,
   componentFilterCount = 0,
+  mechanicFilterCount = 0,
   t,
 }: SpellFilterScopeSummaryProps & {
   t: SpellFilterScopeSummaryTranslate;
@@ -81,6 +89,15 @@ export function buildSpellFilterScopeSummaryItems({
     });
   }
 
+  if (mechanicFilterCount > 0) {
+    items.push({
+      key: "mechanics",
+      label: t("labels.mechanics", { ns: "spell-scope" }),
+      value: String(mechanicFilterCount),
+      isActive: true,
+    });
+  }
+
   if (rulebookCount > 0) {
     items.push({
       key: "rulebooks",
@@ -103,6 +120,7 @@ export function SpellFilterScopeSummary({
   rulebookCount,
   taxonomyFilterCount = 0,
   componentFilterCount = 0,
+  mechanicFilterCount = 0,
   nullLevelMode,
 }: SpellFilterScopeSummaryProps) {
   const { t } = useTranslation("spell-scope");
@@ -113,6 +131,7 @@ export function SpellFilterScopeSummary({
     rulebookCount,
     taxonomyFilterCount,
     componentFilterCount,
+    mechanicFilterCount,
     nullLevelMode,
     t,
   });

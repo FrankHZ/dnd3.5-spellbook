@@ -1,13 +1,8 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router";
-import type {
-  SpellComponentFilterKey,
-  SpellNormalizedFilterScope,
-  SpellTaxonomyFilterIds,
-} from "@dnd/contracts";
+import type { SpellNormalizedFilterScope } from "@dnd/contracts";
 import type { LevelParam } from "~/api/spells";
 import {
-  emptyNormalizedFilters,
   normalizeNormalizedFilters,
   parseNormalizedFilters,
   setNormalizedFilterParams,
@@ -34,14 +29,7 @@ export type BrowseQueryState = {
   setLevel: (next: LevelParam | null) => void;
   setClassIds: (next: number[]) => void;
   setDomainIds: (next: number[]) => void;
-  setSchoolIds: (next: number[]) => void;
-  setSubschoolIds: (next: number[]) => void;
-  setDescriptorIds: (next: number[]) => void;
-  setDescriptorFilters: (
-    next: Pick<SpellTaxonomyFilterIds, "descriptorIds" | "descriptorBuckets">,
-  ) => void;
-  setComponentKeys: (next: SpellComponentFilterKey[]) => void;
-  resetDetailFilters: () => void;
+  setNormalizedFilters: (next: SpellNormalizedFilterScope) => void;
   setPage: (next: number) => void;
 
   // useful flags
@@ -208,79 +196,15 @@ export function useBrowseQueryState(): BrowseQueryState {
     [updateParams, setState],
   );
 
-  const setTaxonomyIds = useCallback(
-    (key: keyof SpellTaxonomyFilterIds, nextIds: number[]) => {
-      const ids = normalizeIds(nextIds.filter((id) => id > 0));
+  const setNormalizedFilters = useCallback(
+    (nextFilters: SpellNormalizedFilterScope) => {
       updateParams((sp) => {
-        setNormalizedFilterParams(
-          sp,
-          normalizeNormalizedFilters({
-            ...parsed.filters,
-            [key]: ids,
-          }),
-        );
+        setNormalizedFilterParams(sp, normalizeNormalizedFilters(nextFilters));
         resetPage(sp);
       });
     },
-    [parsed.filters, updateParams],
+    [updateParams],
   );
-
-  const setSchoolIds = useCallback(
-    (nextIds: number[]) => setTaxonomyIds("schoolIds", nextIds),
-    [setTaxonomyIds],
-  );
-
-  const setSubschoolIds = useCallback(
-    (nextIds: number[]) => setTaxonomyIds("subschoolIds", nextIds),
-    [setTaxonomyIds],
-  );
-
-  const setDescriptorIds = useCallback(
-    (nextIds: number[]) => setTaxonomyIds("descriptorIds", nextIds),
-    [setTaxonomyIds],
-  );
-
-  const setDescriptorFilters = useCallback(
-    (
-      next: Pick<SpellTaxonomyFilterIds, "descriptorIds" | "descriptorBuckets">,
-    ) => {
-      updateParams((sp) => {
-        setNormalizedFilterParams(
-          sp,
-          normalizeNormalizedFilters({
-            ...parsed.filters,
-            descriptorIds: next.descriptorIds,
-            descriptorBuckets: next.descriptorBuckets,
-          }),
-        );
-        resetPage(sp);
-      });
-    },
-    [parsed.filters, updateParams],
-  );
-
-  const setComponentKeys = useCallback(
-    (componentKeys: SpellComponentFilterKey[]) => {
-      updateParams((sp) => {
-        setNormalizedFilterParams(
-          sp,
-          normalizeNormalizedFilters({
-            ...parsed.filters,
-            componentKeys,
-          }),
-        );
-        resetPage(sp);
-      });
-    },
-    [parsed.filters, updateParams],
-  );
-
-  const resetDetailFilters = useCallback(() => {
-    updateParams((sp) => {
-      setNormalizedFilterParams(sp, emptyNormalizedFilters());
-      resetPage(sp);
-    });
-  }, [updateParams]);
 
   const setPage = useCallback(
     (nextPage: number) => {
@@ -311,12 +235,7 @@ export function useBrowseQueryState(): BrowseQueryState {
     setLevel,
     setClassIds,
     setDomainIds,
-    setSchoolIds,
-    setSubschoolIds,
-    setDescriptorIds,
-    setDescriptorFilters,
-    setComponentKeys,
-    resetDetailFilters,
+    setNormalizedFilters,
     setPage,
     hasValidSelection,
   };

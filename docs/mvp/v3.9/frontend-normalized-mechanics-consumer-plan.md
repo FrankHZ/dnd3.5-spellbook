@@ -7,9 +7,11 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned; backend handoff reviewed after PRs #32-#37. URL/API helper
-foundation exists, while public UI controls, scope summary, and Spell Detail
-display remain to implement.
+Status: ready for review in PR #39. Backend handoff was reviewed after PRs
+#32-#37; URL/API helper foundation, public Browse/Search controls, compact
+scope summaries, and limited Spell Detail display fallback are implemented.
+Follow-up UI/i18n polish candidates are recorded below and are not v3.9 merge
+blockers.
 
 ## Purpose
 
@@ -70,16 +72,18 @@ URL state the server cannot support.
   `savingThrowKeys`, and `spellResistanceKeys`; exact public bucket keys,
   labels, and fallback semantics come from the contract plan and
   `GET /api/meta/filters`.
-- Backend contract PRs already extended frontend URL/API helper foundations for
-  promoted mechanics params:
+- Frontend URL/API helper foundations cover promoted mechanics params:
   - `web/app/features/spells/taxonomy-filter-state.ts` parses, normalizes,
     serializes, detects, and counts the five mechanics filter families.
   - `web/app/api/spells.ts` request builders pass the unified normalized
     filter scope through Search and Browse.
-  - Existing web helper tests cover mechanics URL/query normalization and API
-    helper behavior.
-- Browse/Search sidebar controls and scope summary have not yet exposed those
-  mechanics counts to users.
+  - Web helper tests cover mechanics URL/query normalization and API helper
+    behavior.
+- Browse/Search expose secondary taxonomy, component, and mechanics controls
+  through a shared Advanced filters panel. The panel drafts edits locally and
+  applies them together, so long filter lists do not navigate after every
+  selection.
+- Browse/Search scope summaries include compact mechanics counts.
 - Content-backed Spell Detail can include accepted detail-only mechanics flags
   under `casting.mechanics`: duration `dismissible` / `discharge`, saving
   throw `partial` / `negates` / `harmless` / `object`, and spell resistance
@@ -173,17 +177,48 @@ URL state the server cannot support.
 - Do not update `integrated-plan.md` unless frontend work changes the version
   delivery sequence or conflicts with backend contract ownership.
 
-## Open Questions
+## Resolved Decisions
 
-- How should mechanics filters be grouped relative to taxonomy and component
-  filters once the promoted vocabulary is known?
-- Should active scope display count mechanics as one advanced category or list
-  compact labels for the first few selected buckets?
-- How should Spell Detail render the supported mechanics flags so they clarify
-  raw duration / saving throw / spell resistance text without looking like
-  additional filter chips?
+- Secondary taxonomy, component, and mechanics filters live together in the
+  shared Advanced filters panel. Primary Browse/Search controls remain in the
+  sidebar surface.
+- Active scope display counts mechanics as one compact category instead of
+  listing individual bucket labels.
+- Spell Detail renders supported mechanics flags as secondary text notes on
+  duration, saving throw, and spell resistance fields, not as filter chips.
+
+## Follow-Up Candidates
+
+These are intentionally outside the v3.9 frontend consumer acceptance gate:
+
+- Localize mechanics bucket labels. Concrete bucket names such as `Standard
+  action`, `Close`, `Instantaneous`, and `Will` currently come from the
+  server-provided vocabulary labels. A small frontend i18n map by mechanics
+  key is the likely short-term path; backend-provided localized display labels
+  can be considered if the vocabulary grows.
+- Polish the Advanced filters sheet as part of a later filter UI/design-system
+  pass. Current behavior is intentionally usable and compact, not a final
+  filter redesign.
+- Consolidate duplicated query-param normalization between
+  `web/app/api/spells.ts` and
+  `web/app/features/spells/taxonomy-filter-state.ts` when touching those
+  helpers again, preserving the current tested semantics.
+- Revisit `target` / `effect` / `area` only after a later backend contract
+  accepts public buckets and fallback behavior for those high-volume fields.
 
 ## Completion Notes
 
-Use this section only after implementation review. Keep it short and link to
-merged PRs, validation evidence, or freeze snapshots instead of pasting logs.
+Frontend consumer branch:
+
+- Browse/Search expose server-provided taxonomy, component, and mechanics
+  vocabulary through a shared Advanced filters panel with local draft state.
+- The panel writes URL state only on Apply, avoiding repeated navigation while
+  users edit secondary filters.
+- Browse/Search summaries include one compact mechanics filter count.
+- Spell Detail renders supported `casting.mechanics` flags as secondary text
+  notes for duration, saving throw, and spell resistance without parsing raw
+  source strings.
+- Validation: targeted web helper/model tests,
+  `npm run -w web test -- --run`, `npm run typecheck:web`,
+  `npm run i18n:check`, `npm run -w web build`, `git diff --check`, and
+  browser smoke for Browse/Search desktop plus Search mobile.

@@ -38,16 +38,18 @@ Current behavior:
   descriptor ids
 - API filters can constrain results by normalized base spell components through
   `componentKeys`; Browse exposes this server-provided vocabulary in the
-  sidebar
+  Advanced filters panel
 - API filters can constrain results by accepted normalized mechanics buckets
   through `castingTimeKeys`, `rangeKeys`, `durationKeys`, and
-  `savingThrowKeys`, plus `spellResistanceKeys`; frontend controls are planned
-  separately after the backend contract settles
+  `savingThrowKeys`, plus `spellResistanceKeys`; Browse exposes this
+  server-provided vocabulary in the Advanced filters panel
+- the Advanced filters panel drafts taxonomy, component, and mechanics changes
+  locally, then applies them to the shareable URL in one action
 - default rulebooks are supplied by the backend when no explicit rulebook ids
   are provided
 - the spell-list area shows a compact shared scope summary with selected
   class/domain filter counts, level, taxonomy filter count, component filter
-  count, and rulebook scope
+  count, mechanics filter count, and rulebook scope
 - spell list density follows browser-local Display settings, while full-detail
   card display is controlled from the Browse sidebar for the current reading
   context
@@ -96,10 +98,14 @@ Current behavior:
   controls as Browse without making name lookup secondary
 - the Search sidebar also exposes the same normalized base component controls as
   Browse
+- the Search sidebar also exposes the same accepted normalized mechanics
+  controls as Browse
+- Search uses the same Advanced filters panel as Browse so secondary filter
+  changes do not update the URL until users apply the draft
 - header search preserves current Browse or Search filter scope while replacing
   the name query
 - the spell-list area uses the same compact scope summary as Browse, including
-  active taxonomy, active component filters, and selected rulebook scope
+  active taxonomy, component, mechanics, and selected rulebook scope
 - spell list density follows browser-local Display settings, while full-detail
   card display is controlled from the Search sidebar for the current reading
   context
@@ -141,7 +147,9 @@ Current behavior:
   helper
 - content-backed detail responses can include accepted normalized mechanics
   flags under `casting.mechanics` for duration, saving throw, and spell
-  resistance notes; legacy raw strings remain the displayed fallback text
+  resistance notes; Spell Detail renders those as secondary text notes beside
+  the raw source field, while legacy raw strings remain the displayed fallback
+  text
 
 Key code:
 

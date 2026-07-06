@@ -257,12 +257,13 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Follow with the v3.9 frontend mechanics consumer**
+1. **Review and merge the v3.9 frontend mechanics consumer**
 
    Use
-   `docs/mvp/v3.9/frontend-normalized-mechanics-consumer-plan.md`. Browse and
-   Search should consume server-provided mechanics filters through URL/API
-   helpers, active scope summaries, and desktop/mobile sidebar controls.
+   `docs/mvp/v3.9/frontend-normalized-mechanics-consumer-plan.md`. PR #39 is
+   ready for review with Browse/Search server-provided mechanics filters,
+   URL/API helper coverage, compact active scope summaries, Advanced filters
+   draft/apply behavior, and limited Spell Detail mechanics fallback.
 
    The backend contract now exposes stable vocabulary and fallback behavior for
    `castingTimeKeys`, `rangeKeys`, `durationKeys`, `savingThrowKeys`, and

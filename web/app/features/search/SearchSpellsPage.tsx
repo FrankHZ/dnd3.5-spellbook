@@ -15,15 +15,13 @@ import {
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
-import { ComponentFilterSelector } from "~/features/spells/ComponentFilterSelector";
+import { AdvancedSpellFiltersPanel } from "~/features/spells/AdvancedSpellFiltersPanel";
 import { SpellCardDetailToggle } from "~/features/spells/SpellCardDetailToggle";
 import { SpellFilterScopeSummary } from "~/features/spells/SpellFilterScopeSummary";
-import { TaxonomyFilterSelector } from "~/features/spells/TaxonomyFilterSelector";
 import {
   countComponentFilters,
+  countMechanicFilters,
   countTaxonomyFilters,
-  emptyNormalizedFilters,
-  hasNormalizedFilters,
 } from "~/features/spells/taxonomy-filter-state";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useUserPrefs } from "~/state/user-prefs-state";
@@ -171,60 +169,9 @@ export default function SearchSpellsPage() {
 
             <Separator />
 
-            {hasNormalizedFilters(searchScope.filters) && (
-              <div className="grid gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() =>
-                    updateSearchScope({ filters: emptyNormalizedFilters() })
-                  }
-                >
-                  {t("details.clear", { ns: "spell-filters" })}
-                </Button>
-              </div>
-            )}
-
-            <TaxonomyFilterSelector
+            <AdvancedSpellFiltersPanel
               value={searchScope.filters}
-              onChangeSchools={(schoolIds) =>
-                updateSearchScope({
-                  filters: {
-                    ...searchScope.filters,
-                    schoolIds,
-                  },
-                })
-              }
-              onChangeSubschools={(subschoolIds) =>
-                updateSearchScope({
-                  filters: {
-                    ...searchScope.filters,
-                    subschoolIds,
-                  },
-                })
-              }
-              onChangeDescriptorFilters={(descriptorFilters) =>
-                updateSearchScope({
-                  filters: {
-                    ...searchScope.filters,
-                    ...descriptorFilters,
-                  },
-                })
-              }
-            />
-
-            <Separator />
-
-            <ComponentFilterSelector
-              value={searchScope.filters.componentKeys}
-              onChange={(componentKeys) =>
-                updateSearchScope({
-                  filters: {
-                    ...searchScope.filters,
-                    componentKeys,
-                  },
-                })
-              }
+              onApply={(filters) => updateSearchScope({ filters })}
             />
           </CardContent>
         </Card>
@@ -237,6 +184,7 @@ export default function SearchSpellsPage() {
             rulebookCount={rulebookIds.length}
             taxonomyFilterCount={countTaxonomyFilters(searchScope.filters)}
             componentFilterCount={countComponentFilters(searchScope.filters)}
+            mechanicFilterCount={countMechanicFilters(searchScope.filters)}
             nullLevelMode="any"
           />
 
