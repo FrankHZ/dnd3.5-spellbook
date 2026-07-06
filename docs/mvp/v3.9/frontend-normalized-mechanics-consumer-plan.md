@@ -7,11 +7,10 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: ready for review in PR #39. Backend handoff was reviewed after PRs
-#32-#37; URL/API helper foundation, public Browse/Search controls, compact
-scope summaries, and limited Spell Detail display fallback are implemented.
-Follow-up UI/i18n polish candidates are recorded below and are not v3.9 merge
-blockers.
+Status: landed in PR #39. Backend handoff was reviewed after PRs #32-#37;
+URL/API helper foundation, public Browse/Search controls, compact scope
+summaries, and limited Spell Detail display fallback are implemented. Follow-up
+UI/i18n polish candidates are recorded below and are not v3.9 freeze blockers.
 
 ## Purpose
 
@@ -208,7 +207,7 @@ These are intentionally outside the v3.9 frontend consumer acceptance gate:
 
 ## Completion Notes
 
-Frontend consumer branch:
+Frontend consumer branch landed in PR #39:
 
 - Browse/Search expose server-provided taxonomy, component, and mechanics
   vocabulary through a shared Advanced filters panel with local draft state.

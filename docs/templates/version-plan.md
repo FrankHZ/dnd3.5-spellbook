@@ -77,6 +77,15 @@ Status: planned.
 
 - Question 1
 
+## Follow-Up Candidates
+
+Use this section near implementation closeout for useful, explicitly
+non-blocking work discovered during the branch. Keep each item short, explain
+why it is outside the current acceptance gate, and move any real release blocker
+back into `Acceptance Criteria` instead.
+
+- Candidate 1
+
 ## Completion Notes
 
 Use this section only after implementation review. Keep it short and link to

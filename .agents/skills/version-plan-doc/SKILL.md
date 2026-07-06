@@ -54,6 +54,8 @@ topic docs, and `docs/roadmap.md` only when active ordering changes.
 Default to these updates:
 
 - owning child plan: status, accepted slices, remaining work, validation notes
+- owning child plan: follow-up candidates that are useful but explicitly
+  outside the current acceptance gate
 - topic docs: behavior, workflow, commands, schema, deployment, or i18n facts
 - `docs/roadmap.md`: only if next-work order or active track changes
 
@@ -62,6 +64,16 @@ Do not update these by default:
 - `integrated-plan.md`
 - frozen older version plans
 - unrelated child plans
+
+## Follow-Up Candidates
+
+Use a `Follow-Up Candidates` section in child plans when implementation reveals
+future work that is worth preserving but should not block the current version.
+Each item should be short, concrete, and clearly outside the acceptance gate.
+
+Do not put unresolved blockers in follow-up candidates. If a candidate is needed
+for release acceptance, move it back into `Acceptance Criteria`, the active
+slice plan, or `docs/roadmap.md`.
 
 ## Templates
 

@@ -27,9 +27,9 @@ The latest frozen shipped snapshot remains `docs/mvp/v3.8/FREEZE.md`.
 
 1. Backend normalized mechanics contract has landed for the promoted mechanics
    fields and detail metadata.
-2. Frontend normalized mechanics consumer is ready for review in PR #39 now
-   that Browse/Search controls, URL/API helper behavior, compact summaries,
-   and limited Spell Detail fallback consume the stable backend contract.
+2. Frontend normalized mechanics consumer has landed in PR #39. Browse/Search
+   controls, URL/API helper behavior, compact summaries, and limited Spell
+   Detail fallback now consume the stable backend contract.
 3. Librarian plan and freeze sweeps own cross-doc navigation and version
    records. Specialist implementation branches should update only their owning
    child plan and directly affected topic docs unless scope, sequencing, or
@@ -48,7 +48,7 @@ scope, delivery sequence, or ownership.
   detail/raw only. The six remaining review rows are preserved for detail text
   and are not public filter vocabulary.
 - Frontend candidate spike: Browse/Search should now consume the accepted
-  mechanics contract from server-provided vocabulary.
+  mechanics contract from server-provided vocabulary. Landed in PR #39.
 
 ## Non-Goals
 

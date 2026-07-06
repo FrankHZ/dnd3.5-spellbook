@@ -14,9 +14,12 @@ single request.
 3. Fill only the sections that reduce risk for the current task.
 4. Implement against existing entry points and helpers.
 5. Update the nearest tests or add the smallest useful harness.
-6. Delete `docs/tmp-feature-plan.md` before commit, unless the user asks to
+6. Move useful non-blocking follow-up candidates into the owning durable feature
+   or topic doc before deleting the temporary plan. Keep true blockers in the
+   active checklist instead.
+7. Delete `docs/tmp-feature-plan.md` before commit, unless the user asks to
    preserve it as a dated handoff note.
-7. Update durable docs only for changed behavior, workflow, or project rules.
+8. Update durable docs only for changed behavior, workflow, or project rules.
 
 Small one-file fixes do not need a temporary plan. Use judgment.
 
