@@ -96,8 +96,8 @@ decorative page bands for core app screens.
 For simple page titles, use the shared `PageHeader` component so settings,
 collections, about/status, and similar utility screens keep the same title,
 description, and action alignment. Feature-specific reading surfaces such as
-Spell Detail may keep their own header when source badges, actions, or rule
-metadata need a custom hierarchy.
+Spell Detail may keep their own header when rule text, local actions, or
+metadata hierarchy need a custom reading layout.
 
 For empty, loading, validation, and error states on primary pages, use the
 shared `StatusCard` component instead of hand-rolling one-off `CardHeader`

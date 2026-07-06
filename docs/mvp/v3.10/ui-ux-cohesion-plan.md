@@ -203,6 +203,6 @@ Validation:
 - `npm run -w web test -- --run`
 - `npm run -w web build`
 - `git diff --check`
-- Browser smoke on Browse, Search, Spell Detail, collections, settings, and
-  about/status at desktop and mobile widths; Advanced filters opened on desktop
-  and mobile without horizontal overflow.
+- Browser smoke on Browse, Search, Spell Detail, collections, prepared spells,
+  settings, and about/status at desktop and mobile widths; Advanced filters
+  opened on desktop and mobile without horizontal overflow.

@@ -47,7 +47,8 @@ Shared filter components:
 
 Purpose:
 
-- render the detailed spell view and related reference context
+- render the detailed spell view, sidebar metadata overview, and related
+  reference context
 
 ### Collections
 
