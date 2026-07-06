@@ -151,6 +151,12 @@ blocker back into `Acceptance Criteria` instead.
 - Full component-library extraction remains out of scope. This pass may add
   small shared app components when they remove visible inconsistency, but it
   should not turn into a design-system documentation project.
+- A fuller design-system catalog for badges, pills, buttons, headers, and
+  dense workflow rows should be a later design-system task. The current branch
+  only normalizes repeated visible inconsistencies.
+- A visual-regression screenshot gallery for Browse, Search, Spell Detail,
+  collections, prepared spells, settings, and about/status would be useful
+  after v3.10, but it is outside this manual smoke-test closeout.
 
 ## Completion Notes
 
@@ -177,6 +183,16 @@ Implementation branch:
 - Added `SpellMetaBadge` for source, taxonomy, descriptor, and active-scope
   metadata so Browse/Search cards, scope summaries, and Spell Detail share one
   badge vocabulary alongside the existing component badge.
+- Moved Spell Detail source, taxonomy, and descriptor metadata into a sidebar
+  overview section so the detail header stays focused on the spell name,
+  summary, and actions.
+- Tightened Spell Detail mechanics metadata rows so field labels and values
+  align cleanly in the 320px sidebar and mobile stacked layout.
+- Tightened prepared-spell class/domain sidebar card headers, dense row
+  actions, and class/domain type pills so the prepared workflow matches the
+  shared compact card rhythm.
+- Aligned About/Version card headers and content spacing with the shared
+  settings/status card rhythm.
 - Updated `docs/design.md` and `docs/frontend-map.md` with the small shared
   page-header, status-card, and spell metadata badge patterns.
 

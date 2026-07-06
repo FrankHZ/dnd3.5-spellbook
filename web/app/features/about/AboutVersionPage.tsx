@@ -79,11 +79,11 @@ function VersionSection({
 
   return (
     <Card className="gap-0">
-      <CardHeader className="gap-1 pb-3">
+      <CardHeader className="gap-1 py-3">
         <CardTitle className="text-base">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         <div className="grid gap-2 sm:grid-cols-2">
           <StatusField
             label={t("fields.version-label")}
@@ -147,11 +147,11 @@ function DatabaseSection({
 
   return (
     <Card className="gap-0">
-      <CardHeader className="gap-1 pb-3">
+      <CardHeader className="gap-1 py-3">
         <CardTitle className="text-base">{t("db.title")}</CardTitle>
         <CardDescription>{t("db.description")}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 pt-0">
         {isLoading ? (
           <CardDescription>{t("common.loading")}</CardDescription>
         ) : isError || !data ? (

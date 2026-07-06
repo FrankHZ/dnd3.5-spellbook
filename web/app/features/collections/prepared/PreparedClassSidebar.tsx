@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import { Badge } from "~/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -26,6 +27,26 @@ export type DomainOption = Option & { type: "domain" };
 export type Candidate = Option & {
   count: number;
 };
+
+function PreparedTypePill({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <Badge
+      variant="outline"
+      className={cn(
+        "rounded-sm border-border/70 bg-background/80 px-1.5 py-0 text-[11px] font-medium text-muted-foreground",
+        className,
+      )}
+    >
+      {children}
+    </Badge>
+  );
+}
 
 export function PreparedClassAndDomainSidebar({
   selectedClasses,
@@ -92,13 +113,15 @@ export function PreparedClassAndDomainSidebar({
         {!collapsed && (
           <div id="prepared-sidebar-panels" className="space-y-3">
             <Card className="gap-0">
-              <CardHeader>
-                <CardTitle className="text-base">{t("prepared.sidebar.selected")}</CardTitle>
-                <CardDescription className="text-sm py-1">
-                  {selected.length === 0 &&
-                    t("prepared.sidebar.none-selected-help",
-                    )}
-                </CardDescription>
+              <CardHeader className="gap-1 py-3">
+                <CardTitle className="text-base">
+                  {t("prepared.sidebar.selected")}
+                </CardTitle>
+                {selected.length === 0 ? (
+                  <CardDescription className="py-1 text-sm">
+                    {t("prepared.sidebar.none-selected-help")}
+                  </CardDescription>
+                ) : null}
               </CardHeader>
               <CardContent className="space-y-1 pt-0">
                 {selected.length !== 0 && (
@@ -110,15 +133,17 @@ export function PreparedClassAndDomainSidebar({
                       >
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="shrink-0 rounded border px-1.5 py-0.5 text-[11px] text-muted-foreground">
-                              {opt.type === "class" ? t("common.class") : t("common.domain")}
-                            </span>
+                            <PreparedTypePill>
+                              {opt.type === "class"
+                                ? t("common.class")
+                                : t("common.domain")}
+                            </PreparedTypePill>
                             <div className="min-w-0 truncate">{opt.name}</div>
                           </div>
                         </div>
 
                         <Button
-                          size="sm"
+                          size="xs"
                           variant="ghost"
                           className="shrink-0"
                           onClick={() => onRemove(opt)}
@@ -133,8 +158,10 @@ export function PreparedClassAndDomainSidebar({
             </Card>
 
             <Card className="gap-0">
-              <CardHeader>
-                <CardTitle className="text-base">{t("prepared.sidebar.candidates")}</CardTitle>
+              <CardHeader className="gap-1 py-3">
+                <CardTitle className="text-base">
+                  {t("prepared.sidebar.candidates")}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 pt-0">
                 {hasCandidates && (
@@ -161,11 +188,11 @@ export function PreparedClassAndDomainSidebar({
                       >
                         <div className="min-w-0 flex-1">
                           <div className="flex items-stretch gap-2">
-                            <span className="inline-flex shrink-0 items-center self-stretch rounded border px-1.5 text-[11px] text-muted-foreground">
+                            <PreparedTypePill className="self-stretch">
                               {candidate.type === "class"
                                 ? t("common.class")
                                 : t("common.domain")}
-                            </span>
+                            </PreparedTypePill>
                             <div className="min-w-0 flex-1">
                               <div className="truncate">{candidate.name}</div>
                               <div className="text-xs text-muted-foreground">
@@ -178,7 +205,7 @@ export function PreparedClassAndDomainSidebar({
                         </div>
 
                         <Button
-                          size="sm"
+                          size="xs"
                           variant="outline"
                           className="shrink-0"
                           onClick={() => onAdd(candidate)}

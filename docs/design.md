@@ -264,8 +264,13 @@ orientation, while the main column should prioritize spell text and related
 references.
 
 Keep the desktop header near the rule text and the mobile header above the
-stacked content. Related spell references should stay secondary to the current
-spell description.
+stacked content. The header should focus on the spell name, short description,
+and local spell actions. Source, school/subschool, and descriptor badges belong
+in the sidebar overview with the other spell metadata instead of competing with
+the title.
+
+Related spell references should stay secondary to the current spell
+description.
 
 ### Spellbooks And Favorites
 
