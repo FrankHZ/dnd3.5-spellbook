@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router";
 import type {
   SpellComponentFilterKey,
+  SpellMechanicFilters,
   SpellNormalizedFilterScope,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
@@ -41,6 +42,7 @@ export type BrowseQueryState = {
     next: Pick<SpellTaxonomyFilterIds, "descriptorIds" | "descriptorBuckets">,
   ) => void;
   setComponentKeys: (next: SpellComponentFilterKey[]) => void;
+  setMechanicFilters: (next: SpellMechanicFilters) => void;
   resetDetailFilters: () => void;
   setPage: (next: number) => void;
 
@@ -275,6 +277,22 @@ export function useBrowseQueryState(): BrowseQueryState {
     [parsed.filters, updateParams],
   );
 
+  const setMechanicFilters = useCallback(
+    (mechanicFilters: SpellMechanicFilters) => {
+      updateParams((sp) => {
+        setNormalizedFilterParams(
+          sp,
+          normalizeNormalizedFilters({
+            ...parsed.filters,
+            ...mechanicFilters,
+          }),
+        );
+        resetPage(sp);
+      });
+    },
+    [parsed.filters, updateParams],
+  );
+
   const resetDetailFilters = useCallback(() => {
     updateParams((sp) => {
       setNormalizedFilterParams(sp, emptyNormalizedFilters());
@@ -316,6 +334,7 @@ export function useBrowseQueryState(): BrowseQueryState {
     setDescriptorIds,
     setDescriptorFilters,
     setComponentKeys,
+    setMechanicFilters,
     resetDetailFilters,
     setPage,
     hasValidSelection,

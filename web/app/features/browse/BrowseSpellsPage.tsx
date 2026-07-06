@@ -15,10 +15,12 @@ import {
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { ComponentFilterSelector } from "~/features/spells/ComponentFilterSelector";
+import { MechanicsFilterSelector } from "~/features/spells/MechanicsFilterSelector";
 import { SpellFilterScopeSummary } from "~/features/spells/SpellFilterScopeSummary";
 import { TaxonomyFilterSelector } from "~/features/spells/TaxonomyFilterSelector";
 import {
   countComponentFilters,
+  countMechanicFilters,
   countTaxonomyFilters,
   hasNormalizedFilters,
 } from "~/features/spells/taxonomy-filter-state";
@@ -50,6 +52,7 @@ export default function BrowsePage() {
     setSubschoolIds,
     setDescriptorFilters,
     setComponentKeys,
+    setMechanicFilters,
     resetDetailFilters,
     setPage,
     hasValidSelection,
@@ -150,6 +153,11 @@ export default function BrowsePage() {
               value={filters.componentKeys}
               onChange={setComponentKeys}
             />
+            <Separator />
+            <MechanicsFilterSelector
+              value={filters}
+              onChange={setMechanicFilters}
+            />
           </CardContent>
         </Card>
 
@@ -161,6 +169,7 @@ export default function BrowsePage() {
             rulebookCount={rulebookIds.length}
             taxonomyFilterCount={countTaxonomyFilters(filters)}
             componentFilterCount={countComponentFilters(filters)}
+            mechanicFilterCount={countMechanicFilters(filters)}
             nullLevelMode="required"
           />
 

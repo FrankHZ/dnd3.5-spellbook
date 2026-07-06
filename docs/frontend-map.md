@@ -14,7 +14,7 @@ It is intended as a quick orientation guide for agents and maintainers, not a fu
 Purpose:
 
 - browse spells by filters such as class, domain, level, taxonomy, and
-  normalized base components
+  normalized base components and mechanics
 
 ### Search
 
@@ -29,11 +29,13 @@ Shared filter components:
 
 - taxonomy filters: `web/app/features/spells/TaxonomyFilterSelector.tsx`
 - component filters: `web/app/features/spells/ComponentFilterSelector.tsx`
+- mechanics filters: `web/app/features/spells/MechanicsFilterSelector.tsx`
 - URL/filter helpers: `web/app/features/spells/taxonomy-filter-state.ts`
 
 ### Spell Detail
 
 - page entry: `web/app/features/spells/SpellDetailPage.tsx`
+- mechanics display: `web/app/features/spells/MechanicSection.tsx`
 - related spell references: `web/app/features/spells/RelatedSpellsSection.tsx`
 
 Purpose:

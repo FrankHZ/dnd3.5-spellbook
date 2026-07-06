@@ -1,14 +1,36 @@
 import type { SpellCasting } from "@dnd/contracts";
 import { useTranslation } from "react-i18next";
 
-function Field({ label, value }: { label: string; value?: string | null }) {
+import {
+  getMechanicDetailNotes,
+  type MechanicDetailNoteKey,
+} from "./mechanic-detail-notes";
+
+function Field({
+  label,
+  value,
+  notes = [],
+  noteLabel,
+  translateNote,
+}: {
+  label: string;
+  value?: string | null;
+  notes?: MechanicDetailNoteKey[];
+  noteLabel?: string;
+  translateNote?: (key: MechanicDetailNoteKey) => string;
+}) {
   return (
     <div className="grid gap-1 border-b border-border/70 py-1.5 last:border-b-0 sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:gap-3">
       <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </dt>
       <dd className="min-w-0 text-sm leading-5 text-foreground/85">
-        {value && value.trim() ? value : "—"}
+        <span>{value && value.trim() ? value : "—"}</span>
+        {notes.length > 0 && noteLabel && translateNote && (
+          <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+            {noteLabel}: {notes.map(translateNote).join(", ")}
+          </span>
+        )}
       </dd>
     </div>
   );
@@ -16,6 +38,10 @@ function Field({ label, value }: { label: string; value?: string | null }) {
 
 export function MechanicsSection({ casting }: { casting: SpellCasting }) {
   const { t } = useTranslation("spell-detail");
+  const notes = getMechanicDetailNotes(casting.mechanics);
+  const noteLabel = t("mechanics.notes.label");
+  const translateNote = (key: MechanicDetailNoteKey) =>
+    t(`mechanics.notes.${key}`);
 
   return (
     <section className="space-y-2">
@@ -33,15 +59,27 @@ export function MechanicsSection({ casting }: { casting: SpellCasting }) {
         <Field label={t("mechanics.effect")} value={casting.effect} />
 
         <Field label={t("mechanics.area")} value={casting.area} />
-        <Field label={t("mechanics.duration")} value={casting.duration} />
+        <Field
+          label={t("mechanics.duration")}
+          value={casting.duration}
+          notes={notes.duration}
+          noteLabel={noteLabel}
+          translateNote={translateNote}
+        />
 
         <Field
           label={t("mechanics.saving-throw")}
           value={casting.savingThrow}
+          notes={notes.savingThrow}
+          noteLabel={noteLabel}
+          translateNote={translateNote}
         />
         <Field
           label={t("mechanics.spell-resistance")}
           value={casting.spellResistance}
+          notes={notes.spellResistance}
+          noteLabel={noteLabel}
+          translateNote={translateNote}
         />
       </dl>
     </section>

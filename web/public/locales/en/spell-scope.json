@@ -4,6 +4,7 @@
   "labels.domains": "Domains",
   "labels.filters": "Showing",
   "labels.level": "Level",
+  "labels.mechanics": "Mechanics",
   "labels.rulebooks": "Rulebooks",
   "labels.taxonomy": "Taxonomy",
   "rulebooks.selected-summary_one": "{{count}} (Settings)",

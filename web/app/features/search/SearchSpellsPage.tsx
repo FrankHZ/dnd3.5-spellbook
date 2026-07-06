@@ -16,11 +16,13 @@ import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
 import { ComponentFilterSelector } from "~/features/spells/ComponentFilterSelector";
+import { MechanicsFilterSelector } from "~/features/spells/MechanicsFilterSelector";
 import { SpellCardDetailToggle } from "~/features/spells/SpellCardDetailToggle";
 import { SpellFilterScopeSummary } from "~/features/spells/SpellFilterScopeSummary";
 import { TaxonomyFilterSelector } from "~/features/spells/TaxonomyFilterSelector";
 import {
   countComponentFilters,
+  countMechanicFilters,
   countTaxonomyFilters,
   emptyNormalizedFilters,
   hasNormalizedFilters,
@@ -226,6 +228,20 @@ export default function SearchSpellsPage() {
                 })
               }
             />
+
+            <Separator />
+
+            <MechanicsFilterSelector
+              value={searchScope.filters}
+              onChange={(mechanicFilters) =>
+                updateSearchScope({
+                  filters: {
+                    ...searchScope.filters,
+                    ...mechanicFilters,
+                  },
+                })
+              }
+            />
           </CardContent>
         </Card>
 
@@ -237,6 +253,7 @@ export default function SearchSpellsPage() {
             rulebookCount={rulebookIds.length}
             taxonomyFilterCount={countTaxonomyFilters(searchScope.filters)}
             componentFilterCount={countComponentFilters(searchScope.filters)}
+            mechanicFilterCount={countMechanicFilters(searchScope.filters)}
             nullLevelMode="any"
           />
 

@@ -4,6 +4,7 @@
   "labels.domains": "领域",
   "labels.filters": "显示",
   "labels.level": "环数",
+  "labels.mechanics": "机制",
   "labels.rulebooks": "规则书",
   "labels.taxonomy": "分类",
   "rulebooks.selected-summary_other": "{{count}}（设置）"

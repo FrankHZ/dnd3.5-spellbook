@@ -7,9 +7,10 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned; backend handoff reviewed after PRs #32-#37. URL/API helper
-foundation exists, while public UI controls, scope summary, and Spell Detail
-display remain to implement.
+Status: implementation in review. Backend handoff was reviewed after PRs
+#32-#37; URL/API helper foundation existed before this branch, while public UI
+controls, scope summary, and Spell Detail display are implemented in the
+frontend consumer branch.
 
 ## Purpose
 
@@ -185,5 +186,13 @@ URL state the server cannot support.
 
 ## Completion Notes
 
-Use this section only after implementation review. Keep it short and link to
-merged PRs, validation evidence, or freeze snapshots instead of pasting logs.
+Frontend consumer branch:
+
+- Browse/Search sidebars expose server-provided mechanics vocabulary through a
+  shared `MechanicsFilterSelector`.
+- Browse/Search summaries include one compact mechanics filter count.
+- Spell Detail renders supported `casting.mechanics` flags as secondary text
+  notes for duration, saving throw, and spell resistance without parsing raw
+  source strings.
+- Validation: targeted web helper/model tests, `npm run typecheck:web`,
+  `npm run i18n:check`, and `npm run -w web build`.

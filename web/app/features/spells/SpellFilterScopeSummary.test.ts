@@ -7,6 +7,7 @@ const en = {
   "labels.components": "Components",
   "labels.domains": "Domains",
   "labels.level": "Level",
+  "labels.mechanics": "Mechanics",
   "labels.rulebooks": "Rulebooks",
   "labels.taxonomy": "Taxonomy",
   "rulebooks.selected-summary": "{{count}} (Settings)",
@@ -42,6 +43,7 @@ describe("buildSpellFilterScopeSummaryItems", () => {
       rulebookCount: 3,
       taxonomyFilterCount: 4,
       componentFilterCount: 2,
+      mechanicFilterCount: 5,
       nullLevelMode: "any",
       t,
     });
@@ -51,6 +53,7 @@ describe("buildSpellFilterScopeSummaryItems", () => {
       ["domains", "3", true],
       ["taxonomy", "4", true],
       ["components", "2", true],
+      ["mechanics", "5", true],
       ["rulebooks", "3 (Settings)", true],
     ]);
   });
