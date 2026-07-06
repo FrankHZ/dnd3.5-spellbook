@@ -58,39 +58,19 @@ function SpellDetailSkeleton() {
 
 function SpellHeader({
   title,
-  rulebookLabel,
-  page,
-  schoolText,
   shortDescription,
-  descriptors,
   spellId,
   className = "",
 }: {
   title: string;
-  rulebookLabel: string;
-  page?: number | null;
-  schoolText: string;
   shortDescription?: string;
-  descriptors: Array<{ key: string; label: string }>;
   spellId: number;
   className?: string;
 }) {
-  const sourceText = page
-    ? `${rulebookLabel} · p. ${page}`
-    : rulebookLabel;
-
   return (
     <div className={`space-y-3 ${className}`.trim()}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="mb-2 flex flex-wrap items-center gap-2">
-            <SpellMetaBadge kind="source" size="regular">
-              {sourceText}
-            </SpellMetaBadge>
-            <SpellMetaBadge kind="taxonomy" size="regular">
-              {schoolText}
-            </SpellMetaBadge>
-          </div>
           <h1 className="text-2xl font-semibold leading-tight tracking-normal">
             {title}
           </h1>
@@ -99,23 +79,47 @@ function SpellHeader({
               {shortDescription}
             </p>
           ) : null}
-          {descriptors.length > 0 ? (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {descriptors.map((descriptor) => (
-                <SpellMetaBadge
-                  key={descriptor.key}
-                  kind="descriptor"
-                  size="regular"
-                >
-                  {descriptor.label}
-                </SpellMetaBadge>
-              ))}
-            </div>
-          ) : null}
         </div>
         <SpellActionButtons spellId={spellId} />
       </div>
     </div>
+  );
+}
+
+function SpellOverviewSection({
+  sourceText,
+  schoolText,
+  descriptors,
+}: {
+  sourceText: string;
+  schoolText: string;
+  descriptors: Array<{ key: string; label: string }>;
+}) {
+  const { t } = useTranslation("spell-detail");
+
+  return (
+    <section className="space-y-2">
+      <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {t("sections.overview")}
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        <SpellMetaBadge kind="source" size="regular">
+          {sourceText}
+        </SpellMetaBadge>
+        <SpellMetaBadge kind="taxonomy" size="regular">
+          {schoolText}
+        </SpellMetaBadge>
+        {descriptors.map((descriptor) => (
+          <SpellMetaBadge
+            key={descriptor.key}
+            kind="descriptor"
+            size="regular"
+          >
+            {descriptor.label}
+          </SpellMetaBadge>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -200,16 +204,15 @@ export default function SpellDetailPage() {
   }));
   const shortDescription = getSpellShortDescription(spell, lang);
   const source = rulebookDisplay(spell.rulebook);
+  const sourceText = spell.page
+    ? `${source.abbr} · p. ${spell.page}`
+    : source.abbr;
 
   return (
     <div className="page-side">
       <SpellHeader
         title={spellName(spell)}
-        rulebookLabel={source.abbr}
-        page={spell.page}
-        schoolText={schoolText}
         shortDescription={shortDescription}
-        descriptors={descriptorItems}
         spellId={spell.id}
         className="md:hidden"
       />
@@ -218,6 +221,12 @@ export default function SpellDetailPage() {
         <div className="space-y-4">
           <Card className="gap-0">
             <CardContent className="space-y-4 py-3">
+              <SpellOverviewSection
+                sourceText={sourceText}
+                schoolText={schoolText}
+                descriptors={descriptorItems}
+              />
+              <Separator />
               <LevelsSection spell={spell} />
               <Separator />
               <ComponentsSection components={spell.components} />
@@ -231,11 +240,7 @@ export default function SpellDetailPage() {
           <div className="hidden md:block">
             <SpellHeader
               title={spellName(spell)}
-              rulebookLabel={source.abbr}
-              page={spell.page}
-              schoolText={schoolText}
               shortDescription={shortDescription}
-              descriptors={descriptorItems}
               spellId={spell.id}
             />
             <Separator className="my-2" />
