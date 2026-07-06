@@ -82,6 +82,7 @@ baselines.
 - [stable-backlog.md](./stable-backlog.md): deferred stable-version work.
 - [public-repo-notes.md](./operations/public-repo-notes.md): public repo exclusions and
   publication cautions.
+- [releases/README.md](./releases/README.md): formal post-MVP release planning.
 
 ### Operations And Data
 
@@ -122,6 +123,13 @@ baselines.
 
 Older version folders remain under `docs/mvp/` as historical planning and
 handoff records.
+
+### Release Plans
+
+- [releases/README.md](./releases/README.md): release planning roles and
+  maintenance rules.
+- [releases/v1.0/README.md](./releases/v1.0/README.md): planned first formal
+  post-MVP public release line.
 
 ### Templates
 
