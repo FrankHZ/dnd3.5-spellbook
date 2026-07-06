@@ -3,42 +3,11 @@ import { CheckIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useBootstrap } from "~/bootstrap/useBootstrap";
+import { getComponentFilterDisplayLabel } from "~/i18n/display/spell-filter";
 import { cn } from "~/lib/utils";
 import { FilterDisclosure } from "./FilterDisclosure";
 import { SpellComponentBadge } from "./SpellComponentBadge";
 import { normalizeComponentFilters } from "./taxonomy-filter-state";
-
-export function getComponentFilterLabel(
-  key: SpellComponentFilterKey,
-  translateDetail: (key: string) => string,
-  fallback: string,
-  useLocalizedLabel: boolean,
-) {
-  if (!useLocalizedLabel) return fallback;
-
-  switch (key) {
-    case "verbal":
-      return translateDetail("components.full.verbal");
-    case "somatic":
-      return translateDetail("components.full.somatic");
-    case "material":
-      return translateDetail("components.full.material");
-    case "arcane_focus":
-      return translateDetail("components.full.arcane-focus");
-    case "divine_focus":
-      return translateDetail("components.full.divine-focus");
-    case "xp":
-      return translateDetail("components.full.xp");
-    case "metabreath":
-      return translateDetail("components.full.metabreath");
-    case "truename":
-      return translateDetail("components.full.truename");
-    case "corrupt":
-      return translateDetail("components.full.corrupt");
-    default:
-      return fallback;
-  }
-}
 
 export function ComponentFilterSelector({
   value,
@@ -58,34 +27,6 @@ export function ComponentFilterSelector({
   const selected = useMemo(() => new Set(normalizedValue), [normalizedValue]);
   const [open, setOpen] = useState(activeCount > 0);
   const useCompactOnly = !i18n.language.startsWith("zh");
-
-  function getLocalizedComponentLabel(
-    key: SpellComponentFilterKey,
-    fallback: string,
-  ) {
-    switch (key) {
-      case "verbal":
-        return t("components.full.verbal", { ns: "spell-detail" });
-      case "somatic":
-        return t("components.full.somatic", { ns: "spell-detail" });
-      case "material":
-        return t("components.full.material", { ns: "spell-detail" });
-      case "arcane_focus":
-        return t("components.full.arcane-focus", { ns: "spell-detail" });
-      case "divine_focus":
-        return t("components.full.divine-focus", { ns: "spell-detail" });
-      case "xp":
-        return t("components.full.xp", { ns: "spell-detail" });
-      case "metabreath":
-        return t("components.full.metabreath", { ns: "spell-detail" });
-      case "truename":
-        return t("components.full.truename", { ns: "spell-detail" });
-      case "corrupt":
-        return t("components.full.corrupt", { ns: "spell-detail" });
-      default:
-        return fallback;
-    }
-  }
 
   function toggle(key: SpellComponentFilterKey) {
     const next = new Set(normalizedValue);
@@ -116,9 +57,7 @@ export function ComponentFilterSelector({
         {vocabulary.map((item) => {
           const checked = selected.has(item.key);
           const inputId = `component-filter-${item.key}`;
-          const label = useCompactOnly
-            ? item.label
-            : getLocalizedComponentLabel(item.key, item.label);
+          const label = getComponentFilterDisplayLabel(item, t);
           return (
             <button
               key={item.key}

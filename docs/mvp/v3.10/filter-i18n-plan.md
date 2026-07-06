@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: implementation branch ready for review.
 
 ## Purpose
 
@@ -146,6 +146,10 @@ Use this section near implementation closeout for useful, explicitly
 non-blocking work discovered during the branch. Keep each item short, explain
 why it is outside the current acceptance gate, and move any real release
 blocker back into `Acceptance Criteria` instead.
+
+- Confirm whether casting-time vocabulary should distinguish `full-round
+  action` from `1 round`; this is a rules semantics and data taxonomy question,
+  not a label-localization blocker.
 
 ## Completion Notes
 

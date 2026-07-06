@@ -1,31 +1,33 @@
 import type { SpellComponentFilterKey } from "@dnd/contracts";
 import { describe, expect, it } from "vitest";
 
-import { getComponentFilterLabel } from "./ComponentFilterSelector";
+import { getComponentFilterDisplayLabel } from "~/i18n/display/spell-filter";
 
-const detailLabels = new Map<string, string>([
-  ["components.full.material", "材料"],
-  ["components.full.arcane-focus", "器材"],
+const labels = new Map<string, string>([
+  ["components.options.material", "材料"],
+  ["components.options.arcane-focus", "器材"],
 ]);
 
-function translateDetail(key: string) {
-  return detailLabels.get(key) ?? key;
+function t(key: string, options?: { defaultValue?: string }) {
+  return labels.get(key) ?? options?.defaultValue ?? key;
 }
 
-describe("getComponentFilterLabel", () => {
-  it("keeps API vocabulary labels for non-localized component filters", () => {
+describe("getComponentFilterDisplayLabel", () => {
+  function item(key: SpellComponentFilterKey, label: string) {
+    return { key, label, abbreviation: label.slice(0, 1).toUpperCase() };
+  }
+
+  it("keeps API vocabulary labels when a localized key is missing", () => {
     expect(
-      getComponentFilterLabel("material", translateDetail, "Material", false),
-    ).toBe("Material");
+      getComponentFilterDisplayLabel(item("verbal", "Verbal"), t),
+    ).toBe("Verbal");
   });
 
-  it("reuses spell-detail labels for localized component filters", () => {
+  it("uses localized component labels for stable keys", () => {
     expect(
-      getComponentFilterLabel(
-        "arcane_focus" satisfies SpellComponentFilterKey,
-        translateDetail,
-        "Arcane focus",
-        true,
+      getComponentFilterDisplayLabel(
+        item("arcane_focus" satisfies SpellComponentFilterKey, "Arcane focus"),
+        t,
       ),
     ).toBe("器材");
   });

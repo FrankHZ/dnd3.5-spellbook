@@ -30,7 +30,7 @@ export function FilterDisclosure({
         </div>
       </summary>
 
-      <div className="mt-3 space-y-3">{children}</div>
+      {open && <div className="mt-3 space-y-3">{children}</div>}
     </details>
   );
 }

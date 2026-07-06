@@ -13,6 +13,7 @@ export const I18N_NAMESPACES = [
   "metamagic",
   "settings",
   "spell-browse",
+  "spell-filter-vocabulary",
   "spell-filters",
   "spell-scope",
   "spell-search",
