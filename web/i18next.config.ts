@@ -1,6 +1,10 @@
 import { defineConfig } from "i18next-cli";
 
-export const IGNORED = ["metamagic", "collections-default"];
+export const IGNORED = [
+  "metamagic",
+  "collections-default",
+  "spell-filter-vocabulary",
+];
 export default defineConfig({
   locales: ["en", "zh"],
   extract: {

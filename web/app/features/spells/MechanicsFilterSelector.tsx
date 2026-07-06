@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useBootstrap } from "~/bootstrap/useBootstrap";
+import { getMechanicFilterDisplayLabel } from "~/i18n/display/spell-filter";
 import { cn } from "~/lib/utils";
 
 import { FilterDisclosure } from "./FilterDisclosure";
@@ -15,10 +16,6 @@ import {
   countMechanicFilterGroupStates,
 } from "./mechanic-filter-model";
 import { normalizeMechanicFilters } from "./taxonomy-filter-state";
-
-function bucketLabel(item: SpellMechanicFilterVocabularyItem) {
-  return item.label;
-}
 
 export function MechanicsFilterSelector({
   value,
@@ -91,7 +88,11 @@ export function MechanicsFilterSelector({
               <div className="grid grid-cols-1 gap-1.5">
                 {group.buckets.map((item) => {
                   const checked = selected.has(item.key);
-                  const label = bucketLabel(item);
+                  const label = getMechanicFilterDisplayLabel(
+                    group.id,
+                    item,
+                    t,
+                  );
                   const inputId = `mechanic-filter-${group.id}-${item.key}`;
 
                   return (

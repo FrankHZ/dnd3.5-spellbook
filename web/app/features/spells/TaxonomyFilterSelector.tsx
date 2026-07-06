@@ -13,6 +13,7 @@ import {
   type PickerItem,
 } from "~/components/MultiSelectPicker";
 import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
+import { getTaxonomyFilterDisplayLabel } from "~/i18n/display/spell-filter";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useUserPrefs } from "~/state/user-prefs-state";
 import { FilterDisclosure } from "./FilterDisclosure";
@@ -27,7 +28,7 @@ const TOME_OF_BATTLE_SLUG = "tome-of-battle-the-book-of-nine-swords";
 
 function toPickerItem(
   item: SpellFilterVocabularyItem & { id: number },
-  displayName: ReturnType<typeof useAppI18n>["name"],
+  displayName: (item: SpellFilterVocabularyItem) => string,
   group?: string,
 ): PickerItem {
   return {
@@ -45,7 +46,7 @@ function hasVocabularyId(
 
 function toDescriptorPickerItem(
   item: SpellFilterVocabularyItem,
-  displayName: ReturnType<typeof useAppI18n>["name"],
+  displayName: (item: SpellFilterVocabularyItem) => string,
 ): PickerItem | null {
   if (hasVocabularyId(item)) return toPickerItem(item, displayName);
   if (item.bucketKey) {
@@ -124,13 +125,13 @@ export function TaxonomyFilterSelector({
   }) => void;
 }) {
   const { t } = useTranslation("spell-filters");
-  const { lang, name, nameWithEn } = useAppI18n();
+  const { lang } = useAppI18n();
   const { state } = useUserPrefs();
   const displayPrefs = useDisplayPrefs();
-  const displayName =
-    lang === "zh" && displayPrefs.zhDisplay.filterFacetLabelsWithEnglish
-      ? nameWithEn
-      : name;
+  const includeEnglish =
+    lang === "zh" && displayPrefs.zhDisplay.filterFacetLabelsWithEnglish;
+  const displayName = (item: SpellFilterVocabularyItem) =>
+    getTaxonomyFilterDisplayLabel(item, t, { includeEnglish });
   const boot = useBootstrap();
   const taxonomy = boot.spellFilterVocabulary.data?.taxonomy;
   const rulebooks = boot.rulebooks.data?.items ?? [];

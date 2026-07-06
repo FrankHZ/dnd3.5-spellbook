@@ -42,6 +42,14 @@ function normalize(s: string) {
   return s.trim().toLowerCase();
 }
 
+function closestModalPortalContainer(element: HTMLElement | null) {
+  return (
+    element?.closest<HTMLElement>(
+      '[data-slot="sheet-content"], [data-slot="dialog-content"]',
+    ) ?? undefined
+  );
+}
+
 export function MultiSelectPicker(props: {
   title: string;
   placeholder?: string;
@@ -108,20 +116,27 @@ export function MultiSelectPicker(props: {
   }
 
   const anchor = useComboboxAnchor();
+  const [portalContainer, setPortalContainer] =
+    React.useState<HTMLElement>();
+
+  React.useEffect(() => {
+    setPortalContainer(closestModalPortalContainer(anchor.current));
+  }, [anchor]);
+
   return (
     <div className="rounded-md border p-3 space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="font-medium">{title}</div>
         <div className="flex items-center gap-2">
           {selectedIds.length > 0 && (
-            <Button variant="ghost" size="sm" onClick={clearAll}>
+            <Button type="button" variant="ghost" size="sm" onClick={clearAll}>
               {t("actions.clear")}
             </Button>
           )}
 
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button type="button" variant="outline" size="sm">
                 {t("picker.view-all")}
               </Button>
             </DialogTrigger>
@@ -164,7 +179,11 @@ export function MultiSelectPicker(props: {
               </Command>
 
               <div className="pt-2 flex justify-end">
-                <Button variant="outline" onClick={() => setOpen(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setOpen(false)}
+                >
                   {t("actions.done")}
                 </Button>
               </div>
@@ -225,7 +244,7 @@ export function MultiSelectPicker(props: {
             )}
           </ComboboxValue>
         </ComboboxChips>
-        <ComboboxContent anchor={anchor}>
+        <ComboboxContent anchor={anchor} portalContainer={portalContainer}>
           <ComboboxEmpty>{t("picker.no-items")}</ComboboxEmpty>
           <ComboboxList>
             {(item: PickerItem) => (
