@@ -188,8 +188,10 @@ URL state the server cannot support.
 
 Frontend consumer branch:
 
-- Browse/Search sidebars expose server-provided mechanics vocabulary through a
-  shared `MechanicsFilterSelector`.
+- Browse/Search expose server-provided taxonomy, component, and mechanics
+  vocabulary through a shared Advanced filters panel with local draft state.
+- The panel writes URL state only on Apply, avoiding repeated navigation while
+  users edit secondary filters.
 - Browse/Search summaries include one compact mechanics filter count.
 - Spell Detail renders supported `casting.mechanics` flags as secondary text
   notes for duration, saving throw, and spell resistance without parsing raw

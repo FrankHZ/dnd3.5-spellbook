@@ -27,6 +27,8 @@ Purpose:
 
 Shared filter components:
 
+- advanced filter panel:
+  `web/app/features/spells/AdvancedSpellFiltersPanel.tsx`
 - taxonomy filters: `web/app/features/spells/TaxonomyFilterSelector.tsx`
 - component filters: `web/app/features/spells/ComponentFilterSelector.tsx`
 - mechanics filters: `web/app/features/spells/MechanicsFilterSelector.tsx`

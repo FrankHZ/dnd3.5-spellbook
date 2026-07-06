@@ -38,11 +38,13 @@ Current behavior:
   descriptor ids
 - API filters can constrain results by normalized base spell components through
   `componentKeys`; Browse exposes this server-provided vocabulary in the
-  sidebar
+  Advanced filters panel
 - API filters can constrain results by accepted normalized mechanics buckets
   through `castingTimeKeys`, `rangeKeys`, `durationKeys`, and
   `savingThrowKeys`, plus `spellResistanceKeys`; Browse exposes this
-  server-provided vocabulary in the sidebar
+  server-provided vocabulary in the Advanced filters panel
+- the Advanced filters panel drafts taxonomy, component, and mechanics changes
+  locally, then applies them to the shareable URL in one action
 - default rulebooks are supplied by the backend when no explicit rulebook ids
   are provided
 - the spell-list area shows a compact shared scope summary with selected
@@ -98,6 +100,8 @@ Current behavior:
   Browse
 - the Search sidebar also exposes the same accepted normalized mechanics
   controls as Browse
+- Search uses the same Advanced filters panel as Browse so secondary filter
+  changes do not update the URL until users apply the draft
 - header search preserves current Browse or Search filter scope while replacing
   the name query
 - the spell-list area uses the same compact scope summary as Browse, including

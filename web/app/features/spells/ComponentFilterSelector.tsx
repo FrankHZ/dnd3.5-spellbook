@@ -1,8 +1,8 @@
 import type { SpellComponentFilterKey } from "@dnd/contracts";
+import { CheckIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useBootstrap } from "~/bootstrap/useBootstrap";
-import { Checkbox } from "~/components/ui/checkbox";
 import { cn } from "~/lib/utils";
 import { FilterDisclosure } from "./FilterDisclosure";
 import { SpellComponentBadge } from "./SpellComponentBadge";
@@ -120,29 +120,37 @@ export function ComponentFilterSelector({
             ? item.label
             : getLocalizedComponentLabel(item.key, item.label);
           return (
-            <label
+            <button
               key={item.key}
-              htmlFor={inputId}
+              id={inputId}
+              type="button"
+              role="checkbox"
+              aria-checked={checked}
+              onClick={() => toggle(item.key)}
               className={cn(
-                "flex min-w-0 cursor-pointer items-center gap-2 rounded-md border bg-background px-2.5 py-2 text-sm transition-colors",
+                "flex min-w-0 cursor-pointer items-center gap-2 rounded-md border bg-background px-2.5 py-2 text-left text-sm transition-colors",
                 checked
                   ? "border-primary/60 bg-primary/5 text-foreground"
                   : "hover:bg-accent hover:text-accent-foreground",
               )}
             >
-              <Checkbox
-                id={inputId}
-                checked={checked}
-                onCheckedChange={() => toggle(item.key)}
-                aria-label={label}
-              />
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "grid size-4 shrink-0 place-content-center rounded-[4px] border border-input shadow-xs",
+                  checked &&
+                    "border-primary bg-primary text-primary-foreground",
+                )}
+              >
+                {checked && <CheckIcon className="size-3.5" />}
+              </span>
               <SpellComponentBadge className="min-w-8">
                 {item.abbreviation}
               </SpellComponentBadge>
               {!useCompactOnly && (
                 <span className="min-w-0 truncate">{label}</span>
               )}
-            </label>
+            </button>
           );
         })}
       </div>

@@ -34,6 +34,11 @@ of Battle taxonomy grouping uses server-provided `sourceKind` / `category`
 metadata. Do not derive filter options by parsing raw spell component,
 taxonomy, or mechanics strings in the browser.
 
+Secondary normalized filters in Browse/Search should be edited through the
+shared Advanced filters panel. The panel owns local draft state and writes the
+URL only when the user applies the draft, so long filter lists do not cause
+repeated navigation or scroll resets while users are checking boxes.
+
 Spell Detail may render accepted content-backed `casting.mechanics` flags as
 secondary notes for duration, saving throw, and spell resistance. It should not
 infer structured mechanic notes from legacy raw strings or promote deferred

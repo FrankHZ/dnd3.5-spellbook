@@ -12,17 +12,13 @@ import {
   CardDescription,
   CardHeader,
 } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
-import { ComponentFilterSelector } from "~/features/spells/ComponentFilterSelector";
-import { MechanicsFilterSelector } from "~/features/spells/MechanicsFilterSelector";
+import { AdvancedSpellFiltersPanel } from "~/features/spells/AdvancedSpellFiltersPanel";
 import { SpellFilterScopeSummary } from "~/features/spells/SpellFilterScopeSummary";
-import { TaxonomyFilterSelector } from "~/features/spells/TaxonomyFilterSelector";
 import {
   countComponentFilters,
   countMechanicFilters,
   countTaxonomyFilters,
-  hasNormalizedFilters,
 } from "~/features/spells/taxonomy-filter-state";
 import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
@@ -48,12 +44,7 @@ export default function BrowsePage() {
     setLevel,
     setClassIds,
     setDomainIds,
-    setSchoolIds,
-    setSubschoolIds,
-    setDescriptorFilters,
-    setComponentKeys,
-    setMechanicFilters,
-    resetDetailFilters,
+    setNormalizedFilters,
     setPage,
     hasValidSelection,
   } = useBrowseQueryState();
@@ -131,32 +122,9 @@ export default function BrowsePage() {
             <Separator />
             <LevelSelector value={level} onChange={setLevel} />
             <Separator />
-            {hasNormalizedFilters(filters) && (
-              <div className="grid gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={resetDetailFilters}
-                >
-                  {t("details.clear", { ns: "spell-filters" })}
-                </Button>
-              </div>
-            )}
-            <TaxonomyFilterSelector
+            <AdvancedSpellFiltersPanel
               value={filters}
-              onChangeSchools={setSchoolIds}
-              onChangeSubschools={setSubschoolIds}
-              onChangeDescriptorFilters={setDescriptorFilters}
-            />
-            <Separator />
-            <ComponentFilterSelector
-              value={filters.componentKeys}
-              onChange={setComponentKeys}
-            />
-            <Separator />
-            <MechanicsFilterSelector
-              value={filters}
-              onChange={setMechanicFilters}
+              onApply={setNormalizedFilters}
             />
           </CardContent>
         </Card>
