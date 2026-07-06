@@ -3,13 +3,8 @@ import { useTranslation } from "react-i18next";
 
 import { getSpellsBatch } from "~/api/spells";
 import { SpellCard } from "~/components/SpellCard";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { StatusCard } from "~/components/StatusCard";
+import { Card, CardContent } from "~/components/ui/card";
 import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import type { SpellIdBook } from "~/storage/collections.type";
@@ -42,44 +37,28 @@ export function SpellIdBookDetail({ book }: { book: SpellIdBook }) {
       </div>
 
       {ids.length === 0 && (
-        <Card className="gap-0">
-          <CardHeader className="gap-1 py-2">
-            <CardDescription>{t("common.empty-sentence")}</CardDescription>
-          </CardHeader>
-        </Card>
+        <StatusCard description={t("common.empty-sentence")} />
       )}
 
       {ids.length > 0 && (
         <>
           {isLoading && (
-            <Card className="gap-0">
-              <CardHeader className="gap-1 py-2">
-                <CardDescription>{t("spells.loading")}</CardDescription>
-              </CardHeader>
-            </Card>
+            <StatusCard description={t("spells.loading")} />
           )}
 
           {hasError && (
-            <Card className="gap-0">
-              <CardHeader className="gap-1 py-3">
-                <CardTitle className="text-base">
-                  {t("spells.load-failed")}
-                </CardTitle>
-                <CardDescription>{t("errors.try-again-later")}</CardDescription>
-              </CardHeader>
-            </Card>
+            <StatusCard
+              title={t("spells.load-failed")}
+              description={t("errors.try-again-later")}
+            />
           )}
 
           {missingIds.length > 0 && (
-            <Card className="gap-0">
-              <CardHeader className="gap-1 py-2">
-                <CardDescription>
-                  {t("spells.missing-ids", {
-                    ids: missingIds.join(", "),
-                  })}
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <StatusCard
+              description={t("spells.missing-ids", {
+                ids: missingIds.join(", "),
+              })}
+            />
           )}
 
           {spells.length > 0 && (

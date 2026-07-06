@@ -99,6 +99,12 @@ description, and action alignment. Feature-specific reading surfaces such as
 Spell Detail may keep their own header when source badges, actions, or rule
 metadata need a custom hierarchy.
 
+For empty, loading, validation, and error states on primary pages, use the
+shared `StatusCard` component instead of hand-rolling one-off `CardHeader`
+blocks. Keep status copy concise and put recovery actions in the card action
+area so Browse, Search, Spell Detail, and collection workflows present these
+states consistently.
+
 For Browse/Search filter sidebars, use the shared left drawer wrapper. The
 drawer stays open by default on desktop and can collapse to a narrow rail; on
 mobile it opens over the results so users can get back to the list without

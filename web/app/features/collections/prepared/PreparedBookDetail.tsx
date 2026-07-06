@@ -12,12 +12,7 @@ import type { PreparedBook } from "~/storage/collections.type";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { Button } from "~/components/ui/button";
 import { ButtonGroup } from "~/components/ui/button-group";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { StatusCard } from "~/components/StatusCard";
 import { BulkPasteDialog } from "./BulkPasteDialog";
 import { PreparedCopyDialog } from "./PreparedCopyDialog";
 import { PreparedTable } from "./PreparedTable";
@@ -302,34 +297,20 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
           </div>
 
           {book.entries.length === 0 && (
-            <Card className="gap-0">
-              <CardHeader className="gap-1 py-2">
-                <CardDescription>{t("common.empty-sentence")}</CardDescription>
-              </CardHeader>
-            </Card>
+            <StatusCard description={t("common.empty-sentence")} />
           )}
 
           {book.entries.length > 0 && (
             <>
               {batchQuery.isLoading && (
-                <Card className="gap-0">
-                  <CardHeader className="gap-1 py-2">
-                    <CardDescription>{t("spells.loading")}</CardDescription>
-                  </CardHeader>
-                </Card>
+                <StatusCard description={t("spells.loading")} />
               )}
 
               {batchQuery.isError && (
-                <Card className="gap-0">
-                  <CardHeader className="gap-1 py-3">
-                    <CardTitle className="text-base">
-                      {t("spells.load-failed")}
-                    </CardTitle>
-                    <CardDescription>
-                      {t("errors.try-again-later")}
-                    </CardDescription>
-                  </CardHeader>
-                </Card>
+                <StatusCard
+                  title={t("spells.load-failed")}
+                  description={t("errors.try-again-later")}
+                />
               )}
 
               {!batchQuery.isLoading && !batchQuery.isError && (

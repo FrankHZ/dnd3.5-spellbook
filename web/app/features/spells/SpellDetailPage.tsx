@@ -3,16 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 
 import { ApiError } from "~/api/http";
 import { SpellActionButtons } from "~/components/SpellActionButtons";
+import { StatusCard } from "~/components/StatusCard";
 import { getSpellDetail } from "~/api/spells";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent } from "~/components/ui/card";
 import { Skeleton } from "~/components/ui/skeleton";
 import { Separator } from "~/components/ui/separator";
 
@@ -149,14 +144,10 @@ export default function SpellDetailPage() {
   if (!isValidId) {
     return (
       <div className="page-side">
-        <Card className="gap-0">
-          <CardHeader className="gap-1 py-3">
-            <CardTitle>{t("errors.invalid-id-title")}</CardTitle>
-            <CardDescription>
-              {t("errors.invalid-url-description")}
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <StatusCard
+          title={t("errors.invalid-id-title")}
+          description={t("errors.invalid-url-description")}
+        />
       </div>
     );
   }
@@ -166,19 +157,15 @@ export default function SpellDetailPage() {
   if (status === 404) {
     return (
       <div className="page-side">
-        <Card className="gap-0">
-          <CardHeader className="gap-1 py-3">
-            <CardTitle>{t("errors.not-found-title")}</CardTitle>
-            <CardDescription>
-              {t("errors.not-found-description", { id: idNum })}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-0">
+        <StatusCard
+          title={t("errors.not-found-title")}
+          description={t("errors.not-found-description", { id: idNum })}
+          actions={
             <Button asChild variant="outline" size="sm">
               <Link to="/browse">{t("actions.back-to-browse")}</Link>
             </Button>
-          </CardContent>
-        </Card>
+          }
+        />
       </div>
     );
   }
@@ -186,14 +173,10 @@ export default function SpellDetailPage() {
   if (status === 400) {
     return (
       <div className="page-side">
-        <Card className="gap-0">
-          <CardHeader className="gap-1 py-3">
-            <CardTitle>{t("errors.invalid-id-title")}</CardTitle>
-            <CardDescription>
-              {t("errors.invalid-request-description")}
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <StatusCard
+          title={t("errors.invalid-id-title")}
+          description={t("errors.invalid-request-description")}
+        />
       </div>
     );
   }
@@ -205,12 +188,7 @@ export default function SpellDetailPage() {
         : t("errors.request-failed");
     return (
       <div className="page-side">
-        <Card className="gap-0">
-          <CardHeader className="gap-1 py-3">
-            <CardTitle>{t("errors.load-title")}</CardTitle>
-            <CardDescription>{msg}</CardDescription>
-          </CardHeader>
-        </Card>
+        <StatusCard title={t("errors.load-title")} description={msg} />
       </div>
     );
   }

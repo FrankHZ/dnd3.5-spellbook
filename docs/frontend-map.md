@@ -87,6 +87,7 @@ Purpose:
 
 - reusable app components: `web/app/components/`
 - simple page titles/actions: `web/app/components/PageHeader.tsx`
+- shared empty/loading/error states: `web/app/components/StatusCard.tsx`
 - local shadcn wrappers: `web/app/components/ui/`
 
 ### API Client

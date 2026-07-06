@@ -6,12 +6,8 @@ import { ApiError } from "~/api/http";
 import { getSpellsByLevel } from "~/api/spells";
 import Pager from "~/components/Pager";
 import { SpellCard } from "~/components/SpellCard";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from "~/components/ui/card";
+import { StatusCard } from "~/components/StatusCard";
+import { Card, CardContent } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { AdvancedSpellFiltersPanel } from "~/features/spells/AdvancedSpellFiltersPanel";
 import { FilterSidebarCard } from "~/features/spells/FilterSidebarCard";
@@ -141,41 +137,26 @@ export default function BrowsePage() {
           />
 
           {!hasValidSelection && (
-            <Card className="gap-0">
-              <CardHeader className="gap-1 py-1">
-                <CardDescription>
-                  {t("validation.choose-scope-and-level")}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
+            <StatusCard description={t("validation.choose-scope-and-level")}>
                 <ul className="list-disc pl-5 text-sm text-muted-foreground">
                   {validationMessages.map((message) => (
                     <li key={message}>{message}</li>
                   ))}
                 </ul>
-              </CardContent>
-            </Card>
+            </StatusCard>
           )}
 
           {hasValidSelection && errorMessage && (
-            <Card className="gap-0">
-              <CardHeader className="gap-1 py-1">
-                <CardDescription>{errorMessage}</CardDescription>
-              </CardHeader>
-            </Card>
+            <StatusCard description={errorMessage} />
           )}
 
           {hasValidSelection &&
             !errorMessage &&
             !browseQuery.isLoading &&
             !hasSpellData && (
-              <Card className="gap-0">
-                <CardHeader className="gap-1">
-                  <CardDescription>
-                    {t("results.empty-for-level", { level })}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
+              <StatusCard
+                description={t("results.empty-for-level", { level })}
+              />
             )}
 
           {hasValidSelection && hasSpellData && (

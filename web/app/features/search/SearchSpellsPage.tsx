@@ -6,12 +6,8 @@ import { ApiError } from "~/api/http";
 import { searchSpellsByName } from "~/api/spells";
 import Pager from "~/components/Pager";
 import { SpellCard } from "~/components/SpellCard";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from "~/components/ui/card";
+import { StatusCard } from "~/components/StatusCard";
+import { Card, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
@@ -184,35 +180,25 @@ export default function SearchSpellsPage() {
           />
 
           {!isValid.ok && (
-            <Card className="gap-0">
-              <CardHeader className="gap-1 py-2">
-                <CardDescription>
-                  {lang === "zh"
-                    ? t("errors.too-short-cjk")
-                    : t("errors.too-short")}
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <StatusCard
+              description={
+                lang === "zh"
+                  ? t("errors.too-short-cjk")
+                  : t("errors.too-short")
+              }
+            />
           )}
 
           {isValid.ok && (
             <div className="space-y-3">
               {errorMessage && (
-                <Card className="gap-0">
-                  <CardHeader className="gap-1 py-2">
-                    <CardDescription>{errorMessage}</CardDescription>
-                  </CardHeader>
-                </Card>
+                <StatusCard description={errorMessage} />
               )}
 
               {!errorMessage && !query.isLoading && items.length === 0 && (
-                <Card className="gap-0">
-                  <CardHeader className="gap-1 py-2">
-                    <CardDescription>
-                      {t("results.empty", { query: qParam })}
-                    </CardDescription>
-                  </CardHeader>
-                </Card>
+                <StatusCard
+                  description={t("results.empty", { query: qParam })}
+                />
               )}
 
               {items.length > 0 && (

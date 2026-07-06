@@ -168,8 +168,12 @@ Implementation branch:
   left drawer. The drawer is open by default on desktop, collapses to a narrow
   rail when hidden, and opens over the results on mobile so Browse/Search keep
   one consistent sidebar model.
+- Added a shared `StatusCard` for empty, loading, validation, and error states
+  across Browse, Search, Spell Detail, and collection workflows.
+- Made spellbook index cards whole-card links with consistent hover and focus
+  affordances.
 - Updated `docs/design.md` and `docs/frontend-map.md` with the small shared
-  page-header pattern.
+  page-header and status-card patterns.
 
 Validation:
 
