@@ -22,8 +22,11 @@ execution rules and role boundaries.
 
 ## Active Planning
 
-There is no active version plan in this repo snapshot. Use
-[roadmap.md](./roadmap.md) for current ordering after a pause.
+v3.10 is the active final MVP closeout plan:
+
+- [mvp/v3.10/README.md](./mvp/v3.10/README.md)
+- [mvp/v3.10/filter-i18n-plan.md](./mvp/v3.10/filter-i18n-plan.md)
+- [mvp/v3.10/ui-ux-cohesion-plan.md](./mvp/v3.10/ui-ux-cohesion-plan.md)
 
 The latest frozen planning record is v3.9:
 
@@ -104,6 +107,8 @@ baselines.
 ### Versioned MVP Docs
 
 - [mvp/README.md](./mvp/README.md): versioned-doc roles and maintenance rules.
+- [mvp/v3.10/README.md](./mvp/v3.10/README.md): active final MVP closeout
+  plan.
 - [mvp/v3.9/FREEZE.md](./mvp/v3.9/FREEZE.md): latest frozen release snapshot.
 - [mvp/v3.9/README.md](./mvp/v3.9/README.md): frozen normalized
   mechanics/query fullstack planning record.
