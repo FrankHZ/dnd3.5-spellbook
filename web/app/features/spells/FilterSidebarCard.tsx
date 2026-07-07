@@ -65,7 +65,7 @@ export function FilterSidebarCard({
     >
       <div className="md:sticky md:top-3">
         {!open && (
-          <div className="rounded-md border bg-card p-4 shadow-xs md:border-0 md:bg-transparent md:p-0 md:shadow-none">
+          <div className="app-side-card-collapsed md:border-0 md:bg-transparent md:p-0 md:shadow-none">
             <Button
               type="button"
               variant="outline"
@@ -88,8 +88,8 @@ export function FilterSidebarCard({
         )}
 
         {open && (
-          <Card id={sidebarId} className="gap-0 self-start">
-            <CardHeader className="border-b px-4 pb-4">
+          <Card id={sidebarId} className="app-side-card">
+            <CardHeader className="app-side-card-header">
               <CardTitle>{t("sidebar.title")}</CardTitle>
               <CardDescription>{t("sidebar.description")}</CardDescription>
               <CardAction>
@@ -109,7 +109,7 @@ export function FilterSidebarCard({
               </CardAction>
             </CardHeader>
 
-            <CardContent className="space-y-4 px-4 pt-4 md:max-h-[calc(100vh-8rem)] md:overflow-y-auto">
+            <CardContent className="app-side-card-content app-side-card-scroll-md space-y-4">
               {children}
             </CardContent>
           </Card>

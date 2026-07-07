@@ -124,6 +124,11 @@ controls as a top-of-page card that defaults collapsed so users can reach
 results without scrolling past every filter. Reserve sheet/drawer behavior for
 secondary filter panels such as Advanced filters.
 
+For side-column cards such as Browse/Search filters, prepared-spellbook filters,
+and Spell Detail overview metadata, use the shared `app-side-card`,
+`app-side-card-header`, and `app-side-card-content` CSS helpers so outer padding
+and side-card density stay aligned across pages.
+
 ## Information Density
 
 The app should feel compact but not cramped.

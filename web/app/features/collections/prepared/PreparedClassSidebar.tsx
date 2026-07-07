@@ -120,7 +120,7 @@ export function PreparedClassAndDomainSidebar({
     >
       <div className="lg:sticky lg:top-3">
         {collapsed && (
-          <div className="rounded-md border bg-card p-4 shadow-xs lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
+          <div className="app-side-card-collapsed lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
             <Button
               type="button"
               variant="outline"
@@ -143,8 +143,8 @@ export function PreparedClassAndDomainSidebar({
         )}
 
         {!collapsed && (
-          <Card id={sidebarId} className="gap-0 self-start">
-            <CardHeader className="border-b px-4 pb-4">
+          <Card id={sidebarId} className="app-side-card">
+            <CardHeader className="app-side-card-header">
               <CardTitle>{t("prepared.sidebar.title")}</CardTitle>
               <CardDescription>
                 {t("prepared.sidebar.description")}
@@ -166,7 +166,7 @@ export function PreparedClassAndDomainSidebar({
               </CardAction>
             </CardHeader>
 
-            <CardContent className="space-y-4 px-4 pt-4 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
+            <CardContent className="app-side-card-content app-side-card-scroll-lg space-y-4">
               <section className="space-y-2">
                 <div className="space-y-1">
                   <h3 className="text-sm font-medium leading-none">

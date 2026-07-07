@@ -242,3 +242,36 @@
     @apply bg-background text-foreground;
   }
 }
+
+.app-side-card {
+  align-self: flex-start;
+  gap: 0;
+  padding-block: 0;
+}
+
+.app-side-card-header {
+  border-bottom: 1px solid var(--border);
+  padding: 1rem;
+}
+
+.app-side-card-content {
+  padding: 1rem;
+}
+
+.app-side-card-collapsed {
+  @apply rounded-md border bg-card p-4 shadow-xs;
+}
+
+@media (min-width: 48rem) {
+  .app-side-card-scroll-md {
+    max-height: calc(100vh - 8rem);
+    overflow-y: auto;
+  }
+}
+
+@media (min-width: 64rem) {
+  .app-side-card-scroll-lg {
+    max-height: calc(100vh - 8rem);
+    overflow-y: auto;
+  }
+}

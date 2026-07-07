@@ -32,8 +32,8 @@ function SpellDetailSkeleton() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-[320px_1fr]">
-        <Card className="gap-0">
-          <CardContent className="space-y-3 py-3">
+        <Card className="app-side-card">
+          <CardContent className="app-side-card-content space-y-3">
             <Skeleton className="h-5 w-3/4" />
             <Skeleton className="h-4 w-1/2" />
             <Skeleton className="h-4 w-full" />
@@ -219,8 +219,8 @@ export default function SpellDetailPage() {
 
       <div className="grid gap-4 md:grid-cols-[320px_1fr]">
         <div className="space-y-4">
-          <Card className="gap-0">
-            <CardContent className="space-y-4 py-3">
+          <Card className="app-side-card">
+            <CardContent className="app-side-card-content space-y-4">
               <SpellOverviewSection
                 sourceText={sourceText}
                 schoolText={schoolText}
