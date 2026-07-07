@@ -22,8 +22,10 @@ execution rules and role boundaries.
 
 ## Active Planning
 
-v1.0 is the active formal public release plan:
+No later formal release plan is active yet. The latest frozen formal public
+release is v1.0:
 
+- [releases/v1.0/FREEZE.md](./releases/v1.0/FREEZE.md)
 - [releases/v1.0/README.md](./releases/v1.0/README.md)
 - [releases/v1.0/domain-and-deployment-plan.md](./releases/v1.0/domain-and-deployment-plan.md)
 - [releases/v1.0/about-and-status-plan.md](./releases/v1.0/about-and-status-plan.md)
@@ -47,14 +49,19 @@ Use [roadmap.md](./roadmap.md) for current ordering after a pause.
 
 ## Latest Frozen Snapshot
 
-The latest frozen stage snapshot is **v3.10**:
+The latest frozen public release snapshot is **v1.0**:
+
+- [releases/v1.0/FREEZE.md](./releases/v1.0/FREEZE.md)
+- [releases/v1.0/README.md](./releases/v1.0/README.md)
+
+The latest frozen pre-release stage snapshot is **v3.10**:
 
 - [mvp/v3.10/FREEZE.md](./mvp/v3.10/FREEZE.md)
 - [mvp/v3.10/README.md](./mvp/v3.10/README.md)
 
-`FREEZE.md` records the as-built v3.10 handoff state. Supporting v3.10 plan
-docs describe rationale and implementation history; they are not newer than the
-freeze snapshot.
+The v3.10 `FREEZE.md` records the as-built pre-release handoff state.
+Supporting v3.10 plan docs describe rationale and implementation history; they
+are not newer than the freeze snapshot.
 
 The previous frozen stage snapshot is **v3.9**:
 
@@ -133,8 +140,10 @@ handoff records.
 
 - [releases/README.md](./releases/README.md): release planning roles and
   maintenance rules.
-- [releases/v1.0/README.md](./releases/v1.0/README.md): active first formal
-  public release line.
+- [releases/v1.0/FREEZE.md](./releases/v1.0/FREEZE.md): latest frozen formal
+  public release snapshot.
+- [releases/v1.0/README.md](./releases/v1.0/README.md): frozen first formal
+  public release planning record.
 
 ### Templates
 
