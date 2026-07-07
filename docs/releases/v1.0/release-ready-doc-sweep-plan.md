@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: ready for review on implementation branch `codex/docs-v1-0-release-sweep`.
 
 ## Purpose
 
@@ -31,10 +31,10 @@ updated their owning topic docs.
 ## Problem
 
 The v1.0 release changes the public deployment topology from the MVP-era
-single-origin model to Cloudflare Workers Static Assets plus a dedicated API domain. Individual
-implementation branches should update their owning topic docs, but formal
-release readiness needs one final cross-doc sweep so current docs do not keep
-describing the old topology as current truth.
+single-origin model to Cloudflare Workers Static Assets plus a dedicated API
+domain. Individual implementation branches should update their owning topic
+docs, but formal release readiness needs one final cross-doc sweep so current
+docs do not keep describing the old topology as current truth.
 
 This should be a final quality gate, not another implementation bucket.
 
@@ -80,8 +80,9 @@ This should be a final quality gate, not another implementation bucket.
   - backend API at `https://api.d20spellcodex.com`
   - origin server focused on Express/API, SQLite/content DB, DB update scripts,
     and Nginx API reverse proxying
-- Existing docs still contain MVP-era deployment descriptions until the v1.0
-  implementation branches update them.
+- Domain/deployment and About / Status implementation branches have landed.
+  This branch verifies the canonical docs after those updates and removes
+  residual current-truth drift.
 
 ## Plan
 
@@ -177,9 +178,20 @@ This should be a final quality gate, not another implementation bucket.
 
 - A broader architecture-doc refresh can remain post-v1.0 unless the release
   sweep finds a direct public-doc blocker.
+- Review the AI-agent workflow and related docs after v1.0 so `AGENTS.md`,
+  repo-local skills, feature workflow, and planning docs stay aligned with the
+  accepted multi-agent operating model.
 
 ## Completion Notes
 
-Use this section only after implementation review. Keep it short and link to
-merged PRs, validation evidence, or release freeze snapshots instead of pasting
-logs.
+Implementation branch `codex/docs-v1-0-release-sweep` owns the final
+pre-freeze documentation consistency pass:
+
+- root README now describes the GitHub deploy workflow as backend/API-only and
+  Cloudflare Workers Builds as the normal frontend deploy owner.
+- roadmap ordering now treats domain/deployment and About / Status as landed
+  v1.0 slices, with release-ready doc sweep and freeze as the remaining work.
+- v1.0 child plans now distinguish landed implementation slices from remaining
+  acceptance/freeze work.
+- the sweep found no need for a GitHub Wiki or external docs migration; repo
+  `docs/` remains the canonical release documentation source.

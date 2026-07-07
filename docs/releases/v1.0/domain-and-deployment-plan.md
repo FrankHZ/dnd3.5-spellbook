@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: implementation branch in progress: `codex/infra-deployment-topology`.
+Status: landed on main.
 
 ## Purpose
 
@@ -201,12 +201,7 @@ remains the API/content host.
 ## Open Questions
 
 - Should apex `d20spellcodex.com` stay unassigned, redirect to `www`, or serve
-  the same Worker in a later release?
-- Should the old same-origin web deploy target be deleted immediately or kept
-  as a documented emergency legacy path until the first Workers release is
-  accepted?
-- Which origin certificate path is preferred for the server: Cloudflare Origin
-  CA or a public CA certificate?
+  the same Worker in a later release? v1.0 keeps it intentionally unassigned.
 
 ## Follow-Up Candidates
 
@@ -218,7 +213,7 @@ remains the API/content host.
 
 ## Completion Notes
 
-Implementation branch `codex/infra-deployment-topology` owns the first v1.0
+Implementation branch `codex/infra-deployment-topology` landed the first v1.0
 deployment topology slice:
 
 - web API helpers support `VITE_API_BASE_URL` while keeping local relative
@@ -230,3 +225,6 @@ deployment topology slice:
 - deployment/module/workspace docs describe Cloudflare Workers build settings,
   API CORS origins, backend-only origin responsibilities, and legacy web deploy
   boundaries.
+- production remote configuration uses the `www` Workers frontend,
+  `api.d20spellcodex.com` API host, exact production CORS origin, and public CA
+  origin certificate path accepted during deployment setup.

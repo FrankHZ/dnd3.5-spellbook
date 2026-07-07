@@ -22,7 +22,7 @@ execution rules and role boundaries.
 
 ## Active Planning
 
-v1.0 is the active formal post-MVP release plan:
+v1.0 is the active formal public release plan:
 
 - [releases/v1.0/README.md](./releases/v1.0/README.md)
 - [releases/v1.0/domain-and-deployment-plan.md](./releases/v1.0/domain-and-deployment-plan.md)
@@ -84,7 +84,7 @@ baselines.
 - [credits/](./credits/): source credit notes used by About / Status.
 - [public-repo-notes.md](./operations/public-repo-notes.md): public repo exclusions and
   publication cautions.
-- [releases/README.md](./releases/README.md): formal post-MVP release planning.
+- [releases/README.md](./releases/README.md): formal release planning.
 
 ### Operations And Data
 
@@ -110,9 +110,9 @@ baselines.
 ### Versioned MVP Docs
 
 - [mvp/README.md](./mvp/README.md): versioned-doc roles and maintenance rules.
-- [mvp/v3.10/FREEZE.md](./mvp/v3.10/FREEZE.md): latest frozen MVP closeout
+- [mvp/v3.10/FREEZE.md](./mvp/v3.10/FREEZE.md): latest frozen pre-release
   snapshot.
-- [mvp/v3.10/README.md](./mvp/v3.10/README.md): frozen final MVP closeout
+- [mvp/v3.10/README.md](./mvp/v3.10/README.md): frozen final pre-release
   planning record.
 - [mvp/v3.9/FREEZE.md](./mvp/v3.9/FREEZE.md): previous frozen release
   snapshot.
@@ -134,7 +134,7 @@ handoff records.
 - [releases/README.md](./releases/README.md): release planning roles and
   maintenance rules.
 - [releases/v1.0/README.md](./releases/v1.0/README.md): active first formal
-  post-MVP public release line.
+  public release line.
 
 ### Templates
 

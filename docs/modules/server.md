@@ -23,7 +23,7 @@ work belong in `data-tools/`.
 - The status API lives under `/api/status/*`:
   - `/api/status/app` reports backend deploy metadata from explicit environment
     variables with local-development fallback values and a public content DB
-    summary for the About / Version page.
+    summary for the About / Status page.
   - `/api/status/db` reports read-only runtime DB role/provenance state and
     must not upload, migrate, or activate artifacts. In production it is
     operator-facing by default.

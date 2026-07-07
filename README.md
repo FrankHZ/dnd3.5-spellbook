@@ -24,8 +24,8 @@ excluded from the public repository, especially runtime databases under
 
 ## Status
 
-The active release plan is **v1.0**, the first formal post-MVP public release
-line. The latest frozen MVP stage snapshot is **v3.10**.
+The active release plan is **v1.0**, the first formal public release line. The
+latest frozen pre-release stage snapshot is **v3.10**.
 
 Start here:
 
@@ -33,21 +33,9 @@ Start here:
 - [docs/roadmap.md](./docs/roadmap.md): current work order.
 - [docs/features.md](./docs/features.md): current feature map.
 - [docs/releases/v1.0/README.md](./docs/releases/v1.0/README.md): active
-  formal post-MVP release plan.
-- [docs/mvp/v3.10/FREEZE.md](./docs/mvp/v3.10/FREEZE.md): latest frozen MVP
-  closeout snapshot.
-- [docs/mvp/v3.10/README.md](./docs/mvp/v3.10/README.md): frozen final MVP
-  closeout planning record.
-- [docs/mvp/v3.9/FREEZE.md](./docs/mvp/v3.9/FREEZE.md): previous frozen
-  normalized mechanics/query fullstack snapshot.
-- [docs/mvp/v3.8/FREEZE.md](./docs/mvp/v3.8/FREEZE.md): previous frozen
-  release snapshot.
-- [docs/mvp/v3.8/README.md](./docs/mvp/v3.8/README.md): frozen normalized
-  query/filter planning record.
-- [docs/mvp/v3.7/FREEZE.md](./docs/mvp/v3.7/FREEZE.md): previous frozen
-  security, deploy/status visibility, and dependency-maintenance snapshot.
-- [docs/mvp/v3.6/FREEZE.md](./docs/mvp/v3.6/FREEZE.md): older frozen
-  stabilization snapshot.
+  formal release plan.
+- [docs/mvp/v3.10/FREEZE.md](./docs/mvp/v3.10/FREEZE.md): latest frozen
+  pre-release stage snapshot.
 
 ## Quick Start
 
@@ -93,9 +81,10 @@ The current deployment workflow is documented in:
 
 Tracked shell scripts under `docs/deployment-scripts/` are the canonical deployment scripts.
 
-The GitHub Actions deploy workflow is a manual code/web wrapper around those
-scripts; it does not replace them as the deployment source of truth. Database
-deployment remains manual until the DB ownership model is redesigned.
+The GitHub Actions deploy workflow is a manual backend/API wrapper around the
+tracked backend deploy script. Cloudflare Workers Builds owns normal frontend
+deployment. Database deployment remains manual until the DB ownership model is
+redesigned.
 
 Ignored root-level `.bat` files may exist as local machine-specific convenience wrappers, but they are not part of the canonical deployment contract.
 
@@ -145,7 +134,7 @@ This repo keeps documentation intentionally lightweight:
 - `docs/` contains versioned and canonical project documents.
 
 When documents conflict, prefer the newest focused topic doc called out by
-[docs/README.md](./docs/README.md). Frozen MVP docs are stage snapshots, not
+[docs/README.md](./docs/README.md). Frozen stage docs are snapshots, not
 automatic baselines for later work.
 
 ## Data Notes

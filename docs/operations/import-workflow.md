@@ -1,6 +1,7 @@
 # Import Workflow
 
-This document describes the current MVP data import workflow used to populate Chinese app-owned data.
+This document describes the current local data import workflow used to
+populate Chinese app-owned data.
 
 It covers:
 
@@ -13,7 +14,7 @@ For database creation and local DB roles, use [data-setup.md](./data-setup.md).
 
 ## Scope
 
-This workflow is for the current MVP data pipeline.
+This workflow is for the current local data pipeline.
 
 At the moment:
 
@@ -208,11 +209,12 @@ Current script behavior:
   - `lang=zh`
   - `variant=chm`
 
-This is the current MVP import step for CHM-derived spell names and descriptions.
+This is the current import step for CHM-derived spell names and descriptions.
 
 ## Import Order Notes
 
-For the current MVP, the normal order after resetting the content DB is:
+For the current local workflow, the normal order after resetting the content DB
+is:
 
 1. import entity translations
 2. import CHM spell text
