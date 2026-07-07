@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: implementation branch in progress: `codex/infra-deployment-topology`.
 
 ## Purpose
 
@@ -66,15 +66,15 @@ API/content host.
 - Do not require Wrangler Direct Upload for frontend production deploys.
 - Do not make v1.0 responsible for every stable-backlog security item.
 
-## Current Facts
+## Pre-v1.0 Baseline Facts
 
-- Current frontend requests use relative `/api/...` paths and assume the
-  browser-facing host exposes `/api`.
-- Current GitHub deploy workflow has `backend`, `web`, and `backend-and-web`
-  targets.
-- Current Nginx config serves `/var/www/spellbook` and proxies `/api/*` to
-  `http://127.0.0.1:3000`.
-- Current production CORS is explicit through `SPELLBOOK_CORS_ORIGINS`.
+- Before this branch, frontend requests used relative `/api/...` paths and
+  assumed the browser-facing host exposes `/api`.
+- Before this branch, the GitHub deploy workflow had `backend`, `web`, and
+  `backend-and-web` targets.
+- Before this branch, the Nginx config served `/var/www/spellbook` and proxied
+  `/api/*` to `http://127.0.0.1:3000`.
+- Production CORS is explicit through `SPELLBOOK_CORS_ORIGINS`.
 - DB deployment remains manual through `update-db.sh`.
 - Backend status/version metadata already exists through `GET /api/status/app`
   and operator DB provenance through `GET /api/status/db`.
@@ -206,6 +206,15 @@ API/content host.
 
 ## Completion Notes
 
-Use this section only after implementation review. Keep it short and link to
-merged PRs, validation evidence, or release freeze snapshots instead of pasting
-logs.
+Implementation branch `codex/infra-deployment-topology` owns the first v1.0
+deployment topology slice:
+
+- web API helpers support `VITE_API_BASE_URL` while keeping local relative
+  `/api` behavior as the default.
+- GitHub deploy workflow is backend-API only; Cloudflare Pages owns normal
+  frontend production deployment.
+- Nginx apply helper defaults to API-only mode for `api.d20spellcodex.com` and
+  keeps the old static frontend config as an explicit `single-origin` fallback.
+- deployment/module/workspace docs describe Cloudflare Pages build settings,
+  API CORS origins, backend-only origin responsibilities, and legacy web deploy
+  boundaries.

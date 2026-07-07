@@ -3,15 +3,6 @@ name: Deploy
 on:
   workflow_dispatch:
     inputs:
-      target:
-        description: Deployment target
-        required: true
-        default: backend
-        type: choice
-        options:
-          - backend
-          - web
-          - backend-and-web
       runPortableValidation:
         description: Run portable validation before deploy; disable only for emergency rollback
         required: true
@@ -36,7 +27,6 @@ jobs:
       DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
       DEPLOY_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
       DEPLOY_SSH_PORT: ${{ vars.DEPLOY_SSH_PORT || '22' }}
-      DEPLOY_REMOTE_WEB_DIST_DIR: ${{ vars.DEPLOY_REMOTE_WEB_DIST_DIR || 'spellbook-dist' }}
 
     steps:
       - name: Checkout
@@ -59,20 +49,6 @@ jobs:
         if: ${{ !inputs.runPortableValidation }}
         run: echo "::warning::Portable validation was skipped; use only for emergency rollback."
 
-      - name: Build web assets
-        if: ${{ inputs.target == 'web' || inputs.target == 'backend-and-web' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          export VITE_API_BASE_URL=/api
-          export VITE_SPELLBOOK_VERSION_LABEL=v3.7
-          export VITE_SPELLBOOK_FRONTEND_COMMIT_SHA="$GITHUB_SHA"
-          export VITE_SPELLBOOK_FRONTEND_REF="$GITHUB_REF_NAME"
-          export VITE_SPELLBOOK_FRONTEND_BUILT_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          export VITE_SPELLBOOK_FRONTEND_GITHUB_RUN_ID="$GITHUB_RUN_ID"
-          export VITE_SPELLBOOK_FRONTEND_GITHUB_RUN_ATTEMPT="$GITHUB_RUN_ATTEMPT"
-          npm run -w web build
-
       - name: Configure SSH
         shell: bash
         run: |
@@ -93,41 +69,11 @@ jobs:
             ssh-keyscan -p "$DEPLOY_SSH_PORT" "$DEPLOY_SSH_HOST" >> ~/.ssh/known_hosts
           fi
 
-      - name: Upload web assets
-        if: ${{ inputs.target == 'web' || inputs.target == 'backend-and-web' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          case "$DEPLOY_REMOTE_WEB_DIST_DIR" in
-            ""|"."|".."|/*|../*|*/..|*"/../"*)
-              echo "Invalid DEPLOY_REMOTE_WEB_DIST_DIR: $DEPLOY_REMOTE_WEB_DIST_DIR" >&2
-              exit 1
-              ;;
-          esac
-
-          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
-            "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
-            "rm -rf ~/$DEPLOY_REMOTE_WEB_DIST_DIR && mkdir -p ~/$DEPLOY_REMOTE_WEB_DIST_DIR"
-
-          scp -i ~/.ssh/deploy_key -P "$DEPLOY_SSH_PORT" -r \
-            web/build/client/. \
-            "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST:~/$DEPLOY_REMOTE_WEB_DIST_DIR/"
-
-      - name: Deploy backend
-        if: ${{ inputs.target == 'backend' || inputs.target == 'backend-and-web' }}
+      - name: Deploy backend API
         shell: bash
         run: |
           set -euo pipefail
           deployed_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
             "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
-            "SPELLBOOK_VERSION_LABEL='v3.7' SPELLBOOK_BACKEND_COMMIT_SHA='$GITHUB_SHA' SPELLBOOK_BACKEND_REF='$GITHUB_REF_NAME' SPELLBOOK_BACKEND_DEPLOYED_AT='$deployed_at' SPELLBOOK_BACKEND_GITHUB_RUN_ID='$GITHUB_RUN_ID' SPELLBOOK_BACKEND_GITHUB_RUN_ATTEMPT='$GITHUB_RUN_ATTEMPT' ~/deploy-backend.sh"
-
-      - name: Deploy web
-        if: ${{ inputs.target == 'web' || inputs.target == 'backend-and-web' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
-            "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
-            "~/deploy-web.sh"
+            "SPELLBOOK_VERSION_LABEL='v1.0' SPELLBOOK_BACKEND_COMMIT_SHA='$GITHUB_SHA' SPELLBOOK_BACKEND_REF='$GITHUB_REF_NAME' SPELLBOOK_BACKEND_DEPLOYED_AT='$deployed_at' SPELLBOOK_BACKEND_GITHUB_RUN_ID='$GITHUB_RUN_ID' SPELLBOOK_BACKEND_GITHUB_RUN_ATTEMPT='$GITHUB_RUN_ATTEMPT' ~/deploy-backend.sh"

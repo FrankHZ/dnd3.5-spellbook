@@ -64,15 +64,15 @@ describe("security middleware", () => {
   it("allows configured production CORS origins", async () => {
     process.env.NODE_ENV = "production";
     process.env.SPELLBOOK_CORS_ORIGINS =
-      "https://spellbook.example, https://www.spellbook.example";
+      "https://d20spellcodex.com, https://www.d20spellcodex.com";
 
     const res = await request(app)
       .get("/health")
-      .set("Origin", "https://www.spellbook.example");
+      .set("Origin", "https://www.d20spellcodex.com");
 
     expect(res.status).toBe(200);
     expect(res.headers["access-control-allow-origin"]).toBe(
-      "https://www.spellbook.example",
+      "https://www.d20spellcodex.com",
     );
   });
 });
