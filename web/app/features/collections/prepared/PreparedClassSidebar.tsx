@@ -1,15 +1,17 @@
-import { useMemo, useState, type ReactNode } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import { Separator } from "~/components/ui/separator";
 import { cn } from "~/lib/utils";
 import { useTranslation } from "react-i18next";
 
@@ -27,6 +29,29 @@ export type DomainOption = Option & { type: "domain" };
 export type Candidate = Option & {
   count: number;
 };
+
+const DESKTOP_QUERY = "(min-width: 1024px)";
+
+function getIsDesktop() {
+  if (typeof window === "undefined") return true;
+  return window.matchMedia(DESKTOP_QUERY).matches;
+}
+
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(getIsDesktop);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const media = window.matchMedia(DESKTOP_QUERY);
+    const update = () => setIsDesktop(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  return isDesktop;
+}
 
 function PreparedTypePill({
   children,
@@ -64,8 +89,10 @@ export function PreparedClassAndDomainSidebar({
   className?: string;
 }) {
   const { t } = useTranslation("collections");
+  const sidebarId = useId();
+  const isDesktop = useIsDesktop();
   const [candidateFilter, setCandidateFilter] = useState("");
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => !getIsDesktop());
   const selected = [...selectedClasses, ...selectedDomains];
   const hasCandidates = candidates.length > 0;
   const filteredCandidates = useMemo(() => {
@@ -79,51 +106,79 @@ export function PreparedClassAndDomainSidebar({
     );
   }, [candidateFilter, candidates]);
 
+  useEffect(() => {
+    setCollapsed(!isDesktop);
+  }, [isDesktop]);
+
   return (
     <aside
       className={cn(
-        "w-full shrink-0",
-        collapsed ? "lg:w-10" : "lg:w-[320px]",
+        "w-full shrink-0 self-start transition-[width]",
+        collapsed ? "lg:w-11" : "lg:w-[320px]",
         className,
       )}
     >
-      <div className="space-y-3 lg:sticky lg:top-3">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className={cn(
-            "w-full justify-start gap-2",
-            collapsed && "lg:justify-center lg:px-0",
-          )}
-          onClick={() => setCollapsed((value) => !value)}
-          aria-expanded={!collapsed}
-          aria-controls="prepared-sidebar-panels"
-        >
-          {collapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <ChevronDown className="h-4 w-4" />
-          )}
-          <span className={cn(collapsed && "lg:hidden")}>
-            {collapsed ? t("prepared.sidebar.show") : t("prepared.sidebar.hide")}
-          </span>
-        </Button>
+      <div className="lg:sticky lg:top-3">
+        {collapsed && (
+          <div className="rounded-md border bg-card p-4 shadow-xs lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full justify-between lg:h-11 lg:w-11 lg:justify-center lg:px-0"
+              onClick={() => setCollapsed(false)}
+              aria-expanded={false}
+              aria-controls={sidebarId}
+            >
+              <span className="inline-flex min-w-0 items-center gap-2">
+                <PanelLeftOpen className="size-4 shrink-0" aria-hidden="true" />
+                <span className="truncate lg:sr-only">
+                  {t("prepared.sidebar.title")}
+                </span>
+              </span>
+              <span className="shrink-0 text-xs font-normal text-muted-foreground lg:hidden">
+                {t("prepared.sidebar.show")}
+              </span>
+            </Button>
+          </div>
+        )}
 
         {!collapsed && (
-          <div id="prepared-sidebar-panels" className="space-y-3">
-            <Card className="gap-0">
-              <CardHeader className="gap-1 py-3">
-                <CardTitle className="text-base">
-                  {t("prepared.sidebar.selected")}
-                </CardTitle>
-                {selected.length === 0 ? (
-                  <CardDescription className="py-1 text-sm">
-                    {t("prepared.sidebar.none-selected-help")}
-                  </CardDescription>
-                ) : null}
-              </CardHeader>
-              <CardContent className="space-y-1 pt-0">
+          <Card id={sidebarId} className="gap-0 self-start">
+            <CardHeader className="border-b px-4 pb-4">
+              <CardTitle>{t("prepared.sidebar.title")}</CardTitle>
+              <CardDescription>
+                {t("prepared.sidebar.description")}
+              </CardDescription>
+              <CardAction>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 shrink-0"
+                  aria-label={t("prepared.sidebar.hide")}
+                  aria-expanded={true}
+                  aria-controls={sidebarId}
+                  title={t("prepared.sidebar.hide")}
+                  onClick={() => setCollapsed(true)}
+                >
+                  <PanelLeftClose className="size-4" aria-hidden="true" />
+                </Button>
+              </CardAction>
+            </CardHeader>
+
+            <CardContent className="space-y-4 px-4 pt-4 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
+              <section className="space-y-2">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-medium leading-none">
+                    {t("prepared.sidebar.selected")}
+                  </h3>
+                  {selected.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      {t("prepared.sidebar.none-selected-help")}
+                    </p>
+                  ) : null}
+                </div>
+
                 {selected.length !== 0 && (
                   <div className="max-h-48 space-y-1 overflow-auto pr-1">
                     {selected.map((opt) => (
@@ -154,16 +209,14 @@ export function PreparedClassAndDomainSidebar({
                     ))}
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </section>
 
-            <Card className="gap-0">
-              <CardHeader className="gap-1 py-3">
-                <CardTitle className="text-base">
+              <Separator />
+
+              <section className="space-y-2">
+                <h3 className="text-sm font-medium leading-none">
                   {t("prepared.sidebar.candidates")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 pt-0">
+                </h3>
                 {hasCandidates && (
                   <Input
                     value={candidateFilter}
@@ -216,9 +269,9 @@ export function PreparedClassAndDomainSidebar({
                     ))}
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </div>
+              </section>
+            </CardContent>
+          </Card>
         )}
       </div>
     </aside>

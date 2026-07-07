@@ -175,6 +175,9 @@ Implementation branch:
   collapses to a prepared-style narrow rail when hidden, and defaults collapsed
   as a top-of-page card on mobile so Advanced filters remain the only
   drawer-like filter surface.
+- Aligned the prepared-spellbook class/domain sidebar to the same collapsible
+  card/rail pattern, keeping its selected and candidate lists as sections inside
+  the sidebar card instead of separate nested cards.
 - Added a shared `StatusCard` for empty, loading, validation, and error states
   across Browse, Search, Spell Detail, and collection workflows.
 - Made spellbook index cards whole-card links with consistent hover and focus
