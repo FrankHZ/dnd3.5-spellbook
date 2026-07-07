@@ -7,6 +7,7 @@
   "labels.mechanics": "Mechanics",
   "labels.rulebooks": "Rulebooks",
   "labels.taxonomy": "Taxonomy",
-  "rulebooks.selected-summary_one": "{{count}} (Settings)",
-  "rulebooks.selected-summary_other": "{{count}} (Settings)"
+  "rulebooks.settings-link": "Settings",
+  "rulebooks.settings-prefix": " (",
+  "rulebooks.settings-suffix": ")"
 }
