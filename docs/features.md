@@ -350,6 +350,8 @@ Current behavior:
 
 - `/about` shows frontend build metadata from `VITE_SPELLBOOK_*` build-time
   variables
+- Status and Credits are separated into tabs so deployment diagnostics do not
+  compete with source acknowledgements
 - the page identifies the frontend hosting surface and the configured API
   origin; local development reports same-origin `/api`
 - the page shows backend deploy metadata and a public content DB summary from

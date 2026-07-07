@@ -1,13 +1,16 @@
 import type {
+  AppStatusResponse,
   AppVersionMetadata,
   PublicContentStatus,
 } from "@dnd/contracts";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
+import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { getConfiguredApiBaseUrl } from "~/api/http";
 import { getAppStatus } from "~/api/status";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
@@ -21,6 +24,8 @@ import { getFrontendVersionMetadata } from "./build-metadata";
 import { chmChsCredit, englishSourceCredits } from "./credits";
 
 const REPOSITORY_URL = "https://github.com/FrankHZ/dnd3.5-spellbook";
+
+type AboutTab = "credits" | "status";
 
 type StatusFieldProps = {
   label: string;
@@ -291,6 +296,128 @@ function CreditsSection() {
   );
 }
 
+function StatusSections({
+  apiBaseUrl,
+  frontendMetadata,
+  appStatusQuery,
+}: {
+  apiBaseUrl: string;
+  frontendMetadata: AppVersionMetadata;
+  appStatusQuery: UseQueryResult<AppStatusResponse>;
+}) {
+  const { t } = useTranslation("about");
+
+  return (
+    <div className="space-y-4">
+      <VersionSection
+        title={t("frontend.title")}
+        description={t("frontend.description")}
+        metadata={frontendMetadata}
+        timeLabel={t("fields.built-at")}
+      />
+
+      <DeploymentSection
+        apiBaseUrl={apiBaseUrl}
+        frontendSource={frontendMetadata.source}
+      />
+
+      <VersionSection
+        title={t("backend.title")}
+        description={
+          appStatusQuery.isError
+            ? t("common.unavailable")
+            : t("backend.description")
+        }
+        metadata={appStatusQuery.data?.backend}
+        timeLabel={t("fields.deployed-at")}
+      />
+
+      <DatabaseSection
+        data={appStatusQuery.data?.content}
+        isLoading={appStatusQuery.isLoading}
+        isError={appStatusQuery.isError}
+      />
+    </div>
+  );
+}
+
+function AboutTabs({
+  apiBaseUrl,
+  frontendMetadata,
+  appStatusQuery,
+}: {
+  apiBaseUrl: string;
+  frontendMetadata: AppVersionMetadata;
+  appStatusQuery: UseQueryResult<AppStatusResponse>;
+}) {
+  const { t } = useTranslation("about");
+  const tabsId = useId();
+  const [activeTab, setActiveTab] = useState<AboutTab>("status");
+  const statusTabId = `${tabsId}-status-tab`;
+  const creditsTabId = `${tabsId}-credits-tab`;
+  const statusPanelId = `${tabsId}-status-panel`;
+  const creditsPanelId = `${tabsId}-credits-panel`;
+
+  return (
+    <div className="space-y-4">
+      <div
+        aria-label={t("tabs.label")}
+        className="grid grid-cols-2 gap-2 rounded-md border bg-muted/30 p-1 sm:inline-grid sm:min-w-72"
+        role="tablist"
+      >
+        <Button
+          id={statusTabId}
+          aria-controls={statusPanelId}
+          aria-selected={activeTab === "status"}
+          className="w-full"
+          role="tab"
+          size="sm"
+          type="button"
+          variant={activeTab === "status" ? "secondary" : "ghost"}
+          onClick={() => setActiveTab("status")}
+        >
+          {t("tabs.status")}
+        </Button>
+        <Button
+          id={creditsTabId}
+          aria-controls={creditsPanelId}
+          aria-selected={activeTab === "credits"}
+          className="w-full"
+          role="tab"
+          size="sm"
+          type="button"
+          variant={activeTab === "credits" ? "secondary" : "ghost"}
+          onClick={() => setActiveTab("credits")}
+        >
+          {t("tabs.credits")}
+        </Button>
+      </div>
+
+      {activeTab === "status" ? (
+        <div
+          id={statusPanelId}
+          aria-labelledby={statusTabId}
+          role="tabpanel"
+        >
+          <StatusSections
+            apiBaseUrl={apiBaseUrl}
+            frontendMetadata={frontendMetadata}
+            appStatusQuery={appStatusQuery}
+          />
+        </div>
+      ) : (
+        <div
+          id={creditsPanelId}
+          aria-labelledby={creditsTabId}
+          role="tabpanel"
+        >
+          <CreditsSection />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AboutVersionPage() {
   const { t } = useTranslation("about");
   const frontendMetadata = getFrontendVersionMetadata();
@@ -322,36 +449,11 @@ export default function AboutVersionPage() {
         }
       />
 
-      <VersionSection
-        title={t("frontend.title")}
-        description={t("frontend.description")}
-        metadata={frontendMetadata}
-        timeLabel={t("fields.built-at")}
-      />
-
-      <DeploymentSection
+      <AboutTabs
         apiBaseUrl={apiBaseUrl}
-        frontendSource={frontendMetadata.source}
+        frontendMetadata={frontendMetadata}
+        appStatusQuery={appStatusQuery}
       />
-
-      <VersionSection
-        title={t("backend.title")}
-        description={
-          appStatusQuery.isError
-            ? t("common.unavailable")
-            : t("backend.description")
-        }
-        metadata={appStatusQuery.data?.backend}
-        timeLabel={t("fields.deployed-at")}
-      />
-
-      <DatabaseSection
-        data={appStatusQuery.data?.content}
-        isLoading={appStatusQuery.isLoading}
-        isError={appStatusQuery.isError}
-      />
-
-      <CreditsSection />
     </div>
   );
 }

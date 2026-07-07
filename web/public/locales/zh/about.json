@@ -39,5 +39,8 @@
   "frontend.title": "前端",
   "page.description": "当前部署的构建、API、内容状态和资料来源致谢。",
   "page.repository": "GitHub 仓库",
-  "page.title": "关于 / 状态"
+  "page.title": "关于 / 状态",
+  "tabs.credits": "致谢",
+  "tabs.label": "关于页面分区",
+  "tabs.status": "状态"
 }

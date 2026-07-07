@@ -39,5 +39,8 @@
   "frontend.title": "Frontend",
   "page.description": "Build, API, content, and source credits for the current deployment.",
   "page.repository": "GitHub repository",
-  "page.title": "About / Status"
+  "page.title": "About / Status",
+  "tabs.credits": "Credits",
+  "tabs.label": "About page sections",
+  "tabs.status": "Status"
 }

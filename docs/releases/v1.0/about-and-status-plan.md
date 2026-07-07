@@ -171,9 +171,11 @@ without exposing private DB provenance.
 Implementation branch `codex/web-about-status-credits` owns the first About /
 Status release surface pass:
 
-- About / Status now shows frontend hosting and configured API origin without
+- About / Status separates Status and Credits into tabs so deployment
+  diagnostics and source acknowledgements stay distinct.
+- The Status tab shows frontend hosting and configured API origin without
   changing the public status API contract.
-- About / Status now includes compact credits for IMarvinTPA, D&D Tools, and
-  the Chinese CHM translation source.
+- The Credits tab includes compact credits for IMarvinTPA, D&D Tools, and the
+  Chinese CHM translation source.
 - Source attribution notes live under `docs/credits/`, while the page keeps the
   credits readable instead of becoming a full provenance document.
