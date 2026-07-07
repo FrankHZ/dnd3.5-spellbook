@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { getConfiguredApiBaseUrl } from "~/api/http";
 import { getAppStatus } from "~/api/status";
 import {
   Card,
@@ -17,6 +18,7 @@ import {
 import { PageHeader } from "~/components/PageHeader";
 import { cn } from "~/lib/utils";
 import { getFrontendVersionMetadata } from "./build-metadata";
+import { chmChsCredit, englishSourceCredits } from "./credits";
 
 const REPOSITORY_URL = "https://github.com/FrankHZ/dnd3.5-spellbook";
 
@@ -60,6 +62,45 @@ function StatusField({ label, value }: StatusFieldProps) {
         {displayValue}
       </div>
     </div>
+  );
+}
+
+function getFrontendHostingKey(apiBaseUrl: string, source: string | undefined) {
+  if (
+    apiBaseUrl === "https://api.d20spellcodex.com" ||
+    source === "deploy"
+  ) {
+    return "deployment.hosting-workers";
+  }
+  return "deployment.hosting-local";
+}
+
+function DeploymentSection({
+  apiBaseUrl,
+  frontendSource,
+}: {
+  apiBaseUrl: string;
+  frontendSource: string | undefined;
+}) {
+  const { t } = useTranslation("about");
+
+  return (
+    <Card className="gap-0">
+      <CardHeader className="gap-1 py-3">
+        <CardTitle className="text-base">{t("deployment.title")}</CardTitle>
+        <CardDescription>{t("deployment.description")}</CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-2 pt-0 sm:grid-cols-2">
+        <StatusField
+          label={t("deployment.frontend-hosting")}
+          value={t(getFrontendHostingKey(apiBaseUrl, frontendSource))}
+        />
+        <StatusField
+          label={t("deployment.api-origin")}
+          value={apiBaseUrl || t("deployment.api-origin-same-origin")}
+        />
+      </CardContent>
+    </Card>
   );
 }
 
@@ -164,9 +205,96 @@ function DatabaseSection({
   );
 }
 
+function SourceLink({ href, title }: { href?: string; title: string }) {
+  if (!href) return <span>{title}</span>;
+
+  return (
+    <a
+      className="inline-flex items-center gap-1 underline-offset-4 hover:underline"
+      href={href}
+      rel="noreferrer"
+      target="_blank"
+    >
+      {title}
+      <ExternalLink className="size-3" aria-hidden="true" />
+    </a>
+  );
+}
+
+function SourceCreditNote({ noteKey }: { noteKey: "dndtools" | "imarvin" }) {
+  const { t } = useTranslation("about");
+
+  if (noteKey === "dndtools") {
+    return <>{t("credits.english.dndtools-note")}</>;
+  }
+  return <>{t("credits.english.imarvin-note")}</>;
+}
+
+function CreditsSection() {
+  const { t } = useTranslation("about");
+
+  return (
+    <Card className="gap-0">
+      <CardHeader className="gap-1 py-3">
+        <CardTitle className="text-base">{t("credits.title")}</CardTitle>
+        <CardDescription>{t("credits.description")}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4 pt-0 text-sm leading-6">
+        <section className="space-y-2">
+          <h3 className="font-medium">{t("credits.english.title")}</h3>
+          <div className="space-y-3 text-muted-foreground">
+            {englishSourceCredits.map((credit) => (
+              <div key={credit.title} className="space-y-1">
+                <div className="font-medium text-foreground">
+                  <SourceLink href={credit.href} title={credit.title} />
+                </div>
+                <div>{credit.people.join("; ")}</div>
+                <div>
+                  <SourceCreditNote noteKey={credit.noteKey} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="space-y-2">
+          <h3 className="font-medium">{t("credits.chm.title")}</h3>
+          <div className="space-y-2 text-muted-foreground">
+            <p>
+              <span className="font-medium text-foreground">
+                {t("credits.chm.translators")}
+              </span>
+              {chmChsCredit.translators}
+            </p>
+            <p>
+              <span className="font-medium text-foreground">
+                {t("credits.chm.compiler")}
+              </span>
+              {chmChsCredit.compiler}
+            </p>
+            <p>
+              <span className="font-medium text-foreground">
+                {t("credits.chm.second-edition")}
+              </span>
+              {chmChsCredit.secondEdition}
+            </p>
+            <p>
+              <span className="font-medium text-foreground">
+                {t("credits.chm.assistance")}
+              </span>
+              {chmChsCredit.assistance}
+            </p>
+          </div>
+        </section>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function AboutVersionPage() {
   const { t } = useTranslation("about");
   const frontendMetadata = getFrontendVersionMetadata();
+  const apiBaseUrl = getConfiguredApiBaseUrl();
 
   const appStatusQuery = useQuery({
     queryKey: ["status", "app"],
@@ -201,6 +329,11 @@ export default function AboutVersionPage() {
         timeLabel={t("fields.built-at")}
       />
 
+      <DeploymentSection
+        apiBaseUrl={apiBaseUrl}
+        frontendSource={frontendMetadata.source}
+      />
+
       <VersionSection
         title={t("backend.title")}
         description={
@@ -217,6 +350,8 @@ export default function AboutVersionPage() {
         isLoading={appStatusQuery.isLoading}
         isError={appStatusQuery.isError}
       />
+
+      <CreditsSection />
     </div>
   );
 }

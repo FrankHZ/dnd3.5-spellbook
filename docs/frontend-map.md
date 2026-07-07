@@ -72,14 +72,17 @@ Purpose:
 
 - user-facing app settings such as language and content preferences
 
-### About / Version
+### About / Status
 
 - page entry: `web/app/features/about/AboutVersionPage.tsx`
 - build metadata helper: `web/app/features/about/build-metadata.ts`
+- source credits: `web/app/features/about/credits.ts`,
+  `docs/credits/`
 
 Purpose:
 
-- show frontend build, backend deploy, and content DB runtime status
+- show frontend build, API origin, backend deploy, content DB runtime status,
+  and source credits
 
 ## Shared Frontend Layers
 

@@ -38,7 +38,7 @@ About / Status:
 
 - Promote the current About / Version page into a more formal About / Status
   page that explains frontend build state, API origin, backend version, content
-  DB state, and update times.
+  DB state, source credits, and update times.
 
 ## Track Order
 
@@ -103,7 +103,7 @@ v1.0 release acceptance should include:
 - GitHub deploy workflow no longer treats web-to-origin static deploy as the
   normal production frontend path.
 - About / Status reports frontend build, API origin, backend version, public
-  content DB status, and relevant update times.
+  content DB status, source credits, and relevant update times.
 - Release-ready doc sweep confirms root README, docs index, roadmap,
   AGENTS.md, feature docs, design docs, operations docs, module docs, and this
   release README agree before freeze.

@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { apiGet, ApiError, apiPost } from "./http";
+import {
+  apiGet,
+  ApiError,
+  apiPost,
+  getConfiguredApiBaseUrl,
+} from "./http";
 import { getI18nFromStorage } from "~/i18n/storage";
 
 vi.mock("~/i18n/storage", () => ({
@@ -94,6 +99,14 @@ describe("api http helpers", () => {
         signal: undefined,
       },
     );
+  });
+
+  it("normalizes the configured API base URL for display consumers", () => {
+    expect(getConfiguredApiBaseUrl()).toBe("");
+
+    vi.stubEnv("VITE_API_BASE_URL", "https://api.d20spellcodex.com/");
+
+    expect(getConfiguredApiBaseUrl()).toBe("https://api.d20spellcodex.com");
   });
 
   it("throws ApiError with response payload when the API fails", async () => {
