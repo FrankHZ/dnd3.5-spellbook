@@ -287,6 +287,13 @@
     max-height: calc(100vh - 8rem);
     overflow-y: auto;
   }
+
+  .app-filter-layout .app-side-card-collapsed {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+  }
 }
 
 @media (min-width: 64rem) {
@@ -297,5 +304,12 @@
   .app-side-card-scroll-lg {
     max-height: calc(100vh - 8rem);
     overflow-y: auto;
+  }
+
+  .app-prepared-layout .app-side-card-collapsed {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
   }
 }
