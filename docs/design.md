@@ -80,15 +80,18 @@ Keep the existing page classes as the first layout vocabulary:
 - `.page-wide` only when a naturally wide tool, such as prepared spell review,
   needs more horizontal room.
 
-For Browse, Search, and Spell Detail, preserve the established desktop pattern:
+For Browse/Search and Spell Detail, preserve the established side-column
+desktop patterns through shared CSS helpers:
 
 ```tsx
-<div className="grid gap-4 md:grid-cols-[320px_1fr]">
+<div className="app-filter-layout">...</div>
+<div className="app-fixed-side-layout">...</div>
 ```
 
-Use the 320px left column for controls or metadata. Use the main column for
-results, rule text, or the work surface. On mobile, the same areas should stack
-without requiring hidden duplicate flows.
+Use `app-filter-layout` when the left filter component owns its expanded and
+collapsed width. Use `app-fixed-side-layout` for 320px metadata/control columns.
+Use the main column for results, rule text, or the work surface. On mobile, the
+same areas should stack without requiring hidden duplicate flows.
 
 Do not introduce landing-page sections, hero blocks, oversized headings, or
 decorative page bands for core app screens.
@@ -128,6 +131,10 @@ For side-column cards such as Browse/Search filters, prepared-spellbook filters,
 and Spell Detail overview metadata, use the shared `app-side-card`,
 `app-side-card-header`, and `app-side-card-content` CSS helpers so outer padding
 and side-card density stay aligned across pages.
+
+For common side-column page skeletons, prefer the shared `app-filter-layout`,
+`app-fixed-side-layout`, and `app-prepared-layout` CSS helpers over repeating
+breakpoint grid/flex column definitions in feature files.
 
 ## Information Density
 

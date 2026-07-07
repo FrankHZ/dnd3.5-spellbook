@@ -119,7 +119,7 @@ export default function SearchSpellsPage() {
 
   return (
     <div className="page-side">
-      <div className="grid gap-4 md:grid-cols-[auto_minmax(0,1fr)]">
+      <div className="app-filter-layout">
         <FilterSidebarCard>
           <div className="grid gap-2">
             {hasScopedSearch ? (

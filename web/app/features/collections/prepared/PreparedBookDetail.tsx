@@ -227,7 +227,7 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
         {t("prepared.slots-count", { count: book.entries.length })}
       </div>
 
-      <div className="flex flex-col gap-3 lg:flex-row">
+      <div className="app-prepared-layout">
         <PreparedClassAndDomainSidebar
           selectedClasses={selectedClasses}
           selectedDomains={selectedDomains}

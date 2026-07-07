@@ -31,7 +31,7 @@ function SpellDetailSkeleton() {
         <Skeleton className="h-4 w-1/3" />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-[320px_1fr]">
+      <div className="app-fixed-side-layout">
         <Card className="app-side-card">
           <CardContent className="app-side-card-content space-y-3">
             <Skeleton className="h-5 w-3/4" />
@@ -217,7 +217,7 @@ export default function SpellDetailPage() {
         className="md:hidden"
       />
 
-      <div className="grid gap-4 md:grid-cols-[320px_1fr]">
+      <div className="app-fixed-side-layout">
         <div className="space-y-4">
           <Card className="app-side-card">
             <CardContent className="app-side-card-content space-y-4">
