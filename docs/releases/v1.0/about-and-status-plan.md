@@ -114,7 +114,7 @@ without exposing private DB provenance.
 - Expected files: `docs/operations/deployment.md`,
   `docs/modules/delivery.md`, release freeze checklist or `FREEZE.md`.
 - Validation:
-  - `https://d20spellcodex.com/about` loads through Workers
+  - `https://www.d20spellcodex.com/about` loads through Workers
   - About / Status calls `https://api.d20spellcodex.com`
   - frontend build info matches the Workers deployment
   - backend status matches the expected deployed backend commit/version

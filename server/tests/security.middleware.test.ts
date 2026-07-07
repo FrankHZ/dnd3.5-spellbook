@@ -63,8 +63,7 @@ describe("security middleware", () => {
 
   it("allows configured production CORS origins", async () => {
     process.env.NODE_ENV = "production";
-    process.env.SPELLBOOK_CORS_ORIGINS =
-      "https://d20spellcodex.com, https://www.d20spellcodex.com";
+    process.env.SPELLBOOK_CORS_ORIGINS = "https://www.d20spellcodex.com";
 
     const res = await request(app)
       .get("/health")

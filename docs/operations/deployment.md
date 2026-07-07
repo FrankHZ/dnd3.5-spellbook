@@ -12,7 +12,9 @@ It is intentionally simple and optimized for the current stage of the project:
 
 Production topology:
 
-- `https://d20spellcodex.com`: Cloudflare Workers Static Assets frontend
+- `https://www.d20spellcodex.com`: Cloudflare Workers Static Assets frontend
+- `https://d20spellcodex.com`: intentionally unassigned in v1.0 until a
+  redirect or canonical-domain policy is accepted
 - `https://api.d20spellcodex.com`: Cloudflare-proxied API domain reaching the
   existing Nginx/Express backend host
 - SQLite/content DB files remain operator-owned on the backend host
@@ -278,7 +280,7 @@ APP_DATABASE_URL=file:/opt/spellbook/data/content.sqlite
 APP_STATE_DATABASE_URL=file:/opt/spellbook/data/app-state.sqlite
 DATABASE_URL=file:/opt/spellbook/data/spellbook.db
 
-SPELLBOOK_CORS_ORIGINS=https://d20spellcodex.com,https://www.d20spellcodex.com
+SPELLBOOK_CORS_ORIGINS=https://www.d20spellcodex.com
 ```
 
 The current remote has switched to explicit content DB naming:
@@ -366,7 +368,7 @@ production, browser requests from arbitrary external origins do not receive
 Use a comma-separated allowlist for the Cloudflare Workers frontend origins:
 
 ```dotenv
-SPELLBOOK_CORS_ORIGINS=https://d20spellcodex.com,https://www.d20spellcodex.com
+SPELLBOOK_CORS_ORIGINS=https://www.d20spellcodex.com
 ```
 
 TLS is still an operations item. Add HSTS only after HTTPS termination is
@@ -663,9 +665,9 @@ If UI text renders as keys such as `page.title` or `nav.about`, first check the
 Cloudflare Workers static locale files rather than restarting `spellbook-api`:
 
 ```bash
-curl -i https://d20spellcodex.com/locales/en/about.json
-curl -i https://d20spellcodex.com/locales/zh/about.json
-curl -i https://d20spellcodex.com/locales/en-US/about.json
+curl -i https://www.d20spellcodex.com/locales/en/about.json
+curl -i https://www.d20spellcodex.com/locales/zh/about.json
+curl -i https://www.d20spellcodex.com/locales/en-US/about.json
 ```
 
 Existing locale files should return `200` with `Content-Type:

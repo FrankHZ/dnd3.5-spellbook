@@ -224,7 +224,7 @@ APP_DATABASE_URL=file:/opt/spellbook/data/content.sqlite
 APP_STATE_DATABASE_URL=file:/opt/spellbook/data/app-state.sqlite
 DATABASE_URL=file:/opt/spellbook/data/spellbook.db
 
-SPELLBOOK_CORS_ORIGINS=https://d20spellcodex.com,https://www.d20spellcodex.com
+SPELLBOOK_CORS_ORIGINS=https://www.d20spellcodex.com
 ```
 
 Permissions:

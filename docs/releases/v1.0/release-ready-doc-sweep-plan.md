@@ -74,7 +74,9 @@ This should be a final quality gate, not another implementation bucket.
   of PR review, CI, freeze snapshots, or agent-loaded repo context. If used, it
   should summarize and link back to repo docs.
 - v1.0 plans the production split:
-  - Cloudflare Workers frontend at `https://d20spellcodex.com`
+  - Cloudflare Workers frontend at `https://www.d20spellcodex.com`
+  - apex `d20spellcodex.com` intentionally unassigned until a redirect policy
+    is accepted
   - backend API at `https://api.d20spellcodex.com`
   - origin server focused on Express/API, SQLite/content DB, DB update scripts,
     and Nginx API reverse proxying

@@ -45,7 +45,9 @@ remains the API/content host.
 
 - Configure the frontend for Cloudflare Workers Static Assets and Workers
   Builds Git integration.
-- Set production frontend domain to `https://d20spellcodex.com`.
+- Set production frontend domain to `https://www.d20spellcodex.com`.
+- Leave apex `d20spellcodex.com` unassigned in v1.0 unless a redirect policy is
+  explicitly accepted.
 - Set production API origin to `https://api.d20spellcodex.com`.
 - Add real `VITE_API_BASE_URL` support in the web API client:
   - local default remains `/api`
@@ -90,8 +92,10 @@ remains the API/content host.
 - Keep `wrangler.jsonc` as the repo-owned Workers Static Assets configuration:
   the `dnd-spellbook` Worker serves `web/build/client` and uses SPA fallback
   routing.
-- Attach `d20spellcodex.com` through a Workers custom domain or equivalent
+- Attach `www.d20spellcodex.com` through a Workers custom domain or equivalent
   route flow. Do not rely on only hand-writing DNS records.
+- Do not attach apex `d20spellcodex.com` for v1.0; keep it available for a
+  later redirect/canonical-domain decision.
 - Configure Workers Builds for this monorepo with explicit build command,
   deploy command, asset output settings, and `VITE_API_BASE_URL`.
 - Cloudflare API automation should use a user-scoped Workers token with
@@ -130,7 +134,7 @@ remains the API/content host.
   `docs/modules/delivery.md`, optionally `web/README.md`.
 - Validation:
   - Workers production deployment succeeds
-  - `https://d20spellcodex.com` serves the app
+  - `https://www.d20spellcodex.com` serves the app
   - direct refresh of representative SPA routes works
 
 ### Slice 3: API Domain, TLS, Nginx, And CORS
@@ -140,8 +144,7 @@ remains the API/content host.
   - Express remains bound to `127.0.0.1:3000`
   - Nginx handles public API reverse proxying
   - origin HTTPS is configured for Cloudflare Full (strict)
-  - CORS allowlist includes `https://d20spellcodex.com` and optional
-    `https://www.d20spellcodex.com`
+  - CORS allowlist includes `https://www.d20spellcodex.com`
 - Expected files: deployment docs, Nginx helper/scripts if topology changes,
   server CORS tests if behavior changes.
 - Validation:
@@ -171,7 +174,7 @@ remains the API/content host.
 
 - Local web development still works with relative `/api`.
 - Workers production build uses `https://api.d20spellcodex.com`.
-- `https://d20spellcodex.com` serves the production frontend.
+- `https://www.d20spellcodex.com` serves the production frontend.
 - SPA deep-link refresh works for Browse, Search, Spell Detail, collections,
   prepared spells, settings, and About / Status.
 - Cross-origin API requests from the allowed frontend domain work.
@@ -197,8 +200,8 @@ remains the API/content host.
 
 ## Open Questions
 
-- Should `www.d20spellcodex.com` be enabled as a Workers custom domain,
-  redirect to apex, or remain out of v1.0?
+- Should apex `d20spellcodex.com` stay unassigned, redirect to `www`, or serve
+  the same Worker in a later release?
 - Should the old same-origin web deploy target be deleted immediately or kept
   as a documented emergency legacy path until the first Workers release is
   accepted?

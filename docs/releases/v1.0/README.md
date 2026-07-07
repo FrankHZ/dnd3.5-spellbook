@@ -12,18 +12,19 @@ updates, and API reverse proxying.
 
 Frontend:
 
-- `https://d20spellcodex.com`
+- `https://www.d20spellcodex.com`
 - Cloudflare Workers Static Assets owns frontend serving.
 - Cloudflare Workers Builds should own Git-based frontend build and deployment.
 - Manual Wrangler deploy remains an operator tool, not the normal production
   CD path.
+- The apex domain `d20spellcodex.com` is intentionally left unassigned for
+  v1.0 until a redirect or canonical-domain policy is accepted.
 
 API:
 
 - `https://api.d20spellcodex.com`
 - Cloudflare proxied DNS routes browser API traffic to the existing server.
-- Production CORS should explicitly allow `https://d20spellcodex.com` and,
-  if accepted, `https://www.d20spellcodex.com`.
+- Production CORS should explicitly allow `https://www.d20spellcodex.com`.
 
 Server:
 
@@ -87,7 +88,7 @@ delivery sequence, ownership, or accepted release scope.
 
 v1.0 release acceptance should include:
 
-- Cloudflare Workers production build for `https://d20spellcodex.com`.
+- Cloudflare Workers production build for `https://www.d20spellcodex.com`.
 - Workers custom domain or route attached through Cloudflare, not only a
   hand-edited DNS record.
 - SPA deep-link refresh works for representative app routes.
@@ -116,7 +117,8 @@ Cloudflare docs:
   repository.
 - Workers Static Assets uses `wrangler.jsonc` for the asset directory and SPA
   fallback behavior.
-- Workers custom domains can attach the apex frontend hostname to the Worker.
+- Workers custom domains can attach the `www` frontend hostname to the Worker.
+- The apex hostname can stay unassigned until a redirect policy is accepted.
 - Workers Builds supports monorepo build configuration, including install,
   build, deploy commands, and environment variables.
 - Workers SPA routing should be validated with direct refreshes for app routes.
