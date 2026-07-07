@@ -22,48 +22,49 @@ execution rules and role boundaries.
 
 ## Active Planning
 
-v3.10 is the active final MVP closeout plan:
+v1.0 is the active formal post-MVP release plan:
 
+- [releases/v1.0/README.md](./releases/v1.0/README.md)
+- [releases/v1.0/domain-and-deployment-plan.md](./releases/v1.0/domain-and-deployment-plan.md)
+- [releases/v1.0/about-and-status-plan.md](./releases/v1.0/about-and-status-plan.md)
+- [releases/v1.0/release-ready-doc-sweep-plan.md](./releases/v1.0/release-ready-doc-sweep-plan.md)
+
+The latest frozen planning record is v3.10:
+
+- [mvp/v3.10/FREEZE.md](./mvp/v3.10/FREEZE.md)
 - [mvp/v3.10/README.md](./mvp/v3.10/README.md)
 - [mvp/v3.10/filter-i18n-plan.md](./mvp/v3.10/filter-i18n-plan.md)
 - [mvp/v3.10/ui-ux-cohesion-plan.md](./mvp/v3.10/ui-ux-cohesion-plan.md)
 
-The latest frozen planning record is v3.9:
+The previous frozen planning record is v3.9:
 
 - [mvp/v3.9/FREEZE.md](./mvp/v3.9/FREEZE.md)
 - [mvp/v3.9/README.md](./mvp/v3.9/README.md)
 - [mvp/v3.9/normalized-mechanics-contract-plan.md](./mvp/v3.9/normalized-mechanics-contract-plan.md)
 - [mvp/v3.9/frontend-normalized-mechanics-consumer-plan.md](./mvp/v3.9/frontend-normalized-mechanics-consumer-plan.md)
 
-The previous frozen planning record is v3.8:
-
-- [mvp/v3.8/README.md](./mvp/v3.8/README.md)
-- [mvp/v3.8/normalized-query-contract-plan.md](./mvp/v3.8/normalized-query-contract-plan.md)
-- [mvp/v3.8/frontend-filter-consumer-plan.md](./mvp/v3.8/frontend-filter-consumer-plan.md)
-- [mvp/v3.8/module-boundary-cleanup-spike.md](./mvp/v3.8/module-boundary-cleanup-spike.md)
-
 Use [roadmap.md](./roadmap.md) for current ordering after a pause.
 
 ## Latest Frozen Snapshot
 
-The latest frozen stage snapshot is **v3.9**:
+The latest frozen stage snapshot is **v3.10**:
+
+- [mvp/v3.10/FREEZE.md](./mvp/v3.10/FREEZE.md)
+- [mvp/v3.10/README.md](./mvp/v3.10/README.md)
+
+`FREEZE.md` records the as-built v3.10 handoff state. Supporting v3.10 plan
+docs describe rationale and implementation history; they are not newer than the
+freeze snapshot.
+
+The previous frozen stage snapshot is **v3.9**:
 
 - [mvp/v3.9/FREEZE.md](./mvp/v3.9/FREEZE.md)
 - [mvp/v3.9/README.md](./mvp/v3.9/README.md)
 
-`FREEZE.md` records the as-built v3.9 handoff state. Supporting v3.9 plan docs
-describe rationale and implementation history; they are not newer than the
-freeze snapshot.
-
-The previous frozen stage snapshot is **v3.8**:
+The older frozen stage snapshot before that is **v3.8**:
 
 - [mvp/v3.8/FREEZE.md](./mvp/v3.8/FREEZE.md)
 - [mvp/v3.8/README.md](./mvp/v3.8/README.md)
-
-The older frozen stage snapshot before that is **v3.7**:
-
-- [mvp/v3.7/FREEZE.md](./mvp/v3.7/FREEZE.md)
-- [mvp/v3.7/README.md](./mvp/v3.7/README.md)
 
 Use older `FREEZE.md` files as historical comparison points, not active
 baselines.
@@ -108,9 +109,12 @@ baselines.
 ### Versioned MVP Docs
 
 - [mvp/README.md](./mvp/README.md): versioned-doc roles and maintenance rules.
-- [mvp/v3.10/README.md](./mvp/v3.10/README.md): active final MVP closeout
-  plan.
-- [mvp/v3.9/FREEZE.md](./mvp/v3.9/FREEZE.md): latest frozen release snapshot.
+- [mvp/v3.10/FREEZE.md](./mvp/v3.10/FREEZE.md): latest frozen MVP closeout
+  snapshot.
+- [mvp/v3.10/README.md](./mvp/v3.10/README.md): frozen final MVP closeout
+  planning record.
+- [mvp/v3.9/FREEZE.md](./mvp/v3.9/FREEZE.md): previous frozen release
+  snapshot.
 - [mvp/v3.9/README.md](./mvp/v3.9/README.md): frozen normalized
   mechanics/query fullstack planning record.
 - [mvp/v3.8/FREEZE.md](./mvp/v3.8/FREEZE.md): previous frozen release snapshot.
@@ -128,7 +132,7 @@ handoff records.
 
 - [releases/README.md](./releases/README.md): release planning roles and
   maintenance rules.
-- [releases/v1.0/README.md](./releases/v1.0/README.md): planned first formal
+- [releases/v1.0/README.md](./releases/v1.0/README.md): active first formal
   post-MVP public release line.
 
 ### Templates

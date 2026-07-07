@@ -184,7 +184,7 @@ API/content host.
 - Update `docs/modules/delivery.md` for the new delivery boundary.
 - Update `docs/modules/web.md` and `docs/modules/server.md` only if module
   ownership changes.
-- Update `docs/roadmap.md` only after v3.10 freeze promotes v1.0 to active.
+- Update `docs/roadmap.md` only when v1.0 active work ordering changes.
 
 ## Open Questions
 

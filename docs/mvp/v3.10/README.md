@@ -1,12 +1,12 @@
 # v3.10
 
-Status: active plan.
+Status: frozen.
 
 v3.10 is the final MVP closeout version. It should make the existing app feel
 complete and consistent to users without pulling deferred stable-track
 engineering back into MVP scope.
 
-The latest frozen shipped snapshot is `docs/mvp/v3.9/FREEZE.md`.
+The frozen shipped snapshot is `docs/mvp/v3.10/FREEZE.md`.
 
 ## Committed Scope
 
@@ -53,12 +53,13 @@ on scope, delivery sequence, or ownership.
 
 ## Plans
 
+- [FREEZE.md](./FREEZE.md)
 - [filter-i18n-plan.md](./filter-i18n-plan.md)
 - [ui-ux-cohesion-plan.md](./ui-ux-cohesion-plan.md)
 
 ## MVP Closeout Acceptance
 
-Freeze acceptance should cover the app as a user-facing MVP, not only the two
+Freeze acceptance covered the app as a user-facing MVP, not only the two
 implementation branches:
 
 - English and Chinese UI smoke for Browse, Search, Spell Detail, collections,
@@ -71,21 +72,11 @@ implementation branches:
 - Confirmation that server-provided vocabulary still has safe fallback labels
   when a frontend localized label is missing.
 - Validation command evidence from the accepted implementation branches plus a
-  final closeout pass before `FREEZE.md`.
+  final closeout pass recorded in `FREEZE.md`.
 
-## Expected Validation
+## Validation
 
-- `npm run i18n:sync`
-- `npm run i18n:check`
-- targeted web tests for display adapters, filter summaries, and affected UI
-  helpers
-- `npm run test:web`
-- `npm run typecheck:web`
-- `npm run -w web build`
-- browser smoke on desktop and mobile widths for the closeout acceptance pages
-
-Run `npm run ci:portable` for final freeze readiness or CI debugging, not as
-mandatory overhead for every small iteration.
+Final validation evidence is recorded in [FREEZE.md](./FREEZE.md).
 
 ## Working Rule
 
@@ -93,6 +84,5 @@ Use `filter-i18n-plan.md` as the v3.10 source of truth for localized filter and
 mechanics display. Use `ui-ux-cohesion-plan.md` for interface consistency and
 closeout polish.
 
-Implementation branches should update their owning child plan, directly
-affected topic docs, and `docs/roadmap.md` only when active work ordering
-changes. The librarian freeze sweep owns final navigation and `FREEZE.md`.
+v3.10 is frozen. Future implementation branches should update current topic
+docs or active release plans rather than adding new scope to this MVP folder.

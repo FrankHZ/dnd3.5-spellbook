@@ -163,8 +163,8 @@ This should be a final quality gate, not another implementation bucket.
 - Update this plan when release-ready doc sweep scope changes.
 - Update current canonical docs when they conflict with accepted v1.0 behavior.
 - Update historical MVP docs only for navigation corrections.
-- Update `docs/roadmap.md` only after v3.10 freeze promotes v1.0 to active, or
-  during v1.0 freeze closeout.
+- Update `docs/roadmap.md` only when v1.0 active work ordering or release scope
+  changes.
 
 ## Open Questions
 

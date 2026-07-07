@@ -7,7 +7,7 @@ directory for release lines after MVP scope is frozen.
 
 ## Current Release Plans
 
-- [v1.0/README.md](./v1.0/README.md): planned first formal public release line.
+- [v1.0/README.md](./v1.0/README.md): active first formal public release line.
 
 ## Maintenance Rules
 

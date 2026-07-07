@@ -140,7 +140,7 @@ without exposing private DB provenance.
   `docs/modules/contracts.md` when ownership or DTO contracts change.
 - Update `docs/operations/deployment.md` and `docs/modules/delivery.md` for
   release acceptance and metadata ownership.
-- Update `docs/roadmap.md` only after v3.10 freeze promotes v1.0 to active.
+- Update `docs/roadmap.md` only when v1.0 active work ordering changes.
 
 ## Open Questions
 

@@ -8,21 +8,40 @@ details.
 
 ## Current Track
 
-v3.10 is the active final MVP closeout plan:
+v1.0 is the active formal post-MVP release plan:
 
-- `docs/mvp/v3.10/README.md`
-- `docs/mvp/v3.10/filter-i18n-plan.md`
-- `docs/mvp/v3.10/ui-ux-cohesion-plan.md`
+- `docs/releases/v1.0/README.md`
+- `docs/releases/v1.0/domain-and-deployment-plan.md`
+- `docs/releases/v1.0/about-and-status-plan.md`
+- `docs/releases/v1.0/release-ready-doc-sweep-plan.md`
 
-The latest frozen release snapshot is `docs/mvp/v3.9/FREEZE.md`.
+The latest frozen MVP snapshot is `docs/mvp/v3.10/FREEZE.md`.
 
-v3.10 should close user-visible completeness and consistency only. It should
-not pull large stable-track engineering back into MVP scope.
+v1.0 should focus on public release readiness: Cloudflare Pages frontend
+delivery, the `api.d20spellcodex.com` backend API topology, About/Status
+visibility, and release-ready documentation consistency. It should not reopen
+v3.10 MVP UI/i18n acceptance.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
 
 ## Recently Completed
+
+The v3.10 final MVP closeout is frozen with:
+
+- `docs/mvp/v3.10/FREEZE.md` as the as-built snapshot.
+- localized frontend display adapters for stable taxonomy, component, and
+  mechanics filter vocabulary.
+- server-provided vocabulary labels preserved as fallback display text for
+  unknown or future keys.
+- Browse, Search, Advanced filters, active-scope summaries, and Spell Detail
+  supported-mechanics notes using localized labels where stable keys are known.
+- a UI/UX cohesion pass across page headers, sidebars, Advanced filters,
+  result cards, status states, Spell Detail metadata, collection workflows,
+  prepared-spell workflows, settings, and about/status surfaces.
+- final local validation through `npm run ci:portable` and
+  `npm run i18n:check`.
+- v1.0 formal release planning promoted as the next active track.
 
 The v3.9 release is frozen with:
 
@@ -277,26 +296,35 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Filter i18n complete pass**
+1. **Domain and deployment topology**
 
-   The i18n specialist should implement frontend display adapters keyed by
-   stable server vocabulary, with server labels as fallback. Scope includes
-   taxonomy/component/mechanics filters, scope summaries, and supported Spell
-   Detail mechanics notes.
+   Implement the v1.0 split production topology: Cloudflare Pages frontend,
+   `api.d20spellcodex.com` backend API, production API base URL configuration,
+   CORS/TLS verification, and deployment docs/workflows that no longer treat
+   the origin server as the canonical static frontend host.
 
-2. **UI/UX cohesion pass**
+2. **About and status surface**
 
-   The frontend-design specialist should align layout density, action
-   placement, state display, and mobile stacking across the primary MVP
-   surfaces after filter i18n lands.
+   Promote the current About / Version page into a release-ready About /
+   Status surface that reports frontend build information, API origin, backend
+   version, public content DB state, and relevant update times for the split
+   frontend/API deployment.
 
-3. **MVP closeout acceptance and freeze**
+3. **Release Ready Doc Sweep**
 
-   The librarian should run final acceptance across English/Chinese UI,
-   desktop/mobile layouts, Browse/Search/Detail/collections/prepared/settings/
-   about, then create the v3.10 freeze snapshot.
+   Run the final cross-doc quality gate for v1.0. Verify root README,
+   docs index, roadmap, AGENTS.md, feature docs, design docs, operations docs,
+   module docs, and the v1.0 release README all agree on the Cloudflare Pages
+   frontend, API domain, backend-only origin role, and About/Status model.
 
-4. **Triage the non-blocking maintenance tail as needed**
+4. **v1.0 release acceptance and freeze**
+
+   After implementation branches land, validate production SPA deep links,
+   cross-origin API fetches, CORS rejection for unallowed origins, API TLS,
+   About/Status behavior, backend deploy scripts, and docs consistency, then
+   create the v1.0 release freeze snapshot.
+
+5. **Triage the non-blocking maintenance tail as needed**
 
    `npm audit --workspaces --omit=dev --json` still reports the reviewed Prisma
    dev-chain / Hono moderate advisories. Treat them as explicit maintenance
