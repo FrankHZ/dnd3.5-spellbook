@@ -178,6 +178,9 @@ This should be a final quality gate, not another implementation bucket.
 
 - A broader architecture-doc refresh can remain post-v1.0 unless the release
   sweep finds a direct public-doc blocker.
+- Review the AI-agent workflow and related docs after v1.0 so `AGENTS.md`,
+  repo-local skills, feature workflow, and planning docs stay aligned with the
+  accepted multi-agent operating model.
 
 ## Completion Notes
 
