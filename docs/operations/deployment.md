@@ -162,12 +162,20 @@ Apply after syncing scripts:
 ssh remote "chmod 755 ~/apply-nginx-site.sh && ~/apply-nginx-site.sh"
 ```
 
-For Cloudflare Full (strict), configure an origin certificate on the backend
-host, then apply the API config with SSL enabled:
+For Cloudflare Full (strict), configure a valid certificate on the backend host,
+then apply the API config with SSL enabled. The current production host uses
+Let's Encrypt with a webroot challenge directory under `/var/www/certbot`.
 
 ```bash
-ssh remote "SPELLBOOK_NGINX_ENABLE_SSL=true SPELLBOOK_NGINX_SSL_CERTIFICATE=/etc/ssl/certs/spellbook-origin.pem SPELLBOOK_NGINX_SSL_CERTIFICATE_KEY=/etc/ssl/private/spellbook-origin.key ~/apply-nginx-site.sh"
+ssh remote "sudo mkdir -p /var/www/certbot && sudo chown -R www-data:www-data /var/www/certbot"
+ssh remote "sudo certbot certonly --webroot -w /var/www/certbot -d api.d20spellcodex.com --agree-tos --non-interactive --register-unsafely-without-email --keep-until-expiring"
+ssh remote "SPELLBOOK_NGINX_ENABLE_SSL=true SPELLBOOK_NGINX_SSL_CERTIFICATE=/etc/letsencrypt/live/api.d20spellcodex.com/fullchain.pem SPELLBOOK_NGINX_SSL_CERTIFICATE_KEY=/etc/letsencrypt/live/api.d20spellcodex.com/privkey.pem ~/apply-nginx-site.sh"
 ```
+
+When `SPELLBOOK_NGINX_ENABLE_SSL=true` in `api-only` mode, the helper keeps an
+HTTP server block for `/.well-known/acme-challenge/` and API fallback traffic,
+and adds a separate HTTPS server block for normal Cloudflare API traffic. Set
+`SPELLBOOK_ACME_CHALLENGE_ROOT` only if the webroot is not `/var/www/certbot`.
 
 Use the legacy single-origin static web/API config only as an explicit fallback:
 
@@ -370,8 +378,11 @@ Nginx is the API reverse proxy on the backend host.
 
 Expected routing:
 
-- `/api/*` proxies to `http://127.0.0.1:3000`
-- `/health` proxies to `http://127.0.0.1:3000`
+- `https://api.d20spellcodex.com/api/*` proxies to `http://127.0.0.1:3000`
+- `https://api.d20spellcodex.com/health` proxies to
+  `http://127.0.0.1:3000`
+- `http://api.d20spellcodex.com/.well-known/acme-challenge/*` serves the
+  certbot webroot for renewal
 - other paths return `404` in API-only mode
 
 Common commands:

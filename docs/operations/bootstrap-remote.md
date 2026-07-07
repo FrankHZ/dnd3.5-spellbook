@@ -274,10 +274,12 @@ server {
 }
 ```
 
-For Cloudflare Full (strict), configure an origin certificate and run the helper
-with `SPELLBOOK_NGINX_ENABLE_SSL=true` plus certificate/key paths. Use
-`SPELLBOOK_NGINX_MODE=single-origin` only for the legacy static frontend
-fallback.
+For Cloudflare Full (strict), configure a valid certificate and run the helper
+with `SPELLBOOK_NGINX_ENABLE_SSL=true` plus certificate/key paths. The current
+production pattern uses certbot with `/var/www/certbot` as the webroot for
+`api.d20spellcodex.com`; keep the HTTP ACME challenge path available for
+renewal. Use `SPELLBOOK_NGINX_MODE=single-origin` only for the legacy static
+frontend fallback.
 
 ## 13. Prepare Initial Databases
 
@@ -351,6 +353,7 @@ file as `DEPLOY_SSH_ALIAS=...` instead of hardcoding it in docs.
 ## 16. Final Validation Checklist
 
 - nginx running
+- nginx listening on 80 and 443 for `api.d20spellcodex.com`
 - backend running
 - `/opt/spellbook/data` exists
 - DB files owned by spellbook
