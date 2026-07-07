@@ -421,10 +421,11 @@ NODE_VERSION=24
 VITE_API_BASE_URL=https://api.d20spellcodex.com
 ```
 
-Frontend version metadata through `VITE_SPELLBOOK_*` remains optional until a
-dedicated Cloudflare build-metadata slice wires those variables. When metadata
-is absent, the About / Status page shows a local/unavailable fallback for the
-frontend build.
+Workers Builds also injects default `WORKERS_CI_COMMIT_SHA` and
+`WORKERS_CI_BRANCH` values. The production build command exports those into
+`VITE_SPELLBOOK_FRONTEND_COMMIT_SHA` and `VITE_SPELLBOOK_FRONTEND_REF`, with
+`git` fallbacks for manual rebuilds. It also sets
+`VITE_SPELLBOOK_FRONTEND_BUILT_AT` from the build time.
 
 ### Legacy Same-Origin Fallback
 

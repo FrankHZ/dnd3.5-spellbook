@@ -74,7 +74,8 @@ default.
 
 Deploy metadata for the About / Status page is owned here:
 
-- Cloudflare Workers Builds may pass `VITE_SPELLBOOK_*` values into the static build
+- Cloudflare Workers Builds exports default `WORKERS_CI_*` values into
+  `VITE_SPELLBOOK_*` variables before the static build.
 - backend deploys pass `SPELLBOOK_BACKEND_*` values to
   `deploy-backend.sh`
 - `deploy-backend.sh` writes non-secret backend metadata into

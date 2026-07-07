@@ -53,8 +53,10 @@ explicitly promotes them to preferences.
 
 About / Status owns read-only deploy, API-origin, content status, and compact
 source credit display. It should use frontend build-time `VITE_SPELLBOOK_*`
-metadata plus the public `/api/status/app` summary; detailed `/api/status/db`
-provenance is operator-facing and should not be required for the public page.
+metadata plus the public `/api/status/app` summary. Workers Builds should
+export `WORKERS_CI_*` metadata into the `VITE_SPELLBOOK_*` variables during
+production builds; detailed `/api/status/db` provenance is operator-facing and
+should not be required for the public page.
 
 ## Contracts And API
 
