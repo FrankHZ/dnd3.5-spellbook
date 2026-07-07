@@ -18,12 +18,12 @@ function shouldSendVariant(pathname: string) {
   return pathname.startsWith("/api/spells");
 }
 
-function configuredApiBaseUrl() {
+export function getConfiguredApiBaseUrl() {
   return import.meta.env.VITE_API_BASE_URL?.trim().replace(/\/+$/, "") ?? "";
 }
 
 function withApiBaseUrl(relativeUrl: string) {
-  const baseUrl = configuredApiBaseUrl();
+  const baseUrl = getConfiguredApiBaseUrl();
   if (!baseUrl || !relativeUrl.startsWith("/")) return relativeUrl;
   return `${baseUrl}${relativeUrl}`;
 }

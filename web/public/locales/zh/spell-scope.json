@@ -7,5 +7,7 @@
   "labels.mechanics": "机制",
   "labels.rulebooks": "规则书",
   "labels.taxonomy": "分类",
-  "rulebooks.selected-summary_other": "{{count}}（设置）"
+  "rulebooks.settings-link": "设置",
+  "rulebooks.settings-prefix": "（",
+  "rulebooks.settings-suffix": "）"
 }

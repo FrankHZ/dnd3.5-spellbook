@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { useTranslation } from "react-i18next";
 
 import { SpellMetaBadge } from "./SpellMetaBadge";
@@ -104,10 +105,7 @@ export function buildSpellFilterScopeSummaryItems({
     items.push({
       key: "rulebooks",
       label: t("labels.rulebooks", { ns: "spell-scope" }),
-      value: t("rulebooks.selected-summary", {
-        count: rulebookCount,
-        ns: "spell-scope",
-      }),
+      value: String(rulebookCount),
       isActive: true,
     });
   }
@@ -166,6 +164,18 @@ export function SpellFilterScopeSummary({
             >
               {item.value}
             </span>
+            {item.key === "rulebooks" ? (
+              <span className="shrink-0 text-muted-foreground">
+                {t("rulebooks.settings-prefix")}
+                <Link
+                  to="/settings"
+                  className="underline-offset-2 hover:text-foreground hover:underline"
+                >
+                  {t("rulebooks.settings-link")}
+                </Link>
+                {t("rulebooks.settings-suffix")}
+              </span>
+            ) : null}
           </SpellMetaBadge>
         ))}
       </div>

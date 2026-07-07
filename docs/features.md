@@ -341,26 +341,34 @@ Key code:
 - `web/app/state/user-prefs-state.tsx`
 - `web/app/storage/userPrefs.ts`
 
-## About / Version
+## About / Status
 
-Users and operators can view compact build and content status from the app.
+Users and operators can view compact build, deployment, content, and source
+credit status from the app.
 
 Current behavior:
 
 - `/about` shows frontend build metadata from `VITE_SPELLBOOK_*` build-time
   variables
+- Status and Credits are separated into tabs so deployment diagnostics do not
+  compete with source acknowledgements
+- the page identifies the frontend hosting surface and the configured API
+  origin; local development reports same-origin `/api`
 - the page shows backend deploy metadata and a public content DB summary from
   `GET /api/status/app`
 - detailed runtime DB provenance remains operator-facing through
   `GET /api/status/db`
 - missing, local, or unavailable status data renders as a compact
   unavailable/local state instead of blocking the page
+- the page includes compact English and Chinese community source credits, with
+  detailed credit source notes under `docs/credits/`
 - the page is read-only and does not upload, activate, or mutate DB artifacts
 
 Key code:
 
 - `web/app/features/about/AboutVersionPage.tsx`
 - `web/app/features/about/build-metadata.ts`
+- `web/app/features/about/credits.ts`
 - `web/app/api/status.ts`
 - `server/src/routes/status.routes.ts`
 - `server/src/controllers/status.controller.ts`

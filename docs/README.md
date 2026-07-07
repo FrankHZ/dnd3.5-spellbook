@@ -81,6 +81,7 @@ baselines.
 - [i18n.md](./i18n.md): i18n workflow.
 - [harness.md](./harness.md): validation strategy.
 - [stable-backlog.md](./stable-backlog.md): deferred stable-version work.
+- [credits/](./credits/): source credit notes used by About / Status.
 - [public-repo-notes.md](./operations/public-repo-notes.md): public repo exclusions and
   publication cautions.
 - [releases/README.md](./releases/README.md): formal post-MVP release planning.

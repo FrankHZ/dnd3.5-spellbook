@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: implementation branch in progress: `codex/web-about-status-credits`.
 
 ## Purpose
 
@@ -46,6 +46,8 @@ without exposing private DB provenance.
   - build/deploy time
   - hosting surface, `Cloudflare Workers Static Assets`
 - Show the API origin the frontend is configured to call.
+- Show compact source credits for the English and Chinese community data
+  sources used by the app.
 - Show backend public version/status from `GET /api/status/app`.
 - Show public content DB status from the redacted status payload:
   - active read source
@@ -64,6 +66,7 @@ without exposing private DB provenance.
 - Do not add user accounts or admin controls.
 - Do not make About / Status a full observability dashboard.
 - Do not couple the page to Cloudflare APIs at runtime.
+- Do not turn source credits into a backend API or database contract.
 
 ## Current Facts
 
@@ -75,6 +78,8 @@ without exposing private DB provenance.
   operator verification.
 - The frontend currently expects same-origin `/api`; v1.0 should make the API
   origin explicit through `VITE_API_BASE_URL`.
+- Chinese CHM credits are recorded in `docs/credits/chm-chs.txt`.
+- English source attribution is recorded in `docs/credits/english-sources.md`.
 
 ## Plan
 
@@ -91,9 +96,9 @@ without exposing private DB provenance.
 ### Slice 2: Frontend Build And API Origin Display
 
 - Deliverable: About / Status shows frontend build metadata and configured API
-  origin.
+  origin, plus compact source credits.
 - Expected files: About route/components, build metadata helpers, locale JSON,
-  web tests.
+  credits docs, web tests.
 - Validation:
   - targeted web tests for metadata display and fallback states
   - production-like build with Workers environment values
@@ -126,6 +131,8 @@ without exposing private DB provenance.
 - The page shows the API origin the browser is using.
 - The page displays backend version/status from the public API.
 - The page displays public-safe content DB status and update time.
+- The page displays compact credits for IMarvinTPA, D&D Tools, and the Chinese
+  CHM translation source.
 - The page handles API failure and missing metadata without misleading users.
 - `GET /api/status/db` remains private by default in production.
 - English and Chinese UI text pass the existing i18n workflow.
@@ -136,6 +143,7 @@ without exposing private DB provenance.
 - Update this plan when About / Status release scope changes.
 - Update `docs/features.md` and `docs/frontend-map.md` for the final user-facing
   page behavior.
+- Update `docs/credits/` when source attribution changes.
 - Update `docs/modules/web.md`, `docs/modules/server.md`, and
   `docs/modules/contracts.md` when ownership or DTO contracts change.
 - Update `docs/operations/deployment.md` and `docs/modules/delivery.md` for
@@ -160,6 +168,14 @@ without exposing private DB provenance.
 
 ## Completion Notes
 
-Use this section only after implementation review. Keep it short and link to
-merged PRs, validation evidence, or release freeze snapshots instead of pasting
-logs.
+Implementation branch `codex/web-about-status-credits` owns the first About /
+Status release surface pass:
+
+- About / Status separates Status and Credits into tabs so deployment
+  diagnostics and source acknowledgements stay distinct.
+- The Status tab shows frontend hosting and configured API origin without
+  changing the public status API contract.
+- The Credits tab includes compact credits for IMarvinTPA, D&D Tools, and the
+  Chinese CHM translation source.
+- Source attribution notes live under `docs/credits/`, while the page keeps the
+  credits readable instead of becoming a full provenance document.

@@ -10,7 +10,6 @@ const en = {
   "labels.mechanics": "Mechanics",
   "labels.rulebooks": "Rulebooks",
   "labels.taxonomy": "Taxonomy",
-  "rulebooks.selected-summary": "{{count}} (Settings)",
 };
 
 function t(key: string, options?: { count?: number; ns: "spell-scope" }) {
@@ -54,7 +53,7 @@ describe("buildSpellFilterScopeSummaryItems", () => {
       ["taxonomy", "4", true],
       ["components", "2", true],
       ["mechanics", "5", true],
-      ["rulebooks", "3 (Settings)", true],
+      ["rulebooks", "3", true],
     ]);
   });
 
