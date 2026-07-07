@@ -81,7 +81,7 @@ Public UI surfaces should use the redacted content summary in
 
 In the v1.0 split frontend/API topology, production browser access to the API
 is cross-origin. Keep `SPELLBOOK_CORS_ORIGINS` explicit for the accepted
-Cloudflare Pages frontend origins; do not make production CORS permissive.
+Cloudflare Workers frontend origins; do not make production CORS permissive.
 
 ## Contracts
 

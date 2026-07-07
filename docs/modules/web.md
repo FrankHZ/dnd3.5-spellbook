@@ -64,7 +64,7 @@ components.
 
 API helpers should keep feature code on relative `/api/...` paths. The shared
 HTTP helper is responsible for prepending `VITE_API_BASE_URL` in Cloudflare
-Pages production builds.
+Workers production builds.
 
 If the backend contract changes, rebuild `contracts` and update the closest
 frontend API/helper tests before touching page UI.

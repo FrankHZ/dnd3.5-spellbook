@@ -63,8 +63,8 @@ The manual deploy workflow lives at:
 - `.github/workflows/deploy.yml`
 
 In v1.0, that workflow is a thin wrapper for backend API deploys only. It
-invokes the tracked remote backend deploy script; Cloudflare Pages owns normal
-frontend production deployment.
+invokes the tracked remote backend deploy script; Cloudflare Workers Builds
+owns normal frontend production deployment.
 
 Manual deploys run portable validation by default. Skipping validation is an
 emergency rollback option and should leave an explicit workflow warning. SSH
@@ -74,7 +74,7 @@ default.
 
 Deploy metadata for the About / Status page is owned here:
 
-- Cloudflare Pages may pass `VITE_SPELLBOOK_*` values into the static build
+- Cloudflare Workers Builds may pass `VITE_SPELLBOOK_*` values into the static build
 - backend deploys pass `SPELLBOOK_BACKEND_*` values to
   `deploy-backend.sh`
 - `deploy-backend.sh` writes non-secret backend metadata into
@@ -89,6 +89,10 @@ Nginx site configuration is also explicit operator work. Use the tracked
 `apply-nginx-site.sh` helper after syncing remote scripts when the API proxy
 baseline changes. Its default v1.0 mode is API-only; the old static frontend
 mode is an explicit legacy fallback.
+
+Frontend static asset deployment is configured in root `wrangler.jsonc`.
+The Worker serves `web/build/client` with SPA fallback routing; it does not run
+the Express API.
 
 If deployment behavior changes, change the tracked scripts and
 `docs/operations/deployment.md` first. The workflow should stay a trigger/orchestration

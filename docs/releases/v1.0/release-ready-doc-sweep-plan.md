@@ -31,7 +31,7 @@ updated their owning topic docs.
 ## Problem
 
 The v1.0 release changes the public deployment topology from the MVP-era
-single-origin model to Cloudflare Pages plus a dedicated API domain. Individual
+single-origin model to Cloudflare Workers Static Assets plus a dedicated API domain. Individual
 implementation branches should update their owning topic docs, but formal
 release readiness needs one final cross-doc sweep so current docs do not keep
 describing the old topology as current truth.
@@ -43,7 +43,7 @@ This should be a final quality gate, not another implementation bucket.
 - Verify canonical docs agree on the v1.0 release topology.
 - Remove or reframe current-truth wording that still describes MVP-era static
   frontend hosting on the origin server as the normal production model.
-- Ensure Cloudflare Pages frontend responsibilities are reflected in current
+- Ensure Cloudflare Workers frontend responsibilities are reflected in current
   docs.
 - Ensure `api.d20spellcodex.com` backend API responsibilities are reflected in
   current docs.
@@ -57,7 +57,7 @@ This should be a final quality gate, not another implementation bucket.
 ## Non-Goals
 
 - Do not add new runtime behavior.
-- Do not make this branch responsible for implementing Cloudflare Pages, API
+- Do not make this branch responsible for implementing Cloudflare Workers, API
   CORS/TLS, or About / Status changes.
 - Do not rewrite historical MVP snapshots except for navigation corrections.
 - Do not migrate canonical release docs out of the repository.
@@ -74,7 +74,7 @@ This should be a final quality gate, not another implementation bucket.
   of PR review, CI, freeze snapshots, or agent-loaded repo context. If used, it
   should summarize and link back to repo docs.
 - v1.0 plans the production split:
-  - Cloudflare Pages frontend at `https://d20spellcodex.com`
+  - Cloudflare Workers frontend at `https://d20spellcodex.com`
   - backend API at `https://api.d20spellcodex.com`
   - origin server focused on Express/API, SQLite/content DB, DB update scripts,
     and Nginx API reverse proxying
@@ -104,7 +104,7 @@ This should be a final quality gate, not another implementation bucket.
 ### Slice 3: Operations And Module Ownership Sweep
 
 - Deliverable: verify `docs/operations/*` and `docs/modules/*` agree on:
-  - Cloudflare Pages owns production frontend delivery
+  - Cloudflare Workers owns production frontend delivery
   - `api.d20spellcodex.com` is the public API domain
   - backend deploy remains remote/server owned
   - DB updates remain operator-owned
@@ -145,7 +145,7 @@ This should be a final quality gate, not another implementation bucket.
 
 - Root README, docs index, roadmap, AGENTS.md, features, design, operations
   docs, module docs, and release README agree on the v1.0 topology.
-- Canonical docs describe Cloudflare Pages as the production frontend host.
+- Canonical docs describe Cloudflare Workers Static Assets as the production frontend host.
 - Canonical docs describe `api.d20spellcodex.com` as the production API domain.
 - Canonical docs describe the origin server as backend/API/content/DB-update
   infrastructure, not the normal production static frontend host.

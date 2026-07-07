@@ -8,7 +8,7 @@ their responsibilities clear.
 
 ## Deployment And Remote Host
 
-- [./deployment.md](./deployment.md): v1.0 Cloudflare Pages frontend,
+- [./deployment.md](./deployment.md): v1.0 Cloudflare Workers frontend,
   backend API deploy workflow, manual DB activation, and remote verification.
 - [bootstrap-remote.md](./bootstrap-remote.md): one-time remote host bootstrap.
 - [../deployment-scripts/](../deployment-scripts/): tracked deployment helper

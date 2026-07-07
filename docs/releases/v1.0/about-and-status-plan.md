@@ -12,7 +12,7 @@ Status: planned.
 ## Purpose
 
 Promote the current About / Version surface into a formal About / Status page
-for the split Cloudflare Pages frontend and API-domain backend topology.
+for the split Cloudflare Workers frontend and API-domain backend topology.
 
 The page should let a user or operator answer: which frontend build is loaded,
 which API origin it is calling, which backend version responded, which content
@@ -33,18 +33,18 @@ DB state is active, and when those pieces were updated.
 ## Problem
 
 The current About / Version page was built for the MVP topology. After the
-frontend moves to Cloudflare Pages and the API moves behind
+frontend moves to Cloudflare Workers Static Assets and the API moves behind
 `api.d20spellcodex.com`, the page needs to report a split system clearly
 without exposing private DB provenance.
 
 ## Goals
 
-- Show frontend build information from the Pages build:
+- Show frontend build information from the Workers build:
   - version label
   - commit SHA / short SHA
   - ref or branch
   - build/deploy time
-  - hosting surface, `Cloudflare Pages`
+  - hosting surface, `Cloudflare Workers Static Assets`
 - Show the API origin the frontend is configured to call.
 - Show backend public version/status from `GET /api/status/app`.
 - Show public content DB status from the redacted status payload:
@@ -96,7 +96,7 @@ without exposing private DB provenance.
   web tests.
 - Validation:
   - targeted web tests for metadata display and fallback states
-  - production-like build with Pages environment values
+  - production-like build with Workers environment values
 
 ### Slice 3: Backend And Content Status Display
 
@@ -114,15 +114,15 @@ without exposing private DB provenance.
 - Expected files: `docs/operations/deployment.md`,
   `docs/modules/delivery.md`, release freeze checklist or `FREEZE.md`.
 - Validation:
-  - `https://d20spellcodex.com/about` loads through Pages
+  - `https://d20spellcodex.com/about` loads through Workers
   - About / Status calls `https://api.d20spellcodex.com`
-  - frontend build info matches the Pages deployment
+  - frontend build info matches the Workers deployment
   - backend status matches the expected deployed backend commit/version
   - public content status matches the accepted DB update state
 
 ## Acceptance Criteria
 
-- About / Status clearly identifies the Cloudflare Pages frontend.
+- About / Status clearly identifies the Cloudflare Workers frontend.
 - The page shows the API origin the browser is using.
 - The page displays backend version/status from the public API.
 - The page displays public-safe content DB status and update time.
@@ -144,7 +144,7 @@ without exposing private DB provenance.
 
 ## Open Questions
 
-- Should the page display a Cloudflare Pages deployment id if it is available
+- Should the page display a Cloudflare Workers deployment id if it is available
   through build-time environment variables, or keep commit/ref/build time as the
   stable public identifiers?
 - Should public content status display exact counts or a smaller "content DB

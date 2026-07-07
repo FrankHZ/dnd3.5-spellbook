@@ -354,7 +354,7 @@ file as `DEPLOY_SSH_ALIAS=...` instead of hardcoding it in docs.
 - backend running
 - `/opt/spellbook/data` exists
 - DB files owned by spellbook
-- Cloudflare Pages frontend accessible
+- Cloudflare Workers frontend accessible
 - `/api/rulebooks` works
 - No service bound publicly on 3000
 
@@ -369,7 +369,7 @@ sudo ss -ltnp
 ```text
 Internet
    ↓
-Cloudflare Pages (frontend)
+Cloudflare Workers Static Assets (frontend)
    ↓
 api.d20spellcodex.com
    ↓
@@ -386,7 +386,7 @@ After this point:
 
 - Use `ssh remote "./deploy-backend.sh"` for backend code deploys
 - Use `ssh remote "./update-db.sh"` for database updates
-- Use Cloudflare Pages Git integration for frontend deploys
+- Use Cloudflare Workers Builds Git integration for frontend deploys
 
 ## Security Baseline And Deferred Hardening
 

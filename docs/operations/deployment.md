@@ -4,7 +4,7 @@ This document describes the current v1.0 deployment workflow used for the projec
 
 It is intentionally simple and optimized for the current stage of the project:
 
-- Cloudflare Pages frontend delivery
+- Cloudflare Workers Static Assets frontend delivery
 - existing single backend/API host
 - low traffic
 - explicit manual control
@@ -12,7 +12,7 @@ It is intentionally simple and optimized for the current stage of the project:
 
 Production topology:
 
-- `https://d20spellcodex.com`: Cloudflare Pages frontend
+- `https://d20spellcodex.com`: Cloudflare Workers Static Assets frontend
 - `https://api.d20spellcodex.com`: Cloudflare-proxied API domain reaching the
   existing Nginx/Express backend host
 - SQLite/content DB files remain operator-owned on the backend host
@@ -77,13 +77,14 @@ The workflow injects deploy metadata for the About / Status page:
   which writes the non-secret metadata into `/etc/default/spellbook-api` before
   restarting the service
 
-Cloudflare Pages owns normal production frontend builds and deployment.
-Configure Cloudflare Pages through Git integration with:
+Cloudflare Workers Builds owns normal production frontend builds and deployment.
+Configure Workers Builds through Git integration with:
 
 - root directory: repository root
 - install command: `npm ci`
 - build command: `npm run build:contracts && npm run -w web build`
-- build output directory: `web/build/client`
+- deploy command: `npx wrangler deploy`
+- static asset config: root `wrangler.jsonc`
 - environment variables:
   - `NODE_VERSION=24`
   - `VITE_API_BASE_URL=https://api.d20spellcodex.com`
@@ -201,7 +202,7 @@ Current runtime stack:
 - Nginx as the API reverse proxy on the backend host
 - Express backend managed by `systemd`
 - SQLite databases stored as local files
-- React frontend served by Cloudflare Pages
+- React frontend served by Cloudflare Workers Static Assets
 
 ## Server Layout
 
@@ -354,7 +355,7 @@ Production CORS is explicit. If `SPELLBOOK_CORS_ORIGINS` is unset in
 production, browser requests from arbitrary external origins do not receive
 `Access-Control-Allow-Origin`.
 
-Use a comma-separated allowlist for the Cloudflare Pages frontend origins:
+Use a comma-separated allowlist for the Cloudflare Workers frontend origins:
 
 ```dotenv
 SPELLBOOK_CORS_ORIGINS=https://d20spellcodex.com,https://www.d20spellcodex.com
@@ -382,23 +383,24 @@ sudo systemctl reload nginx
 
 ## Frontend Deployment
 
-Cloudflare Pages owns normal production frontend deployment.
+Cloudflare Workers Builds owns normal production frontend deployment.
 
-### Cloudflare Pages Build
+### Cloudflare Workers Build
 
 ```bash
 npm ci
 npm run build:contracts
 npm run -w web build
+npx wrangler deploy
 ```
 
-Pages should publish:
+Root `wrangler.jsonc` publishes:
 
 ```text
 web/build/client
 ```
 
-Production Pages environment variables:
+Production Workers Builds environment variables:
 
 ```dotenv
 NODE_VERSION=24
@@ -587,7 +589,7 @@ These should remain true unless the deployment model is deliberately changed:
 - the backend environment is defined by `/etc/default/spellbook-api`
 - the backend binds only to `127.0.0.1:3000`
 - Nginx is the only public service on the backend host
-- normal production frontend delivery is owned by Cloudflare Pages
+- normal production frontend delivery is owned by Cloudflare Workers
 - backend builds use plain `tsc`; server package imports must resolve through
   `server/package.json`
 - deployment remains explicit and manual
@@ -647,7 +649,7 @@ Check:
 ### UI Shows i18n Keys
 
 If UI text renders as keys such as `page.title` or `nav.about`, first check the
-Cloudflare Pages static locale files rather than restarting `spellbook-api`:
+Cloudflare Workers static locale files rather than restarting `spellbook-api`:
 
 ```bash
 curl -i https://d20spellcodex.com/locales/en/about.json
@@ -658,7 +660,8 @@ curl -i https://d20spellcodex.com/locales/en-US/about.json
 Existing locale files should return `200` with `Content-Type:
 application/json`. Missing locale files should return `404`; they should not
 return the SPA `index.html`. If a missing `/locales/...` path returns HTML on
-Cloudflare Pages, review the Pages routing/fallback behavior and build output.
+Cloudflare Workers, review the Workers Static Assets routing/fallback behavior
+and build output.
 If using the legacy single-origin fallback, update the Nginx site config so
 `location /locales/ { try_files $uri =404; }` appears before the SPA fallback
 location.
