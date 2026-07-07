@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: implementation branch in progress: `codex/docs-v1-0-release-sweep`.
+Status: ready for review on implementation branch `codex/docs-v1-0-release-sweep`.
 
 ## Purpose
 

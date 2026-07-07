@@ -1,12 +1,12 @@
 ---
 name: version-plan-doc
-description: Shape docs/mvp/v* version planning docs in dnd3.5-spellbook. Use when creating, updating, reviewing, or assigning version README files, integrated plans, child plan docs, roadmap links, acceptance/freeze planning, or deciding whether an implementation branch should touch integrated-plan.md.
+description: Shape version and release planning docs in dnd3.5-spellbook. Use when creating, updating, reviewing, or assigning docs/mvp/v* or docs/releases/* README files, integrated plans, child plan docs, roadmap links, acceptance/freeze planning, or deciding whether an implementation branch should touch integrated-plan.md.
 ---
 
 # Version Plan Doc
 
-Use this skill to keep version planning docs useful without turning every
-implementation branch into a cross-doc synchronization exercise.
+Use this skill to keep version and release planning docs useful without turning
+every implementation branch into a cross-doc synchronization exercise.
 
 ## Core Rule
 
@@ -16,7 +16,7 @@ completion notes.
 
 Update an integrated plan only when one of these changes:
 
-- version scope
+- version or release scope
 - delivery sequence
 - ownership boundary between child plans
 - cross-plan conflict or decision
@@ -31,15 +31,20 @@ topic docs, and `docs/roadmap.md` only when active ordering changes.
 - `docs/mvp/vX.Y/integrated-plan.md`: cross-plan sequencing and conflict
   review; not a status ledger.
 - `docs/mvp/vX.Y/*-plan.md`: child plan owned by one domain or deliverable.
+- `docs/releases/vX.Y/README.md`: release folder map, release boundary, track
+  order, and acceptance criteria.
+- `docs/releases/vX.Y/*-plan.md`: release child plan owned by one domain or
+  deliverable.
 - `docs/roadmap.md`: current next-work order after a pause.
 - `docs/mvp/vX.Y/acceptance-checklist.md`: acceptance evidence while closing a
   version.
-- `docs/mvp/vX.Y/FREEZE.md`: as-built shipped snapshot after acceptance.
+- `docs/mvp/vX.Y/FREEZE.md` or `docs/releases/vX.Y/FREEZE.md`: as-built
+  shipped snapshot after acceptance.
 
 ## New Plan Workflow
 
-1. Read `docs/roadmap.md`, `docs/mvp/README.md`, and the target version
-   `README.md`.
+1. Read `docs/roadmap.md`, the owning area README (`docs/mvp/README.md` or
+   `docs/releases/README.md`), and the target version/release `README.md`.
 2. For child plans, copy `docs/templates/version-plan.md` and fill only the
    sections that matter.
 3. Put the plan maintenance rule at the top of new child plans.
@@ -81,9 +86,9 @@ Use `docs/templates/version-plan.md` for new child plans. If a new document is
 an integrated plan or version README, keep the same maintenance rule but adapt
 the body to the doc role above.
 
-Use `docs/templates/acceptance-checklist.md` when creating version acceptance
-checklists. Use `docs/templates/freeze-snapshot.md` when preparing a new
-freeze snapshot draft.
+Use `docs/templates/acceptance-checklist.md` when creating version or release
+acceptance checklists. Use `docs/templates/freeze-snapshot.md` when preparing a
+new freeze snapshot draft.
 
 Operational and data workflow links now live under `docs/operations/`, for
 example `docs/operations/deployment.md` and

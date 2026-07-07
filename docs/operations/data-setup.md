@@ -152,10 +152,10 @@ server/db/app-state/
 It should remain separate from generated content so future user data can be
 preserved independently.
 
-## Current MVP DB Policy
+## Current Local DB Policy
 
-For the current MVP stage, the content DB is treated as a rebuildable local
-artifact.
+For the current local/release stage, the content DB is treated as a rebuildable
+local artifact.
 
 The practical rule is:
 
@@ -407,9 +407,9 @@ After that, the backend can use:
 - The content DB is the Prisma-managed local database for app-owned content.
 - The app-state DB is the Prisma-managed local database for future user-owned
   state.
-- For the current MVP, content DB rebuilds are expected to start from a fresh
-  reset rather than incremental local preservation.
-- The current MVP content population path uses import commands, not the Prisma
+- For the current local workflow, content DB rebuilds are expected to start
+  from a fresh reset rather than incremental local preservation.
+- The current content population path uses import commands, not the Prisma
   seed command.
 - Deployment copies database files after they exist locally; deployment is not
   the step that creates the content DB schema.

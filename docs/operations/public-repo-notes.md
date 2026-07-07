@@ -33,9 +33,10 @@ That license does not automatically apply to third-party game content, imported 
 
 ## Project Status
 
-The current public documentation baseline is still MVP-oriented:
+The current public repository baseline is release-oriented but still
+operator-managed:
 
-- manual deployment
+- manual backend/API and database deployment
 - local data preparation
 - intentionally deferred stable-version hardening and rollback work
 

@@ -34,9 +34,9 @@ style MVP notes for ordinary follow-up work. Historical MVP docs under
 `docs/mvp/` should be treated as release history, not the day-to-day working
 surface for agents.
 
-## MVP Convention
+## Current Release Convention
 
-For the current MVP line:
+For the current v1.0 pre-stable release line:
 
 - deployment is manual
 - content DB rebuilds normally start from scratch

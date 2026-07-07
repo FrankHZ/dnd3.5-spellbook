@@ -139,7 +139,8 @@ Copy-Item .env.example .env
 pwsh -NoLogo -NoProfile -File docs/deployment-scripts/sync-remote-scripts.ps1
 ```
 
-There is no automatic sync for these files in the current MVP workflow.
+There is no automatic sync for these files in the current operator-managed
+workflow.
 
 ## Nginx Site Config
 
