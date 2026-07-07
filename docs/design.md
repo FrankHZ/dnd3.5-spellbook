@@ -80,18 +80,61 @@ Keep the existing page classes as the first layout vocabulary:
 - `.page-wide` only when a naturally wide tool, such as prepared spell review,
   needs more horizontal room.
 
-For Browse, Search, and Spell Detail, preserve the established desktop pattern:
+For Browse/Search and Spell Detail, preserve the established side-column
+desktop patterns through shared CSS helpers:
 
 ```tsx
-<div className="grid gap-4 md:grid-cols-[320px_1fr]">
+<div className="app-filter-layout">...</div>
+<div className="app-fixed-side-layout">...</div>
 ```
 
-Use the 320px left column for controls or metadata. Use the main column for
-results, rule text, or the work surface. On mobile, the same areas should stack
-without requiring hidden duplicate flows.
+Use `app-filter-layout` when the left filter component owns its expanded and
+collapsed width. Use `app-fixed-side-layout` for 320px metadata/control columns.
+Use the main column for results, rule text, or the work surface. On mobile, the
+same areas should stack without requiring hidden duplicate flows.
 
 Do not introduce landing-page sections, hero blocks, oversized headings, or
 decorative page bands for core app screens.
+
+For simple page titles, use the shared `PageHeader` component so settings,
+collections, about/status, and similar utility screens keep the same title,
+description, and action alignment. Feature-specific reading surfaces such as
+Spell Detail may keep their own header when rule text, local actions, or
+metadata hierarchy need a custom reading layout.
+
+For empty, loading, validation, and error states on primary pages, use the
+shared `StatusCard` component instead of hand-rolling one-off `CardHeader`
+blocks. Keep status copy concise and put recovery actions in the card action
+area so Browse, Search, Spell Detail, and collection workflows present these
+states consistently.
+
+For page-level actions in headers, use normal small buttons (`size="sm"`) so
+import/export, destructive collection actions, and navigation controls remain
+legible. Reserve extra-small and icon-only buttons for dense table rows,
+segmented toolbars, and repeated inline controls where compactness is part of
+the workflow.
+
+For spell metadata badges, keep the vocabulary small and semantic. Use
+`SpellMetaBadge` for source labels, taxonomy labels such as school/subschool,
+descriptors, and active filter-scope chips. Use `SpellComponentBadge` only for
+spell components. This keeps Browse/Search cards, scope summaries, and Spell
+Detail from inventing separate badge treatments for the same metadata roles.
+
+For Browse/Search filter sidebars, use the shared collapsible card wrapper. The
+sidebar stays open by default on desktop and can collapse to a narrow rail that
+matches the prepared-spellbook sidebar pattern. On mobile, keep the filter
+controls as a top-of-page card that defaults collapsed so users can reach
+results without scrolling past every filter. Reserve sheet/drawer behavior for
+secondary filter panels such as Advanced filters.
+
+For side-column cards such as Browse/Search filters, prepared-spellbook filters,
+and Spell Detail overview metadata, use the shared `app-side-card`,
+`app-side-card-header`, and `app-side-card-content` CSS helpers so outer padding
+and side-card density stay aligned across pages.
+
+For common side-column page skeletons, prefer the shared `app-filter-layout`,
+`app-fixed-side-layout`, and `app-prepared-layout` CSS helpers over repeating
+breakpoint grid/flex column definitions in feature files.
 
 ## Information Density
 
@@ -233,8 +276,13 @@ orientation, while the main column should prioritize spell text and related
 references.
 
 Keep the desktop header near the rule text and the mobile header above the
-stacked content. Related spell references should stay secondary to the current
-spell description.
+stacked content. The header should focus on the spell name, short description,
+and local spell actions. Source, school/subschool, and descriptor badges belong
+in the sidebar overview with the other spell metadata instead of competing with
+the title.
+
+Related spell references should stay secondary to the current spell
+description.
 
 ### Spellbooks And Favorites
 

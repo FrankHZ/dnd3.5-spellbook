@@ -32,6 +32,11 @@ Shared filter components:
 - taxonomy filters: `web/app/features/spells/TaxonomyFilterSelector.tsx`
 - component filters: `web/app/features/spells/ComponentFilterSelector.tsx`
 - mechanics filters: `web/app/features/spells/MechanicsFilterSelector.tsx`
+- collapsible filter sidebar card:
+  `web/app/features/spells/FilterSidebarCard.tsx`
+- spell metadata badges:
+  `web/app/features/spells/SpellMetaBadge.tsx`,
+  `web/app/features/spells/SpellComponentBadge.tsx`
 - URL/filter helpers: `web/app/features/spells/taxonomy-filter-state.ts`
 
 ### Spell Detail
@@ -42,7 +47,8 @@ Shared filter components:
 
 Purpose:
 
-- render the detailed spell view and related reference context
+- render the detailed spell view, sidebar metadata overview, and related
+  reference context
 
 ### Collections
 
@@ -80,10 +86,15 @@ Purpose:
 ### Layout
 
 - top bar: `web/app/layout/TopBar.tsx`
+- shared page and side-column CSS helpers: `web/app/app.css`
+  (`page-*`, `app-side-card*`, `app-filter-layout`,
+  `app-fixed-side-layout`, `app-prepared-layout`)
 
 ### Shared Components
 
 - reusable app components: `web/app/components/`
+- simple page titles/actions: `web/app/components/PageHeader.tsx`
+- shared empty/loading/error states: `web/app/components/StatusCard.tsx`
 - local shadcn wrappers: `web/app/components/ui/`
 
 ### API Client

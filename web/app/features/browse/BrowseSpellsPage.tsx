@@ -6,14 +6,11 @@ import { ApiError } from "~/api/http";
 import { getSpellsByLevel } from "~/api/spells";
 import Pager from "~/components/Pager";
 import { SpellCard } from "~/components/SpellCard";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from "~/components/ui/card";
+import { StatusCard } from "~/components/StatusCard";
+import { Card, CardContent } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { AdvancedSpellFiltersPanel } from "~/features/spells/AdvancedSpellFiltersPanel";
+import { FilterSidebarCard } from "~/features/spells/FilterSidebarCard";
 import { SpellFilterScopeSummary } from "~/features/spells/SpellFilterScopeSummary";
 import {
   countComponentFilters,
@@ -103,31 +100,29 @@ export default function BrowsePage() {
 
   return (
     <div className="page-side">
-      <div className="grid gap-4 md:grid-cols-[320px_1fr]">
-        <Card className="gap-0 self-start">
-          <CardContent className="space-y-4">
-            <BrowseOptionsToggle
-              groupMode={groupMode}
-              onGroupModeChange={setGroupMode}
-              cardDetailMode={spellCardDetails}
-              onCardDetailModeChange={setSpellCardDetails}
-            />
-            <Separator />
-            <ClassAndDomainSelector
-              classIds={classIds}
-              domainIds={domainIds}
-              onChangeClasses={setClassIds}
-              onChangeDomains={setDomainIds}
-            />
-            <Separator />
-            <LevelSelector value={level} onChange={setLevel} />
-            <Separator />
-            <AdvancedSpellFiltersPanel
-              value={filters}
-              onApply={setNormalizedFilters}
-            />
-          </CardContent>
-        </Card>
+      <div className="app-filter-layout">
+        <FilterSidebarCard>
+          <BrowseOptionsToggle
+            groupMode={groupMode}
+            onGroupModeChange={setGroupMode}
+            cardDetailMode={spellCardDetails}
+            onCardDetailModeChange={setSpellCardDetails}
+          />
+          <Separator />
+          <ClassAndDomainSelector
+            classIds={classIds}
+            domainIds={domainIds}
+            onChangeClasses={setClassIds}
+            onChangeDomains={setDomainIds}
+          />
+          <Separator />
+          <LevelSelector value={level} onChange={setLevel} />
+          <Separator />
+          <AdvancedSpellFiltersPanel
+            value={filters}
+            onApply={setNormalizedFilters}
+          />
+        </FilterSidebarCard>
 
         <div className="space-y-3">
           <SpellFilterScopeSummary
@@ -142,41 +137,26 @@ export default function BrowsePage() {
           />
 
           {!hasValidSelection && (
-            <Card className="gap-0">
-              <CardHeader className="gap-1 py-1">
-                <CardDescription>
-                  {t("validation.choose-scope-and-level")}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
+            <StatusCard description={t("validation.choose-scope-and-level")}>
                 <ul className="list-disc pl-5 text-sm text-muted-foreground">
                   {validationMessages.map((message) => (
                     <li key={message}>{message}</li>
                   ))}
                 </ul>
-              </CardContent>
-            </Card>
+            </StatusCard>
           )}
 
           {hasValidSelection && errorMessage && (
-            <Card className="gap-0">
-              <CardHeader className="gap-1 py-1">
-                <CardDescription>{errorMessage}</CardDescription>
-              </CardHeader>
-            </Card>
+            <StatusCard description={errorMessage} />
           )}
 
           {hasValidSelection &&
             !errorMessage &&
             !browseQuery.isLoading &&
             !hasSpellData && (
-              <Card className="gap-0">
-                <CardHeader className="gap-1">
-                  <CardDescription>
-                    {t("results.empty-for-level", { level })}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
+              <StatusCard
+                description={t("results.empty-for-level", { level })}
+              />
             )}
 
           {hasValidSelection && hasSpellData && (

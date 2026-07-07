@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { PageHeader } from "~/components/PageHeader";
 import { cn } from "~/lib/utils";
 import { getFrontendVersionMetadata } from "./build-metadata";
 
@@ -78,11 +79,11 @@ function VersionSection({
 
   return (
     <Card className="gap-0">
-      <CardHeader className="gap-1 pb-3">
+      <CardHeader className="gap-1 py-3">
         <CardTitle className="text-base">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         <div className="grid gap-2 sm:grid-cols-2">
           <StatusField
             label={t("fields.version-label")}
@@ -146,11 +147,11 @@ function DatabaseSection({
 
   return (
     <Card className="gap-0">
-      <CardHeader className="gap-1 pb-3">
+      <CardHeader className="gap-1 py-3">
         <CardTitle className="text-base">{t("db.title")}</CardTitle>
         <CardDescription>{t("db.description")}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 pt-0">
         {isLoading ? (
           <CardDescription>{t("common.loading")}</CardDescription>
         ) : isError || !data ? (
@@ -174,21 +175,24 @@ export default function AboutVersionPage() {
 
   return (
     <div className="page-single">
-      <div className="space-y-1 px-1">
-        <h2 className="text-lg font-semibold">{t("page.title")}</h2>
-        <div className="text-sm text-muted-foreground">
-          {t("page.description")}
-        </div>
-        <a
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-          href={REPOSITORY_URL}
-          rel="noreferrer"
-          target="_blank"
-        >
-          {t("page.repository")}
-          <ExternalLink className="size-3.5" aria-hidden="true" />
-        </a>
-      </div>
+      <PageHeader
+        title={t("page.title")}
+        description={
+          <>
+            {t("page.description")}
+            <br />
+            <a
+              className="inline-flex items-center gap-1.5 text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              href={REPOSITORY_URL}
+              rel="noreferrer"
+              target="_blank"
+            >
+              {t("page.repository")}
+              <ExternalLink className="size-3.5" aria-hidden="true" />
+            </a>
+          </>
+        }
+      />
 
       <VersionSection
         title={t("frontend.title")}

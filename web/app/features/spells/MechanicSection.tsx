@@ -20,11 +20,11 @@ function Field({
   translateNote?: (key: MechanicDetailNoteKey) => string;
 }) {
   return (
-    <div className="grid gap-1 border-b border-border/70 py-1.5 last:border-b-0 sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:gap-3">
-      <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+    <div className="grid grid-cols-[6rem_minmax(0,1fr)] items-baseline gap-2 border-b border-border/70 py-1.5 last:border-b-0">
+      <dt className="text-xs font-medium leading-5 text-muted-foreground">
         {label}
       </dt>
-      <dd className="min-w-0 text-sm leading-5 text-foreground/85">
+      <dd className="min-w-0 break-words text-sm leading-5 text-foreground/85">
         <span>{value && value.trim() ? value : "—"}</span>
         {notes.length > 0 && noteLabel && translateNote && (
           <span className="mt-1 block text-xs leading-5 text-muted-foreground">

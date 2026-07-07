@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: ready for review in `codex/design-ui-ux-cohesion`.
 
 ## Purpose
 
@@ -148,7 +148,70 @@ non-blocking work discovered during the branch. Keep each item short, explain
 why it is outside the current acceptance gate, and move any real release
 blocker back into `Acceptance Criteria` instead.
 
+- Full component-library extraction remains out of scope. This pass may add
+  small shared app components when they remove visible inconsistency, but it
+  should not turn into a design-system documentation project.
+- A fuller design-system catalog for badges, pills, buttons, headers, and
+  dense workflow rows should be a later design-system task. The current branch
+  only normalizes repeated visible inconsistencies.
+- A visual-regression screenshot gallery for Browse, Search, Spell Detail,
+  collections, prepared spells, settings, and about/status would be useful
+  after v3.10, but it is outside this manual smoke-test closeout.
+
 ## Completion Notes
 
-Use this section only after implementation review. Keep it short and link to
-merged PRs, validation evidence, or freeze snapshots instead of pasting logs.
+Implementation branch:
+
+- Added `PageHeader` for simple page titles, descriptions, and actions across
+  settings, collections, and about/status surfaces.
+- Aligned Spell Detail loading with the same `.page-side` shell as the loaded
+  detail page.
+- Tightened Advanced filters footer layout into a reset-left/actions-right
+  action bar that still stacks on mobile.
+- Made Browse/Search display toggles more resistant to longer localized labels.
+- Moved the Advanced filters sheet to open from the left, matching its sidebar
+  trigger location, and replaced the Browse/Search filter card with a shared
+  collapsible card sidebar. The sidebar is open by default on desktop,
+  collapses to a prepared-style narrow rail when hidden, and defaults collapsed
+  as a top-of-page card on mobile so Advanced filters remain the only
+  drawer-like filter surface.
+- Aligned the prepared-spellbook class/domain sidebar to the same collapsible
+  card/rail pattern, keeping its selected and candidate lists as sections inside
+  the sidebar card instead of separate nested cards.
+- Added shared side-column CSS helpers in `web/app/app.css` for side-card
+  padding, filter/detail/prepared layouts, and sidebar scroll constraints so
+  Browse/Search, Spell Detail, and prepared workflows do not repeat breakpoint
+  layout classes.
+- Added a shared `StatusCard` for empty, loading, validation, and error states
+  across Browse, Search, Spell Detail, and collection workflows.
+- Made spellbook index cards whole-card links with consistent hover and focus
+  affordances.
+- Normalized spellbook/prepared page-header actions to small buttons instead of
+  extra-small controls, keeping compact buttons for dense toolbars and rows.
+- Added `SpellMetaBadge` for source, taxonomy, descriptor, and active-scope
+  metadata so Browse/Search cards, scope summaries, and Spell Detail share one
+  badge vocabulary alongside the existing component badge.
+- Moved Spell Detail source, taxonomy, and descriptor metadata into a sidebar
+  overview section so the detail header stays focused on the spell name,
+  summary, and actions.
+- Tightened Spell Detail mechanics metadata rows so field labels and values
+  align cleanly in the 320px sidebar and mobile stacked layout.
+- Tightened prepared-spell class/domain sidebar card headers, dense row
+  actions, and class/domain type pills so the prepared workflow matches the
+  shared compact card rhythm.
+- Aligned About/Version card headers and content spacing with the shared
+  settings/status card rhythm.
+- Updated `docs/design.md` and `docs/frontend-map.md` with the small shared
+  page-header, status-card, side-card/layout, and spell metadata badge
+  patterns.
+
+Validation:
+
+- `npm run typecheck:web`
+- `npm run i18n:check`
+- `npm run -w web test -- --run`
+- `npm run -w web build`
+- `git diff --check`
+- Browser smoke on Browse, Search, Spell Detail, collections, prepared spells,
+  settings, and about/status at desktop and mobile widths; Advanced filters
+  opened on desktop and mobile without horizontal overflow.

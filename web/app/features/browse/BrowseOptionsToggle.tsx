@@ -27,8 +27,11 @@ export function BrowseOptionsToggle({
         label={t("options.show-card-details")}
       />
       <label className="flex items-center justify-between gap-3 text-sm">
-        <span className="font-medium text-foreground">{t("options.group-by-level")}</span>
+        <span className="min-w-0 font-medium text-foreground">
+          {t("options.group-by-level")}
+        </span>
         <Switch
+          className="shrink-0"
           checked={groupMode === "grouped"}
           onCheckedChange={(checked) =>
             onGroupModeChange(checked ? "grouped" : "flat")

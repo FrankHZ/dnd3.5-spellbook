@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { PageHeader } from "~/components/PageHeader";
 import { useCollections } from "~/state/collections-state";
 import { getCollectionDisplayName } from "./collection-display-name";
 
@@ -15,36 +16,35 @@ export default function SpellbooksIndexPage() {
   const { t: tDefault } = useTranslation("collections-default");
   return (
     <div className="page-single">
-      <div className="space-y-1 px-1">
-        <h1 className="text-lg font-semibold">{t("books.title")}</h1>
-        <div className="text-sm text-muted-foreground">
-          {t("books.local-only-description")}
-        </div>
-      </div>
+      <PageHeader
+        title={t("books.title")}
+        description={t("books.local-only-description")}
+      />
 
       <div className="grid gap-3 sm:grid-cols-2">
         {collections.books.map((b) => (
-          <Card
+          <Link
             key={b.id}
-            className="gap-0 p-1 transition-colors hover:bg-muted/30"
+            to={`/spellbooks/${b.id}`}
+            className="block rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
-            <CardHeader className="gap-1 py-3">
-              <CardTitle className="text-base">
-                <Link to={`/spellbooks/${b.id}`} className="hover:underline">
+            <Card className="h-full gap-0 p-1 transition-colors hover:bg-muted/30">
+              <CardHeader className="gap-1 py-3">
+                <CardTitle className="text-base">
                   {getCollectionDisplayName(b, tDefault)}
-                </Link>
-              </CardTitle>
-              <CardDescription>
-                {b.kind == "prepared"
-                  ? t("books.entry-summary", {
-                      entryCount: b.entries.length,
-                    })
-                  : t("books.spell-summary", {
-                      spellCount: b.spellIds.length,
-                    })}
-              </CardDescription>
-            </CardHeader>
-          </Card>
+                </CardTitle>
+                <CardDescription>
+                  {b.kind == "prepared"
+                    ? t("books.entry-summary", {
+                        entryCount: b.entries.length,
+                      })
+                    : t("books.spell-summary", {
+                        spellCount: b.spellIds.length,
+                      })}
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>

@@ -140,6 +140,9 @@ Current behavior:
 - missing spell ids return not found
 - Chinese content overlays are applied when available
 - spell names follow the Chinese Display setting for English comparison text
+- source, school/subschool, and descriptor metadata are grouped in the detail
+  sidebar overview, while the page header focuses on the spell name, short
+  description, and local actions
 - detail pages render related spell references when matches exist
 - related results are split into same-name matches and variant-form matches
 - related result ordering is deterministic by source rulebook abbreviation,

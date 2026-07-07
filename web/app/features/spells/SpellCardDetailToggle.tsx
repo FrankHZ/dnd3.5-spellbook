@@ -12,10 +12,9 @@ export function SpellCardDetailToggle({
 }) {
   return (
     <label className="flex items-center justify-between gap-3 text-sm">
-      <span className="font-medium text-foreground">
-        {label}
-      </span>
+      <span className="min-w-0 font-medium text-foreground">{label}</span>
       <Switch
+        className="shrink-0"
         checked={mode === "full"}
         onCheckedChange={(checked) =>
           onModeChange(checked ? "full" : "summary")

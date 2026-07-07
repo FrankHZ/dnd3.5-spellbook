@@ -1,6 +1,7 @@
 import ClassSettings from "~/features/settings/ClassSettings";
 import DisplaySettings from "~/features/settings/DisplaySettings";
 import RulebookSelector from "~/features/settings/RulebookSelector";
+import { PageHeader } from "~/components/PageHeader";
 import { useTranslation } from "react-i18next";
 
 export default function SettingsPage() {
@@ -8,12 +9,7 @@ export default function SettingsPage() {
 
   return (
     <div className="page-single">
-      <div className="space-y-1 px-1">
-        <h2 className="text-lg font-semibold">{t("page.title")}</h2>
-        <div className="text-sm text-muted-foreground">
-          {t("page.description")}
-        </div>
-      </div>
+      <PageHeader title={t("page.title")} description={t("page.description")} />
 
       <DisplaySettings />
       <ClassSettings />

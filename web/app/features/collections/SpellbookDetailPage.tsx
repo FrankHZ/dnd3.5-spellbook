@@ -2,12 +2,8 @@ import { Link, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { PageHeader } from "~/components/PageHeader";
+import { StatusCard } from "~/components/StatusCard";
 import { useCollections } from "~/state/collections-state";
 import { getBook } from "~/storage/collections";
 import { PreparedBookDetail } from "./prepared/PreparedBookDetail";
@@ -27,14 +23,10 @@ export default function SpellbookDetailPage() {
   if (!book) {
     return (
       <div className="page-single">
-        <Card className="gap-0">
-          <CardHeader className="gap-1 py-3">
-            <CardTitle>{t("books.not-found-title")}</CardTitle>
-            <CardDescription>
-              {t("books.unknown-id", { bookId })}
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <StatusCard
+          title={t("books.not-found-title")}
+          description={t("books.unknown-id", { bookId })}
+        />
       </div>
     );
   }
@@ -43,22 +35,23 @@ export default function SpellbookDetailPage() {
 
   return (
     <div className={pageClass}>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-lg font-semibold">
-            {getCollectionDisplayName(book, tDefault)}
-          </h1>
-        </div>
+      <PageHeader
+        title={getCollectionDisplayName(book, tDefault)}
+        actions={
+          <>
+            {book.kind === "prepared" && (
+              <PreparedBookJsonActions book={book} />
+            )}
+            {book.kind === "spellbook" && (
+              <SpellIdBookJsonActions book={book} />
+            )}
 
-        <div className="flex flex-wrap items-center gap-2">
-          {book.kind === "prepared" && <PreparedBookJsonActions book={book} />}
-          {book.kind === "spellbook" && <SpellIdBookJsonActions book={book} />}
-
-          <Button asChild size="xs" variant="outline">
-            <Link to="/spellbooks">{t("actions.back")}</Link>
-          </Button>
-        </div>
-      </div>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/spellbooks">{t("actions.back")}</Link>
+            </Button>
+          </>
+        }
+      />
 
       {book.kind === "spellbook" && <SpellIdBookDetail book={book} />}
       {book.kind === "prepared" && <PreparedBookDetail book={book} />}

@@ -3,16 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 
 import { ApiError } from "~/api/http";
 import { SpellActionButtons } from "~/components/SpellActionButtons";
+import { StatusCard } from "~/components/StatusCard";
 import { getSpellDetail } from "~/api/spells";
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent } from "~/components/ui/card";
 import { Skeleton } from "~/components/ui/skeleton";
 import { Separator } from "~/components/ui/separator";
 
@@ -27,18 +21,19 @@ import { getSpellShortDescription } from "~/i18n/display/spell-short-description
 import { useMetaNames } from "~/i18n/hooks/useMetaNames";
 import { useRulebookDisplay } from "~/i18n/hooks/useRulebookDisplay";
 import { useTranslation } from "react-i18next";
+import { SpellMetaBadge } from "./SpellMetaBadge";
 
 function SpellDetailSkeleton() {
   return (
-    <div className="mx-auto max-w-6xl space-y-4 p-4">
+    <div className="page-side">
       <div className="space-y-2 md:hidden">
         <Skeleton className="h-8 w-2/3" />
         <Skeleton className="h-4 w-1/3" />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-[320px_1fr]">
-        <Card className="gap-0">
-          <CardContent className="space-y-3 py-3">
+      <div className="app-fixed-side-layout">
+        <Card className="app-side-card">
+          <CardContent className="app-side-card-content space-y-3">
             <Skeleton className="h-5 w-3/4" />
             <Skeleton className="h-4 w-1/2" />
             <Skeleton className="h-4 w-full" />
@@ -63,42 +58,19 @@ function SpellDetailSkeleton() {
 
 function SpellHeader({
   title,
-  rulebookLabel,
-  page,
-  schoolText,
   shortDescription,
-  descriptors,
   spellId,
   className = "",
 }: {
   title: string;
-  rulebookLabel: string;
-  page?: number | null;
-  schoolText: string;
   shortDescription?: string;
-  descriptors: Array<{ key: string; label: string }>;
   spellId: number;
   className?: string;
 }) {
-  const sourceText = page
-    ? `${rulebookLabel} · p. ${page}`
-    : rulebookLabel;
-
   return (
     <div className={`space-y-3 ${className}`.trim()}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="mb-2 flex flex-wrap items-center gap-2">
-            <Badge
-              variant="outline"
-              className="rounded-sm bg-muted/30 text-[11px] font-medium text-muted-foreground"
-            >
-              {sourceText}
-            </Badge>
-            <Badge variant="secondary" className="rounded-sm text-xs">
-              {schoolText}
-            </Badge>
-          </div>
           <h1 className="text-2xl font-semibold leading-tight tracking-normal">
             {title}
           </h1>
@@ -107,23 +79,47 @@ function SpellHeader({
               {shortDescription}
             </p>
           ) : null}
-          {descriptors.length > 0 ? (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {descriptors.map((descriptor) => (
-                <Badge
-                  key={descriptor.key}
-                  variant="outline"
-                  className="rounded-sm text-xs text-muted-foreground"
-                >
-                  {descriptor.label}
-                </Badge>
-              ))}
-            </div>
-          ) : null}
         </div>
         <SpellActionButtons spellId={spellId} />
       </div>
     </div>
+  );
+}
+
+function SpellOverviewSection({
+  sourceText,
+  schoolText,
+  descriptors,
+}: {
+  sourceText: string;
+  schoolText: string;
+  descriptors: Array<{ key: string; label: string }>;
+}) {
+  const { t } = useTranslation("spell-detail");
+
+  return (
+    <section className="space-y-2">
+      <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {t("sections.overview")}
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        <SpellMetaBadge kind="source" size="regular">
+          {sourceText}
+        </SpellMetaBadge>
+        <SpellMetaBadge kind="taxonomy" size="regular">
+          {schoolText}
+        </SpellMetaBadge>
+        {descriptors.map((descriptor) => (
+          <SpellMetaBadge
+            key={descriptor.key}
+            kind="descriptor"
+            size="regular"
+          >
+            {descriptor.label}
+          </SpellMetaBadge>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -149,14 +145,10 @@ export default function SpellDetailPage() {
   if (!isValidId) {
     return (
       <div className="page-side">
-        <Card className="gap-0">
-          <CardHeader className="gap-1 py-3">
-            <CardTitle>{t("errors.invalid-id-title")}</CardTitle>
-            <CardDescription>
-              {t("errors.invalid-url-description")}
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <StatusCard
+          title={t("errors.invalid-id-title")}
+          description={t("errors.invalid-url-description")}
+        />
       </div>
     );
   }
@@ -166,19 +158,15 @@ export default function SpellDetailPage() {
   if (status === 404) {
     return (
       <div className="page-side">
-        <Card className="gap-0">
-          <CardHeader className="gap-1 py-3">
-            <CardTitle>{t("errors.not-found-title")}</CardTitle>
-            <CardDescription>
-              {t("errors.not-found-description", { id: idNum })}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-0">
+        <StatusCard
+          title={t("errors.not-found-title")}
+          description={t("errors.not-found-description", { id: idNum })}
+          actions={
             <Button asChild variant="outline" size="sm">
               <Link to="/browse">{t("actions.back-to-browse")}</Link>
             </Button>
-          </CardContent>
-        </Card>
+          }
+        />
       </div>
     );
   }
@@ -186,14 +174,10 @@ export default function SpellDetailPage() {
   if (status === 400) {
     return (
       <div className="page-side">
-        <Card className="gap-0">
-          <CardHeader className="gap-1 py-3">
-            <CardTitle>{t("errors.invalid-id-title")}</CardTitle>
-            <CardDescription>
-              {t("errors.invalid-request-description")}
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <StatusCard
+          title={t("errors.invalid-id-title")}
+          description={t("errors.invalid-request-description")}
+        />
       </div>
     );
   }
@@ -205,12 +189,7 @@ export default function SpellDetailPage() {
         : t("errors.request-failed");
     return (
       <div className="page-side">
-        <Card className="gap-0">
-          <CardHeader className="gap-1 py-3">
-            <CardTitle>{t("errors.load-title")}</CardTitle>
-            <CardDescription>{msg}</CardDescription>
-          </CardHeader>
-        </Card>
+        <StatusCard title={t("errors.load-title")} description={msg} />
       </div>
     );
   }
@@ -225,24 +204,29 @@ export default function SpellDetailPage() {
   }));
   const shortDescription = getSpellShortDescription(spell, lang);
   const source = rulebookDisplay(spell.rulebook);
+  const sourceText = spell.page
+    ? `${source.abbr} · p. ${spell.page}`
+    : source.abbr;
 
   return (
     <div className="page-side">
       <SpellHeader
         title={spellName(spell)}
-        rulebookLabel={source.abbr}
-        page={spell.page}
-        schoolText={schoolText}
         shortDescription={shortDescription}
-        descriptors={descriptorItems}
         spellId={spell.id}
         className="md:hidden"
       />
 
-      <div className="grid gap-4 md:grid-cols-[320px_1fr]">
+      <div className="app-fixed-side-layout">
         <div className="space-y-4">
-          <Card className="gap-0">
-            <CardContent className="space-y-4 py-3">
+          <Card className="app-side-card">
+            <CardContent className="app-side-card-content space-y-4">
+              <SpellOverviewSection
+                sourceText={sourceText}
+                schoolText={schoolText}
+                descriptors={descriptorItems}
+              />
+              <Separator />
               <LevelsSection spell={spell} />
               <Separator />
               <ComponentsSection components={spell.components} />
@@ -256,11 +240,7 @@ export default function SpellDetailPage() {
           <div className="hidden md:block">
             <SpellHeader
               title={spellName(spell)}
-              rulebookLabel={source.abbr}
-              page={spell.page}
-              schoolText={schoolText}
               shortDescription={shortDescription}
-              descriptors={descriptorItems}
               spellId={spell.id}
             />
             <Separator className="my-2" />
