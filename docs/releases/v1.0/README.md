@@ -36,33 +36,36 @@ Server:
 
 About / Status:
 
-- Promote the current About / Version page into a more formal About / Status
-  page that explains frontend build state, API origin, backend version, content
-  DB state, source credits, and update times.
+- Maintain the formal About / Status page that explains frontend build state,
+  API origin, backend version, content DB state, source credits, and update
+  times.
 
 ## Track Order
 
 1. **Domain and deployment topology**
 
-   Owns Cloudflare Workers frontend deployment, API domain/proxy/TLS/CORS, web
-   API base URL configuration, GitHub workflow changes, and operations docs.
+   Landed. This owns Cloudflare Workers frontend deployment, API
+   domain/proxy/TLS/CORS, web API base URL configuration, GitHub workflow
+   changes, and operations docs.
 
 2. **About and status surface**
 
-   Owns the user-facing status page, frontend/backend/content version display,
-   and a stable public status contract for the split frontend/API topology.
+   Landed. This owns the user-facing status page,
+   frontend/backend/content version display, source credits, and the stable
+   public status contract for the split frontend/API topology.
 
 3. **Release Ready Doc Sweep**
 
-   Owns the final cross-doc quality gate. It verifies that current canonical
-   docs no longer describe the MVP-era deployment topology as current truth and
-   that release docs, operations docs, module docs, and navigation agree before
-   freeze.
+   Current. This owns the final cross-doc quality gate. It verifies that
+   current canonical docs no longer describe the MVP-era deployment topology as
+   current truth and that release docs, operations docs, module docs, and
+   navigation agree before freeze.
 
 4. **Release acceptance and freeze**
 
-   Owns production smoke tests, Cloudflare/remote verification, final docs, and
-   the v1.0 release freeze snapshot after implementation branches land.
+   Next. This owns production smoke tests, Cloudflare/remote verification,
+   final docs, and the v1.0 release freeze snapshot after release acceptance
+   completes.
 
 Do not create an integrated plan unless these tracks start conflicting on
 delivery sequence, ownership, or accepted release scope.

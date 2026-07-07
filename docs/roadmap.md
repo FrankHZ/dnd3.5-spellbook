@@ -2,32 +2,47 @@
 
 This document is the lightweight current roadmap for active work.
 
-It is intentionally shorter than the versioned MVP plans. Use it to decide what
+It is intentionally shorter than the versioned stage plans. Use it to decide what
 to do next after a pause, then follow the linked topic docs for implementation
 details.
 
 ## Current Track
 
-v1.0 is the active formal post-MVP release plan:
+v1.0 is the active formal public release plan:
 
 - `docs/releases/v1.0/README.md`
 - `docs/releases/v1.0/domain-and-deployment-plan.md`
 - `docs/releases/v1.0/about-and-status-plan.md`
 - `docs/releases/v1.0/release-ready-doc-sweep-plan.md`
 
-The latest frozen MVP snapshot is `docs/mvp/v3.10/FREEZE.md`.
+The latest frozen pre-release snapshot is `docs/mvp/v3.10/FREEZE.md`.
 
 v1.0 should focus on public release readiness: Cloudflare Workers frontend
 delivery, the `api.d20spellcodex.com` backend API topology, About/Status
 visibility, and release-ready documentation consistency. It should not reopen
-v3.10 MVP UI/i18n acceptance.
+v3.10 UI/i18n acceptance.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
 
 ## Recently Completed
 
-The v3.10 final MVP closeout is frozen with:
+The v1.0 domain/deployment and About/Status implementation slices have landed:
+
+- Cloudflare Workers Static Assets owns production frontend delivery for
+  `https://www.d20spellcodex.com`.
+- the apex `d20spellcodex.com` is intentionally unassigned until a redirect or
+  canonical-domain policy is accepted.
+- `https://api.d20spellcodex.com` reaches the existing Express API through
+  Cloudflare proxying and the API-only Nginx reverse proxy.
+- production CORS is scoped to the accepted Workers frontend origin.
+- GitHub deploy workflow is backend/API-only; frontend CD is owned by
+  Cloudflare Workers Builds.
+- About / Status separates Status and Credits, reports frontend hosting and
+  API origin, reads public backend/content status, and keeps operator DB
+  provenance on the private `/api/status/db` path.
+
+The v3.10 final pre-release closeout is frozen with:
 
 - `docs/mvp/v3.10/FREEZE.md` as the as-built snapshot.
 - localized frontend display adapters for stable taxonomy, component, and
@@ -296,35 +311,21 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Domain and deployment topology**
-
-   Implement the v1.0 split production topology: Cloudflare Workers frontend,
-   `api.d20spellcodex.com` backend API, production API base URL configuration,
-   CORS/TLS verification, and deployment docs/workflows that no longer treat
-   the origin server as the canonical static frontend host.
-
-2. **About and status surface**
-
-   Promote the current About / Version page into a release-ready About /
-   Status surface that reports frontend build information, API origin, backend
-   version, public content DB state, and relevant update times for the split
-   frontend/API deployment.
-
-3. **Release Ready Doc Sweep**
+1. **Release Ready Doc Sweep**
 
    Run the final cross-doc quality gate for v1.0. Verify root README,
    docs index, roadmap, AGENTS.md, feature docs, design docs, operations docs,
    module docs, and the v1.0 release README all agree on the Cloudflare Workers
    frontend, API domain, backend-only origin role, and About/Status model.
 
-4. **v1.0 release acceptance and freeze**
+2. **v1.0 release acceptance and freeze**
 
    After implementation branches land, validate production SPA deep links,
    cross-origin API fetches, CORS rejection for unallowed origins, API TLS,
    About/Status behavior, backend deploy scripts, and docs consistency, then
    create the v1.0 release freeze snapshot.
 
-5. **Triage the non-blocking maintenance tail as needed**
+3. **Triage the non-blocking maintenance tail as needed**
 
    `npm audit --workspaces --omit=dev --json` still reports the reviewed Prisma
    dev-chain / Hono moderate advisories. Treat them as explicit maintenance

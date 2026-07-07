@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: implementation branch in progress: `codex/web-about-status-credits`.
+Status: landed on main.
 
 ## Purpose
 
@@ -70,14 +70,15 @@ without exposing private DB provenance.
 
 ## Current Facts
 
-- Web builds already support `VITE_SPELLBOOK_*` metadata from GitHub deploys.
+- Web builds support `VITE_SPELLBOOK_*` metadata from deployment environment
+  variables.
 - Backend deploys already support `SPELLBOOK_BACKEND_*` metadata.
 - `GET /api/status/app` is public and includes redacted app/content status for
-  About / Version.
+  About / Status.
 - `GET /api/status/db` is private by default in production and intended for
   operator verification.
-- The frontend currently expects same-origin `/api`; v1.0 should make the API
-  origin explicit through `VITE_API_BASE_URL`.
+- Frontend API helpers default to same-origin `/api` for local development and
+  honor `VITE_API_BASE_URL` for Workers production builds.
 - Chinese CHM credits are recorded in `docs/credits/chm-chs.txt`.
 - English source attribution is recorded in `docs/credits/english-sources.md`.
 
@@ -152,23 +153,21 @@ without exposing private DB provenance.
 
 ## Open Questions
 
-- Should the page display a Cloudflare Workers deployment id if it is available
-  through build-time environment variables, or keep commit/ref/build time as the
-  stable public identifiers?
-- Should public content status display exact counts or a smaller "content DB
-  active / updated at" summary?
-- Should an API-origin mismatch warning be visible to ordinary users or only in
-  a compact diagnostic row?
+- None blocking for v1.0 acceptance.
 
 ## Follow-Up Candidates
 
 - Operator-only status dashboard remains out of v1.0 unless a direct release
   blocker appears.
 - External uptime monitoring can be planned after the public topology is live.
+- Cloudflare deployment id display can be added later if Workers exposes a
+  stable build-time identifier worth showing.
+- A richer API-origin mismatch warning can be considered with a broader
+  operator-status pass.
 
 ## Completion Notes
 
-Implementation branch `codex/web-about-status-credits` owns the first About /
+Implementation branch `codex/web-about-status-credits` landed the first About /
 Status release surface pass:
 
 - About / Status separates Status and Credits into tabs so deployment
