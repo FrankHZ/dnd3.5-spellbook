@@ -1,6 +1,6 @@
 # Versioned MVP Docs
 
-This directory contains stage records and active version planning spaces.
+This directory contains MVP stage records and version planning spaces.
 
 Use version folders for release-scoped planning, acceptance evidence, and
 freeze snapshots. Do not use older MVP folders as the daily working surface for
@@ -8,8 +8,8 @@ new behavior.
 
 ## Current Version Folders
 
-- `v3.10`: active final MVP closeout plan.
-- `v3.9`: latest frozen release snapshot and supporting plans.
+- `v3.10`: latest frozen MVP closeout snapshot and supporting plans.
+- `v3.9`: older frozen release snapshot and supporting plans.
 - `v3.8`: older frozen release snapshot and supporting plans.
 - `v3.7`: older frozen release snapshot and supporting plans.
 - `v3.6`: older frozen release snapshot and supporting plans.
@@ -26,6 +26,9 @@ When a version is active and not frozen, read its `README.md` first. If it has
 an `integrated-plan.md`, use that only for sequencing, scope split, ownership,
 and conflict review. Implementation branches should update their focused child
 plan instead of turning integrated plans into status ledgers.
+
+Formal post-MVP release planning now belongs in `docs/releases/`, not this MVP
+history area.
 
 ## Maintenance Rules
 

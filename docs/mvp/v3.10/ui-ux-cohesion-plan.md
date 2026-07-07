@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: ready for review in `codex/design-ui-ux-cohesion`.
+Status: frozen in v3.10. Landed in PR #45.
 
 ## Purpose
 
@@ -160,7 +160,7 @@ blocker back into `Acceptance Criteria` instead.
 
 ## Completion Notes
 
-Implementation branch:
+Implementation branch PR #45:
 
 - Added `PageHeader` for simple page titles, descriptions, and actions across
   settings, collections, and about/status surfaces.

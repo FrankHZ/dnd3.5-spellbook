@@ -28,10 +28,13 @@ Use these docs for orientation instead of expanding this file:
 - `docs/README.md`: canonical documentation map and historical/current doc
   ownership.
 - `docs/roadmap.md`: current active work ordering after a pause.
-- `docs/mvp/v3.10/README.md`: active final MVP closeout plan.
-- `docs/mvp/v3.10/filter-i18n-plan.md`: active filter i18n completion plan.
-- `docs/mvp/v3.10/ui-ux-cohesion-plan.md`: active UI/UX cohesion plan.
-- `docs/mvp/v3.9/FREEZE.md`: latest frozen stage snapshot.
+- `docs/releases/v1.0/README.md`: active formal post-MVP release plan.
+- `docs/releases/v1.0/domain-and-deployment-plan.md`: active deployment
+  topology plan.
+- `docs/releases/v1.0/about-and-status-plan.md`: active About/Status plan.
+- `docs/releases/v1.0/release-ready-doc-sweep-plan.md`: active release docs
+  quality-gate plan.
+- `docs/mvp/v3.10/FREEZE.md`: latest frozen MVP stage snapshot.
 - `docs/features.md`: current user-facing feature map.
 - `docs/feature-workflow.md`: feature intake and implementation loop.
 - `docs/modules/README.md`: high-level module ownership and validation

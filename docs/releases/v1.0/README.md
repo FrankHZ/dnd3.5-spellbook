@@ -1,7 +1,6 @@
 # v1.0 Release Plan
 
-Status: planned. Do not make this the active roadmap track until v3.10 is
-frozen.
+Status: active plan.
 
 v1.0 is the first formal post-MVP public release line. It should move the app
 from the MVP single-origin deployment shape to a clearer production topology:
@@ -160,6 +159,6 @@ Reference docs for implementation review:
 
 ## Handoff Rule
 
-Until v3.10 is frozen, v1.0 planning is allowed to exist but should not replace
-the active roadmap track. After v3.10 freeze, the librarian should update
-`docs/roadmap.md` so v1.0 becomes the active release track.
+v3.10 is frozen. v1.0 is now the active release track in `docs/roadmap.md`.
+Keep this release line focused on public release readiness and do not reopen
+v3.10 MVP UI/i18n acceptance.

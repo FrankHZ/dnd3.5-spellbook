@@ -24,20 +24,22 @@ excluded from the public repository, especially runtime databases under
 
 ## Status
 
-The active version plan is **v3.10**, the final MVP closeout pass. The latest
-frozen stage snapshot is **v3.9**.
+The active release plan is **v1.0**, the first formal post-MVP public release
+line. The latest frozen MVP stage snapshot is **v3.10**.
 
 Start here:
 
 - [docs/README.md](./docs/README.md): documentation map and precedence rules.
 - [docs/roadmap.md](./docs/roadmap.md): current work order.
 - [docs/features.md](./docs/features.md): current feature map.
-- [docs/mvp/v3.10/README.md](./docs/mvp/v3.10/README.md): active final MVP
-  closeout plan.
-- [docs/mvp/v3.9/FREEZE.md](./docs/mvp/v3.9/FREEZE.md): latest frozen
+- [docs/releases/v1.0/README.md](./docs/releases/v1.0/README.md): active
+  formal post-MVP release plan.
+- [docs/mvp/v3.10/FREEZE.md](./docs/mvp/v3.10/FREEZE.md): latest frozen MVP
+  closeout snapshot.
+- [docs/mvp/v3.10/README.md](./docs/mvp/v3.10/README.md): frozen final MVP
+  closeout planning record.
+- [docs/mvp/v3.9/FREEZE.md](./docs/mvp/v3.9/FREEZE.md): previous frozen
   normalized mechanics/query fullstack snapshot.
-- [docs/mvp/v3.9/README.md](./docs/mvp/v3.9/README.md): frozen normalized
-  mechanics/query planning record.
 - [docs/mvp/v3.8/FREEZE.md](./docs/mvp/v3.8/FREEZE.md): previous frozen
   release snapshot.
 - [docs/mvp/v3.8/README.md](./docs/mvp/v3.8/README.md): frozen normalized

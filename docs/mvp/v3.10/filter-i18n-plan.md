@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: implementation branch ready for review.
+Status: frozen in v3.10. Landed in PR #44.
 
 ## Purpose
 
@@ -153,5 +153,11 @@ blocker back into `Acceptance Criteria` instead.
 
 ## Completion Notes
 
-Use this section only after implementation review. Keep it short and link to
-merged PRs, validation evidence, or freeze snapshots instead of pasting logs.
+- PR #44 landed the frontend display-adapter pass for localized taxonomy,
+  component, and mechanics vocabulary labels.
+- Browse, Search, Advanced filters, scope summaries, and Spell Detail supported
+  mechanics notes use localized frontend labels where stable keys are known and
+  server labels as fallback.
+- URL/query state, API helper behavior, and server vocabulary semantics remain
+  unchanged.
+- Final closeout validation is recorded in `docs/mvp/v3.10/FREEZE.md`.
