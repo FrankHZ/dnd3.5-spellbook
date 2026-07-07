@@ -84,7 +84,10 @@ Configure Workers Builds through Git integration with:
 
 - root directory: repository root
 - install command: `npm ci`
-- build command: `npm run build:contracts && npm run -w web build`
+- build command:
+  ```bash
+  sh -lc 'commit="${WORKERS_CI_COMMIT_SHA:-$(git rev-parse HEAD 2>/dev/null || true)}"; ref="${WORKERS_CI_BRANCH:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)}"; export VITE_SPELLBOOK_VERSION_LABEL=v1.0 VITE_SPELLBOOK_FRONTEND_COMMIT_SHA="$commit" VITE_SPELLBOOK_FRONTEND_REF="$ref" VITE_SPELLBOOK_FRONTEND_BUILT_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"; npm run build:contracts && npm run -w web build'
+  ```
 - deploy command: `npx wrangler deploy`
 - static asset config: root `wrangler.jsonc`
 - environment variables:
@@ -401,10 +404,21 @@ Cloudflare Workers Builds owns normal production frontend deployment.
 
 ### Cloudflare Workers Build
 
+Install command:
+
 ```bash
 npm ci
-npm run build:contracts
-npm run -w web build
+```
+
+Build command:
+
+```bash
+sh -lc 'commit="${WORKERS_CI_COMMIT_SHA:-$(git rev-parse HEAD 2>/dev/null || true)}"; ref="${WORKERS_CI_BRANCH:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)}"; export VITE_SPELLBOOK_VERSION_LABEL=v1.0 VITE_SPELLBOOK_FRONTEND_COMMIT_SHA="$commit" VITE_SPELLBOOK_FRONTEND_REF="$ref" VITE_SPELLBOOK_FRONTEND_BUILT_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"; npm run build:contracts && npm run -w web build'
+```
+
+Deploy command:
+
+```bash
 npx wrangler deploy
 ```
 

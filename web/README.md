@@ -72,13 +72,16 @@ Suggested Cloudflare Workers Builds settings:
 
 - Root directory: repository root
 - Install command: `npm ci`
-- Build command: `npm run build:contracts && npm run -w web build`
+- Build command:
+  ```bash
+  sh -lc 'commit="${WORKERS_CI_COMMIT_SHA:-$(git rev-parse HEAD 2>/dev/null || true)}"; ref="${WORKERS_CI_BRANCH:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)}"; export VITE_SPELLBOOK_VERSION_LABEL=v1.0 VITE_SPELLBOOK_FRONTEND_COMMIT_SHA="$commit" VITE_SPELLBOOK_FRONTEND_REF="$ref" VITE_SPELLBOOK_FRONTEND_BUILT_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"; npm run build:contracts && npm run -w web build'
+  ```
 - Deploy command: `npx wrangler deploy`
 - Static asset config: root `wrangler.jsonc`
 - Environment variables:
   - `NODE_VERSION=24`
   - `VITE_API_BASE_URL=https://api.d20spellcodex.com`
-- Build command should export Workers Builds `WORKERS_CI_*` metadata into
+- The build command exports Workers Builds `WORKERS_CI_*` metadata into
   `VITE_SPELLBOOK_*` values before running `npm run -w web build`.
 
 For deployment and reverse-proxy expectations, use:
