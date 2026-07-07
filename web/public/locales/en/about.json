@@ -37,6 +37,7 @@
   "fields.version-label": "Version",
   "frontend.description": "Static web build metadata for the loaded frontend.",
   "frontend.title": "Frontend",
+  "page.author": "Author",
   "page.description": "Build, API, content, and source credits for the current deployment.",
   "page.repository": "GitHub repository",
   "page.title": "About / Status",

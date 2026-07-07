@@ -37,6 +37,7 @@
   "fields.version-label": "版本",
   "frontend.description": "当前加载的静态前端构建元数据。",
   "frontend.title": "前端",
+  "page.author": "作者",
   "page.description": "当前部署的构建、API、内容状态和资料来源致谢。",
   "page.repository": "GitHub 仓库",
   "page.title": "关于 / 状态",

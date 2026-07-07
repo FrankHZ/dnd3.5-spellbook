@@ -24,6 +24,8 @@ import { getFrontendVersionMetadata } from "./build-metadata";
 import { chmChsCredit, englishSourceCredits } from "./credits";
 
 const REPOSITORY_URL = "https://github.com/FrankHZ/dnd3.5-spellbook";
+const AUTHOR_GITHUB_ID = "FrankHZ";
+const AUTHOR_URL = "https://github.com/FrankHZ";
 
 type AboutTab = "credits" | "status";
 
@@ -362,7 +364,7 @@ function AboutTabs({
     <div className="space-y-4">
       <div
         aria-label={t("tabs.label")}
-        className="grid grid-cols-2 gap-2 rounded-md border bg-muted/30 p-1 sm:inline-grid sm:min-w-72"
+        className="mx-auto grid w-full grid-cols-2 gap-2 rounded-md border bg-muted/30 p-1 sm:w-fit sm:min-w-72"
         role="tablist"
       >
         <Button
@@ -435,16 +437,30 @@ export default function AboutVersionPage() {
         description={
           <>
             {t("page.description")}
-            <br />
-            <a
-              className="inline-flex items-center gap-1.5 text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-              href={REPOSITORY_URL}
-              rel="noreferrer"
-              target="_blank"
-            >
-              {t("page.repository")}
-              <ExternalLink className="size-3.5" aria-hidden="true" />
-            </a>
+            <div className="mt-2 space-y-1">
+              <div className="inline-flex items-center gap-1.5">
+                <span>{t("page.author")}</span>
+                <a
+                  className="font-medium text-foreground underline-offset-4 hover:underline"
+                  href={AUTHOR_URL}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  {AUTHOR_GITHUB_ID}
+                </a>
+              </div>
+              <div>
+                <a
+                  className="inline-flex items-center gap-1.5 text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                  href={REPOSITORY_URL}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  {t("page.repository")}
+                  <ExternalLink className="size-3.5" aria-hidden="true" />
+                </a>
+              </div>
+            </div>
           </>
         }
       />
