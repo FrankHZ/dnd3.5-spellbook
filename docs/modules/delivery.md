@@ -51,7 +51,7 @@ spine stops catching the majority of regressions.
 Canonical deployment behavior and helper templates live in:
 
 - `docs/deployment-scripts/deploy-backend.sh`
-- `docs/deployment-scripts/deploy-web.sh`
+- `docs/deployment-scripts/deploy-web.sh` (legacy same-origin fallback only)
 - `docs/deployment-scripts/update-db.sh`
 - `docs/deployment-scripts/apply-nginx-site.sh`
 - `docs/deployment-scripts/sync-remote-scripts.ps1`
@@ -62,9 +62,9 @@ The manual deploy workflow lives at:
 
 - `.github/workflows/deploy.yml`
 
-That workflow is a thin wrapper for code/web deploys. The backend target invokes
-the tracked remote backend deploy script. The web target builds and uploads
-static assets, then invokes the tracked remote web deploy script.
+In v1.0, that workflow is a thin wrapper for backend API deploys only. It
+invokes the tracked remote backend deploy script; Cloudflare Workers Builds
+owns normal frontend production deployment.
 
 Manual deploys run portable validation by default. Skipping validation is an
 emergency rollback option and should leave an explicit workflow warning. SSH
@@ -72,9 +72,9 @@ host trust should prefer the pinned `DEPLOY_SSH_KNOWN_HOSTS` secret; the
 `ssh-keyscan` fallback is convenience bootstrap behavior, not the hardened
 default.
 
-Deploy metadata for the About / Version page is owned here:
+Deploy metadata for the About / Status page is owned here:
 
-- web deploys pass `VITE_SPELLBOOK_*` values into the static build
+- Cloudflare Workers Builds may pass `VITE_SPELLBOOK_*` values into the static build
 - backend deploys pass `SPELLBOOK_BACKEND_*` values to
   `deploy-backend.sh`
 - `deploy-backend.sh` writes non-secret backend metadata into
@@ -86,8 +86,13 @@ DB / app-state DB redesign to define artifact ownership, activation, and
 rollback.
 
 Nginx site configuration is also explicit operator work. Use the tracked
-`apply-nginx-site.sh` helper after syncing remote scripts when the proxy/static
-site baseline changes.
+`apply-nginx-site.sh` helper after syncing remote scripts when the API proxy
+baseline changes. Its default v1.0 mode is API-only; the old static frontend
+mode is an explicit legacy fallback.
+
+Frontend static asset deployment is configured in root `wrangler.jsonc`.
+The Worker serves `web/build/client` with SPA fallback routing; it does not run
+the Express API.
 
 If deployment behavior changes, change the tracked scripts and
 `docs/operations/deployment.md` first. The workflow should stay a trigger/orchestration

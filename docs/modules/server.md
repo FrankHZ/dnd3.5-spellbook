@@ -79,6 +79,10 @@ source data or full filesystem paths.
 Public UI surfaces should use the redacted content summary in
 `GET /api/status/app` instead of depending on `/api/status/db`.
 
+In the v1.0 split frontend/API topology, production browser access to the API
+is cross-origin. Keep `SPELLBOOK_CORS_ORIGINS` explicit for the accepted
+Cloudflare Workers frontend origins; do not make production CORS permissive.
+
 ## Contracts
 
 Server responses should use DTOs exported from `@dnd/contracts`. If a response

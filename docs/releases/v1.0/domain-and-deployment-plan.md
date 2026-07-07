@@ -7,13 +7,13 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: implementation branch in progress: `codex/infra-deployment-topology`.
 
 ## Purpose
 
 Define the first formal production deployment topology:
 
-- Cloudflare Pages serves the frontend.
+- Cloudflare Workers Static Assets serves the frontend.
 - `api.d20spellcodex.com` reaches the existing Express API through Cloudflare
   DNS/proxy and the current server.
 - The origin server stops being responsible for hosting the production static
@@ -38,17 +38,20 @@ frontend CD, API deploys, Nginx static hosting, and backend runtime all live in
 one operational path.
 
 v1.0 should split the public topology without replacing the backend stack:
-Cloudflare Pages owns frontend delivery, while the existing server remains the
-API/content host.
+Cloudflare Workers owns static frontend delivery, while the existing server
+remains the API/content host.
 
 ## Goals
 
-- Configure the frontend for Cloudflare Pages Git integration.
-- Set production frontend domain to `https://d20spellcodex.com`.
+- Configure the frontend for Cloudflare Workers Static Assets and Workers
+  Builds Git integration.
+- Set production frontend domain to `https://www.d20spellcodex.com`.
+- Leave apex `d20spellcodex.com` unassigned in v1.0 unless a redirect policy is
+  explicitly accepted.
 - Set production API origin to `https://api.d20spellcodex.com`.
 - Add real `VITE_API_BASE_URL` support in the web API client:
   - local default remains `/api`
-  - Pages production value is `https://api.d20spellcodex.com`
+  - Workers production value is `https://api.d20spellcodex.com`
 - Keep local development behavior working without requiring Cloudflare.
 - Update backend production CORS for exact allowed frontend origins.
 - Update Nginx so production public API traffic proxies to Express while static
@@ -59,38 +62,45 @@ API/content host.
 
 ## Non-Goals
 
-- Do not move the Express API to Cloudflare Workers.
+- Do not move the Express API to Cloudflare Workers; Workers serves the static
+  frontend only for v1.0.
 - Do not replace SQLite/content DB storage.
 - Do not add DB CD or content artifact automation.
 - Do not change spell query semantics.
-- Do not require Wrangler Direct Upload for frontend production deploys.
+- Do not make a manual Wrangler upload the normal frontend production deploy
+  when Workers Builds Git integration is available.
 - Do not make v1.0 responsible for every stable-backlog security item.
 
-## Current Facts
+## Pre-v1.0 Baseline Facts
 
-- Current frontend requests use relative `/api/...` paths and assume the
-  browser-facing host exposes `/api`.
-- Current GitHub deploy workflow has `backend`, `web`, and `backend-and-web`
-  targets.
-- Current Nginx config serves `/var/www/spellbook` and proxies `/api/*` to
-  `http://127.0.0.1:3000`.
-- Current production CORS is explicit through `SPELLBOOK_CORS_ORIGINS`.
+- Before this branch, frontend requests used relative `/api/...` paths and
+  assumed the browser-facing host exposes `/api`.
+- Before this branch, the GitHub deploy workflow had `backend`, `web`, and
+  `backend-and-web` targets.
+- Before this branch, the Nginx config served `/var/www/spellbook` and proxied
+  `/api/*` to `http://127.0.0.1:3000`.
+- Production CORS is explicit through `SPELLBOOK_CORS_ORIGINS`.
 - DB deployment remains manual through `update-db.sh`.
 - Backend status/version metadata already exists through `GET /api/status/app`
   and operator DB provenance through `GET /api/status/db`.
 
 ## External Platform Constraints
 
-- Use Cloudflare Pages Git integration for the frontend project. It matches the
-  desired ownership model: Cloudflare runs frontend builds from repository
-  changes.
-- Avoid creating the Pages project as Direct Upload unless Git integration is
-  rejected by a specific blocker. Cloudflare documents Direct Upload and Git
-  integration as one-way project choices.
-- Attach `d20spellcodex.com` through the Pages custom domain flow. Do not rely
-  on only hand-writing DNS records.
-- Configure Pages for this monorepo with explicit root/build/output settings
-  and `VITE_API_BASE_URL`.
+- Use Cloudflare Workers Builds Git integration for frontend production
+  deployments. It matches the desired ownership model: Cloudflare runs
+  frontend builds from repository changes.
+- Keep `wrangler.jsonc` as the repo-owned Workers Static Assets configuration:
+  the `dnd-spellbook` Worker serves `web/build/client` and uses SPA fallback
+  routing.
+- Attach `www.d20spellcodex.com` through a Workers custom domain or equivalent
+  route flow. Do not rely on only hand-writing DNS records.
+- Do not attach apex `d20spellcodex.com` for v1.0; keep it available for a
+  later redirect/canonical-domain decision.
+- Configure Workers Builds for this monorepo with explicit build command,
+  deploy command, asset output settings, and `VITE_API_BASE_URL`.
+- Cloudflare API automation should use a user-scoped Workers token with
+  Workers Scripts access and Workers Builds configuration access; DNS/API
+  domain work uses the separate DNS/zone token.
 - Use Cloudflare proxied DNS for `api.d20spellcodex.com`.
 - Production TLS should use Cloudflare Full (strict) with a valid origin
   certificate, either Cloudflare Origin CA or a publicly trusted certificate.
@@ -108,20 +118,23 @@ API/content host.
   - local dev smoke with default `/api`
   - production-like build with `VITE_API_BASE_URL=https://api.d20spellcodex.com`
 
-### Slice 2: Cloudflare Pages Frontend Deployment
+### Slice 2: Cloudflare Workers Frontend Deployment
 
-- Deliverable: documented Pages Git integration setup for the monorepo.
+- Deliverable: repo-owned Workers Static Assets config and documented Workers
+  Builds Git integration setup for the monorepo.
 - Expected settings:
   - project connected to the Git repository
+  - Worker name is `dnd-spellbook`
   - build command runs the web production build from the monorepo context
-  - output directory points at the React Router client build
+  - deploy command uses `npx wrangler deploy`
+  - `wrangler.jsonc` assets directory points at the React Router client build
   - `VITE_API_BASE_URL=https://api.d20spellcodex.com`
   - frontend build metadata variables mapped or documented
 - Expected files: `docs/operations/deployment.md`,
   `docs/modules/delivery.md`, optionally `web/README.md`.
 - Validation:
-  - Pages production deployment succeeds
-  - `https://d20spellcodex.com` serves the app
+  - Workers production deployment succeeds
+  - `https://www.d20spellcodex.com` serves the app
   - direct refresh of representative SPA routes works
 
 ### Slice 3: API Domain, TLS, Nginx, And CORS
@@ -131,8 +144,7 @@ API/content host.
   - Express remains bound to `127.0.0.1:3000`
   - Nginx handles public API reverse proxying
   - origin HTTPS is configured for Cloudflare Full (strict)
-  - CORS allowlist includes `https://d20spellcodex.com` and optional
-    `https://www.d20spellcodex.com`
+  - CORS allowlist includes `https://www.d20spellcodex.com`
 - Expected files: deployment docs, Nginx helper/scripts if topology changes,
   server CORS tests if behavior changes.
 - Validation:
@@ -150,7 +162,7 @@ API/content host.
   - DB upload remains out of CD
   - old web deploy path is removed, renamed as legacy/manual, or clearly
     documented as non-production fallback
-  - Cloudflare Pages owns frontend CD
+  - Cloudflare Workers Builds owns frontend CD
 - Expected files: `.github/workflows/deploy.yml`,
   `docs/operations/deployment.md`, `docs/modules/delivery.md`.
 - Validation:
@@ -161,8 +173,8 @@ API/content host.
 ## Acceptance Criteria
 
 - Local web development still works with relative `/api`.
-- Pages production build uses `https://api.d20spellcodex.com`.
-- `https://d20spellcodex.com` serves the production frontend.
+- Workers production build uses `https://api.d20spellcodex.com`.
+- `https://www.d20spellcodex.com` serves the production frontend.
 - SPA deep-link refresh works for Browse, Search, Spell Detail, collections,
   prepared spells, settings, and About / Status.
 - Cross-origin API requests from the allowed frontend domain work.
@@ -172,14 +184,14 @@ API/content host.
 - Backend deploy and DB update scripts remain usable for API/content updates.
 - GitHub deploy workflow preserves backend deploy and removes or demotes normal
   web-to-origin deploy.
-- Deployment docs describe both Cloudflare Pages frontend CD and remote backend
-  deployment.
+- Deployment docs describe both Cloudflare Workers frontend CD and remote
+  backend deployment.
 
 ## Doc Updates
 
 - Update this plan when deployment topology decisions change.
 - Update `web/README.md` for `VITE_API_BASE_URL`.
-- Update `docs/operations/deployment.md` for Pages frontend and backend-only
+- Update `docs/operations/deployment.md` for Workers frontend and backend-only
   origin deploy.
 - Update `docs/modules/delivery.md` for the new delivery boundary.
 - Update `docs/modules/web.md` and `docs/modules/server.md` only if module
@@ -188,10 +200,10 @@ API/content host.
 
 ## Open Questions
 
-- Should `www.d20spellcodex.com` be enabled as a Pages custom domain, redirect
-  to apex, or remain out of v1.0?
+- Should apex `d20spellcodex.com` stay unassigned, redirect to `www`, or serve
+  the same Worker in a later release?
 - Should the old same-origin web deploy target be deleted immediately or kept
-  as a documented emergency legacy path until the first Pages release is
+  as a documented emergency legacy path until the first Workers release is
   accepted?
 - Which origin certificate path is preferred for the server: Cloudflare Origin
   CA or a public CA certificate?
@@ -206,6 +218,15 @@ API/content host.
 
 ## Completion Notes
 
-Use this section only after implementation review. Keep it short and link to
-merged PRs, validation evidence, or release freeze snapshots instead of pasting
-logs.
+Implementation branch `codex/infra-deployment-topology` owns the first v1.0
+deployment topology slice:
+
+- web API helpers support `VITE_API_BASE_URL` while keeping local relative
+  `/api` behavior as the default.
+- GitHub deploy workflow is backend-API only; Cloudflare Workers Builds owns
+  normal frontend production deployment.
+- Nginx apply helper defaults to API-only mode for `api.d20spellcodex.com` and
+  keeps the old static frontend config as an explicit `single-origin` fallback.
+- deployment/module/workspace docs describe Cloudflare Workers build settings,
+  API CORS origins, backend-only origin responsibilities, and legacy web deploy
+  boundaries.

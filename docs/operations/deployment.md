@@ -1,20 +1,30 @@
 # Deployment
 
-This document describes the current manual deployment workflow used for the project.
+This document describes the current v1.0 deployment workflow used for the project.
 
 It is intentionally simple and optimized for the current stage of the project:
 
-- single host
+- Cloudflare Workers Static Assets frontend delivery
+- existing single backend/API host
 - low traffic
 - explicit manual control
-- separate code deploy and database update
+- separate backend code deploy and database update
+
+Production topology:
+
+- `https://www.d20spellcodex.com`: Cloudflare Workers Static Assets frontend
+- `https://d20spellcodex.com`: intentionally unassigned in v1.0 until a
+  redirect or canonical-domain policy is accepted
+- `https://api.d20spellcodex.com`: Cloudflare-proxied API domain reaching the
+  existing Nginx/Express backend host
+- SQLite/content DB files remain operator-owned on the backend host
 
 ## Canonical Scripts
 
 The canonical deployment assets are tracked in:
 
 - `docs/deployment-scripts/deploy-backend.sh`
-- `docs/deployment-scripts/deploy-web.sh`
+- `docs/deployment-scripts/deploy-web.sh` (legacy same-origin fallback only)
 - `docs/deployment-scripts/update-db.sh`
 - `docs/deployment-scripts/apply-nginx-site.sh`
 - `docs/deployment-scripts/sync-remote-scripts.ps1`
@@ -33,16 +43,15 @@ The tracked GitHub Actions deploy workflow is:
 
 - `.github/workflows/deploy.yml`
 
-It is a manual `workflow_dispatch` wrapper around the canonical scripts. It is
-not a second deployment implementation.
+It is a manual `workflow_dispatch` wrapper around the canonical backend deploy
+script. It is not a second deployment implementation.
 
-Supported targets:
+Supported behavior:
 
-- `backend`: runs portable validation, then invokes `~/deploy-backend.sh` on the
-  remote host.
-- `web`: runs portable validation, builds `web`, uploads `web/build/client/` to
-  the remote staging directory, then invokes `~/deploy-web.sh`.
-- `backend-and-web`: combines the backend and web paths.
+- runs portable validation by default
+- invokes `~/deploy-backend.sh` on the remote host
+- writes backend deploy metadata for `GET /api/status/app`
+- does not build, upload, or activate frontend static assets
 
 Required repository secrets:
 
@@ -53,7 +62,6 @@ Required repository secrets:
 Optional repository variables:
 
 - `DEPLOY_SSH_PORT`, default `22`
-- `DEPLOY_REMOTE_WEB_DIST_DIR`, default `spellbook-dist`
 
 Recommended repository secrets:
 
@@ -65,13 +73,23 @@ Portable validation is enabled by default for every manual deploy. Disable the
 `runPortableValidation` input only for an emergency rollback where the operator
 has already accepted the risk.
 
-The workflow injects deploy metadata for the About / Version page:
+The workflow injects deploy metadata for the About / Status page:
 
-- web builds receive `VITE_SPELLBOOK_*` values derived from the GitHub run,
-  commit, ref, and build time
 - backend deploys pass `SPELLBOOK_BACKEND_*` values to `deploy-backend.sh`,
   which writes the non-secret metadata into `/etc/default/spellbook-api` before
   restarting the service
+
+Cloudflare Workers Builds owns normal production frontend builds and deployment.
+Configure Workers Builds through Git integration with:
+
+- root directory: repository root
+- install command: `npm ci`
+- build command: `npm run build:contracts && npm run -w web build`
+- deploy command: `npx wrangler deploy`
+- static asset config: root `wrangler.jsonc`
+- environment variables:
+  - `NODE_VERSION=24`
+  - `VITE_API_BASE_URL=https://api.d20spellcodex.com`
 
 The deploy workflow does not automatically sync changed files under
 `docs/deployment-scripts/` to the remote host. If those tracked scripts change,
@@ -83,9 +101,9 @@ to `~/data/`, so it should stay manual until the v3.5 content DB / app-state DB
 redesign defines a safer release artifact and activation model.
 
 The v3.5 normalized rules-content work does not change that boundary. GitHub
-Actions deploys code/web only. Data-bearing SQLite files remain operator-owned
-artifacts; do not add generated DB uploads to CD until a separate artifact and
-rollback model is accepted.
+Actions deploys backend code only. Data-bearing SQLite files remain
+operator-owned artifacts; do not add generated DB uploads to CD until a
+separate artifact and rollback model is accepted.
 
 ## Remote Script Sync Policy
 
@@ -99,7 +117,7 @@ your machine can keep its actual SSH alias private.
 Current remote targets:
 
 - `~/deploy-backend.sh`
-- `~/deploy-web.sh`
+- `~/deploy-web.sh` (legacy same-origin fallback only)
 - `~/update-db.sh`
 - `~/apply-nginx-site.sh`
 - `/etc/default/spellbook-api` for the environment values adapted from
@@ -109,7 +127,6 @@ Example:
 
 ```bash
 scp docs/deployment-scripts/deploy-backend.sh remote:~/deploy-backend.sh
-scp docs/deployment-scripts/deploy-web.sh remote:~/deploy-web.sh
 scp docs/deployment-scripts/update-db.sh remote:~/update-db.sh
 scp docs/deployment-scripts/apply-nginx-site.sh remote:~/apply-nginx-site.sh
 ```
@@ -131,14 +148,15 @@ The tracked Nginx site apply script is:
 - `docs/deployment-scripts/apply-nginx-site.sh`
 
 It writes `/etc/nginx/sites-available/spellbook`, enables it, removes the
-default site, runs `nginx -t`, and reloads Nginx. It preserves the current
-single-host assumptions:
+default site, runs `nginx -t`, and reloads Nginx.
 
-- static frontend root: `/var/www/spellbook`
+By default, it writes the v1.0 API-only origin config:
+
+- server name: `api.d20spellcodex.com`
 - API upstream: `http://127.0.0.1:3000`
-- `/locales/` returns `404` for missing locale JSON instead of falling through
-  to the SPA
-- hashed static assets receive immutable cache headers
+- `/api/*` proxies to Express
+- `/health` proxies to Express
+- all other paths return `404`
 
 Apply after syncing scripts:
 
@@ -146,10 +164,25 @@ Apply after syncing scripts:
 ssh remote "chmod 755 ~/apply-nginx-site.sh && ~/apply-nginx-site.sh"
 ```
 
-Override only when deliberately changing host layout:
+For Cloudflare Full (strict), configure a valid certificate on the backend host,
+then apply the API config with SSL enabled. The current production host uses
+Let's Encrypt with a webroot challenge directory under `/var/www/certbot`.
 
 ```bash
-ssh remote "SPELLBOOK_FRONTEND_ROOT=/var/www/spellbook SPELLBOOK_API_UPSTREAM=http://127.0.0.1:3000 ~/apply-nginx-site.sh"
+ssh remote "sudo mkdir -p /var/www/certbot && sudo chown -R www-data:www-data /var/www/certbot"
+ssh remote "sudo certbot certonly --webroot -w /var/www/certbot -d api.d20spellcodex.com --agree-tos --non-interactive --register-unsafely-without-email --keep-until-expiring"
+ssh remote "SPELLBOOK_NGINX_ENABLE_SSL=true SPELLBOOK_NGINX_SSL_CERTIFICATE=/etc/letsencrypt/live/api.d20spellcodex.com/fullchain.pem SPELLBOOK_NGINX_SSL_CERTIFICATE_KEY=/etc/letsencrypt/live/api.d20spellcodex.com/privkey.pem ~/apply-nginx-site.sh"
+```
+
+When `SPELLBOOK_NGINX_ENABLE_SSL=true` in `api-only` mode, the helper keeps an
+HTTP server block for `/.well-known/acme-challenge/` and API fallback traffic,
+and adds a separate HTTPS server block for normal Cloudflare API traffic. Set
+`SPELLBOOK_ACME_CHALLENGE_ROOT` only if the webroot is not `/var/www/certbot`.
+
+Use the legacy single-origin static web/API config only as an explicit fallback:
+
+```bash
+ssh remote "SPELLBOOK_NGINX_MODE=single-origin SPELLBOOK_SERVER_NAME=_ SPELLBOOK_FRONTEND_ROOT=/var/www/spellbook SPELLBOOK_API_UPSTREAM=http://127.0.0.1:3000 ~/apply-nginx-site.sh"
 ```
 
 ## Host Placeholder
@@ -159,7 +192,7 @@ This document uses `remote` as a placeholder SSH host alias.
 Examples such as:
 
 ```bash
-ssh remote "./deploy-web.sh"
+ssh remote "./deploy-backend.sh"
 ```
 
 assume you have an SSH config entry or equivalent host setup for your actual
@@ -176,10 +209,10 @@ Current deployment target:
 
 Current runtime stack:
 
-- Nginx as the public entry point on port `80`
+- Nginx as the API reverse proxy on the backend host
 - Express backend managed by `systemd`
 - SQLite databases stored as local files
-- React frontend served as static assets
+- React frontend served by Cloudflare Workers Static Assets
 
 ## Server Layout
 
@@ -196,7 +229,7 @@ Application directories:
   |- ...
 ```
 
-Frontend static root:
+Legacy same-origin frontend static root:
 
 ```text
 /var/www/spellbook/
@@ -205,7 +238,7 @@ Frontend static root:
 Staging directories used by the current scripts:
 
 ```text
-~/spellbook-dist/   # uploaded frontend build before deploy-web.sh
+~/spellbook-dist/   # legacy frontend build staging before deploy-web.sh
 ~/data/             # uploaded DB files before update-db.sh or deploy-backend.sh
 ~/dnd3.5-spellbook/ # git checkout used by deploy-backend.sh
 ```
@@ -247,8 +280,7 @@ APP_DATABASE_URL=file:/opt/spellbook/data/content.sqlite
 APP_STATE_DATABASE_URL=file:/opt/spellbook/data/app-state.sqlite
 DATABASE_URL=file:/opt/spellbook/data/spellbook.db
 
-# Optional. Same-origin static web/API deployments do not need this.
-# SPELLBOOK_CORS_ORIGINS=https://spellbook.example
+SPELLBOOK_CORS_ORIGINS=https://www.d20spellcodex.com
 ```
 
 The current remote has switched to explicit content DB naming:
@@ -274,7 +306,7 @@ Backend version metadata is optional in local/manual environments. GitHub
 backend deploys refresh it automatically:
 
 ```dotenv
-SPELLBOOK_VERSION_LABEL=v3.7
+SPELLBOOK_VERSION_LABEL=v1.0
 SPELLBOOK_BACKEND_COMMIT_SHA=
 SPELLBOOK_BACKEND_SHORT_SHA=
 SPELLBOOK_BACKEND_REF=
@@ -285,7 +317,7 @@ SPELLBOOK_BACKEND_GITHUB_RUN_ATTEMPT=
 
 When these values are absent, `GET /api/status/app` reports a local fallback
 instead of inspecting Git state at request time. The same public endpoint also
-returns a redacted content DB summary used by the About / Version page.
+returns a redacted content DB summary used by the About / Status page.
 
 Runtime database provenance is available through `GET /api/status/db`, but in
 production it is private by default because it reports database file roles,
@@ -331,14 +363,12 @@ The Express API sends a baseline set of response headers on all API responses:
 
 Production CORS is explicit. If `SPELLBOOK_CORS_ORIGINS` is unset in
 production, browser requests from arbitrary external origins do not receive
-`Access-Control-Allow-Origin`. Same-origin static web/API deployments continue
-to work through Nginx without CORS.
+`Access-Control-Allow-Origin`.
 
-Use a comma-separated allowlist only when a trusted external browser origin must
-call the API:
+Use a comma-separated allowlist for the Cloudflare Workers frontend origins:
 
 ```dotenv
-SPELLBOOK_CORS_ORIGINS=https://spellbook.example,https://www.spellbook.example
+SPELLBOOK_CORS_ORIGINS=https://www.d20spellcodex.com
 ```
 
 TLS is still an operations item. Add HSTS only after HTTPS termination is
@@ -346,14 +376,16 @@ configured and verified for the production domain.
 
 ### Nginx
 
-Nginx is the public entry point on port `80`.
+Nginx is the API reverse proxy on the backend host.
 
 Expected routing:
 
-- `/` serves static assets from `/var/www/spellbook`
-- `/locales/*` serves checked-in frontend i18n JSON files and returns `404`
-  when a locale file is missing
-- `/api/*` proxies to `http://127.0.0.1:3000`
+- `https://api.d20spellcodex.com/api/*` proxies to `http://127.0.0.1:3000`
+- `https://api.d20spellcodex.com/health` proxies to
+  `http://127.0.0.1:3000`
+- `http://api.d20spellcodex.com/.well-known/acme-challenge/*` serves the
+  certbot webroot for renewal
+- other paths return `404` in API-only mode
 
 Common commands:
 
@@ -364,30 +396,44 @@ sudo systemctl reload nginx
 
 ## Frontend Deployment
 
-The frontend is built locally and deployed as static files.
+Cloudflare Workers Builds owns normal production frontend deployment.
 
-This is intentional because the remote host is not the preferred place to do the frontend build.
+### Cloudflare Workers Build
 
-### Local Build
+```bash
+npm ci
+npm run build:contracts
+npm run -w web build
+npx wrangler deploy
+```
+
+Root `wrangler.jsonc` publishes:
+
+```text
+web/build/client
+```
+
+Production Workers Builds environment variables:
+
+```dotenv
+NODE_VERSION=24
+VITE_API_BASE_URL=https://api.d20spellcodex.com
+```
+
+Frontend version metadata through `VITE_SPELLBOOK_*` remains optional until a
+dedicated Cloudflare build-metadata slice wires those variables. When metadata
+is absent, the About / Status page shows a local/unavailable fallback for the
+frontend build.
+
+### Legacy Same-Origin Fallback
+
+The old remote static deploy path still exists only as an emergency/manual
+fallback. It is not the normal v1.0 production frontend path.
 
 ```bash
 set VITE_API_BASE_URL=/api
 npm run -w web build
-```
-
-GitHub web deploys also provide frontend version metadata through
-`VITE_SPELLBOOK_*` variables. Manual local builds may omit these values; the
-About / Version page then shows a local fallback for the frontend build.
-
-### Upload
-
-```bash
 scp -r web/build/client/* remote:~/spellbook-dist
-```
-
-### Activate On Remote
-
-```bash
 ssh remote "./deploy-web.sh"
 ```
 
@@ -555,7 +601,8 @@ These should remain true unless the deployment model is deliberately changed:
 - `data/` must be preserved across code sync
 - the backend environment is defined by `/etc/default/spellbook-api`
 - the backend binds only to `127.0.0.1:3000`
-- Nginx is the only public service on port `80`
+- Nginx is the only public service on the backend host
+- normal production frontend delivery is owned by Cloudflare Workers
 - backend builds use plain `tsc`; server package imports must resolve through
   `server/package.json`
 - deployment remains explicit and manual
@@ -564,7 +611,7 @@ These should remain true unless the deployment model is deliberately changed:
 
 Be aware of these characteristics in the current scripts:
 
-- `deploy-web.sh` deletes all existing files in `/var/www/spellbook` before copying the new build
+- `deploy-web.sh` deletes all existing files in `/var/www/spellbook` before copying the new build; it is legacy fallback only
 - `deploy-backend.sh` runs `git reset --hard` and `git clean -fd` in the remote checkout
 - backend deploy and DB update both restart the backend service
 - deploying backend code that uses default normalized reads before verifying
@@ -607,25 +654,30 @@ Check:
 Check:
 
 - `sudo nginx -t`
-- ownership and permissions under `/var/www/spellbook`
-- that the copied frontend assets are complete
+- the selected `SPELLBOOK_NGINX_MODE`
+- API-only server name and TLS certificate paths
+- ownership and permissions under `/var/www/spellbook` only when using the
+  legacy single-origin fallback
 
 ### UI Shows i18n Keys
 
 If UI text renders as keys such as `page.title` or `nav.about`, first check the
-static locale files rather than restarting `spellbook-api`:
+Cloudflare Workers static locale files rather than restarting `spellbook-api`:
 
 ```bash
-curl -i http://127.0.0.1/locales/en/about.json
-curl -i http://127.0.0.1/locales/zh/about.json
-curl -i http://127.0.0.1/locales/en-US/about.json
+curl -i https://www.d20spellcodex.com/locales/en/about.json
+curl -i https://www.d20spellcodex.com/locales/zh/about.json
+curl -i https://www.d20spellcodex.com/locales/en-US/about.json
 ```
 
 Existing locale files should return `200` with `Content-Type:
 application/json`. Missing locale files should return `404`; they should not
-return the SPA `index.html`. If a missing `/locales/...` path returns HTML,
-update the Nginx site config so `location /locales/ { try_files $uri =404; }`
-appears before the SPA fallback location.
+return the SPA `index.html`. If a missing `/locales/...` path returns HTML on
+Cloudflare Workers, review the Workers Static Assets routing/fallback behavior
+and build output.
+If using the legacy single-origin fallback, update the Nginx site config so
+`location /locales/ { try_files $uri =404; }` appears before the SPA fallback
+location.
 
 ## Current Fit
 
@@ -638,7 +690,7 @@ This setup is currently good enough for:
 
 It is not yet meant to provide:
 
-- CI/CD
+- automated DB CD
 - auto-scaling
 - HA
 - managed database infrastructure

@@ -18,6 +18,16 @@ function shouldSendVariant(pathname: string) {
   return pathname.startsWith("/api/spells");
 }
 
+function configuredApiBaseUrl() {
+  return import.meta.env.VITE_API_BASE_URL?.trim().replace(/\/+$/, "") ?? "";
+}
+
+function withApiBaseUrl(relativeUrl: string) {
+  const baseUrl = configuredApiBaseUrl();
+  if (!baseUrl || !relativeUrl.startsWith("/")) return relativeUrl;
+  return `${baseUrl}${relativeUrl}`;
+}
+
 function withI18nParams(urlStr: string): string {
   const base =
     typeof window !== "undefined" ? window.location.origin : "http://localhost";
@@ -33,8 +43,9 @@ function withI18nParams(urlStr: string): string {
   }
 
   // return relative if input was relative
-  if (urlStr.startsWith("/"))
-    return url.pathname + (url.search ? url.search : "");
+  if (urlStr.startsWith("/")) {
+    return withApiBaseUrl(url.pathname + (url.search ? url.search : ""));
+  }
   return url.toString();
 }
 

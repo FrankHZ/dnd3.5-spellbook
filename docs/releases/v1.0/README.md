@@ -4,24 +4,27 @@ Status: active plan.
 
 v1.0 is the first formal post-MVP public release line. It should move the app
 from the MVP single-origin deployment shape to a clearer production topology:
-Cloudflare Pages for the frontend, a dedicated API domain for the backend, and
-the existing server focused on Express, SQLite/content DB, DB updates, and API
-reverse proxying.
+Cloudflare Workers Static Assets for the frontend, a dedicated API domain for
+the backend, and the existing server focused on Express, SQLite/content DB, DB
+updates, and API reverse proxying.
 
 ## Release Boundary
 
 Frontend:
 
-- `https://d20spellcodex.com`
-- Cloudflare Pages owns frontend build and deployment.
-- Pages should use Git integration rather than Wrangler Direct Upload.
+- `https://www.d20spellcodex.com`
+- Cloudflare Workers Static Assets owns frontend serving.
+- Cloudflare Workers Builds should own Git-based frontend build and deployment.
+- Manual Wrangler deploy remains an operator tool, not the normal production
+  CD path.
+- The apex domain `d20spellcodex.com` is intentionally left unassigned for
+  v1.0 until a redirect or canonical-domain policy is accepted.
 
 API:
 
 - `https://api.d20spellcodex.com`
 - Cloudflare proxied DNS routes browser API traffic to the existing server.
-- Production CORS should explicitly allow `https://d20spellcodex.com` and,
-  if accepted, `https://www.d20spellcodex.com`.
+- Production CORS should explicitly allow `https://www.d20spellcodex.com`.
 
 Server:
 
@@ -41,8 +44,8 @@ About / Status:
 
 1. **Domain and deployment topology**
 
-   Owns Cloudflare Pages frontend deployment, API domain/proxy/TLS/CORS, web API
-   base URL configuration, GitHub workflow changes, and operations docs.
+   Owns Cloudflare Workers frontend deployment, API domain/proxy/TLS/CORS, web
+   API base URL configuration, GitHub workflow changes, and operations docs.
 
 2. **About and status surface**
 
@@ -72,8 +75,8 @@ delivery sequence, ownership, or accepted release scope.
 - Do not add large-scale Chinese/English translation or proofreading QA.
 - Do not promote `target` / `effect` / `area` backend normalization.
 - Do not migrate away from the existing Express/SQLite backend solely for v1.0.
-- Do not make Wrangler Direct Upload the frontend deployment model unless Git
-  integration is rejected by a specific blocking constraint.
+- Do not make manual Wrangler deploy the frontend deployment model unless
+  Workers Builds Git integration is rejected by a specific blocking constraint.
 
 ## Plans
 
@@ -85,9 +88,9 @@ delivery sequence, ownership, or accepted release scope.
 
 v1.0 release acceptance should include:
 
-- Cloudflare Pages production build for `https://d20spellcodex.com`.
-- Pages custom domain attached through the Pages project, not only a hand-edited
-  DNS record.
+- Cloudflare Workers production build for `https://www.d20spellcodex.com`.
+- Workers custom domain or route attached through Cloudflare, not only a
+  hand-edited DNS record.
 - SPA deep-link refresh works for representative app routes.
 - Frontend API client uses `https://api.d20spellcodex.com` in production and
   still uses local `/api` or dev proxy behavior in local development.
@@ -110,30 +113,31 @@ v1.0 release acceptance should include:
 These assumptions should be verified during implementation against current
 Cloudflare docs:
 
-- Pages Git integration supports automatic deployments from the Git repository.
-- Cloudflare documents Direct Upload and Git integration as one-way project
-  choices; choose Git integration for this repo unless there is a concrete
-  blocker.
-- Pages custom domains must be attached to the Pages project.
-- Pages supports monorepo build configuration, including root directory, build
-  command, output directory, and environment variables.
-- Pages SPA routing should be validated with direct refreshes for app routes.
+- Workers Builds Git integration supports automatic deployments from the Git
+  repository.
+- Workers Static Assets uses `wrangler.jsonc` for the asset directory and SPA
+  fallback behavior.
+- Workers custom domains can attach the `www` frontend hostname to the Worker.
+- The apex hostname can stay unassigned until a redirect policy is accepted.
+- Workers Builds supports monorepo build configuration, including install,
+  build, deploy commands, and environment variables.
+- Workers SPA routing should be validated with direct refreshes for app routes.
 - Cloudflare proxied DNS should be used for the API domain.
 - Full (strict) requires a valid origin certificate, such as Cloudflare Origin
   CA or a publicly trusted certificate, and HTTPS reachability to the origin.
 
 Reference docs for implementation review:
 
-- Cloudflare Pages Git integration:
-  <https://developers.cloudflare.com/pages/get-started/git-integration/>
-- Cloudflare Pages custom domains:
-  <https://developers.cloudflare.com/pages/configuration/custom-domains/>
-- Cloudflare Pages build configuration:
-  <https://developers.cloudflare.com/pages/configuration/build-configuration/>
-- Cloudflare Pages monorepos:
-  <https://developers.cloudflare.com/pages/configuration/monorepos/>
-- Cloudflare Pages serving behavior:
-  <https://developers.cloudflare.com/pages/configuration/serving-pages/>
+- Cloudflare Workers Static Assets:
+  <https://developers.cloudflare.com/workers/static-assets/>
+- Cloudflare Workers SPA routing:
+  <https://developers.cloudflare.com/workers/static-assets/routing/single-page-application/>
+- Cloudflare Workers Builds:
+  <https://developers.cloudflare.com/workers/ci-cd/builds/>
+- Cloudflare Workers Builds configuration:
+  <https://developers.cloudflare.com/workers/ci-cd/builds/configuration/>
+- Cloudflare Workers custom domains:
+  <https://developers.cloudflare.com/workers/configuration/routing/custom-domains/>
 - Cloudflare DNS proxy status:
   <https://developers.cloudflare.com/dns/proxy-status/>
 - Cloudflare SSL/TLS Full (strict):
@@ -144,9 +148,9 @@ Reference docs for implementation review:
 ## Expected Documentation Updates
 
 - `web/README.md`: document `VITE_API_BASE_URL`, local default `/api`, and
-  Pages production value.
-- `docs/operations/deployment.md`: split frontend Pages deployment from backend
-  remote deployment.
+  Workers production value.
+- `docs/operations/deployment.md`: split frontend Workers deployment from
+  backend remote deployment.
 - `docs/modules/delivery.md`: update delivery ownership and workflow boundary.
 - `.github/workflows/deploy.yml`: remove or downgrade web-to-origin static
   deploy as the production frontend path; preserve backend deploy.

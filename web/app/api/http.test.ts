@@ -28,6 +28,7 @@ function mockFetchResponse({
 describe("api http helpers", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
     mockedGetI18nFromStorage.mockReturnValue({ lang: "en" });
     globalThis.fetch = vi.fn().mockResolvedValue(mockFetchResponse({ body: { ok: true } }));
   });
@@ -79,6 +80,20 @@ describe("api http helpers", () => {
       body: JSON.stringify({ names: ["Magic Missile"] }),
       signal: undefined,
     });
+  });
+
+  it("prepends the configured API base URL for relative API requests", async () => {
+    vi.stubEnv("VITE_API_BASE_URL", "https://api.d20spellcodex.com/");
+
+    await apiGet("/api/spells/search?q=fire");
+
+    expect(fetch).toHaveBeenCalledWith(
+      "https://api.d20spellcodex.com/api/spells/search?q=fire&lang=en",
+      {
+        method: "GET",
+        signal: undefined,
+      },
+    );
   });
 
   it("throws ApiError with response payload when the API fails", async () => {

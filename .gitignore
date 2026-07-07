@@ -3,6 +3,7 @@
 node_modules
 *.bat
 docs/tmp-feature-plan.md
+.local/
 server/data/db/
 /data/
 data-tools/out/

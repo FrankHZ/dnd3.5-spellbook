@@ -51,15 +51,35 @@ npm run -w web i18next:sync:check
 
 ## Configuration
 
-The frontend currently keeps runtime configuration intentionally minimal.
+The frontend supports one API base URL build variable:
+
+```bash
+VITE_API_BASE_URL=https://api.d20spellcodex.com
+```
 
 Current behavior:
 
-- API requests are made against relative `/api/...` paths
-- the app expects the browser-facing host to expose the backend under `/api`
-- there is no current required frontend runtime environment variable for API base URL
+- when `VITE_API_BASE_URL` is unset, API requests use relative `/api/...` paths
+- local development keeps using the Vite dev proxy for `/api`
+- Cloudflare Workers production should set
+  `VITE_API_BASE_URL=https://api.d20spellcodex.com`
+- the value is treated as the API origin/base host, so app code still calls
+  `/api/...` helpers internally
 
-In development, the app code uses `import.meta.env.DEV` for development-only behavior such as i18n debug mode.
+In development, the app code also uses `import.meta.env.DEV` for development-only behavior such as i18n debug mode.
+
+Suggested Cloudflare Workers Builds settings:
+
+- Root directory: repository root
+- Install command: `npm ci`
+- Build command: `npm run build:contracts && npm run -w web build`
+- Deploy command: `npx wrangler deploy`
+- Static asset config: root `wrangler.jsonc`
+- Environment variables:
+  - `NODE_VERSION=24`
+  - `VITE_API_BASE_URL=https://api.d20spellcodex.com`
+  - optional `VITE_SPELLBOOK_*` build metadata variables if Cloudflare build
+    metadata is wired in a later release slice
 
 For deployment and reverse-proxy expectations, use:
 
@@ -72,9 +92,10 @@ For deployment and reverse-proxy expectations, use:
   [../docs/design.md](../docs/design.md).
 - Early v3.4 frontend styling work should follow
   [../docs/mvp/v3.4/design-refresh-plan.md](../docs/mvp/v3.4/design-refresh-plan.md).
-- The production build output is written under `build/`.
+- The production build output is written under `build/`; root `wrangler.jsonc`
+  publishes `web/build/client` as Workers Static Assets.
 - Deployment workflow and remote activation steps are documented in [../docs/operations/deployment.md](../docs/operations/deployment.md).
-- For current release-level behavior, start with [../docs/mvp/v3.3/FREEZE.md](../docs/mvp/v3.3/FREEZE.md).
+- For current release-level behavior, start with [../docs/releases/v1.0/README.md](../docs/releases/v1.0/README.md).
 
 ## Related Docs
 

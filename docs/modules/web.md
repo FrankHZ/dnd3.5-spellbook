@@ -17,6 +17,9 @@ Version status, local browser state, and UI i18n display behavior.
 - Shared components live under `web/app/components/`.
 - Local shadcn wrappers live under `web/app/components/ui/`.
 - i18n runtime, display helpers, and meta-name hooks live under `web/app/i18n/`.
+- Production API origin configuration is build-time owned through
+  `VITE_API_BASE_URL`; local development leaves it unset and uses relative
+  `/api` requests through the Vite dev proxy.
 
 ## Feature Ownership
 
@@ -58,6 +61,10 @@ operator-facing and should not be required for the public page.
 Frontend code should import shared DTOs from `@dnd/contracts` and use API helper
 modules under `web/app/api/` rather than calling `fetch` directly from feature
 components.
+
+API helpers should keep feature code on relative `/api/...` paths. The shared
+HTTP helper is responsible for prepending `VITE_API_BASE_URL` in Cloudflare
+Workers production builds.
 
 If the backend contract changes, rebuild `contracts` and update the closest
 frontend API/helper tests before touching page UI.

@@ -88,7 +88,6 @@ Explanation:
 ```bash
 sudo mkdir -p /opt/spellbook
 sudo mkdir -p /opt/spellbook/data
-sudo mkdir -p /var/www/spellbook
 mkdir -p ~/data
 ```
 
@@ -100,9 +99,11 @@ sudo chmod 750 /opt/spellbook
 sudo chmod 750 /opt/spellbook/data
 ```
 
-Set nginx ownership for frontend:
+Create the legacy single-origin frontend root only if you need the emergency
+same-origin fallback:
 
 ```bash
+sudo mkdir -p /var/www/spellbook
 sudo chown -R www-data:www-data /var/www/spellbook
 sudo chmod 755 /var/www/spellbook
 ```
@@ -223,8 +224,7 @@ APP_DATABASE_URL=file:/opt/spellbook/data/content.sqlite
 APP_STATE_DATABASE_URL=file:/opt/spellbook/data/app-state.sqlite
 DATABASE_URL=file:/opt/spellbook/data/spellbook.db
 
-# Optional. Same-origin static web/API deployments do not need this.
-# SPELLBOOK_CORS_ORIGINS=https://spellbook.example
+SPELLBOOK_CORS_ORIGINS=https://www.d20spellcodex.com
 ```
 
 Permissions:
@@ -235,8 +235,8 @@ sudo chmod 600 /etc/default/spellbook-api
 
 ## 12. Configure Nginx
 
-The tracked apply script writes the standard single-host site config, tests it,
-and reloads Nginx:
+The tracked apply script writes the v1.0 API-only site config, tests it, and
+reloads Nginx:
 
 ```bash
 ~/apply-nginx-site.sh
@@ -247,23 +247,11 @@ The generated config is:
 ```nginx
 server {
     listen 80;
-    server_name _;
-
-    root /var/www/spellbook;
-    index index.html;
+    server_name api.d20spellcodex.com;
 
     add_header X-Content-Type-Options nosniff always;
     add_header X-Frame-Options SAMEORIGIN always;
     add_header Referrer-Policy strict-origin-when-cross-origin always;
-
-    location /locales/ {
-        add_header Cache-Control "no-cache" always;
-        try_files $uri =404;
-    }
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
 
     location /api/ {
         proxy_pass http://127.0.0.1:3000;
@@ -276,13 +264,22 @@ server {
         proxy_set_header Connection "upgrade";
     }
 
-    location ~* \.(?:js|css|png|jpg|jpeg|gif|svg|ico|webp|woff2?)$ {
-        expires 7d;
-        add_header Cache-Control "public, max-age=604800, immutable" always;
-        try_files $uri =404;
+    location = /health {
+        proxy_pass http://127.0.0.1:3000;
+    }
+
+    location / {
+        return 404;
     }
 }
 ```
+
+For Cloudflare Full (strict), configure a valid certificate and run the helper
+with `SPELLBOOK_NGINX_ENABLE_SSL=true` plus certificate/key paths. The current
+production pattern uses certbot with `/var/www/certbot` as the webroot for
+`api.d20spellcodex.com`; keep the HTTP ACME challenge path available for
+renewal. Use `SPELLBOOK_NGINX_MODE=single-origin` only for the legacy static
+frontend fallback.
 
 ## 13. Prepare Initial Databases
 
@@ -356,10 +353,11 @@ file as `DEPLOY_SSH_ALIAS=...` instead of hardcoding it in docs.
 ## 16. Final Validation Checklist
 
 - nginx running
+- nginx listening on 80 and 443 for `api.d20spellcodex.com`
 - backend running
 - `/opt/spellbook/data` exists
 - DB files owned by spellbook
-- frontend static accessible
+- Cloudflare Workers frontend accessible
 - `/api/rulebooks` works
 - No service bound publicly on 3000
 
@@ -374,7 +372,11 @@ sudo ss -ltnp
 ```text
 Internet
    ↓
-Nginx (80)
+Cloudflare Workers Static Assets (frontend)
+   ↓
+api.d20spellcodex.com
+   ↓
+Nginx (API reverse proxy)
    ↓
 Express (127.0.0.1:3000)
    ↓
@@ -387,8 +389,7 @@ After this point:
 
 - Use `ssh remote "./deploy-backend.sh"` for backend code deploys
 - Use `ssh remote "./update-db.sh"` for database updates
-- Use `scp -r web/build/client/* remote:~/spellbook-dist` followed by
-  `ssh remote "./deploy-web.sh"` for frontend deploys
+- Use Cloudflare Workers Builds Git integration for frontend deploys
 
 ## Security Baseline And Deferred Hardening
 

@@ -17,7 +17,7 @@ v1.0 is the active formal post-MVP release plan:
 
 The latest frozen MVP snapshot is `docs/mvp/v3.10/FREEZE.md`.
 
-v1.0 should focus on public release readiness: Cloudflare Pages frontend
+v1.0 should focus on public release readiness: Cloudflare Workers frontend
 delivery, the `api.d20spellcodex.com` backend API topology, About/Status
 visibility, and release-ready documentation consistency. It should not reopen
 v3.10 MVP UI/i18n acceptance.
@@ -298,7 +298,7 @@ Recommended next sequence:
 
 1. **Domain and deployment topology**
 
-   Implement the v1.0 split production topology: Cloudflare Pages frontend,
+   Implement the v1.0 split production topology: Cloudflare Workers frontend,
    `api.d20spellcodex.com` backend API, production API base URL configuration,
    CORS/TLS verification, and deployment docs/workflows that no longer treat
    the origin server as the canonical static frontend host.
@@ -314,7 +314,7 @@ Recommended next sequence:
 
    Run the final cross-doc quality gate for v1.0. Verify root README,
    docs index, roadmap, AGENTS.md, feature docs, design docs, operations docs,
-   module docs, and the v1.0 release README all agree on the Cloudflare Pages
+   module docs, and the v1.0 release README all agree on the Cloudflare Workers
    frontend, API domain, backend-only origin role, and About/Status model.
 
 4. **v1.0 release acceptance and freeze**
