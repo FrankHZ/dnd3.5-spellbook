@@ -78,8 +78,8 @@ Suggested Cloudflare Workers Builds settings:
 - Environment variables:
   - `NODE_VERSION=24`
   - `VITE_API_BASE_URL=https://api.d20spellcodex.com`
-  - optional `VITE_SPELLBOOK_*` build metadata variables if Cloudflare build
-    metadata is wired in a later release slice
+- Build command should export Workers Builds `WORKERS_CI_*` metadata into
+  `VITE_SPELLBOOK_*` values before running `npm run -w web build`.
 
 For deployment and reverse-proxy expectations, use:
 

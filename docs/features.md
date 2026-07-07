@@ -349,7 +349,8 @@ credit status from the app.
 Current behavior:
 
 - `/about` shows frontend build metadata from `VITE_SPELLBOOK_*` build-time
-  variables
+  variables; Workers Builds exports its `WORKERS_CI_*` metadata into those
+  variables during production builds
 - Status and Credits are separated into tabs so deployment diagnostics do not
   compete with source acknowledgements
 - the page identifies the frontend hosting surface and the configured API
