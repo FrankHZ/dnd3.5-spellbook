@@ -86,6 +86,9 @@ Purpose:
 ### Layout
 
 - top bar: `web/app/layout/TopBar.tsx`
+- shared page and side-column CSS helpers: `web/app/app.css`
+  (`page-*`, `app-side-card*`, `app-filter-layout`,
+  `app-fixed-side-layout`, `app-prepared-layout`)
 
 ### Shared Components
 

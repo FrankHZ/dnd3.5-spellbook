@@ -178,6 +178,10 @@ Implementation branch:
 - Aligned the prepared-spellbook class/domain sidebar to the same collapsible
   card/rail pattern, keeping its selected and candidate lists as sections inside
   the sidebar card instead of separate nested cards.
+- Added shared side-column CSS helpers in `web/app/app.css` for side-card
+  padding, filter/detail/prepared layouts, and sidebar scroll constraints so
+  Browse/Search, Spell Detail, and prepared workflows do not repeat breakpoint
+  layout classes.
 - Added a shared `StatusCard` for empty, loading, validation, and error states
   across Browse, Search, Spell Detail, and collection workflows.
 - Made spellbook index cards whole-card links with consistent hover and focus
@@ -198,7 +202,8 @@ Implementation branch:
 - Aligned About/Version card headers and content spacing with the shared
   settings/status card rhythm.
 - Updated `docs/design.md` and `docs/frontend-map.md` with the small shared
-  page-header, status-card, and spell metadata badge patterns.
+  page-header, status-card, side-card/layout, and spell metadata badge
+  patterns.
 
 Validation:
 
