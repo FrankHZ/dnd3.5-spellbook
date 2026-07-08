@@ -14,6 +14,7 @@ import {
 } from "../rules/spells-schema";
 import {
   makeRulebookResolver,
+  manualReviewBlocker,
   parseSourceAppearance,
   sourceAppearances,
   sourceLabelKey,
@@ -328,6 +329,10 @@ const tests: TestCase[] = [
         "defer-out-of-scope",
       );
       assert.equal(
+        classifySourceLabel("Dragonlance: Age of Mortals").importDisposition,
+        "defer-out-of-scope",
+      );
+      assert.equal(
         classifySourceLabel("Far Corners of the World: Fire and Ash")
           .sourceCategory,
         "wotc-web-article",
@@ -335,6 +340,10 @@ const tests: TestCase[] = [
       assert.equal(
         classifySourceLabel("Player’s Handbook").sourceCategory,
         "ambiguous-core-source",
+      );
+      assert.match(
+        manualReviewBlocker({ name: "Augment Truefiend" }, "TM") ?? "",
+        /Augment Truefriend/,
       );
     },
   },

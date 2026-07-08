@@ -262,10 +262,10 @@ function classifySourceLabel(sourceLabel: string): Omit<
     return classification(
       "licensed-d20-setting",
       "Dragonlance d20",
-      "manual-review-source",
+      "defer-out-of-scope",
       "medium",
       [EVIDENCE.dragonlance],
-      ["Licensed setting family; map only after deciding sourcebook scope."],
+      ["Dragonlance family sources other than DCS are deferred from the v1.1 published-corpus scope."],
     );
   }
 

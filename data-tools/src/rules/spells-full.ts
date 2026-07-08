@@ -203,6 +203,33 @@ const RULEBOOK_TO_SOURCE_NAME: Record<string, string> = {
   Sc_: "Spell Compendium",
 };
 
+const MANUAL_REVIEW_READY_BLOCKLIST: Record<string, string> = {
+  "CM:Dawnburst": "possible duplicate of existing CM row Dawn Burst",
+  "CM:Otiluke’s Suppressing Field":
+    "possible duplicate of existing CM row Otiluke's Supressing Field",
+  "CR:Necrotic Spell Bomb":
+    "possible duplicate of existing CR row Necrotic Skull Bomb",
+  "CV:Dawnshroud": "possible duplicate of existing CV row Dawn Shroud",
+  "Fr:Ice to Flesh 2": "possible duplicate of existing Fr row Ice to Flesh",
+  "Gh:Alarm, Ethereal": "possible duplicate of existing Gh row Ethereal Alarm",
+  "Gh:Black Lung": "possible duplicate of existing Gh row Black Lungs",
+  "HH:Familiar Geas": "possible duplicate of existing HH row Familial Geas",
+  "LE:Mailied Might of the Magelords":
+    "possible duplicate of existing LE row Mailed Might of the Magelords",
+  "PH2:Channeled Pyroblast":
+    "possible duplicate of existing PH2 row Channeled Pyroburst",
+  "RE:Unfettered Heroism":
+    "possible duplicate of existing RE row Unfettered Herosim",
+  "Sa:Protection from Desiccation":
+    "possible duplicate of existing Sa row Protection from Dessication",
+  "TM:Augment Truefiend":
+    "possible duplicate of existing TM row Augment Truefriend",
+  "TM:Bane of the Archrivel":
+    "possible duplicate of existing TM row Bane of the Archrival",
+  "Una:Mage Armor, Improved":
+    "possible duplicate of existing Una row Improved Mage Armor",
+};
+
 function usage(): never {
   console.error(`Usage:
   npm run -w data-tools spells-full:inspect -- known-misses
@@ -568,6 +595,10 @@ function conversionCheck(spell: ParsedSpell, lookups: ConversionLookups) {
   }
 
   return { blockers, notes };
+}
+
+function manualReviewBlocker(spell: Pick<ParsedSpell, "name">, rulebookAbbr: string) {
+  return MANUAL_REVIEW_READY_BLOCKLIST[`${rulebookAbbr}:${spell.name}`];
 }
 
 function descriptors(raw: string | undefined) {
@@ -1000,6 +1031,20 @@ function runCorpusInventory(mode: Mode, patchPath: string | undefined) {
           continue;
         }
 
+        const manualReviewNote = manualReviewBlocker(spell, targetRulebook.abbr);
+        if (manualReviewNote) {
+          entries.push(
+            buildInventoryEntry({
+              category: "manual-review",
+              spell,
+              appearance,
+              notes: [...notes, manualReviewNote],
+              duplicates,
+            }),
+          );
+          continue;
+        }
+
         if (unresolved.length > 0 || mapped.length > 1) {
           if (mapped.length > 1) {
             notes.push(
@@ -1269,6 +1314,7 @@ export {
   cleanSpellNameForMatch,
   conversionCheck,
   makeRulebookResolver,
+  manualReviewBlocker,
   parseSourceAppearance,
   sourceAppearances,
   sourceLabelKey,

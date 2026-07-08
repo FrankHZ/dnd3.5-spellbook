@@ -113,21 +113,23 @@ npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.
 npm run -w data-tools spells-full:rulebooks
 ```
 
-Initial local run on July 8, 2026 produced:
+Current local run on July 8, 2026 produced:
 
 | Category        | Count |
 | --------------- | ----: |
-| ready           |    57 |
+| ready           |    42 |
 | duplicate       |  5016 |
 | mismatch        |    17 |
-| manual-review   |    63 |
+| manual-review   |    78 |
 | deferred        |  2103 |
 
 The inventory is entry-based rather than source-row-based because one parsed
-source row can list multiple source appearances. The ready set generated 57
+source row can list multiple source appearances. The ready set generated 42
 `insertSpell` JSONL operations and passed `rules:spells:validate` with 0
 warnings and 0 errors. No DB apply or dry-run apply was performed in this
-data-pipeline branch.
+data-pipeline branch. The generated ready patch keeps 17 `DCS` rows in scope
+and moves 15 apparent typo/duplicate hazards into `manual-review` instead of
+letting them create new spell rows.
 
 Deferred source labels are also summarized into
 `data/spells-full/source-rulebooks.generated.jsonl`. The current run produced
@@ -136,14 +138,17 @@ Deferred source labels are also summarized into
 | Disposition               | Labels | Entries |
 | ------------------------- | -----: | ------: |
 | candidate-import-rulebook |     42 |     231 |
-| manual-review-source      |     99 |     292 |
-| defer-out-of-scope        |    106 |    1309 |
+| manual-review-source      |     87 |     174 |
+| defer-out-of-scope        |    118 |    1427 |
 | defer-parser-artifact     |      1 |     271 |
 
 The 231 `candidate-import-rulebook` entries represent D&D 3.5 sources that are
 in scope but lack a current rules DB rulebook mapping: Dragon Magazine #309+
 issue labels, `Forgotten Realms: Anauroch`, `Eberron: City of Stormreach`,
 `Eberron: Shadows of the Last War`, and `Expeditions to Undermountain`.
+Dragonlance Campaign Setting (`DCS`) already maps to the current rules DB and is
+part of the ready patch; other Dragonlance family labels are deferred from the
+v1.1 published-corpus scope.
 
 ### Slice 2: Import And Review Workflow
 
@@ -203,7 +208,7 @@ issue labels, `Forgotten Realms: Anauroch`, `Eberron: City of Stormreach`,
 
 ## Open Questions
 
-- Which of the 57 ready JSONL rows should DB/content maintainers accept
+- Whether DB/content maintainers should apply the 42 ready JSONL rows
   directly versus split by rulebook or source family?
 - What rulebook identifiers should DB/content maintainers use for Dragon
   Magazine issue labels and the 3.5 adventure/source labels currently marked
