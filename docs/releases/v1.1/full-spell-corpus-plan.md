@@ -217,6 +217,10 @@ issue labels, `Forgotten Realms: Anauroch`, `Eberron: City of Stormreach`,
 
 - Large-scale Chinese/English translation and proofreading QA belongs in v1.2
   after the full corpus is stable.
+- Official WotC web articles and web enhancements should stay out of the v1.1
+  published-corpus gate and move into a later `official-web-corpus` slice with
+  URL/date/article provenance, edition confirmation, and duplicate/conflict
+  review against printed sources.
 - Static/offline search or HTML artifacts remain later stable-track work.
 - Broader DB schema cleanup should remain separate from corpus import unless a
   blocking import issue proves otherwise.
