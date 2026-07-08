@@ -76,6 +76,24 @@ The sequence is:
   separate pre-freeze branch for those chores unless the cleanup changes scope,
   ownership, sequencing, or shipped behavior.
 
+## Follow-Up Candidate Lifecycle
+
+Use follow-up candidates for useful work discovered during a branch that should
+not block the current acceptance gate.
+
+- Keep branch-local candidates in the owning feature doc, topic doc, or version
+  child plan.
+- Keep each candidate short, concrete, and explicit about why it is outside the
+  current acceptance gate.
+- Move real blockers back into the active checklist or acceptance criteria.
+- Move valuable but unprioritized stable-track candidates into
+  `docs/stable-backlog.md`.
+- Promote candidates to `docs/roadmap.md` only during freeze, roadmap, or
+  docs-governance sweeps when direction, priority, scope, and acceptance are
+  clear.
+- Remove completed, duplicated, or invalidated candidates during the next
+  closeout sweep instead of carrying them forward indefinitely.
+
 ## Temporary Plan Lifecycle
 
 `docs/tmp-feature-plan.md` is intentionally ignored by git.

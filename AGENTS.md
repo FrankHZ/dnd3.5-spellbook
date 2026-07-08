@@ -140,6 +140,9 @@ probe a user-level `.agents` path first.
   docs, not implementation ledgers. Ordinary implementation branches should
   update their owning child plan, affected topic docs, and `docs/roadmap.md`
   only when active work ordering changes.
+- Keep follow-up candidates local to the owning feature/topic/version plan or
+  `docs/stable-backlog.md`; promote them into `docs/roadmap.md` only during a
+  freeze, roadmap, or docs-governance sweep when scope and acceptance are clear.
 
 ## Feature Change Workflow
 

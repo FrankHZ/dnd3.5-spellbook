@@ -84,6 +84,9 @@ non-blocking work discovered during the branch. Keep each item short, explain
 why it is outside the current acceptance gate, and move any real release blocker
 back into `Acceptance Criteria` instead.
 
+Freeze or docs-governance sweeps decide whether these candidates stay local,
+move to `docs/stable-backlog.md`, or promote to `docs/roadmap.md`.
+
 - Candidate 1
 
 ## Completion Notes

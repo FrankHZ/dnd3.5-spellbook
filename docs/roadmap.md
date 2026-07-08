@@ -1,10 +1,15 @@
 # Roadmap
 
-This document is the lightweight current roadmap for active work.
+This document is the lightweight official roadmap for active work.
 
 It is intentionally shorter than the versioned stage plans. Use it to decide what
 to do next after a pause, then follow the linked topic docs for implementation
 details.
+
+Keep scratch notes, unpromoted ideas, and loose follow-up candidates in
+`docs/stable-backlog.md` or the owning feature/version plan. Promote an item
+here only when the direction is accepted, the scope can be bounded, and
+acceptance can be described.
 
 ## Current Track
 
@@ -18,8 +23,9 @@ v1.0 is the latest frozen formal public release:
 
 The latest frozen pre-release snapshot is `docs/mvp/v3.10/FREEZE.md`.
 
-No later formal release plan is active yet. Use the next-work list below to
-triage stable-track work after v1.0.
+No later formal release plan is active yet. Use the post-release governance
+tracks below to clean up the stable-track candidate pool before opening the
+next release plan.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
@@ -314,16 +320,73 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Triage the non-blocking maintenance tail as needed**
+1. **Agent Workflow Review**
 
-   `npm audit --workspaces --omit=dev --json` still reports the reviewed Prisma
-   dev-chain / Hono moderate advisories. Treat them as explicit maintenance
-   follow-ups, not hidden release blockers.
+   Solidify the collaboration model that is already working: main gate agents
+   own planning, review, and merge readiness; librarian agents own docs,
+   roadmap, freeze, and plan coherence; specialist agents own focused
+   implementation in areas such as design, i18n, db, security, and frontend;
+   subagents handle bounded implementation or corpus-inspection slices. Keep
+   `AGENTS.md` compact and move detailed process into topic docs, templates, or
+   repo-local skills.
 
-2. **Choose the next formal release track**
+2. **Promote Candidates To Official Roadmap**
 
-   Promote only a bounded slice from `docs/stable-backlog.md` into a new
-   release plan when the next user-visible target is clear.
+   Sweep freeze notes, feature docs, follow-up candidates, and
+   `docs/stable-backlog.md`. Promote only confirmed, acceptance-definable work
+   that matches the product and engineering direction. Leave valuable but
+   unprioritized ideas in the stable backlog, and delete or archive completed,
+   duplicate, or stale candidates. After promotion, `docs/roadmap.md` should
+   remain the official route, not a scratchpad.
+
+3. **CF/AWS Security Pass**
+
+   Run a post-release security acceptance pass, not a v1.0 freeze patch.
+   Cloudflare review should cover DNSSEC, Full Strict HTTPS, HTTP-to-HTTPS,
+   basic WAF or managed rules, reasonable API rate limiting, security response
+   headers, and Pages/Workers environment-variable and token permissions. AWS
+   review should cover security groups, SSH exposure, deploy user/IAM
+   permissions, key rotation, system update strategy, Nginx reverse-proxy
+   exposure, logs, backups, and rollback paths. HSTS preload, Bot Fight, and
+   aggressive caching need evaluation before enabling. The acceptance artifact
+   should record enabled items, deferred items with reasons, and post-change
+   smoke for frontend, API, CORS, deploy, and private db-status/admin paths.
+
+4. **Open the next formal release track**
+
+   Create a release plan only after the governance sweep has promoted the next
+   bounded slice from the stable backlog.
+
+## Official Release Sequence
+
+The expected post-v1.0 release order is:
+
+1. **v1.1 Production Hardening + Full Spell Corpus**
+
+   Scope this as two independent acceptance tracks so security configuration
+   and content import can be evaluated separately:
+
+   - production hardening: resolve confirmed security-checklist findings,
+     apply Cloudflare/AWS configuration changes, and smoke frontend, API, CORS,
+     deploy, and db-status/admin-only behavior
+   - full spell corpus: import the remaining source-backed spell corpus,
+     update content DB artifacts, and validate deploy/content status without
+     adding DB upload to automatic CD
+
+   Non-goals: broad UI redesign and large-scale translation/proofreading.
+
+2. **v1.2 Translation + QA**
+
+   After the full corpus is stable, build the bulk Chinese/English translation
+   and proofreading workflow: QA reports, human review queues, terminology and
+   rulebook consistency checks, and data/i18n/corpus harness coverage.
+
+3. **v1.3 Sitewide UX / Style Redesign**
+
+   Run a deliberate design-system and sitewide cohesion pass across Browse,
+   Search, Detail, About/Status, collections, prepared spells, filters, spell
+   cards, layout density, and mobile behavior. Let frontend-design own the
+   implementation branch while the main gate controls scope and acceptance.
 
 ## v3.6 Frozen Workstreams
 
@@ -394,10 +457,8 @@ v3.6 decision: do not broaden filter contracts inside v3.6.
 
 The stable-version backlog remains intentionally deferred:
 
-- content artifact pipeline for versioned content releases
-- large-scale Chinese/English translation/proofreading QA workflow
-- `data/spells-full` completion workflow for adding remaining source-backed
-  English spells into the content/rules DB path
+- content artifact pipeline for versioned content releases outside the v1.1
+  full-corpus acceptance path
 - static HTML/offline artifact generation to replace old loose HTML
   distribution
 - search/index artifact generation for offline or static deployments
@@ -416,9 +477,8 @@ The stable-version backlog remains intentionally deferred:
   filter vocabulary needs a deliberate model for grouping, density, chip
   labels, reset behavior, mobile disclosure, scope summaries, and how advanced
   filters differ from primary Browse/Search scope
-- release automation beyond the v3.5 script-backed CD pass
 - rollback playbook
-- HTTPS / TLS and host hardening
+- release automation beyond the current backend deploy workflow
 - deeper architecture docs beyond the v3.5 module-doc automation pass
 
 See `docs/stable-backlog.md`.
