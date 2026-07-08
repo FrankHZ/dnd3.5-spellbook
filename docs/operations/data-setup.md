@@ -259,10 +259,13 @@ npm run -w data-tools spells-full:generate -- known-misses --write-patch pending
 npm run -w data-tools spells-full:inspect -- corpus-inventory
 npm run -w data-tools spells-full:generate -- corpus-inventory --write-patch pending/spells/full-corpus-ready.generated.jsonl
 npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.generated.jsonl
+npm run -w data-tools spells-full:rulebooks
 ```
 
 The `corpus-inventory` path produces rebuildable reports and ready-only JSONL.
-It does not apply rules DB patches or rebuild the content DB.
+It does not apply rules DB patches or rebuild the content DB. The
+`spells-full:rulebooks` command produces local deferred source-label review
+JSONL under `data/spells-full/`.
 
 ## Content DB Setup
 

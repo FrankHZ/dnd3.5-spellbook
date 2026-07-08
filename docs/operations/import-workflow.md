@@ -39,6 +39,7 @@ npm run -w server db:content:import:zh-chm
 npm run -w data-tools spells-full:inspect -- corpus-inventory
 npm run -w data-tools spells-full:generate -- corpus-inventory --write-patch pending/spells/full-corpus-ready.generated.jsonl
 npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.generated.jsonl
+npm run -w data-tools spells-full:rulebooks
 ```
 
 The `server` workspace keeps compatibility wrappers for the `tool:*` commands,
@@ -87,11 +88,16 @@ The parser writes into `data-tools/out/zh-parser/`:
 - optional parsed source dump: `data/spells-full/spells-parsed.json`
 - rebuildable inventory reports: `data-tools/out/spells-full/`
 - reviewable structured patch JSONL: `data/rules-patches/pending/spells/`
+- deferred source-label review JSONL:
+  `data/spells-full/source-rulebooks.generated.jsonl`
 
 The `spells-full` source dump is ignored by the parent repo and may be
 maintained only in the nested local `data/` repo. The data-pipeline command
 reads the configured rules DB read-only for matching and validation context.
 It does not apply rules DB patches or rebuild content DB artifacts.
+Deferred source-label review rows classify unmapped sources such as
+periodicals, web articles, licensed d20 settings, conversion material, and
+parser artifacts. They are scope-review data, not rules DB patch operations.
 
 ## Recommended End-To-End Flow
 

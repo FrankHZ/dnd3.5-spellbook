@@ -156,6 +156,13 @@
       "requiresSqlite": true,
       "writeCapable": false
     },
+    "spells-full:rulebooks": {
+      "module": "rules",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": false,
+      "writeCapable": true
+    },
     "summaries:coverage-report": {
       "module": "short-desc",
       "lifecycle": "maintained-local",

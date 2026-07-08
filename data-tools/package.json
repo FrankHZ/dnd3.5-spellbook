@@ -33,6 +33,7 @@
     "summaries:qa": "tsx src/short-desc/qa.ts",
     "spells-full:generate": "tsx src/rules/spells-full.ts generate",
     "spells-full:inspect": "tsx src/rules/spells-full.ts inspect",
+    "spells-full:rulebooks": "tsx src/rules/spells-full-source-rulebooks.ts",
     "test:portable": "tsx src/harness/portable-tests.ts",
     "acceptance:local": "tsx src/harness/local-acceptance.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",

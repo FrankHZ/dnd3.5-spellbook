@@ -183,13 +183,15 @@ rebuildable source-appearance inventory and a ready-only structured JSONL handof
 npm run -w data-tools spells-full:inspect -- corpus-inventory
 npm run -w data-tools spells-full:generate -- corpus-inventory --write-patch pending/spells/full-corpus-ready.generated.jsonl
 npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.generated.jsonl
+npm run -w data-tools spells-full:rulebooks
 ```
 
 The generated JSONL is a pending review artifact in the nested local `data/`
 repo. It is not an applied rules DB patch until a DB/content maintainer runs
 the normal structured patch apply workflow. The inventory groups entries as
 `ready`, `duplicate`, `mismatch`, `manual-review`, or `deferred`; only `ready`
-entries are written by generate mode.
+entries are written by generate mode. The rulebook JSONL summarizes deferred
+source labels for scope review and is not an insert/update patch.
 
 ## Verified Manual Fixes
 

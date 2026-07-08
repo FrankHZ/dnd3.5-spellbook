@@ -160,9 +160,16 @@ const SOURCE_TO_RULEBOOK: Record<string, string> = {
 };
 
 const SOURCE_LABEL_ALIASES_TO_RULEBOOK: Record<string, string> = {
+  "defenders of the faith": "DF",
   "eberron magic of eberron": "MoE",
+  "fiendish codex i": "FCI",
+  "fiendish codex ii": "FCII",
+  "forgotten realms city of splendor waterdeep": "CSW",
   "forgotten realms magic of faerun": "Mag",
   "forgotten realms players guide to faerun": "PG",
+  "libris mortis": "LM",
+  "master of the wild": "MW",
+  "masters of the wild": "MW",
   "miniature s handbook": "MH",
   "miniatures handbook": "MH",
   "player s handbook 3 0": "PHB",
@@ -170,6 +177,8 @@ const SOURCE_LABEL_ALIASES_TO_RULEBOOK: Record<string, string> = {
   "players handbook 3 0": "PHB",
   "players handbook 3 5": "PH",
   "players handbook v 3 5": "PH",
+  "song and silence": "SaS",
+  "tome and blood": "TB",
   "dungeon masters guide 3 5": "DMG",
   "dungeon masters guide v 3 5": "DMG",
 };
@@ -407,7 +416,7 @@ function parseSourceAppearance(raw: string): SourceAppearance {
     return { raw: trimmed, label: trimmed, page: null };
   }
 
-  const match = trimmed.match(/^(.*\D)\s+(\d{1,3})$/);
+  const match = trimmed.match(/^(.*?)\s+(\d{1,3})(?:[),])?$/);
   if (match?.[1] && match[2]) {
     return {
       raw: trimmed,

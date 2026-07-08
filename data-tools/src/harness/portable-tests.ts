@@ -20,6 +20,7 @@ import {
   spellNameVariants,
   summarizeInventory,
 } from "../rules/spells-full";
+import { classifySourceLabel } from "../rules/spells-full-source-rulebooks";
 import { readSummaryJsonlText } from "../short-desc/summary-row-schema";
 import { mapBookLabelToAbbr, normalizeBookLabel } from "../zh-parser/mapping";
 import {
@@ -227,6 +228,11 @@ const tests: TestCase[] = [
         label: "Complete Mage",
         page: 128,
       });
+      assert.deepEqual(parseSourceAppearance("Player’s Handbook 3.0 173"), {
+        raw: "Player’s Handbook 3.0 173",
+        label: "Player’s Handbook 3.0",
+        page: 173,
+      });
       assert.deepEqual(parseSourceAppearance("Dragon Magazine 304"), {
         raw: "Dragon Magazine 304",
         label: "Dragon Magazine 304",
@@ -299,6 +305,28 @@ const tests: TestCase[] = [
           "manual-review": 0,
           deferred: 1,
         },
+      );
+    },
+  },
+  {
+    name: "spells-full deferred source classifier separates rulebook families",
+    run: () => {
+      assert.equal(
+        classifySourceLabel("Dragon Magazine 304").sourceCategory,
+        "wotc-3e35-periodical",
+      );
+      assert.equal(
+        classifySourceLabel("Rokugan: Magic of Rokugan").importDisposition,
+        "defer-out-of-scope",
+      );
+      assert.equal(
+        classifySourceLabel("Far Corners of the World: Fire and Ash")
+          .sourceCategory,
+        "wotc-web-article",
+      );
+      assert.equal(
+        classifySourceLabel("Player’s Handbook").sourceCategory,
+        "ambiguous-core-source",
       );
     },
   },
