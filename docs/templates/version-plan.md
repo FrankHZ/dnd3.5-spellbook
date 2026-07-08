@@ -23,6 +23,16 @@ Status: planned.
 - Upstream dependency plans:
 - Downstream consumer plans:
 
+## Agent Context
+
+- Main gate outcome:
+- Required reading:
+- Expected edit surface:
+- Nearby code/tests:
+- Validation or acceptance evidence:
+- Non-goals and follow-up parking:
+- Handoff owner:
+
 ## Problem
 
 - State the current pain or risk.

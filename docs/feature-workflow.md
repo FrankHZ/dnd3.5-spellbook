@@ -47,6 +47,37 @@ The sequence is:
 3. Implement the deliverable in a follow-up commit.
 4. Update durable docs if shipped behavior differs from the plan.
 
+## Agent Assignment Workflow
+
+Use this when work is split across the main gate, specialist branches,
+librarian branches, freeze sweeps, or bounded subagents.
+
+The main gate owns the assignment boundary before work is delegated. It should
+name:
+
+- the user-visible outcome
+- the owning plan, feature doc, or topic doc
+- required reading and nearby code/tests
+- the expected edit surface
+- explicit non-goals and follow-up parking place
+- validation commands or acceptance evidence
+- the branch or role that owns final review and handoff
+
+Specialist branches should execute inside that packet. They may update the
+owning feature/topic/version plan and affected topic docs when behavior,
+workflow, commands, schemas, deployment, or i18n facts change. They should not
+chase navigation, roadmap order, release acceptance evidence, freeze snapshots,
+or unrelated module-doc cleanup unless the assignment itself changes scope,
+ownership, sequencing, or release state.
+
+Librarian and freeze-sweep branches own cross-doc coherence after accepted
+implementation: navigation, roadmap state, stale review wording, acceptance
+evidence, freeze snapshots, and promotion or cleanup of follow-up candidates.
+
+Workflow-improvement PRs should improve these assignment rules, templates, or
+checklists. Use completed plans as examples only; do not reopen their shipped
+content unless the workflow change reveals a current source-of-truth conflict.
+
 ## Intake Rules
 
 - State the user-visible outcome before choosing files.

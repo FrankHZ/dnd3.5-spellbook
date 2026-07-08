@@ -114,6 +114,12 @@ probe a user-level `.agents` path first.
   branches chase docs navigation, roadmap ordering, module docs, integrated
   plans, or freeze snapshots unless the branch changes scope, ownership,
   sequencing, or release state.
+- Before handing work to a specialist or librarian branch, the main gate should
+  define the context packet: user-visible outcome, owning plan or topic doc,
+  required reading, expected edit surface, explicit non-goals, validation, and
+  handoff owner. If that packet is missing or conflicts with current docs, fix
+  the packet or route the question back to the main gate instead of letting the
+  specialist broaden scope.
 - Treat `main` as remote-managed. Work on feature branches, push the branch,
   open a PR, and let remote CI protect merges. Do not locally merge and push
   `main` unless the user explicitly asks for a direct main update.
