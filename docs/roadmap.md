@@ -13,6 +13,12 @@ acceptance can be described.
 
 ## Current Track
 
+v1.1 is the active formal release plan:
+
+- `docs/releases/v1.1/README.md`
+- `docs/releases/v1.1/production-hardening-plan.md`
+- `docs/releases/v1.1/full-spell-corpus-plan.md`
+
 v1.0 is the latest frozen formal public release:
 
 - `docs/releases/v1.0/FREEZE.md`
@@ -23,9 +29,8 @@ v1.0 is the latest frozen formal public release:
 
 The latest frozen pre-release snapshot is `docs/mvp/v3.10/FREEZE.md`.
 
-No later formal release plan is active yet. Use the post-release governance
-tracks below to clean up the stable-track candidate pool before opening the
-next release plan.
+Use the v1.1 child plans for implementation boundaries. Keep security and full
+spell corpus acceptance independent unless a real sequencing conflict appears.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
@@ -93,28 +98,9 @@ freeze docs instead of copying them into this roadmap.
 
 Recommended next sequence:
 
-1. **Agent Workflow Review**
+1. **v1.1 Production Hardening**
 
-   Solidify the collaboration model that is already working: main gate agents
-   own planning, review, and merge readiness; librarian agents own docs,
-   roadmap, freeze, and plan coherence; specialist agents own focused
-   implementation in areas such as design, i18n, db, security, and frontend;
-   subagents handle bounded implementation or corpus-inspection slices. Keep
-   `AGENTS.md` compact and move detailed process into topic docs, templates, or
-   repo-local skills.
-
-2. **Promote Candidates To Official Roadmap**
-
-   Sweep freeze notes, feature docs, follow-up candidates, and
-   `docs/stable-backlog.md`. Promote only confirmed, acceptance-definable work
-   that matches the product and engineering direction. Leave valuable but
-   unprioritized ideas in the stable backlog, and delete or archive completed,
-   duplicate, or stale candidates. After promotion, `docs/roadmap.md` should
-   remain the official route, not a scratchpad.
-
-3. **CF/AWS Security Pass**
-
-   Run a post-release security acceptance pass, not a v1.0 freeze patch.
+   Follow `docs/releases/v1.1/production-hardening-plan.md`.
    Cloudflare review should cover DNSSEC, Full Strict HTTPS, HTTP-to-HTTPS,
    basic WAF or managed rules, reasonable API rate limiting, security response
    headers, and Pages/Workers environment-variable and token permissions. AWS
@@ -125,36 +111,29 @@ Recommended next sequence:
    should record enabled items, deferred items with reasons, and post-change
    smoke for frontend, API, CORS, deploy, and private db-status/admin paths.
 
-4. **Open the next formal release track**
+2. **v1.1 Full Spell Corpus**
 
-   Create a release plan only after the governance sweep has promoted the next
-   bounded slice from the stable backlog.
+   Follow `docs/releases/v1.1/full-spell-corpus-plan.md`. Import the remaining
+   source-backed corpus through maintained data-tools workflows, update the
+   content DB artifact/provenance, and verify representative Browse, Search,
+   and Detail behavior plus production DB status after activation.
+
+3. **v1.1 Release Acceptance And Freeze**
+
+   After both independent tracks are accepted, collect release evidence and
+   create `docs/releases/v1.1/FREEZE.md`.
 
 ## Official Release Sequence
 
-The expected post-v1.0 release order is:
+The expected post-v1.1 release order is:
 
-1. **v1.1 Production Hardening + Full Spell Corpus**
-
-   Scope this as two independent acceptance tracks so security configuration
-   and content import can be evaluated separately:
-
-   - production hardening: resolve confirmed security-checklist findings,
-     apply Cloudflare/AWS configuration changes, and smoke frontend, API, CORS,
-     deploy, and db-status/admin-only behavior
-   - full spell corpus: import the remaining source-backed spell corpus,
-     update content DB artifacts, and validate deploy/content status without
-     adding DB upload to automatic CD
-
-   Non-goals: broad UI redesign and large-scale translation/proofreading.
-
-2. **v1.2 Translation + QA**
+1. **v1.2 Translation + QA**
 
    After the full corpus is stable, build the bulk Chinese/English translation
    and proofreading workflow: QA reports, human review queues, terminology and
    rulebook consistency checks, and data/i18n/corpus harness coverage.
 
-3. **v1.3 Sitewide UX / Style Redesign**
+2. **v1.3 Sitewide UX / Style Redesign**
 
    Run a deliberate design-system and sitewide cohesion pass across Browse,
    Search, Detail, About/Status, collections, prepared spells, filters, spell
