@@ -47,6 +47,37 @@ The sequence is:
 3. Implement the deliverable in a follow-up commit.
 4. Update durable docs if shipped behavior differs from the plan.
 
+## Agent Assignment Workflow
+
+Use this when work is split across the main gate, specialist branches,
+librarian branches, freeze sweeps, or bounded subagents.
+
+The main gate owns the assignment boundary before work is delegated. It should
+name:
+
+- the user-visible outcome
+- the owning plan, feature doc, or topic doc
+- required reading and nearby code/tests
+- the expected edit surface
+- explicit non-goals and follow-up parking place
+- validation commands or acceptance evidence
+- the branch or role that owns final review and handoff
+
+Specialist branches should execute inside that packet. They may update the
+owning feature/topic/version plan and affected topic docs when behavior,
+workflow, commands, schemas, deployment, or i18n facts change. They should not
+chase navigation, roadmap order, release acceptance evidence, freeze snapshots,
+or unrelated module-doc cleanup unless the assignment itself changes scope,
+ownership, sequencing, or release state.
+
+Librarian and freeze-sweep branches own cross-doc coherence after accepted
+implementation: navigation, roadmap state, stale review wording, acceptance
+evidence, freeze snapshots, and promotion or cleanup of follow-up candidates.
+
+Workflow-improvement PRs should improve these assignment rules, templates, or
+checklists. Use completed plans as examples only; do not reopen their shipped
+content unless the workflow change reveals a current source-of-truth conflict.
+
 ## Intake Rules
 
 - State the user-visible outcome before choosing files.
@@ -75,6 +106,24 @@ The sequence is:
   preserving non-blocking follow-up candidates as deferred work. Do not create a
   separate pre-freeze branch for those chores unless the cleanup changes scope,
   ownership, sequencing, or shipped behavior.
+
+## Follow-Up Candidate Lifecycle
+
+Use follow-up candidates for useful work discovered during a branch that should
+not block the current acceptance gate.
+
+- Keep branch-local candidates in the owning feature doc, topic doc, or version
+  child plan.
+- Keep each candidate short, concrete, and explicit about why it is outside the
+  current acceptance gate.
+- Move real blockers back into the active checklist or acceptance criteria.
+- Move valuable but unprioritized stable-track candidates into
+  `docs/stable-backlog.md`.
+- Promote candidates to `docs/roadmap.md` only during freeze, roadmap, or
+  docs-governance sweeps when direction, priority, scope, and acceptance are
+  clear.
+- Remove completed, duplicated, or invalidated candidates during the next
+  closeout sweep instead of carrying them forward indefinitely.
 
 ## Temporary Plan Lifecycle
 

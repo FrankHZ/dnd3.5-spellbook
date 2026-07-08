@@ -7,8 +7,8 @@ decide what to do next after a pause.
 
 ## Current Entry Points
 
-- [roadmap.md](./roadmap.md): current work order, recently completed slices,
-  and later stable backlog.
+- [roadmap.md](./roadmap.md): official current work order, recently completed
+  slices, and promoted stable-track sequence.
 - [features.md](./features.md): current user-facing feature map.
 - [harness.md](./harness.md): validation and harness strategy.
 - [design.md](./design.md): durable UI design direction.
@@ -87,7 +87,8 @@ baselines.
 - [design.md](./design.md): UI direction.
 - [i18n.md](./i18n.md): i18n workflow.
 - [harness.md](./harness.md): validation strategy.
-- [stable-backlog.md](./stable-backlog.md): deferred stable-version work.
+- [stable-backlog.md](./stable-backlog.md): unpromoted stable-track candidate
+  pool and promotion rules.
 - [credits/](./credits/): source credit notes used by About / Status.
 - [public-repo-notes.md](./operations/public-repo-notes.md): public repo exclusions and
   publication cautions.

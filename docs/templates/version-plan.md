@@ -23,6 +23,16 @@ Status: planned.
 - Upstream dependency plans:
 - Downstream consumer plans:
 
+## Agent Context
+
+- Main gate outcome:
+- Required reading:
+- Expected edit surface:
+- Nearby code/tests:
+- Validation or acceptance evidence:
+- Non-goals and follow-up parking:
+- Handoff owner:
+
 ## Problem
 
 - State the current pain or risk.
@@ -83,6 +93,9 @@ Use this section near implementation closeout for useful, explicitly
 non-blocking work discovered during the branch. Keep each item short, explain
 why it is outside the current acceptance gate, and move any real release blocker
 back into `Acceptance Criteria` instead.
+
+Freeze or docs-governance sweeps decide whether these candidates stay local,
+move to `docs/stable-backlog.md`, or promote to `docs/roadmap.md`.
 
 - Candidate 1
 
