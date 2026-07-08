@@ -88,13 +88,21 @@ The parser writes into `data-tools/out/zh-parser/`:
 - optional parsed source dump: `data/spells-full/spells-parsed.json`
 - rebuildable inventory reports: `data-tools/out/spells-full/`
 - reviewable structured patch JSONL: `data/rules-patches/pending/spells/`
+- row-level rejected review JSONL:
+  `data/spells-full/full-corpus-rejected.generated.jsonl`
+- row-level ambiguous review JSONL:
+  `data/spells-full/full-corpus-ambiguous.generated.jsonl`
 - deferred source-label review JSONL:
   `data/spells-full/source-rulebooks.generated.jsonl`
+- ambiguous source-label review JSONL:
+  `data/spells-full/source-rulebooks-ambiguous.generated.jsonl`
 
 The `spells-full` source dump is ignored by the parent repo and may be
 maintained only in the nested local `data/` repo. The data-pipeline command
 reads the configured rules DB read-only for matching and validation context.
 It does not apply rules DB patches or rebuild content DB artifacts.
+Confirmed non-import rows and unresolved row-level decisions are written as
+review artifacts under `data/spells-full/`, not mixed into the ready patch.
 Deferred source-label review rows classify unmapped sources such as
 periodicals, web articles, licensed d20 settings, conversion material, and
 parser artifacts. They are scope-review data, not rules DB patch operations.

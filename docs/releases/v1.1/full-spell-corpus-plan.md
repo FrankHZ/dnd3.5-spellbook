@@ -134,6 +134,14 @@ confirmed the original 15 blocked rows and identified 9 additional ready rows
 whose names/descriptions matched existing DB spells closely enough to require
 manual review before import.
 
+Generate mode also writes row-level review artifacts in the nested `data/`
+repo:
+
+| Artifact | Rows | Purpose |
+| --- | ---: | --- |
+| `data/spells-full/full-corpus-rejected.generated.jsonl` | 5040 | confirmed non-import rows: existing DB duplicates and reviewed typo/duplicate hazards |
+| `data/spells-full/full-corpus-ambiguous.generated.jsonl` | 80 | unresolved row-level mismatches or source/edition ambiguity |
+
 Deferred source labels are also summarized into
 `data/spells-full/source-rulebooks.generated.jsonl`. The current run produced
 248 source-label rows. Current import disposition counts are:
@@ -151,7 +159,10 @@ issue labels, `Forgotten Realms: Anauroch`, `Eberron: City of Stormreach`,
 `Eberron: Shadows of the Last War`, and `Expeditions to Undermountain`.
 Dragonlance Campaign Setting (`DCS`) already maps to the current rules DB and is
 part of the ready patch; other Dragonlance family labels are deferred from the
-v1.1 published-corpus scope.
+v1.1 published-corpus scope. `spells-full:rulebooks` also writes
+`data/spells-full/source-rulebooks-ambiguous.generated.jsonl`, currently 87
+`manual-review-source` labels, so edition/source ambiguity is not buried inside
+the broader source-rulebook report.
 
 ### Slice 2: Import And Review Workflow
 
@@ -162,11 +173,12 @@ v1.1 published-corpus scope.
 - Validation: focused data-tools tests, import dry-run/apply evidence, and
   review reports for unresolved rows.
 - Current handoff input: the data-pipeline branch can provide
-  `data/rules-patches/pending/spells/full-corpus-ready.generated.jsonl` plus
-  the matching inventory report and deferred source-label JSONL. DB/content
-  maintainers decide whether to apply the ready JSONL as-is, split it by
-  rulebook, add missing 3.5 rulebook mappings for
-  `candidate-import-rulebook`, or send specific rows back to manual review.
+  `data/rules-patches/pending/spells/full-corpus-ready.generated.jsonl`, the
+  matching inventory report, row-level rejected/ambiguous JSONL, and
+  source-label review JSONL. DB/content maintainers decide whether to apply the
+  ready JSONL as-is, split it by rulebook, add missing 3.5 rulebook mappings
+  for `candidate-import-rulebook`, or send specific ambiguous rows back to
+  manual review.
 
 ### Slice 3: Content DB Artifact And Provenance
 

@@ -13,6 +13,7 @@ import {
   validateLevelShape,
 } from "../rules/spells-schema";
 import {
+  buildReviewArtifacts,
   makeRulebookResolver,
   manualReviewBlocker,
   parseSourceAppearance,
@@ -306,6 +307,43 @@ const tests: TestCase[] = [
           "manual-review": 0,
           deferred: 1,
         },
+      );
+
+      const reviewArtifacts = buildReviewArtifacts([
+        {
+          category: "duplicate",
+          name: "Existing Spell",
+          source: "Spell Compendium",
+          sourceLabel: "Spell Compendium",
+          page: null,
+          targetRulebook: "Sc_",
+          notes: [],
+        },
+        {
+          category: "manual-review",
+          name: "Wake of Trailing",
+          source: "Stormwrack",
+          sourceLabel: "Stormwrack",
+          page: 124,
+          targetRulebook: "Sto",
+          notes: ["possible duplicate of existing Sto row Wake Trailing"],
+        },
+        {
+          category: "manual-review",
+          name: "Ambiguous Spell",
+          source: "Player’s Handbook",
+          sourceLabel: "Player’s Handbook",
+          page: null,
+          notes: ["ambiguous source label"],
+        },
+      ]);
+      assert.deepEqual(
+        reviewArtifacts.rejected.map((row) => row.reviewReason),
+        ["already-in-rules-db", "confirmed-typo-or-duplicate"],
+      );
+      assert.deepEqual(
+        reviewArtifacts.ambiguous.map((row) => row.reviewReason),
+        ["source-or-edition-ambiguity"],
       );
     },
   },

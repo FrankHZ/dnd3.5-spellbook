@@ -56,6 +56,11 @@ const DEFAULT_OUTPUT_PATH = path.join(
   "spells-full",
   "source-rulebooks.generated.jsonl",
 );
+const DEFAULT_AMBIGUOUS_OUTPUT_PATH = path.join(
+  localDataDir(),
+  "spells-full",
+  "source-rulebooks-ambiguous.generated.jsonl",
+);
 
 const EVIDENCE = {
   darkSun: "https://athas.org/products/ds3",
@@ -72,6 +77,7 @@ function usage(): never {
   npm run -w data-tools spells-full:rulebooks
   npm run -w data-tools spells-full:rulebooks -- --input data-tools/out/spells-full/<report>.json
   npm run -w data-tools spells-full:rulebooks -- --output ../data/spells-full/source-rulebooks.generated.jsonl
+  npm run -w data-tools spells-full:rulebooks -- --ambiguous-output ../data/spells-full/source-rulebooks-ambiguous.generated.jsonl
 
 Reads a spells-full corpus inventory report and writes local deferred source
 labels as review JSONL. The command does not read or write SQLite databases.
@@ -82,6 +88,7 @@ labels as review JSONL. The command does not read or write SQLite databases.
 function parseArgs(argv: string[]) {
   let input: string | undefined;
   let output = DEFAULT_OUTPUT_PATH;
+  let ambiguousOutput = DEFAULT_AMBIGUOUS_OUTPUT_PATH;
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -99,10 +106,17 @@ function parseArgs(argv: string[]) {
       index += 1;
       continue;
     }
+    if (arg === "--ambiguous-output") {
+      const next = argv[index + 1];
+      if (!next) usage();
+      ambiguousOutput = resolveCliPath(next);
+      index += 1;
+      continue;
+    }
     usage();
   }
 
-  return { input: input ?? latestInventoryReport(), output };
+  return { input: input ?? latestInventoryReport(), output, ambiguousOutput };
 }
 
 function resolveCliPath(value: string) {
@@ -476,10 +490,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function main() {
-  const { input, output } = parseArgs(process.argv.slice(2));
+  const { input, output, ambiguousOutput } = parseArgs(process.argv.slice(2));
   const report = readInventoryReport(input);
   const rows = buildRows(report);
+  const ambiguousRows = rows.filter(
+    (row) => row.importDisposition === "manual-review-source",
+  );
   writeJsonl(rows, output);
+  writeJsonl(ambiguousRows, ambiguousOutput);
 
   const byCategory = new Map<string, number>();
   for (const row of rows) {
@@ -489,10 +507,12 @@ function main() {
   console.log("spells-full source rulebooks OK");
   console.log(`Input: ${input}`);
   console.log(`Rows: ${rows.length}`);
+  console.log(`Ambiguous source labels: ${ambiguousRows.length}`);
   for (const [category, count] of [...byCategory.entries()].sort()) {
     console.log(`${category}: ${count}`);
   }
   console.log(`Output: ${output}`);
+  console.log(`Ambiguous output: ${ambiguousOutput}`);
 }
 
 if (require.main === module) {

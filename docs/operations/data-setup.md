@@ -262,10 +262,11 @@ npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.
 npm run -w data-tools spells-full:rulebooks
 ```
 
-The `corpus-inventory` path produces rebuildable reports and ready-only JSONL.
+The `corpus-inventory` path produces rebuildable reports, ready-only patch
+JSONL, and row-level rejected/ambiguous review JSONL under `data/spells-full/`.
 It does not apply rules DB patches or rebuild the content DB. The
-`spells-full:rulebooks` command produces local deferred source-label review
-JSONL under `data/spells-full/`.
+`spells-full:rulebooks` command produces local source-label review JSONL under
+`data/spells-full/`, including a focused ambiguous source-label queue.
 
 ## Content DB Setup
 

@@ -103,6 +103,17 @@ type CorpusInventoryEntry = {
   notes: string[];
 };
 
+type CorpusReviewArtifactRow = CorpusInventoryEntry & {
+  schemaVersion: 1;
+  reviewSource: "spells-full-corpus-inventory";
+  reviewDecision: "rejected" | "ambiguous";
+  reviewReason:
+    | "already-in-rules-db"
+    | "confirmed-typo-or-duplicate"
+    | "source-or-edition-ambiguity"
+    | "conversion-mismatch";
+};
+
 const SPELLS_FULL_JSON = path.join(
   localDataDir(),
   "spells-full",
@@ -118,6 +129,15 @@ const DEFAULT_RULES_GAPS_PATH = path.join(
 );
 const REPORT_ROOT = path.join(repoRoot(), "data-tools", "out", "spells-full");
 const PATCH_ROOT = path.join(localDataDir(), "rules-patches");
+const SPELLS_FULL_LOCAL_DIR = path.join(localDataDir(), "spells-full");
+const DEFAULT_REJECTED_PATH = path.join(
+  SPELLS_FULL_LOCAL_DIR,
+  "full-corpus-rejected.generated.jsonl",
+);
+const DEFAULT_AMBIGUOUS_PATH = path.join(
+  SPELLS_FULL_LOCAL_DIR,
+  "full-corpus-ambiguous.generated.jsonl",
+);
 
 const KNOWN_MISSES: KnownMiss[] = [
   {
@@ -255,6 +275,7 @@ function usage(): never {
   npm run -w data-tools spells-full:inspect -- short-desc-rules-gaps
   npm run -w data-tools spells-full:generate -- short-desc-rules-gaps --write-patch pending/spells/short-desc-rules-gaps.jsonl
   npm run -w data-tools spells-full:inspect -- corpus-inventory
+  npm run -w data-tools spells-full:generate -- corpus-inventory --write-patch pending/spells/full-corpus-ready.generated.jsonl
 
 spells-full source data is read from data/spells-full/spells-parsed.json.
 Patch paths are resolved under data/rules-patches/.
@@ -321,6 +342,13 @@ function writeReport(report: unknown, name: string) {
   const reportPath = path.join(REPORT_ROOT, `${timestamp()}-${name}.json`);
   fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
   return reportPath;
+}
+
+function writeJsonl(rows: unknown[], outputPath: string) {
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+  const body =
+    rows.length > 0 ? `${rows.map((item) => JSON.stringify(item)).join("\n")}\n` : "";
+  fs.writeFileSync(outputPath, body);
 }
 
 function resolvePatchPath(rawPath: string) {
@@ -984,6 +1012,57 @@ function summarizeInventory(entries: CorpusInventoryEntry[]) {
   return { counts, byRulebook };
 }
 
+function manualReviewRejectionNote(entry: CorpusInventoryEntry) {
+  if (!entry.targetRulebook) return undefined;
+  return manualReviewBlocker({ name: entry.name }, entry.targetRulebook);
+}
+
+function reviewArtifactRow(
+  entry: CorpusInventoryEntry,
+  reviewDecision: CorpusReviewArtifactRow["reviewDecision"],
+  reviewReason: CorpusReviewArtifactRow["reviewReason"],
+): CorpusReviewArtifactRow {
+  return {
+    schemaVersion: 1,
+    reviewSource: "spells-full-corpus-inventory",
+    reviewDecision,
+    reviewReason,
+    ...entry,
+  };
+}
+
+function buildReviewArtifacts(entries: CorpusInventoryEntry[]) {
+  const rejected: CorpusReviewArtifactRow[] = [];
+  const ambiguous: CorpusReviewArtifactRow[] = [];
+
+  for (const entry of entries) {
+    if (entry.category === "duplicate") {
+      rejected.push(reviewArtifactRow(entry, "rejected", "already-in-rules-db"));
+      continue;
+    }
+
+    if (entry.category === "manual-review" && manualReviewRejectionNote(entry)) {
+      rejected.push(
+        reviewArtifactRow(entry, "rejected", "confirmed-typo-or-duplicate"),
+      );
+      continue;
+    }
+
+    if (entry.category === "manual-review") {
+      ambiguous.push(
+        reviewArtifactRow(entry, "ambiguous", "source-or-edition-ambiguity"),
+      );
+      continue;
+    }
+
+    if (entry.category === "mismatch") {
+      ambiguous.push(reviewArtifactRow(entry, "ambiguous", "conversion-mismatch"));
+    }
+  }
+
+  return { rejected, ambiguous };
+}
+
 function runCorpusInventory(mode: Mode, patchPath: string | undefined) {
   const parsedSpells = loadParsedSpells();
   const db = new Database(rulesDbPath(), { readonly: true });
@@ -1157,12 +1236,17 @@ function runCorpusInventory(mode: Mode, patchPath: string | undefined) {
     }
 
     const summary = summarizeInventory(entries);
+    const reviewArtifacts = buildReviewArtifacts(entries);
     const reportPath = writeReport(
       {
         mode,
         sourcePath: SPELLS_FULL_JSON,
         generatedCount: generated.length,
         summary,
+        reviewArtifactCounts: {
+          rejected: reviewArtifacts.rejected.length,
+          ambiguous: reviewArtifacts.ambiguous.length,
+        },
         entries,
       },
       `spells-full-corpus-inventory-${mode}`,
@@ -1171,12 +1255,17 @@ function runCorpusInventory(mode: Mode, patchPath: string | undefined) {
     let writtenPatchPath: string | undefined;
     if (mode === "generate" && patchPath) {
       const resolved = resolvePatchPath(patchPath);
-      fs.mkdirSync(path.dirname(resolved), { recursive: true });
-      fs.writeFileSync(
-        resolved,
-        `${generated.map((item) => JSON.stringify(item)).join("\n")}\n`,
-      );
+      writeJsonl(generated, resolved);
       writtenPatchPath = resolved;
+    }
+
+    let writtenRejectedPath: string | undefined;
+    let writtenAmbiguousPath: string | undefined;
+    if (mode === "generate") {
+      writeJsonl(reviewArtifacts.rejected, DEFAULT_REJECTED_PATH);
+      writeJsonl(reviewArtifacts.ambiguous, DEFAULT_AMBIGUOUS_PATH);
+      writtenRejectedPath = DEFAULT_REJECTED_PATH;
+      writtenAmbiguousPath = DEFAULT_AMBIGUOUS_PATH;
     }
 
     console.log(`spells-full corpus-inventory ${mode} OK`);
@@ -1185,8 +1274,12 @@ function runCorpusInventory(mode: Mode, patchPath: string | undefined) {
       console.log(`${category}: ${count}`);
     }
     console.log(`Generated: ${generated.length}`);
+    console.log(`Rejected: ${reviewArtifacts.rejected.length}`);
+    console.log(`Ambiguous: ${reviewArtifacts.ambiguous.length}`);
     console.log(`Report: ${reportPath}`);
     if (writtenPatchPath) console.log(`Patch: ${writtenPatchPath}`);
+    if (writtenRejectedPath) console.log(`Rejected file: ${writtenRejectedPath}`);
+    if (writtenAmbiguousPath) console.log(`Ambiguous file: ${writtenAmbiguousPath}`);
   } finally {
     db.close();
   }
@@ -1329,6 +1422,7 @@ function main() {
 }
 
 export {
+  buildReviewArtifacts,
   cleanSpellNameForMatch,
   conversionCheck,
   makeRulebookResolver,

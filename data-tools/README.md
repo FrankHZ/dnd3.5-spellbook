@@ -137,9 +137,18 @@ rules DB read-only, then writes a rebuildable inventory report under
 as structured `insertSpell` JSONL for review. It does not apply the patch or
 rebuild content DB artifacts.
 
+Generate mode also writes row-level review artifacts under `data/spells-full/`:
+`full-corpus-rejected.generated.jsonl` contains confirmed non-import rows
+because they already exist in the rules DB or were reviewed as typo/duplicate
+hazards; `full-corpus-ambiguous.generated.jsonl` contains unresolved row-level
+mismatches and source/edition ambiguity. These files are review data, not patch
+operations.
+
 `spells-full:rulebooks` reads the latest generated corpus inventory report and
 writes deferred source-label review rows to
-`data/spells-full/source-rulebooks.generated.jsonl`. These rows
+`data/spells-full/source-rulebooks.generated.jsonl`. It also writes
+`data/spells-full/source-rulebooks-ambiguous.generated.jsonl` with only
+`manual-review-source` labels for focused edition/source review. These rows
 classify unmapped source families and import disposition; they are not rulebook
 insert operations. D&D 3.5 source labels that cannot yet generate spell JSONL
 because the rules DB lacks a matching rulebook are marked
@@ -314,11 +323,15 @@ source appearances as `ready`, `duplicate`, `mismatch`, `manual-review`, or
 `deferred`. `spells-full:generate -- corpus-inventory --write-patch <path>`
 writes only the `ready` rows to JSONL under `data/rules-patches/`; DB apply,
 content DB rebuild, and production activation stay outside the data-pipeline
-command.
+command. The same generate command writes rejected and ambiguous review JSONL
+under `data/spells-full/` so confirmed non-import rows and unresolved rows are
+not mixed back into the ready patch.
 
 Run `spells-full:rulebooks` after generating corpus inventory when deferred
 source labels need review. Its JSONL output belongs in the nested local `data/`
-repo alongside other review decisions.
+repo alongside other review decisions; the companion
+`source-rulebooks-ambiguous.generated.jsonl` is the focused source-label queue
+for edition/source ambiguity.
 
 `en:summaries:probe` performs a small, rate-limited live probe against
 IMarvinTPA's spell search. It defaults to one candidate at a time with at least
