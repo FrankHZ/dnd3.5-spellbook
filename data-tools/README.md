@@ -124,7 +124,17 @@ npm run -w data-tools spells-full:inspect -- known-misses
 npm run -w data-tools spells-full:generate -- known-misses --write-patch pending/spells/spells-full-known-misses.jsonl
 npm run -w data-tools spells-full:inspect -- short-desc-rules-gaps
 npm run -w data-tools spells-full:generate -- short-desc-rules-gaps --write-patch pending/spells/short-desc-rules-gaps.generated.jsonl
+npm run -w data-tools spells-full:inspect -- corpus-inventory
+npm run -w data-tools spells-full:generate -- corpus-inventory --write-patch pending/spells/full-corpus-ready.generated.jsonl
+npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.generated.jsonl
 ```
+
+`corpus-inventory` is a local-only v1.1 data-pipeline command. It reads the
+ignored `data/spells-full/spells-parsed.json` source dump and the configured
+rules DB read-only, then writes a rebuildable inventory report under
+`data-tools/out/spells-full/`. Generate mode writes only the `ready` category
+as structured `insertSpell` JSONL for review. It does not apply the patch or
+rebuild content DB artifacts.
 
 Probe IMarvinTPA for English short-description candidates:
 
@@ -289,6 +299,13 @@ from it. The `short-desc-rules-gaps` target consumes
 target rulebooks from reviewed IMarvinTPA source labels, and only writes patch
 candidates when the parsed spell, rules DB lookups, class/domain levels,
 schools, subschools, descriptors, and slug checks all pass.
+
+For v1.1 full-corpus work, `spells-full:inspect -- corpus-inventory` groups
+source appearances as `ready`, `duplicate`, `mismatch`, `manual-review`, or
+`deferred`. `spells-full:generate -- corpus-inventory --write-patch <path>`
+writes only the `ready` rows to JSONL under `data/rules-patches/`; DB apply,
+content DB rebuild, and production activation stay outside the data-pipeline
+command.
 
 `en:summaries:probe` performs a small, rate-limited live probe against
 IMarvinTPA's spell search. It defaults to one candidate at a time with at least

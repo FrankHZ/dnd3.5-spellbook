@@ -12,6 +12,14 @@ import {
   validateInsertSpellShape,
   validateLevelShape,
 } from "../rules/spells-schema";
+import {
+  makeRulebookResolver,
+  parseSourceAppearance,
+  sourceAppearances,
+  sourceLabelKey,
+  spellNameVariants,
+  summarizeInventory,
+} from "../rules/spells-full";
 import { readSummaryJsonlText } from "../short-desc/summary-row-schema";
 import { mapBookLabelToAbbr, normalizeBookLabel } from "../zh-parser/mapping";
 import {
@@ -208,6 +216,89 @@ const tests: TestCase[] = [
           "Undeniable Gravity, Legion's",
         ),
         [{ name: "Mass Undeniable Gravity" }],
+      );
+    },
+  },
+  {
+    name: "spells-full source helpers parse appearances and rulebook aliases",
+    run: () => {
+      assert.deepEqual(parseSourceAppearance("Complete Mage 128"), {
+        raw: "Complete Mage 128",
+        label: "Complete Mage",
+        page: 128,
+      });
+      assert.deepEqual(parseSourceAppearance("Dragon Magazine 304"), {
+        raw: "Dragon Magazine 304",
+        label: "Dragon Magazine 304",
+        page: null,
+      });
+      assert.deepEqual(
+        sourceAppearances(
+          "Forgotten Realms: Magic of Faerûn 108; Spell Compendium",
+        ).map((source) => ({
+          label: source.label,
+          page: source.page,
+        })),
+        [
+          { label: "Forgotten Realms: Magic of Faerûn", page: 108 },
+          { label: "Spell Compendium", page: null },
+        ],
+      );
+      assert.equal(sourceLabelKey("Player’s Handbook 3.5"), "player s handbook 3 5");
+      assert.deepEqual(spellNameVariants("Acid Breath / Mestil’s Acid Breath"), [
+        "Acid Breath",
+        "Mestil’s Acid Breath",
+      ]);
+
+      const resolveRulebook = makeRulebookResolver([
+        { id: 1, abbr: "Sc_", name: "Spell Compendium" },
+        { id: 2, abbr: "Mag", name: "Magic of Faerun" },
+        { id: 3, abbr: "PH", name: "Player's Handbook v.3.5" },
+      ]);
+      assert.equal(
+        resolveRulebook(parseSourceAppearance("Spell Compendium")).targetRulebook
+          ?.abbr,
+        "Sc_",
+      );
+      assert.equal(
+        resolveRulebook(
+          parseSourceAppearance("Forgotten Realms: Magic of Faerûn 108"),
+        ).targetRulebook?.abbr,
+        "Mag",
+      );
+      assert.equal(
+        resolveRulebook(parseSourceAppearance("Player’s Handbook 3.5"))
+          .targetRulebook?.abbr,
+        "PH",
+      );
+
+      assert.deepEqual(
+        summarizeInventory([
+          {
+            category: "ready",
+            name: "Ready Spell",
+            source: "Spell Compendium",
+            sourceLabel: "Spell Compendium",
+            page: null,
+            targetRulebook: "Sc_",
+            notes: [],
+          },
+          {
+            category: "deferred",
+            name: "Deferred Spell",
+            source: "Unknown Source",
+            sourceLabel: "Unknown Source",
+            page: null,
+            notes: ["unmapped source label"],
+          },
+        ]).counts,
+        {
+          ready: 1,
+          duplicate: 0,
+          mismatch: 0,
+          "manual-review": 0,
+          deferred: 1,
+        },
       );
     },
   },

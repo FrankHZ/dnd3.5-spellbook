@@ -1,7 +1,7 @@
 # Import Workflow
 
 This document describes the current local data import workflow used to
-populate Chinese app-owned data.
+populate local data artifacts and Chinese app-owned data.
 
 It covers:
 
@@ -9,6 +9,8 @@ It covers:
 - parsing spell content into matched records
 - importing dictionary-style entity translations
 - importing CHM-derived spell text into the content DB
+- producing English rules-patch JSONL candidates from local `spells-full`
+  source data
 
 For database creation and local DB roles, use [data-setup.md](./data-setup.md).
 
@@ -34,6 +36,9 @@ npm run -w data-tools zh:backcheck
 npm run -w data-tools zh:qa
 npm run -w server db:content:import:zh-entities
 npm run -w server db:content:import:zh-chm
+npm run -w data-tools spells-full:inspect -- corpus-inventory
+npm run -w data-tools spells-full:generate -- corpus-inventory --write-patch pending/spells/full-corpus-ready.generated.jsonl
+npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.generated.jsonl
 ```
 
 The `server` workspace keeps compatibility wrappers for the `tool:*` commands,
@@ -77,6 +82,17 @@ The parser writes into `data-tools/out/zh-parser/`:
 - `missing-zh.json` may also exist as a follow-up artifact from auxiliary checks
 - `qa/summary.json` and `qa/issues.json` from mechanical CHM source QA
 
+### English Spells-Full Source
+
+- optional parsed source dump: `data/spells-full/spells-parsed.json`
+- rebuildable inventory reports: `data-tools/out/spells-full/`
+- reviewable structured patch JSONL: `data/rules-patches/pending/spells/`
+
+The `spells-full` source dump is ignored by the parent repo and may be
+maintained only in the nested local `data/` repo. The data-pipeline command
+reads the configured rules DB read-only for matching and validation context.
+It does not apply rules DB patches or rebuild content DB artifacts.
+
 ## Recommended End-To-End Flow
 
 For a normal full rebuild:
@@ -93,6 +109,11 @@ For a normal full rebuild:
 10. Run `npm run -w server db:content:import:zh-chm`.
 
 This order keeps the content DB aligned with the latest parser output and the latest entity translation JSON maintained in the nested data repo.
+
+For English full-corpus candidate generation, run the `spells-full` inventory
+and generation commands separately from the CHM content DB rebuild. That
+workflow produces JSONL for DB/content maintainers to review; it is not itself
+a content DB import.
 
 ## Step Details
 

@@ -10,6 +10,13 @@ import {
 } from "../shared/env";
 
 type Mode = "inspect" | "generate";
+type ReportTarget = "known-misses" | "short-desc-rules-gaps" | "corpus-inventory";
+type InventoryCategory =
+  | "ready"
+  | "duplicate"
+  | "mismatch"
+  | "manual-review"
+  | "deferred";
 
 type ParsedSpell = {
   name: string;
@@ -50,6 +57,50 @@ type GapDecision = {
   decision?: string;
   recommendedAction?: string;
   confidence?: string;
+};
+
+type LookupRow = { id: number; label: string };
+type RulebookRow = { id: number; abbr: string; name: string };
+type SpellIdentityRow = {
+  id: number;
+  name: string;
+  slug: string;
+  rulebookId: number;
+  rulebook: string;
+  rulebookName: string;
+};
+
+type SourceAppearance = {
+  raw: string;
+  label: string;
+  page: number | null;
+};
+
+type ResolvedSourceAppearance = SourceAppearance & {
+  targetRulebook?: RulebookRow;
+  notes: string[];
+};
+
+type ConversionLookups = {
+  classes: Map<string, LookupRow>;
+  domains: Map<string, LookupRow>;
+  schools: Map<string, LookupRow>;
+  subschools: Map<string, LookupRow>;
+  spellDescriptors: Map<string, LookupRow>;
+};
+
+type CorpusInventoryEntry = {
+  category: InventoryCategory;
+  name: string;
+  source: string;
+  sourceLabel: string;
+  page: number | null;
+  targetRulebook?: string;
+  targetRulebookName?: string;
+  existingSpellId?: number;
+  existingSpellName?: string;
+  duplicateSpellIds?: number[];
+  notes: string[];
 };
 
 const SPELLS_FULL_JSON = path.join(
@@ -108,6 +159,21 @@ const SOURCE_TO_RULEBOOK: Record<string, string> = {
   "Forgotten Realms: Magic of Faerun": "Mag",
 };
 
+const SOURCE_LABEL_ALIASES_TO_RULEBOOK: Record<string, string> = {
+  "eberron magic of eberron": "MoE",
+  "forgotten realms magic of faerun": "Mag",
+  "forgotten realms players guide to faerun": "PG",
+  "miniature s handbook": "MH",
+  "miniatures handbook": "MH",
+  "player s handbook 3 0": "PHB",
+  "player s handbook 3 5": "PH",
+  "players handbook 3 0": "PHB",
+  "players handbook 3 5": "PH",
+  "players handbook v 3 5": "PH",
+  "dungeon masters guide 3 5": "DMG",
+  "dungeon masters guide v 3 5": "DMG",
+};
+
 const IMARVIN_SOURCE_ABBR_TO_RULEBOOK: Record<string, string> = {
   ECS: "ECS",
   EH: "EH",
@@ -132,6 +198,7 @@ function usage(): never {
   npm run -w data-tools spells-full:generate -- known-misses --write-patch pending/spells/spells-full-known-misses.jsonl
   npm run -w data-tools spells-full:inspect -- short-desc-rules-gaps
   npm run -w data-tools spells-full:generate -- short-desc-rules-gaps --write-patch pending/spells/short-desc-rules-gaps.jsonl
+  npm run -w data-tools spells-full:inspect -- corpus-inventory
 
 spells-full source data is read from data/spells-full/spells-parsed.json.
 Patch paths are resolved under data/rules-patches/.
@@ -167,6 +234,12 @@ function cleanSpellNameForMatch(value: string) {
   return normalize(value)
     .replace(/\s*\((?:m|f|df|xp|v|s|af|x)\)\s*$/, "")
     .replace(/,\s*(greater|lesser)$/, " $1")
+    .trim();
+}
+
+function sourceLabelKey(value: string) {
+  return normalize(value)
+    .replace(/[^a-z0-9]+/g, " ")
     .trim();
 }
 
@@ -249,11 +322,40 @@ function loadLookup(
   db: Database.Database,
   table: string,
   column: string,
-): Map<string, { id: number; label: string }> {
+): Map<string, LookupRow> {
   const rows = db
     .prepare(`SELECT id, ${column} AS label FROM ${table}`)
     .all() as Array<{ id: number; label: string }>;
   return new Map(rows.map((row) => [normalize(row.label), row]));
+}
+
+function loadConversionLookups(db: Database.Database): ConversionLookups {
+  return {
+    classes: loadLookup(db, "dnd_characterclass", "name"),
+    domains: loadLookup(db, "dnd_domain", "name"),
+    schools: loadLookup(db, "dnd_spellschool", "name"),
+    subschools: loadLookup(db, "dnd_spellsubschool", "name"),
+    spellDescriptors: loadLookup(db, "dnd_spelldescriptor", "name"),
+  };
+}
+
+function loadRulebooks(db: Database.Database) {
+  return db
+    .prepare("SELECT id, abbr, name FROM dnd_rulebook ORDER BY id")
+    .all() as RulebookRow[];
+}
+
+function loadSpellIdentities(db: Database.Database) {
+  return db
+    .prepare(
+      `
+        SELECT s.id, s.name, s.slug, s.rulebook_id AS rulebookId,
+               rb.abbr AS rulebook, rb.name AS rulebookName
+        FROM dnd_spell s
+        JOIN dnd_rulebook rb ON rb.id = s.rulebook_id
+      `,
+    )
+    .all() as SpellIdentityRow[];
 }
 
 function currentMaxSpellId(db: Database.Database) {
@@ -296,6 +398,165 @@ function parseLevel(value: number | string) {
   const match = text.match(/^(\d+)(?:\s*\((.+)\))?$/);
   if (!match || !match[1]) return undefined;
   return { level: Number(match[1]), extra: match[2] ?? "" };
+}
+
+function parseSourceAppearance(raw: string): SourceAppearance {
+  const trimmed = raw.trim();
+  if (!trimmed) return { raw, label: "", page: null };
+  if (/^dragon magazine\s+\d+$/i.test(trimmed)) {
+    return { raw: trimmed, label: trimmed, page: null };
+  }
+
+  const match = trimmed.match(/^(.*\D)\s+(\d{1,3})$/);
+  if (match?.[1] && match[2]) {
+    return {
+      raw: trimmed,
+      label: match[1].trim(),
+      page: Number(match[2]),
+    };
+  }
+  return { raw: trimmed, label: trimmed, page: null };
+}
+
+function sourceAppearances(source: string | undefined) {
+  const parts = (source ?? "")
+    .split(";")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  if (parts.length === 0) return [parseSourceAppearance("")];
+  return parts.map(parseSourceAppearance);
+}
+
+function makeRulebookResolver(rulebooks: RulebookRow[]) {
+  const byName = new Map<string, RulebookRow>();
+  const byAbbr = new Map<string, RulebookRow[]>();
+  for (const rulebook of rulebooks) {
+    byName.set(sourceLabelKey(rulebook.name), rulebook);
+    const current = byAbbr.get(rulebook.abbr) ?? [];
+    current.push(rulebook);
+    byAbbr.set(rulebook.abbr, current);
+  }
+
+  function byAbbrUnique(abbr: string) {
+    const rows = byAbbr.get(abbr) ?? [];
+    return rows.length === 1 ? rows[0] : undefined;
+  }
+
+  return (appearance: SourceAppearance): ResolvedSourceAppearance => {
+    const notes: string[] = [];
+    const key = sourceLabelKey(appearance.label);
+
+    const alias = SOURCE_LABEL_ALIASES_TO_RULEBOOK[key];
+    const aliasRulebook = alias ? byAbbrUnique(alias) : undefined;
+    if (alias && aliasRulebook) {
+      return { ...appearance, targetRulebook: aliasRulebook, notes };
+    }
+    if (alias && !aliasRulebook) {
+      notes.push(`ambiguous or missing rulebook alias: ${alias}`);
+      return { ...appearance, notes };
+    }
+
+    const direct = byName.get(key);
+    if (direct) return { ...appearance, targetRulebook: direct, notes };
+
+    const colonSuffix = appearance.label.split(":").at(-1)?.trim();
+    if (colonSuffix && colonSuffix !== appearance.label) {
+      const suffixRulebook = byName.get(sourceLabelKey(colonSuffix));
+      if (suffixRulebook) {
+        notes.push(`mapped from source suffix: ${colonSuffix}`);
+        return { ...appearance, targetRulebook: suffixRulebook, notes };
+      }
+    }
+
+    const inferred = inferRulebookFromSource(appearance.raw);
+    const inferredRulebook = inferred ? byAbbrUnique(inferred) : undefined;
+    if (inferred && inferredRulebook) {
+      notes.push(`mapped from source alias: ${inferred}`);
+      return { ...appearance, targetRulebook: inferredRulebook, notes };
+    }
+
+    notes.push(appearance.label ? "unmapped source label" : "missing source label");
+    return { ...appearance, notes };
+  };
+}
+
+function spellNameVariants(name: string) {
+  const variants = name
+    .split(/\s+\/\s+/)
+    .map((variant) => variant.trim())
+    .filter(Boolean);
+  return variants.length > 0 ? variants : [name];
+}
+
+function conversionCheck(spell: ParsedSpell, lookups: ConversionLookups) {
+  const notes: string[] = [];
+  const blockers: string[] = [];
+  const slug = slugify(spell.name);
+
+  if (spell.name.length > 64) {
+    blockers.push(`spell name exceeds legacy column width: ${spell.name.length}`);
+  }
+  if (slug.length > 64) {
+    blockers.push(`spell slug exceeds legacy column width: ${slug.length}`);
+  }
+  if (descriptionText(spell).length === 0) {
+    blockers.push("missing description text");
+  }
+
+  if (!lookups.schools.has(normalize(spell.school))) {
+    blockers.push(`unresolved school: ${spell.school}`);
+  }
+  if (
+    spell.subschool?.trim() &&
+    !lookups.subschools.has(normalize(spell.subschool))
+  ) {
+    blockers.push(`unresolved subschool: ${spell.subschool}`);
+  }
+
+  const classLevels = Object.entries(spell.class ?? {}).flatMap(
+    ([className, rawLevel]) => {
+      const parsed = parseLevel(rawLevel);
+      if (!parsed) {
+        blockers.push(`unparsed class level: ${className}=${rawLevel}`);
+        return [];
+      }
+      return expandClassNames(className).flatMap((expandedName) => {
+        const classRow = lookups.classes.get(normalize(expandedName));
+        if (!classRow) {
+          notes.push(`skipped unresolved class: ${expandedName}`);
+          return [];
+        }
+        return [{ class: classRow.label, level: parsed.level }];
+      });
+    },
+  );
+
+  const domainLevels = Object.entries(spell.domain ?? {}).flatMap(
+    ([domainName, rawLevel]) => {
+      const parsed = parseLevel(rawLevel);
+      if (!parsed) {
+        blockers.push(`unparsed domain level: ${domainName}=${rawLevel}`);
+        return [];
+      }
+      if (!lookups.domains.has(normalize(domainName))) {
+        notes.push(`skipped unresolved domain: ${domainName}`);
+        return [];
+      }
+      return [{ domain: domainName, level: parsed.level }];
+    },
+  );
+
+  for (const descriptor of descriptors(spell.descriptors)) {
+    if (!lookups.spellDescriptors.has(normalize(descriptor))) {
+      blockers.push(`unresolved descriptor: ${descriptor}`);
+    }
+  }
+
+  if (classLevels.length === 0 && domainLevels.length === 0) {
+    blockers.push("no resolvable class or domain levels");
+  }
+
+  return { blockers, notes };
 }
 
 function descriptors(raw: string | undefined) {
@@ -440,12 +701,9 @@ function convertCandidate(
   miss: KnownMiss,
   spellId: number,
   notes: string[],
+  lookups = loadConversionLookups(db),
 ) {
-  const classes = loadLookup(db, "dnd_characterclass", "name");
-  const domains = loadLookup(db, "dnd_domain", "name");
-  const schools = loadLookup(db, "dnd_spellschool", "name");
-  const subschools = loadLookup(db, "dnd_spellsubschool", "name");
-  const spellDescriptors = loadLookup(db, "dnd_spelldescriptor", "name");
+  const { classes, domains, schools, subschools, spellDescriptors } = lookups;
 
   if (!schools.has(normalize(spell.school))) {
     notes.push(`unresolved school: ${spell.school}`);
@@ -564,6 +822,302 @@ function convertCandidate(
   };
 }
 
+function findExactTargetSpell(
+  byRulebookAndName: Map<string, SpellIdentityRow>,
+  spell: ParsedSpell,
+  rulebookId: number,
+) {
+  for (const variant of spellNameVariants(spell.name)) {
+    const row = byRulebookAndName.get(
+      `${rulebookId}:${cleanSpellNameForMatch(variant)}`,
+    );
+    if (row) return row;
+  }
+  return undefined;
+}
+
+function findNameDuplicates(
+  byName: Map<string, SpellIdentityRow[]>,
+  spell: ParsedSpell,
+) {
+  const rows: SpellIdentityRow[] = [];
+  const seenIds = new Set<number>();
+  for (const variant of spellNameVariants(spell.name)) {
+    for (const row of byName.get(cleanSpellNameForMatch(variant)) ?? []) {
+      if (seenIds.has(row.id)) continue;
+      seenIds.add(row.id);
+      rows.push(row);
+    }
+  }
+  return rows;
+}
+
+function indexSpellIdentities(spells: SpellIdentityRow[]) {
+  const byRulebookAndName = new Map<string, SpellIdentityRow>();
+  const byName = new Map<string, SpellIdentityRow[]>();
+  const bySlug = new Map<string, SpellIdentityRow>();
+
+  for (const spell of spells) {
+    const nameKey = cleanSpellNameForMatch(spell.name);
+    byRulebookAndName.set(`${spell.rulebookId}:${nameKey}`, spell);
+    const nameRows = byName.get(nameKey) ?? [];
+    nameRows.push(spell);
+    byName.set(nameKey, nameRows);
+    bySlug.set(spell.slug, spell);
+  }
+
+  return { byRulebookAndName, byName, bySlug };
+}
+
+function buildInventoryEntry(params: {
+  category: InventoryCategory;
+  spell: ParsedSpell;
+  appearance: ResolvedSourceAppearance;
+  notes: string[];
+  existing?: SpellIdentityRow;
+  duplicates?: SpellIdentityRow[];
+}): CorpusInventoryEntry {
+  const { category, spell, appearance, notes, existing, duplicates } = params;
+  const entry: CorpusInventoryEntry = {
+    category,
+    name: spell.name,
+    source: spell.source,
+    sourceLabel: appearance.label,
+    page: appearance.page,
+    notes,
+  };
+  if (appearance.targetRulebook) {
+    entry.targetRulebook = appearance.targetRulebook.abbr;
+    entry.targetRulebookName = appearance.targetRulebook.name;
+  }
+  if (existing) {
+    entry.existingSpellId = existing.id;
+    entry.existingSpellName = existing.name;
+  }
+  if (duplicates && duplicates.length > 0) {
+    entry.duplicateSpellIds = duplicates.map((row) => row.id);
+  }
+  return entry;
+}
+
+function summarizeInventory(entries: CorpusInventoryEntry[]) {
+  const counts: Record<InventoryCategory, number> = {
+    ready: 0,
+    duplicate: 0,
+    mismatch: 0,
+    "manual-review": 0,
+    deferred: 0,
+  };
+  const byRulebook: Record<string, Record<InventoryCategory, number>> = {};
+  for (const entry of entries) {
+    counts[entry.category] += 1;
+    const key = entry.targetRulebook ?? "(unmapped)";
+    byRulebook[key] ??= {
+      ready: 0,
+      duplicate: 0,
+      mismatch: 0,
+      "manual-review": 0,
+      deferred: 0,
+    };
+    byRulebook[key][entry.category] += 1;
+  }
+  return { counts, byRulebook };
+}
+
+function runCorpusInventory(mode: Mode, patchPath: string | undefined) {
+  const parsedSpells = loadParsedSpells();
+  const db = new Database(rulesDbPath(), { readonly: true });
+  try {
+    const lookups = loadConversionLookups(db);
+    const resolveRulebook = makeRulebookResolver(loadRulebooks(db));
+    const spellIndexes = indexSpellIdentities(loadSpellIdentities(db));
+    const entries: CorpusInventoryEntry[] = [];
+    const generated: unknown[] = [];
+    let nextSpellId = currentMaxSpellId(db) + 1;
+
+    for (const spell of parsedSpells) {
+      const appearances = sourceAppearances(spell.source).map(resolveRulebook);
+      const mapped = appearances.filter((appearance) => appearance.targetRulebook);
+      const unresolved = appearances.filter(
+        (appearance) => !appearance.targetRulebook,
+      );
+
+      if (mapped.length === 0) {
+        entries.push(
+          buildInventoryEntry({
+            category: "deferred",
+            spell,
+            appearance: appearances[0] ?? {
+              raw: "",
+              label: "",
+              page: null,
+              notes: ["missing source label"],
+            },
+            notes: appearances.flatMap((appearance) => appearance.notes),
+          }),
+        );
+        continue;
+      }
+
+      for (const appearance of mapped) {
+        const targetRulebook = appearance.targetRulebook;
+        if (!targetRulebook) continue;
+        const notes = [...appearance.notes];
+        const existing = findExactTargetSpell(
+          spellIndexes.byRulebookAndName,
+          spell,
+          targetRulebook.id,
+        );
+        const slugRow = spellIndexes.bySlug.get(slugify(spell.name));
+        const duplicates = findNameDuplicates(spellIndexes.byName, spell);
+
+        if (existing || slugRow) {
+          if (slugRow && (!existing || slugRow.id !== existing.id)) {
+            notes.push(`slug already exists as id ${slugRow.id}: ${slugRow.name}`);
+          }
+          const duplicateExisting = existing ?? slugRow;
+          entries.push(
+            buildInventoryEntry({
+              category: "duplicate",
+              spell,
+              appearance,
+              notes,
+              ...(duplicateExisting ? { existing: duplicateExisting } : {}),
+              duplicates,
+            }),
+          );
+          continue;
+        }
+
+        if (unresolved.length > 0 || mapped.length > 1) {
+          if (mapped.length > 1) {
+            notes.push(
+              `multiple mapped source appearances: ${mapped
+                .map((item) => item.targetRulebook?.abbr)
+                .filter(Boolean)
+                .join(", ")}`,
+            );
+          }
+          for (const unresolvedAppearance of unresolved) {
+            notes.push(
+              `${unresolvedAppearance.label || "(blank source)"}: ${unresolvedAppearance.notes.join("; ")}`,
+            );
+          }
+          entries.push(
+            buildInventoryEntry({
+              category: "manual-review",
+              spell,
+              appearance,
+              notes,
+              duplicates,
+            }),
+          );
+          continue;
+        }
+
+        if (duplicates.length > 0) {
+          notes.push(
+            `same normalized name exists in other rulebooks: ${duplicates
+              .map((row) => `${row.id}/${row.rulebook}`)
+              .join(", ")}`,
+          );
+          entries.push(
+            buildInventoryEntry({
+              category: "manual-review",
+              spell,
+              appearance,
+              notes,
+              duplicates,
+            }),
+          );
+          continue;
+        }
+
+        const check = conversionCheck(spell, lookups);
+        notes.push(...check.notes);
+        if (check.blockers.length > 0) {
+          entries.push(
+            buildInventoryEntry({
+              category: "mismatch",
+              spell,
+              appearance,
+              notes: [...notes, ...check.blockers],
+            }),
+          );
+          continue;
+        }
+
+        let candidate: unknown | undefined;
+        if (mode === "generate") {
+          const candidateNotes = [...notes];
+          candidate = convertCandidate(
+            db,
+            spell,
+            {
+              name: spell.name,
+              targetRulebook: targetRulebook.abbr,
+              sourceName: appearance.label,
+              generate: true,
+            },
+            nextSpellId,
+            candidateNotes,
+            lookups,
+          );
+          if (candidate) {
+            generated.push(candidate);
+            nextSpellId += 1;
+          } else {
+            notes.push(...candidateNotes.filter((note) => !notes.includes(note)));
+          }
+        }
+
+        entries.push(
+          buildInventoryEntry({
+            category: candidate || mode === "inspect" ? "ready" : "mismatch",
+            spell,
+            appearance,
+            notes,
+          }),
+        );
+      }
+    }
+
+    const summary = summarizeInventory(entries);
+    const reportPath = writeReport(
+      {
+        mode,
+        sourcePath: SPELLS_FULL_JSON,
+        generatedCount: generated.length,
+        summary,
+        entries,
+      },
+      `spells-full-corpus-inventory-${mode}`,
+    );
+
+    let writtenPatchPath: string | undefined;
+    if (mode === "generate" && patchPath) {
+      const resolved = resolvePatchPath(patchPath);
+      fs.mkdirSync(path.dirname(resolved), { recursive: true });
+      fs.writeFileSync(
+        resolved,
+        `${generated.map((item) => JSON.stringify(item)).join("\n")}\n`,
+      );
+      writtenPatchPath = resolved;
+    }
+
+    console.log(`spells-full corpus-inventory ${mode} OK`);
+    console.log(`Source spells: ${parsedSpells.length}`);
+    for (const [category, count] of Object.entries(summary.counts)) {
+      console.log(`${category}: ${count}`);
+    }
+    console.log(`Generated: ${generated.length}`);
+    console.log(`Report: ${reportPath}`);
+    if (writtenPatchPath) console.log(`Patch: ${writtenPatchPath}`);
+  } finally {
+    db.close();
+  }
+}
+
 function runMisses(
   mode: Mode,
   patchPath: string | undefined,
@@ -665,7 +1219,13 @@ function runMisses(
 function main() {
   const [, , command, target, ...args] = process.argv;
   if (command !== "inspect" && command !== "generate") usage();
-  if (target !== "known-misses" && target !== "short-desc-rules-gaps") usage();
+  if (
+    target !== "known-misses" &&
+    target !== "short-desc-rules-gaps" &&
+    target !== "corpus-inventory"
+  ) {
+    usage();
+  }
 
   const writePatchIndex = args.indexOf("--write-patch");
   const patchPath =
@@ -674,6 +1234,11 @@ function main() {
 
   if (target === "known-misses") {
     runMisses(command, patchPath, KNOWN_MISSES, "known-misses");
+    return;
+  }
+
+  if (target === "corpus-inventory") {
+    runCorpusInventory(command, patchPath);
     return;
   }
 
@@ -689,4 +1254,17 @@ function main() {
   });
 }
 
-main();
+export {
+  cleanSpellNameForMatch,
+  conversionCheck,
+  makeRulebookResolver,
+  parseSourceAppearance,
+  sourceAppearances,
+  sourceLabelKey,
+  spellNameVariants,
+  summarizeInventory,
+};
+
+if (require.main === module) {
+  main();
+}

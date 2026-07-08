@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: in progress.
 
 ## Purpose
 
@@ -21,7 +21,9 @@ Status: planned.
 - Owning version: v1.1.
 - Owning domain: data tools, rules/content DB import, content artifact
   validation.
-- Primary implementation branch or specialist: data/db specialist.
+- Primary implementation branch or specialist: data-pipeline specialist for
+  inventory and JSONL generation; DB/content maintainer for apply and artifact
+  activation.
 - Related feature/module docs: `docs/operations/import-workflow.md`,
   `docs/operations/data-setup.md`, `docs/operations/rules-db-notes.md`,
   `docs/modules/data-tools.md`, `docs/modules/server.md`.
@@ -33,6 +35,10 @@ Status: planned.
 - Main gate outcome: import the remaining source-backed spell corpus through
   maintained data tooling, then produce reviewable reports and a production
   content DB activation path.
+- Current data-pipeline specialist boundary: produce reproducible inventory
+  reports and reviewable structured JSONL patch candidates only. Rules DB
+  apply, content DB rebuild, artifact provenance, and production activation are
+  owned by the DB/content maintenance track.
 - Required reading: `AGENTS.md`, this plan,
   `docs/releases/v1.1/README.md`, `docs/operations/import-workflow.md`,
   `docs/operations/data-setup.md`, `docs/operations/rules-db-notes.md`, and
@@ -93,9 +99,34 @@ ad hoc runtime migrations or one-off server scripts.
 - Deliverable: report of remaining source-backed spells to import, grouped by
   ready, duplicate, mismatch, manual-review, and deferred categories.
 - Expected files: data-tools reports under `data-tools/out/` when rebuildable,
-  plus durable summary notes in this plan or operations docs.
-- Validation: inventory command is reproducible from maintained scripts or is
+  plus durable summary notes in this plan or operations docs. Ready candidates
+  may be written as structured JSONL under the nested local `data/` repo.
+- Validation: inventory command is reproducible from maintained scripts and is
   clearly marked local-only.
+
+Current command:
+
+```bash
+npm run -w data-tools spells-full:inspect -- corpus-inventory
+npm run -w data-tools spells-full:generate -- corpus-inventory --write-patch pending/spells/full-corpus-ready.generated.jsonl
+npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.generated.jsonl
+```
+
+Initial local run on July 8, 2026 produced:
+
+| Category        | Count |
+| --------------- | ----: |
+| ready           |    54 |
+| duplicate       |  4189 |
+| mismatch        |    17 |
+| manual-review   |    35 |
+| deferred        |  2253 |
+
+The inventory is entry-based rather than source-row-based because one parsed
+source row can list multiple source appearances. The ready set generated 54
+`insertSpell` JSONL operations and passed `rules:spells:validate` with 0
+warnings and 0 errors. No DB apply or dry-run apply was performed in this
+data-pipeline branch.
 
 ### Slice 2: Import And Review Workflow
 
@@ -105,6 +136,11 @@ ad hoc runtime migrations or one-off server scripts.
   workflow docs as needed.
 - Validation: focused data-tools tests, import dry-run/apply evidence, and
   review reports for unresolved rows.
+- Current handoff input: the data-pipeline branch can provide
+  `data/rules-patches/pending/spells/full-corpus-ready.generated.jsonl` plus
+  the matching inventory report. DB/content maintainers decide whether to
+  apply the ready JSONL as-is, split it by rulebook, or send specific rows back
+  to manual review.
 
 ### Slice 3: Content DB Artifact And Provenance
 
@@ -149,10 +185,12 @@ ad hoc runtime migrations or one-off server scripts.
 
 ## Open Questions
 
-- Which remaining source-backed rows are ready for automatic import versus
-  manual review?
+- Which of the 54 ready JSONL rows should DB/content maintainers accept
+  directly versus split by rulebook or source family?
 - What production artifact naming/versioning is sufficient before a broader
   content artifact pipeline exists?
+- Should the current parser/source dump's unresolved third-party class list
+  notes remain informational, or should they block future ready classification?
 
 ## Follow-Up Candidates
 
