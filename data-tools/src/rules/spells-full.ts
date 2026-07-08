@@ -161,11 +161,13 @@ const SOURCE_TO_RULEBOOK: Record<string, string> = {
 
 const SOURCE_LABEL_ALIASES_TO_RULEBOOK: Record<string, string> = {
   "defenders of the faith": "DF",
+  "eberron dragons of eberron": "DE",
   "eberron magic of eberron": "MoE",
   "fiendish codex i": "FCI",
   "fiendish codex ii": "FCII",
   "forgotten realms city of splendor waterdeep": "CSW",
   "forgotten realms magic of faerun": "Mag",
+  "forgotten realms powers of faerun": "PF",
   "forgotten realms players guide to faerun": "PG",
   "libris mortis": "LM",
   "master of the wild": "MW",

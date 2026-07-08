@@ -141,7 +141,9 @@ rebuild content DB artifacts.
 writes deferred source-label review rows to
 `data/spells-full/source-rulebooks.generated.jsonl`. These rows
 classify unmapped source families and import disposition; they are not rulebook
-insert operations.
+insert operations. D&D 3.5 source labels that cannot yet generate spell JSONL
+because the rules DB lacks a matching rulebook are marked
+`candidate-import-rulebook`.
 
 Probe IMarvinTPA for English short-description candidates:
 

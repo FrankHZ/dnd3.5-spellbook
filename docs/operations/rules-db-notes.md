@@ -191,7 +191,9 @@ repo. It is not an applied rules DB patch until a DB/content maintainer runs
 the normal structured patch apply workflow. The inventory groups entries as
 `ready`, `duplicate`, `mismatch`, `manual-review`, or `deferred`; only `ready`
 entries are written by generate mode. The rulebook JSONL summarizes deferred
-source labels for scope review and is not an insert/update patch.
+source labels for scope review and is not an insert/update patch. Rows marked
+`candidate-import-rulebook` are in-scope D&D 3.5 sources that still need a
+rules DB rulebook mapping before spell rows can validate.
 
 ## Verified Manual Fixes
 

@@ -316,6 +316,14 @@ const tests: TestCase[] = [
         "wotc-3e35-periodical",
       );
       assert.equal(
+        classifySourceLabel("Dragon Magazine 304").importDisposition,
+        "defer-out-of-scope",
+      );
+      assert.equal(
+        classifySourceLabel("Dragon Magazine 309").importDisposition,
+        "candidate-import-rulebook",
+      );
+      assert.equal(
         classifySourceLabel("Rokugan: Magic of Rokugan").importDisposition,
         "defer-out-of-scope",
       );

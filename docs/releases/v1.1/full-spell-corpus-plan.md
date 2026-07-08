@@ -117,26 +117,33 @@ Initial local run on July 8, 2026 produced:
 
 | Category        | Count |
 | --------------- | ----: |
-| ready           |    56 |
-| duplicate       |  5015 |
+| ready           |    57 |
+| duplicate       |  5016 |
 | mismatch        |    17 |
 | manual-review   |    63 |
-| deferred        |  2105 |
+| deferred        |  2103 |
 
 The inventory is entry-based rather than source-row-based because one parsed
-source row can list multiple source appearances. The ready set generated 56
+source row can list multiple source appearances. The ready set generated 57
 `insertSpell` JSONL operations and passed `rules:spells:validate` with 0
 warnings and 0 errors. No DB apply or dry-run apply was performed in this
 data-pipeline branch.
 
 Deferred source labels are also summarized into
 `data/spells-full/source-rulebooks.generated.jsonl`. The current run produced
-250 source-label rows: 79 WotC web/article labels, 59
-Dragon/Dungeon periodical labels, 62 licensed d20 setting labels, 18 official
-fan/conversion labels, 11 Living Greyhawk labels, 8 WotC setting labels needing
-row-level confirmation, 4 WotC adventure labels, 4 licensed other-IP labels, 3
-ambiguous core labels, 1 legacy setting-conversion label, and 1 parser-artifact
-bucket.
+248 source-label rows. Current import disposition counts are:
+
+| Disposition               | Labels | Entries |
+| ------------------------- | -----: | ------: |
+| candidate-import-rulebook |     42 |     231 |
+| manual-review-source      |     99 |     292 |
+| defer-out-of-scope        |    106 |    1309 |
+| defer-parser-artifact     |      1 |     271 |
+
+The 231 `candidate-import-rulebook` entries represent D&D 3.5 sources that are
+in scope but lack a current rules DB rulebook mapping: Dragon Magazine #309+
+issue labels, `Forgotten Realms: Anauroch`, `Eberron: City of Stormreach`,
+`Eberron: Shadows of the Last War`, and `Expeditions to Undermountain`.
 
 ### Slice 2: Import And Review Workflow
 
@@ -150,7 +157,8 @@ bucket.
   `data/rules-patches/pending/spells/full-corpus-ready.generated.jsonl` plus
   the matching inventory report and deferred source-label JSONL. DB/content
   maintainers decide whether to apply the ready JSONL as-is, split it by
-  rulebook, or send specific rows back to manual review.
+  rulebook, add missing 3.5 rulebook mappings for
+  `candidate-import-rulebook`, or send specific rows back to manual review.
 
 ### Slice 3: Content DB Artifact And Provenance
 
@@ -195,8 +203,11 @@ bucket.
 
 ## Open Questions
 
-- Which of the 56 ready JSONL rows should DB/content maintainers accept
+- Which of the 57 ready JSONL rows should DB/content maintainers accept
   directly versus split by rulebook or source family?
+- What rulebook identifiers should DB/content maintainers use for Dragon
+  Magazine issue labels and the 3.5 adventure/source labels currently marked
+  `candidate-import-rulebook`?
 - What production artifact naming/versioning is sufficient before a broader
   content artifact pipeline exists?
 - Should the current parser/source dump's unresolved third-party class list

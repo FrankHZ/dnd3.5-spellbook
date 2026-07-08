@@ -31,6 +31,8 @@ type SourceCategory =
 type ImportDisposition =
   | "defer-parser-artifact"
   | "defer-out-of-scope"
+  | "candidate-import"
+  | "candidate-import-rulebook"
   | "manual-review-source"
   | "candidate-alias-review";
 
@@ -170,6 +172,27 @@ function classifySourceLabel(sourceLabel: string): Omit<
   }
 
   if (/^Dragon Magazine\b|^Dragon Annual\b/i.test(sourceLabel)) {
+    const dragonIssue = dragonMagazineIssue(sourceLabel);
+    if (dragonIssue !== undefined && dragonIssue < 309) {
+      return classification(
+        "wotc-3e35-periodical",
+        "Dragon Magazine",
+        "defer-out-of-scope",
+        "high",
+        [EVIDENCE.dragonMagazine],
+        ["Dragon Magazine issue predates the Dragon #309 D&D 3.5 cutover."],
+      );
+    }
+    if (dragonIssue !== undefined) {
+      return classification(
+        "wotc-3e35-periodical",
+        "Dragon Magazine",
+        "candidate-import-rulebook",
+        "high",
+        [EVIDENCE.dragonMagazine],
+        ["Dragon Magazine issue is D&D 3.5-era; add or map an issue rulebook before spell import."],
+      );
+    }
     return classification(
       "wotc-3e35-periodical",
       "Dragon Magazine",
@@ -328,13 +351,23 @@ function classifySourceLabel(sourceLabel: string): Omit<
   }
 
   if (/^Lord of the Iron Fortress$|^Bastion of Broken Souls$|^The Standing Stone$|^Expeditions? to Undermountain$/i.test(sourceLabel)) {
+    if (/^Expeditions? to Undermountain$/i.test(sourceLabel)) {
+      return classification(
+        "wotc-adventure",
+        "Expedition to Undermountain",
+        "candidate-import-rulebook",
+        "medium",
+        [],
+        ["D&D 3.5-era adventure/source label; add or map a rulebook before spell import."],
+      );
+    }
     return classification(
       "wotc-adventure",
       sourceLabel,
-      "manual-review-source",
+      "defer-out-of-scope",
       "medium",
       [],
-      ["Adventure/module source; review separately from sourcebook imports."],
+      ["D&D 3.0-era adventure/module source; defer under the current corpus policy."],
     );
   }
 
@@ -350,6 +383,46 @@ function classifySourceLabel(sourceLabel: string): Omit<
   }
 
   if (/^Forgotten Realms\b|^Eberron:/i.test(sourceLabel)) {
+    if (
+      /^Eberron: City of Stormreach$/i.test(sourceLabel) ||
+      /^Eberron: Shadows of the Last War$/i.test(sourceLabel) ||
+      /^Forgotten Realms: Anauroch$/i.test(sourceLabel)
+    ) {
+      return classification(
+        "wotc-setting-source-label",
+        sourceLabel.startsWith("Eberron:") ? "Eberron source label" : "Forgotten Realms source label",
+        "candidate-import-rulebook",
+        "medium",
+        [],
+        ["D&D 3.5 source label; add or map a rulebook before spell import."],
+      );
+    }
+    if (
+      /^Eberron: Dragons of Eberron$/i.test(sourceLabel) ||
+      /^Forgotten Realms: Powers of Faer[uû]n$/i.test(sourceLabel)
+    ) {
+      return classification(
+        "wotc-setting-source-label",
+        sourceLabel.startsWith("Eberron:") ? "Eberron source label" : "Forgotten Realms source label",
+        "candidate-import",
+        "medium",
+        [],
+        ["D&D 3.5 source label maps to an existing rules DB rulebook alias."],
+      );
+    }
+    if (
+      /^Forgotten Realms: Monsters of Faer[uû]n$/i.test(sourceLabel) ||
+      /^Forgotten Realms Campaign Setting, Player.?s Handbook, Tome and Blood$/i.test(sourceLabel)
+    ) {
+      return classification(
+        "wotc-setting-source-label",
+        "Forgotten Realms source label",
+        "defer-out-of-scope",
+        "medium",
+        [],
+        ["D&D 3.0 or mixed 3.0 source label; defer under the current corpus policy."],
+      );
+    }
     return classification(
       "wotc-setting-source-label",
       sourceLabel.startsWith("Eberron:") ? "Eberron source label" : "Forgotten Realms source label",
@@ -368,6 +441,11 @@ function classifySourceLabel(sourceLabel: string): Omit<
     [],
     ["No durable source-family classification yet."],
   );
+}
+
+function dragonMagazineIssue(sourceLabel: string) {
+  const match = sourceLabel.match(/^Dragon Magazine\s+(\d{3})\b/i);
+  return match?.[1] ? Number(match[1]) : undefined;
 }
 
 function classification(
