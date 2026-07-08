@@ -75,6 +75,6 @@ as loose backlog items unless their scope changes again:
 
 ## Scope Note
 
-These are intentionally deferred beyond the currently planned MVP line.
+These are intentionally deferred beyond the promoted post-v1.0 release sequence.
 
 They should be considered early candidates for the future stable-version track rather than gaps accidentally left undocumented.
