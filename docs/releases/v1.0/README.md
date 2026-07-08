@@ -1,6 +1,6 @@
 # v1.0 Release Plan
 
-Status: active plan.
+Status: frozen.
 
 v1.0 is the first formal post-MVP public release line. It should move the app
 from the MVP single-origin deployment shape to a clearer production topology:
@@ -56,14 +56,14 @@ About / Status:
 
 3. **Release Ready Doc Sweep**
 
-   Current. This owns the final cross-doc quality gate. It verifies that
+   Landed. This owns the final cross-doc quality gate. It verifies that
    current canonical docs no longer describe the MVP-era deployment topology as
    current truth and that release docs, operations docs, module docs, and
    navigation agree before freeze.
 
 4. **Release acceptance and freeze**
 
-   Next. This owns production smoke tests, Cloudflare/remote verification,
+   Landed. This owns production smoke tests, Cloudflare/remote verification,
    final docs, and the v1.0 release freeze snapshot after release acceptance
    completes.
 
@@ -83,6 +83,7 @@ delivery sequence, ownership, or accepted release scope.
 
 ## Plans
 
+- [FREEZE.md](./FREEZE.md)
 - [domain-and-deployment-plan.md](./domain-and-deployment-plan.md)
 - [about-and-status-plan.md](./about-and-status-plan.md)
 - [release-ready-doc-sweep-plan.md](./release-ready-doc-sweep-plan.md)
@@ -166,6 +167,5 @@ Reference docs for implementation review:
 
 ## Handoff Rule
 
-v3.10 is frozen. v1.0 is now the active release track in `docs/roadmap.md`.
-Keep this release line focused on public release readiness and do not reopen
-v3.10 MVP UI/i18n acceptance.
+v1.0 is frozen. Use `FREEZE.md` as the authoritative v1.0 shipped-state
+snapshot, and use `docs/roadmap.md` for next-work ordering after this release.

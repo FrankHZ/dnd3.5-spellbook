@@ -8,8 +8,9 @@ details.
 
 ## Current Track
 
-v1.0 is the active formal public release plan:
+v1.0 is the latest frozen formal public release:
 
+- `docs/releases/v1.0/FREEZE.md`
 - `docs/releases/v1.0/README.md`
 - `docs/releases/v1.0/domain-and-deployment-plan.md`
 - `docs/releases/v1.0/about-and-status-plan.md`
@@ -17,30 +18,32 @@ v1.0 is the active formal public release plan:
 
 The latest frozen pre-release snapshot is `docs/mvp/v3.10/FREEZE.md`.
 
-v1.0 should focus on public release readiness: Cloudflare Workers frontend
-delivery, the `api.d20spellcodex.com` backend API topology, About/Status
-visibility, and release-ready documentation consistency. It should not reopen
-v3.10 UI/i18n acceptance.
+No later formal release plan is active yet. Use the next-work list below to
+triage stable-track work after v1.0.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
 
 ## Recently Completed
 
-The v1.0 domain/deployment and About/Status implementation slices have landed:
+The v1.0 release is frozen with:
 
-- Cloudflare Workers Static Assets owns production frontend delivery for
+- `docs/releases/v1.0/FREEZE.md` as the as-built snapshot.
+- Cloudflare Workers Static Assets frontend delivery at
   `https://www.d20spellcodex.com`.
-- the apex `d20spellcodex.com` is intentionally unassigned until a redirect or
-  canonical-domain policy is accepted.
-- `https://api.d20spellcodex.com` reaches the existing Express API through
-  Cloudflare proxying and the API-only Nginx reverse proxy.
-- production CORS is scoped to the accepted Workers frontend origin.
-- GitHub deploy workflow is backend/API-only; frontend CD is owned by
-  Cloudflare Workers Builds.
-- About / Status separates Status and Credits, reports frontend hosting and
-  API origin, reads public backend/content status, and keeps operator DB
-  provenance on the private `/api/status/db` path.
+- backend API domain at `https://api.d20spellcodex.com`.
+- backend-only origin server responsibility for Express/API,
+  SQLite/content DBs, DB update scripts, and Nginx API reverse proxying.
+- About / Status reporting frontend build metadata, API origin, backend
+  version metadata, public content DB status, and source credits.
+- final frontend Workers production build
+  `d72db3fd-b5cd-4f98-999b-e74a1907c218` on commit `96c84b7`.
+- backend deploy workflow run `28906821504` on commit `96c84b7`.
+- production smoke checks for representative SPA routes, API status, CORS,
+  private DB provenance, and About frontend metadata.
+- release-ready documentation consistency across root README, docs index,
+  roadmap, AGENTS.md, feature docs, module docs, operations docs, and release
+  docs.
 
 The v3.10 final pre-release closeout is frozen with:
 
@@ -311,25 +314,16 @@ target text to review.
 
 Recommended next sequence:
 
-1. **Release Ready Doc Sweep**
-
-   Run the final cross-doc quality gate for v1.0. Verify root README,
-   docs index, roadmap, AGENTS.md, feature docs, design docs, operations docs,
-   module docs, and the v1.0 release README all agree on the Cloudflare Workers
-   frontend, API domain, backend-only origin role, and About/Status model.
-
-2. **v1.0 release acceptance and freeze**
-
-   After implementation branches land, validate production SPA deep links,
-   cross-origin API fetches, CORS rejection for unallowed origins, API TLS,
-   About/Status behavior, backend deploy scripts, and docs consistency, then
-   create the v1.0 release freeze snapshot.
-
-3. **Triage the non-blocking maintenance tail as needed**
+1. **Triage the non-blocking maintenance tail as needed**
 
    `npm audit --workspaces --omit=dev --json` still reports the reviewed Prisma
    dev-chain / Hono moderate advisories. Treat them as explicit maintenance
    follow-ups, not hidden release blockers.
+
+2. **Choose the next formal release track**
+
+   Promote only a bounded slice from `docs/stable-backlog.md` into a new
+   release plan when the next user-visible target is clear.
 
 ## v3.6 Frozen Workstreams
 
