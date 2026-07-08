@@ -111,12 +111,8 @@ EOF
         write_acme_challenge_location
         cat <<EOF
 
-EOF
-        write_api_proxy_locations
-        cat <<EOF
-
   location / {
-    return 404;
+    return 301 https://\$host\$request_uri;
   }
 }
 

@@ -97,6 +97,9 @@ Local development currently uses:
 
 The main database variables are:
 
+- `HOST`, normally `127.0.0.1` in production so Nginx remains the only public
+  entry point
+- `PORT`, normally `3000`
 - `RULES_DATABASE_URL`
 - `CONTENT_DATABASE_URL`
 - `APP_STATE_DATABASE_URL`
