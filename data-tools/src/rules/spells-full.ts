@@ -204,6 +204,8 @@ const RULEBOOK_TO_SOURCE_NAME: Record<string, string> = {
 };
 
 const MANUAL_REVIEW_READY_BLOCKLIST: Record<string, string> = {
+  "BE:Glorious Apparel":
+    "possible duplicate of existing BE row Glorious Raiment",
   "CM:Dawnburst": "possible duplicate of existing CM row Dawn Burst",
   "CM:Otiluke’s Suppressing Field":
     "possible duplicate of existing CM row Otiluke's Supressing Field",
@@ -211,17 +213,33 @@ const MANUAL_REVIEW_READY_BLOCKLIST: Record<string, string> = {
     "possible duplicate of existing CR row Necrotic Skull Bomb",
   "CV:Dawnshroud": "possible duplicate of existing CV row Dawn Shroud",
   "Fr:Ice to Flesh 2": "possible duplicate of existing Fr row Ice to Flesh",
+  "FRCS:Portal Seal":
+    "possible duplicate of existing FRCS row Gate Seal",
   "Gh:Alarm, Ethereal": "possible duplicate of existing Gh row Ethereal Alarm",
   "Gh:Black Lung": "possible duplicate of existing Gh row Black Lungs",
   "HH:Familiar Geas": "possible duplicate of existing HH row Familial Geas",
   "LE:Mailied Might of the Magelords":
     "possible duplicate of existing LE row Mailed Might of the Magelords",
+  "Mag:Symbol (Death Symbol of Bane)":
+    "possible duplicate of existing Mag row Symbol",
+  "Mag:Symbol (Symbol of Spell Loss)":
+    "possible duplicate of existing Mag row Symbol",
+  "MW:Animal Trance, Mass":
+    "possible duplicate of existing MW row Trance, Mass",
   "PH2:Channeled Pyroblast":
     "possible duplicate of existing PH2 row Channeled Pyroburst",
+  "PH2:Kelgore’s Fire Mist":
+    "possible duplicate of existing PH2 row Kelgore's Fire Bolt",
   "RE:Unfettered Heroism":
     "possible duplicate of existing RE row Unfettered Herosim",
   "Sa:Protection from Desiccation":
     "possible duplicate of existing Sa row Protection from Dessication",
+  "SaS:Sign of Discord":
+    "possible duplicate of existing SaS row Song of Discord",
+  "Sto:Tern’s Resistance":
+    "possible duplicate of existing Sto row Tern's Persistence",
+  "Sto:Wake of Trailing":
+    "possible duplicate of existing Sto row Wake Trailing",
   "TM:Augment Truefiend":
     "possible duplicate of existing TM row Augment Truefriend",
   "TM:Bane of the Archrivel":

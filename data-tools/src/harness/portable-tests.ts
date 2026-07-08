@@ -345,6 +345,10 @@ const tests: TestCase[] = [
         manualReviewBlocker({ name: "Augment Truefiend" }, "TM") ?? "",
         /Augment Truefriend/,
       );
+      assert.match(
+        manualReviewBlocker({ name: "Wake of Trailing" }, "Sto") ?? "",
+        /Wake Trailing/,
+      );
     },
   },
   {

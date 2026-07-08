@@ -117,19 +117,22 @@ Current local run on July 8, 2026 produced:
 
 | Category        | Count |
 | --------------- | ----: |
-| ready           |    42 |
+| ready           |    33 |
 | duplicate       |  5016 |
 | mismatch        |    17 |
-| manual-review   |    78 |
+| manual-review   |    87 |
 | deferred        |  2103 |
 
 The inventory is entry-based rather than source-row-based because one parsed
-source row can list multiple source appearances. The ready set generated 42
+source row can list multiple source appearances. The ready set generated 33
 `insertSpell` JSONL operations and passed `rules:spells:validate` with 0
 warnings and 0 errors. No DB apply or dry-run apply was performed in this
 data-pipeline branch. The generated ready patch keeps 17 `DCS` rows in scope
-and moves 15 apparent typo/duplicate hazards into `manual-review` instead of
-letting them create new spell rows.
+and moves 24 apparent typo/duplicate hazards into `manual-review` instead of
+letting them create new spell rows. A subagent DB cross-check on July 8, 2026
+confirmed the original 15 blocked rows and identified 9 additional ready rows
+whose names/descriptions matched existing DB spells closely enough to require
+manual review before import.
 
 Deferred source labels are also summarized into
 `data/spells-full/source-rulebooks.generated.jsonl`. The current run produced
@@ -208,7 +211,7 @@ v1.1 published-corpus scope.
 
 ## Open Questions
 
-- Whether DB/content maintainers should apply the 42 ready JSONL rows
+- Whether DB/content maintainers should apply the 33 ready JSONL rows
   directly versus split by rulebook or source family?
 - What rulebook identifiers should DB/content maintainers use for Dragon
   Magazine issue labels and the 3.5 adventure/source labels currently marked
