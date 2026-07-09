@@ -195,10 +195,11 @@ only remaining high-confidence ambiguous core source label is
 - Current handoff input: the data-pipeline branch provides
   `data/rules-patches/pending/spells/full-corpus-ready.generated.jsonl`, the
   matching inventory report, row-level rejected/ambiguous JSONL, and
-  source-label review JSONL. DB/content maintainers decide whether to apply the
-  ready JSONL as-is, split it by rulebook, add missing 3.5 rulebook mappings
-  for `candidate-import-rulebook`, or send specific ambiguous rows back to
-  manual review.
+  source-label review JSONL. The `codex/db-full-corpus-apply` branch applies
+  the ready JSONL rows that already resolve to existing rules DB rulebooks.
+  Missing 3.5 rulebook mappings for `candidate-import-rulebook` rows remain a
+  separate follow-up PR so rulebook identity, abbreviation, edition, display
+  labels, and provenance can be reviewed before importing their spell rows.
 - Current short-description handoff input: reviewed strict-3.5 English summary
   decisions are materialized as
   `data/short-desc-review/qa/en-strict35-ready.generated.jsonl`. That ledger
@@ -272,10 +273,12 @@ Current local content DB rebuild on July 9, 2026:
   4959 spells, 110 rulebooks, 2312 descriptors, 12580 class list entries,
   1549 domain list entries, 44631 base component rows, and 140 extra component
   rows.
-- `rules:content:meta` reported content DB checksum
-  `479ebb98d284331185af0515bfd99ee3757617f9c1635857af8f01760bb850b6` for the
-  first local rebuild pass. Rebuild once more after parent/data commits so the
-  final local `RulesContentBuild` commit ids match the review branch heads.
+- `rules:content:meta` reported final local content DB checksum
+  `6178e8cfa86456ed1c88d7e89bfdccd61083e7ef4762ac44de5368862def43f6`
+  after the metadata-aligned rebuild. The latest local `RulesContentBuild`
+  records parent repo commit
+  `6a0fae6131dd21684aaedce70cc520fc838cad45` and nested data repo commit
+  `e9e1834c73823d99e829c4e989b453f56386717a`.
 
 ### Slice 4: API And Production Activation Smoke
 
@@ -324,9 +327,6 @@ operator-owned and are not part of CD.
 
 ## Open Questions
 
-- What rulebook identifiers should DB/content maintainers use for Dragon
-  Magazine issue labels and the 3.5 adventure/source labels currently marked
-  `candidate-import-rulebook`?
 - What production artifact naming/versioning is sufficient before a broader
   content artifact pipeline exists, beyond `RulesContentBuild` plus operator
   upload notes?
@@ -335,6 +335,13 @@ operator-owned and are not part of CD.
 
 ## Follow-Up Candidates
 
+- Next DB/content PR: add reviewed rules DB rulebook mappings for the
+  `candidate-import-rulebook` source labels, then regenerate/apply the spell
+  rows unlocked by those mappings. Current input is
+  `data/spells-full/source-rulebooks.generated.jsonl`, with 42 candidate source
+  labels and 231 entries: Dragon Magazine issue labels, `Forgotten Realms:
+  Anauroch`, `Eberron: City of Stormreach`, `Eberron: Shadows of the Last War`,
+  and `Expeditions to Undermountain`.
 - Large-scale Chinese/English translation and proofreading QA belongs in v1.2
   after the full corpus is stable.
 - Official WotC web articles and web enhancements should stay out of the v1.1
