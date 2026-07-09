@@ -270,6 +270,18 @@ const tests: TestCase[] = [
         "Perniarch, Planar",
         "Perinarch, Planar",
       ]);
+      assert.deepEqual(spellNameVariants("Junglerazor"), [
+        "Junglerazor",
+        "Junglerazer",
+      ]);
+      assert.deepEqual(spellNameVariants("Rejuvenate Corpse"), [
+        "Rejuvenate Corpse",
+        "Rejuvenative Corpse",
+      ]);
+      assert.deepEqual(spellNameVariants("Invisibility, Superior"), [
+        "Invisibility, Superior",
+        "Superior Invisibility",
+      ]);
 
       const resolveRulebook = makeRulebookResolver([
         { id: 1, abbr: "Sc_", name: "Spell Compendium" },

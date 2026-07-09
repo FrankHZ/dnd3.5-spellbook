@@ -118,9 +118,9 @@ Current local run on July 8, 2026 produced:
 | Category        | Count |
 | --------------- | ----: |
 | ready           |    33 |
-| duplicate       |  5092 |
+| duplicate       |  5095 |
 | mismatch        |    14 |
-| manual-review   |    36 |
+| manual-review   |    33 |
 | deferred        |  2081 |
 
 The inventory is entry-based rather than source-row-based because one parsed
@@ -139,8 +139,8 @@ repo:
 
 | Artifact | Rows | Purpose |
 | --- | ---: | --- |
-| `data/spells-full/full-corpus-rejected.generated.jsonl` | 5133 | confirmed non-import rows: existing DB duplicates, parser artifacts, out-of-scope edition rows, and reviewed typo/duplicate hazards |
-| `data/spells-full/full-corpus-ambiguous.generated.jsonl` | 9 | unresolved in-scope row-level mismatches or source/edition ambiguity |
+| `data/spells-full/full-corpus-rejected.generated.jsonl` | 5136 | confirmed non-import rows: existing DB duplicates, parser artifacts, out-of-scope edition rows, and reviewed typo/duplicate hazards |
+| `data/spells-full/full-corpus-ambiguous.generated.jsonl` | 6 | unresolved in-scope row-level mismatches or source/edition ambiguity |
 
 The rejected queue includes 22 bare core-source rows from `Player’s Handbook`,
 `Player’s Handbook, Rules Compendium`, and `Dungeon Master’s Guide` that matched
@@ -153,9 +153,12 @@ rejected as `parser-artifact`; numbered real-spell rows such as `Dirge 1` and
 `Sandblast 1` use de-numbered spell-name variants for DB matching. For
 multi-source rows, spells-full currently provides one combined body rather than
 source-specific bodies, so a hit in any mapped target book is treated as already
-collected unless the row is on a version-aware manual review blocklist. The
-remaining row-level ambiguous artifact is limited to in-scope review: 4
-`source-or-edition-ambiguity` rows and 5 `conversion-mismatch` rows.
+collected unless the row is on a version-aware manual review blocklist. Reviewed
+alias spell-name variants also reject `Junglerazor`/`Junglerazer`,
+`Rejuvenate Corpse`/`Rejuvenative Corpse`, and
+`Invisibility, Superior`/`Superior Invisibility` as already collected. The
+remaining row-level ambiguous artifact is limited to in-scope review: 1
+`source-or-edition-ambiguity` row and 5 `conversion-mismatch` rows.
 
 Deferred source labels are also summarized into
 `data/spells-full/source-rulebooks.generated.jsonl`. The current run produced
@@ -258,6 +261,8 @@ only remaining high-confidence ambiguous core source label is
   published-corpus gate and move into a later `official-web-corpus` slice with
   URL/date/article provenance, edition confirmation, and duplicate/conflict
   review against printed sources.
+- Run a Spell Compendium PDF-backed sweep after v1.1 to verify SpC-derived
+  source/body variants and close any remaining source-dump parser ambiguity.
 - Static/offline search or HTML artifacts remain later stable-track work.
 - Broader DB schema cleanup should remain separate from corpus import unless a
   blocking import issue proves otherwise.

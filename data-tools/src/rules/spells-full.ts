@@ -279,12 +279,14 @@ const MANUAL_REVIEW_READY_BLOCKLIST: Record<string, string> = {
 };
 
 const SPELL_NAME_VARIANT_ALIASES: Record<string, string[]> = {
+  [cleanSpellNameForMatch("Invisibility, Superior")]: ["Superior Invisibility"],
+  [cleanSpellNameForMatch("Junglerazor")]: ["Junglerazer"],
   [cleanSpellNameForMatch("Perniarch")]: ["Perinarch"],
   [cleanSpellNameForMatch("Perniarch, Planar")]: ["Perinarch, Planar"],
+  [cleanSpellNameForMatch("Rejuvenate Corpse")]: ["Rejuvenative Corpse"],
 };
 
 const MULTI_SOURCE_ANY_HIT_REVIEW_BLOCKLIST = new Set([
-  cleanSpellNameForMatch("Invisibility, Superior"),
   cleanSpellNameForMatch("War Cry/Warcry"),
 ]);
 
