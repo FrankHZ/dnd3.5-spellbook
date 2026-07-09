@@ -60,7 +60,12 @@ type GapDecision = {
 };
 
 type LookupRow = { id: number; label: string };
-type RulebookRow = { id: number; abbr: string; name: string };
+type RulebookRow = {
+  id: number;
+  abbr: string;
+  name: string;
+  editionName?: string;
+};
 type SpellIdentityRow = {
   id: number;
   name: string;
@@ -97,6 +102,7 @@ type CorpusInventoryEntry = {
   page: number | null;
   targetRulebook?: string;
   targetRulebookName?: string;
+  targetRulebookEdition?: string;
   existingSpellId?: number;
   existingSpellName?: string;
   duplicateSpellIds?: number[];
@@ -110,6 +116,7 @@ type CorpusReviewArtifactRow = CorpusInventoryEntry & {
   reviewReason:
     | "already-in-rules-db"
     | "confirmed-typo-or-duplicate"
+    | "out-of-scope-edition"
     | "source-or-edition-ambiguity"
     | "conversion-mismatch";
 };
@@ -427,7 +434,14 @@ function loadConversionLookups(db: Database.Database): ConversionLookups {
 
 function loadRulebooks(db: Database.Database) {
   return db
-    .prepare("SELECT id, abbr, name FROM dnd_rulebook ORDER BY id")
+    .prepare(
+      `
+        SELECT rb.id, rb.abbr, rb.name, edition.name AS editionName
+        FROM dnd_rulebook rb
+        LEFT JOIN dnd_dndedition edition ON edition.id = rb.dnd_edition_id
+        ORDER BY rb.id
+      `,
+    )
     .all() as RulebookRow[];
 }
 
@@ -996,6 +1010,9 @@ function buildInventoryEntry(params: {
   if (appearance.targetRulebook) {
     entry.targetRulebook = appearance.targetRulebook.abbr;
     entry.targetRulebookName = appearance.targetRulebook.name;
+    if (appearance.targetRulebook.editionName) {
+      entry.targetRulebookEdition = appearance.targetRulebook.editionName;
+    }
   }
   if (existing) {
     entry.existingSpellId = existing.id;
@@ -1036,17 +1053,23 @@ function manualReviewRejectionNote(entry: CorpusInventoryEntry) {
   return manualReviewBlocker({ name: entry.name }, entry.targetRulebook);
 }
 
+function isOutOfScopeEdition(entry: CorpusInventoryEntry) {
+  return entry.targetRulebookEdition?.includes("(3.0)") === true;
+}
+
 function reviewArtifactRow(
   entry: CorpusInventoryEntry,
   reviewDecision: CorpusReviewArtifactRow["reviewDecision"],
   reviewReason: CorpusReviewArtifactRow["reviewReason"],
 ): CorpusReviewArtifactRow {
+  const { targetRulebookEdition: _targetRulebookEdition, ...serializedEntry } =
+    entry;
   return {
     schemaVersion: 1,
     reviewSource: "spells-full-corpus-inventory",
     reviewDecision,
     reviewReason,
-    ...entry,
+    ...serializedEntry,
   };
 }
 
@@ -1057,6 +1080,14 @@ function buildReviewArtifacts(entries: CorpusInventoryEntry[]) {
   for (const entry of entries) {
     if (entry.category === "duplicate") {
       rejected.push(reviewArtifactRow(entry, "rejected", "already-in-rules-db"));
+      continue;
+    }
+
+    if (
+      (entry.category === "manual-review" || entry.category === "mismatch") &&
+      isOutOfScopeEdition(entry)
+    ) {
+      rejected.push(reviewArtifactRow(entry, "rejected", "out-of-scope-edition"));
       continue;
     }
 

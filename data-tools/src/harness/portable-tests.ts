@@ -335,6 +335,16 @@ const tests: TestCase[] = [
           notes: ["possible duplicate of existing Sto row Wake Trailing"],
         },
         {
+          category: "mismatch",
+          name: "Obsolete Spell",
+          source: "Player’s Handbook 3.0",
+          sourceLabel: "Player’s Handbook 3.0",
+          page: null,
+          targetRulebook: "PHB",
+          targetRulebookEdition: "Core (3.0)",
+          notes: ["obsolete 3.0 source row"],
+        },
+        {
           category: "manual-review",
           name: "Ambiguous Spell",
           source: "Player’s Handbook",
@@ -345,7 +355,11 @@ const tests: TestCase[] = [
       ]);
       assert.deepEqual(
         reviewArtifacts.rejected.map((row) => row.reviewReason),
-        ["already-in-rules-db", "confirmed-typo-or-duplicate"],
+        [
+          "already-in-rules-db",
+          "confirmed-typo-or-duplicate",
+          "out-of-scope-edition",
+        ],
       );
       assert.deepEqual(
         reviewArtifacts.ambiguous.map((row) => row.reviewReason),

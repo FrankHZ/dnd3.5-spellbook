@@ -139,8 +139,9 @@ rebuild content DB artifacts.
 
 Generate mode also writes row-level review artifacts under `data/spells-full/`:
 `full-corpus-rejected.generated.jsonl` contains confirmed non-import rows
-because they already exist in the rules DB or were reviewed as typo/duplicate
-hazards; `full-corpus-ambiguous.generated.jsonl` contains unresolved row-level
+because they already exist in the rules DB, resolve to out-of-scope 3.0
+rulebooks, or were reviewed as typo/duplicate hazards;
+`full-corpus-ambiguous.generated.jsonl` contains unresolved in-scope row-level
 mismatches and source/edition ambiguity. These files are review data, not patch
 operations.
 
