@@ -7,8 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: existing-rulebook local apply complete; rulebook-backed corpus follow-up
-and production activation pending.
+Status: existing-rulebook and rulebook-backed local apply complete; production
+activation and remaining review queues pending.
 
 ## Purpose
 
@@ -245,6 +245,38 @@ Current DB/content maintainer run on July 9, 2026:
   `summaries:strict35-ready` reported 63 ready rows, 63 already covered rows,
   and 0 pending rows.
 
+Current DB/content maintainer rulebook-backed run on July 9, 2026:
+
+- Added structured rulebook patch tooling:
+  `rules:rulebooks:validate` and `rules:rulebooks:apply`.
+- `rules:rulebooks:validate -- pending/rulebooks/full-corpus-rulebooks.generated.jsonl`
+  passed with 41 operations, 0 warnings, and 0 errors.
+- `rules:rulebooks:apply -- --dry-run pending/rulebooks/full-corpus-rulebooks.generated.jsonl`
+  passed against a temporary SQLite copy.
+- `rules:rulebooks:apply -- pending/rulebooks/full-corpus-rulebooks.generated.jsonl`
+  inserted 41 reviewed rulebook rows into the local `rules-clean.sqlite`.
+- The rulebook patch file was moved to
+  `data/rules-patches/applied/rulebooks/full-corpus-rulebooks.generated.jsonl`.
+- `spells-full:generate -- corpus-inventory --write-patch pending/spells/full-corpus-rulebook-spells.generated.jsonl`
+  generated 138 rulebook-backed `insertSpell` operations.
+- `rules:spells:validate -- pending/spells/full-corpus-rulebook-spells.generated.jsonl`
+  passed with 138 operations, 0 warnings, and 0 errors.
+- `rules:spells:apply -- --dry-run pending/spells/full-corpus-rulebook-spells.generated.jsonl`
+  passed against a temporary SQLite copy.
+- `rules:spells:apply -- pending/spells/full-corpus-rulebook-spells.generated.jsonl`
+  applied the 138 `insertSpell` operations to the local `rules-clean.sqlite`.
+- The spell patch file was moved to
+  `data/rules-patches/applied/spells/full-corpus-rulebook-spells.generated.jsonl`.
+- `rules:manifest:write` then `rules:manifest:verify` passed with 12 patch
+  files, 41 verified rulebook JSONL operations, 189 verified spell JSONL
+  operations, 0 missing, and 0 mismatched operations.
+- `spells-full:rulebooks` now reports no remaining
+  `candidate-import-rulebook` disposition rows. The malformed
+  `Dragon Magazine 344 82, Eberron: Sharn` label remains in
+  `manual-review-source` instead of becoming a synthetic rulebook.
+- Current local rules DB counts are 151 rulebooks, 5097 spells, 2371
+  descriptor join rows, 13766 class-list rows, and 1549 domain-list rows.
+
 ### Slice 3: Content DB Artifact And Provenance
 
 - Deliverable: updated content DB artifact/provenance report suitable for
@@ -254,7 +286,7 @@ Current DB/content maintainer run on July 9, 2026:
 - Validation: content DB metadata check, representative row counts, and clear
   rollback source.
 
-Current local content DB rebuild on July 9, 2026:
+Existing-rulebook local content DB rebuild on July 9, 2026:
 
 - The local content DB was reset with
   `prisma migrate reset --force --config ./prisma-content/prisma.config.ts`
@@ -280,6 +312,21 @@ Current local content DB rebuild on July 9, 2026:
   records parent repo commit
   `6a0fae6131dd21684aaedce70cc520fc838cad45` and nested data repo commit
   `e9e1834c73823d99e829c4e989b453f56386717a`.
+
+Rulebook-backed local content DB refresh on July 9, 2026:
+
+- `rules:content:audit` and `rules:content:generate` completed against the
+  updated rules DB with 5097 spells and 3636 review issues.
+- `rules:content:import -- --dry-run` completed with 5097 spells and 3636
+  review issues.
+- `rules:content:import` replaced the generated content tables in the local
+  content DB with the 5097-spell artifact.
+- `rules:content:parity` passed with matching legacy/content counts:
+  5097 spells, 151 rulebooks, 2371 descriptors, 13766 class list entries, and
+  1549 domain list entries.
+- `rules:content:meta` passed after import. Re-run import/meta after the final
+  parent and nested data commits so local content DB provenance records the
+  accepted commit ids.
 
 ### Slice 4: API And Production Activation Smoke
 
@@ -336,13 +383,14 @@ operator-owned and are not part of CD.
 
 ## Follow-Up Candidates
 
-- Next DB/content PR: add reviewed rules DB rulebook mappings for the
-  `candidate-import-rulebook` source labels, then regenerate/apply the spell
-  rows unlocked by those mappings. Current input is
-  `data/spells-full/source-rulebooks.generated.jsonl`, with 42 candidate source
-  labels and 231 entries: Dragon Magazine issue labels, `Forgotten Realms:
-  Anauroch`, `Eberron: City of Stormreach`, `Eberron: Shadows of the Last War`,
-  and `Expeditions to Undermountain`.
+- Review the remaining post-apply ambiguous corpus rows:
+  `data/spells-full/full-corpus-ambiguous.generated.jsonl` currently contains
+  95 rows, split into 87 `conversion-mismatch` rows and 8
+  `source-or-edition-ambiguity` rows.
+- Review the remaining source-label queue:
+  `data/spells-full/source-rulebooks.generated.jsonl` currently contains 205
+  deferred/manual labels, with no remaining `candidate-import-rulebook`
+  disposition rows.
 - Large-scale Chinese/English translation and proofreading QA belongs in v1.2
   after the full corpus is stable.
 - Official WotC web articles and web enhancements should stay out of the v1.1
@@ -368,8 +416,9 @@ merge/import, content DB artifact provenance, and production activation.
 DB/content apply completed locally on `codex/db-full-corpus-apply`. The nested
 local `data/` repo records the applied full-corpus spell JSONL, updated rules
 manifest, canonical summary merge, and regenerated strict-3.5 summary ledger.
-The remaining v1.1 corpus work is to add reviewed rules DB rulebook mappings
-for `candidate-import-rulebook` sources, regenerate and apply the spell rows
-unlocked by those mappings, rerun the final local content DB rebuild/provenance
-checks, then perform operator-owned production upload/activation and remote
-`/api/status/db` verification.
+Rulebook-backed corpus apply completed locally on
+`codex/db-corpus-rulebooks`. The nested local `data/` repo records the applied
+rulebook JSONL, applied rulebook-backed spell JSONL, updated rules manifest,
+and regenerated corpus/source-label review queues. The remaining v1.1 corpus
+work is production upload/activation, remote `/api/status/db` verification,
+and later review of the remaining ambiguous corpus/source-label queues.

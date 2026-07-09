@@ -42,6 +42,8 @@ npm run -w data-tools spells-full:inspect -- corpus-inventory
 npm run -w data-tools spells-full:generate -- corpus-inventory --write-patch pending/spells/full-corpus-ready.generated.jsonl
 npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.generated.jsonl
 npm run -w data-tools spells-full:rulebooks
+npm run -w data-tools rules:rulebooks:validate -- pending/rulebooks/full-corpus-rulebooks.generated.jsonl
+npm run -w data-tools rules:rulebooks:apply -- --dry-run pending/rulebooks/full-corpus-rulebooks.generated.jsonl
 npm run -w data-tools summaries:strict35-ready
 ```
 
@@ -49,6 +51,9 @@ DB/content maintainer apply commands for an accepted full-corpus handoff are:
 
 ```bash
 npm run -w data-tools rules:manifest:verify
+npm run -w data-tools rules:rulebooks:validate -- pending/rulebooks/full-corpus-rulebooks.generated.jsonl
+npm run -w data-tools rules:rulebooks:apply -- --dry-run pending/rulebooks/full-corpus-rulebooks.generated.jsonl
+npm run -w data-tools rules:rulebooks:apply -- pending/rulebooks/full-corpus-rulebooks.generated.jsonl
 npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.generated.jsonl
 npm run -w data-tools rules:spells:apply -- --dry-run pending/spells/full-corpus-ready.generated.jsonl
 npm run -w data-tools rules:spells:apply -- pending/spells/full-corpus-ready.generated.jsonl
@@ -67,6 +72,12 @@ move it from `data/rules-patches/pending/spells/` to
 `data/rules-patches/applied/spells/` in the nested local `data/` repo before
 rewriting the rules manifest. That keeps the manifest's verified patch set
 aligned with the local `rules-clean.sqlite` baseline.
+
+Rulebook additions use the same pending-to-applied convention under
+`data/rules-patches/pending/rulebooks/` and
+`data/rules-patches/applied/rulebooks/`. Apply reviewed `insertRulebook` rows
+before regenerating full-corpus spell JSONL that references those new
+abbreviations.
 
 The `server` workspace keeps compatibility wrappers for the `tool:*` commands,
 and transitional `db:app:*` aliases forward to the content DB import commands
@@ -114,6 +125,9 @@ The parser writes into `data-tools/out/zh-parser/`:
 - optional parsed source dump: `data/spells-full/spells-parsed.json`
 - rebuildable inventory reports: `data-tools/out/spells-full/`
 - reviewable structured patch JSONL: `data/rules-patches/pending/spells/`
+- reviewed rulebook patch JSONL:
+  `data/rules-patches/pending/rulebooks/` before apply and
+  `data/rules-patches/applied/rulebooks/` after apply
 - row-level rejected review JSONL:
   `data/spells-full/full-corpus-rejected.generated.jsonl`
 - row-level ambiguous review JSONL:

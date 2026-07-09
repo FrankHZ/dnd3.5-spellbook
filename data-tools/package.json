@@ -10,6 +10,8 @@
     "rules:spells:validate": "tsx src/rules/spells.ts validate",
     "rules:manifest:verify": "tsx src/rules/manifest.ts verify",
     "rules:manifest:write": "tsx src/rules/manifest.ts write",
+    "rules:rulebooks:apply": "tsx src/rules/rulebooks.ts apply",
+    "rules:rulebooks:validate": "tsx src/rules/rulebooks.ts validate",
     "rules:content:audit": "tsx src/rules-content/cli.ts audit",
     "rules:content:generate": "tsx src/rules-content/cli.ts generate",
     "rules:content:import": "tsx src/rules-content/cli.ts import",

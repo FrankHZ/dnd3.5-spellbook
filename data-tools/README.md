@@ -56,6 +56,9 @@ npm run -w data-tools rules:index:rebuild
 Validate and apply structured missing-spell patches:
 
 ```bash
+npm run -w data-tools rules:rulebooks:validate -- pending/rulebooks/example.jsonl
+npm run -w data-tools rules:rulebooks:apply -- --dry-run pending/rulebooks/example.jsonl
+npm run -w data-tools rules:rulebooks:apply -- pending/rulebooks/example.jsonl
 npm run -w data-tools rules:spells:validate -- pending/spells/example.jsonl
 npm run -w data-tools rules:spells:apply -- --dry-run pending/spells/example.jsonl
 npm run -w data-tools rules:spells:apply -- pending/spells/example.jsonl
@@ -103,7 +106,7 @@ npm run -w data-tools test:portable
 This command is fixture-only and does not require local CHM/raw source data,
 the nested `data/` repo, or SQLite databases. It covers pure source-label
 mapping, English name normalization, short-description row validation, and
-structured spell patch JSONL/schema validation.
+structured rulebook/spell patch JSONL/schema validation.
 
 Run the local v3.4 data acceptance bundle:
 
@@ -159,6 +162,12 @@ classify unmapped source families and import disposition; they are not rulebook
 insert operations. D&D 3.5 source labels that cannot yet generate spell JSONL
 because the rules DB lacks a matching rulebook are marked
 `candidate-import-rulebook`.
+
+When those source labels are reviewed, add rulebook identities through
+structured JSONL under `data/rules-patches/pending/rulebooks/`, validate/apply
+them with `rules:rulebooks:*`, and move accepted files to
+`data/rules-patches/applied/rulebooks/` before rewriting the rules manifest.
+The source-label review JSONL itself is not an insert/update patch.
 
 Probe IMarvinTPA for English short-description candidates:
 
@@ -316,6 +325,13 @@ Because these patch files can contain source text, they are managed by the
 nested local `data/` repo. Keep patch schemas, validators, generators, reports,
 and redacted fixtures in the parent project repo.
 
+Structured rulebook patch JSONL files live under the same root, normally in
+`pending/rulebooks/` before apply and `applied/rulebooks/` after the locked
+rules baseline is updated. The supported operation is `insertRulebook`, which
+inserts a reviewed `dnd_rulebook` row after validating id, edition id, name,
+abbr, slug, and duplicate collisions. Rulebook patches do not rebuild spell
+indexes.
+
 The optional `spells-full` source dump lives under
 `data/spells-full/` when present locally. It is ignored by the parent repo and
 may be versioned in the nested local `data/` repo. Use `spells-full:inspect`
@@ -415,9 +431,9 @@ are reported as skipped in
 
 `rules:manifest:write` updates `data/rules-db-manifest.json` with the current
 local rules DB fingerprint, table counts, patch file hashes, and structured
-spell-patch presence checks. `rules:manifest:verify` fails when the local rules
-DB, patch files, index-table counts, or structured patch presence drift from
-that manifest. Command reports are generated under
+rulebook/spell-patch presence checks. `rules:manifest:verify` fails when the
+local rules DB, patch files, index-table counts, or structured patch presence
+drift from that manifest. Command reports are generated under
 `data-tools/out/rules-manifest/`.
 
 `rules:content:audit` is the read-only legacy dirty-field inventory for v3.5
@@ -534,8 +550,13 @@ another scoped book. The default scope is the current official 3.5 working set:
   artifact comparison.
 - `rules:spells:validate` opens the SQLite database in read-only mode and
   writes a JSON report under `data-tools/out/rules-patches/`.
+- `rules:rulebooks:validate` opens the SQLite database in read-only mode and
+  writes a JSON report under `data-tools/out/rules-patches/`.
 - `rules:spells:apply -- --dry-run` applies to a temporary database copy.
 - `rules:spells:apply` is write-capable and prints the target DB path before
+  mutating it.
+- `rules:rulebooks:apply -- --dry-run` applies to a temporary database copy.
+- `rules:rulebooks:apply` is write-capable and prints the target DB path before
   mutating it.
 - `spells-full:*` reads local source data and writes reports or patch
   candidates; it does not mutate SQLite databases.

@@ -65,6 +65,20 @@
       "requiresSqlite": true,
       "writeCapable": true
     },
+    "rules:rulebooks:apply": {
+      "module": "rules",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "rules:rulebooks:validate": {
+      "module": "rules",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
     "rules:content:audit": {
       "module": "rules-content",
       "lifecycle": "local-acceptance",
