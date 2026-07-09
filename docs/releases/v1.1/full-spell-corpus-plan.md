@@ -167,7 +167,7 @@ Deferred source labels are also summarized into
 | Disposition               | Labels | Entries |
 | ------------------------- | -----: | ------: |
 | candidate-import-rulebook |     42 |     231 |
-| manual-review-source      |     85 |     153 |
+| manual-review-source      |     85 |     152 |
 | defer-out-of-scope        |    118 |    1427 |
 | defer-parser-artifact     |      1 |     271 |
 
