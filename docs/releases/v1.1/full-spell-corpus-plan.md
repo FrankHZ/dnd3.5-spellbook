@@ -7,7 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: local DB/content apply complete; production activation pending.
+Status: existing-rulebook local apply complete; rulebook-backed corpus follow-up
+and production activation pending.
 
 ## Purpose
 
@@ -367,6 +368,8 @@ merge/import, content DB artifact provenance, and production activation.
 DB/content apply completed locally on `codex/db-full-corpus-apply`. The nested
 local `data/` repo records the applied full-corpus spell JSONL, updated rules
 manifest, canonical summary merge, and regenerated strict-3.5 summary ledger.
-The remaining v1.1 acceptance work is final metadata-aligned local rebuild,
-operator-owned production upload/activation, and remote `/api/status/db`
-verification.
+The remaining v1.1 corpus work is to add reviewed rules DB rulebook mappings
+for `candidate-import-rulebook` sources, regenerate and apply the spell rows
+unlocked by those mappings, rerun the final local content DB rebuild/provenance
+checks, then perform operator-owned production upload/activation and remote
+`/api/status/db` verification.
