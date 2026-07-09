@@ -226,6 +226,13 @@
       "requiresSqlite": true,
       "writeCapable": false
     },
+    "summaries:strict35-ready": {
+      "module": "short-desc",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
     "test:portable": {
       "module": "harness",
       "lifecycle": "portable",

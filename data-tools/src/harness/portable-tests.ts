@@ -220,6 +220,14 @@ const tests: TestCase[] = [
         ),
         [{ name: "Mass Undeniable Gravity" }],
       );
+      assert.deepEqual(
+        chooseExact([{ name: "Rebuke, Final" }, { name: "Fireball" }], "Final Rebuke"),
+        [{ name: "Rebuke, Final" }],
+      );
+      assert.deepEqual(
+        chooseExact([{ name: "Haste, Swift" }, { name: "Fireball" }], "Swift Haste"),
+        [{ name: "Haste, Swift" }],
+      );
     },
   },
   {

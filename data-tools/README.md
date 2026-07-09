@@ -275,6 +275,8 @@ Current CHM parser defaults:
 - short-description extraction output: `data-tools/out/zh-parser/summary/`
 - normalized short-description import JSONL:
   `data/short-desc-normalized/summaries.generated.jsonl`
+- reviewed-but-not-yet-merged summary rows:
+  `data/short-desc-normalized/pending/`
 
 `data/chm-raw/` and `data/chm-raw-full/` may exist locally under the nested
 `data/` directory, but they are static inputs and should stay ignored rather
@@ -390,6 +392,16 @@ current local rules DB rows are moved to `en-resolved-rules-db-gaps.jsonl`;
 conservative source-mismatch title aliases that are covered by the same matching
 rules are moved to
 `en-resolved-source-mismatches.jsonl`.
+
+`summaries:strict35-ready` consumes reviewed
+`data/short-desc-review/qa/en-strict35-missing.decisions.jsonl` rows and the
+local IMarvinTPA source index, then writes the currently consumable subset to
+`data/short-desc-review/qa/en-strict35-ready.generated.jsonl`. Rows that already
+have an accepted normalized summary are marked `already_covered`; rows that are
+ready but not yet merged into the import boundary are also written to
+`data/short-desc-normalized/pending/en-strict35-ready.generated.jsonl`. The
+default source scope is the current official 3.5 working set:
+`core-35`, `supplementals-35`, `eberron-35`, and `forgotten-realms-35`.
 
 `summaries:normalize` is the import boundary for v3.4 spell summaries. It reads
 Chinese extractor output plus conflict-review decisions from

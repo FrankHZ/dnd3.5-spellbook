@@ -30,6 +30,7 @@
     "summaries:source-gap-candidates": "tsx src/short-desc/source-gap-reuse.ts candidates",
     "summaries:source-gap-apply": "tsx src/short-desc/source-gap-reuse.ts apply",
     "summaries:coverage-report": "tsx src/short-desc/coverage-report.ts",
+    "summaries:strict35-ready": "tsx src/short-desc/strict35-ready.ts",
     "summaries:qa": "tsx src/short-desc/qa.ts",
     "spells-full:generate": "tsx src/rules/spells-full.ts generate",
     "spells-full:inspect": "tsx src/rules/spells-full.ts inspect",
