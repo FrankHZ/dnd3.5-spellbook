@@ -118,10 +118,10 @@ Current local run on July 8, 2026 produced:
 | Category        | Count |
 | --------------- | ----: |
 | ready           |    33 |
-| duplicate       |  5016 |
+| duplicate       |  5038 |
 | mismatch        |    17 |
 | manual-review   |    87 |
-| deferred        |  2103 |
+| deferred        |  2081 |
 
 The inventory is entry-based rather than source-row-based because one parsed
 source row can list multiple source appearances. The ready set generated 33
@@ -139,17 +139,22 @@ repo:
 
 | Artifact | Rows | Purpose |
 | --- | ---: | --- |
-| `data/spells-full/full-corpus-rejected.generated.jsonl` | 5040 | confirmed non-import rows: existing DB duplicates and reviewed typo/duplicate hazards |
+| `data/spells-full/full-corpus-rejected.generated.jsonl` | 5062 | confirmed non-import rows: existing DB duplicates and reviewed typo/duplicate hazards |
 | `data/spells-full/full-corpus-ambiguous.generated.jsonl` | 80 | unresolved row-level mismatches or source/edition ambiguity |
+
+The rejected queue includes 22 bare core-source rows from `Player’s Handbook`,
+`Player’s Handbook, Rules Compendium`, and `Dungeon Master’s Guide` that matched
+existing PH/DMG 3.5 rows in `rules-clean.sqlite`. Bare core source rows without
+an exact PH/DMG 3.5 rules DB match stay in source-level ambiguity.
 
 Deferred source labels are also summarized into
 `data/spells-full/source-rulebooks.generated.jsonl`. The current run produced
-248 source-label rows. Current import disposition counts are:
+246 source-label rows. Current import disposition counts are:
 
 | Disposition               | Labels | Entries |
 | ------------------------- | -----: | ------: |
 | candidate-import-rulebook |     42 |     231 |
-| manual-review-source      |     87 |     174 |
+| manual-review-source      |     85 |     153 |
 | defer-out-of-scope        |    118 |    1427 |
 | defer-parser-artifact     |      1 |     271 |
 
@@ -160,9 +165,11 @@ issue labels, `Forgotten Realms: Anauroch`, `Eberron: City of Stormreach`,
 Dragonlance Campaign Setting (`DCS`) already maps to the current rules DB and is
 part of the ready patch; other Dragonlance family labels are deferred from the
 v1.1 published-corpus scope. `spells-full:rulebooks` also writes
-`data/spells-full/source-rulebooks-ambiguous.generated.jsonl`, currently 87
+`data/spells-full/source-rulebooks-ambiguous.generated.jsonl`, currently 85
 `manual-review-source` labels, so edition/source ambiguity is not buried inside
-the broader source-rulebook report.
+the broader source-rulebook report. After the bare-core exact-match pass, the
+only remaining high-confidence ambiguous core source label is
+`Dungeon Master’s Guide` for `Shadow Image`.
 
 ### Slice 2: Import And Review Workflow
 

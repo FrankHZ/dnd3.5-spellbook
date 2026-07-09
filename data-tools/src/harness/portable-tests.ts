@@ -262,6 +262,7 @@ const tests: TestCase[] = [
         { id: 1, abbr: "Sc_", name: "Spell Compendium" },
         { id: 2, abbr: "Mag", name: "Magic of Faerun" },
         { id: 3, abbr: "PH", name: "Player's Handbook v.3.5" },
+        { id: 4, abbr: "DMG", name: "Dungeon Master's Guide v.3.5" },
       ]);
       assert.equal(
         resolveRulebook(parseSourceAppearance("Spell Compendium")).targetRulebook
@@ -278,6 +279,11 @@ const tests: TestCase[] = [
         resolveRulebook(parseSourceAppearance("Player’s Handbook 3.5"))
           .targetRulebook?.abbr,
         "PH",
+      );
+      assert.equal(
+        resolveRulebook(parseSourceAppearance("Dungeon Master’s Guide 3.5"))
+          .targetRulebook?.abbr,
+        "DMG",
       );
 
       assert.deepEqual(

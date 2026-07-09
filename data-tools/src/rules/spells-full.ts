@@ -201,6 +201,8 @@ const SOURCE_LABEL_ALIASES_TO_RULEBOOK: Record<string, string> = {
   "players handbook v 3 5": "PH",
   "song and silence": "SaS",
   "tome and blood": "TB",
+  "dungeon master s guide 3 5": "DMG",
+  "dungeon master s guide v 3 5": "DMG",
   "dungeon masters guide 3 5": "DMG",
   "dungeon masters guide v 3 5": "DMG",
 };
@@ -924,6 +926,23 @@ function findExactTargetSpell(
   return undefined;
 }
 
+function coreDuplicateRulebooks(
+  appearance: ResolvedSourceAppearance,
+  resolveRulebook: (appearance: SourceAppearance) => ResolvedSourceAppearance,
+) {
+  const key = sourceLabelKey(appearance.label);
+  const labelsByKey: Record<string, string[]> = {
+    [sourceLabelKey("Player’s Handbook")]: ["Player’s Handbook 3.5"],
+    [sourceLabelKey("Player’s Handbook, Rules Compendium")]: [
+      "Player’s Handbook 3.5",
+    ],
+    [sourceLabelKey("Dungeon Master’s Guide")]: ["Dungeon Master’s Guide 3.5"],
+  };
+  return (labelsByKey[key] ?? [])
+    .map((label) => resolveRulebook({ raw: label, label, page: appearance.page }))
+    .filter((resolved) => resolved.targetRulebook);
+}
+
 function findNameDuplicates(
   byName: Map<string, SpellIdentityRow[]>,
   spell: ParsedSpell,
@@ -1082,16 +1101,62 @@ function runCorpusInventory(mode: Mode, patchPath: string | undefined) {
       );
 
       if (mapped.length === 0) {
+        const fallbackAppearance = appearances[0] ?? {
+          raw: "",
+          label: "",
+          page: null,
+          notes: ["missing source label"],
+        };
+        const coreDuplicateMatches = coreDuplicateRulebooks(
+          fallbackAppearance,
+          resolveRulebook,
+        )
+          .map((appearance) => {
+            const targetRulebook = appearance.targetRulebook;
+            if (!targetRulebook) return undefined;
+            const existing = findExactTargetSpell(
+              spellIndexes.byRulebookAndName,
+              spell,
+              targetRulebook.id,
+            );
+            return existing ? { appearance, existing } : undefined;
+          })
+          .filter(
+            (match): match is {
+              appearance: ResolvedSourceAppearance;
+              existing: SpellIdentityRow;
+            } => match !== undefined,
+          );
+
+        if (coreDuplicateMatches.length > 0) {
+          for (const match of coreDuplicateMatches) {
+            const targetRulebook = match.appearance.targetRulebook;
+            if (!targetRulebook) continue;
+            entries.push(
+              buildInventoryEntry({
+                category: "duplicate",
+                spell,
+                appearance: {
+                  ...fallbackAppearance,
+                  targetRulebook,
+                },
+                notes: [
+                  ...fallbackAppearance.notes,
+                  `bare core source label matched existing ${match.existing.rulebook} row`,
+                ],
+                existing: match.existing,
+                duplicates: [match.existing],
+              }),
+            );
+          }
+          continue;
+        }
+
         entries.push(
           buildInventoryEntry({
             category: "deferred",
             spell,
-            appearance: appearances[0] ?? {
-              raw: "",
-              label: "",
-              page: null,
-              notes: ["missing source label"],
-            },
+            appearance: fallbackAppearance,
             notes: appearances.flatMap((appearance) => appearance.notes),
           }),
         );
