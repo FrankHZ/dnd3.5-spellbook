@@ -28,6 +28,14 @@
       "note": "Pending reviewed strict-3.5 summary rows use the same imported summary row shape."
     },
     {
+      "dataPath": "data/rules-patches/applied/spells/full-corpus-ready.generated.jsonl",
+      "portableFixturePaths": [
+        "server/db/rules-clean/fixtures/portable/spell-runtime.jsonl",
+        "server/db/content/fixtures/portable/normalized-rules-spells.jsonl"
+      ],
+      "note": "Full-corpus accepted additions are represented by synthetic spell runtime and normalized content rows."
+    },
+    {
       "dataPath": "data/rules-patches/applied/spells/legacy-slug-fixes.jsonl",
       "portableFixturePaths": [
         "server/db/rules-clean/fixtures/portable/spell-runtime.jsonl",
