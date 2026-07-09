@@ -27,6 +27,7 @@ The active formal public release plan is v1.1:
 - [releases/v1.1/README.md](./releases/v1.1/README.md)
 - [releases/v1.1/production-hardening-plan.md](./releases/v1.1/production-hardening-plan.md)
 - [releases/v1.1/full-spell-corpus-plan.md](./releases/v1.1/full-spell-corpus-plan.md)
+- [releases/v1.1/frontend-content-pass-plan.md](./releases/v1.1/frontend-content-pass-plan.md)
 
 The latest frozen formal public release is v1.0:
 
@@ -152,6 +153,8 @@ handoff records.
   active CF/AWS security acceptance plan.
 - [releases/v1.1/full-spell-corpus-plan.md](./releases/v1.1/full-spell-corpus-plan.md):
   active full spell corpus import and content DB activation plan.
+- [releases/v1.1/frontend-content-pass-plan.md](./releases/v1.1/frontend-content-pass-plan.md):
+  active focused frontend content acceptance plan.
 - [releases/v1.0/FREEZE.md](./releases/v1.0/FREEZE.md): latest frozen formal
   public release snapshot.
 - [releases/v1.0/README.md](./releases/v1.0/README.md): frozen first formal

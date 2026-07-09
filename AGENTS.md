@@ -34,6 +34,8 @@ Use these docs for orientation instead of expanding this file:
   acceptance plan.
 - `docs/releases/v1.1/full-spell-corpus-plan.md`: active full spell corpus
   import and content DB activation plan.
+- `docs/releases/v1.1/frontend-content-pass-plan.md`: active focused frontend
+  content acceptance plan.
 - `docs/releases/v1.0/FREEZE.md`: latest frozen formal public release
   snapshot.
 - `docs/releases/v1.0/README.md`: frozen formal public release planning

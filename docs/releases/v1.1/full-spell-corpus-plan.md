@@ -29,7 +29,8 @@ activation and remaining review queues pending.
   `docs/operations/data-setup.md`, `docs/operations/rules-db-notes.md`,
   `docs/modules/data-tools.md`, `docs/modules/server.md`.
 - Upstream dependency plans: `docs/releases/v1.1/README.md`.
-- Downstream consumer plans: v1.1 release acceptance and freeze.
+- Downstream consumer plans: v1.1 frontend content pass, release acceptance,
+  and freeze.
 
 ## Agent Context
 
@@ -348,7 +349,9 @@ the default content-backed read source:
   school `Illusion`, subschool `Phantasm`, and casting time `1 swift action`.
 
 Production upload/activation and remote `/api/status/db` verification remain
-operator-owned and are not part of CD.
+operator-owned and are not part of CD. After activation, the frontend content
+pass should verify representative Browse/Search/Detail display against the
+accepted corpus.
 
 ## Acceptance Criteria
 
@@ -421,4 +424,5 @@ Rulebook-backed corpus apply completed locally on
 rulebook JSONL, applied rulebook-backed spell JSONL, updated rules manifest,
 and regenerated corpus/source-label review queues. The remaining v1.1 corpus
 work is production upload/activation, remote `/api/status/db` verification,
-and later review of the remaining ambiguous corpus/source-label queues.
+handoff into the frontend content pass, and later review of the remaining
+ambiguous corpus/source-label queues.
