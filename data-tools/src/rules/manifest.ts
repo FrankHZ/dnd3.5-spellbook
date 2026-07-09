@@ -9,6 +9,10 @@ import {
   repoRoot,
   resolveServerRelativePath,
 } from "../shared/env";
+import {
+  isInsertRulebook,
+  type InsertRulebookOperation,
+} from "./rulebooks-schema";
 
 type Mode = "write" | "verify";
 
@@ -39,6 +43,8 @@ type UpdateSpellOperation = {
 
 type SpellOperation = InsertSpellOperation | UpdateSpellOperation;
 
+type RulebookOperation = InsertRulebookOperation;
+
 type SpellOperationCheck = {
   patchPath: string;
   line: number;
@@ -50,9 +56,21 @@ type SpellOperationCheck = {
   issues: string[];
 };
 
+type RulebookOperationCheck = {
+  patchPath: string;
+  line: number;
+  id: number | null;
+  name: string | null;
+  abbr: string | null;
+  slug: string | null;
+  dndEditionId: number | null;
+  status: "verified" | "missing" | "mismatch";
+  issues: string[];
+};
+
 type PatchManifest = {
   path: string;
-  kind: "legacy-sql" | "spell-jsonl";
+  kind: "legacy-sql" | "spell-jsonl" | "rulebook-jsonl";
   sha256: string;
   bytes: number;
   operations?: {
@@ -92,6 +110,13 @@ type RulesManifest = {
       missing: number;
       mismatch: number;
       issues: SpellOperationCheck[];
+    };
+    rulebookJsonl: {
+      totalOperations: number;
+      verified: number;
+      missing: number;
+      mismatch: number;
+      issues: RulebookOperationCheck[];
     };
   };
 };
@@ -178,6 +203,10 @@ function isUpdateSpell(value: unknown): value is UpdateSpellOperation {
 
 function isSpellOperation(value: unknown): value is SpellOperation {
   return isInsertSpell(value) || isUpdateSpell(value);
+}
+
+function isRulebookOperation(value: unknown): value is RulebookOperation {
+  return isInsertRulebook(value);
 }
 
 function listPatchFiles() {
@@ -334,18 +363,89 @@ function verifySpellOperation(
   return { patchPath, line, id, name, rulebook, slug, status, issues };
 }
 
+function verifyRulebookOperation(
+  db: Database.Database,
+  patchPath: string,
+  line: number,
+  op: RulebookOperation,
+): RulebookOperationCheck {
+  const id = typeof op.id === "number" ? op.id : null;
+  const dndEditionId =
+    typeof op.dndEditionId === "number" ? op.dndEditionId : null;
+  const name = typeof op.rulebook?.name === "string" ? op.rulebook.name : null;
+  const abbr = typeof op.rulebook?.abbr === "string" ? op.rulebook.abbr : null;
+  const slug = typeof op.rulebook?.slug === "string" ? op.rulebook.slug : null;
+  const issues: string[] = [];
+
+  if (id === null) issues.push("operation id is missing");
+  if (dndEditionId === null) issues.push("dndEditionId is missing");
+  if (!name) issues.push("rulebook name is missing");
+  if (!abbr) issues.push("rulebook abbr is missing");
+  if (!slug) issues.push("rulebook slug is missing");
+
+  const rulebook =
+    id === null
+      ? undefined
+      : (db
+          .prepare(
+            `
+            SELECT id, dnd_edition_id AS dndEditionId, name, abbr, slug
+            FROM dnd_rulebook
+            WHERE id = ?
+          `,
+          )
+          .get(id) as
+          | {
+              id: number;
+              dndEditionId: number;
+              name: string;
+              abbr: string;
+              slug: string;
+            }
+          | undefined);
+
+  if (!rulebook) {
+    issues.push("rulebook id is missing from dnd_rulebook");
+  } else {
+    if (dndEditionId !== null && rulebook.dndEditionId !== dndEditionId) {
+      issues.push(`dndEditionId mismatch: db=${rulebook.dndEditionId}`);
+    }
+    if (name && rulebook.name !== name) {
+      issues.push(`name mismatch: db=${rulebook.name}`);
+    }
+    if (abbr && rulebook.abbr !== abbr) {
+      issues.push(`abbr mismatch: db=${rulebook.abbr}`);
+    }
+    if (slug && rulebook.slug !== slug) {
+      issues.push(`slug mismatch: db=${rulebook.slug}`);
+    }
+  }
+
+  const status =
+    !rulebook || issues.includes("rulebook id is missing from dnd_rulebook")
+      ? "missing"
+      : issues.length > 0
+        ? "mismatch"
+        : "verified";
+
+  return { patchPath, line, id, name, abbr, slug, dndEditionId, status, issues };
+}
+
 function buildManifest() {
   const dbPath = rulesDbPath();
   const stat = fs.statSync(dbPath);
   const db = new Database(dbPath, { readonly: true });
   try {
     const spellChecks: SpellOperationCheck[] = [];
+    const rulebookChecks: RulebookOperationCheck[] = [];
     const patches = listPatchFiles().map((filePath): PatchManifest => {
       const relativePath = relativeToData(filePath);
       const patchStat = fs.statSync(filePath);
       const kind = filePath.toLowerCase().endsWith(".sql")
         ? "legacy-sql"
-        : "spell-jsonl";
+        : relativePath.startsWith("rules-patches/applied/rulebooks/")
+          ? "rulebook-jsonl"
+          : "spell-jsonl";
 
       if (kind === "spell-jsonl") {
         const operations = readJsonl(filePath).flatMap((entry): Array<{
@@ -361,6 +461,34 @@ function buildManifest() {
           ),
         );
         spellChecks.push(...checks);
+        return {
+          path: relativePath,
+          kind,
+          sha256: sha256(filePath),
+          bytes: patchStat.size,
+          operations: {
+            total: checks.length,
+            verified: checks.filter((check) => check.status === "verified").length,
+            missing: checks.filter((check) => check.status === "missing").length,
+            mismatch: checks.filter((check) => check.status === "mismatch").length,
+          },
+        };
+      }
+
+      if (kind === "rulebook-jsonl") {
+        const operations = readJsonl(filePath).flatMap((entry): Array<{
+          line: number;
+          value: RulebookOperation;
+        }> => (isRulebookOperation(entry.value) ? [{ line: entry.line, value: entry.value }] : []));
+        const checks = operations.map((entry) =>
+          verifyRulebookOperation(
+            db,
+            relativePath,
+            entry.line,
+            entry.value,
+          ),
+        );
+        rulebookChecks.push(...checks);
         return {
           path: relativePath,
           kind,
@@ -423,6 +551,13 @@ function buildManifest() {
           mismatch: spellChecks.filter((check) => check.status === "mismatch").length,
           issues: spellChecks.filter((check) => check.status !== "verified"),
         },
+        rulebookJsonl: {
+          totalOperations: rulebookChecks.length,
+          verified: rulebookChecks.filter((check) => check.status === "verified").length,
+          missing: rulebookChecks.filter((check) => check.status === "missing").length,
+          mismatch: rulebookChecks.filter((check) => check.status === "mismatch").length,
+          issues: rulebookChecks.filter((check) => check.status !== "verified"),
+        },
       },
     };
 
@@ -462,6 +597,7 @@ function runWrite() {
         dbSha256: manifest.database.sha256,
         patches: manifest.patches.length,
         spellOperations: manifest.checks.spellJsonl,
+        rulebookOperations: manifest.checks.rulebookJsonl,
         legacySql: manifest.checks.legacySql,
       },
       null,
@@ -498,6 +634,12 @@ function runVerify() {
   if (actual.checks.spellJsonl.missing > 0 || actual.checks.spellJsonl.mismatch > 0) {
     errors.push("one or more structured spell patch operations are not present in rules DB");
   }
+  if (
+    actual.checks.rulebookJsonl.missing > 0 ||
+    actual.checks.rulebookJsonl.mismatch > 0
+  ) {
+    errors.push("one or more structured rulebook patch operations are not present in rules DB");
+  }
 
   const reportPath = writeReport("verify", actual, errors);
   if (errors.length > 0) {
@@ -517,6 +659,7 @@ function runVerify() {
         dbSha256: actual.database.sha256,
         patches: actual.patches.length,
         spellOperations: actual.checks.spellJsonl,
+        rulebookOperations: actual.checks.rulebookJsonl,
         legacySql: actual.checks.legacySql,
       },
       null,

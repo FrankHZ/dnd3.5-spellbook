@@ -44,14 +44,16 @@ npm run -w data-tools rules:manifest:verify
 
 `data/rules-db-manifest.json` records the current DB fingerprint, SQLite pragma
 values, table counts, rules patch file hashes, index-table consistency checks,
-and structured spell-patch presence checks. Generated command reports live under
-`data-tools/out/rules-manifest/`.
+and structured rulebook/spell patch presence checks. Generated command reports
+live under `data-tools/out/rules-manifest/`.
 
 The current manifest verifies all maintained structured spell patch operations:
-`51` total spell JSONL operations, `51` verified, `0` missing, and `0`
-mismatched. Legacy SQL patch files are recorded by hash, and their durable
-runtime effect is checked through the presence and row-count consistency of
-`idx_spell_class_level` and `idx_spell_domain_level`.
+`189` total spell JSONL operations, `189` verified, `0` missing, and `0`
+mismatched. It also verifies `41` structured rulebook JSONL operations, `41`
+verified, `0` missing, and `0` mismatched. Legacy SQL patch files are recorded
+by hash, and their durable runtime effect is checked through the presence and
+row-count consistency of `idx_spell_class_level` and
+`idx_spell_domain_level`.
 
 ## Current Counts
 
@@ -59,13 +61,13 @@ Snapshot from the local `server/db/local/rules-clean.sqlite`:
 
 | Table                    |  Rows |
 | ------------------------ | ----: |
-| `dnd_spell`              |  4959 |
-| `dnd_spellclasslevel`    | 12580 |
+| `dnd_spell`              |  5097 |
+| `dnd_spellclasslevel`    | 13766 |
 | `dnd_spelldomainlevel`   |  1549 |
-| `dnd_spell_descriptors`  |  2312 |
-| `idx_spell_class_level`  | 12580 |
+| `dnd_spell_descriptors`  |  2371 |
+| `idx_spell_class_level`  | 13766 |
 | `idx_spell_domain_level` |  1549 |
-| `dnd_rulebook`           |   110 |
+| `dnd_rulebook`           |   151 |
 | `dnd_characterclass`     |   878 |
 | `dnd_domain`             |   177 |
 | `dnd_spellschool`        |    26 |
@@ -150,10 +152,20 @@ Applied structured missing-spell patch assets live under
 validator/apply commands instead of authoring new ad hoc SQL:
 
 ```bash
+npm run -w data-tools rules:rulebooks:validate -- pending/rulebooks/example.jsonl
+npm run -w data-tools rules:rulebooks:apply -- --dry-run pending/rulebooks/example.jsonl
+npm run -w data-tools rules:rulebooks:apply -- pending/rulebooks/example.jsonl
 npm run -w data-tools rules:spells:validate -- pending/spells/example.jsonl
 npm run -w data-tools rules:spells:apply -- --dry-run pending/spells/example.jsonl
 npm run -w data-tools rules:spells:apply -- pending/spells/example.jsonl
 ```
+
+Structured rulebook patches live under
+`data/rules-patches/applied/rulebooks/` after apply. The supported operation is
+`insertRulebook`; it inserts a `dnd_rulebook` row after validating the edition
+id and duplicate id/name/abbr/slug collisions. Apply reviewed rulebook rows
+before regenerating full-corpus spell patches that reference new rulebook
+abbreviations.
 
 The first supported operation is `insertSpell`. It writes one `dnd_spell` row,
 optional `dnd_spell_descriptors` rows, class/domain level rows, and then
@@ -210,6 +222,10 @@ deferred source labels for scope review and is not an insert/update patch. Its
 companion ambiguous source-label JSONL contains only `manual-review-source`
 labels. Rows marked `candidate-import-rulebook` are in-scope D&D 3.5 sources
 that still need a rules DB rulebook mapping before spell rows can validate.
+The July 9, 2026 rulebook-backed apply consumed the reviewed
+`candidate-import-rulebook` set except the malformed
+`Dragon Magazine 344 82, Eberron: Sharn` source label, which remains in
+manual source review.
 
 The v1.1 ready full-corpus patch was applied locally on July 9, 2026:
 
@@ -220,6 +236,20 @@ The v1.1 ready full-corpus patch was applied locally on July 9, 2026:
 - manifest after apply: 51 verified spell JSONL operations, 0 missing, 0
   mismatched
 - resulting spell count: 4959
+
+The v1.1 rulebook-backed full-corpus patch was applied locally on July 9,
+2026:
+
+- rulebook patch file:
+  `data/rules-patches/applied/rulebooks/full-corpus-rulebooks.generated.jsonl`
+- spell patch file:
+  `data/rules-patches/applied/spells/full-corpus-rulebook-spells.generated.jsonl`
+- operation count: 41 `insertRulebook` rows and 138 `insertSpell` rows
+- validation before apply: 0 warnings, 0 errors for both patches
+- manifest after apply: 41 verified rulebook JSONL operations and 189 verified
+  spell JSONL operations, 0 missing, 0 mismatched
+- resulting rulebook count: 151
+- resulting spell count: 5097
 
 ## Verified Manual Fixes
 

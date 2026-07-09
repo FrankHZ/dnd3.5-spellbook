@@ -3,6 +3,7 @@
   "dataRoots": [
     "data/rulebook-labels",
     "data/short-desc-normalized",
+    "data/rules-patches/applied/rulebooks",
     "data/rules-patches/applied/spells"
   ],
   "mappings": [
@@ -28,12 +29,28 @@
       "note": "Pending reviewed strict-3.5 summary rows use the same imported summary row shape."
     },
     {
+      "dataPath": "data/rules-patches/applied/rulebooks/full-corpus-rulebooks.generated.jsonl",
+      "portableFixturePaths": [
+        "server/db/rules-clean/fixtures/portable/rulebooks.jsonl",
+        "server/db/content/fixtures/portable/normalized-rules-spells.jsonl"
+      ],
+      "note": "Full-corpus rulebook additions are represented by synthetic rulebook runtime and normalized content rows."
+    },
+    {
       "dataPath": "data/rules-patches/applied/spells/full-corpus-ready.generated.jsonl",
       "portableFixturePaths": [
         "server/db/rules-clean/fixtures/portable/spell-runtime.jsonl",
         "server/db/content/fixtures/portable/normalized-rules-spells.jsonl"
       ],
       "note": "Full-corpus accepted additions are represented by synthetic spell runtime and normalized content rows."
+    },
+    {
+      "dataPath": "data/rules-patches/applied/spells/full-corpus-rulebook-spells.generated.jsonl",
+      "portableFixturePaths": [
+        "server/db/rules-clean/fixtures/portable/spell-runtime.jsonl",
+        "server/db/content/fixtures/portable/normalized-rules-spells.jsonl"
+      ],
+      "note": "Rulebook-backed full-corpus accepted additions are represented by synthetic spell runtime and normalized content rows."
     },
     {
       "dataPath": "data/rules-patches/applied/spells/legacy-slug-fixes.jsonl",

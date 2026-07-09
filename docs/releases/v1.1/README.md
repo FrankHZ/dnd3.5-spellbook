@@ -8,7 +8,8 @@ expanding the content corpus through the maintained data harness.
 
 ## Release Boundary
 
-v1.1 owns two independent acceptance tracks:
+v1.1 owns two independent implementation tracks plus a focused frontend
+acceptance pass:
 
 1. **Production hardening**
 
@@ -22,9 +23,17 @@ v1.1 owns two independent acceptance tracks:
    rules/content DB workflow, with provenance and review evidence clear enough
    for production content DB activation.
 
-These tracks may be implemented by separate specialist agents. Each track must
-remain independently reviewable so a security finding does not block corpus
-readiness, and a corpus issue does not block security acceptance.
+3. **Frontend content pass**
+
+   Verify the user-facing frontend after hardening and full-corpus activation.
+   This is a focused Browse/Search/Detail/About/Status/display-settings pass,
+   not the broad v1.3 sitewide redesign.
+
+These tracks may be implemented by separate specialist agents. Production
+hardening and full spell corpus should remain independently reviewable so a
+security finding does not block corpus readiness, and a corpus issue does not
+block security acceptance. The frontend content pass should run after enough
+corpus/runtime state is available to inspect the release as users see it.
 
 ## Track Order
 
@@ -42,12 +51,20 @@ readiness, and a corpus issue does not block security acceptance.
    owns corpus source intake, data-tool import/review workflow, content DB
    artifact update, production activation evidence, and DB status validation.
 
-3. **Release acceptance and freeze**
+3. **Frontend content pass**
 
-   Create acceptance evidence after both tracks are accepted. Then create
-   `FREEZE.md` as the as-built v1.1 snapshot.
+   Planned in
+   [frontend-content-pass-plan.md](./frontend-content-pass-plan.md). This owns
+   focused frontend smoke and small content-display fixes for the accepted v1.1
+   runtime state.
 
-Do not create an integrated plan unless the two tracks start conflicting on
+4. **Release acceptance and freeze**
+
+   Create acceptance evidence after the two implementation tracks and frontend
+   content pass are accepted. Then create `FREEZE.md` as the as-built v1.1
+   snapshot.
+
+Do not create an integrated plan unless these v1.1 tracks start conflicting on
 delivery sequence, ownership, or accepted release scope.
 
 ## Non-Goals
@@ -66,6 +83,7 @@ delivery sequence, ownership, or accepted release scope.
 
 - [production-hardening-plan.md](./production-hardening-plan.md)
 - [full-spell-corpus-plan.md](./full-spell-corpus-plan.md)
+- [frontend-content-pass-plan.md](./frontend-content-pass-plan.md)
 
 ## Release Acceptance
 
@@ -83,6 +101,8 @@ v1.1 release acceptance should include:
   artifact with provenance.
 - Content DB activation is verified through DB status and representative
   Browse/Search/Detail API checks.
+- Focused frontend pass verifies updated content visibility, route layout,
+  mobile behavior, display settings, language mode, and About/Status metadata.
 - Documentation updates explain changed operator workflow, data workflow,
   security posture, and remaining follow-up candidates.
 - `FREEZE.md` records the final as-built release state.
@@ -101,6 +121,8 @@ v1.1 release acceptance should include:
   hardening changes deploy responsibilities.
 - `docs/features.md`: update user-visible content coverage only after corpus
   import is accepted.
+- `docs/design.md` and `docs/i18n.md`: update only if the frontend pass changes
+  durable design guidance or copy workflow.
 - `docs/roadmap.md`: update when v1.1 becomes frozen or when the next release
   track changes.
 

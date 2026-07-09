@@ -24,7 +24,8 @@ Status: in progress.
 - Related feature/module docs: `docs/operations/deployment.md`,
   `docs/modules/delivery.md`, `docs/harness.md`.
 - Upstream dependency plans: `docs/releases/v1.1/README.md`.
-- Downstream consumer plans: v1.1 release acceptance and freeze.
+- Downstream consumer plans: v1.1 frontend content pass, then release
+  acceptance and freeze.
 
 ## Agent Context
 

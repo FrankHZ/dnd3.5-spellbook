@@ -13,6 +13,11 @@ import {
   validateLevelShape,
 } from "../rules/spells-schema";
 import {
+  parseRulebookPatchJsonlText,
+  validateInsertRulebookShape,
+  type InsertRulebookOperation,
+} from "../rules/rulebooks-schema";
+import {
   buildReviewArtifacts,
   makeRulebookResolver,
   manualReviewBlocker,
@@ -83,6 +88,7 @@ const tests: TestCase[] = [
         "harness",
         "rules",
         "rules-content",
+        "rulebooks",
         "short-desc",
         "zh-parser",
       ]);
@@ -296,6 +302,8 @@ const tests: TestCase[] = [
         { id: 2, abbr: "Mag", name: "Magic of Faerun" },
         { id: 3, abbr: "PH", name: "Player's Handbook v.3.5" },
         { id: 4, abbr: "DMG", name: "Dungeon Master's Guide v.3.5" },
+        { id: 5, abbr: "Drg309", name: "Dragon Magazine #309" },
+        { id: 6, abbr: "CoS", name: "City of Stormreach" },
       ]);
       assert.equal(
         resolveRulebook(parseSourceAppearance("Spell Compendium")).targetRulebook
@@ -317,6 +325,16 @@ const tests: TestCase[] = [
         resolveRulebook(parseSourceAppearance("Dungeon Master’s Guide 3.5"))
           .targetRulebook?.abbr,
         "DMG",
+      );
+      assert.equal(
+        resolveRulebook(parseSourceAppearance("Dragon Magazine 309"))
+          .targetRulebook?.abbr,
+        "Drg309",
+      );
+      assert.equal(
+        resolveRulebook(parseSourceAppearance("Eberron: City of Stormreach"))
+          .targetRulebook?.abbr,
+        "CoS",
       );
 
       assert.deepEqual(
@@ -434,6 +452,11 @@ const tests: TestCase[] = [
         "candidate-import-rulebook",
       );
       assert.equal(
+        classifySourceLabel("Dragon Magazine 344 82, Eberron: Sharn")
+          .importDisposition,
+        "manual-review-source",
+      );
+      assert.equal(
         classifySourceLabel("Rokugan: Magic of Rokugan").importDisposition,
         "defer-out-of-scope",
       );
@@ -458,6 +481,67 @@ const tests: TestCase[] = [
         manualReviewBlocker({ name: "Wake of Trailing" }, "Sto") ?? "",
         /Wake Trailing/,
       );
+    },
+  },
+  {
+    name: "structured rulebook patch JSONL validates shape and rejects unsafe fields",
+    run: () => {
+      const valid: InsertRulebookOperation = {
+        op: "insertRulebook",
+        id: 116,
+        dndEditionId: 5,
+        rulebook: {
+          name: "Dragon Magazine #309",
+          abbr: "Drg309",
+          slug: "dragon-magazine-309",
+          description: "",
+          year: "2003",
+          officialUrl: "",
+          image: null,
+          published: null,
+        },
+        source: {
+          sourceLabel: "Dragon Magazine 309",
+          provenance: "portable fixture",
+        },
+      };
+      const errors: string[] = [];
+      const operations = parseRulebookPatchJsonlText(
+        `${JSON.stringify(valid)}\n`,
+        errors,
+      );
+      assert.deepEqual(errors, []);
+      assert.equal(operations.length, 1);
+      const shape = validateInsertRulebookShape(
+        operations[0]?.value ?? valid,
+        1,
+        errors,
+      );
+      assert.deepEqual(errors, []);
+      assert.equal(shape.abbr, "Drg309");
+
+      const invalidErrors: string[] = [];
+      const invalid: InsertRulebookOperation = {
+        ...valid,
+        id: -1,
+        rulebook: {
+          ...valid.rulebook,
+          abbr: "TooLong8",
+          slug: "Dragon Magazine 309",
+          year: "03",
+        },
+      };
+      const invalidOps = parseRulebookPatchJsonlText(
+        `${JSON.stringify(invalid)}\n{"op":"unknown"}\n`,
+        invalidErrors,
+      );
+      assert.equal(invalidOps.length, 1);
+      validateInsertRulebookShape(invalidOps[0]?.value ?? invalid, 1, invalidErrors);
+      assert.ok(invalidErrors.some((error) => error.includes("unsupported operation")));
+      assert.ok(invalidErrors.some((error) => error.includes("id must be")));
+      assert.ok(invalidErrors.some((error) => error.includes("abbr must be")));
+      assert.ok(invalidErrors.some((error) => error.includes("slug is not normalized")));
+      assert.ok(invalidErrors.some((error) => error.includes("four-digit year")));
     },
   },
   {

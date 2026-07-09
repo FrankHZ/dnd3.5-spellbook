@@ -174,6 +174,17 @@ function classifySourceLabel(sourceLabel: string): Omit<
   RulebookSourceRow,
   "schemaVersion" | "source" | "sourceLabel" | "entryCount" | "examples"
 > {
+  if (/^Dragon Magazine 344 82, Eberron: Sharn$/i.test(sourceLabel)) {
+    return classification(
+      "wotc-setting-source-label",
+      "ambiguous Dragon Magazine / Eberron source label",
+      "manual-review-source",
+      "low",
+      [EVIDENCE.dragonMagazine],
+      ["Parsed source label appears to combine a Dragon issue/page fragment with an Eberron book label; review the source row before adding a rulebook mapping."],
+    );
+  }
+
   if (sourceLabel === "(missing source label)") {
     return classification(
       "parser-artifact",

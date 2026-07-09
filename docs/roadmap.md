@@ -18,6 +18,7 @@ v1.1 is the active formal release plan:
 - `docs/releases/v1.1/README.md`
 - `docs/releases/v1.1/production-hardening-plan.md`
 - `docs/releases/v1.1/full-spell-corpus-plan.md`
+- `docs/releases/v1.1/frontend-content-pass-plan.md`
 
 v1.0 is the latest frozen formal public release:
 
@@ -31,6 +32,8 @@ The latest frozen pre-release snapshot is `docs/mvp/v3.10/FREEZE.md`.
 
 Use the v1.1 child plans for implementation boundaries. Keep security and full
 spell corpus acceptance independent unless a real sequencing conflict appears.
+Run the frontend content pass after enough v1.1 runtime/content state is
+available to inspect the release as users see it.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
@@ -118,10 +121,18 @@ Recommended next sequence:
    content DB artifact/provenance, and verify representative Browse, Search,
    and Detail behavior plus production DB status after activation.
 
-3. **v1.1 Release Acceptance And Freeze**
+3. **v1.1 Frontend Content Pass**
 
-   After both independent tracks are accepted, collect release evidence and
-   create `docs/releases/v1.1/FREEZE.md`.
+   Follow `docs/releases/v1.1/frontend-content-pass-plan.md`. After the content
+   DB activation path is ready enough to inspect, verify Browse, Search, Detail,
+   About/Status, Settings, language/display behavior, mobile layout, and
+   representative newly imported spells/rulebooks. Keep this pass focused on
+   v1.1 content acceptance, not the v1.3 redesign.
+
+4. **v1.1 Release Acceptance And Freeze**
+
+   After production hardening, full corpus, and the frontend content pass are
+   accepted, collect release evidence and create `docs/releases/v1.1/FREEZE.md`.
 
 ## Official Release Sequence
 

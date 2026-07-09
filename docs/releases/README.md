@@ -7,12 +7,14 @@ directory for release lines after MVP scope is frozen.
 
 ## Current Release Plans
 
-- [v1.1/README.md](./v1.1/README.md): active production hardening and full
-  spell corpus release plan.
+- [v1.1/README.md](./v1.1/README.md): active production hardening, full spell
+  corpus, and frontend content acceptance release plan.
 - [v1.1/production-hardening-plan.md](./v1.1/production-hardening-plan.md):
   active CF/AWS security acceptance plan.
 - [v1.1/full-spell-corpus-plan.md](./v1.1/full-spell-corpus-plan.md): active
   full spell corpus import and content DB activation plan.
+- [v1.1/frontend-content-pass-plan.md](./v1.1/frontend-content-pass-plan.md):
+  active focused frontend content acceptance plan.
 - [v1.0/FREEZE.md](./v1.0/FREEZE.md): frozen first formal public release
   snapshot.
 - [v1.0/README.md](./v1.0/README.md): frozen first formal public release
