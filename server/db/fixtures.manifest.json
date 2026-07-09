@@ -21,6 +21,13 @@
       "note": "Imported summary rows are represented by synthetic I18nSpellSummaryText rows."
     },
     {
+      "dataPath": "data/short-desc-normalized/pending/en-strict35-ready.generated.jsonl",
+      "portableFixturePaths": [
+        "server/db/content/fixtures/portable/i18n-spell-overlays.jsonl"
+      ],
+      "note": "Pending reviewed strict-3.5 summary rows use the same imported summary row shape."
+    },
+    {
       "dataPath": "data/rules-patches/applied/spells/legacy-slug-fixes.jsonl",
       "portableFixturePaths": [
         "server/db/rules-clean/fixtures/portable/spell-runtime.jsonl",

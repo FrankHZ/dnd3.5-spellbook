@@ -124,7 +124,41 @@ npm run -w data-tools spells-full:inspect -- known-misses
 npm run -w data-tools spells-full:generate -- known-misses --write-patch pending/spells/spells-full-known-misses.jsonl
 npm run -w data-tools spells-full:inspect -- short-desc-rules-gaps
 npm run -w data-tools spells-full:generate -- short-desc-rules-gaps --write-patch pending/spells/short-desc-rules-gaps.generated.jsonl
+npm run -w data-tools spells-full:inspect -- corpus-inventory
+npm run -w data-tools spells-full:generate -- corpus-inventory --write-patch pending/spells/full-corpus-ready.generated.jsonl
+npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.generated.jsonl
+npm run -w data-tools spells-full:rulebooks
 ```
+
+`corpus-inventory` is a local-only v1.1 data-pipeline command. It reads the
+ignored `data/spells-full/spells-parsed.json` source dump and the configured
+rules DB read-only, then writes a rebuildable inventory report under
+`data-tools/out/spells-full/`. Generate mode writes only the `ready` category
+as structured `insertSpell` JSONL for review. It does not apply the patch or
+rebuild content DB artifacts.
+
+Generate mode also writes row-level review artifacts under `data/spells-full/`:
+`full-corpus-rejected.generated.jsonl` contains confirmed non-import rows
+because they already exist in the rules DB, resolve to parser/index artifacts
+or out-of-scope 3.0 rulebooks, or were reviewed as typo/duplicate hazards;
+`full-corpus-ambiguous.generated.jsonl` contains unresolved in-scope row-level
+mismatches and source/edition ambiguity. These files are review data, not patch
+operations.
+
+For multi-source spells-full rows, the parsed corpus normally provides one
+combined body rather than one body per source book. If any mapped target
+rulebook already has an exact or reviewed alias hit, the row is treated as
+already collected unless it is on a version-aware manual review blocklist.
+
+`spells-full:rulebooks` reads the latest generated corpus inventory report and
+writes deferred source-label review rows to
+`data/spells-full/source-rulebooks.generated.jsonl`. It also writes
+`data/spells-full/source-rulebooks-ambiguous.generated.jsonl` with only
+`manual-review-source` labels for focused edition/source review. These rows
+classify unmapped source families and import disposition; they are not rulebook
+insert operations. D&D 3.5 source labels that cannot yet generate spell JSONL
+because the rules DB lacks a matching rulebook are marked
+`candidate-import-rulebook`.
 
 Probe IMarvinTPA for English short-description candidates:
 
@@ -241,6 +275,8 @@ Current CHM parser defaults:
 - short-description extraction output: `data-tools/out/zh-parser/summary/`
 - normalized short-description import JSONL:
   `data/short-desc-normalized/summaries.generated.jsonl`
+- reviewed-but-not-yet-merged summary rows:
+  `data/short-desc-normalized/pending/`
 
 `data/chm-raw/` and `data/chm-raw-full/` may exist locally under the nested
 `data/` directory, but they are static inputs and should stay ignored rather
@@ -289,6 +325,21 @@ from it. The `short-desc-rules-gaps` target consumes
 target rulebooks from reviewed IMarvinTPA source labels, and only writes patch
 candidates when the parsed spell, rules DB lookups, class/domain levels,
 schools, subschools, descriptors, and slug checks all pass.
+
+For v1.1 full-corpus work, `spells-full:inspect -- corpus-inventory` groups
+source appearances as `ready`, `duplicate`, `mismatch`, `manual-review`, or
+`deferred`. `spells-full:generate -- corpus-inventory --write-patch <path>`
+writes only the `ready` rows to JSONL under `data/rules-patches/`; DB apply,
+content DB rebuild, and production activation stay outside the data-pipeline
+command. The same generate command writes rejected and ambiguous review JSONL
+under `data/spells-full/` so confirmed non-import rows and unresolved rows are
+not mixed back into the ready patch.
+
+Run `spells-full:rulebooks` after generating corpus inventory when deferred
+source labels need review. Its JSONL output belongs in the nested local `data/`
+repo alongside other review decisions; the companion
+`source-rulebooks-ambiguous.generated.jsonl` is the focused source-label queue
+for edition/source ambiguity.
 
 `en:summaries:probe` performs a small, rate-limited live probe against
 IMarvinTPA's spell search. It defaults to one candidate at a time with at least
@@ -341,6 +392,16 @@ current local rules DB rows are moved to `en-resolved-rules-db-gaps.jsonl`;
 conservative source-mismatch title aliases that are covered by the same matching
 rules are moved to
 `en-resolved-source-mismatches.jsonl`.
+
+`summaries:strict35-ready` consumes reviewed
+`data/short-desc-review/qa/en-strict35-missing.decisions.jsonl` rows and the
+local IMarvinTPA source index, then writes the currently consumable subset to
+`data/short-desc-review/qa/en-strict35-ready.generated.jsonl`. Rows that already
+have an accepted normalized summary are marked `already_covered`; rows that are
+ready but not yet merged into the import boundary are also written to
+`data/short-desc-normalized/pending/en-strict35-ready.generated.jsonl`. The
+default source scope is the current official 3.5 working set:
+`core-35`, `supplementals-35`, `eberron-35`, and `forgotten-realms-35`.
 
 `summaries:normalize` is the import boundary for v3.4 spell summaries. It reads
 Chinese extractor output plus conflict-review decisions from

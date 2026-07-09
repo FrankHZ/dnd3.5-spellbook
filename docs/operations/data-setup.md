@@ -246,15 +246,27 @@ data/spells-full/
 ```
 
 That directory is ignored by the parent repo. It may be versioned in the nested
-local `data/` repo. Use `docs/mvp/v3.3/spells-full-import-plan.md` before
-generating structured patch candidates from it.
+local `data/` repo. Use
+`docs/releases/v1.1/full-spell-corpus-plan.md` for the active full-corpus
+workflow. The older `docs/mvp/v3.3/spells-full-import-plan.md` records the
+initial known-miss workflow only.
 
 Current helper commands:
 
 ```bash
 npm run -w data-tools spells-full:inspect -- known-misses
 npm run -w data-tools spells-full:generate -- known-misses --write-patch pending/spells/spells-full-known-misses.jsonl
+npm run -w data-tools spells-full:inspect -- corpus-inventory
+npm run -w data-tools spells-full:generate -- corpus-inventory --write-patch pending/spells/full-corpus-ready.generated.jsonl
+npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.generated.jsonl
+npm run -w data-tools spells-full:rulebooks
 ```
+
+The `corpus-inventory` path produces rebuildable reports, ready-only patch
+JSONL, and row-level rejected/ambiguous review JSONL under `data/spells-full/`.
+It does not apply rules DB patches or rebuild the content DB. The
+`spells-full:rulebooks` command produces local source-label review JSONL under
+`data/spells-full/`, including a focused ambiguous source-label queue.
 
 ## Content DB Setup
 

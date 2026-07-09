@@ -12,6 +12,17 @@ import {
   validateInsertSpellShape,
   validateLevelShape,
 } from "../rules/spells-schema";
+import {
+  buildReviewArtifacts,
+  makeRulebookResolver,
+  manualReviewBlocker,
+  parseSourceAppearance,
+  sourceAppearances,
+  sourceLabelKey,
+  spellNameVariants,
+  summarizeInventory,
+} from "../rules/spells-full";
+import { classifySourceLabel } from "../rules/spells-full-source-rulebooks";
 import { readSummaryJsonlText } from "../short-desc/summary-row-schema";
 import { mapBookLabelToAbbr, normalizeBookLabel } from "../zh-parser/mapping";
 import {
@@ -208,6 +219,244 @@ const tests: TestCase[] = [
           "Undeniable Gravity, Legion's",
         ),
         [{ name: "Mass Undeniable Gravity" }],
+      );
+      assert.deepEqual(
+        chooseExact([{ name: "Rebuke, Final" }, { name: "Fireball" }], "Final Rebuke"),
+        [{ name: "Rebuke, Final" }],
+      );
+      assert.deepEqual(
+        chooseExact([{ name: "Haste, Swift" }, { name: "Fireball" }], "Swift Haste"),
+        [{ name: "Haste, Swift" }],
+      );
+    },
+  },
+  {
+    name: "spells-full source helpers parse appearances and rulebook aliases",
+    run: () => {
+      assert.deepEqual(parseSourceAppearance("Complete Mage 128"), {
+        raw: "Complete Mage 128",
+        label: "Complete Mage",
+        page: 128,
+      });
+      assert.deepEqual(parseSourceAppearance("Player’s Handbook 3.0 173"), {
+        raw: "Player’s Handbook 3.0 173",
+        label: "Player’s Handbook 3.0",
+        page: 173,
+      });
+      assert.deepEqual(parseSourceAppearance("Dragon Magazine 304"), {
+        raw: "Dragon Magazine 304",
+        label: "Dragon Magazine 304",
+        page: null,
+      });
+      assert.deepEqual(
+        sourceAppearances(
+          "Forgotten Realms: Magic of Faerûn 108; Spell Compendium",
+        ).map((source) => ({
+          label: source.label,
+          page: source.page,
+        })),
+        [
+          { label: "Forgotten Realms: Magic of Faerûn", page: 108 },
+          { label: "Spell Compendium", page: null },
+        ],
+      );
+      assert.equal(sourceLabelKey("Player’s Handbook 3.5"), "player s handbook 3 5");
+      assert.deepEqual(spellNameVariants("Acid Breath / Mestil’s Acid Breath"), [
+        "Acid Breath",
+        "Mestil’s Acid Breath",
+      ]);
+      assert.deepEqual(spellNameVariants("False Vision 1"), [
+        "False Vision 1",
+        "False Vision",
+      ]);
+      assert.deepEqual(spellNameVariants("War Cry/Warcry"), [
+        "War Cry/Warcry",
+        "War Cry",
+        "Warcry",
+      ]);
+      assert.deepEqual(spellNameVariants("Perniarch, Planar"), [
+        "Perniarch, Planar",
+        "Perinarch, Planar",
+      ]);
+      assert.deepEqual(spellNameVariants("Junglerazor"), [
+        "Junglerazor",
+        "Junglerazer",
+      ]);
+      assert.deepEqual(spellNameVariants("Rejuvenate Corpse"), [
+        "Rejuvenate Corpse",
+        "Rejuvenative Corpse",
+      ]);
+      assert.deepEqual(spellNameVariants("Invisibility, Superior"), [
+        "Invisibility, Superior",
+        "Superior Invisibility",
+      ]);
+
+      const resolveRulebook = makeRulebookResolver([
+        { id: 1, abbr: "Sc_", name: "Spell Compendium" },
+        { id: 2, abbr: "Mag", name: "Magic of Faerun" },
+        { id: 3, abbr: "PH", name: "Player's Handbook v.3.5" },
+        { id: 4, abbr: "DMG", name: "Dungeon Master's Guide v.3.5" },
+      ]);
+      assert.equal(
+        resolveRulebook(parseSourceAppearance("Spell Compendium")).targetRulebook
+          ?.abbr,
+        "Sc_",
+      );
+      assert.equal(
+        resolveRulebook(
+          parseSourceAppearance("Forgotten Realms: Magic of Faerûn 108"),
+        ).targetRulebook?.abbr,
+        "Mag",
+      );
+      assert.equal(
+        resolveRulebook(parseSourceAppearance("Player’s Handbook 3.5"))
+          .targetRulebook?.abbr,
+        "PH",
+      );
+      assert.equal(
+        resolveRulebook(parseSourceAppearance("Dungeon Master’s Guide 3.5"))
+          .targetRulebook?.abbr,
+        "DMG",
+      );
+
+      assert.deepEqual(
+        summarizeInventory([
+          {
+            category: "ready",
+            name: "Ready Spell",
+            source: "Spell Compendium",
+            sourceLabel: "Spell Compendium",
+            page: null,
+            targetRulebook: "Sc_",
+            notes: [],
+          },
+          {
+            category: "deferred",
+            name: "Deferred Spell",
+            source: "Unknown Source",
+            sourceLabel: "Unknown Source",
+            page: null,
+            notes: ["unmapped source label"],
+          },
+        ]).counts,
+        {
+          ready: 1,
+          duplicate: 0,
+          mismatch: 0,
+          "manual-review": 0,
+          deferred: 1,
+        },
+      );
+
+      const reviewArtifacts = buildReviewArtifacts([
+        {
+          category: "duplicate",
+          name: "Existing Spell",
+          source: "Spell Compendium",
+          sourceLabel: "Spell Compendium",
+          page: null,
+          targetRulebook: "Sc_",
+          notes: [],
+        },
+        {
+          category: "manual-review",
+          name: "Wake of Trailing",
+          source: "Stormwrack",
+          sourceLabel: "Stormwrack",
+          page: 124,
+          targetRulebook: "Sto",
+          notes: ["possible duplicate of existing Sto row Wake Trailing"],
+        },
+        {
+          category: "mismatch",
+          name: "Obsolete Spell",
+          source: "Player’s Handbook 3.0",
+          sourceLabel: "Player’s Handbook 3.0",
+          page: null,
+          targetRulebook: "PHB",
+          targetRulebookEdition: "Core (3.0)",
+          notes: ["obsolete 3.0 source row"],
+        },
+        {
+          category: "manual-review",
+          name: "Ambiguous Spell",
+          source: "Player’s Handbook",
+          sourceLabel: "Player’s Handbook",
+          page: null,
+          notes: ["ambiguous source label"],
+        },
+        {
+          category: "manual-review",
+          name: "Lesser (Spell Name)",
+          source: "Spell Compendium",
+          sourceLabel: "Spell Compendium",
+          page: null,
+          notes: ["parser artifact"],
+        },
+        {
+          category: "manual-review",
+          name: "Leonal’s Road",
+          source: "Book of Exalted Deeds",
+          sourceLabel: "Book of Exalted Deeds",
+          page: null,
+          notes: ["header-only parse artifact"],
+        },
+      ]);
+      assert.deepEqual(
+        reviewArtifacts.rejected.map((row) => row.reviewReason),
+        [
+          "already-in-rules-db",
+          "confirmed-typo-or-duplicate",
+          "out-of-scope-edition",
+          "parser-artifact",
+          "parser-artifact",
+        ],
+      );
+      assert.deepEqual(
+        reviewArtifacts.ambiguous.map((row) => row.reviewReason),
+        ["source-or-edition-ambiguity"],
+      );
+    },
+  },
+  {
+    name: "spells-full deferred source classifier separates rulebook families",
+    run: () => {
+      assert.equal(
+        classifySourceLabel("Dragon Magazine 304").sourceCategory,
+        "wotc-3e35-periodical",
+      );
+      assert.equal(
+        classifySourceLabel("Dragon Magazine 304").importDisposition,
+        "defer-out-of-scope",
+      );
+      assert.equal(
+        classifySourceLabel("Dragon Magazine 309").importDisposition,
+        "candidate-import-rulebook",
+      );
+      assert.equal(
+        classifySourceLabel("Rokugan: Magic of Rokugan").importDisposition,
+        "defer-out-of-scope",
+      );
+      assert.equal(
+        classifySourceLabel("Dragonlance: Age of Mortals").importDisposition,
+        "defer-out-of-scope",
+      );
+      assert.equal(
+        classifySourceLabel("Far Corners of the World: Fire and Ash")
+          .sourceCategory,
+        "wotc-web-article",
+      );
+      assert.equal(
+        classifySourceLabel("Player’s Handbook").sourceCategory,
+        "ambiguous-core-source",
+      );
+      assert.match(
+        manualReviewBlocker({ name: "Augment Truefiend" }, "TM") ?? "",
+        /Augment Truefriend/,
+      );
+      assert.match(
+        manualReviewBlocker({ name: "Wake of Trailing" }, "Sto") ?? "",
+        /Wake Trailing/,
       );
     },
   },

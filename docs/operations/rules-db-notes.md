@@ -176,6 +176,41 @@ slugs, or existing target spell rows stay in the generated report rather than
 being written into the patch file. Running `rules:spells:apply` without
 `--dry-run` is still the write-capable step.
 
+Reviewed strict-3.5 English short-description rows that become ready after
+later rules DB work are tracked separately from rules DB patches:
+
+```bash
+npm run -w data-tools summaries:strict35-ready
+```
+
+This writes a ready ledger under `data/short-desc-review/qa/` and pending
+normalized summary rows under `data/short-desc-normalized/pending/`. Those rows
+target the content DB `I18nSpellSummaryText` import path after DB/content
+review; they are not structured `insertSpell` patch operations and should not
+be passed to `rules:spells:apply`.
+
+For v1.1 full-corpus data-pipeline work, use `corpus-inventory` to produce a
+rebuildable source-appearance inventory and a ready-only structured JSONL handoff:
+
+```bash
+npm run -w data-tools spells-full:inspect -- corpus-inventory
+npm run -w data-tools spells-full:generate -- corpus-inventory --write-patch pending/spells/full-corpus-ready.generated.jsonl
+npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.generated.jsonl
+npm run -w data-tools spells-full:rulebooks
+```
+
+The generated JSONL is a pending review artifact in the nested local `data/`
+repo. It is not an applied rules DB patch until a DB/content maintainer runs
+the normal structured patch apply workflow. The inventory groups entries as
+`ready`, `duplicate`, `mismatch`, `manual-review`, or `deferred`; only `ready`
+entries are written to the patch JSONL. The same generate command writes
+row-level rejected and ambiguous review JSONL under `data/spells-full/`; these
+files are explicit non-apply review artifacts. The rulebook JSONL summarizes
+deferred source labels for scope review and is not an insert/update patch. Its
+companion ambiguous source-label JSONL contains only `manual-review-source`
+labels. Rows marked `candidate-import-rulebook` are in-scope D&D 3.5 sources
+that still need a rules DB rulebook mapping before spell rows can validate.
+
 ## Verified Manual Fixes
 
 The local `rules-clean.sqlite` already reflects the manual fixes listed in
