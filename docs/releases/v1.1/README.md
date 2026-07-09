@@ -64,7 +64,7 @@ corpus/runtime state is available to inspect the release as users see it.
    content pass are accepted. Then create `FREEZE.md` as the as-built v1.1
    snapshot.
 
-Do not create an integrated plan unless the two tracks start conflicting on
+Do not create an integrated plan unless these v1.1 tracks start conflicting on
 delivery sequence, ownership, or accepted release scope.
 
 ## Non-Goals
