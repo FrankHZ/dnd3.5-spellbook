@@ -48,7 +48,7 @@ and structured spell-patch presence checks. Generated command reports live under
 `data-tools/out/rules-manifest/`.
 
 The current manifest verifies all maintained structured spell patch operations:
-`15` total `insertSpell` operations, `15` verified, `0` missing, and `0`
+`51` total spell JSONL operations, `51` verified, `0` missing, and `0`
 mismatched. Legacy SQL patch files are recorded by hash, and their durable
 runtime effect is checked through the presence and row-count consistency of
 `idx_spell_class_level` and `idx_spell_domain_level`.
@@ -59,11 +59,11 @@ Snapshot from the local `server/db/local/rules-clean.sqlite`:
 
 | Table                    |  Rows |
 | ------------------------ | ----: |
-| `dnd_spell`              |  4926 |
-| `dnd_spellclasslevel`    | 12297 |
+| `dnd_spell`              |  4959 |
+| `dnd_spellclasslevel`    | 12580 |
 | `dnd_spelldomainlevel`   |  1549 |
-| `dnd_spell_descriptors`  |  2291 |
-| `idx_spell_class_level`  | 12297 |
+| `dnd_spell_descriptors`  |  2312 |
+| `idx_spell_class_level`  | 12580 |
 | `idx_spell_domain_level` |  1549 |
 | `dnd_rulebook`           |   110 |
 | `dnd_characterclass`     |   878 |
@@ -210,6 +210,16 @@ deferred source labels for scope review and is not an insert/update patch. Its
 companion ambiguous source-label JSONL contains only `manual-review-source`
 labels. Rows marked `candidate-import-rulebook` are in-scope D&D 3.5 sources
 that still need a rules DB rulebook mapping before spell rows can validate.
+
+The v1.1 ready full-corpus patch was applied locally on July 9, 2026:
+
+- patch file:
+  `data/rules-patches/applied/spells/full-corpus-ready.generated.jsonl`
+- operation count: 33 `insertSpell` rows
+- validation before apply: 0 warnings, 0 errors
+- manifest after apply: 51 verified spell JSONL operations, 0 missing, 0
+  mismatched
+- resulting spell count: 4959
 
 ## Verified Manual Fixes
 

@@ -7,7 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: data-pipeline handoff ready; DB/content apply and activation pending.
+Status: existing-rulebook local apply complete; rulebook-backed corpus follow-up
+and production activation pending.
 
 ## Purpose
 
@@ -195,10 +196,11 @@ only remaining high-confidence ambiguous core source label is
 - Current handoff input: the data-pipeline branch provides
   `data/rules-patches/pending/spells/full-corpus-ready.generated.jsonl`, the
   matching inventory report, row-level rejected/ambiguous JSONL, and
-  source-label review JSONL. DB/content maintainers decide whether to apply the
-  ready JSONL as-is, split it by rulebook, add missing 3.5 rulebook mappings
-  for `candidate-import-rulebook`, or send specific ambiguous rows back to
-  manual review.
+  source-label review JSONL. The `codex/db-full-corpus-apply` branch applies
+  the ready JSONL rows that already resolve to existing rules DB rulebooks.
+  Missing 3.5 rulebook mappings for `candidate-import-rulebook` rows remain a
+  separate follow-up PR so rulebook identity, abbreviation, edition, display
+  labels, and provenance can be reviewed before importing their spell rows.
 - Current short-description handoff input: reviewed strict-3.5 English summary
   decisions are materialized as
   `data/short-desc-review/qa/en-strict35-ready.generated.jsonl`. That ledger
@@ -224,6 +226,25 @@ inserts, 0 updates, and 0 unchanged rows against the current local content DB.
 No rules DB apply, canonical summary merge, content DB write, or production
 activation was performed in this data-pipeline branch.
 
+Current DB/content maintainer run on July 9, 2026:
+
+- `rules:manifest:verify` passed before apply against the previous 18-operation
+  rules manifest.
+- `rules:spells:validate -- pending/spells/full-corpus-ready.generated.jsonl`
+  passed with 33 operations, 0 warnings, and 0 errors.
+- `rules:spells:apply -- --dry-run pending/spells/full-corpus-ready.generated.jsonl`
+  passed against a temporary SQLite copy.
+- `rules:spells:apply -- pending/spells/full-corpus-ready.generated.jsonl`
+  applied the 33 `insertSpell` operations to the local `rules-clean.sqlite`.
+- The patch file was moved to
+  `data/rules-patches/applied/spells/full-corpus-ready.generated.jsonl`.
+- `rules:manifest:write` then `rules:manifest:verify` passed with 10 patch
+  files, 51 verified spell operations, 0 missing, and 0 mismatched operations.
+- The 40 pending strict-3.5 English summary rows were merged into
+  `data/short-desc-normalized/summaries.generated.jsonl`; rerunning
+  `summaries:strict35-ready` reported 63 ready rows, 63 already covered rows,
+  and 0 pending rows.
+
 ### Slice 3: Content DB Artifact And Provenance
 
 - Deliverable: updated content DB artifact/provenance report suitable for
@@ -233,6 +254,33 @@ activation was performed in this data-pipeline branch.
 - Validation: content DB metadata check, representative row counts, and clear
   rollback source.
 
+Current local content DB rebuild on July 9, 2026:
+
+- The local content DB was reset with
+  `prisma migrate reset --force --config ./prisma-content/prisma.config.ts`
+  after Prisma detected old local migration checksum drift.
+- `db:content:import:zh-entities` imported 66 class, 177 domain, 82 rulebook,
+  26 school, 20 subschool, and 45 descriptor zh/default rows. Its existing
+  missing/stale local-data warnings remain informational for the corpus import.
+- `db:content:import:zh-chm` completed against the existing CHM parser output.
+- `summaries:import -- --dry-run` and `summaries:import` read 6572 canonical
+  normalized summary rows and inserted 6572 rows into the freshly reset content
+  DB.
+- `rules:content:audit`, `rules:content:generate`,
+  `rules:content:import -- --dry-run`, and `rules:content:import` all completed
+  against the updated rules DB. The generated rules-content artifact contains
+  4959 spells and 3544 review issues.
+- `rules:content:parity` passed with matching legacy/content counts:
+  4959 spells, 110 rulebooks, 2312 descriptors, 12580 class list entries,
+  1549 domain list entries, 44631 base component rows, and 140 extra component
+  rows.
+- `rules:content:meta` reported final local content DB checksum
+  `6178e8cfa86456ed1c88d7e89bfdccd61083e7ef4762ac44de5368862def43f6`
+  after the metadata-aligned rebuild. The latest local `RulesContentBuild`
+  records parent repo commit
+  `6a0fae6131dd21684aaedce70cc520fc838cad45` and nested data repo commit
+  `e9e1834c73823d99e829c4e989b453f56386717a`.
+
 ### Slice 4: API And Production Activation Smoke
 
 - Deliverable: representative server/API validation after local update and
@@ -241,6 +289,19 @@ activation was performed in this data-pipeline branch.
   coverage changes.
 - Validation: Browse/Search/Detail checks for newly imported spells, DB status
   provenance, and no regression in existing content-backed reads.
+
+Local API smoke on July 9, 2026 passed against `npm run -w server dev` with
+the default content-backed read source:
+
+- `GET /api/status/db` reported `activeSpellReadSource: "content"` and
+  4959 `SpellContent` rows.
+- `GET /api/spells/search?q=Alibi&rulebookIds=110&pageSize=5` returned one
+  result: spell id 4931, `Alibi`, rulebook `EE`.
+- `GET /api/spells/4931` returned detail for `Alibi` with rulebook `EE`,
+  school `Illusion`, subschool `Phantasm`, and casting time `1 swift action`.
+
+Production upload/activation and remote `/api/status/db` verification remain
+operator-owned and are not part of CD.
 
 ## Acceptance Criteria
 
@@ -267,18 +328,21 @@ activation was performed in this data-pipeline branch.
 
 ## Open Questions
 
-- Whether DB/content maintainers should apply the 33 ready JSONL rows
-  directly versus split by rulebook or source family?
-- What rulebook identifiers should DB/content maintainers use for Dragon
-  Magazine issue labels and the 3.5 adventure/source labels currently marked
-  `candidate-import-rulebook`?
 - What production artifact naming/versioning is sufficient before a broader
-  content artifact pipeline exists?
+  content artifact pipeline exists, beyond `RulesContentBuild` plus operator
+  upload notes?
 - Should the current parser/source dump's unresolved third-party class list
   notes remain informational, or should they block future ready classification?
 
 ## Follow-Up Candidates
 
+- Next DB/content PR: add reviewed rules DB rulebook mappings for the
+  `candidate-import-rulebook` source labels, then regenerate/apply the spell
+  rows unlocked by those mappings. Current input is
+  `data/spells-full/source-rulebooks.generated.jsonl`, with 42 candidate source
+  labels and 231 entries: Dragon Magazine issue labels, `Forgotten Realms:
+  Anauroch`, `Eberron: City of Stormreach`, `Eberron: Shadows of the Last War`,
+  and `Expeditions to Undermountain`.
 - Large-scale Chinese/English translation and proofreading QA belongs in v1.2
   after the full corpus is stable.
 - Official WotC web articles and web enhancements should stay out of the v1.1
@@ -300,3 +364,12 @@ nested local `data/` repo commit adds the ready ledger and pending normalized
 summary JSONL. DB/content maintainers should consume the generated JSONL after
 this branch is merged, then handle rules DB apply, canonical normalized summary
 merge/import, content DB artifact provenance, and production activation.
+
+DB/content apply completed locally on `codex/db-full-corpus-apply`. The nested
+local `data/` repo records the applied full-corpus spell JSONL, updated rules
+manifest, canonical summary merge, and regenerated strict-3.5 summary ledger.
+The remaining v1.1 corpus work is to add reviewed rules DB rulebook mappings
+for `candidate-import-rulebook` sources, regenerate and apply the spell rows
+unlocked by those mappings, rerun the final local content DB rebuild/provenance
+checks, then perform operator-owned production upload/activation and remote
+`/api/status/db` verification.

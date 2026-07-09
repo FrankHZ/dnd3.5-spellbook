@@ -45,6 +45,29 @@ npm run -w data-tools spells-full:rulebooks
 npm run -w data-tools summaries:strict35-ready
 ```
 
+DB/content maintainer apply commands for an accepted full-corpus handoff are:
+
+```bash
+npm run -w data-tools rules:manifest:verify
+npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.generated.jsonl
+npm run -w data-tools rules:spells:apply -- --dry-run pending/spells/full-corpus-ready.generated.jsonl
+npm run -w data-tools rules:spells:apply -- pending/spells/full-corpus-ready.generated.jsonl
+npm run -w data-tools rules:manifest:write
+npm run -w data-tools rules:manifest:verify
+npm run -w data-tools rules:content:audit
+npm run -w data-tools rules:content:generate
+npm run -w data-tools rules:content:import -- --dry-run
+npm run -w data-tools rules:content:import
+npm run -w data-tools rules:content:parity
+npm run -w data-tools rules:content:meta
+```
+
+After a structured spell JSONL patch is applied to the local locked rules DB,
+move it from `data/rules-patches/pending/spells/` to
+`data/rules-patches/applied/spells/` in the nested local `data/` repo before
+rewriting the rules manifest. That keeps the manifest's verified patch set
+aligned with the local `rules-clean.sqlite` baseline.
+
 The `server` workspace keeps compatibility wrappers for the `tool:*` commands,
 and transitional `db:app:*` aliases forward to the content DB import commands
 where practical. New workflow docs should use the `db:content:*` names.
@@ -155,6 +178,11 @@ For reviewed English strict-3.5 short-description rows, run
 `summaries:strict35-ready` separately from both the CHM rebuild and the
 spells-full rules patch workflow. It produces pending normalized summary rows
 for DB/content maintainers to review before canonical import.
+
+When the reviewed pending strict-3.5 rows are accepted, merge them into
+`data/short-desc-normalized/summaries.generated.jsonl` in the nested local
+`data/` repo, rerun `summaries:strict35-ready`, and expect the pending output
+to drop to zero rows before running `summaries:import`.
 
 ## Step Details
 
@@ -280,11 +308,28 @@ is:
 
 1. import entity translations
 2. import CHM spell text
+3. import normalized spell summaries
+4. generate and import normalized rules content
 
 This keeps the content DB populated with both:
 
 - dictionary-style entity overlays (`zh`, `default`)
 - spell text overlays (`zh`, `chm`)
+- accepted short-summary rows
+- normalized rules-derived spell, taxonomy, component, mechanic, and list-entry
+  content
+
+If a local development content DB was created with an older migration checksum,
+`db:content:reset` may ask for a Prisma reset instead of applying migrations in
+place. The content DB is rebuildable, so a DB/content maintainer may run:
+
+```bash
+npx prisma migrate reset --force --config ./prisma-content/prisma.config.ts
+```
+
+Run that command from the `server/` workspace and then re-run all content import
+commands. Do not use it for the app-state DB or any preserve-sensitive future
+user data.
 
 ## What This Workflow Does Not Do
 

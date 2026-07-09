@@ -290,6 +290,7 @@ Populate the content DB through server import commands:
 
 - `npm run -w server db:content:import:zh-chm`
 - `npm run -w server db:content:import:zh-entities`
+- `npm run -w data-tools summaries:import`
 
 Compatibility aliases named `db:app:*` currently forward to the content commands
 where practical, but new docs and scripts should use the content names.
@@ -405,6 +406,11 @@ For a normal local setup:
    storage is needed locally.
 7. Run `npm run -w server db:content:import:zh-entities`.
 8. Run `npm run -w server db:content:import:zh-chm`.
+9. Run `npm run -w data-tools summaries:import`.
+10. Run `npm run -w data-tools rules:content:generate`.
+11. Run `npm run -w data-tools rules:content:import`.
+12. Run `npm run -w data-tools rules:content:parity`.
+13. Run `npm run -w data-tools rules:content:meta`.
 
 After that, the backend can use:
 
