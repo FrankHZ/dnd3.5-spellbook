@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: in progress.
+Status: data-pipeline handoff ready; DB/content apply and activation pending.
 
 ## Purpose
 
@@ -192,13 +192,37 @@ only remaining high-confidence ambiguous core source label is
   workflow docs as needed.
 - Validation: focused data-tools tests, import dry-run/apply evidence, and
   review reports for unresolved rows.
-- Current handoff input: the data-pipeline branch can provide
+- Current handoff input: the data-pipeline branch provides
   `data/rules-patches/pending/spells/full-corpus-ready.generated.jsonl`, the
   matching inventory report, row-level rejected/ambiguous JSONL, and
   source-label review JSONL. DB/content maintainers decide whether to apply the
   ready JSONL as-is, split it by rulebook, add missing 3.5 rulebook mappings
   for `candidate-import-rulebook`, or send specific ambiguous rows back to
   manual review.
+- Current short-description handoff input: reviewed strict-3.5 English summary
+  decisions are materialized as
+  `data/short-desc-review/qa/en-strict35-ready.generated.jsonl`. That ledger
+  currently has 63 ready rows: 23 already covered by the normalized summary
+  import file and 40 written to
+  `data/short-desc-normalized/pending/en-strict35-ready.generated.jsonl` for DB
+  maintainer review before merging into the canonical summary import boundary.
+  The generator is `npm run -w data-tools summaries:strict35-ready`; it keeps
+  3.0 sources out of the default scope and does not perform fuzzy reuse.
+
+Current data-pipeline validation:
+
+```bash
+npm run -w data-tools test:portable
+npm run -w data-tools typecheck
+npm run -w data-tools summaries:strict35-ready
+npm run -w data-tools summaries:qa
+npm run -w data-tools summaries:import -- --dry-run --input ../data/short-desc-normalized/pending/en-strict35-ready.generated.jsonl
+```
+
+The pending short-description dry-run reads 40 normalized rows and reports 40
+inserts, 0 updates, and 0 unchanged rows against the current local content DB.
+No rules DB apply, canonical summary merge, content DB write, or production
+activation was performed in this data-pipeline branch.
 
 ### Slice 3: Content DB Artifact And Provenance
 
@@ -269,4 +293,10 @@ only remaining high-confidence ambiguous core source label is
 
 ## Completion Notes
 
-Use this section only after implementation review.
+Data-pipeline handoff completed on the `codex/data-full-spell-corpus` branch.
+The parent repo commit adds the strict-3.5 summary ready generator, reviewed
+IMarvin alias matching, fixture manifest coverage, and data-tool docs. The
+nested local `data/` repo commit adds the ready ledger and pending normalized
+summary JSONL. DB/content maintainers should consume the generated JSONL after
+this branch is merged, then handle rules DB apply, canonical normalized summary
+merge/import, content DB artifact provenance, and production activation.

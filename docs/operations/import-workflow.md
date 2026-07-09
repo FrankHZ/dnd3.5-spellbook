@@ -11,6 +11,8 @@ It covers:
 - importing CHM-derived spell text into the content DB
 - producing English rules-patch JSONL candidates from local `spells-full`
   source data
+- producing reviewed English short-description handoff JSONL from local
+  IMarvinTPA source-index data
 
 For database creation and local DB roles, use [data-setup.md](./data-setup.md).
 
@@ -40,6 +42,7 @@ npm run -w data-tools spells-full:inspect -- corpus-inventory
 npm run -w data-tools spells-full:generate -- corpus-inventory --write-patch pending/spells/full-corpus-ready.generated.jsonl
 npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.generated.jsonl
 npm run -w data-tools spells-full:rulebooks
+npm run -w data-tools summaries:strict35-ready
 ```
 
 The `server` workspace keeps compatibility wrappers for the `tool:*` commands,
@@ -107,6 +110,25 @@ Deferred source-label review rows classify unmapped sources such as
 periodicals, web articles, licensed d20 settings, conversion material, and
 parser artifacts. They are scope-review data, not rules DB patch operations.
 
+### English Short-Description Handoff
+
+- reviewed strict-3.5 decision input:
+  `data/short-desc-review/qa/en-strict35-missing.decisions.jsonl`
+- ready ledger:
+  `data/short-desc-review/qa/en-strict35-ready.generated.jsonl`
+- reviewed normalized rows not yet merged into the import boundary:
+  `data/short-desc-normalized/pending/en-strict35-ready.generated.jsonl`
+- rebuildable command report:
+  `data-tools/out/short-desc-qa/en-strict35-ready.summary.json`
+
+`summaries:strict35-ready` reads the reviewed decisions, local IMarvinTPA source
+index, current rules DB, and current normalized summary JSONL. It writes a
+ledger for rows that are now consumable, marks rows already covered by
+`summaries.generated.jsonl`, and writes only not-yet-covered normalized rows to
+`short-desc-normalized/pending/`. The pending file uses the same row shape as
+`summaries:import`, but it is not automatically imported; merge it into the
+canonical normalized summary JSONL only after DB/content review.
+
 ## Recommended End-To-End Flow
 
 For a normal full rebuild:
@@ -128,6 +150,11 @@ For English full-corpus candidate generation, run the `spells-full` inventory
 and generation commands separately from the CHM content DB rebuild. That
 workflow produces JSONL for DB/content maintainers to review; it is not itself
 a content DB import.
+
+For reviewed English strict-3.5 short-description rows, run
+`summaries:strict35-ready` separately from both the CHM rebuild and the
+spells-full rules patch workflow. It produces pending normalized summary rows
+for DB/content maintainers to review before canonical import.
 
 ## Step Details
 
