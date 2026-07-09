@@ -117,6 +117,7 @@ type CorpusReviewArtifactRow = CorpusInventoryEntry & {
     | "already-in-rules-db"
     | "confirmed-typo-or-duplicate"
     | "out-of-scope-edition"
+    | "parser-artifact"
     | "source-or-edition-ambiguity"
     | "conversion-mismatch";
 };
@@ -276,6 +277,20 @@ const MANUAL_REVIEW_READY_BLOCKLIST: Record<string, string> = {
   "Una:Mage Armor, Improved":
     "possible duplicate of existing Una row Improved Mage Armor",
 };
+
+const SPELL_NAME_VARIANT_ALIASES: Record<string, string[]> = {
+  [cleanSpellNameForMatch("Perniarch")]: ["Perinarch"],
+  [cleanSpellNameForMatch("Perniarch, Planar")]: ["Perinarch, Planar"],
+};
+
+const MULTI_SOURCE_ANY_HIT_REVIEW_BLOCKLIST = new Set([
+  cleanSpellNameForMatch("Invisibility, Superior"),
+  cleanSpellNameForMatch("War Cry/Warcry"),
+]);
+
+const PARSER_ARTIFACT_SPELL_NAMES = new Set([
+  cleanSpellNameForMatch("Leonal’s Road"),
+]);
 
 function usage(): never {
   console.error(`Usage:
@@ -585,7 +600,42 @@ function spellNameVariants(name: string) {
     .split(/\s+\/\s+/)
     .map((variant) => variant.trim())
     .filter(Boolean);
-  return variants.length > 0 ? variants : [name];
+  if (variants.length === 1 && name.includes("/")) {
+    const compactSlashVariants = name
+      .split("/")
+      .map((variant) => variant.trim())
+      .filter(Boolean);
+    const compactKeys = new Set(
+      compactSlashVariants.map((variant) =>
+        normalize(variant).replace(/\s+/g, ""),
+      ),
+    );
+    if (compactSlashVariants.length > 1 && compactKeys.size === 1) {
+      variants.push(...compactSlashVariants);
+    }
+  }
+
+  const expanded = new Set(variants.length > 0 ? variants : [name]);
+  for (const variant of [...expanded]) {
+    const withoutParserIndex = variant.replace(/\s+\d+$/, "").trim();
+    if (withoutParserIndex && withoutParserIndex !== variant) {
+      expanded.add(withoutParserIndex);
+    }
+  }
+  for (const variant of [...expanded]) {
+    for (const alias of SPELL_NAME_VARIANT_ALIASES[
+      cleanSpellNameForMatch(variant)
+    ] ?? []) {
+      expanded.add(alias);
+    }
+  }
+  return [...expanded];
+}
+
+function allowsMultiSourceAnyHit(spell: Pick<ParsedSpell, "name">) {
+  return !MULTI_SOURCE_ANY_HIT_REVIEW_BLOCKLIST.has(
+    cleanSpellNameForMatch(spell.name),
+  );
 }
 
 function conversionCheck(spell: ParsedSpell, lookups: ConversionLookups) {
@@ -940,6 +990,33 @@ function findExactTargetSpell(
   return undefined;
 }
 
+function parserArtifactNote(spell: Pick<ParsedSpell, "name">) {
+  if (
+    /\(\s*spell name\s*\)$/i.test(spell.name) ||
+    PARSER_ARTIFACT_SPELL_NAMES.has(cleanSpellNameForMatch(spell.name))
+  ) {
+    return "parser artifact: source/index fragment, not a spell entry";
+  }
+  return undefined;
+}
+
+function mappedExistingMatches(
+  byRulebookAndName: Map<string, SpellIdentityRow>,
+  spell: ParsedSpell,
+  appearances: ResolvedSourceAppearance[],
+) {
+  return appearances.flatMap((appearance) => {
+    const targetRulebook = appearance.targetRulebook;
+    if (!targetRulebook) return [];
+    const existing = findExactTargetSpell(
+      byRulebookAndName,
+      spell,
+      targetRulebook.id,
+    );
+    return existing ? [{ appearance, existing }] : [];
+  });
+}
+
 function coreDuplicateRulebooks(
   appearance: ResolvedSourceAppearance,
   resolveRulebook: (appearance: SourceAppearance) => ResolvedSourceAppearance,
@@ -1057,6 +1134,10 @@ function isOutOfScopeEdition(entry: CorpusInventoryEntry) {
   return entry.targetRulebookEdition?.includes("(3.0)") === true;
 }
 
+function isParserArtifactEntry(entry: Pick<CorpusInventoryEntry, "name">) {
+  return parserArtifactNote(entry) !== undefined;
+}
+
 function reviewArtifactRow(
   entry: CorpusInventoryEntry,
   reviewDecision: CorpusReviewArtifactRow["reviewDecision"],
@@ -1080,6 +1161,11 @@ function buildReviewArtifacts(entries: CorpusInventoryEntry[]) {
   for (const entry of entries) {
     if (entry.category === "duplicate") {
       rejected.push(reviewArtifactRow(entry, "rejected", "already-in-rules-db"));
+      continue;
+    }
+
+    if (entry.category === "manual-review" && isParserArtifactEntry(entry)) {
+      rejected.push(reviewArtifactRow(entry, "rejected", "parser-artifact"));
       continue;
     }
 
@@ -1130,6 +1216,26 @@ function runCorpusInventory(mode: Mode, patchPath: string | undefined) {
       const unresolved = appearances.filter(
         (appearance) => !appearance.targetRulebook,
       );
+      const artifactNote = parserArtifactNote(spell);
+
+      if (artifactNote) {
+        const artifactAppearances = mapped.length > 0 ? mapped : appearances;
+        for (const appearance of artifactAppearances) {
+          entries.push(
+            buildInventoryEntry({
+              category: "manual-review",
+              spell,
+              appearance,
+              notes: [
+                ...appearance.notes,
+                artifactNote,
+                ...unresolved.flatMap((item) => item.notes),
+              ],
+            }),
+          );
+        }
+        continue;
+      }
 
       if (mapped.length === 0) {
         const fallbackAppearance = appearances[0] ?? {
@@ -1194,6 +1300,15 @@ function runCorpusInventory(mode: Mode, patchPath: string | undefined) {
         continue;
       }
 
+      const anyMappedExistingMatches =
+        mapped.length > 1 && allowsMultiSourceAnyHit(spell)
+          ? mappedExistingMatches(
+              spellIndexes.byRulebookAndName,
+              spell,
+              mapped,
+            )
+          : [];
+
       for (const appearance of mapped) {
         const targetRulebook = appearance.targetRulebook;
         if (!targetRulebook) continue;
@@ -1219,6 +1334,28 @@ function runCorpusInventory(mode: Mode, patchPath: string | undefined) {
               notes,
               ...(duplicateExisting ? { existing: duplicateExisting } : {}),
               duplicates,
+            }),
+          );
+          continue;
+        }
+
+        const anyMappedExisting = anyMappedExistingMatches[0];
+        if (anyMappedExisting) {
+          notes.push(
+            `same parsed multi-source row already matched existing ${anyMappedExisting.existing.rulebook} row ${anyMappedExisting.existing.id}: ${anyMappedExisting.existing.name}`,
+          );
+          const duplicateRows = [...duplicates];
+          if (!duplicateRows.some((row) => row.id === anyMappedExisting.existing.id)) {
+            duplicateRows.push(anyMappedExisting.existing);
+          }
+          entries.push(
+            buildInventoryEntry({
+              category: "duplicate",
+              spell,
+              appearance,
+              notes,
+              existing: anyMappedExisting.existing,
+              duplicates: duplicateRows,
             }),
           );
           continue;

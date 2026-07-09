@@ -257,6 +257,19 @@ const tests: TestCase[] = [
         "Acid Breath",
         "Mestil’s Acid Breath",
       ]);
+      assert.deepEqual(spellNameVariants("False Vision 1"), [
+        "False Vision 1",
+        "False Vision",
+      ]);
+      assert.deepEqual(spellNameVariants("War Cry/Warcry"), [
+        "War Cry/Warcry",
+        "War Cry",
+        "Warcry",
+      ]);
+      assert.deepEqual(spellNameVariants("Perniarch, Planar"), [
+        "Perniarch, Planar",
+        "Perinarch, Planar",
+      ]);
 
       const resolveRulebook = makeRulebookResolver([
         { id: 1, abbr: "Sc_", name: "Spell Compendium" },
@@ -352,6 +365,22 @@ const tests: TestCase[] = [
           page: null,
           notes: ["ambiguous source label"],
         },
+        {
+          category: "manual-review",
+          name: "Lesser (Spell Name)",
+          source: "Spell Compendium",
+          sourceLabel: "Spell Compendium",
+          page: null,
+          notes: ["parser artifact"],
+        },
+        {
+          category: "manual-review",
+          name: "Leonal’s Road",
+          source: "Book of Exalted Deeds",
+          sourceLabel: "Book of Exalted Deeds",
+          page: null,
+          notes: ["header-only parse artifact"],
+        },
       ]);
       assert.deepEqual(
         reviewArtifacts.rejected.map((row) => row.reviewReason),
@@ -359,6 +388,8 @@ const tests: TestCase[] = [
           "already-in-rules-db",
           "confirmed-typo-or-duplicate",
           "out-of-scope-edition",
+          "parser-artifact",
+          "parser-artifact",
         ],
       );
       assert.deepEqual(

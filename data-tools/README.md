@@ -139,11 +139,16 @@ rebuild content DB artifacts.
 
 Generate mode also writes row-level review artifacts under `data/spells-full/`:
 `full-corpus-rejected.generated.jsonl` contains confirmed non-import rows
-because they already exist in the rules DB, resolve to out-of-scope 3.0
-rulebooks, or were reviewed as typo/duplicate hazards;
+because they already exist in the rules DB, resolve to parser/index artifacts
+or out-of-scope 3.0 rulebooks, or were reviewed as typo/duplicate hazards;
 `full-corpus-ambiguous.generated.jsonl` contains unresolved in-scope row-level
 mismatches and source/edition ambiguity. These files are review data, not patch
 operations.
+
+For multi-source spells-full rows, the parsed corpus normally provides one
+combined body rather than one body per source book. If any mapped target
+rulebook already has an exact or reviewed alias hit, the row is treated as
+already collected unless it is on a version-aware manual review blocklist.
 
 `spells-full:rulebooks` reads the latest generated corpus inventory report and
 writes deferred source-label review rows to

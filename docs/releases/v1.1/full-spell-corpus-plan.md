@@ -118,9 +118,9 @@ Current local run on July 8, 2026 produced:
 | Category        | Count |
 | --------------- | ----: |
 | ready           |    33 |
-| duplicate       |  5038 |
-| mismatch        |    17 |
-| manual-review   |    87 |
+| duplicate       |  5092 |
+| mismatch        |    14 |
+| manual-review   |    36 |
 | deferred        |  2081 |
 
 The inventory is entry-based rather than source-row-based because one parsed
@@ -139,18 +139,23 @@ repo:
 
 | Artifact | Rows | Purpose |
 | --- | ---: | --- |
-| `data/spells-full/full-corpus-rejected.generated.jsonl` | 5104 | confirmed non-import rows: existing DB duplicates, out-of-scope edition rows, and reviewed typo/duplicate hazards |
-| `data/spells-full/full-corpus-ambiguous.generated.jsonl` | 38 | unresolved in-scope row-level mismatches or source/edition ambiguity |
+| `data/spells-full/full-corpus-rejected.generated.jsonl` | 5133 | confirmed non-import rows: existing DB duplicates, parser artifacts, out-of-scope edition rows, and reviewed typo/duplicate hazards |
+| `data/spells-full/full-corpus-ambiguous.generated.jsonl` | 9 | unresolved in-scope row-level mismatches or source/edition ambiguity |
 
 The rejected queue includes 22 bare core-source rows from `Player’s Handbook`,
 `Player’s Handbook, Rules Compendium`, and `Dungeon Master’s Guide` that matched
 existing PH/DMG 3.5 rows in `rules-clean.sqlite`. Bare core source rows without
 an exact PH/DMG 3.5 rules DB match stay in source-level ambiguity. It also
-separates 50 target-rulebook rows whose resolved rulebook edition is explicitly
-3.0 into `out-of-scope-edition` rejected rows; 42 of those previously appeared
-in the row-level ambiguous queue. The remaining row-level ambiguous artifact is
-limited to in-scope review: 30 `source-or-edition-ambiguity` rows and 8
-`conversion-mismatch` rows.
+separates target-rulebook rows whose resolved rulebook edition is explicitly
+3.0 into `out-of-scope-edition` rejected rows. Parser/index placeholders such
+as `Lesser (Spell Name)` and header-only fragments such as `Leonal’s Road` are
+rejected as `parser-artifact`; numbered real-spell rows such as `Dirge 1` and
+`Sandblast 1` use de-numbered spell-name variants for DB matching. For
+multi-source rows, spells-full currently provides one combined body rather than
+source-specific bodies, so a hit in any mapped target book is treated as already
+collected unless the row is on a version-aware manual review blocklist. The
+remaining row-level ambiguous artifact is limited to in-scope review: 4
+`source-or-edition-ambiguity` rows and 5 `conversion-mismatch` rows.
 
 Deferred source labels are also summarized into
 `data/spells-full/source-rulebooks.generated.jsonl`. The current run produced
