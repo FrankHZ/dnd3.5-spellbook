@@ -78,7 +78,7 @@ debuggability do not become brittle.
 
 ## Security Checklist Inventory
 
-Snapshot date: 2026-07-08.
+Snapshot date: 2026-07-09.
 
 ### Cloudflare
 
@@ -87,22 +87,22 @@ Snapshot date: 2026-07-08.
 | DNS proxying | `www.d20spellcodex.com` is proxied; `api.d20spellcodex.com` is proxied; apex has no record. | Keep. Apex remains intentionally unassigned. |
 | DNSSEC | Cloudflare DNS API reports DNSSEC `disabled`. | Defer enabling until registrar-side DS record access is ready; enabling Cloudflare-side DNSSEC alone is not the whole acceptance step. |
 | HTTP to HTTPS | Public `http://www...` and `http://api...` return Cloudflare `301` redirects to HTTPS. | Keep public edge redirect; also tighten origin Nginx HTTP behavior so SSL API-only mode redirects non-ACME HTTP to HTTPS. |
-| SSL/TLS mode | Read-all Cloudflare API reports SSL mode `full`, Always Use HTTPS `on`, Automatic HTTPS Rewrites `on`, minimum TLS `1.0`, TLS 1.3 `zrt`, and 0-RTT `on`. | Move SSL mode to Full Strict after origin certificate/renewal is confirmed. Raise minimum TLS to 1.2 unless an explicit legacy-client need appears. Evaluate disabling 0-RTT for API safety; current app is mostly read-only but has POST helper endpoints. |
+| SSL/TLS mode | Read-all Cloudflare API now reports SSL mode `strict`, Always Use HTTPS `on`, Automatic HTTPS Rewrites `on`, minimum TLS `1.2`, TLS 1.3 `on`, and 0-RTT `off`. Certbot timer is active on the origin and the current `api.d20spellcodex.com` certificate is valid until 2026-10-05 UTC. | Keep Full Strict, minimum TLS 1.2, and 0-RTT disabled. After deploying the Nginx redirect change, run `certbot renew --dry-run` to prove ACME renewal still works through the tightened HTTP path. |
 | HSTS | Cloudflare security header setting has HSTS disabled; public frontend/API responses currently do not expose `Strict-Transport-Security`. | Defer HSTS preload. Consider non-preload HSTS only after Full Strict, origin cert renewal, and rollback impact are confirmed. |
-| WAF and API rate limiting | Zone rulesets include managed DDoS L7, Cloudflare Managed Free Ruleset, and Normalization Ruleset definitions, but no managed/custom firewall phase entrypoint is active. Legacy firewall/rate/page/access rules are empty. The only active zone ruleset entrypoint is `http_ratelimit` with a leaked-credential check block rule. Zone setting `waf` is `off`. | Enable the low-risk managed WAF/free ruleset only after dashboard/API write access is available and smoke checks are ready. Add a conservative `/api/*` rate-limit rule if Cloudflare plan support allows it; avoid aggressive bot/challenge behavior until API and deploy smoke pass. |
-| Worker token scope | Worker token is valid and can see the account and one Workers service. Read-all token can inspect zone settings and rulesets. | Good enough for inspection. Separate write-capable change path is still required for accepted Cloudflare setting changes. |
+| WAF and API rate limiting | Zone managed-firewall entrypoint `e1b9cbcb44874c4282c743bb32da698b` version 1 executes Cloudflare Managed Free Ruleset `77454fe2d30c4220b5701f6fdfb893ba` for `true`. The existing `http_ratelimit` entrypoint still has the leaked-credential check block rule. The legacy zone setting `waf` remains `off`. | Keep the Free Managed Ruleset entrypoint. Treat the legacy `waf` setting as non-authoritative for the Rulesets API deployment. Add a conservative `/api/*` rate-limit rule only if Cloudflare plan support and smoke checks make it low risk. |
+| Cloudflare token scope | Worker token is valid and can see the account and one Workers service. Read-all token can inspect zone settings and rulesets. The DNS token is active and now reads zone settings plus zone rulesets/WAF surfaces after Zone Settings permissions were added. | Good enough for inspection and accepted Cloudflare setting changes. Keep real tokens in local `.env`; document required permission groups without committing secrets. |
 
 ### Lightsail Origin
 
 | Item | Current evidence | v1.1 decision |
 | ---- | ---------------- | ------------- |
 | Host platform | Debian 12 on AWS Lightsail; Nginx and `spellbook-api` are active. | Keep current single-instance topology. |
-| API process binding | `spellbook-api` listens on `*:3000` even though `/etc/default/spellbook-api` has `HOST=127.0.0.1`; an external TCP probe did not reach port 3000. | Accepted defense-in-depth code fix: server startup must honor `HOST`, defaulting to `127.0.0.1`; deploy backend after merge and verify `ss` shows `127.0.0.1:3000`. |
-| Nginx origin routing | HTTPS API proxy works; HTTP origin API also proxies today. | Accepted script fix: SSL API-only mode redirects non-ACME HTTP to HTTPS. Sync `apply-nginx-site.sh`, reapply with SSL env, and verify. |
-| SSH exposure | SSH listens on 22 and is externally reachable; root login and password auth are disabled; recent auth logs show public scanning. | Keep key-only SSH. Restrict port 22 to the operator's current IP/range in the Lightsail firewall if operationally acceptable. |
+| API process binding | Lightsail firewall blocks direct public access to port 3000, but the service previously listened on `*:3000` despite `/etc/default/spellbook-api` having `HOST=127.0.0.1`. | Accepted defense-in-depth code fix: server startup must honor `HOST`, defaulting to `127.0.0.1`; deploy backend after merge and verify `ss` shows `127.0.0.1:3000`. |
+| Nginx origin routing | HTTPS API proxy works. `apply-nginx-site.sh` was synced and rerun in SSL API-only mode on 2026-07-09; direct origin HTTP `/api/status/app` now returns `301` to HTTPS, while a nonexistent ACME challenge path returns `404` from the webroot instead of redirecting. | Keep the SSL API-only Nginx config. Reapply the tracked helper after future Nginx changes, and keep ACME challenge verification in the acceptance smoke. |
+| SSH exposure | Lightsail networking is operator-reported as limited to ports 22, 80, and 443, with port 22 restricted to the operator's IP. A direct probe from the allowed workstation reaches 22/80/443 and not 3000. Root login and password auth are disabled; recent auth logs showed public scanning before restriction. | Keep key-only SSH and the Lightsail port-22 source-IP restriction. If the operator IP changes often, document the update path or consider `fail2ban` as a fallback hardening layer. |
 | OS updates | `unattended-upgrades` is installed and enabled. | Keep. Document as accepted baseline. |
 | Intrusion throttling | `fail2ban` is not installed. | Candidate for v1.1 if SSH cannot be IP-restricted; otherwise follow-up. |
-| Cert renewal | `certbot.timer` is active. | Keep; verify after Nginx redirect change that ACME HTTP challenge still works. |
+| Cert renewal | `certbot.timer` is active. `certbot renew --dry-run` succeeded on 2026-07-09 after the Nginx redirect change. | Keep the current webroot renewal path and timer. |
 | Backups | Existing DB backup files are present under `/opt/spellbook/data`. | Keep current manual retention policy; prune intentionally after release acceptance. |
 
 ## Plan
