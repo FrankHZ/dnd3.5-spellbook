@@ -278,8 +278,10 @@ For Cloudflare Full (strict), configure a valid certificate and run the helper
 with `SPELLBOOK_NGINX_ENABLE_SSL=true` plus certificate/key paths. The current
 production pattern uses certbot with `/var/www/certbot` as the webroot for
 `api.d20spellcodex.com`; keep the HTTP ACME challenge path available for
-renewal. Use `SPELLBOOK_NGINX_MODE=single-origin` only for the legacy static
-frontend fallback.
+renewal. In SSL API-only mode, the HTTP server block should serve only the ACME
+challenge path and redirect other HTTP traffic to HTTPS. Use
+`SPELLBOOK_NGINX_MODE=single-origin` only for the legacy static frontend
+fallback.
 
 ## 13. Prepare Initial Databases
 

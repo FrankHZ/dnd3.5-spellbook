@@ -179,9 +179,10 @@ ssh remote "SPELLBOOK_NGINX_ENABLE_SSL=true SPELLBOOK_NGINX_SSL_CERTIFICATE=/etc
 ```
 
 When `SPELLBOOK_NGINX_ENABLE_SSL=true` in `api-only` mode, the helper keeps an
-HTTP server block for `/.well-known/acme-challenge/` and API fallback traffic,
-and adds a separate HTTPS server block for normal Cloudflare API traffic. Set
-`SPELLBOOK_ACME_CHALLENGE_ROOT` only if the webroot is not `/var/www/certbot`.
+HTTP server block for `/.well-known/acme-challenge/`, redirects other HTTP
+traffic to HTTPS, and adds a separate HTTPS server block for normal Cloudflare
+API traffic. Set `SPELLBOOK_ACME_CHALLENGE_ROOT` only if the webroot is not
+`/var/www/certbot`.
 
 Use the legacy single-origin static web/API config only as an explicit fallback:
 
@@ -389,6 +390,7 @@ Expected routing:
   `http://127.0.0.1:3000`
 - `http://api.d20spellcodex.com/.well-known/acme-challenge/*` serves the
   certbot webroot for renewal
+- `http://api.d20spellcodex.com/*` redirects to HTTPS when SSL is enabled
 - other paths return `404` in API-only mode
 
 Common commands:
