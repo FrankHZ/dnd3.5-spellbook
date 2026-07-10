@@ -168,13 +168,18 @@ before regenerating full-corpus spell patches that reference new rulebook
 abbreviations.
 
 Publication display and grouping metadata is not a rules DB patch concern. The
-rules DB owns base rulebook identity; the content generation pipeline derives
-and imports `RulebookContent` publication fields for API grouping:
-`publicationCategory`, `publicationFamily`, `publicationSourceKind`,
-`publicationDisplayOrder`, and `publicationReviewStatus`. Review overrides for
-display labels and future metadata overrides belong with maintained local data
-such as `data/rulebook-labels/chm-publications.jsonl`, then flow through
-`rules:content:generate` and `rules:content:import`.
+rules DB owns base rulebook identity and has partial publication fields
+(`year`, `published`, `official_url`, `image`), but the maintained local source
+for API-facing publication metadata is
+`data/rulebook-publications/publications.jsonl`. Seed that file with
+`rulebooks:publications:seed`, then review it in the data repo. The content
+generation pipeline imports `RulebookContent` publication fields for API
+grouping and display: `publicationCategory`, `publicationFamily`,
+`publicationSourceKind`, `publicationDisplayOrder`, `publicationYear`,
+`publicationDate`, `publicationUrl`, `publicationImage`, and
+`publicationReviewStatus`. Review-stage rows can preserve rules-clean
+year/date/URL/image values for QA, but generated content only exposes those
+detail fields after a row is marked `accepted`.
 
 The first supported operation is `insertSpell`. It writes one `dnd_spell` row,
 optional `dnd_spell_descriptors` rows, class/domain level rows, and then

@@ -2,6 +2,7 @@
   "schemaVersion": 1,
   "dataRoots": [
     "data/rulebook-labels",
+    "data/rulebook-publications",
     "data/short-desc-normalized",
     "data/rules-patches/applied/rulebooks",
     "data/rules-patches/applied/spells"
@@ -13,6 +14,13 @@
         "server/db/content/fixtures/portable/normalized-rules-spells.jsonl"
       ],
       "note": "Rulebook display labels are represented by synthetic RulebookContent display fields."
+    },
+    {
+      "dataPath": "data/rulebook-publications/publications.jsonl",
+      "portableFixturePaths": [
+        "server/db/content/fixtures/portable/normalized-rules-spells.jsonl"
+      ],
+      "note": "Canonical publication metadata is represented by synthetic RulebookContent publication fields."
     },
     {
       "dataPath": "data/short-desc-normalized/summaries.generated.jsonl",

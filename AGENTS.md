@@ -222,6 +222,14 @@ JSONL, and durable review decisions belong in the nested `data/` repo. Keep
 schemas, validators, generators, generated queues, run reports, and
 redacted/minimal fixtures in the parent repo.
 
+Rulebook publication metadata belongs in
+`data/rulebook-publications/publications.jsonl`. Seed it with
+`npm run -w data-tools rulebooks:publications:seed`, then review and maintain it
+in the nested data repo. Do not treat rules-clean `year` / `published` fields or
+frontend grouping heuristics as the publication metadata source of truth.
+Generated content may keep review status for grouping QA, but only rows marked
+`accepted` should publish year/date/URL/image details to API-facing content.
+
 For any large-scale source reading or broad content QA over local data sources,
 spawn a subagent to inspect the corpus and return summarized findings instead
 of loading the source corpus into the main agent context.

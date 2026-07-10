@@ -19,6 +19,7 @@
     "rules:content:parity": "tsx src/rules-content/cli.ts parity",
     "rules:content:review": "tsx src/rules-content/cli.ts review",
     "rulebooks:labels:audit": "tsx src/rulebooks/labels-audit.ts",
+    "rulebooks:publications:seed": "tsx src/rulebooks/publications-seed.ts",
     "rules:sql:apply": "tsx src/rules/sql.ts apply",
     "rules:sql:dry-run": "tsx src/rules/sql.ts dry-run",
     "en:summaries:candidates": "tsx src/short-desc/en-summaries.ts candidates",

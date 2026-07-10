@@ -18,7 +18,8 @@ source-data operations workspace.
   manifests, and `spells-full` patch generation.
 - `rules-content/`: generated content rows derived from the rules DB, including
   publication metadata overlays for rulebook consumers.
-- `rulebooks/`: rulebook label audits and publication metadata helpers.
+- `rulebooks/`: rulebook label audits, publication metadata helpers, and the
+  local publication metadata seed workflow.
 - `short-desc/`: English/Chinese short-description matching, QA,
   normalization, import, coverage, and reuse workflows.
 - `zh-parser/`: CHM preprocessing, parsing, QA, matching, and summary
@@ -32,6 +33,14 @@ Command lifecycle metadata lives in `data-tools/scripts.manifest.json`.
 Local source inputs, maintained patch data, normalized import JSONL, and review
 decisions belong in the nested `data/` repo. Generated reports and parser output
 belong under `data-tools/out/`.
+
+The canonical local publication metadata source is
+`data/rulebook-publications/publications.jsonl`. Seed it with
+`rulebooks:publications:seed`, then review and maintain rows in the data repo;
+the seed inherits publication dates from rules-clean where available and should
+not be treated as externally verified until row `reviewStatus` is accepted.
+Generated content only exposes publication year/date/URL/image details from
+rows marked `accepted`.
 
 Parent-repo code should include schemas, validators, fixtures, command
 wrappers, and docs. Do not commit ignored raw CHM data, local SQLite DBs, or

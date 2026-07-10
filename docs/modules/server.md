@@ -75,9 +75,10 @@ Rulebook publication metadata is content-overlay data. The rules DB remains the
 source for base rulebook identity and edition membership, while
 `RulebookContent` supplies display labels plus `publicationCategory`,
 `publicationFamily`, `publicationSourceKind`, `publicationDisplayOrder`, and
-`publicationReviewStatus` for `/api/rulebooks`. Do not make frontend consumers
-regroup rulebooks from raw abbreviations or edition labels when these fields are
-present.
+`publicationReviewStatus` for `/api/rulebooks`; it can also carry publication
+year/date, URL, and cover-image path when the local data source has them. Do not
+make frontend consumers regroup rulebooks from raw abbreviations or edition
+labels when these fields are present.
 
 `GET /api/status/db` is the operator-facing runtime check for this boundary. It
 reports sanitized file role state, the active spell read source, the latest

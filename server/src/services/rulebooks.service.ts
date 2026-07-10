@@ -44,6 +44,10 @@ async function loadRulebooks(): Promise<Rulebook[]> {
           publicationFamily: true,
           publicationSourceKind: true,
           publicationDisplayOrder: true,
+          publicationYear: true,
+          publicationDate: true,
+          publicationUrl: true,
+          publicationImage: true,
           publicationReviewStatus: true,
         },
       });
@@ -67,6 +71,18 @@ async function loadRulebooks(): Promise<Rulebook[]> {
                   display.publicationSourceKind,
                 ),
                 publicationDisplayOrder: display.publicationDisplayOrder,
+                ...(display.publicationYear
+                  ? { publicationYear: display.publicationYear }
+                  : {}),
+                ...(display.publicationDate
+                  ? { publicationDate: display.publicationDate }
+                  : {}),
+                ...(display.publicationUrl
+                  ? { publicationUrl: display.publicationUrl }
+                  : {}),
+                ...(display.publicationImage
+                  ? { publicationImage: display.publicationImage }
+                  : {}),
                 publicationReviewStatus: toPublicationReviewStatus(
                   display.publicationReviewStatus,
                 ),

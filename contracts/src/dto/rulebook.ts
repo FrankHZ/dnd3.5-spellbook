@@ -35,6 +35,10 @@ export type RulebookMin = {
   publicationFamily?: string | undefined;
   publicationSourceKind?: PublicationSourceKind | undefined;
   publicationDisplayOrder?: number | undefined;
+  publicationYear?: string | undefined;
+  publicationDate?: string | undefined;
+  publicationUrl?: string | undefined;
+  publicationImage?: string | undefined;
   publicationReviewStatus?: PublicationReviewStatus | undefined;
 };
 

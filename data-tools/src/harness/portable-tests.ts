@@ -39,7 +39,10 @@ import {
   auditRulebookLabels,
   readRulebookPublicationJsonlText,
 } from "../rulebooks/labels-audit";
-import { deriveRulebookPublicationMetadata } from "../rulebooks/publication-metadata";
+import {
+  deriveRulebookPublicationMetadata,
+  readRulebookPublicationMetadataJsonlText,
+} from "../rulebooks/publication-metadata";
 
 type TestCase = {
   name: string;
@@ -601,6 +604,10 @@ const tests: TestCase[] = [
             publicationFamily: "core",
             publicationSourceKind: "rulebook",
             publicationDisplayOrder: 10001,
+            publicationYear: "2003",
+            publicationDate: "2003-07-01",
+            publicationUrl: null,
+            publicationImage: null,
             publicationReviewStatus: "accepted",
           },
         ],
@@ -710,6 +717,8 @@ const tests: TestCase[] = [
       assert.equal(normalized.rulebooks[0]?.displayAbbr, "PH");
       assert.equal(normalized.rulebooks[0]?.publicationCategory, "core");
       assert.equal(normalized.rulebooks[0]?.publicationDisplayOrder, 10001);
+      assert.equal(normalized.rulebooks[0]?.publicationYear, "2003");
+      assert.equal(normalized.rulebooks[0]?.publicationDate, "2003-07-01");
       assert.equal(normalized.spells[0]?.descriptionText, "Fixture rules text.");
       assert.equal(normalized.spells[0]?.verified, true);
       assert.equal(normalized.taxonomyFacets.length, 7);
@@ -835,6 +844,66 @@ const tests: TestCase[] = [
           { family: "forgotten-realms", displayOrder: 30010 },
         ).displayOrder,
         30010,
+      );
+    },
+  },
+  {
+    name: "canonical rulebook publication JSONL validates publication metadata",
+    run: () => {
+      const valid = readRulebookPublicationMetadataJsonlText(
+        `${JSON.stringify({
+          schemaVersion: 1,
+          legacyRulebookId: 6,
+          source: "rules-clean+chm-publications",
+          name: "Spell Compendium",
+          abbr: "SC",
+          displayAbbr: "SpC",
+          zhName: "万法大全",
+          category: "supplement",
+          family: "supplemental",
+          sourceKind: "rulebook",
+          displayOrder: 20006,
+          year: "2005",
+          published: "2005-12-01",
+          officialUrl: null,
+          image: null,
+          reviewStatus: "accepted",
+        })}\n`,
+        "fixture.jsonl",
+      );
+      assert.deepEqual(valid.errors, []);
+      assert.equal(valid.rows[0]?.legacyRulebookId, 6);
+      assert.equal(valid.rows[0]?.published, "2005-12-01");
+
+      const invalid = readRulebookPublicationMetadataJsonlText(
+        JSON.stringify({
+          schemaVersion: 1,
+          legacyRulebookId: 6,
+          source: "rules-clean",
+          name: "Bad Date",
+          abbr: "BD",
+          category: "supplement",
+          family: "supplemental",
+          sourceKind: "rulebook",
+          displayOrder: -1,
+          year: "05",
+          published: "2005-12",
+          reviewStatus: "accepted",
+        }),
+        "fixture.jsonl",
+      );
+      assert.ok(
+        invalid.errors.some((error) =>
+          error.includes("displayOrder must be a non-negative integer"),
+        ),
+      );
+      assert.ok(
+        invalid.errors.some((error) => error.includes("year must be YYYY")),
+      );
+      assert.ok(
+        invalid.errors.some((error) =>
+          error.includes("published must be YYYY-MM-DD"),
+        ),
       );
     },
   },

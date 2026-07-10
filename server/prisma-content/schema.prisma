@@ -203,6 +203,10 @@ model RulebookContent {
     publicationFamily       String
     publicationSourceKind   String
     publicationDisplayOrder Int
+    publicationYear         String?
+    publicationDate         String?
+    publicationUrl          String?
+    publicationImage        String?
     publicationReviewStatus String @default("accepted")
     rawJson                 String?
 

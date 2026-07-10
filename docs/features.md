@@ -193,7 +193,7 @@ Current behavior:
   `displayAbbr` / `displayName` metadata from normalized content
 - rulebook list responses can include publication grouping metadata from
   normalized content: category, family, source kind, display order, and review
-  status
+  status, plus publication year/date, URL, and cover-image path when available
 - frontend rulebook display uses a shared helper so English and default Chinese
   display can show curated/source abbreviations consistently
 - Chinese Display settings can opt into localized Chinese short rulebook labels

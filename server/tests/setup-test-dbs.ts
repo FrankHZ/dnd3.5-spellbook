@@ -352,6 +352,10 @@ function seedContentDb() {
         publicationFamily TEXT NOT NULL DEFAULT 'other',
         publicationSourceKind TEXT NOT NULL DEFAULT 'rulebook',
         publicationDisplayOrder INTEGER NOT NULL DEFAULT 90000,
+        publicationYear TEXT,
+        publicationDate TEXT,
+        publicationUrl TEXT,
+        publicationImage TEXT,
         publicationReviewStatus TEXT NOT NULL DEFAULT 'accepted',
         rawJson TEXT
       )

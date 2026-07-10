@@ -87,10 +87,15 @@ surface and a small, explicit publication metadata contract.
 - Validation: server/API tests and data-tool checks relevant to metadata.
 - Implementation notes: `RulebookContent` now carries
   `publicationCategory`, `publicationFamily`, `publicationSourceKind`,
-  `publicationDisplayOrder`, and `publicationReviewStatus`. Data-tools derives
-  defaults from rules DB rulebook/edition facts and accepts optional overrides
-  from maintained publication JSONL. `/api/rulebooks` exposes the metadata so
-  frontend consumers do not need publication grouping heuristics.
+  `publicationDisplayOrder`, `publicationYear`, `publicationDate`,
+  `publicationUrl`, `publicationImage`, and `publicationReviewStatus`.
+  Data-tools consumes the maintained local publication metadata JSONL at
+  `data/rulebook-publications/publications.jsonl`; `rulebooks:publications:seed`
+  creates a review-starting seed from rules-clean publication fields and CHM
+  labels. Review rows may keep seed year/date/URL/image values for QA, but
+  generated content only exposes those detail fields after a row is marked
+  `accepted`. `/api/rulebooks` exposes the metadata so frontend consumers do not
+  need publication grouping heuristics.
 
 ### Slice 2: Publications Page
 
@@ -132,6 +137,9 @@ surface and a small, explicit publication metadata contract.
 
 - Which metadata overrides, if any, are needed after the frontend Publications
   page validates the first grouping model against real user workflows?
+- Which seeded publication dates should be accepted, corrected, or cleared
+  after source review? The seed inherits partial rules-clean date fields and is
+  not an external publication-date audit.
 
 ## Follow-Up Candidates
 
