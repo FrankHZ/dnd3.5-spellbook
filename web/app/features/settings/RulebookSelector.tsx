@@ -315,7 +315,7 @@ export default function RulebookSelector() {
                         </Badge>
                       </div>
 
-                      <FieldGroup className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                      <FieldGroup className="grid gap-2 sm:grid-cols-2">
                         {g.rulebooks.map((rb) => {
                           const checked = selectedRulebookSet.has(rb.id);
                           const localized = getRulebookDisplay(meta, rb, lang);
