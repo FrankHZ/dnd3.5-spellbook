@@ -118,25 +118,39 @@ Recommended next sequence:
 
 1. **Open v1.2 release plan**
 
-   v1.2 should start from the now-stable full corpus and split at least two
-   acceptance tracks:
+   v1.2 should start from the now-stable full corpus, but keep translation
+   scope deliberately narrow. Do not make full spell-body translation and
+   review part of v1.2 acceptance.
 
-   - publication/rulebook metadata contract: add durable DB/API fields for
-     publication category, family/setting, source kind, display abbreviation,
-     ordering, and review status so frontend grouping no longer depends on
-     heuristic labels
-   - Publications page: add a user-facing publication/rulebook page that
-     replaces Settings as the primary place to browse and manage publication
-     scope; Settings should keep only general app preferences
-   - translation and QA: build bulk Chinese/English translation/proofreading
-     reports, human review queues, terminology checks, and rulebook/publication
-     consistency checks against the full corpus
+   Split v1.2 into these acceptance tracks:
+
+   - full-spell source review: inventory the local
+     `data/spells-full/v6.01/` source package, review the existing
+     `data/spells-full/spells-parsed.json` quality from the v6.00 source, and
+     produce a clear source/parse QA report before relying on full-spell data
+     for later import or translation work
+   - mechanics localization workflow: translate all normalized mechanics into
+     Chinese, run the translation + QA loop end-to-end on that bounded corpus,
+     and record the reusable workflow as repo-local skill guidance or an
+     equivalent durable agent playbook
+   - frontend mechanics localization: make the frontend render mechanics in
+     Chinese wherever mechanics appear in the Chinese UI, while preserving the
+     existing English comparison/display behavior
+   - Publications page: add a user-facing publication/rulebook page for
+     browsing and managing publication scope; Settings should keep only general
+     app preferences
+   - minimum publication metadata support: add only the DB/API metadata needed
+     to make the Publications page and rulebook grouping robust; defer broader
+     publication schema review if it is not needed for the page
 
 2. **Assign v1.2 specialists**
 
-   Use separate DB/data and frontend-design branches for the publication
-   metadata contract and Publications page consumer. Use an i18n/data branch
-   for translation QA after the publication vocabulary boundary is stable.
+   Use a data/corpus branch for the full-spell 6.01 inventory and v6.00 parsed
+   JSON quality review. Use an i18n/data branch for mechanics translation, QA
+   reports, and the reusable workflow/skill handoff. Use a frontend-design
+   branch for Chinese mechanics display and the Publications page. Use a
+   DB/data branch only for the minimum publication metadata needed by the page
+   and rulebook grouping.
 
 3. **Keep v1.3 as the broader design release**
 
@@ -144,16 +158,26 @@ Recommended next sequence:
    redesign. Keep complete filter UX, spell-card redesign, and broader visual
    system work in v1.3 unless a v1.2 acceptance blocker proves otherwise.
 
+4. **Defer full translation QA**
+
+   Treat full spell-body/name/short-description translation and proofreading
+   as a later release candidate. v1.2 should first review the full-spell
+   source/parse boundary and prove the translation workflow on mechanics, then
+   preserve the full-corpus translation plan as follow-up scope.
+
 ## Official Release Sequence
 
 The expected post-v1.1 release order is:
 
-1. **v1.2 Publication Metadata + Translation QA**
+1. **v1.2 Full-Spell Review + Mechanics Localization + Publications Page**
 
-   Add durable publication/rulebook metadata to the content/API contract, add a
-   Publications page to replace Settings as the primary rulebook/publication
-   surface, and build the bulk Chinese/English translation QA workflow on top of
-   the stable full corpus.
+   Review the local full-spell 6.01 source package and the existing v6.00
+   parsed JSON quality, translate all normalized mechanics into Chinese, run
+   and document the translation + QA workflow as a reusable agent
+   skill/playbook, make frontend mechanics display correctly in Chinese, and
+   add a Publications page for rulebook/publication browsing and scope
+   management. Add only the publication metadata needed to make that page
+   durable.
 
 2. **v1.3 Sitewide UX / Style Redesign**
 
@@ -161,6 +185,12 @@ The expected post-v1.1 release order is:
    Search, Detail, About/Status, collections, prepared spells, filters, spell
    cards, layout density, and mobile behavior. Let frontend-design own the
    implementation branch while the main gate controls scope and acceptance.
+
+3. **Later Translation QA**
+
+   Promote full spell-body/name/short-description translation and proofreading
+   only after the full-spell source review and mechanics workflow have produced
+   useful QA reports, review queues, terminology checks, and handoff rules.
 
 ## Later Stable Track
 
