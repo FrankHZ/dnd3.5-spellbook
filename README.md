@@ -24,14 +24,16 @@ excluded from the public repository, especially runtime databases under
 
 ## Status
 
-The latest frozen public release is **v1.1**. The latest frozen pre-release
-stage snapshot is **v3.10**.
+The active public release plan is **v1.2**. The latest frozen public release is
+**v1.1**. The latest frozen pre-release stage snapshot is **v3.10**.
 
 Start here:
 
 - [docs/README.md](./docs/README.md): documentation map and precedence rules.
 - [docs/roadmap.md](./docs/roadmap.md): current work order.
 - [docs/features.md](./docs/features.md): current feature map.
+- [docs/releases/v1.2/README.md](./docs/releases/v1.2/README.md): active v1.2
+  release plan.
 - [docs/releases/v1.1/FREEZE.md](./docs/releases/v1.1/FREEZE.md): latest
   frozen public release snapshot.
 - [docs/releases/v1.1/README.md](./docs/releases/v1.1/README.md): frozen v1.1

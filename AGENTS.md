@@ -28,6 +28,14 @@ Use these docs for orientation instead of expanding this file:
 - `docs/README.md`: canonical documentation map and historical/current doc
   ownership.
 - `docs/roadmap.md`: current active work ordering after a pause.
+- `docs/releases/v1.2/README.md`: active full-spell source review, mechanics
+  localization, and Publications page release plan.
+- `docs/releases/v1.2/full-spell-source-review-plan.md`: active full-spell
+  source inventory and parse QA plan.
+- `docs/releases/v1.2/mechanics-localization-plan.md`: active mechanics
+  translation, QA workflow, and frontend consumer plan.
+- `docs/releases/v1.2/publications-page-plan.md`: active Publications page and
+  minimum metadata plan.
 - `docs/releases/v1.1/FREEZE.md`: latest frozen formal public release
   snapshot.
 - `docs/releases/v1.1/README.md`: frozen production hardening and full spell
