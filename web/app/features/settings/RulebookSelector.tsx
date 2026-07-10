@@ -31,6 +31,13 @@ export type RulebookCategoryGroup = {
   editionGroups: EditionGroup[];
 };
 
+export type RulebookSettingsGroup = {
+  key: string;
+  category: RulebookSettingsCategory;
+  edition?: Edition;
+  rulebooks: Rulebook[];
+};
+
 const RULEBOOK_CATEGORY_ORDER: RulebookSettingsCategory[] = [
   "core",
   "supplements",
@@ -107,6 +114,35 @@ export function groupRulebooksByCategory(
   });
 }
 
+export function groupRulebooksForSettings(
+  rulebooks: Rulebook[],
+  displayLabel: (rulebook: Rulebook) => string,
+): RulebookSettingsGroup[] {
+  return groupRulebooksByCategory(
+    rulebooks,
+    displayLabel,
+  ).flatMap<RulebookSettingsGroup>((group) => {
+    if (group.key === "magazines") {
+      return [
+        {
+          key: "magazines",
+          category: group.key,
+          rulebooks: group.editionGroups.flatMap(
+            (editionGroup) => editionGroup.rulebooks,
+          ),
+        },
+      ];
+    }
+
+    return group.editionGroups.map((editionGroup) => ({
+      key: `${group.key}-${editionGroup.edition.id}`,
+      category: group.key,
+      edition: editionGroup.edition,
+      rulebooks: editionGroup.rulebooks,
+    }));
+  });
+}
+
 function getEditionCheckState(
   group: { rulebooks: Rulebook[] },
   selected: Set<number>,
@@ -122,16 +158,6 @@ function getEditionCheckState(
     none: count === 0,
     some: count > 0 && count < total,
   };
-}
-
-function getCategoryCheckState(
-  group: RulebookCategoryGroup,
-  selected: Set<number>,
-) {
-  return getEditionCheckState(
-    { rulebooks: group.editionGroups.flatMap((g) => g.rulebooks) },
-    selected,
-  );
 }
 
 function getSettingsRulebookDisplay(rulebook: Rulebook, localizedName: string) {
@@ -175,41 +201,17 @@ export default function RulebookSelector() {
 
   const groups = useMemo(
     () =>
-      groupRulebooksByCategory(rulebooks, (rulebook) => {
+      groupRulebooksForSettings(rulebooks, (rulebook) => {
         const localized = getRulebookDisplay(meta, rulebook, lang);
         return getSettingsRulebookDisplay(rulebook, localized.name).abbr;
       }),
     [lang, meta, rulebooks],
   );
 
-  function toggleCategory(
-    category: RulebookSettingsCategory,
-    checked: boolean,
-  ) {
+  function toggleGroup(groupKey: string, checked: boolean) {
     setState((s) => {
       const next = new Set(s.selectedRulebookIds);
-      const group = groups.find((g) => g.key === category);
-      if (!group) return s;
-
-      for (const rb of group.editionGroups.flatMap((g) => g.rulebooks)) {
-        if (checked) next.add(rb.id);
-        else next.delete(rb.id);
-      }
-
-      return { ...s, selectedRulebookIds: Array.from(next) };
-    });
-  }
-
-  function toggleEdition(
-    category: RulebookSettingsCategory,
-    editionId: number,
-    checked: boolean,
-  ) {
-    setState((s) => {
-      const next = new Set(s.selectedRulebookIds);
-      const group = groups
-        .find((g) => g.key === category)
-        ?.editionGroups.find((g) => g.edition.id === editionId);
+      const group = groups.find((g) => g.key === groupKey);
       if (!group) return s;
 
       for (const rb of group.rulebooks) {
@@ -236,132 +238,87 @@ export default function RulebookSelector() {
         <CardDescription>{t("rulebooks.default-hint")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3 pt-0">
-        {groups.map((categoryGroup) => {
-          const categoryState = getCategoryCheckState(
-            categoryGroup,
-            selectedRulebookSet,
-          );
-          const categoryCheckboxId = `settings-rulebook-category-${categoryGroup.key}`;
+        {groups.map((group) => {
+          const st = getEditionCheckState(group, selectedRulebookSet);
+          const groupCheckboxId = `settings-rulebook-group-${group.key}`;
+          const groupTitle =
+            group.category === "magazines"
+              ? getRulebookCategoryLabel(group.category, t)
+              : (group.edition?.name ??
+                getRulebookCategoryLabel(group.category, t));
+          const groupSubtitle = group.edition
+            ? `${group.edition.system}${group.edition.core ? `, ${t("rulebooks.core")}` : ""}`
+            : undefined;
 
           return (
             <div
-              key={categoryGroup.key}
-              className="overflow-hidden rounded-md border bg-card"
+              key={group.key}
+              className="space-y-3 rounded-md border bg-muted/10 px-4 py-3"
             >
-              <div className="flex items-center justify-between gap-4 border-b bg-muted/40 px-4 py-3">
+              <div className="flex items-center justify-between gap-4">
                 <Field orientation="horizontal">
                   <Checkbox
-                    id={categoryCheckboxId}
-                    checked={
-                      categoryState.all
-                        ? true
-                        : categoryState.some
-                          ? "indeterminate"
-                          : false
-                    }
-                    onCheckedChange={(v) =>
-                      toggleCategory(categoryGroup.key, Boolean(v))
-                    }
+                    id={groupCheckboxId}
+                    checked={st.all ? true : st.some ? "indeterminate" : false}
+                    onCheckedChange={(v) => toggleGroup(group.key, Boolean(v))}
                   />
                   <FieldLabel
-                    htmlFor={categoryCheckboxId}
-                    className="select-text text-sm font-semibold text-foreground"
+                    htmlFor={groupCheckboxId}
+                    className="select-text text-sm font-medium text-foreground"
                   >
-                    {getRulebookCategoryLabel(categoryGroup.key, t)}
+                    {groupTitle}
+                    {groupSubtitle ? (
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        ({groupSubtitle})
+                      </span>
+                    ) : null}
                   </FieldLabel>
                 </Field>
-                <Badge variant="secondary" className="shrink-0">
-                  {categoryState.count}/{categoryState.total}{" "}
-                  {t("rulebooks.selected")}
+                <Badge variant="outline" className="shrink-0">
+                  {st.count}/{st.total}
                 </Badge>
               </div>
 
-              <div className="space-y-4 px-4 py-3">
-                {categoryGroup.editionGroups.map((g) => {
-                  const st = getEditionCheckState(g, selectedRulebookSet);
-                  const editionCheckboxId = `settings-edition-${categoryGroup.key}-${g.edition.id}`;
+              <Separator />
+              <FieldGroup className="grid gap-2 sm:grid-cols-2">
+                {group.rulebooks.map((rb) => {
+                  const checked = selectedRulebookSet.has(rb.id);
+                  const localized = getRulebookDisplay(meta, rb, lang);
+                  const display = getSettingsRulebookDisplay(
+                    rb,
+                    localized.name,
+                  );
+                  const rulebookCheckboxId = `settings-rulebook-${group.key}-${rb.id}`;
                   return (
-                    <section key={g.edition.id} className="space-y-3">
-                      <div className="flex items-center justify-between gap-4">
-                        <Field orientation="horizontal">
-                          <Checkbox
-                            id={editionCheckboxId}
-                            checked={
-                              st.all ? true : st.some ? "indeterminate" : false
-                            }
-                            onCheckedChange={(v) =>
-                              toggleEdition(
-                                categoryGroup.key,
-                                g.edition.id,
-                                Boolean(v),
-                              )
-                            }
-                          />
-                          <FieldLabel
-                            htmlFor={editionCheckboxId}
-                            className="select-text text-sm font-medium text-foreground/85"
-                          >
-                            {g.edition.name}
-                            <span className="ml-2 text-xs text-muted-foreground">
-                              ({g.edition.system}
-                              {g.edition.core ? `, ${t("rulebooks.core")}` : ""}
-                              )
-                            </span>
-                          </FieldLabel>
-                        </Field>
-                        <Badge variant="outline" className="shrink-0">
-                          {st.count}/{st.total}
-                        </Badge>
-                      </div>
-
-                      <FieldGroup className="grid gap-2 sm:grid-cols-2">
-                        {g.rulebooks.map((rb) => {
-                          const checked = selectedRulebookSet.has(rb.id);
-                          const localized = getRulebookDisplay(meta, rb, lang);
-                          const display = getSettingsRulebookDisplay(
-                            rb,
-                            localized.name,
-                          );
-                          const rulebookCheckboxId = `settings-rulebook-${categoryGroup.key}-${g.edition.id}-${rb.id}`;
-                          return (
-                            <Field
-                              key={rb.id}
-                              orientation="horizontal"
-                              className="min-w-0"
-                            >
-                              <Checkbox
-                                id={rulebookCheckboxId}
-                                checked={checked}
-                                onCheckedChange={(v) =>
-                                  toggleRulebook(rb.id, Boolean(v))
-                                }
-                              />
-                              <FieldLabel
-                                htmlFor={rulebookCheckboxId}
-                                className="min-w-0 flex-1 select-text"
-                              >
-                                <span className="shrink-0 text-xs font-medium">
-                                  {display.abbr}
-                                </span>
-                                {display.name !== display.abbr && (
-                                  <span className="min-w-0 truncate">
-                                    {display.name}
-                                  </span>
-                                )}
-                              </FieldLabel>
-                            </Field>
-                          );
-                        })}
-                      </FieldGroup>
-
-                      {g !==
-                        categoryGroup.editionGroups[
-                          categoryGroup.editionGroups.length - 1
-                        ] && <Separator className="bg-border/60" />}
-                    </section>
+                    <Field
+                      key={rb.id}
+                      orientation="horizontal"
+                      className="min-w-0"
+                    >
+                      <Checkbox
+                        id={rulebookCheckboxId}
+                        checked={checked}
+                        onCheckedChange={(v) =>
+                          toggleRulebook(rb.id, Boolean(v))
+                        }
+                      />
+                      <FieldLabel
+                        htmlFor={rulebookCheckboxId}
+                        className="min-w-0 flex-1 select-text"
+                      >
+                        <span className="shrink-0 text-xs font-medium">
+                          {display.abbr}
+                        </span>
+                        {display.name !== display.abbr && (
+                          <span className="min-w-0 truncate">
+                            {display.name}
+                          </span>
+                        )}
+                      </FieldLabel>
+                    </Field>
                   );
                 })}
-              </div>
+              </FieldGroup>
             </div>
           );
         })}

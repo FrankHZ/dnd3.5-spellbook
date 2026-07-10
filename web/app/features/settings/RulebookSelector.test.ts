@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   getRulebookSettingsCategory,
-  groupRulebooksByCategory,
+  groupRulebooksForSettings,
   isMagazineRulebook,
 } from "./RulebookSelector";
 
@@ -93,8 +93,8 @@ describe("rulebook settings grouping", () => {
     ).toBe("other");
   });
 
-  it("orders sections as core, supplements, magazines, then other", () => {
-    const groups = groupRulebooksByCategory(
+  it("orders flat setting groups as core, supplements, magazines, then other", () => {
+    const groups = groupRulebooksForSettings(
       [
         rulebook({
           id: 4,
@@ -120,11 +120,17 @@ describe("rulebook settings grouping", () => {
       (rb) => rb.abbr,
     );
 
-    expect(groups.map((group) => group.key)).toEqual([
+    expect(groups.map((group) => group.category)).toEqual([
       "core",
       "supplements",
       "magazines",
       "other",
     ]);
+    expect(
+      groups.find((group) => group.category === "magazines"),
+    ).toMatchObject({
+      key: "magazines",
+      rulebooks: [{ abbr: "Drg330" }],
+    });
   });
 });
