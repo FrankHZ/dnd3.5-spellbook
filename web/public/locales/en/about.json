@@ -11,6 +11,7 @@
   "credits.description": "Acknowledgements for the community sources this project builds on.",
   "credits.english.dndtools-note": "Legacy D&D Tools data and open-source tooling are credited separately from later mirrors and rebuilds.",
   "credits.english.imarvin-note": "The IMarvinTPA spell database is credited as an English spell-data reference.",
+  "credits.english.spells-full-note": "Spells Full is credited as an English spell-data compilation reference.",
   "credits.english.title": "English spell data references",
   "credits.title": "Credits",
   "db.active-read-source": "Read source",
