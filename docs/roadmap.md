@@ -13,14 +13,15 @@ acceptance can be described.
 
 ## Current Track
 
-v1.1 is the active formal release plan:
+v1.1 is the latest frozen formal public release:
 
+- `docs/releases/v1.1/FREEZE.md`
 - `docs/releases/v1.1/README.md`
 - `docs/releases/v1.1/production-hardening-plan.md`
 - `docs/releases/v1.1/full-spell-corpus-plan.md`
 - `docs/releases/v1.1/frontend-content-pass-plan.md`
 
-v1.0 is the latest frozen formal public release:
+v1.0 is the previous frozen formal public release:
 
 - `docs/releases/v1.0/FREEZE.md`
 - `docs/releases/v1.0/README.md`
@@ -30,15 +31,29 @@ v1.0 is the latest frozen formal public release:
 
 The latest frozen pre-release snapshot is `docs/mvp/v3.10/FREEZE.md`.
 
-Use the v1.1 child plans for implementation boundaries. Keep security and full
-spell corpus acceptance independent unless a real sequencing conflict appears.
-Run the frontend content pass after enough v1.1 runtime/content state is
-available to inspect the release as users see it.
+No later formal release plan is active yet. Use the next-work list below to
+open the v1.2 release plan.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
 
 ## Recently Completed
+
+The v1.1 release is frozen with:
+
+- `docs/releases/v1.1/FREEZE.md` as the as-built snapshot.
+- production hardening for the Cloudflare Workers frontend plus
+  Lightsail/Nginx/Express API topology.
+- full source-backed spell corpus import through maintained data tooling.
+- rulebook-backed corpus patch flow with structured `insertRulebook` and
+  `insertSpell` validation.
+- focused frontend content acceptance for Settings rulebook tabs, rulebook
+  scope links, About/Credits, and representative v1.1 content.
+- backend deploy to commit `9cf77e4d6dda7b2700be5a63968e3de000691545`.
+- remote DB activation with `5097` `SpellContent` rows and `151`
+  `RulebookContent` rows.
+- production smoke for status, CORS, route loads, operator DB status, and
+  representative `Fiery Assault` / `Spider Poison` content queries.
 
 The v1.0 release is frozen with:
 
@@ -91,7 +106,7 @@ freeze docs instead of copying them into this roadmap.
 - Rules DB inspection and structured patch notes live in
   `docs/operations/rules-db-notes.md`.
 - Current public release DB/status behavior is frozen in
-  `docs/releases/v1.0/FREEZE.md`.
+  `docs/releases/v1.1/FREEZE.md`.
 - Production still uses an operator-owned content DB upload/activation path;
   DB upload is not part of automatic CD.
 - `GET /api/status/db` remains the remote runtime state check for content DB
@@ -101,48 +116,44 @@ freeze docs instead of copying them into this roadmap.
 
 Recommended next sequence:
 
-1. **v1.1 Production Hardening**
+1. **Open v1.2 release plan**
 
-   Follow `docs/releases/v1.1/production-hardening-plan.md`.
-   Cloudflare review should cover DNSSEC, Full Strict HTTPS, HTTP-to-HTTPS,
-   basic WAF or managed rules, reasonable API rate limiting, security response
-   headers, and Pages/Workers environment-variable and token permissions. AWS
-   review should cover security groups, SSH exposure, deploy user/IAM
-   permissions, key rotation, system update strategy, Nginx reverse-proxy
-   exposure, logs, backups, and rollback paths. HSTS preload, Bot Fight, and
-   aggressive caching need evaluation before enabling. The acceptance artifact
-   should record enabled items, deferred items with reasons, and post-change
-   smoke for frontend, API, CORS, deploy, and private db-status/admin paths.
+   v1.2 should start from the now-stable full corpus and split at least two
+   acceptance tracks:
 
-2. **v1.1 Full Spell Corpus**
+   - publication/rulebook metadata contract: add durable DB/API fields for
+     publication category, family/setting, source kind, display abbreviation,
+     ordering, and review status so frontend grouping no longer depends on
+     heuristic labels
+   - Publications page: add a user-facing publication/rulebook page that
+     replaces Settings as the primary place to browse and manage publication
+     scope; Settings should keep only general app preferences
+   - translation and QA: build bulk Chinese/English translation/proofreading
+     reports, human review queues, terminology checks, and rulebook/publication
+     consistency checks against the full corpus
 
-   Follow `docs/releases/v1.1/full-spell-corpus-plan.md`. Import the remaining
-   source-backed corpus through maintained data-tools workflows, update the
-   content DB artifact/provenance, and verify representative Browse, Search,
-   and Detail behavior plus production DB status after activation.
+2. **Assign v1.2 specialists**
 
-3. **v1.1 Frontend Content Pass**
+   Use separate DB/data and frontend-design branches for the publication
+   metadata contract and Publications page consumer. Use an i18n/data branch
+   for translation QA after the publication vocabulary boundary is stable.
 
-   Follow `docs/releases/v1.1/frontend-content-pass-plan.md`. After the content
-   DB activation path is ready enough to inspect, verify Browse, Search, Detail,
-   About/Status, Settings, language/display behavior, mobile layout, and
-   representative newly imported spells/rulebooks. Keep this pass focused on
-   v1.1 content acceptance, not the v1.3 redesign.
+3. **Keep v1.3 as the broader design release**
 
-4. **v1.1 Release Acceptance And Freeze**
-
-   After production hardening, full corpus, and the frontend content pass are
-   accepted, collect release evidence and create `docs/releases/v1.1/FREEZE.md`.
+   Do not let the v1.2 Publications page become the full sitewide style
+   redesign. Keep complete filter UX, spell-card redesign, and broader visual
+   system work in v1.3 unless a v1.2 acceptance blocker proves otherwise.
 
 ## Official Release Sequence
 
 The expected post-v1.1 release order is:
 
-1. **v1.2 Translation + QA**
+1. **v1.2 Publication Metadata + Translation QA**
 
-   After the full corpus is stable, build the bulk Chinese/English translation
-   and proofreading workflow: QA reports, human review queues, terminology and
-   rulebook consistency checks, and data/i18n/corpus harness coverage.
+   Add durable publication/rulebook metadata to the content/API contract, add a
+   Publications page to replace Settings as the primary rulebook/publication
+   surface, and build the bulk Chinese/English translation QA workflow on top of
+   the stable full corpus.
 
 2. **v1.3 Sitewide UX / Style Redesign**
 

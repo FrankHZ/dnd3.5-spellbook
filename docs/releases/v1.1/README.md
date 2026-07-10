@@ -1,6 +1,6 @@
 # v1.1 Release Plan
 
-Status: planned.
+Status: frozen.
 
 v1.1 is the first post-v1.0 production hardening release. It should keep the
 public site stable while tightening the production security posture and
@@ -128,7 +128,6 @@ v1.1 release acceptance should include:
 
 ## Handoff Rule
 
-v1.1 is active planning. Implementation branches should update their owning
-child plan and affected topic/operations docs. Use `docs/roadmap.md` for
-current work ordering after a pause, and do not edit older MVP history to
-describe v1.1 behavior.
+v1.1 is frozen. Use `FREEZE.md` as the authoritative v1.1 shipped-state
+snapshot, and use `docs/roadmap.md` for next-work ordering after this release.
+Do not edit older MVP history to describe v1.1 behavior.

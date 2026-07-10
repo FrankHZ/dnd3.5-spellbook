@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: in progress.
+Status: frozen.
 
 ## Purpose
 
@@ -178,4 +178,5 @@ Snapshot date: 2026-07-09.
 
 ## Completion Notes
 
-Use this section only after implementation review.
+Production hardening shipped in v1.1. See `FREEZE.md` for final acceptance
+evidence.
