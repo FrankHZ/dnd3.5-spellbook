@@ -246,9 +246,9 @@ export default function RulebookSelector() {
           return (
             <div
               key={categoryGroup.key}
-              className="space-y-4 rounded-md border bg-muted/10 px-4 py-3"
+              className="overflow-hidden rounded-md border bg-card"
             >
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center justify-between gap-4 border-b bg-muted/40 px-4 py-3">
                 <Field orientation="horizontal">
                   <Checkbox
                     id={categoryCheckboxId}
@@ -265,19 +265,18 @@ export default function RulebookSelector() {
                   />
                   <FieldLabel
                     htmlFor={categoryCheckboxId}
-                    className="select-text"
+                    className="select-text text-sm font-semibold text-foreground"
                   >
                     {getRulebookCategoryLabel(categoryGroup.key, t)}
                   </FieldLabel>
                 </Field>
-                <div className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+                <Badge variant="secondary" className="shrink-0">
                   {categoryState.count}/{categoryState.total}{" "}
                   {t("rulebooks.selected")}
-                </div>
+                </Badge>
               </div>
-              <Separator />
 
-              <div className="space-y-4">
+              <div className="space-y-4 px-4 py-3">
                 {categoryGroup.editionGroups.map((g) => {
                   const st = getEditionCheckState(g, selectedRulebookSet);
                   const editionCheckboxId = `settings-edition-${categoryGroup.key}-${g.edition.id}`;
@@ -300,7 +299,7 @@ export default function RulebookSelector() {
                           />
                           <FieldLabel
                             htmlFor={editionCheckboxId}
-                            className="select-text"
+                            className="select-text text-sm font-medium text-foreground/85"
                           >
                             {g.edition.name}
                             <span className="ml-2 text-xs text-muted-foreground">
