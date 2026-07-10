@@ -2,6 +2,7 @@ import type { Edition, Rulebook } from "@dnd/contracts";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useBootstrap } from "~/bootstrap/useBootstrap";
+import { Badge } from "~/components/ui/badge";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Separator } from "~/components/ui/separator";
 import {
@@ -22,34 +23,88 @@ type EditionGroup = {
   rulebooks: Rulebook[];
 };
 
-function groupRulebooksByEdition(
+export type RulebookSettingsCategory =
+  "core" | "supplements" | "magazines" | "other";
+
+export type RulebookCategoryGroup = {
+  key: RulebookSettingsCategory;
+  editionGroups: EditionGroup[];
+};
+
+const RULEBOOK_CATEGORY_ORDER: RulebookSettingsCategory[] = [
+  "core",
+  "supplements",
+  "magazines",
+  "other",
+];
+
+export function isMagazineRulebook(rulebook: Rulebook) {
+  return (
+    /^drg\d+$/i.test(rulebook.abbr) ||
+    /^dragon-magazine-\d+$/i.test(rulebook.slug) ||
+    /^dragon magazine #?\d+/i.test(rulebook.name)
+  );
+}
+
+export function getRulebookSettingsCategory(
+  rulebook: Rulebook,
+): RulebookSettingsCategory {
+  if (rulebook.edition.core) return "core";
+  if (isMagazineRulebook(rulebook)) return "magazines";
+  if (rulebook.edition.slug === "supplementals-35") return "supplements";
+  return "other";
+}
+
+function sortEditionGroups(groups: EditionGroup[]) {
+  return groups.sort(
+    (a, b) =>
+      Number(b.edition.core) - Number(a.edition.core) ||
+      a.edition.system.localeCompare(b.edition.system) ||
+      a.edition.name.localeCompare(b.edition.name) ||
+      a.edition.id - b.edition.id,
+  );
+}
+
+export function groupRulebooksByCategory(
   rulebooks: Rulebook[],
   displayLabel: (rulebook: Rulebook) => string,
-): EditionGroup[] {
-  const map = new Map<number, EditionGroup>();
+): RulebookCategoryGroup[] {
+  const categoryMap = new Map<
+    RulebookSettingsCategory,
+    Map<number, EditionGroup>
+  >();
 
   for (const rb of rulebooks) {
+    const category = getRulebookSettingsCategory(rb);
+    const editionMap =
+      categoryMap.get(category) ?? new Map<number, EditionGroup>();
+    categoryMap.set(category, editionMap);
+
     const ed = rb.edition;
-    const existing = map.get(ed.id);
+    const existing = editionMap.get(ed.id);
     if (existing) {
       existing.rulebooks.push(rb);
     } else {
-      map.set(ed.id, { edition: ed, rulebooks: [rb] });
+      editionMap.set(ed.id, { edition: ed, rulebooks: [rb] });
     }
   }
 
-  // stable order: core editions first, then by system+name
-  const groups = Array.from(map.values());
-  // optionally sort rulebooks within group
-  for (const g of groups) {
-    g.rulebooks.sort(
-      (x, y) =>
-        displayLabel(x).localeCompare(displayLabel(y)) ||
-        x.abbr.localeCompare(y.abbr) ||
-        x.id - y.id,
-    );
-  }
-  return groups;
+  return RULEBOOK_CATEGORY_ORDER.flatMap((category) => {
+    const editionMap = categoryMap.get(category);
+    if (!editionMap) return [];
+
+    const editionGroups = sortEditionGroups(Array.from(editionMap.values()));
+    for (const group of editionGroups) {
+      group.rulebooks.sort(
+        (x, y) =>
+          displayLabel(x).localeCompare(displayLabel(y)) ||
+          x.abbr.localeCompare(y.abbr) ||
+          x.id - y.id,
+      );
+    }
+
+    return [{ key: category, editionGroups }];
+  });
 }
 
 function getEditionCheckState(
@@ -69,15 +124,38 @@ function getEditionCheckState(
   };
 }
 
-function getSettingsRulebookDisplay(
-  rulebook: Rulebook,
-  localizedName: string,
+function getCategoryCheckState(
+  group: RulebookCategoryGroup,
+  selected: Set<number>,
 ) {
+  return getEditionCheckState(
+    { rulebooks: group.editionGroups.flatMap((g) => g.rulebooks) },
+    selected,
+  );
+}
+
+function getSettingsRulebookDisplay(rulebook: Rulebook, localizedName: string) {
   const abbr = rulebook.displayAbbr ?? rulebook.abbr ?? localizedName;
   return {
     abbr,
     name: localizedName,
   };
+}
+
+function getRulebookCategoryLabel(
+  category: RulebookSettingsCategory,
+  t: (key: string, options?: { ns: "settings" }) => string,
+) {
+  switch (category) {
+    case "core":
+      return t("rulebooks.groups.core", { ns: "settings" });
+    case "supplements":
+      return t("rulebooks.groups.supplements", { ns: "settings" });
+    case "magazines":
+      return t("rulebooks.groups.magazines", { ns: "settings" });
+    case "other":
+      return t("rulebooks.groups.other", { ns: "settings" });
+  }
 }
 
 export default function RulebookSelector() {
@@ -97,20 +175,41 @@ export default function RulebookSelector() {
 
   const groups = useMemo(
     () =>
-      groupRulebooksByEdition(
-        rulebooks,
-        (rulebook) => {
-          const localized = getRulebookDisplay(meta, rulebook, lang);
-          return getSettingsRulebookDisplay(rulebook, localized.name).abbr;
-        },
-      ),
+      groupRulebooksByCategory(rulebooks, (rulebook) => {
+        const localized = getRulebookDisplay(meta, rulebook, lang);
+        return getSettingsRulebookDisplay(rulebook, localized.name).abbr;
+      }),
     [lang, meta, rulebooks],
   );
 
-  function toggleEdition(editionId: number, checked: boolean) {
+  function toggleCategory(
+    category: RulebookSettingsCategory,
+    checked: boolean,
+  ) {
     setState((s) => {
       const next = new Set(s.selectedRulebookIds);
-      const group = groups.find((g) => g.edition.id === editionId);
+      const group = groups.find((g) => g.key === category);
+      if (!group) return s;
+
+      for (const rb of group.editionGroups.flatMap((g) => g.rulebooks)) {
+        if (checked) next.add(rb.id);
+        else next.delete(rb.id);
+      }
+
+      return { ...s, selectedRulebookIds: Array.from(next) };
+    });
+  }
+
+  function toggleEdition(
+    category: RulebookSettingsCategory,
+    editionId: number,
+    checked: boolean,
+  ) {
+    setState((s) => {
+      const next = new Set(s.selectedRulebookIds);
+      const group = groups
+        .find((g) => g.key === category)
+        ?.editionGroups.find((g) => g.edition.id === editionId);
       if (!group) return s;
 
       for (const rb of group.rulebooks) {
@@ -134,84 +233,136 @@ export default function RulebookSelector() {
     <Card className="gap-0">
       <CardHeader className="gap-1 py-3">
         <CardTitle>{t("rulebooks.title")}</CardTitle>
-        <CardDescription>
-          {t("rulebooks.default-hint")}
-        </CardDescription>
+        <CardDescription>{t("rulebooks.default-hint")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3 pt-0">
-        {groups.map((g) => {
-          const st = getEditionCheckState(g, selectedRulebookSet);
-          const editionCheckboxId = `settings-edition-${g.edition.id}`;
+        {groups.map((categoryGroup) => {
+          const categoryState = getCategoryCheckState(
+            categoryGroup,
+            selectedRulebookSet,
+          );
+          const categoryCheckboxId = `settings-rulebook-category-${categoryGroup.key}`;
 
           return (
             <div
-              key={g.edition.id}
-              className="space-y-3 rounded-md border bg-muted/10 px-4 py-3"
+              key={categoryGroup.key}
+              className="space-y-4 rounded-md border bg-muted/10 px-4 py-3"
             >
               <div className="flex items-center justify-between gap-4">
                 <Field orientation="horizontal">
                   <Checkbox
-                    id={editionCheckboxId}
-                    checked={st.all ? true : st.some ? "indeterminate" : false}
+                    id={categoryCheckboxId}
+                    checked={
+                      categoryState.all
+                        ? true
+                        : categoryState.some
+                          ? "indeterminate"
+                          : false
+                    }
                     onCheckedChange={(v) =>
-                      toggleEdition(g.edition.id, Boolean(v))
+                      toggleCategory(categoryGroup.key, Boolean(v))
                     }
                   />
                   <FieldLabel
-                    htmlFor={editionCheckboxId}
+                    htmlFor={categoryCheckboxId}
                     className="select-text"
                   >
-                    {g.edition.name}
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      ({g.edition.system}
-                      {g.edition.core ? ", core" : ""})
-                    </span>
+                    {getRulebookCategoryLabel(categoryGroup.key, t)}
                   </FieldLabel>
                 </Field>
                 <div className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
-                  {st.count}/{st.total} {t("rulebooks.selected")}
+                  {categoryState.count}/{categoryState.total}{" "}
+                  {t("rulebooks.selected")}
                 </div>
               </div>
               <Separator />
-              <FieldGroup className="grid gap-2 sm:grid-cols-2">
-                {g.rulebooks.map((rb) => {
-                  const checked = selectedRulebookSet.has(rb.id);
-                  const localized = getRulebookDisplay(meta, rb, lang);
-                  const display = getSettingsRulebookDisplay(
-                    rb,
-                    localized.name,
-                  );
-                  const rulebookCheckboxId = `settings-rulebook-${g.edition.id}-${rb.id}`;
+
+              <div className="space-y-4">
+                {categoryGroup.editionGroups.map((g) => {
+                  const st = getEditionCheckState(g, selectedRulebookSet);
+                  const editionCheckboxId = `settings-edition-${categoryGroup.key}-${g.edition.id}`;
                   return (
-                    <Field
-                      key={rb.id}
-                      orientation="horizontal"
-                      className="min-w-0"
-                    >
-                      <Checkbox
-                        id={rulebookCheckboxId}
-                        checked={checked}
-                        onCheckedChange={(v) =>
-                          toggleRulebook(rb.id, Boolean(v))
-                        }
-                      />
-                      <FieldLabel
-                        htmlFor={rulebookCheckboxId}
-                        className="min-w-0 flex-1 select-text"
-                      >
-                        <span className="shrink-0 text-xs font-medium">
-                          {display.abbr}
-                        </span>
-                        {display.name !== display.abbr && (
-                          <span className="min-w-0 truncate">
-                            {display.name}
-                          </span>
-                        )}
-                      </FieldLabel>
-                    </Field>
+                    <section key={g.edition.id} className="space-y-3">
+                      <div className="flex items-center justify-between gap-4">
+                        <Field orientation="horizontal">
+                          <Checkbox
+                            id={editionCheckboxId}
+                            checked={
+                              st.all ? true : st.some ? "indeterminate" : false
+                            }
+                            onCheckedChange={(v) =>
+                              toggleEdition(
+                                categoryGroup.key,
+                                g.edition.id,
+                                Boolean(v),
+                              )
+                            }
+                          />
+                          <FieldLabel
+                            htmlFor={editionCheckboxId}
+                            className="select-text"
+                          >
+                            {g.edition.name}
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              ({g.edition.system}
+                              {g.edition.core ? `, ${t("rulebooks.core")}` : ""}
+                              )
+                            </span>
+                          </FieldLabel>
+                        </Field>
+                        <Badge variant="outline" className="shrink-0">
+                          {st.count}/{st.total}
+                        </Badge>
+                      </div>
+
+                      <FieldGroup className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                        {g.rulebooks.map((rb) => {
+                          const checked = selectedRulebookSet.has(rb.id);
+                          const localized = getRulebookDisplay(meta, rb, lang);
+                          const display = getSettingsRulebookDisplay(
+                            rb,
+                            localized.name,
+                          );
+                          const rulebookCheckboxId = `settings-rulebook-${categoryGroup.key}-${g.edition.id}-${rb.id}`;
+                          return (
+                            <Field
+                              key={rb.id}
+                              orientation="horizontal"
+                              className="min-w-0"
+                            >
+                              <Checkbox
+                                id={rulebookCheckboxId}
+                                checked={checked}
+                                onCheckedChange={(v) =>
+                                  toggleRulebook(rb.id, Boolean(v))
+                                }
+                              />
+                              <FieldLabel
+                                htmlFor={rulebookCheckboxId}
+                                className="min-w-0 flex-1 select-text"
+                              >
+                                <span className="shrink-0 text-xs font-medium">
+                                  {display.abbr}
+                                </span>
+                                {display.name !== display.abbr && (
+                                  <span className="min-w-0 truncate">
+                                    {display.name}
+                                  </span>
+                                )}
+                              </FieldLabel>
+                            </Field>
+                          );
+                        })}
+                      </FieldGroup>
+
+                      {g !==
+                        categoryGroup.editionGroups[
+                          categoryGroup.editionGroups.length - 1
+                        ] && <Separator className="bg-border/60" />}
+                    </section>
                   );
                 })}
-              </FieldGroup>
+              </div>
             </div>
           );
         })}

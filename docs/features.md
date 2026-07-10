@@ -323,12 +323,16 @@ rulebook scope, and class-related browsing defaults.
 Current behavior:
 
 - settings are browser-local
+- the Settings page separates general preferences and rulebook scope into
+  hash-addressable tabs
 - Display settings control compact versus comfortable spell-list density
 - Browse and Search sidebars expose the browser-local summary/full-detail spell
   card toggle for context-specific scanning
 - Chinese Display settings control English comparison text for spell names,
   class/domain labels, other filter labels, and rulebook abbreviations
 - selected rulebooks affect browse/search behavior
+- the rulebook selector groups visible rulebooks as core, supplements,
+  magazines, and other sources for scanning after the expanded v1.1 corpus
 - language selection affects both UI text and API query parameters
 
 Key code:
