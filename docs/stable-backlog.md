@@ -29,7 +29,7 @@ as loose backlog items unless their scope changes again:
 - follow-up candidate and roadmap promotion sweep
 - CF/AWS security acceptance pass
 - v1.1 production hardening and full spell corpus
-- v1.2 translation and QA
+- v1.2 mechanics localization and Publications page
 - v1.3 sitewide UX / style redesign
 
 ## Current Deferred Areas
@@ -65,8 +65,10 @@ as loose backlog items unless their scope changes again:
 
 - content coverage, provenance, and review-status reporting
 - search/index artifact generation for offline or static deployments
-- expansion work after the v1.1 full-corpus import and v1.2 translation/QA
-  tracks are accepted
+- full spell-body/name/short-description translation and proofreading QA after
+  the v1.2 mechanics translation workflow proves the review model
+- expansion work after the v1.1 full-corpus import and v1.2 mechanics
+  localization tracks are accepted
 
 ### Documentation
 
