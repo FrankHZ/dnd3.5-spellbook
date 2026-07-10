@@ -16,6 +16,9 @@ source-data operations workspace.
 - `db/`: data-tool database clients.
 - `rules/`: rules DB inspection, SQL patching, structured spell patches,
   manifests, and `spells-full` patch generation.
+- `rules-content/`: generated content rows derived from the rules DB, including
+  publication metadata overlays for rulebook consumers.
+- `rulebooks/`: rulebook label audits and publication metadata helpers.
 - `short-desc/`: English/Chinese short-description matching, QA,
   normalization, import, coverage, and reuse workflows.
 - `zh-parser/`: CHM preprocessing, parsing, QA, matching, and summary

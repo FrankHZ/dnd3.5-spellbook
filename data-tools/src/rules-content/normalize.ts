@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 
-export const RULES_CONTENT_GENERATOR_VERSION = "rules-content-normalizer-v4";
+export const RULES_CONTENT_GENERATOR_VERSION = "rules-content-normalizer-v5";
 
 export type LegacyRulebookRow = {
   id: number;
@@ -9,8 +9,15 @@ export type LegacyRulebookRow = {
   abbr: string;
   slug: string;
   description?: string | null;
+  editionSlug?: string | null;
+  editionCore?: boolean | number | null;
   displayName?: string | null;
   displayAbbr?: string | null;
+  publicationCategory: string;
+  publicationFamily: string;
+  publicationSourceKind: string;
+  publicationDisplayOrder: number;
+  publicationReviewStatus: string;
 };
 
 export type LegacySpellRow = {
@@ -104,6 +111,11 @@ export type NormalizedRulebookRow = {
   slug: string;
   displayName: string | null;
   displayAbbr: string | null;
+  publicationCategory: string;
+  publicationFamily: string;
+  publicationSourceKind: string;
+  publicationDisplayOrder: number;
+  publicationReviewStatus: string;
   rawJson: string;
 };
 
@@ -321,6 +333,11 @@ export function normalizeRulesContent(
     slug: row.slug,
     displayName: clean(row.displayName),
     displayAbbr: clean(row.displayAbbr),
+    publicationCategory: row.publicationCategory,
+    publicationFamily: row.publicationFamily,
+    publicationSourceKind: row.publicationSourceKind,
+    publicationDisplayOrder: row.publicationDisplayOrder,
+    publicationReviewStatus: row.publicationReviewStatus,
     rawJson: stableJson(row),
   }));
 

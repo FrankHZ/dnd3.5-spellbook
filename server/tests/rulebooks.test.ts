@@ -22,6 +22,11 @@ describe("GET /api/rulebooks", () => {
       abbr: "SC",
       displayAbbr: "SpC",
       name: "Spell Compendium",
+      publicationCategory: "supplement",
+      publicationFamily: "supplemental",
+      publicationSourceKind: "rulebook",
+      publicationDisplayOrder: 20006,
+      publicationReviewStatus: "accepted",
     });
   });
 });

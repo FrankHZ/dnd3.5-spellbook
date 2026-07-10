@@ -7,7 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: in progress. Slice 1 data/API metadata contract is implemented for
+review; the Publications page and Settings boundary slices remain planned.
 
 ## Purpose
 
@@ -84,6 +85,12 @@ surface and a small, explicit publication metadata contract.
 - Expected files: DB/content metadata handling, contracts, server tests, and
   docs.
 - Validation: server/API tests and data-tool checks relevant to metadata.
+- Implementation notes: `RulebookContent` now carries
+  `publicationCategory`, `publicationFamily`, `publicationSourceKind`,
+  `publicationDisplayOrder`, and `publicationReviewStatus`. Data-tools derives
+  defaults from rules DB rulebook/edition facts and accepts optional overrides
+  from maintained publication JSONL. `/api/rulebooks` exposes the metadata so
+  frontend consumers do not need publication grouping heuristics.
 
 ### Slice 2: Publications Page
 
@@ -123,8 +130,8 @@ surface and a small, explicit publication metadata contract.
 
 ## Open Questions
 
-- Which metadata fields are required for v1.2 acceptance versus broader future
-  publication schema cleanup?
+- Which metadata overrides, if any, are needed after the frontend Publications
+  page validates the first grouping model against real user workflows?
 
 ## Follow-Up Candidates
 

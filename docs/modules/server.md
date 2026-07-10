@@ -71,6 +71,14 @@ The current runtime reads three SQLite connection roles:
 The first v3.5 split creates the physical schema/client boundary. Do not add
 server-owned user state to the content DB.
 
+Rulebook publication metadata is content-overlay data. The rules DB remains the
+source for base rulebook identity and edition membership, while
+`RulebookContent` supplies display labels plus `publicationCategory`,
+`publicationFamily`, `publicationSourceKind`, `publicationDisplayOrder`, and
+`publicationReviewStatus` for `/api/rulebooks`. Do not make frontend consumers
+regroup rulebooks from raw abbreviations or edition labels when these fields are
+present.
+
 `GET /api/status/db` is the operator-facing runtime check for this boundary. It
 reports sanitized file role state, the active spell read source, the latest
 `RulesContentBuild`, and normalized content table counts without exposing raw

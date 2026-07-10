@@ -9,6 +9,14 @@ import {
   repoRoot,
   resolveServerRelativePath,
 } from "../shared/env";
+import {
+  isPublicationCategory,
+  isPublicationReviewStatus,
+  isPublicationSourceKind,
+  type PublicationCategory,
+  type PublicationReviewStatus,
+  type PublicationSourceKind,
+} from "./publication-metadata";
 
 export type RulebookLabelAuditStatus =
   | "keep"
@@ -85,7 +93,11 @@ export type RulebookPublicationJsonlRow = {
   displayAbbr: string;
   englishName: string;
   zhName: string;
-  reviewStatus: "accepted";
+  category?: PublicationCategory | undefined;
+  family?: string | undefined;
+  sourceKind?: PublicationSourceKind | undefined;
+  displayOrder?: number | undefined;
+  reviewStatus: PublicationReviewStatus;
 };
 
 function usage(): never {
@@ -437,7 +449,20 @@ export function readRulebookPublicationJsonlText(
     const displayAbbr = asNonEmptyString(parsed.displayAbbr);
     const englishName = asNonEmptyString(parsed.englishName);
     const zhName = asNonEmptyString(parsed.zhName);
+    const category = asOptionalString(parsed.category);
+    const family = asOptionalString(parsed.family);
+    const sourceKind = asOptionalString(parsed.sourceKind);
+    const displayOrder = asOptionalInteger(parsed.displayOrder);
     const reviewStatus = parsed.reviewStatus;
+    const validCategory =
+      category && isPublicationCategory(category) ? category : undefined;
+    const validSourceKind =
+      sourceKind && isPublicationSourceKind(sourceKind) ? sourceKind : undefined;
+    const validReviewStatus =
+      typeof reviewStatus === "string" &&
+      isPublicationReviewStatus(reviewStatus)
+        ? reviewStatus
+        : undefined;
 
     if (schemaVersion !== 1) {
       errors.push(`${source}:${lineNumber}: schemaVersion must be 1`);
@@ -450,8 +475,26 @@ export function readRulebookPublicationJsonlText(
       errors.push(`${source}:${lineNumber}: englishName is required`);
     }
     if (!zhName) errors.push(`${source}:${lineNumber}: zhName is required`);
-    if (reviewStatus !== "accepted") {
-      errors.push(`${source}:${lineNumber}: reviewStatus must be accepted`);
+    if (category && !isPublicationCategory(category)) {
+      errors.push(`${source}:${lineNumber}: category is invalid`);
+    }
+    if (sourceKind && !isPublicationSourceKind(sourceKind)) {
+      errors.push(`${source}:${lineNumber}: sourceKind is invalid`);
+    }
+    if (
+      parsed.displayOrder !== undefined &&
+      parsed.displayOrder !== null &&
+      displayOrder === null
+    ) {
+      errors.push(
+        `${source}:${lineNumber}: displayOrder must be a non-negative integer`,
+      );
+    }
+    if (
+      typeof reviewStatus !== "string" ||
+      !isPublicationReviewStatus(reviewStatus)
+    ) {
+      errors.push(`${source}:${lineNumber}: reviewStatus is invalid`);
     }
 
     if (
@@ -460,7 +503,12 @@ export function readRulebookPublicationJsonlText(
       !displayAbbr ||
       !englishName ||
       !zhName ||
-      reviewStatus !== "accepted"
+      (category && !validCategory) ||
+      (sourceKind && !validSourceKind) ||
+      (parsed.displayOrder !== undefined &&
+        parsed.displayOrder !== null &&
+        displayOrder === null) ||
+      !validReviewStatus
     ) {
       return;
     }
@@ -477,7 +525,11 @@ export function readRulebookPublicationJsonlText(
       displayAbbr,
       englishName,
       zhName,
-      reviewStatus: "accepted",
+      ...(validCategory ? { category: validCategory } : {}),
+      ...(family ? { family } : {}),
+      ...(validSourceKind ? { sourceKind: validSourceKind } : {}),
+      ...(displayOrder !== null ? { displayOrder } : {}),
+      reviewStatus: validReviewStatus,
     });
   });
 
@@ -492,6 +544,18 @@ function asNonEmptyString(value: unknown) {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
+}
+
+function asOptionalString(value: unknown): string | null {
+  if (value === undefined || value === null) return null;
+  return asNonEmptyString(value);
+}
+
+function asOptionalInteger(value: unknown): number | null {
+  if (value === undefined || value === null) return null;
+  return typeof value === "number" && Number.isInteger(value) && value >= 0
+    ? value
+    : null;
 }
 
 export function normalizePublicationName(value: string) {

@@ -84,10 +84,16 @@ npm run -w data-tools rules:content:review
 `rules:content:audit` and `rules:content:generate` open the configured rules DB
 read-only. The generator writes
 `data-tools/out/rules-content/rules-content.generated.json` plus an audit summary
-of review-worthy legacy strings. `rules:content:import` reads that generated file
-and replaces only the rules-content generated tables in `CONTENT_DATABASE_URL`;
-use `--dry-run` after applying content migrations to validate row counts without
-mutating SQLite.
+of review-worthy legacy strings. Rulebook rows also receive the accepted
+publication metadata used by API consumers: `publicationCategory`,
+`publicationFamily`, `publicationSourceKind`, `publicationDisplayOrder`, and
+`publicationReviewStatus`. Those values are derived from rules DB edition/source
+facts, with optional overrides from
+`data/rulebook-labels/chm-publications.jsonl`; frontend code should consume the
+generated metadata instead of deriving publication groups from labels.
+`rules:content:import` reads that generated file and replaces only the
+rules-content generated tables in `CONTENT_DATABASE_URL`; use `--dry-run` after
+applying content migrations to validate row counts without mutating SQLite.
 
 `rules:content:review` opens the configured content DB read-only and inventories
 the normalized taxonomy, component, and mechanic facet tables for filter-contract

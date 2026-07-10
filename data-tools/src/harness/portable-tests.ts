@@ -39,6 +39,7 @@ import {
   auditRulebookLabels,
   readRulebookPublicationJsonlText,
 } from "../rulebooks/labels-audit";
+import { deriveRulebookPublicationMetadata } from "../rulebooks/publication-metadata";
 
 type TestCase = {
   name: string;
@@ -596,6 +597,11 @@ const tests: TestCase[] = [
             abbr: "PHB",
             slug: "players-handbook",
             displayAbbr: "PH",
+            publicationCategory: "core",
+            publicationFamily: "core",
+            publicationSourceKind: "rulebook",
+            publicationDisplayOrder: 10001,
+            publicationReviewStatus: "accepted",
           },
         ],
         spells: [
@@ -702,6 +708,8 @@ const tests: TestCase[] = [
       const normalized = normalizeRulesContent(input, "2026-07-02T00:00:00.000Z");
       assert.equal(normalized.counts.spells, 2);
       assert.equal(normalized.rulebooks[0]?.displayAbbr, "PH");
+      assert.equal(normalized.rulebooks[0]?.publicationCategory, "core");
+      assert.equal(normalized.rulebooks[0]?.publicationDisplayOrder, 10001);
       assert.equal(normalized.spells[0]?.descriptionText, "Fixture rules text.");
       assert.equal(normalized.spells[0]?.verified, true);
       assert.equal(normalized.taxonomyFacets.length, 7);
@@ -776,6 +784,58 @@ const tests: TestCase[] = [
       const audit = auditNormalizedContent(normalized);
       assert.equal(audit.reviewCounts.components, 1);
       assert.equal(audit.issueCounts["component.extra.review"], 1);
+    },
+  },
+  {
+    name: "rulebook publication metadata classifies common source families",
+    run: () => {
+      assert.deepEqual(
+        deriveRulebookPublicationMetadata({
+          id: 4,
+          name: "Player's Handbook",
+          abbr: "PH",
+          slug: "players-handbook",
+          editionSlug: "core-35",
+          editionCore: true,
+        }),
+        {
+          category: "core",
+          family: "core",
+          sourceKind: "rulebook",
+          displayOrder: 10004,
+          reviewStatus: "accepted",
+        },
+      );
+      assert.deepEqual(
+        deriveRulebookPublicationMetadata({
+          id: 82,
+          name: "Dragon Magazine 344",
+          abbr: "Dr344",
+          slug: "dragon-magazine-344",
+          editionSlug: "dragon-magazine-35",
+          editionCore: false,
+        }),
+        {
+          category: "magazine",
+          family: "magazine",
+          sourceKind: "magazine",
+          displayOrder: 40082,
+          reviewStatus: "accepted",
+        },
+      );
+      assert.equal(
+        deriveRulebookPublicationMetadata(
+          {
+            id: 32,
+            name: "Magic of Faerun",
+            abbr: "Mag",
+            slug: "magic-of-faerun",
+            editionSlug: "forgotten-realms-35",
+          },
+          { family: "forgotten-realms", displayOrder: 30010 },
+        ).displayOrder,
+        30010,
+      );
     },
   },
   {
@@ -858,12 +918,18 @@ const tests: TestCase[] = [
           displayAbbr: "SpC",
           englishName: "Spell Compendium",
           zhName: "万法大全",
+          category: "supplement",
+          family: "supplemental",
+          sourceKind: "rulebook",
+          displayOrder: 20006,
           reviewStatus: "accepted",
         })}\n`,
         "fixture.jsonl",
       );
       assert.deepEqual(valid.errors, []);
       assert.equal(valid.rows[0]?.displayAbbr, "SpC");
+      assert.equal(valid.rows[0]?.category, "supplement");
+      assert.equal(valid.rows[0]?.displayOrder, 20006);
 
       const duplicate = readRulebookPublicationJsonlText(
         `${JSON.stringify(valid.rows[0])}\n${JSON.stringify(valid.rows[0])}\n`,
@@ -880,7 +946,7 @@ const tests: TestCase[] = [
           schemaVersion: 1,
           source: "chm-publications",
           englishName: "Spell Compendium",
-          reviewStatus: "review",
+          reviewStatus: "todo",
         }),
         "fixture.jsonl",
       );
@@ -891,7 +957,7 @@ const tests: TestCase[] = [
       );
       assert.ok(
         invalid.errors.some((error) =>
-          error.includes("reviewStatus must be accepted"),
+          error.includes("reviewStatus is invalid"),
         ),
       );
     },

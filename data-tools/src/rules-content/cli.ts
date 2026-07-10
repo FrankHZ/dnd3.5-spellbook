@@ -23,7 +23,9 @@ import {
 import {
   normalizePublicationName,
   readRulebookPublicationJsonlText,
+  type RulebookPublicationJsonlRow,
 } from "../rulebooks/labels-audit";
+import { deriveRulebookPublicationMetadata } from "../rulebooks/publication-metadata";
 
 const OUT_ROOT = path.join(repoRoot(), "data-tools", "out", "rules-content");
 const DEFAULT_GENERATED_PATH = path.join(OUT_ROOT, "rules-content.generated.json");
@@ -91,6 +93,15 @@ type ReviewReadiness = {
   status: "ready" | "needs_normalization" | "defer" | "detail_only";
   reason: string;
   evidence: Record<string, unknown>;
+};
+
+type RulebookPublicationMetadataRow = {
+  displayAbbr: string;
+  category: RulebookPublicationJsonlRow["category"];
+  family: RulebookPublicationJsonlRow["family"];
+  sourceKind: RulebookPublicationJsonlRow["sourceKind"];
+  displayOrder: RulebookPublicationJsonlRow["displayOrder"];
+  reviewStatus: RulebookPublicationJsonlRow["reviewStatus"];
 };
 
 const TOME_OF_BATTLE_DISCIPLINES = [
@@ -209,24 +220,44 @@ function readLegacyInput(db: Database.Database, limit: number | null) {
   const limitClause = limit ? "LIMIT ?" : "";
   const limitArgs = limit ? [limit] : [];
 
-  const rulebookDisplayLabels = readRulebookDisplayLabelsByName();
+  const rulebookPublicationMetadata = readRulebookPublicationRowsByName();
   const rulebooks = (
     db
     .prepare(
       `
-      SELECT id, dnd_edition_id AS dndEditionId, name, abbr, slug, description
-      FROM dnd_rulebook
-      ORDER BY id
+      SELECT rb.id,
+             rb.dnd_edition_id AS dndEditionId,
+             rb.name,
+             rb.abbr,
+             rb.slug,
+             rb.description,
+             e.slug AS editionSlug,
+             e.core AS editionCore
+      FROM dnd_rulebook rb
+      JOIN dnd_edition e ON e.id = rb.dnd_edition_id
+      ORDER BY rb.id
     `,
     )
       .all() as LegacyRulebookRow[]
   ).map((row) => {
-    const display = rulebookDisplayLabels.get(
+    const publicationRow = rulebookPublicationMetadata.get(
       normalizePublicationName(row.name),
     );
+    const publicationMetadata = deriveRulebookPublicationMetadata(row, {
+      category: publicationRow?.category,
+      family: publicationRow?.family,
+      sourceKind: publicationRow?.sourceKind,
+      displayOrder: publicationRow?.displayOrder,
+      reviewStatus: publicationRow?.reviewStatus,
+    });
     return {
       ...row,
-      displayAbbr: display?.displayAbbr ?? null,
+      displayAbbr: publicationRow?.displayAbbr ?? null,
+      publicationCategory: publicationMetadata.category,
+      publicationFamily: publicationMetadata.family,
+      publicationSourceKind: publicationMetadata.sourceKind,
+      publicationDisplayOrder: publicationMetadata.displayOrder,
+      publicationReviewStatus: publicationMetadata.reviewStatus,
     };
   });
 
@@ -366,8 +397,8 @@ function readLegacyInput(db: Database.Database, limit: number | null) {
   } satisfies LegacyRulesContentInput;
 }
 
-function readRulebookDisplayLabelsByName() {
-  const byName = new Map<string, { displayAbbr: string }>();
+function readRulebookPublicationRowsByName() {
+  const byName = new Map<string, RulebookPublicationMetadataRow>();
   if (!fs.existsSync(RULEBOOK_PUBLICATIONS_JSONL_PATH)) return byName;
 
   const sourcePath = path.relative(
@@ -387,6 +418,11 @@ function readRulebookDisplayLabelsByName() {
   for (const row of parsed.rows) {
     byName.set(normalizePublicationName(row.englishName), {
       displayAbbr: row.displayAbbr,
+      category: row.category,
+      family: row.family,
+      sourceKind: row.sourceKind,
+      displayOrder: row.displayOrder,
+      reviewStatus: row.reviewStatus,
     });
   }
   return byName;
