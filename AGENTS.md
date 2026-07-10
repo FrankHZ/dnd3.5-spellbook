@@ -229,6 +229,9 @@ in the nested data repo. Do not treat rules-clean `year` / `published` fields or
 frontend grouping heuristics as the publication metadata source of truth.
 Generated content may keep review status for grouping QA, but only rows marked
 `accepted` should publish year/date/URL/image details to API-facing content.
+When enriching publication metadata from the web, record ISBNs and source URLs
+in data repo fields such as `isbn10`, `isbn13`, and `metadataSources`; do not
+overwrite the canonical seed file without an intentional `--force` rebuild.
 
 For any large-scale source reading or broad content QA over local data sources,
 spawn a subagent to inspect the corpus and return summarized findings instead

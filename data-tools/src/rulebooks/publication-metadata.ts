@@ -65,6 +65,9 @@ export type RulebookPublicationMetadataJsonlRow = {
   published?: string | null | undefined;
   officialUrl?: string | null | undefined;
   image?: string | null | undefined;
+  isbn10?: string | null | undefined;
+  isbn13?: string | null | undefined;
+  metadataSources?: string[] | undefined;
   reviewStatus: PublicationReviewStatus;
 };
 
@@ -154,6 +157,9 @@ export function readRulebookPublicationMetadataJsonlText(
     const published = asNullableDate(parsed.published);
     const officialUrl = asOptionalString(parsed.officialUrl);
     const image = asOptionalString(parsed.image);
+    const isbn10 = asNullableIsbn10(parsed.isbn10);
+    const isbn13 = asNullableIsbn13(parsed.isbn13);
+    const metadataSources = asOptionalUrlList(parsed.metadataSources);
     const reviewStatus = asOptionalString(parsed.reviewStatus);
     const validCategory =
       category && isPublicationCategory(category) ? category : undefined;
@@ -189,6 +195,17 @@ export function readRulebookPublicationMetadataJsonlText(
     if (parsed.published !== undefined && published === undefined) {
       errors.push(`${source}:${lineNumber}: published must be YYYY-MM-DD or null`);
     }
+    if (parsed.isbn10 !== undefined && isbn10 === undefined) {
+      errors.push(`${source}:${lineNumber}: isbn10 must be ISBN-10 or null`);
+    }
+    if (parsed.isbn13 !== undefined && isbn13 === undefined) {
+      errors.push(`${source}:${lineNumber}: isbn13 must be ISBN-13 or null`);
+    }
+    if (parsed.metadataSources !== undefined && metadataSources === undefined) {
+      errors.push(
+        `${source}:${lineNumber}: metadataSources must be an array of HTTP URLs`,
+      );
+    }
     if (!validReviewStatus) {
       errors.push(`${source}:${lineNumber}: reviewStatus is invalid`);
     }
@@ -205,6 +222,9 @@ export function readRulebookPublicationMetadataJsonlText(
       displayOrder === null ||
       (parsed.year !== undefined && year === undefined) ||
       (parsed.published !== undefined && published === undefined) ||
+      (parsed.isbn10 !== undefined && isbn10 === undefined) ||
+      (parsed.isbn13 !== undefined && isbn13 === undefined) ||
+      (parsed.metadataSources !== undefined && metadataSources === undefined) ||
       !validReviewStatus
     ) {
       return;
@@ -234,6 +254,9 @@ export function readRulebookPublicationMetadataJsonlText(
       published,
       officialUrl,
       image,
+      isbn10,
+      isbn13,
+      ...(metadataSources ? { metadataSources } : {}),
       reviewStatus: validReviewStatus,
     });
   });
@@ -375,4 +398,32 @@ function asNullableDate(value: unknown) {
   const text = asNonEmptyString(value);
   if (!text) return null;
   return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : undefined;
+}
+
+function asNullableIsbn10(value: unknown) {
+  if (value === undefined) return null;
+  if (value === null) return null;
+  const text = asNonEmptyString(value)?.replace(/-/g, "").toUpperCase();
+  if (!text) return null;
+  return /^\d{9}[\dX]$/.test(text) ? text : undefined;
+}
+
+function asNullableIsbn13(value: unknown) {
+  if (value === undefined) return null;
+  if (value === null) return null;
+  const text = asNonEmptyString(value)?.replace(/-/g, "");
+  if (!text) return null;
+  return /^\d{13}$/.test(text) ? text : undefined;
+}
+
+function asOptionalUrlList(value: unknown) {
+  if (value === undefined) return null;
+  if (!Array.isArray(value)) return undefined;
+  const urls: string[] = [];
+  for (const item of value) {
+    const url = asNonEmptyString(item);
+    if (!url || !/^https?:\/\/\S+$/i.test(url)) return undefined;
+    urls.push(url);
+  }
+  return urls;
 }

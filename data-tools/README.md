@@ -493,7 +493,12 @@ writes one row per rules-clean rulebook keyed by `legacyRulebookId`. The seed is
 a review starting point: publication dates, URLs, and cover-image paths inherit
 from rules-clean where available and remain `review` until accepted in the data
 repo. Review rows preserve those values for QA, but generated content only
-exposes the detail fields after the row is marked `accepted`.
+exposes the detail fields after the row is marked `accepted`. The seed command
+refuses to overwrite an existing canonical JSONL unless `--force` is passed, so
+manual ISBN and source URL enrichment is not accidentally lost. Use optional
+`isbn10`, `isbn13`, and `metadataSources` fields in the data repo to record
+publication-date provenance; those fields are validation/provenance data and are
+not currently API-facing.
 
 `summaries:import` is the content DB mutation boundary for spell summaries. It
 reads only `data/short-desc-normalized/summaries.generated.jsonl`, validates the

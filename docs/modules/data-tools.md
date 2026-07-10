@@ -40,7 +40,9 @@ The canonical local publication metadata source is
 the seed inherits publication dates from rules-clean where available and should
 not be treated as externally verified until row `reviewStatus` is accepted.
 Generated content only exposes publication year/date/URL/image details from
-rows marked `accepted`.
+rows marked `accepted`. Use `isbn10`, `isbn13`, and `metadataSources` in the
+data repo for provenance when publication details are researched from external
+ISBN-backed sources.
 
 Parent-repo code should include schemas, validators, fixtures, command
 wrappers, and docs. Do not commit ignored raw CHM data, local SQLite DBs, or

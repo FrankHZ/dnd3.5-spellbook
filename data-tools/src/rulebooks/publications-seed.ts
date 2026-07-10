@@ -43,6 +43,7 @@ function usage(): never {
   console.error(`Usage:
   npm run -w data-tools rulebooks:publications:seed
   npm run -w data-tools rulebooks:publications:seed -- --output ../data/rulebook-publications/publications.jsonl
+  npm run -w data-tools rulebooks:publications:seed -- --force
 
 Seeds the maintained publication metadata JSONL from the configured rules DB and
 the local CHM publication-label JSONL. Review and edit the generated data repo
@@ -53,6 +54,7 @@ file before treating it as authoritative.
 
 function parseArgs(argv: string[]) {
   let output = DEFAULT_OUTPUT_PATH;
+  let force = false;
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -63,10 +65,14 @@ function parseArgs(argv: string[]) {
       index += 1;
       continue;
     }
+    if (arg === "--force") {
+      force = true;
+      continue;
+    }
     usage();
   }
 
-  return { output };
+  return { output, force };
 }
 
 function rulesDbPath() {
@@ -177,7 +183,13 @@ function writeJsonl(filePath: string, rows: unknown[]) {
 }
 
 function main() {
-  const { output } = parseArgs(process.argv.slice(2));
+  const { output, force } = parseArgs(process.argv.slice(2));
+  if (!force && fs.existsSync(output)) {
+    throw new Error(
+      `Refusing to overwrite existing publication metadata JSONL: ${output}\n` +
+        "Use --force to rebuild the seed file.",
+    );
+  }
   const db = new Database(rulesDbPath(), { readonly: true, fileMustExist: true });
   try {
     const rows = seedPublicationRows(readRulebookRows(db));

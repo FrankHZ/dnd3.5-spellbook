@@ -853,27 +853,34 @@ const tests: TestCase[] = [
       const valid = readRulebookPublicationMetadataJsonlText(
         `${JSON.stringify({
           schemaVersion: 1,
-          legacyRulebookId: 6,
+          legacyRulebookId: 9,
           source: "rules-clean+chm-publications",
-          name: "Spell Compendium",
-          abbr: "SC",
-          displayAbbr: "SpC",
-          zhName: "万法大全",
-          category: "supplement",
-          family: "supplemental",
+          name: "Magic of Eberron",
+          abbr: "MoE",
+          displayAbbr: "MoE",
+          zhName: "艾伯伦魔法",
+          category: "setting",
+          family: "eberron",
           sourceKind: "rulebook",
-          displayOrder: 20006,
+          displayOrder: 30009,
           year: "2005",
-          published: "2005-12-01",
+          published: "2005-10-20",
           officialUrl: null,
           image: null,
+          isbn10: "0786936967",
+          isbn13: "9780786936960",
+          metadataSources: ["https://openlibrary.org/books/OL8144458M"],
           reviewStatus: "accepted",
         })}\n`,
         "fixture.jsonl",
       );
       assert.deepEqual(valid.errors, []);
-      assert.equal(valid.rows[0]?.legacyRulebookId, 6);
-      assert.equal(valid.rows[0]?.published, "2005-12-01");
+      assert.equal(valid.rows[0]?.legacyRulebookId, 9);
+      assert.equal(valid.rows[0]?.published, "2005-10-20");
+      assert.equal(valid.rows[0]?.isbn13, "9780786936960");
+      assert.deepEqual(valid.rows[0]?.metadataSources, [
+        "https://openlibrary.org/books/OL8144458M",
+      ]);
 
       const invalid = readRulebookPublicationMetadataJsonlText(
         JSON.stringify({
@@ -888,6 +895,9 @@ const tests: TestCase[] = [
           displayOrder: -1,
           year: "05",
           published: "2005-12",
+          isbn10: "bad",
+          isbn13: "978078693702X",
+          metadataSources: ["openlibrary.org/books/OL8144458M"],
           reviewStatus: "accepted",
         }),
         "fixture.jsonl",
@@ -903,6 +913,17 @@ const tests: TestCase[] = [
       assert.ok(
         invalid.errors.some((error) =>
           error.includes("published must be YYYY-MM-DD"),
+        ),
+      );
+      assert.ok(
+        invalid.errors.some((error) => error.includes("isbn10 must be ISBN-10")),
+      );
+      assert.ok(
+        invalid.errors.some((error) => error.includes("isbn13 must be ISBN-13")),
+      );
+      assert.ok(
+        invalid.errors.some((error) =>
+          error.includes("metadataSources must be an array of HTTP URLs"),
         ),
       );
     },

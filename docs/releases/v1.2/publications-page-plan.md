@@ -96,6 +96,11 @@ surface and a small, explicit publication metadata contract.
   generated content only exposes those detail fields after a row is marked
   `accepted`. `/api/rulebooks` exposes the metadata so frontend consumers do not
   need publication grouping heuristics.
+- Enrichment notes: 37 non-magazine rulebook rows now have ISBN-backed
+  Open Library edition provenance in local data fields (`isbn10`, `isbn13`,
+  `metadataSources`) and are accepted for publication year/date output. The
+  remaining exact-date gaps are `Web` plus Dragon Magazine issue rows, which
+  should use issue-specific sources instead of the book ISBN workflow.
 
 ### Slice 2: Publications Page
 
