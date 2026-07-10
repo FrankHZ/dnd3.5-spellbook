@@ -106,7 +106,7 @@ freeze docs instead of copying them into this roadmap.
 - Rules DB inspection and structured patch notes live in
   `docs/operations/rules-db-notes.md`.
 - Current public release DB/status behavior is frozen in
-  `docs/releases/v1.0/FREEZE.md`.
+  `docs/releases/v1.1/FREEZE.md`.
 - Production still uses an operator-owned content DB upload/activation path;
   DB upload is not part of automatic CD.
 - `GET /api/status/db` remains the remote runtime state check for content DB
