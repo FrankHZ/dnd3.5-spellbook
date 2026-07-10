@@ -18,7 +18,14 @@
   "display.zh.title": "中文显示",
   "page.description": "设置目前只存在本地！",
   "page.title": "设置",
+  "rulebooks.core": "核心",
   "rulebooks.default-hint": "什么都不选：3.5核心",
-  "rulebooks.selected": "已选择",
-  "rulebooks.title": "规则书"
+  "rulebooks.groups.core": "核心",
+  "rulebooks.groups.magazines": "杂志",
+  "rulebooks.groups.other": "其他",
+  "rulebooks.groups.supplements": "扩展",
+  "rulebooks.title": "规则书",
+  "tabs.general": "通用",
+  "tabs.label": "设置分区",
+  "tabs.rulebooks": "规则书"
 }

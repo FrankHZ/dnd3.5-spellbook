@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: in progress.
 
 ## Purpose
 
@@ -80,6 +80,8 @@ it should stay acceptance-sized rather than becoming the v1.3 redesign.
 - v1.0 established Cloudflare Workers frontend delivery and About/Status
   metadata.
 - v1.1 full-corpus work increases the visible spell and rulebook corpus.
+- The expanded v1.1 rulebook corpus makes the Settings page too long when
+  rulebook scope stays inline with general display/class preferences.
 - v1.3 remains the planned sitewide UX/style redesign release.
 
 ## Plan
@@ -98,6 +100,11 @@ it should stay acceptance-sized rather than becoming the v1.3 redesign.
   affected frontend docs only when behavior changes.
 - Validation: `npm run test:web`, `npm run typecheck:web`,
   `npm run -w web build`, plus `npm run i18n:check` when copy changes.
+- Current branch focus: split Settings into hash-addressable General and
+  Rulebooks tabs, link Browse/Search rulebook scope summaries directly to the
+  Rulebooks tab, and group rulebooks as Core, Supplements, Magazines, and Other
+  in the selector. The grouping is frontend display-only because the current
+  rulebook API does not expose a formal category field.
 
 ### Slice 3: Production Frontend Smoke
 

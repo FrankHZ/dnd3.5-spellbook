@@ -67,10 +67,12 @@ Purpose:
 ### Settings
 
 - page entry: `web/app/features/settings/SettingsPage.tsx`
+- rulebook selector: `web/app/features/settings/RulebookSelector.tsx`
 
 Purpose:
 
-- user-facing app settings such as language and content preferences
+- user-facing app settings such as language and content preferences, separated
+  into hash-addressable general and rulebook sections
 
 ### About / Status
 

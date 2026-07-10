@@ -2,7 +2,7 @@ export type SourceCredit = {
   title: string;
   href?: string;
   people: string[];
-  noteKey: "dndtools" | "imarvin";
+  noteKey: "dndtools" | "imarvin" | "spells-full";
 };
 
 export const englishSourceCredits: SourceCredit[] = [
@@ -11,6 +11,11 @@ export const englishSourceCredits: SourceCredit[] = [
     href: "https://www.imarvintpa.com/",
     people: ["IMarvinTPA / Andy Bay"],
     noteKey: "imarvin",
+  },
+  {
+    title: "Spells Full",
+    people: ["Zook1shoe"],
+    noteKey: "spells-full",
   },
   {
     title: "D&D Tools",

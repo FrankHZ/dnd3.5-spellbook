@@ -51,10 +51,8 @@ function formatShortSha(value: string | undefined) {
 
 function StatusField({ label, value }: StatusFieldProps) {
   const { t } = useTranslation("about");
-  const isUnavailable =
-    value === null || value === undefined || value === "";
-  const displayValue =
-    isUnavailable ? t("common.unavailable") : String(value);
+  const isUnavailable = value === null || value === undefined || value === "";
+  const displayValue = isUnavailable ? t("common.unavailable") : String(value);
 
   return (
     <div className="min-w-0 rounded-sm border bg-muted/20 px-3 py-2">
@@ -73,10 +71,7 @@ function StatusField({ label, value }: StatusFieldProps) {
 }
 
 function getFrontendHostingKey(apiBaseUrl: string, source: string | undefined) {
-  if (
-    apiBaseUrl === "https://api.d20spellcodex.com" ||
-    source === "deploy"
-  ) {
+  if (apiBaseUrl === "https://api.d20spellcodex.com" || source === "deploy") {
     return "deployment.hosting-workers";
   }
   return "deployment.hosting-local";
@@ -228,11 +223,18 @@ function SourceLink({ href, title }: { href?: string; title: string }) {
   );
 }
 
-function SourceCreditNote({ noteKey }: { noteKey: "dndtools" | "imarvin" }) {
+function SourceCreditNote({
+  noteKey,
+}: {
+  noteKey: "dndtools" | "imarvin" | "spells-full";
+}) {
   const { t } = useTranslation("about");
 
   if (noteKey === "dndtools") {
     return <>{t("credits.english.dndtools-note")}</>;
+  }
+  if (noteKey === "spells-full") {
+    return <>{t("credits.english.spells-full-note")}</>;
   }
   return <>{t("credits.english.imarvin-note")}</>;
 }
@@ -396,11 +398,7 @@ function AboutTabs({
       </div>
 
       {activeTab === "status" ? (
-        <div
-          id={statusPanelId}
-          aria-labelledby={statusTabId}
-          role="tabpanel"
-        >
+        <div id={statusPanelId} aria-labelledby={statusTabId} role="tabpanel">
           <StatusSections
             apiBaseUrl={apiBaseUrl}
             frontendMetadata={frontendMetadata}
@@ -408,11 +406,7 @@ function AboutTabs({
           />
         </div>
       ) : (
-        <div
-          id={creditsPanelId}
-          aria-labelledby={creditsTabId}
-          role="tabpanel"
-        >
+        <div id={creditsPanelId} aria-labelledby={creditsTabId} role="tabpanel">
           <CreditsSection />
         </div>
       )}

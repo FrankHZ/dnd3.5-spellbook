@@ -2,6 +2,7 @@ import type { Edition, Rulebook } from "@dnd/contracts";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useBootstrap } from "~/bootstrap/useBootstrap";
+import { Badge } from "~/components/ui/badge";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Separator } from "~/components/ui/separator";
 import {
@@ -22,34 +23,124 @@ type EditionGroup = {
   rulebooks: Rulebook[];
 };
 
-function groupRulebooksByEdition(
+export type RulebookSettingsCategory =
+  "core" | "supplements" | "magazines" | "other";
+
+export type RulebookCategoryGroup = {
+  key: RulebookSettingsCategory;
+  editionGroups: EditionGroup[];
+};
+
+export type RulebookSettingsGroup = {
+  key: string;
+  category: RulebookSettingsCategory;
+  edition?: Edition;
+  rulebooks: Rulebook[];
+};
+
+const RULEBOOK_CATEGORY_ORDER: RulebookSettingsCategory[] = [
+  "core",
+  "supplements",
+  "magazines",
+  "other",
+];
+
+export function isMagazineRulebook(rulebook: Rulebook) {
+  return (
+    /^drg\d+$/i.test(rulebook.abbr) ||
+    /^dragon-magazine-\d+$/i.test(rulebook.slug) ||
+    /^dragon magazine #?\d+/i.test(rulebook.name)
+  );
+}
+
+export function getRulebookSettingsCategory(
+  rulebook: Rulebook,
+): RulebookSettingsCategory {
+  if (rulebook.edition.core) return "core";
+  if (isMagazineRulebook(rulebook)) return "magazines";
+  if (rulebook.edition.slug === "supplementals-35") return "supplements";
+  return "other";
+}
+
+function sortEditionGroups(groups: EditionGroup[]) {
+  return groups.sort(
+    (a, b) =>
+      Number(b.edition.core) - Number(a.edition.core) ||
+      a.edition.system.localeCompare(b.edition.system) ||
+      a.edition.name.localeCompare(b.edition.name) ||
+      a.edition.id - b.edition.id,
+  );
+}
+
+export function groupRulebooksByCategory(
   rulebooks: Rulebook[],
   displayLabel: (rulebook: Rulebook) => string,
-): EditionGroup[] {
-  const map = new Map<number, EditionGroup>();
+): RulebookCategoryGroup[] {
+  const categoryMap = new Map<
+    RulebookSettingsCategory,
+    Map<number, EditionGroup>
+  >();
 
   for (const rb of rulebooks) {
+    const category = getRulebookSettingsCategory(rb);
+    const editionMap =
+      categoryMap.get(category) ?? new Map<number, EditionGroup>();
+    categoryMap.set(category, editionMap);
+
     const ed = rb.edition;
-    const existing = map.get(ed.id);
+    const existing = editionMap.get(ed.id);
     if (existing) {
       existing.rulebooks.push(rb);
     } else {
-      map.set(ed.id, { edition: ed, rulebooks: [rb] });
+      editionMap.set(ed.id, { edition: ed, rulebooks: [rb] });
     }
   }
 
-  // stable order: core editions first, then by system+name
-  const groups = Array.from(map.values());
-  // optionally sort rulebooks within group
-  for (const g of groups) {
-    g.rulebooks.sort(
-      (x, y) =>
-        displayLabel(x).localeCompare(displayLabel(y)) ||
-        x.abbr.localeCompare(y.abbr) ||
-        x.id - y.id,
-    );
-  }
-  return groups;
+  return RULEBOOK_CATEGORY_ORDER.flatMap((category) => {
+    const editionMap = categoryMap.get(category);
+    if (!editionMap) return [];
+
+    const editionGroups = sortEditionGroups(Array.from(editionMap.values()));
+    for (const group of editionGroups) {
+      group.rulebooks.sort(
+        (x, y) =>
+          displayLabel(x).localeCompare(displayLabel(y)) ||
+          x.abbr.localeCompare(y.abbr) ||
+          x.id - y.id,
+      );
+    }
+
+    return [{ key: category, editionGroups }];
+  });
+}
+
+export function groupRulebooksForSettings(
+  rulebooks: Rulebook[],
+  displayLabel: (rulebook: Rulebook) => string,
+): RulebookSettingsGroup[] {
+  return groupRulebooksByCategory(
+    rulebooks,
+    displayLabel,
+  ).flatMap<RulebookSettingsGroup>((group) => {
+    if (group.key === "magazines") {
+      return [
+        {
+          key: "magazines",
+          category: group.key,
+          rulebooks: group.editionGroups.flatMap(
+            (editionGroup) => editionGroup.rulebooks,
+          ),
+        },
+      ];
+    }
+
+    return group.editionGroups.map((editionGroup) => ({
+      key: `${group.key}-${editionGroup.edition.id}`,
+      category: group.key,
+      edition: editionGroup.edition,
+      rulebooks: editionGroup.rulebooks,
+    }));
+  });
 }
 
 function getEditionCheckState(
@@ -69,15 +160,28 @@ function getEditionCheckState(
   };
 }
 
-function getSettingsRulebookDisplay(
-  rulebook: Rulebook,
-  localizedName: string,
-) {
+function getSettingsRulebookDisplay(rulebook: Rulebook, localizedName: string) {
   const abbr = rulebook.displayAbbr ?? rulebook.abbr ?? localizedName;
   return {
     abbr,
     name: localizedName,
   };
+}
+
+function getRulebookCategoryLabel(
+  category: RulebookSettingsCategory,
+  t: (key: string, options?: { ns: "settings" }) => string,
+) {
+  switch (category) {
+    case "core":
+      return t("rulebooks.groups.core", { ns: "settings" });
+    case "supplements":
+      return t("rulebooks.groups.supplements", { ns: "settings" });
+    case "magazines":
+      return t("rulebooks.groups.magazines", { ns: "settings" });
+    case "other":
+      return t("rulebooks.groups.other", { ns: "settings" });
+  }
 }
 
 export default function RulebookSelector() {
@@ -97,20 +201,17 @@ export default function RulebookSelector() {
 
   const groups = useMemo(
     () =>
-      groupRulebooksByEdition(
-        rulebooks,
-        (rulebook) => {
-          const localized = getRulebookDisplay(meta, rulebook, lang);
-          return getSettingsRulebookDisplay(rulebook, localized.name).abbr;
-        },
-      ),
+      groupRulebooksForSettings(rulebooks, (rulebook) => {
+        const localized = getRulebookDisplay(meta, rulebook, lang);
+        return getSettingsRulebookDisplay(rulebook, localized.name).abbr;
+      }),
     [lang, meta, rulebooks],
   );
 
-  function toggleEdition(editionId: number, checked: boolean) {
+  function toggleGroup(groupKey: string, checked: boolean) {
     setState((s) => {
       const next = new Set(s.selectedRulebookIds);
-      const group = groups.find((g) => g.edition.id === editionId);
+      const group = groups.find((g) => g.key === groupKey);
       if (!group) return s;
 
       for (const rb of group.rulebooks) {
@@ -134,54 +235,60 @@ export default function RulebookSelector() {
     <Card className="gap-0">
       <CardHeader className="gap-1 py-3">
         <CardTitle>{t("rulebooks.title")}</CardTitle>
-        <CardDescription>
-          {t("rulebooks.default-hint")}
-        </CardDescription>
+        <CardDescription>{t("rulebooks.default-hint")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3 pt-0">
-        {groups.map((g) => {
-          const st = getEditionCheckState(g, selectedRulebookSet);
-          const editionCheckboxId = `settings-edition-${g.edition.id}`;
+        {groups.map((group) => {
+          const st = getEditionCheckState(group, selectedRulebookSet);
+          const groupCheckboxId = `settings-rulebook-group-${group.key}`;
+          const groupTitle =
+            group.category === "magazines"
+              ? getRulebookCategoryLabel(group.category, t)
+              : (group.edition?.name ??
+                getRulebookCategoryLabel(group.category, t));
+          const groupSubtitle = group.edition
+            ? `${group.edition.system}${group.edition.core ? `, ${t("rulebooks.core")}` : ""}`
+            : undefined;
 
           return (
             <div
-              key={g.edition.id}
+              key={group.key}
               className="space-y-3 rounded-md border bg-muted/10 px-4 py-3"
             >
               <div className="flex items-center justify-between gap-4">
                 <Field orientation="horizontal">
                   <Checkbox
-                    id={editionCheckboxId}
+                    id={groupCheckboxId}
                     checked={st.all ? true : st.some ? "indeterminate" : false}
-                    onCheckedChange={(v) =>
-                      toggleEdition(g.edition.id, Boolean(v))
-                    }
+                    onCheckedChange={(v) => toggleGroup(group.key, Boolean(v))}
                   />
                   <FieldLabel
-                    htmlFor={editionCheckboxId}
-                    className="select-text"
+                    htmlFor={groupCheckboxId}
+                    className="select-text text-sm font-medium text-foreground"
                   >
-                    {g.edition.name}
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      ({g.edition.system}
-                      {g.edition.core ? ", core" : ""})
-                    </span>
+                    {groupTitle}
+                    {groupSubtitle ? (
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        ({groupSubtitle})
+                      </span>
+                    ) : null}
                   </FieldLabel>
                 </Field>
-                <div className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
-                  {st.count}/{st.total} {t("rulebooks.selected")}
-                </div>
+                <Badge variant="outline" className="shrink-0">
+                  {st.count}/{st.total}
+                </Badge>
               </div>
+
               <Separator />
               <FieldGroup className="grid gap-2 sm:grid-cols-2">
-                {g.rulebooks.map((rb) => {
+                {group.rulebooks.map((rb) => {
                   const checked = selectedRulebookSet.has(rb.id);
                   const localized = getRulebookDisplay(meta, rb, lang);
                   const display = getSettingsRulebookDisplay(
                     rb,
                     localized.name,
                   );
-                  const rulebookCheckboxId = `settings-rulebook-${g.edition.id}-${rb.id}`;
+                  const rulebookCheckboxId = `settings-rulebook-${group.key}-${rb.id}`;
                   return (
                     <Field
                       key={rb.id}

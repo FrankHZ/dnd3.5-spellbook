@@ -11,6 +11,11 @@ changes.
 - Name shown on the site: Andy Bay
 - Relevant source: IMarvinTPA's Dungeons and Dragons Spells Live
 
+## Spells Full
+
+- Public author id: `Zook1shoe`
+- Relevant source: Spells Full
+
 ## D&D Tools
 
 - Legacy project repository: <https://github.com/dndtools/dndtools>

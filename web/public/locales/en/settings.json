@@ -18,7 +18,14 @@
   "display.zh.title": "Chinese display",
   "page.description": "Settings are stored locally (MVP).",
   "page.title": "Settings",
+  "rulebooks.core": "core",
   "rulebooks.default-hint": "Leave empty to rely on backend default edition rulebooks.",
-  "rulebooks.selected": "selected",
-  "rulebooks.title": "Rulebooks"
+  "rulebooks.groups.core": "Core",
+  "rulebooks.groups.magazines": "Magazines",
+  "rulebooks.groups.other": "Other",
+  "rulebooks.groups.supplements": "Supplements",
+  "rulebooks.title": "Rulebooks",
+  "tabs.general": "General",
+  "tabs.label": "Settings sections",
+  "tabs.rulebooks": "Rulebooks"
 }
