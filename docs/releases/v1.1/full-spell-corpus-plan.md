@@ -7,8 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: existing-rulebook and rulebook-backed local apply complete; production
-activation and remaining review queues pending.
+Status: frozen.
 
 ## Purpose
 
@@ -422,7 +421,7 @@ manifest, canonical summary merge, and regenerated strict-3.5 summary ledger.
 Rulebook-backed corpus apply completed locally on
 `codex/db-corpus-rulebooks`. The nested local `data/` repo records the applied
 rulebook JSONL, applied rulebook-backed spell JSONL, updated rules manifest,
-and regenerated corpus/source-label review queues. The remaining v1.1 corpus
-work is production upload/activation, remote `/api/status/db` verification,
-handoff into the frontend content pass, and later review of the remaining
-ambiguous corpus/source-label queues.
+and regenerated corpus/source-label review queues. Production upload/activation,
+remote `/api/status/db` verification, and frontend content handoff completed
+during v1.1 freeze. Later review of the remaining ambiguous corpus/source-label
+queues is deferred. See `FREEZE.md` for final acceptance evidence.

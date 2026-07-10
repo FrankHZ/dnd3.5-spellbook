@@ -22,14 +22,16 @@ execution rules and role boundaries.
 
 ## Active Planning
 
-The active formal public release plan is v1.1:
+No later formal release plan is active yet. The latest frozen formal public
+release is v1.1:
 
+- [releases/v1.1/FREEZE.md](./releases/v1.1/FREEZE.md)
 - [releases/v1.1/README.md](./releases/v1.1/README.md)
 - [releases/v1.1/production-hardening-plan.md](./releases/v1.1/production-hardening-plan.md)
 - [releases/v1.1/full-spell-corpus-plan.md](./releases/v1.1/full-spell-corpus-plan.md)
 - [releases/v1.1/frontend-content-pass-plan.md](./releases/v1.1/frontend-content-pass-plan.md)
 
-The latest frozen formal public release is v1.0:
+The previous frozen formal public release is v1.0:
 
 - [releases/v1.0/FREEZE.md](./releases/v1.0/FREEZE.md)
 - [releases/v1.0/README.md](./releases/v1.0/README.md)
@@ -55,7 +57,12 @@ Use [roadmap.md](./roadmap.md) for current ordering after a pause.
 
 ## Latest Frozen Snapshot
 
-The latest frozen public release snapshot is **v1.0**:
+The latest frozen public release snapshot is **v1.1**:
+
+- [releases/v1.1/FREEZE.md](./releases/v1.1/FREEZE.md)
+- [releases/v1.1/README.md](./releases/v1.1/README.md)
+
+The previous frozen public release snapshot is **v1.0**:
 
 - [releases/v1.0/FREEZE.md](./releases/v1.0/FREEZE.md)
 - [releases/v1.0/README.md](./releases/v1.0/README.md)
@@ -147,15 +154,17 @@ handoff records.
 
 - [releases/README.md](./releases/README.md): release planning roles and
   maintenance rules.
-- [releases/v1.1/README.md](./releases/v1.1/README.md): active production
+- [releases/v1.1/FREEZE.md](./releases/v1.1/FREEZE.md): latest frozen formal
+  public release snapshot.
+- [releases/v1.1/README.md](./releases/v1.1/README.md): frozen production
   hardening and full spell corpus release plan.
 - [releases/v1.1/production-hardening-plan.md](./releases/v1.1/production-hardening-plan.md):
-  active CF/AWS security acceptance plan.
+  frozen CF/AWS security acceptance plan.
 - [releases/v1.1/full-spell-corpus-plan.md](./releases/v1.1/full-spell-corpus-plan.md):
-  active full spell corpus import and content DB activation plan.
+  frozen full spell corpus import and content DB activation plan.
 - [releases/v1.1/frontend-content-pass-plan.md](./releases/v1.1/frontend-content-pass-plan.md):
-  active focused frontend content acceptance plan.
-- [releases/v1.0/FREEZE.md](./releases/v1.0/FREEZE.md): latest frozen formal
+  frozen focused frontend content acceptance plan.
+- [releases/v1.0/FREEZE.md](./releases/v1.0/FREEZE.md): previous frozen formal
   public release snapshot.
 - [releases/v1.0/README.md](./releases/v1.0/README.md): frozen first formal
   public release planning record.

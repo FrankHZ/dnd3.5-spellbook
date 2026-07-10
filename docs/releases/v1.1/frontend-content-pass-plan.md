@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: in progress.
+Status: frozen.
 
 ## Purpose
 
@@ -150,5 +150,5 @@ it should stay acceptance-sized rather than becoming the v1.3 redesign.
 
 ## Completion Notes
 
-Use this section only after implementation review. Keep it short and link to
-merged PRs, validation evidence, or freeze snapshots instead of pasting logs.
+Frontend content acceptance shipped in v1.1. See `FREEZE.md` for final
+acceptance evidence.
