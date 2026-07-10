@@ -13,6 +13,13 @@ acceptance can be described.
 
 ## Current Track
 
+v1.2 is the active formal public release plan:
+
+- `docs/releases/v1.2/README.md`
+- `docs/releases/v1.2/full-spell-source-review-plan.md`
+- `docs/releases/v1.2/mechanics-localization-plan.md`
+- `docs/releases/v1.2/publications-page-plan.md`
+
 v1.1 is the latest frozen formal public release:
 
 - `docs/releases/v1.1/FREEZE.md`
@@ -31,8 +38,9 @@ v1.0 is the previous frozen formal public release:
 
 The latest frozen pre-release snapshot is `docs/mvp/v3.10/FREEZE.md`.
 
-No later formal release plan is active yet. Use the next-work list below to
-open the v1.2 release plan.
+Use the v1.2 child plans for implementation boundaries. Keep full-spell source
+review, mechanics localization, and the Publications page independently
+reviewable unless a real sequencing conflict appears.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
@@ -116,34 +124,7 @@ freeze docs instead of copying them into this roadmap.
 
 Recommended next sequence:
 
-1. **Open v1.2 release plan**
-
-   v1.2 should start from the now-stable full corpus, but keep translation
-   scope deliberately narrow. Do not make full spell-body translation and
-   review part of v1.2 acceptance.
-
-   Split v1.2 into these acceptance tracks:
-
-   - full-spell source review: inventory the local
-     `data/spells-full/v6.01/` source package, review the existing
-     `data/spells-full/spells-parsed.json` quality from the v6.00 source, and
-     produce a clear source/parse QA report before relying on full-spell data
-     for later import or translation work
-   - mechanics localization workflow: translate all normalized mechanics into
-     Chinese, run the translation + QA loop end-to-end on that bounded corpus,
-     and record the reusable workflow as repo-local skill guidance or an
-     equivalent durable agent playbook
-   - frontend mechanics localization: make the frontend render mechanics in
-     Chinese wherever mechanics appear in the Chinese UI, while preserving the
-     existing English comparison/display behavior
-   - Publications page: add a user-facing publication/rulebook page for
-     browsing and managing publication scope; Settings should keep only general
-     app preferences
-   - minimum publication metadata support: add only the DB/API metadata needed
-     to make the Publications page and rulebook grouping robust; defer broader
-     publication schema review if it is not needed for the page
-
-2. **Assign v1.2 specialists**
+1. **Assign v1.2 specialists**
 
    Use a data/corpus branch for the full-spell 6.01 inventory and v6.00 parsed
    JSON quality review. Use an i18n/data branch for mechanics translation, QA
@@ -152,13 +133,13 @@ Recommended next sequence:
    DB/data branch only for the minimum publication metadata needed by the page
    and rulebook grouping.
 
-3. **Keep v1.3 as the broader design release**
+2. **Keep v1.3 as the broader design release**
 
    Do not let the v1.2 Publications page become the full sitewide style
    redesign. Keep complete filter UX, spell-card redesign, and broader visual
    system work in v1.3 unless a v1.2 acceptance blocker proves otherwise.
 
-4. **Defer full translation QA**
+3. **Defer full translation QA**
 
    Treat full spell-body/name/short-description translation and proofreading
    as a later release candidate. v1.2 should first review the full-spell

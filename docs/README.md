@@ -22,8 +22,14 @@ execution rules and role boundaries.
 
 ## Active Planning
 
-No later formal release plan is active yet. The latest frozen formal public
-release is v1.1:
+The active formal public release plan is v1.2:
+
+- [releases/v1.2/README.md](./releases/v1.2/README.md)
+- [releases/v1.2/full-spell-source-review-plan.md](./releases/v1.2/full-spell-source-review-plan.md)
+- [releases/v1.2/mechanics-localization-plan.md](./releases/v1.2/mechanics-localization-plan.md)
+- [releases/v1.2/publications-page-plan.md](./releases/v1.2/publications-page-plan.md)
+
+The latest frozen formal public release is v1.1:
 
 - [releases/v1.1/FREEZE.md](./releases/v1.1/FREEZE.md)
 - [releases/v1.1/README.md](./releases/v1.1/README.md)
@@ -154,6 +160,14 @@ handoff records.
 
 - [releases/README.md](./releases/README.md): release planning roles and
   maintenance rules.
+- [releases/v1.2/README.md](./releases/v1.2/README.md): active full-spell
+  source review, mechanics localization, and Publications page release plan.
+- [releases/v1.2/full-spell-source-review-plan.md](./releases/v1.2/full-spell-source-review-plan.md):
+  active full-spell source inventory and parse QA plan.
+- [releases/v1.2/mechanics-localization-plan.md](./releases/v1.2/mechanics-localization-plan.md):
+  active mechanics translation, QA workflow, and frontend consumer plan.
+- [releases/v1.2/publications-page-plan.md](./releases/v1.2/publications-page-plan.md):
+  active Publications page and minimum metadata plan.
 - [releases/v1.1/FREEZE.md](./releases/v1.1/FREEZE.md): latest frozen formal
   public release snapshot.
 - [releases/v1.1/README.md](./releases/v1.1/README.md): frozen production

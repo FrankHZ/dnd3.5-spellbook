@@ -7,6 +7,14 @@ directory for release lines after MVP scope is frozen.
 
 ## Current Release Plans
 
+- [v1.2/README.md](./v1.2/README.md): active full-spell source review,
+  mechanics localization, and Publications page release plan.
+- [v1.2/full-spell-source-review-plan.md](./v1.2/full-spell-source-review-plan.md):
+  active full-spell source inventory and parse QA plan.
+- [v1.2/mechanics-localization-plan.md](./v1.2/mechanics-localization-plan.md):
+  active mechanics translation, QA workflow, and frontend consumer plan.
+- [v1.2/publications-page-plan.md](./v1.2/publications-page-plan.md): active
+  Publications page and minimum metadata plan.
 - [v1.1/FREEZE.md](./v1.1/FREEZE.md): frozen production hardening, full spell
   corpus, and frontend content acceptance release snapshot.
 - [v1.1/README.md](./v1.1/README.md): frozen production hardening, full spell
