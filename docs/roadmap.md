@@ -124,6 +124,11 @@ Recommended next sequence:
 
    Split v1.2 into these acceptance tracks:
 
+   - full-spell source review: inventory the local
+     `data/spells-full/v6.01/` source package, review the existing
+     `data/spells-full/spells-parsed.json` quality from the v6.00 source, and
+     produce a clear source/parse QA report before relying on full-spell data
+     for later import or translation work
    - mechanics localization workflow: translate all normalized mechanics into
      Chinese, run the translation + QA loop end-to-end on that bounded corpus,
      and record the reusable workflow as repo-local skill guidance or an
@@ -140,10 +145,12 @@ Recommended next sequence:
 
 2. **Assign v1.2 specialists**
 
-   Use an i18n/data branch for mechanics translation, QA reports, and the
-   reusable workflow/skill handoff. Use a frontend-design branch for Chinese
-   mechanics display and the Publications page. Use a DB/data branch only for
-   the minimum publication metadata needed by the page and rulebook grouping.
+   Use a data/corpus branch for the full-spell 6.01 inventory and v6.00 parsed
+   JSON quality review. Use an i18n/data branch for mechanics translation, QA
+   reports, and the reusable workflow/skill handoff. Use a frontend-design
+   branch for Chinese mechanics display and the Publications page. Use a
+   DB/data branch only for the minimum publication metadata needed by the page
+   and rulebook grouping.
 
 3. **Keep v1.3 as the broader design release**
 
@@ -154,20 +161,23 @@ Recommended next sequence:
 4. **Defer full translation QA**
 
    Treat full spell-body/name/short-description translation and proofreading
-   as a later release candidate. v1.2 should prove the workflow on mechanics
-   first, then preserve the full-corpus translation plan as follow-up scope.
+   as a later release candidate. v1.2 should first review the full-spell
+   source/parse boundary and prove the translation workflow on mechanics, then
+   preserve the full-corpus translation plan as follow-up scope.
 
 ## Official Release Sequence
 
 The expected post-v1.1 release order is:
 
-1. **v1.2 Mechanics Localization + Publications Page**
+1. **v1.2 Full-Spell Review + Mechanics Localization + Publications Page**
 
-   Translate all normalized mechanics into Chinese, run and document the
-   translation + QA workflow as a reusable agent skill/playbook, make frontend
-   mechanics display correctly in Chinese, and add a Publications page for
-   rulebook/publication browsing and scope management. Add only the publication
-   metadata needed to make that page durable.
+   Review the local full-spell 6.01 source package and the existing v6.00
+   parsed JSON quality, translate all normalized mechanics into Chinese, run
+   and document the translation + QA workflow as a reusable agent
+   skill/playbook, make frontend mechanics display correctly in Chinese, and
+   add a Publications page for rulebook/publication browsing and scope
+   management. Add only the publication metadata needed to make that page
+   durable.
 
 2. **v1.3 Sitewide UX / Style Redesign**
 
@@ -179,8 +189,8 @@ The expected post-v1.1 release order is:
 3. **Later Translation QA**
 
    Promote full spell-body/name/short-description translation and proofreading
-   only after the mechanics workflow has produced useful QA reports, review
-   queues, terminology checks, and handoff rules.
+   only after the full-spell source review and mechanics workflow have produced
+   useful QA reports, review queues, terminology checks, and handoff rules.
 
 ## Later Stable Track
 
