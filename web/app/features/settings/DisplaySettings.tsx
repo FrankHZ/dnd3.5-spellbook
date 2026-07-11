@@ -19,11 +19,9 @@ export default function DisplaySettings() {
     setZhSpellNamesWithEnglish,
     setZhClassDomainLabelsWithEnglish,
     setZhFilterFacetLabelsWithEnglish,
-    setZhRulebookLabelStyle,
   } = useDisplayPrefs();
   const { t } = useTranslation("settings");
   const compactId = "settings-display-compact";
-  const rulebookLocalizedId = "settings-display-zh-rulebooks";
   const spellNameEnglishId = "settings-display-zh-spell-names";
   const classDomainEnglishId = "settings-display-zh-class-domain";
   const filterFacetEnglishId = "settings-display-zh-filter-facets";
@@ -55,29 +53,9 @@ export default function DisplaySettings() {
 
         <div className="space-y-3 rounded-md border bg-background px-4 py-3">
           <div className="space-y-1">
-            <h3 className="text-base font-semibold">
-              {t("display.zh.title")}
-            </h3>
+            <h3 className="text-base font-semibold">{t("display.zh.title")}</h3>
             <CardDescription>{t("display.zh.description")}</CardDescription>
           </div>
-
-          <Field orientation="horizontal">
-            <FieldContent>
-              <FieldLabel htmlFor={rulebookLocalizedId}>
-                {t("display.zh.rulebooks.title")}
-              </FieldLabel>
-              <CardDescription>
-                {t("display.zh.rulebooks.description")}
-              </CardDescription>
-            </FieldContent>
-            <Switch
-              id={rulebookLocalizedId}
-              checked={zhDisplay.rulebookLabelStyle === "localized"}
-              onCheckedChange={(checked) =>
-                setZhRulebookLabelStyle(checked ? "localized" : "english")
-              }
-            />
-          </Field>
 
           <Field orientation="horizontal">
             <FieldContent>

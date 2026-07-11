@@ -324,9 +324,9 @@ Treat spreadsheet-friendly copy/export behavior as a core design constraint.
 
 Settings should remain utilitarian. Language, display, and class choices affect
 many other screens, so settings surfaces should emphasize current state, clear
-selection, and predictable persistence. Publication/rulebook scope management
-belongs on Publications; Settings can link there but should not duplicate the
-full publication selector.
+selection, and predictable persistence. Publication/rulebook browsing and scope
+management belong on Publications; Settings should not retain rulebook tabs,
+entries, selectors, or display controls.
 
 ## Do / Avoid
 

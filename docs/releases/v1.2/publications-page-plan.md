@@ -41,7 +41,7 @@ as the primary publication-management surface.
 - Expected edit surface: rulebook/publication API contract, minimum DB/content
   metadata, web route/components/state, tests, and this plan.
 - Nearby code/tests: server rulebook/content services, contracts DTOs, Settings
-  rulebook tabs, frontend scope state, Browse/Search rulebook scope summaries.
+  preferences, frontend scope state, Browse/Search rulebook scope summaries.
 - Validation or acceptance evidence: server/API tests, web tests/build, i18n
   checks if copy changes, and manual route smoke.
 - Non-goals and follow-up parking: do not redesign all settings, filters, spell
@@ -132,15 +132,16 @@ surface and a small, explicit publication metadata contract.
   scope links point to the correct publication-management surface.
 - Expected files: Settings route updates, scope summary links, feature docs.
 - Validation: Browse/Search/Detail route smoke and regression tests.
-- Implementation notes: `codex/web-publications-page` keeps the legacy Settings
-  rulebook hash as an entry card linking to `/publications`, and updates
-  Browse/Search scope summary links to the Publications page.
+- Implementation notes: `codex/web-publications-page` removes the legacy
+  Settings rulebook tab, entry card, selector, selector tests, and rulebook
+  display toggle. Publications is the only rulebook-scope management page;
+  Browse/Search scope summaries link there directly.
 
 ## Acceptance Criteria
 
 - Publications page is the primary place to inspect and manage publication or
   rulebook scope.
-- Settings no longer serves as the primary publication-management surface.
+- Settings contains no rulebook tabs, entries, selectors, or display controls.
 - Supported grouping uses accepted metadata rather than frontend-only
   heuristics.
 - Existing rulebook scope behavior in Browse/Search/Detail remains intact.
@@ -168,8 +169,6 @@ surface and a small, explicit publication metadata contract.
 
 - Broader publication schema review after the Publications page validates the
   first metadata contract.
-- Delete or repurpose the retired Settings `RulebookSelector` after the
-  Publications page is merged and production behavior is accepted.
 - Sitewide filter and scope UI redesign in v1.3.
 
 ## Completion Notes
@@ -186,9 +185,9 @@ Use this section only after implementation review.
 - Frontend Slices 2 and 3 were accepted for merge review on 2026-07-10 in PR
   #65. The final page uses metadata-first grouping, compact reader-facing rows,
   curated display abbreviations with source fallback, date/source supporting
-  metadata, browser-local scope controls, and the accepted Settings and
-  Browse/Search links.
+  metadata, browser-local scope controls, no Settings rulebook surface, and the
+  accepted Browse/Search links.
 - Frontend validation includes `npm run i18n:check`, `npm run typecheck:web`,
-  `npm run -w web build`, 126 passing web tests, focused publication grouping
+  `npm run -w web build`, 125 passing web tests, focused publication grouping
   tests, `git diff --check`, and EN/ZH desktop/mobile browser smoke without raw
   i18n keys or horizontal overflow.

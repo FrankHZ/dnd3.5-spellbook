@@ -196,8 +196,8 @@ Current behavior:
   status, plus publication year/date, URL, and cover-image path when available
 - frontend rulebook display uses a shared helper so English and default Chinese
   display can show curated/source abbreviations consistently
-- Chinese Display settings can opt into localized Chinese short rulebook labels
-  in frontend content surfaces
+- frontend content preserves the existing browser-local rulebook label preference
+  for compatibility, but Settings no longer exposes a rulebook display control
 - Chinese display names are available where local app data provides overlays
 - frontend bootstrapping loads metadata for selectors and labels
 
@@ -360,13 +360,13 @@ the Publications page.
 Current behavior:
 
 - settings are browser-local
-- the Settings page keeps general preferences while the legacy rulebook tab
-  points users to `/publications`
+- the Settings page contains no rulebook tabs, entries, selectors, or display
+  controls; publication scope is owned by `/publications`
 - Display settings control compact versus comfortable spell-list density
 - Browse and Search sidebars expose the browser-local summary/full-detail spell
   card toggle for context-specific scanning
 - Chinese Display settings control English comparison text for spell names,
-  class/domain labels, other filter labels, and rulebook abbreviations
+  class/domain labels, and other filter labels
 - selected rulebooks affect browse/search behavior and are managed from
   Publications
 - language selection affects both UI text and API query parameters

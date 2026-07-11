@@ -81,7 +81,7 @@ Purpose:
 Purpose:
 
 - user-facing app settings such as language, display, and class preferences;
-  publication/rulebook scope management links out to Publications
+  publication/rulebook scope management is owned exclusively by Publications
 
 ### About / Status
 
