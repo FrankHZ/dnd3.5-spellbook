@@ -199,15 +199,15 @@ Use this section only after implementation review.
 - Frontend Slices 2 and 3 were accepted and merged on 2026-07-11 in PR #65. The
   final page uses metadata-first grouping, compact reader-facing rows,
   curated display abbreviations with source fallback, date/source supporting
-  metadata, browser-local scope controls, date/abbreviation row sorting within
-  stable groups, no Settings rulebook surface, and the accepted Browse/Search
-  links.
+  metadata, browser-local scope controls, no Settings rulebook surface, and the
+  accepted Browse/Search links.
 - Frontend validation includes `npm run i18n:check`, `npm run typecheck:web`,
   `npm run -w web build`, 127 passing web tests, focused publication grouping
   tests, `git diff --check`, and EN/ZH desktop/mobile browser smoke without raw
   i18n keys or horizontal overflow.
 - Publication metadata refresh accepted on 2026-07-11. Nested data repo commits:
-  `500e17b`, `faeac25`; parent repo commit: `b64cc4f`. Validation:
+  `500e17b`, `faeac25`; parent repo commits: `d7a097b`, `ab2703e`,
+  `f99d95b`. Validation:
   `npm run -w data-tools test:portable`,
   `npm run -w data-tools rules:content:generate`,
   `npm run -w data-tools rules:content:import -- --dry-run`,
@@ -220,3 +220,8 @@ Use this section only after implementation review.
   URL rows. The follow-up source-data pass replaces obsolete direct Wizards
   product URLs with fixed Wayback archived-official URLs while keeping Open
   Library links as publication-date provenance.
+- Publication row sorting follow-up accepted on 2026-07-11. Parent repo commits:
+  `4453785`, `74e4d69`. The page now supports date/abbreviation row sorting
+  within stable category/family groups, keeps `publicationDisplayOrder` as
+  grouping/manual fallback rather than chronology, and suppresses duplicate
+  scroll-lock margin compensation so sort/select controls do not shift layout.
