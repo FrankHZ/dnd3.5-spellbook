@@ -100,7 +100,10 @@ surface and a small, explicit publication metadata contract.
   labels. Review rows may keep seed year/date/URL/image values for QA, but
   generated content only exposes those detail fields after a row is marked
   `accepted`. `/api/rulebooks` exposes the metadata so frontend consumers do not
-  need publication grouping heuristics.
+  need publication grouping heuristics. `publicationDisplayOrder` is not
+  publication chronology; the current seed derives it from the category bucket
+  plus the rules-clean legacy id, so it should be treated as a manual/fallback
+  ordering field rather than the primary sort key.
 - Enrichment notes: 111 rows now have accepted publication year/date output and
   source provenance in local data fields (`isbn10`, `isbn13`,
   `metadataSources`). The remaining rows are still `review` or `deferred`;
@@ -123,9 +126,12 @@ surface and a small, explicit publication metadata contract.
   browser-local rulebook selection updates, EN/ZH UI copy, and desktop/mobile
   smoke coverage. The reader-facing catalog keeps curated display abbreviations
   beside localized titles, falls back to source abbreviations only when needed,
-  and reserves its supporting line for publication date and source URL. Review
-  status and source kind remain available to data/API workflows but are not
-  rendered as row badges.
+  and reserves its supporting line for publication date and source URL. Within a
+  category/family, publication rows should sort chronologically by accepted
+  `publicationDate`, then `publicationYear`, then display label/id fallback;
+  use `publicationDisplayOrder` only for reviewed manual overrides or stable
+  fallback, not ahead of accepted dates. Review status and source kind remain
+  available to data/API workflows but are not rendered as row badges.
 
 ### Slice 3: Settings Boundary And Existing Consumers
 

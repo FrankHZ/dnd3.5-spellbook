@@ -179,9 +179,15 @@ grouping and display: `publicationCategory`, `publicationFamily`,
 `publicationDate`, `publicationUrl`, `publicationImage`, and
 `publicationReviewStatus`. Review-stage rows can preserve rules-clean
 year/date/URL/image values for QA, but generated content only exposes those
-detail fields after a row is marked `accepted`. Store external publication
-provenance, such as Open Library edition pages or other ISBN-backed sources, in
-the data repo `isbn10`, `isbn13`, and `metadataSources` fields.
+detail fields after a row is marked `accepted`. `publicationDisplayOrder` is a
+manual/fallback ordering field, not a publication chronology field: the seed
+default is only the publication category bucket plus the rules-clean legacy
+rulebook id. Consumers should use accepted `publicationDate` / `publicationYear`
+for chronological publication ordering before falling back to display label or
+id, unless a reviewed metadata row explicitly assigns a special display order.
+Store external publication provenance, such as Open Library edition pages or
+other ISBN-backed sources, in the data repo `isbn10`, `isbn13`, and
+`metadataSources` fields.
 
 Local content DB acceptance for the v1.2 minimum publication metadata contract
 has been verified on 2026-07-10 after content migrations/import: `RulebookContent`
