@@ -170,6 +170,11 @@ surface and a small, explicit publication metadata contract.
 
 - Broader publication schema review after the Publications page validates the
   first metadata contract.
+- Internet Archive item/resource layer for reviewed rulebooks: keep
+  `publicationUrl` reserved for official or archived-official product pages and
+  `metadataSources` reserved for publication-date provenance, but consider a
+  separate reviewed resource JSONL/DB contract for Archive item pages, readable
+  scans, PDFs, OCR, and ARK identifiers.
 - Sitewide filter and scope UI redesign in v1.3.
 
 ## Completion Notes
@@ -192,8 +197,8 @@ Use this section only after implementation review.
   `npm run -w web build`, 125 passing web tests, focused publication grouping
   tests, `git diff --check`, and EN/ZH desktop/mobile browser smoke without raw
   i18n keys or horizontal overflow.
-- Publication metadata refresh accepted on 2026-07-11. Nested data repo commit:
-  `500e17b`; parent repo commit: `b64cc4f`. Validation:
+- Publication metadata refresh accepted on 2026-07-11. Nested data repo commits:
+  `500e17b`, `faeac25`; parent repo commit: `b64cc4f`. Validation:
   `npm run -w data-tools test:portable`,
   `npm run -w data-tools rules:content:generate`,
   `npm run -w data-tools rules:content:import -- --dry-run`,
@@ -203,4 +208,6 @@ Use this section only after implementation review.
   `npm run -w server test -- --run tests/rulebooks.test.ts`. Local content DB
   meta reports 5097 `SpellContent` rows, 151 `RulebookContent` rows, 111
   accepted publication rows, 111 publication-date rows, 66 image rows, and 46
-  URL rows.
+  URL rows. The follow-up source-data pass replaces obsolete direct Wizards
+  product URLs with fixed Wayback archived-official URLs while keeping Open
+  Library links as publication-date provenance.
