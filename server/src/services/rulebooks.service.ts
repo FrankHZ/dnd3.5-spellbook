@@ -1,4 +1,10 @@
-import type { Edition, Rulebook } from "@dnd/contracts";
+import type {
+  Edition,
+  PublicationCategory,
+  PublicationReviewStatus,
+  PublicationSourceKind,
+  Rulebook,
+} from "@dnd/contracts";
 import { DEFAULT_DND_EDITION_SLUG, DND_SYSTEM } from "#server/config/constant";
 import { contentPrisma } from "#server/lib/content-prisma-client";
 import { rulesPrisma as prisma } from "#server/lib/rules-prisma-client";
@@ -6,7 +12,7 @@ import { rulesPrisma as prisma } from "#server/lib/rules-prisma-client";
 let cachedRulebooksPromise: Promise<Rulebook[]> | null = null;
 let cachedEditionsPromise: Promise<Edition[]> | null = null;
 
-async function loadRulebooks() {
+async function loadRulebooks(): Promise<Rulebook[]> {
   if (!cachedRulebooksPromise) {
     cachedRulebooksPromise = (async () => {
       const rulebooks = await prisma.rulebook.findMany({
@@ -34,6 +40,15 @@ async function loadRulebooks() {
           legacyRulebookId: true,
           displayAbbr: true,
           displayName: true,
+          publicationCategory: true,
+          publicationFamily: true,
+          publicationSourceKind: true,
+          publicationDisplayOrder: true,
+          publicationYear: true,
+          publicationDate: true,
+          publicationUrl: true,
+          publicationImage: true,
+          publicationReviewStatus: true,
         },
       });
       const displayByRulebookId = new Map(
@@ -46,6 +61,33 @@ async function loadRulebooks() {
           ...rulebook,
           ...(display?.displayAbbr ? { displayAbbr: display.displayAbbr } : {}),
           ...(display?.displayName ? { displayName: display.displayName } : {}),
+          ...(display
+            ? {
+                publicationCategory: toPublicationCategory(
+                  display.publicationCategory,
+                ),
+                publicationFamily: display.publicationFamily,
+                publicationSourceKind: toPublicationSourceKind(
+                  display.publicationSourceKind,
+                ),
+                publicationDisplayOrder: display.publicationDisplayOrder,
+                ...(display.publicationYear
+                  ? { publicationYear: display.publicationYear }
+                  : {}),
+                ...(display.publicationDate
+                  ? { publicationDate: display.publicationDate }
+                  : {}),
+                ...(display.publicationUrl
+                  ? { publicationUrl: display.publicationUrl }
+                  : {}),
+                ...(display.publicationImage
+                  ? { publicationImage: display.publicationImage }
+                  : {}),
+                publicationReviewStatus: toPublicationReviewStatus(
+                  display.publicationReviewStatus,
+                ),
+              }
+            : {}),
         };
       });
     })().catch((err) => {
@@ -89,3 +131,35 @@ export const rulebooksService = {
     return cachedEditionsPromise;
   },
 };
+
+function toPublicationCategory(value: string): PublicationCategory {
+  if (
+    value === "core" ||
+    value === "supplement" ||
+    value === "setting" ||
+    value === "magazine" ||
+    value === "other"
+  ) {
+    return value;
+  }
+  return "other";
+}
+
+function toPublicationSourceKind(value: string): PublicationSourceKind {
+  if (
+    value === "rulebook" ||
+    value === "magazine" ||
+    value === "web" ||
+    value === "other"
+  ) {
+    return value;
+  }
+  return "other";
+}
+
+function toPublicationReviewStatus(value: string): PublicationReviewStatus {
+  if (value === "accepted" || value === "review" || value === "deferred") {
+    return value;
+  }
+  return "review";
+}

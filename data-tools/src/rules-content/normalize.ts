@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 
-export const RULES_CONTENT_GENERATOR_VERSION = "rules-content-normalizer-v4";
+export const RULES_CONTENT_GENERATOR_VERSION = "rules-content-normalizer-v6";
 
 export type LegacyRulebookRow = {
   id: number;
@@ -9,8 +9,23 @@ export type LegacyRulebookRow = {
   abbr: string;
   slug: string;
   description?: string | null;
+  editionSlug?: string | null;
+  editionCore?: boolean | number | null;
+  year?: string | null;
+  published?: string | null;
+  officialUrl?: string | null;
+  image?: string | null;
   displayName?: string | null;
   displayAbbr?: string | null;
+  publicationCategory: string;
+  publicationFamily: string;
+  publicationSourceKind: string;
+  publicationDisplayOrder: number;
+  publicationYear: string | null;
+  publicationDate: string | null;
+  publicationUrl: string | null;
+  publicationImage: string | null;
+  publicationReviewStatus: string;
 };
 
 export type LegacySpellRow = {
@@ -104,6 +119,15 @@ export type NormalizedRulebookRow = {
   slug: string;
   displayName: string | null;
   displayAbbr: string | null;
+  publicationCategory: string;
+  publicationFamily: string;
+  publicationSourceKind: string;
+  publicationDisplayOrder: number;
+  publicationYear: string | null;
+  publicationDate: string | null;
+  publicationUrl: string | null;
+  publicationImage: string | null;
+  publicationReviewStatus: string;
   rawJson: string;
 };
 
@@ -321,6 +345,15 @@ export function normalizeRulesContent(
     slug: row.slug,
     displayName: clean(row.displayName),
     displayAbbr: clean(row.displayAbbr),
+    publicationCategory: row.publicationCategory,
+    publicationFamily: row.publicationFamily,
+    publicationSourceKind: row.publicationSourceKind,
+    publicationDisplayOrder: row.publicationDisplayOrder,
+    publicationYear: row.publicationYear,
+    publicationDate: row.publicationDate,
+    publicationUrl: row.publicationUrl,
+    publicationImage: row.publicationImage,
+    publicationReviewStatus: row.publicationReviewStatus,
     rawJson: stableJson(row),
   }));
 

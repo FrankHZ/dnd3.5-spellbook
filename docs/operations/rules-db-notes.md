@@ -167,6 +167,28 @@ id and duplicate id/name/abbr/slug collisions. Apply reviewed rulebook rows
 before regenerating full-corpus spell patches that reference new rulebook
 abbreviations.
 
+Publication display and grouping metadata is not a rules DB patch concern. The
+rules DB owns base rulebook identity and has partial publication fields
+(`year`, `published`, `official_url`, `image`), but the maintained local source
+for API-facing publication metadata is
+`data/rulebook-publications/publications.jsonl`. Seed that file with
+`rulebooks:publications:seed`, then review it in the data repo. The content
+generation pipeline imports `RulebookContent` publication fields for API
+grouping and display: `publicationCategory`, `publicationFamily`,
+`publicationSourceKind`, `publicationDisplayOrder`, `publicationYear`,
+`publicationDate`, `publicationUrl`, `publicationImage`, and
+`publicationReviewStatus`. Review-stage rows can preserve rules-clean
+year/date/URL/image values for QA, but generated content only exposes those
+detail fields after a row is marked `accepted`. Store external publication
+provenance, such as Open Library edition pages or other ISBN-backed sources, in
+the data repo `isbn10`, `isbn13`, and `metadataSources` fields.
+
+Local content DB acceptance for the v1.2 minimum publication metadata contract
+has been verified on 2026-07-10 after content migrations/import: `RulebookContent`
+has 151 rows, 37 rows marked `accepted`, and 37 rows with `publicationDate`.
+The remaining exact-date gaps are `Web` plus Dragon Magazine issue rows; review
+those with issue-specific sources rather than the book ISBN enrichment workflow.
+
 The first supported operation is `insertSpell`. It writes one `dnd_spell` row,
 optional `dnd_spell_descriptors` rows, class/domain level rows, and then
 rebuilds `idx_spell_class_level` and `idx_spell_domain_level`.

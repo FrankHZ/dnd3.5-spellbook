@@ -128,6 +128,13 @@
       "requiresSqlite": true,
       "writeCapable": false
     },
+    "rulebooks:publications:seed": {
+      "module": "rulebooks",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
     "rules:spells:apply": {
       "module": "rules",
       "lifecycle": "maintained-local",

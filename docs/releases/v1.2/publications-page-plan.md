@@ -7,7 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: in progress. Slice 1 data/API metadata contract is accepted; the
+Publications page and Settings boundary slices remain planned.
 
 ## Purpose
 
@@ -73,6 +74,9 @@ surface and a small, explicit publication metadata contract.
 
 - v1.1 accepted Settings rulebook tabs and rulebook scope links.
 - v1.1 freeze deferred formal publication/rulebook metadata to v1.2.
+- Local content DB import has accepted the Slice 1 rulebook metadata contract:
+  `RulebookContent` has 151 rows, including 37 accepted rows with publication
+  year/date details from ISBN-backed local metadata.
 - Production DB upload remains operator-owned and outside automatic CD.
 
 ## Plan
@@ -84,6 +88,26 @@ surface and a small, explicit publication metadata contract.
 - Expected files: DB/content metadata handling, contracts, server tests, and
   docs.
 - Validation: server/API tests and data-tool checks relevant to metadata.
+- Implementation notes: `RulebookContent` now carries
+  `publicationCategory`, `publicationFamily`, `publicationSourceKind`,
+  `publicationDisplayOrder`, `publicationYear`, `publicationDate`,
+  `publicationUrl`, `publicationImage`, and `publicationReviewStatus`.
+  Data-tools consumes the maintained local publication metadata JSONL at
+  `data/rulebook-publications/publications.jsonl`; `rulebooks:publications:seed`
+  creates a review-starting seed from rules-clean publication fields and CHM
+  labels. Review rows may keep seed year/date/URL/image values for QA, but
+  generated content only exposes those detail fields after a row is marked
+  `accepted`. `/api/rulebooks` exposes the metadata so frontend consumers do not
+  need publication grouping heuristics.
+- Enrichment notes: 37 non-magazine rulebook rows now have ISBN-backed
+  Open Library edition provenance in local data fields (`isbn10`, `isbn13`,
+  `metadataSources`) and are accepted for publication year/date output. The
+  remaining exact-date gaps are `Web` plus Dragon Magazine issue rows, which
+  should use issue-specific sources instead of the book ISBN workflow.
+- Acceptance evidence: local `CONTENT_DATABASE_URL` was migrated/imported by the
+  DB handoff, and read-only verification on 2026-07-10 showed
+  `RulebookContent` has 151 rows, 37 `accepted` rows, and 37 rows with
+  `publicationDate`.
 
 ### Slice 2: Publications Page
 
@@ -123,8 +147,10 @@ surface and a small, explicit publication metadata contract.
 
 ## Open Questions
 
-- Which metadata fields are required for v1.2 acceptance versus broader future
-  publication schema cleanup?
+- Which metadata overrides, if any, are needed after the frontend Publications
+  page validates the first grouping model against real user workflows?
+- Which Dragon Magazine issue dates and Web-source metadata, if any, should be
+  accepted after issue-specific source review?
 
 ## Follow-Up Candidates
 
@@ -135,3 +161,11 @@ surface and a small, explicit publication metadata contract.
 ## Completion Notes
 
 Use this section only after implementation review.
+
+- Slice 1 DB/data/API contract accepted on 2026-07-10. Parent repo commits:
+  `f78b752`, `ce6fd69`, `1281148`. Nested data repo commits: `0e1b8e2`,
+  `2ba201a`.
+- Validation evidence includes `rules:content:generate`, data-tools portable
+  tests/typecheck, contracts build/check, server build/tests, and local content
+  DB verification showing 151 `RulebookContent` rows with 37 accepted
+  publication-date rows.

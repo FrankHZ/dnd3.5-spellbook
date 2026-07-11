@@ -76,6 +76,7 @@ Audit and generate normalized spell-facing rules content:
 
 ```bash
 npm run -w data-tools rules:content:audit
+npm run -w data-tools rulebooks:publications:seed
 npm run -w data-tools rules:content:generate
 npm run -w data-tools rules:content:import -- --dry-run
 npm run -w data-tools rules:content:review
@@ -84,10 +85,21 @@ npm run -w data-tools rules:content:review
 `rules:content:audit` and `rules:content:generate` open the configured rules DB
 read-only. The generator writes
 `data-tools/out/rules-content/rules-content.generated.json` plus an audit summary
-of review-worthy legacy strings. `rules:content:import` reads that generated file
-and replaces only the rules-content generated tables in `CONTENT_DATABASE_URL`;
-use `--dry-run` after applying content migrations to validate row counts without
-mutating SQLite.
+of review-worthy legacy strings. `rulebooks:publications:seed` writes the
+maintained local publication metadata source at
+`data/rulebook-publications/publications.jsonl` from rules-clean rulebook fields
+and CHM publication labels. Seeded rows use `reviewStatus: "review"` until a
+human or specialist review accepts them. Rulebook content rows receive
+publication metadata used by API consumers: `publicationCategory`,
+`publicationFamily`, `publicationSourceKind`, `publicationDisplayOrder`,
+`publicationYear`, `publicationDate`, `publicationUrl`, `publicationImage`, and
+`publicationReviewStatus`. Review-stage publication rows may keep source
+year/date/URL/image values in local data, but `rules:content:generate` only
+publishes those detail fields from rows marked `accepted`. Frontend code should
+consume the generated metadata instead of deriving publication groups from
+labels. `rules:content:import` reads that generated file and replaces only the
+rules-content generated tables in `CONTENT_DATABASE_URL`; use `--dry-run` after
+applying content migrations to validate row counts without mutating SQLite.
 
 `rules:content:review` opens the configured content DB read-only and inventories
 the normalized taxonomy, component, and mechanic facet tables for filter-contract
@@ -472,6 +484,21 @@ abbreviation artifacts such as `Sc_`, publication display-abbreviation
 mismatches,
 duplicate proposed display abbreviations, and missing Chinese full names without
 changing API contracts or UI consumers.
+
+`rulebooks:publications:seed` is the write-capable seed command for the
+canonical local publication metadata JSONL at
+`data/rulebook-publications/publications.jsonl`. It reads rules-clean
+`dnd_rulebook` identity/publication fields and CHM publication labels, then
+writes one row per rules-clean rulebook keyed by `legacyRulebookId`. The seed is
+a review starting point: publication dates, URLs, and cover-image paths inherit
+from rules-clean where available and remain `review` until accepted in the data
+repo. Review rows preserve those values for QA, but generated content only
+exposes the detail fields after the row is marked `accepted`. The seed command
+refuses to overwrite an existing canonical JSONL unless `--force` is passed, so
+manual ISBN and source URL enrichment is not accidentally lost. Use optional
+`isbn10`, `isbn13`, and `metadataSources` fields in the data repo to record
+publication-date provenance; those fields are validation/provenance data and are
+not currently API-facing.
 
 `summaries:import` is the content DB mutation boundary for spell summaries. It
 reads only `data/short-desc-normalized/summaries.generated.jsonl`, validates the

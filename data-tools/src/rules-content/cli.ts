@@ -24,10 +24,20 @@ import {
   normalizePublicationName,
   readRulebookPublicationJsonlText,
 } from "../rulebooks/labels-audit";
+import {
+  deriveRulebookPublicationMetadata,
+  readRulebookPublicationMetadataJsonlText,
+  type RulebookPublicationMetadataJsonlRow,
+} from "../rulebooks/publication-metadata";
 
 const OUT_ROOT = path.join(repoRoot(), "data-tools", "out", "rules-content");
 const DEFAULT_GENERATED_PATH = path.join(OUT_ROOT, "rules-content.generated.json");
-const RULEBOOK_PUBLICATIONS_JSONL_PATH = path.join(
+const RULEBOOK_PUBLICATION_METADATA_JSONL_PATH = path.join(
+  localDataDir(),
+  "rulebook-publications",
+  "publications.jsonl",
+);
+const CHM_RULEBOOK_PUBLICATIONS_JSONL_PATH = path.join(
   localDataDir(),
   "rulebook-labels",
   "chm-publications.jsonl",
@@ -91,6 +101,20 @@ type ReviewReadiness = {
   status: "ready" | "needs_normalization" | "defer" | "detail_only";
   reason: string;
   evidence: Record<string, unknown>;
+};
+
+type RulebookPublicationMetadataRow = {
+  displayAbbr: string;
+  zhName?: string | undefined;
+  category?: RulebookPublicationMetadataJsonlRow["category"];
+  family?: RulebookPublicationMetadataJsonlRow["family"];
+  sourceKind?: RulebookPublicationMetadataJsonlRow["sourceKind"];
+  displayOrder?: RulebookPublicationMetadataJsonlRow["displayOrder"];
+  year?: RulebookPublicationMetadataJsonlRow["year"];
+  published?: RulebookPublicationMetadataJsonlRow["published"];
+  officialUrl?: RulebookPublicationMetadataJsonlRow["officialUrl"];
+  image?: RulebookPublicationMetadataJsonlRow["image"];
+  reviewStatus?: RulebookPublicationMetadataJsonlRow["reviewStatus"];
 };
 
 const TOME_OF_BATTLE_DISCIPLINES = [
@@ -209,24 +233,57 @@ function readLegacyInput(db: Database.Database, limit: number | null) {
   const limitClause = limit ? "LIMIT ?" : "";
   const limitArgs = limit ? [limit] : [];
 
-  const rulebookDisplayLabels = readRulebookDisplayLabelsByName();
+  const rulebookPublicationMetadata = readRulebookPublicationRowsById();
+  const chmPublicationLabels = readChmRulebookPublicationRowsByName();
   const rulebooks = (
     db
     .prepare(
       `
-      SELECT id, dnd_edition_id AS dndEditionId, name, abbr, slug, description
-      FROM dnd_rulebook
-      ORDER BY id
+      SELECT rb.id,
+             rb.dnd_edition_id AS dndEditionId,
+             rb.name,
+             rb.abbr,
+             rb.slug,
+             rb.description,
+             NULLIF(TRIM(rb.year), '') AS year,
+             rb.published,
+             NULLIF(TRIM(rb.official_url), '') AS officialUrl,
+             NULLIF(TRIM(rb.image), '') AS image,
+             e.slug AS editionSlug,
+             e.core AS editionCore
+      FROM dnd_rulebook rb
+      JOIN dnd_dndedition e ON e.id = rb.dnd_edition_id
+      ORDER BY rb.id
     `,
     )
       .all() as LegacyRulebookRow[]
   ).map((row) => {
-    const display = rulebookDisplayLabels.get(
-      normalizePublicationName(row.name),
-    );
+    const publicationRow = rulebookPublicationMetadata.get(row.id);
+    const chmLabel = chmPublicationLabels.get(normalizePublicationName(row.name));
+    const publicationMetadata = deriveRulebookPublicationMetadata(row, {
+      category: publicationRow?.category,
+      family: publicationRow?.family,
+      sourceKind: publicationRow?.sourceKind,
+      displayOrder: publicationRow?.displayOrder,
+      reviewStatus: publicationRow?.reviewStatus,
+    });
+    const displayAbbr =
+      displayOverride(publicationRow?.displayAbbr, row.abbr) ??
+      displayOverride(chmLabel?.displayAbbr, row.abbr);
+    const acceptedPublicationFields =
+      publicationRow?.reviewStatus === "accepted" ? publicationRow : null;
     return {
       ...row,
-      displayAbbr: display?.displayAbbr ?? null,
+      displayAbbr,
+      publicationCategory: publicationMetadata.category,
+      publicationFamily: publicationMetadata.family,
+      publicationSourceKind: publicationMetadata.sourceKind,
+      publicationDisplayOrder: publicationMetadata.displayOrder,
+      publicationYear: acceptedPublicationFields?.year ?? null,
+      publicationDate: acceptedPublicationFields?.published ?? null,
+      publicationUrl: acceptedPublicationFields?.officialUrl ?? null,
+      publicationImage: acceptedPublicationFields?.image ?? null,
+      publicationReviewStatus: publicationMetadata.reviewStatus,
     };
   });
 
@@ -366,21 +423,57 @@ function readLegacyInput(db: Database.Database, limit: number | null) {
   } satisfies LegacyRulesContentInput;
 }
 
-function readRulebookDisplayLabelsByName() {
-  const byName = new Map<string, { displayAbbr: string }>();
-  if (!fs.existsSync(RULEBOOK_PUBLICATIONS_JSONL_PATH)) return byName;
+function readRulebookPublicationRowsById() {
+  const byId = new Map<number, RulebookPublicationMetadataRow>();
+  if (!fs.existsSync(RULEBOOK_PUBLICATION_METADATA_JSONL_PATH)) return byId;
 
   const sourcePath = path.relative(
     localDataDir(),
-    RULEBOOK_PUBLICATIONS_JSONL_PATH,
+    RULEBOOK_PUBLICATION_METADATA_JSONL_PATH,
   );
-  const parsed = readRulebookPublicationJsonlText(
-    fs.readFileSync(RULEBOOK_PUBLICATIONS_JSONL_PATH, "utf8"),
+  const parsed = readRulebookPublicationMetadataJsonlText(
+    fs.readFileSync(RULEBOOK_PUBLICATION_METADATA_JSONL_PATH, "utf8"),
     sourcePath,
   );
   if (parsed.errors.length > 0) {
     throw new Error(
-      `Invalid rulebook publication JSONL ${RULEBOOK_PUBLICATIONS_JSONL_PATH}:\n${parsed.errors.join("\n")}`,
+      `Invalid rulebook publication metadata JSONL ${RULEBOOK_PUBLICATION_METADATA_JSONL_PATH}:\n${parsed.errors.join("\n")}`,
+    );
+  }
+
+  for (const row of parsed.rows) {
+    byId.set(row.legacyRulebookId, {
+      displayAbbr: row.displayAbbr ?? row.abbr,
+      zhName: row.zhName,
+      category: row.category,
+      family: row.family,
+      sourceKind: row.sourceKind,
+      displayOrder: row.displayOrder,
+      year: row.year,
+      published: row.published,
+      officialUrl: row.officialUrl,
+      image: row.image,
+      reviewStatus: row.reviewStatus,
+    });
+  }
+  return byId;
+}
+
+function readChmRulebookPublicationRowsByName() {
+  const byName = new Map<string, Pick<RulebookPublicationMetadataRow, "displayAbbr">>();
+  if (!fs.existsSync(CHM_RULEBOOK_PUBLICATIONS_JSONL_PATH)) return byName;
+
+  const sourcePath = path.relative(
+    localDataDir(),
+    CHM_RULEBOOK_PUBLICATIONS_JSONL_PATH,
+  );
+  const parsed = readRulebookPublicationJsonlText(
+    fs.readFileSync(CHM_RULEBOOK_PUBLICATIONS_JSONL_PATH, "utf8"),
+    sourcePath,
+  );
+  if (parsed.errors.length > 0) {
+    throw new Error(
+      `Invalid CHM rulebook publication JSONL ${CHM_RULEBOOK_PUBLICATIONS_JSONL_PATH}:\n${parsed.errors.join("\n")}`,
     );
   }
 
@@ -390,6 +483,12 @@ function readRulebookDisplayLabelsByName() {
     });
   }
   return byName;
+}
+
+function displayOverride(value: string | null | undefined, sourceAbbr: string) {
+  const trimmed = value?.trim();
+  if (!trimmed || trimmed === sourceAbbr) return null;
+  return trimmed;
 }
 
 function coerceSpellRow(row: Record<string, unknown>): LegacySpellRow {
