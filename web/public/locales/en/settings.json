@@ -11,21 +11,9 @@
   "display.zh.description": "These options apply only when the interface language is Chinese.",
   "display.zh.filter-facets.description": "Show English schools, subschools, descriptors, and future filter labels next to Chinese labels.",
   "display.zh.filter-facets.title": "Filter label English",
-  "display.zh.rulebooks.description": "Turn on localized Chinese short labels; the default matches English source abbreviations.",
-  "display.zh.rulebooks.title": "Chinese rulebook abbreviations",
   "display.zh.spell-names.description": "Show the English spell name next to the Chinese spell name.",
   "display.zh.spell-names.title": "Spell name English",
   "display.zh.title": "Chinese display",
   "page.description": "Settings are stored locally (MVP).",
-  "page.title": "Settings",
-  "rulebooks.core": "core",
-  "rulebooks.default-hint": "Leave empty to rely on backend default edition rulebooks.",
-  "rulebooks.groups.core": "Core",
-  "rulebooks.groups.magazines": "Magazines",
-  "rulebooks.groups.other": "Other",
-  "rulebooks.groups.supplements": "Supplements",
-  "rulebooks.title": "Rulebooks",
-  "tabs.general": "General",
-  "tabs.label": "Settings sections",
-  "tabs.rulebooks": "Rulebooks"
+  "page.title": "Settings"
 }

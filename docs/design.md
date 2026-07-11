@@ -58,9 +58,10 @@ Primary screens:
 - Search: name lookup with optional Browse-equivalent filters.
 - Spell Detail: rule text, mechanics, components, levels, and related spell
   references.
+- Publications: publication/rulebook metadata browsing and scope management.
 - Spellbooks and Favorites: browser-local spell-id collections.
 - Prepared Spells: class/domain-oriented prepared spell review and editing.
-- Settings: language, rulebook scope, and class-related preferences.
+- Settings: language, display, and class-related preferences.
 
 Shared shell:
 
@@ -284,6 +285,19 @@ the title.
 Related spell references should stay secondary to the current spell
 description.
 
+### Publications
+
+Publications is a scope-management index. Keep it denser than a marketing or
+catalog page: compact controls first, then grouped publication families with
+rulebook rows. Grouping should reflect API-provided publication metadata rather
+than visual parsing of abbreviations or edition names.
+
+Each row should make the reader-facing title and curated display abbreviation
+easy to scan, with the source abbreviation used only as a fallback. Publication
+dates and source links can be supporting text; source kind and review status are
+data-workflow metadata and should not compete with the reader-facing scope
+choice. Avoid a stack of metadata badges in these rows.
+
 ### Spellbooks And Favorites
 
 Collection screens should make local persistence understandable without heavy
@@ -308,9 +322,11 @@ Treat spreadsheet-friendly copy/export behavior as a core design constraint.
 
 ### Settings
 
-Settings should remain utilitarian. Rulebook and language choices affect many
-other screens, so settings surfaces should emphasize current state, clear
-selection, and predictable persistence.
+Settings should remain utilitarian. Language, display, and class choices affect
+many other screens, so settings surfaces should emphasize current state, clear
+selection, and predictable persistence. Publication/rulebook browsing and scope
+management belong on Publications; Settings should not retain rulebook tabs,
+entries, selectors, or display controls.
 
 ## Do / Avoid
 

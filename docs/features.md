@@ -196,8 +196,8 @@ Current behavior:
   status, plus publication year/date, URL, and cover-image path when available
 - frontend rulebook display uses a shared helper so English and default Chinese
   display can show curated/source abbreviations consistently
-- Chinese Display settings can opt into localized Chinese short rulebook labels
-  in frontend content surfaces
+- frontend content preserves the existing browser-local rulebook label preference
+  for compatibility, but Settings no longer exposes a rulebook display control
 - Chinese display names are available where local app data provides overlays
 - frontend bootstrapping loads metadata for selectors and labels
 
@@ -216,6 +216,39 @@ Key code:
 - `server/tests/rulebooks.test.ts`
 - `server/tests/classes.test.ts`
 - `server/tests/domains.test.ts`
+
+## Publications
+
+Users can inspect publication/rulebook metadata and manage the rulebook scope
+used by Browse and Search.
+
+Current behavior:
+
+- `/publications` groups rulebooks by API-provided `publicationCategory` and
+  `publicationFamily` metadata rather than frontend abbreviation or edition
+  heuristics
+- publication rows show localized rulebook titles with curated display
+  abbreviations, falling back to source abbreviations when no display override
+  exists; publication year/date or source URL appears when the API exposes it,
+  while review-oriented metadata stays out of the reader-facing index
+- users can search publications by title, abbreviation, family, or year
+- users can select or clear visible results, toggle a family, toggle one
+  rulebook, or reset to the browser-local default rulebook scope
+- selected rulebooks remain stored in browser-local preferences and continue to
+  affect Browse/Search behavior
+- Browse/Search scope summaries link rulebook scope management to
+  `/publications`
+- English and Chinese UI modes preserve the same page behavior
+
+Key code:
+
+- `web/app/features/publications/PublicationScopePage.tsx`
+- `web/app/features/publications/publication-groups.ts`
+- `web/app/routes/publications.tsx`
+- `web/app/api/bootstrap.ts`
+- `server/src/routes/rulebooks.routes.ts`
+- `server/src/services/rulebooks.service.ts`
+- `server/tests/rulebooks.test.ts`
 
 ## Spellbooks And Favorites
 
@@ -320,29 +353,28 @@ Key code:
 
 ## Settings
 
-Users can adjust application preferences such as display density, language,
-rulebook scope, and class-related browsing defaults.
+Users can adjust application preferences such as display density, language, and
+class-related browsing defaults. Publication/rulebook scope management lives on
+the Publications page.
 
 Current behavior:
 
 - settings are browser-local
-- the Settings page separates general preferences and rulebook scope into
-  hash-addressable tabs
+- the Settings page contains no rulebook tabs, entries, selectors, or display
+  controls; publication scope is owned by `/publications`
 - Display settings control compact versus comfortable spell-list density
 - Browse and Search sidebars expose the browser-local summary/full-detail spell
   card toggle for context-specific scanning
 - Chinese Display settings control English comparison text for spell names,
-  class/domain labels, other filter labels, and rulebook abbreviations
-- selected rulebooks affect browse/search behavior
-- the rulebook selector groups visible rulebooks as core, supplements,
-  magazines, and other sources for scanning after the expanded v1.1 corpus
+  class/domain labels, and other filter labels
+- selected rulebooks affect browse/search behavior and are managed from
+  Publications
 - language selection affects both UI text and API query parameters
 
 Key code:
 
 - `web/app/features/settings/SettingsPage.tsx`
 - `web/app/features/settings/DisplaySettings.tsx`
-- `web/app/features/settings/RulebookSelector.tsx`
 - `web/app/features/settings/ClassSettings.tsx`
 - `web/app/features/display/useDisplayPrefs.ts`
 - `web/app/state/user-prefs-state.tsx`

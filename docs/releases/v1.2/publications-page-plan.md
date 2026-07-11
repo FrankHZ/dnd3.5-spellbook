@@ -7,8 +7,9 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: in progress. Slice 1 data/API metadata contract is accepted; the
-Publications page and Settings boundary slices remain planned.
+Status: ready for merge review. Slice 1 data/API metadata contract is accepted;
+the frontend Publications page and Settings boundary slices are accepted on the
+current frontend branch and tracked in PR #65.
 
 ## Purpose
 
@@ -40,7 +41,7 @@ as the primary publication-management surface.
 - Expected edit surface: rulebook/publication API contract, minimum DB/content
   metadata, web route/components/state, tests, and this plan.
 - Nearby code/tests: server rulebook/content services, contracts DTOs, Settings
-  rulebook tabs, frontend scope state, Browse/Search rulebook scope summaries.
+  preferences, frontend scope state, Browse/Search rulebook scope summaries.
 - Validation or acceptance evidence: server/API tests, web tests/build, i18n
   checks if copy changes, and manual route smoke.
 - Non-goals and follow-up parking: do not redesign all settings, filters, spell
@@ -116,6 +117,14 @@ surface and a small, explicit publication metadata contract.
 - Expected files: web route/components/state/tests and i18n copy.
 - Validation: targeted web tests, `npm run i18n:check`, and manual desktop/
   mobile smoke.
+- Implementation notes: `codex/web-publications-page` adds `/publications`,
+  metadata-first publication grouping, visible-scope select/clear actions,
+  browser-local rulebook selection updates, EN/ZH UI copy, and desktop/mobile
+  smoke coverage. The reader-facing catalog keeps curated display abbreviations
+  beside localized titles, falls back to source abbreviations only when needed,
+  and reserves its supporting line for publication date and source URL. Review
+  status and source kind remain available to data/API workflows but are not
+  rendered as row badges.
 
 ### Slice 3: Settings Boundary And Existing Consumers
 
@@ -123,12 +132,16 @@ surface and a small, explicit publication metadata contract.
   scope links point to the correct publication-management surface.
 - Expected files: Settings route updates, scope summary links, feature docs.
 - Validation: Browse/Search/Detail route smoke and regression tests.
+- Implementation notes: `codex/web-publications-page` removes the legacy
+  Settings rulebook tab, entry card, selector, selector tests, and rulebook
+  display toggle. Publications is the only rulebook-scope management page;
+  Browse/Search scope summaries link there directly.
 
 ## Acceptance Criteria
 
 - Publications page is the primary place to inspect and manage publication or
   rulebook scope.
-- Settings no longer serves as the primary publication-management surface.
+- Settings contains no rulebook tabs, entries, selectors, or display controls.
 - Supported grouping uses accepted metadata rather than frontend-only
   heuristics.
 - Existing rulebook scope behavior in Browse/Search/Detail remains intact.
@@ -147,8 +160,8 @@ surface and a small, explicit publication metadata contract.
 
 ## Open Questions
 
-- Which metadata overrides, if any, are needed after the frontend Publications
-  page validates the first grouping model against real user workflows?
+- Which remaining publication rows need curated display-abbreviation or
+  category/family overrides after the accepted frontend grouping model ships?
 - Which Dragon Magazine issue dates and Web-source metadata, if any, should be
   accepted after issue-specific source review?
 
@@ -169,3 +182,12 @@ Use this section only after implementation review.
   tests/typecheck, contracts build/check, server build/tests, and local content
   DB verification showing 151 `RulebookContent` rows with 37 accepted
   publication-date rows.
+- Frontend Slices 2 and 3 were accepted for merge review on 2026-07-10 in PR
+  #65. The final page uses metadata-first grouping, compact reader-facing rows,
+  curated display abbreviations with source fallback, date/source supporting
+  metadata, browser-local scope controls, no Settings rulebook surface, and the
+  accepted Browse/Search links.
+- Frontend validation includes `npm run i18n:check`, `npm run typecheck:web`,
+  `npm run -w web build`, 125 passing web tests, focused publication grouping
+  tests, `git diff --check`, and EN/ZH desktop/mobile browser smoke without raw
+  i18n keys or horizontal overflow.
