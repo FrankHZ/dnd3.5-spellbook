@@ -244,6 +244,10 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* The root gutter already reserves scrollbar width during scroll locking. */
+  html body[data-scroll-locked] {
+    margin-right: 0 !important;
+  }
 }
 
 .app-side-card {

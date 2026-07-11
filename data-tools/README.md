@@ -95,9 +95,15 @@ publication metadata used by API consumers: `publicationCategory`,
 `publicationYear`, `publicationDate`, `publicationUrl`, `publicationImage`, and
 `publicationReviewStatus`. Review-stage publication rows may keep source
 year/date/URL/image values in local data, but `rules:content:generate` only
-publishes those detail fields from rows marked `accepted`. Frontend code should
-consume the generated metadata instead of deriving publication groups from
-labels. `rules:content:import` reads that generated file and replaces only the
+publishes those detail fields from rows marked `accepted`.
+`publicationDisplayOrder` is a deterministic manual/fallback ordering field, not
+publication chronology; seeded rows currently derive it from the publication
+category bucket plus the rules-clean legacy rulebook id. Consumers that need
+publication order should prefer `publicationDate`, then `publicationYear`, then
+display label/id fallback unless a reviewed row intentionally overrides
+`publicationDisplayOrder`. Frontend code should consume the generated metadata
+instead of deriving publication groups from labels. `rules:content:import` reads
+that generated file and replaces only the
 rules-content generated tables in `CONTENT_DATABASE_URL`; use `--dry-run` after
 applying content migrations to validate row counts without mutating SQLite.
 
@@ -498,7 +504,9 @@ refuses to overwrite an existing canonical JSONL unless `--force` is passed, so
 manual ISBN and source URL enrichment is not accidentally lost. Use optional
 `isbn10`, `isbn13`, and `metadataSources` fields in the data repo to record
 publication-date provenance; those fields are validation/provenance data and are
-not currently API-facing.
+not currently API-facing. Treat seeded `displayOrder` values as deterministic
+fallbacks only: they are category offsets plus rules-clean legacy ids, and they
+do not represent release order.
 
 `summaries:import` is the content DB mutation boundary for spell summaries. It
 reads only `data/short-desc-normalized/summaries.generated.jsonl`, validates the

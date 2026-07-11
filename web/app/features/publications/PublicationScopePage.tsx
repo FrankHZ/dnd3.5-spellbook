@@ -1,5 +1,5 @@
 import type { PublicationCategory, Rulebook } from "@dnd/contracts";
-import { ExternalLink } from "lucide-react";
+import { ArrowUpDown, ExternalLink } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -10,6 +10,14 @@ import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Field, FieldGroup, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { SpellMetaBadge } from "~/features/spells/SpellMetaBadge";
 import { getRulebookDisplay } from "~/i18n/display/rulebook";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useMetaI18n } from "~/i18n/hooks/useMetaI18n";
@@ -21,6 +29,7 @@ import {
   getPublicationAbbr,
   groupRulebooksByPublication,
   type PublicationCategoryGroup,
+  type PublicationSort,
 } from "./publication-groups";
 
 function getCheckState(rulebooks: Rulebook[], selected: Set<number>) {
@@ -120,31 +129,33 @@ function PublicationRulebookRow({
   return (
     <Field
       orientation="horizontal"
-      className="min-h-11 min-w-0 items-start border-t border-border/60 py-2"
+      className="min-h-11 min-w-0 items-center border-t border-border/60 py-2"
     >
       <Checkbox
         id={checkboxId}
         checked={selected}
-        className="mt-1"
         onCheckedChange={(value) =>
           onCheckedChange(rulebook.id, Boolean(value))
         }
       />
-      <div className="min-w-0 flex-1">
-        <FieldLabel
-          htmlFor={checkboxId}
-          className="grid min-w-0 grid-cols-[3.5rem_minmax(0,1fr)] items-baseline gap-x-2 select-text"
-        >
-          <span className="font-mono text-sm font-semibold text-foreground/80">
+      <div className="grid min-w-0 flex-1 grid-cols-[6.5rem_minmax(0,1fr)] items-center gap-x-3">
+        <FieldLabel htmlFor={checkboxId} className="min-w-0 select-text">
+          <SpellMetaBadge
+            kind="source"
+            size="regular"
+            className="max-w-full font-mono"
+          >
             {getPublicationAbbr(rulebook)}
-          </span>
-          <span className="min-w-0 text-[0.9375rem] font-normal leading-5 text-foreground">
-            {display.name}
-          </span>
+          </SpellMetaBadge>
         </FieldLabel>
-        {yearLabel || rulebook.publicationUrl ? (
-          <div className="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-x-2">
-            <span aria-hidden="true" />
+        <div className="min-w-0">
+          <FieldLabel
+            htmlFor={checkboxId}
+            className="min-w-0 max-w-full select-text text-[0.9375rem] font-normal leading-5 text-foreground"
+          >
+            {display.name}
+          </FieldLabel>
+          {yearLabel || rulebook.publicationUrl ? (
             <span className="flex min-w-0 flex-wrap items-center gap-1 text-sm tabular-nums text-muted-foreground">
               {yearLabel ? <time dateTime={yearLabel}>{yearLabel}</time> : null}
               {rulebook.publicationUrl ? (
@@ -160,8 +171,8 @@ function PublicationRulebookRow({
                 </a>
               ) : null}
             </span>
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </div>
     </Field>
   );
@@ -298,6 +309,7 @@ export default function PublicationScopePage() {
   const { state, setState } = useUserPrefs();
   const { boot, rulebooks, displayRulebook } = usePublicationRulebooks();
   const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<PublicationSort>("date");
   const selectedRulebookSet = useMemo(
     () => new Set(state.selectedRulebookIds),
     [state.selectedRulebookIds],
@@ -311,8 +323,8 @@ export default function PublicationScopePage() {
     [displayRulebook, query, rulebooks],
   );
   const groups = useMemo(
-    () => groupRulebooksByPublication(visibleRulebooks),
-    [visibleRulebooks],
+    () => groupRulebooksByPublication(visibleRulebooks, sort),
+    [sort, visibleRulebooks],
   );
   const visibleState = getCheckState(visibleRulebooks, selectedRulebookSet);
 
@@ -367,7 +379,7 @@ export default function PublicationScopePage() {
       />
 
       <div className="space-y-4">
-        <section className="rounded-md border bg-card p-3 shadow-xs">
+        <section className="space-y-2 rounded-md border bg-card p-3 shadow-xs">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <Input
               value={query}
@@ -375,48 +387,64 @@ export default function PublicationScopePage() {
               placeholder={t("controls.search-placeholder")}
               aria-label={t("controls.search-label")}
             />
-            <div className="flex flex-wrap gap-2 sm:shrink-0">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={visibleRulebooks.length === 0}
-                onClick={() => setRulebookGroup(visibleRulebooks, true)}
-              >
-                {t("actions.select-visible")}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={visibleRulebooks.length === 0}
-                onClick={() => setRulebookGroup(visibleRulebooks, false)}
-              >
-                {t("actions.clear-visible")}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={resetDefaults}
-              >
-                {t("actions.reset-defaults")}
-              </Button>
-            </div>
-          </div>
-          {query ? (
-            <div
-              className={cn(
-                "mt-2 text-sm tabular-nums text-muted-foreground",
-                visibleRulebooks.length === 0 && "text-destructive",
-              )}
+            <Select
+              value={sort}
+              onValueChange={(value) => setSort(value as PublicationSort)}
             >
-              {t("summary.visible", {
-                selected: visibleState.count,
-                total: visibleState.total,
-              })}
-            </div>
-          ) : null}
+              <SelectTrigger
+                aria-label={t("controls.sort-label")}
+                className="w-full sm:w-44"
+              >
+                <ArrowUpDown className="size-4" aria-hidden="true" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date">{t("sort.date")}</SelectItem>
+                <SelectItem value="abbr">{t("sort.abbr")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={visibleRulebooks.length === 0}
+              onClick={() => setRulebookGroup(visibleRulebooks, true)}
+            >
+              {t("actions.select-visible")}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={visibleRulebooks.length === 0}
+              onClick={() => setRulebookGroup(visibleRulebooks, false)}
+            >
+              {t("actions.clear-visible")}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={resetDefaults}
+            >
+              {t("actions.reset-defaults")}
+            </Button>
+            {query ? (
+              <div
+                className={cn(
+                  "ml-auto text-sm tabular-nums text-muted-foreground",
+                  visibleRulebooks.length === 0 && "text-destructive",
+                )}
+              >
+                {t("summary.visible", {
+                  selected: visibleState.count,
+                  total: visibleState.total,
+                })}
+              </div>
+            ) : null}
+          </div>
         </section>
 
         {isLoading ? (

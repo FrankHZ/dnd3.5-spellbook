@@ -82,28 +82,84 @@ describe("publication grouping", () => {
     });
   });
 
-  it("sorts rulebooks by publication order before display label", () => {
+  it("sorts rulebooks chronologically without using display order", () => {
     const groups = groupRulebooksByPublication([
-      rulebook({ id: 2, abbr: "B", publicationDisplayOrder: 20 }),
-      rulebook({ id: 1, abbr: "A", publicationDisplayOrder: 10 }),
+      rulebook({
+        id: 2,
+        abbr: "Late",
+        publicationDate: "2006-01-01",
+        publicationDisplayOrder: 10,
+      }),
+      rulebook({
+        id: 1,
+        abbr: "Early",
+        publicationDate: "2004-01-01",
+        publicationDisplayOrder: 20,
+      }),
     ]);
 
-    expect(groups[0]?.rulebooks.map((rb) => rb.abbr)).toEqual(["A", "B"]);
+    expect(groups[0]?.rulebooks.map((rb) => rb.abbr)).toEqual([
+      "Early",
+      "Late",
+    ]);
   });
 
-  it("uses the curated abbreviation as the stable tie-breaker", () => {
+  it("places undated rulebooks after dated rulebooks", () => {
+    const groups = groupRulebooksByPublication([
+      rulebook({ id: 3, abbr: "Undated" }),
+      rulebook({ id: 2, abbr: "Dated", publicationDate: "2005-01-01" }),
+      rulebook({ id: 1, abbr: "Year", publicationYear: "2004" }),
+    ]);
+
+    expect(groups[0]?.rulebooks.map((rb) => rb.abbr)).toEqual([
+      "Year",
+      "Dated",
+      "Undated",
+    ]);
+  });
+
+  it("sorts rulebooks alphabetically by curated abbreviation", () => {
+    const groups = groupRulebooksByPublication(
+      [
+        rulebook({
+          id: 1,
+          abbr: "Z-source",
+          displayAbbr: "A-display",
+          publicationDate: "2006-01-01",
+          publicationDisplayOrder: 20,
+        }),
+        rulebook({
+          id: 2,
+          abbr: "A-source",
+          displayAbbr: "Z-display",
+          publicationDate: "2004-01-01",
+          publicationDisplayOrder: 10,
+        }),
+      ],
+      "abbr",
+    );
+
+    expect(groups[0]?.rulebooks.map((rb) => rb.abbr)).toEqual([
+      "Z-source",
+      "A-source",
+    ]);
+  });
+
+  it("uses the curated abbreviation as the chronological tie-breaker", () => {
     const groups = groupRulebooksByPublication([
       rulebook({
         id: 1,
         abbr: "Z-source",
         displayAbbr: "A-display",
+        publicationDate: "2005-01-01",
         publicationDisplayOrder: 10,
       }),
       rulebook({
         id: 2,
         abbr: "A-source",
         displayAbbr: "Z-display",
-        publicationDisplayOrder: 10,
+        publicationDate: "2005-01-01",
+        publicationDisplayOrder: 20,
       }),
     ]);
 

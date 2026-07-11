@@ -97,6 +97,10 @@ same areas should stack without requiring hidden duplicate flows.
 Do not introduce landing-page sections, hero blocks, oversized headings, or
 decorative page bands for core app screens.
 
+Keep the root scrollbar gutter stable so opening portal controls does not shift
+the page. Selects, dialogs, and sheets that lock body scrolling must not add a
+second scrollbar-width margin compensation on top of that reserved gutter.
+
 For simple page titles, use the shared `PageHeader` component so settings,
 collections, about/status, and similar utility screens keep the same title,
 description, and action alignment. Feature-specific reading surfaces such as
@@ -292,11 +296,19 @@ catalog page: compact controls first, then grouped publication families with
 rulebook rows. Grouping should reflect API-provided publication metadata rather
 than visual parsing of abbreviations or edition names.
 
-Each row should make the reader-facing title and curated display abbreviation
-easy to scan, with the source abbreviation used only as a fallback. Publication
-dates and source links can be supporting text; source kind and review status are
-data-workflow metadata and should not compete with the reader-facing scope
-choice. Avoid a stack of metadata badges in these rows.
+Each row should keep the reader-facing title as the primary scan target. Put the
+curated display abbreviation in a stable source column, use the same quiet source
+badge treatment as other spell surfaces, and fall back to the source
+abbreviation only when needed. The abbreviation should not overpower family or
+category headings. Publication dates and source links can be supporting text;
+source kind and review status are data-workflow metadata and should not compete
+with the reader-facing scope choice. Avoid a stack of metadata badges in these
+rows.
+
+Sorting controls may reorder rows within a publication family by date or display
+abbreviation, but should not change the category/family hierarchy. Treat missing
+dates as unknown and place them after dated rows rather than presenting fallback
+display order as chronology.
 
 ### Spellbooks And Favorites
 

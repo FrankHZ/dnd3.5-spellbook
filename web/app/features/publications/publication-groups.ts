@@ -14,6 +14,8 @@ export type PublicationCategoryGroup = {
   families: PublicationFamilyGroup[];
 };
 
+export type PublicationSort = "date" | "abbr";
+
 const CATEGORY_ORDER: PublicationCategory[] = [
   "core",
   "supplement",
@@ -53,19 +55,37 @@ export function getPublicationAbbr(rulebook: Rulebook) {
   return rulebook.displayAbbr?.trim() || rulebook.abbr;
 }
 
-function compareRulebooks(a: Rulebook, b: Rulebook) {
+const ABBR_COLLATOR = new Intl.Collator("en", {
+  numeric: true,
+  sensitivity: "base",
+});
+
+function comparePublicationAbbr(a: Rulebook, b: Rulebook) {
   return (
-    getRulebookDisplayOrder(a) - getRulebookDisplayOrder(b) ||
-    (a.publicationDate ?? "").localeCompare(b.publicationDate ?? "") ||
-    (a.publicationYear ?? "").localeCompare(b.publicationYear ?? "") ||
-    getPublicationAbbr(a).localeCompare(getPublicationAbbr(b)) ||
+    ABBR_COLLATOR.compare(getPublicationAbbr(a), getPublicationAbbr(b)) ||
     a.abbr.localeCompare(b.abbr) ||
     a.id - b.id
   );
 }
 
+function comparePublicationDate(a: Rulebook, b: Rulebook) {
+  const aDate = a.publicationDate ?? a.publicationYear;
+  const bDate = b.publicationDate ?? b.publicationYear;
+
+  if (aDate && bDate) return aDate.localeCompare(bDate);
+  if (aDate) return -1;
+  if (bDate) return 1;
+  return 0;
+}
+
+function compareRulebooks(a: Rulebook, b: Rulebook, sort: PublicationSort) {
+  if (sort === "abbr") return comparePublicationAbbr(a, b);
+  return comparePublicationDate(a, b) || comparePublicationAbbr(a, b);
+}
+
 export function groupRulebooksByPublication(
   rulebooks: Rulebook[],
+  sort: PublicationSort = "date",
 ): PublicationCategoryGroup[] {
   const categories = new Map<
     PublicationCategory,
@@ -101,7 +121,9 @@ export function groupRulebooksByPublication(
       const families = Array.from(familyMap.values())
         .map((family) => ({
           ...family,
-          rulebooks: family.rulebooks.sort(compareRulebooks),
+          rulebooks: family.rulebooks.sort((a, b) =>
+            compareRulebooks(a, b, sort),
+          ),
         }))
         .sort(
           (a, b) =>
