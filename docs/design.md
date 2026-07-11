@@ -292,9 +292,11 @@ catalog page: compact controls first, then grouped publication families with
 rulebook rows. Grouping should reflect API-provided publication metadata rather
 than visual parsing of abbreviations or edition names.
 
-The page may show review status, source kind, and publication dates as compact
-metadata badges. These badges should help users understand source scope without
-turning each rulebook row into a large card.
+Each row should make the reader-facing title and curated display abbreviation
+easy to scan, with the source abbreviation used only as a fallback. Publication
+dates and source links can be supporting text; source kind and review status are
+data-workflow metadata and should not compete with the reader-facing scope
+choice. Avoid a stack of metadata badges in these rows.
 
 ### Spellbooks And Favorites
 

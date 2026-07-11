@@ -227,8 +227,10 @@ Current behavior:
 - `/publications` groups rulebooks by API-provided `publicationCategory` and
   `publicationFamily` metadata rather than frontend abbreviation or edition
   heuristics
-- publication rows show rulebook display labels, source kind, review status,
-  and publication year/date or source URL when the API exposes them
+- publication rows show localized rulebook titles with curated display
+  abbreviations, falling back to source abbreviations when no display override
+  exists; publication year/date or source URL appears when the API exposes it,
+  while review-oriented metadata stays out of the reader-facing index
 - users can search publications by title, abbreviation, family, or year
 - users can select or clear visible results, toggle a family, toggle one
   rulebook, or reset to the browser-local default rulebook scope

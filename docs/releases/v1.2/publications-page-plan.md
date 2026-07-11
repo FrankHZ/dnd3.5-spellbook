@@ -7,9 +7,9 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: in progress. Slice 1 data/API metadata contract is accepted; the
-frontend Publications page and Settings boundary slices are implemented in the
-current frontend branch and awaiting review.
+Status: ready for merge review. Slice 1 data/API metadata contract is accepted;
+the frontend Publications page and Settings boundary slices are accepted on the
+current frontend branch and tracked in PR #65.
 
 ## Purpose
 
@@ -120,7 +120,11 @@ surface and a small, explicit publication metadata contract.
 - Implementation notes: `codex/web-publications-page` adds `/publications`,
   metadata-first publication grouping, visible-scope select/clear actions,
   browser-local rulebook selection updates, EN/ZH UI copy, and desktop/mobile
-  smoke coverage.
+  smoke coverage. The reader-facing catalog keeps curated display abbreviations
+  beside localized titles, falls back to source abbreviations only when needed,
+  and reserves its supporting line for publication date and source URL. Review
+  status and source kind remain available to data/API workflows but are not
+  rendered as row badges.
 
 ### Slice 3: Settings Boundary And Existing Consumers
 
@@ -155,8 +159,8 @@ surface and a small, explicit publication metadata contract.
 
 ## Open Questions
 
-- Which metadata overrides, if any, are needed after the frontend Publications
-  page validates the first grouping model against real user workflows?
+- Which remaining publication rows need curated display-abbreviation or
+  category/family overrides after the accepted frontend grouping model ships?
 - Which Dragon Magazine issue dates and Web-source metadata, if any, should be
   accepted after issue-specific source review?
 
@@ -164,6 +168,8 @@ surface and a small, explicit publication metadata contract.
 
 - Broader publication schema review after the Publications page validates the
   first metadata contract.
+- Delete or repurpose the retired Settings `RulebookSelector` after the
+  Publications page is merged and production behavior is accepted.
 - Sitewide filter and scope UI redesign in v1.3.
 
 ## Completion Notes
@@ -177,3 +183,12 @@ Use this section only after implementation review.
   tests/typecheck, contracts build/check, server build/tests, and local content
   DB verification showing 151 `RulebookContent` rows with 37 accepted
   publication-date rows.
+- Frontend Slices 2 and 3 were accepted for merge review on 2026-07-10 in PR
+  #65. The final page uses metadata-first grouping, compact reader-facing rows,
+  curated display abbreviations with source fallback, date/source supporting
+  metadata, browser-local scope controls, and the accepted Settings and
+  Browse/Search links.
+- Frontend validation includes `npm run i18n:check`, `npm run typecheck:web`,
+  `npm run -w web build`, 126 passing web tests, focused publication grouping
+  tests, `git diff --check`, and EN/ZH desktop/mobile browser smoke without raw
+  i18n keys or horizontal overflow.

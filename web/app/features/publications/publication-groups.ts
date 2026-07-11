@@ -49,16 +49,16 @@ function getRulebookDisplayOrder(rulebook: Rulebook) {
   return rulebook.publicationDisplayOrder ?? 90000;
 }
 
-function compareRulebooks(
-  displayLabel: (rulebook: Rulebook) => string,
-  a: Rulebook,
-  b: Rulebook,
-) {
+export function getPublicationAbbr(rulebook: Rulebook) {
+  return rulebook.displayAbbr?.trim() || rulebook.abbr;
+}
+
+function compareRulebooks(a: Rulebook, b: Rulebook) {
   return (
     getRulebookDisplayOrder(a) - getRulebookDisplayOrder(b) ||
     (a.publicationDate ?? "").localeCompare(b.publicationDate ?? "") ||
     (a.publicationYear ?? "").localeCompare(b.publicationYear ?? "") ||
-    displayLabel(a).localeCompare(displayLabel(b)) ||
+    getPublicationAbbr(a).localeCompare(getPublicationAbbr(b)) ||
     a.abbr.localeCompare(b.abbr) ||
     a.id - b.id
   );
@@ -66,7 +66,6 @@ function compareRulebooks(
 
 export function groupRulebooksByPublication(
   rulebooks: Rulebook[],
-  displayLabel: (rulebook: Rulebook) => string,
 ): PublicationCategoryGroup[] {
   const categories = new Map<
     PublicationCategory,
@@ -102,9 +101,7 @@ export function groupRulebooksByPublication(
       const families = Array.from(familyMap.values())
         .map((family) => ({
           ...family,
-          rulebooks: family.rulebooks.sort((a, b) =>
-            compareRulebooks(displayLabel, a, b),
-          ),
+          rulebooks: family.rulebooks.sort(compareRulebooks),
         }))
         .sort(
           (a, b) =>

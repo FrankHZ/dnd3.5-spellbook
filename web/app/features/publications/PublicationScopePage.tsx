@@ -1,9 +1,4 @@
-import type {
-  PublicationCategory,
-  PublicationReviewStatus,
-  PublicationSourceKind,
-  Rulebook,
-} from "@dnd/contracts";
+import type { PublicationCategory, Rulebook } from "@dnd/contracts";
 import { ExternalLink } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -11,19 +6,10 @@ import { useTranslation } from "react-i18next";
 import { useBootstrap } from "~/bootstrap/useBootstrap";
 import { PageHeader } from "~/components/PageHeader";
 import { StatusCard } from "~/components/StatusCard";
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Field, FieldGroup, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
-import { Separator } from "~/components/ui/separator";
 import { getRulebookDisplay } from "~/i18n/display/rulebook";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useMetaI18n } from "~/i18n/hooks/useMetaI18n";
@@ -32,6 +18,7 @@ import { DEFAULT_STATE } from "~/storage/userPrefs";
 import { useUserPrefs } from "~/state/user-prefs-state";
 
 import {
+  getPublicationAbbr,
   groupRulebooksByPublication,
   type PublicationCategoryGroup,
 } from "./publication-groups";
@@ -112,53 +99,6 @@ function CategoryLabel({ category }: { category: PublicationCategory }) {
   }
 }
 
-function StatusBadge({
-  status,
-}: {
-  status: PublicationReviewStatus | undefined;
-}) {
-  const { t } = useTranslation("publications");
-  const normalized = status ?? "review";
-  const label =
-    normalized === "accepted"
-      ? t("status.accepted")
-      : normalized === "deferred"
-        ? t("status.deferred")
-        : t("status.review");
-
-  return (
-    <Badge
-      variant={normalized === "accepted" ? "secondary" : "outline"}
-      className="max-w-full"
-    >
-      {label}
-    </Badge>
-  );
-}
-
-function SourceKindBadge({
-  sourceKind,
-}: {
-  sourceKind: PublicationSourceKind | undefined;
-}) {
-  const { t } = useTranslation("publications");
-  const normalized = sourceKind ?? "other";
-  const label =
-    normalized === "rulebook"
-      ? t("source-kind.rulebook")
-      : normalized === "magazine"
-        ? t("source-kind.magazine")
-        : normalized === "web"
-          ? t("source-kind.web")
-          : t("source-kind.other");
-
-  return (
-    <Badge variant="outline" className="max-w-full">
-      {label}
-    </Badge>
-  );
-}
-
 function PublicationRulebookRow({
   groupKey,
   rulebook,
@@ -178,46 +118,51 @@ function PublicationRulebookRow({
   const yearLabel = getPublicationYearLabel(rulebook);
 
   return (
-    <Field orientation="horizontal" className="min-w-0 items-start">
+    <Field
+      orientation="horizontal"
+      className="min-h-11 min-w-0 items-start border-t border-border/60 py-2"
+    >
       <Checkbox
         id={checkboxId}
         checked={selected}
-        className="mt-0.5"
+        className="mt-1"
         onCheckedChange={(value) =>
           onCheckedChange(rulebook.id, Boolean(value))
         }
       />
-      <FieldLabel
-        htmlFor={checkboxId}
-        className="min-w-0 flex-1 select-text flex-col items-start gap-1.5"
-      >
-        <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="shrink-0 text-xs font-medium text-foreground">
-            {display.abbr}
+      <div className="min-w-0 flex-1">
+        <FieldLabel
+          htmlFor={checkboxId}
+          className="grid min-w-0 grid-cols-[3.5rem_minmax(0,1fr)] items-baseline gap-x-2 select-text"
+        >
+          <span className="font-mono text-sm font-semibold text-foreground/80">
+            {getPublicationAbbr(rulebook)}
           </span>
-          {display.name !== display.abbr ? (
-            <span className="min-w-0 text-sm text-foreground/85">
-              {display.name}
+          <span className="min-w-0 text-[0.9375rem] font-normal leading-5 text-foreground">
+            {display.name}
+          </span>
+        </FieldLabel>
+        {yearLabel || rulebook.publicationUrl ? (
+          <div className="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-x-2">
+            <span aria-hidden="true" />
+            <span className="flex min-w-0 flex-wrap items-center gap-1 text-sm tabular-nums text-muted-foreground">
+              {yearLabel ? <time dateTime={yearLabel}>{yearLabel}</time> : null}
+              {rulebook.publicationUrl ? (
+                <a
+                  aria-label={t("actions.source")}
+                  className="inline-flex size-6 items-center justify-center rounded-sm text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                  href={rulebook.publicationUrl}
+                  rel="noreferrer"
+                  target="_blank"
+                  title={t("actions.source")}
+                >
+                  <ExternalLink className="size-3.5" aria-hidden="true" />
+                </a>
+              ) : null}
             </span>
-          ) : null}
-        </span>
-        <span className="flex min-w-0 flex-wrap items-center gap-1.5">
-          <SourceKindBadge sourceKind={rulebook.publicationSourceKind} />
-          <StatusBadge status={rulebook.publicationReviewStatus} />
-          {yearLabel ? <Badge variant="outline">{yearLabel}</Badge> : null}
-          {rulebook.publicationUrl ? (
-            <a
-              className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-              href={rulebook.publicationUrl}
-              rel="noreferrer"
-              target="_blank"
-            >
-              {t("actions.source")}
-              <ExternalLink className="size-3" aria-hidden="true" />
-            </a>
-          ) : null}
-        </span>
-      </FieldLabel>
+          </div>
+        ) : null}
+      </div>
     </Field>
   );
 }
@@ -239,8 +184,8 @@ function PublicationFamilyCard({
   const checkboxId = `publication-family-${category}-${family.key}`;
 
   return (
-    <div className="space-y-3 rounded-md border bg-card px-4 py-3 shadow-xs">
-      <div className="flex items-center justify-between gap-3">
+    <section className="border-t first:border-t-0">
+      <div className="flex items-center justify-between gap-4 bg-muted/20 px-4 py-2.5">
         <Field orientation="horizontal" className="min-w-0">
           <Checkbox
             id={checkboxId}
@@ -256,24 +201,25 @@ function PublicationFamilyCard({
             <span className="truncate">{family.label}</span>
           </FieldLabel>
         </Field>
-        <Badge variant="outline" className="shrink-0">
+        <span className="shrink-0 text-sm tabular-nums text-muted-foreground">
           {st.count}/{st.total}
-        </Badge>
+        </span>
       </div>
 
-      <Separator />
-      <FieldGroup className="grid gap-3 sm:grid-cols-2">
-        {family.rulebooks.map((rulebook) => (
-          <PublicationRulebookRow
-            key={rulebook.id}
-            groupKey={family.key}
-            rulebook={rulebook}
-            selected={selectedRulebookSet.has(rulebook.id)}
-            onCheckedChange={onRulebookCheckedChange}
-          />
-        ))}
-      </FieldGroup>
-    </div>
+      <div className="px-4">
+        <FieldGroup className="grid gap-x-8 gap-y-0 sm:grid-cols-2">
+          {family.rulebooks.map((rulebook) => (
+            <PublicationRulebookRow
+              key={rulebook.id}
+              groupKey={family.key}
+              rulebook={rulebook}
+              selected={selectedRulebookSet.has(rulebook.id)}
+              onCheckedChange={onRulebookCheckedChange}
+            />
+          ))}
+        </FieldGroup>
+      </div>
+    </section>
   );
 }
 
@@ -289,30 +235,60 @@ function PublicationCategorySection({
   onRulebookCheckedChange: (id: number, checked: boolean) => void;
 }) {
   const st = getCheckState(group.rulebooks, selectedRulebookSet);
+  const checkboxId = `publication-category-${group.key}`;
+  const hasMultipleFamilies = group.families.length > 1;
 
   return (
-    <section className="space-y-2">
-      <div className="flex flex-wrap items-center justify-between gap-2 px-1">
-        <h2 className="text-sm font-semibold text-foreground">
-          <CategoryLabel category={group.key} />
-        </h2>
-        <Badge variant="outline">
+    <section className="overflow-hidden rounded-md border bg-card shadow-xs">
+      <div className="flex items-center justify-between gap-4 bg-muted/35 px-4 py-2.5">
+        <Field orientation="horizontal" className="min-w-0">
+          <Checkbox
+            id={checkboxId}
+            checked={st.all ? true : st.some ? "indeterminate" : false}
+            onCheckedChange={(value) =>
+              onGroupCheckedChange(group.rulebooks, Boolean(value))
+            }
+          />
+          <FieldLabel
+            htmlFor={checkboxId}
+            className="min-w-0 select-text text-base font-semibold text-foreground"
+          >
+            <CategoryLabel category={group.key} />
+          </FieldLabel>
+        </Field>
+        <span className="shrink-0 text-sm tabular-nums text-muted-foreground">
           {st.count}/{st.total}
-        </Badge>
+        </span>
       </div>
 
-      <div className="space-y-3">
-        {group.families.map((family) => (
-          <PublicationFamilyCard
-            key={family.key}
-            category={group.key}
-            family={family}
-            selectedRulebookSet={selectedRulebookSet}
-            onGroupCheckedChange={onGroupCheckedChange}
-            onRulebookCheckedChange={onRulebookCheckedChange}
-          />
-        ))}
-      </div>
+      {hasMultipleFamilies ? (
+        <div>
+          {group.families.map((family) => (
+            <PublicationFamilyCard
+              key={family.key}
+              category={group.key}
+              family={family}
+              selectedRulebookSet={selectedRulebookSet}
+              onGroupCheckedChange={onGroupCheckedChange}
+              onRulebookCheckedChange={onRulebookCheckedChange}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="px-4">
+          <FieldGroup className="grid gap-x-8 gap-y-0 sm:grid-cols-2">
+            {group.rulebooks.map((rulebook) => (
+              <PublicationRulebookRow
+                key={rulebook.id}
+                groupKey={group.key}
+                rulebook={rulebook}
+                selected={selectedRulebookSet.has(rulebook.id)}
+                onCheckedChange={onRulebookCheckedChange}
+              />
+            ))}
+          </FieldGroup>
+        </div>
+      )}
     </section>
   );
 }
@@ -335,12 +311,8 @@ export default function PublicationScopePage() {
     [displayRulebook, query, rulebooks],
   );
   const groups = useMemo(
-    () =>
-      groupRulebooksByPublication(
-        visibleRulebooks,
-        (rulebook) => displayRulebook(rulebook).abbr,
-      ),
-    [displayRulebook, visibleRulebooks],
+    () => groupRulebooksByPublication(visibleRulebooks),
+    [visibleRulebooks],
   );
   const visibleState = getCheckState(visibleRulebooks, selectedRulebookSet);
 
@@ -385,61 +357,57 @@ export default function PublicationScopePage() {
         title={t("page.title")}
         description={t("page.description")}
         actions={
-          <Badge variant="secondary" className="max-w-full">
+          <span className="text-sm tabular-nums text-muted-foreground">
             {t("summary.selected", {
               selected: state.selectedRulebookIds.length,
               total: rulebooks.length,
             })}
-          </Badge>
+          </span>
         }
       />
 
       <div className="space-y-4">
-        <Card className="gap-0">
-          <CardHeader className="gap-1 py-3">
-            <CardTitle className="text-base">{t("controls.title")}</CardTitle>
-            <CardDescription>{t("controls.description")}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 pt-0">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <Input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={t("controls.search-placeholder")}
-                aria-label={t("controls.search-label")}
-              />
-              <div className="flex flex-wrap gap-2 sm:shrink-0">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={visibleRulebooks.length === 0}
-                  onClick={() => setRulebookGroup(visibleRulebooks, true)}
-                >
-                  {t("actions.select-visible")}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={visibleRulebooks.length === 0}
-                  onClick={() => setRulebookGroup(visibleRulebooks, false)}
-                >
-                  {t("actions.clear-visible")}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={resetDefaults}
-                >
-                  {t("actions.reset-defaults")}
-                </Button>
-              </div>
+        <section className="rounded-md border bg-card p-3 shadow-xs">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={t("controls.search-placeholder")}
+              aria-label={t("controls.search-label")}
+            />
+            <div className="flex flex-wrap gap-2 sm:shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={visibleRulebooks.length === 0}
+                onClick={() => setRulebookGroup(visibleRulebooks, true)}
+              >
+                {t("actions.select-visible")}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={visibleRulebooks.length === 0}
+                onClick={() => setRulebookGroup(visibleRulebooks, false)}
+              >
+                {t("actions.clear-visible")}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={resetDefaults}
+              >
+                {t("actions.reset-defaults")}
+              </Button>
             </div>
+          </div>
+          {query ? (
             <div
               className={cn(
-                "flex flex-wrap items-center gap-2 text-xs text-muted-foreground",
+                "mt-2 text-sm tabular-nums text-muted-foreground",
                 visibleRulebooks.length === 0 && "text-destructive",
               )}
             >
@@ -448,8 +416,8 @@ export default function PublicationScopePage() {
                 total: visibleState.total,
               })}
             </div>
-          </CardContent>
-        </Card>
+          ) : null}
+        </section>
 
         {isLoading ? (
           <StatusCard
@@ -479,7 +447,7 @@ export default function PublicationScopePage() {
             }
           />
         ) : (
-          <div className="space-y-5">
+          <div className="space-y-3">
             {groups.map((group) => (
               <PublicationCategorySection
                 key={group.key}
