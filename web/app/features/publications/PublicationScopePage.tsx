@@ -120,31 +120,30 @@ function PublicationRulebookRow({
   return (
     <Field
       orientation="horizontal"
-      className="min-h-11 min-w-0 items-start border-t border-border/60 py-2"
+      className="min-h-11 min-w-0 items-center border-t border-border/60 py-2"
     >
       <Checkbox
         id={checkboxId}
         checked={selected}
-        className="mt-1"
         onCheckedChange={(value) =>
           onCheckedChange(rulebook.id, Boolean(value))
         }
       />
-      <div className="min-w-0 flex-1">
+      <div className="grid min-w-0 flex-1 grid-cols-[7.5rem_minmax(0,1fr)] items-center gap-x-3">
         <FieldLabel
           htmlFor={checkboxId}
-          className="grid min-w-0 grid-cols-[3.5rem_minmax(0,1fr)] items-baseline gap-x-2 select-text"
+          className="min-w-0 select-text font-mono text-base font-semibold leading-5 text-foreground/85"
         >
-          <span className="font-mono text-sm font-semibold text-foreground/80">
-            {getPublicationAbbr(rulebook)}
-          </span>
-          <span className="min-w-0 text-[0.9375rem] font-normal leading-5 text-foreground">
-            {display.name}
-          </span>
+          {getPublicationAbbr(rulebook)}
         </FieldLabel>
-        {yearLabel || rulebook.publicationUrl ? (
-          <div className="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-x-2">
-            <span aria-hidden="true" />
+        <div className="min-w-0">
+          <FieldLabel
+            htmlFor={checkboxId}
+            className="min-w-0 max-w-full select-text text-[0.9375rem] font-normal leading-5 text-foreground"
+          >
+            {display.name}
+          </FieldLabel>
+          {yearLabel || rulebook.publicationUrl ? (
             <span className="flex min-w-0 flex-wrap items-center gap-1 text-sm tabular-nums text-muted-foreground">
               {yearLabel ? <time dateTime={yearLabel}>{yearLabel}</time> : null}
               {rulebook.publicationUrl ? (
@@ -160,8 +159,8 @@ function PublicationRulebookRow({
                 </a>
               ) : null}
             </span>
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </div>
     </Field>
   );
