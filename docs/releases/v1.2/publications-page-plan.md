@@ -7,8 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: in progress. Slice 1 data/API metadata contract is implemented for
-review; the Publications page and Settings boundary slices remain planned.
+Status: in progress. Slice 1 data/API metadata contract is accepted; the
+Publications page and Settings boundary slices remain planned.
 
 ## Purpose
 
@@ -74,6 +74,9 @@ surface and a small, explicit publication metadata contract.
 
 - v1.1 accepted Settings rulebook tabs and rulebook scope links.
 - v1.1 freeze deferred formal publication/rulebook metadata to v1.2.
+- Local content DB import has accepted the Slice 1 rulebook metadata contract:
+  `RulebookContent` has 151 rows, including 37 accepted rows with publication
+  year/date details from ISBN-backed local metadata.
 - Production DB upload remains operator-owned and outside automatic CD.
 
 ## Plan
@@ -101,6 +104,10 @@ surface and a small, explicit publication metadata contract.
   `metadataSources`) and are accepted for publication year/date output. The
   remaining exact-date gaps are `Web` plus Dragon Magazine issue rows, which
   should use issue-specific sources instead of the book ISBN workflow.
+- Acceptance evidence: local `CONTENT_DATABASE_URL` was migrated/imported by the
+  DB handoff, and read-only verification on 2026-07-10 showed
+  `RulebookContent` has 151 rows, 37 `accepted` rows, and 37 rows with
+  `publicationDate`.
 
 ### Slice 2: Publications Page
 
@@ -142,9 +149,8 @@ surface and a small, explicit publication metadata contract.
 
 - Which metadata overrides, if any, are needed after the frontend Publications
   page validates the first grouping model against real user workflows?
-- Which seeded publication dates should be accepted, corrected, or cleared
-  after source review? The seed inherits partial rules-clean date fields and is
-  not an external publication-date audit.
+- Which Dragon Magazine issue dates and Web-source metadata, if any, should be
+  accepted after issue-specific source review?
 
 ## Follow-Up Candidates
 
@@ -155,3 +161,11 @@ surface and a small, explicit publication metadata contract.
 ## Completion Notes
 
 Use this section only after implementation review.
+
+- Slice 1 DB/data/API contract accepted on 2026-07-10. Parent repo commits:
+  `f78b752`, `ce6fd69`, `1281148`. Nested data repo commits: `0e1b8e2`,
+  `2ba201a`.
+- Validation evidence includes `rules:content:generate`, data-tools portable
+  tests/typecheck, contracts build/check, server build/tests, and local content
+  DB verification showing 151 `RulebookContent` rows with 37 accepted
+  publication-date rows.

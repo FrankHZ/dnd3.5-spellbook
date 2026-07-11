@@ -183,6 +183,12 @@ detail fields after a row is marked `accepted`. Store external publication
 provenance, such as Open Library edition pages or other ISBN-backed sources, in
 the data repo `isbn10`, `isbn13`, and `metadataSources` fields.
 
+Local content DB acceptance for the v1.2 minimum publication metadata contract
+has been verified on 2026-07-10 after content migrations/import: `RulebookContent`
+has 151 rows, 37 rows marked `accepted`, and 37 rows with `publicationDate`.
+The remaining exact-date gaps are `Web` plus Dragon Magazine issue rows; review
+those with issue-specific sources rather than the book ISBN enrichment workflow.
+
 The first supported operation is `insertSpell`. It writes one `dnd_spell` row,
 optional `dnd_spell_descriptors` rows, class/domain level rows, and then
 rebuilds `idx_spell_class_level` and `idx_spell_domain_level`.
