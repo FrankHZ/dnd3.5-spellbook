@@ -97,6 +97,10 @@ same areas should stack without requiring hidden duplicate flows.
 Do not introduce landing-page sections, hero blocks, oversized headings, or
 decorative page bands for core app screens.
 
+Keep the root scrollbar gutter stable so opening portal controls does not shift
+the page. Selects, dialogs, and sheets that lock body scrolling must not add a
+second scrollbar-width margin compensation on top of that reserved gutter.
+
 For simple page titles, use the shared `PageHeader` component so settings,
 collections, about/status, and similar utility screens keep the same title,
 description, and action alignment. Feature-specific reading surfaces such as

@@ -138,7 +138,7 @@ function PublicationRulebookRow({
           onCheckedChange(rulebook.id, Boolean(value))
         }
       />
-      <div className="grid min-w-0 flex-1 grid-cols-[7.5rem_minmax(0,1fr)] items-center gap-x-3">
+      <div className="grid min-w-0 flex-1 grid-cols-[6.5rem_minmax(0,1fr)] items-center gap-x-3">
         <FieldLabel htmlFor={checkboxId} className="min-w-0 select-text">
           <SpellMetaBadge
             kind="source"
