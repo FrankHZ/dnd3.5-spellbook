@@ -1,5 +1,5 @@
 import type { PublicationCategory, Rulebook } from "@dnd/contracts";
-import { ExternalLink } from "lucide-react";
+import { ArrowUpDown, ExternalLink } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -10,6 +10,14 @@ import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Field, FieldGroup, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { SpellMetaBadge } from "~/features/spells/SpellMetaBadge";
 import { getRulebookDisplay } from "~/i18n/display/rulebook";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useMetaI18n } from "~/i18n/hooks/useMetaI18n";
@@ -21,6 +29,7 @@ import {
   getPublicationAbbr,
   groupRulebooksByPublication,
   type PublicationCategoryGroup,
+  type PublicationSort,
 } from "./publication-groups";
 
 function getCheckState(rulebooks: Rulebook[], selected: Set<number>) {
@@ -130,11 +139,14 @@ function PublicationRulebookRow({
         }
       />
       <div className="grid min-w-0 flex-1 grid-cols-[7.5rem_minmax(0,1fr)] items-center gap-x-3">
-        <FieldLabel
-          htmlFor={checkboxId}
-          className="min-w-0 select-text font-mono text-base font-semibold leading-5 text-foreground/85"
-        >
-          {getPublicationAbbr(rulebook)}
+        <FieldLabel htmlFor={checkboxId} className="min-w-0 select-text">
+          <SpellMetaBadge
+            kind="source"
+            size="regular"
+            className="max-w-full font-mono"
+          >
+            {getPublicationAbbr(rulebook)}
+          </SpellMetaBadge>
         </FieldLabel>
         <div className="min-w-0">
           <FieldLabel
@@ -297,6 +309,7 @@ export default function PublicationScopePage() {
   const { state, setState } = useUserPrefs();
   const { boot, rulebooks, displayRulebook } = usePublicationRulebooks();
   const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<PublicationSort>("date");
   const selectedRulebookSet = useMemo(
     () => new Set(state.selectedRulebookIds),
     [state.selectedRulebookIds],
@@ -310,8 +323,8 @@ export default function PublicationScopePage() {
     [displayRulebook, query, rulebooks],
   );
   const groups = useMemo(
-    () => groupRulebooksByPublication(visibleRulebooks),
-    [visibleRulebooks],
+    () => groupRulebooksByPublication(visibleRulebooks, sort),
+    [sort, visibleRulebooks],
   );
   const visibleState = getCheckState(visibleRulebooks, selectedRulebookSet);
 
@@ -366,7 +379,7 @@ export default function PublicationScopePage() {
       />
 
       <div className="space-y-4">
-        <section className="rounded-md border bg-card p-3 shadow-xs">
+        <section className="space-y-2 rounded-md border bg-card p-3 shadow-xs">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <Input
               value={query}
@@ -374,48 +387,64 @@ export default function PublicationScopePage() {
               placeholder={t("controls.search-placeholder")}
               aria-label={t("controls.search-label")}
             />
-            <div className="flex flex-wrap gap-2 sm:shrink-0">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={visibleRulebooks.length === 0}
-                onClick={() => setRulebookGroup(visibleRulebooks, true)}
-              >
-                {t("actions.select-visible")}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={visibleRulebooks.length === 0}
-                onClick={() => setRulebookGroup(visibleRulebooks, false)}
-              >
-                {t("actions.clear-visible")}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={resetDefaults}
-              >
-                {t("actions.reset-defaults")}
-              </Button>
-            </div>
-          </div>
-          {query ? (
-            <div
-              className={cn(
-                "mt-2 text-sm tabular-nums text-muted-foreground",
-                visibleRulebooks.length === 0 && "text-destructive",
-              )}
+            <Select
+              value={sort}
+              onValueChange={(value) => setSort(value as PublicationSort)}
             >
-              {t("summary.visible", {
-                selected: visibleState.count,
-                total: visibleState.total,
-              })}
-            </div>
-          ) : null}
+              <SelectTrigger
+                aria-label={t("controls.sort-label")}
+                className="w-full sm:w-44"
+              >
+                <ArrowUpDown className="size-4" aria-hidden="true" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date">{t("sort.date")}</SelectItem>
+                <SelectItem value="abbr">{t("sort.abbr")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={visibleRulebooks.length === 0}
+              onClick={() => setRulebookGroup(visibleRulebooks, true)}
+            >
+              {t("actions.select-visible")}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={visibleRulebooks.length === 0}
+              onClick={() => setRulebookGroup(visibleRulebooks, false)}
+            >
+              {t("actions.clear-visible")}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={resetDefaults}
+            >
+              {t("actions.reset-defaults")}
+            </Button>
+            {query ? (
+              <div
+                className={cn(
+                  "ml-auto text-sm tabular-nums text-muted-foreground",
+                  visibleRulebooks.length === 0 && "text-destructive",
+                )}
+              >
+                {t("summary.visible", {
+                  selected: visibleState.count,
+                  total: visibleState.total,
+                })}
+              </div>
+            ) : null}
+          </div>
         </section>
 
         {isLoading ? (

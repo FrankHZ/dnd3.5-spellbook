@@ -232,6 +232,8 @@ Current behavior:
   exists; publication year/date or source URL appears when the API exposes it,
   while review-oriented metadata stays out of the reader-facing index
 - users can search publications by title, abbreviation, family, or year
+- users can sort rows within each existing category/family by publication date
+  or display abbreviation; category and family ordering stays stable
 - users can select or clear visible results, toggle a family, toggle one
   rulebook, or reset to the browser-local default rulebook scope
 - selected rulebooks remain stored in browser-local preferences and continue to

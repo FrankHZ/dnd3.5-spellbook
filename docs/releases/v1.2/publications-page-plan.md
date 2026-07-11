@@ -126,12 +126,14 @@ surface and a small, explicit publication metadata contract.
   browser-local rulebook selection updates, EN/ZH UI copy, and desktop/mobile
   smoke coverage. The reader-facing catalog keeps curated display abbreviations
   beside localized titles, falls back to source abbreviations only when needed,
-  and reserves its supporting line for publication date and source URL. Within a
-  category/family, publication rows should sort chronologically by accepted
-  `publicationDate`, then `publicationYear`, then display label/id fallback;
-  use `publicationDisplayOrder` only for reviewed manual overrides or stable
-  fallback, not ahead of accepted dates. Review status and source kind remain
-  available to data/API workflows but are not rendered as row badges.
+  and reserves its supporting line for publication date and source URL. A page
+  control sorts rows within each category/family by accepted publication date or
+  display abbreviation without changing the category/family hierarchy. Date
+  sorting uses `publicationDate`, then `publicationYear`, puts undated rows last,
+  and falls back to display abbreviation/id. `publicationDisplayOrder` remains a
+  grouping/manual fallback rather than row chronology. Review status and source
+  kind remain available to data/API workflows but are not rendered as row
+  badges.
 
 ### Slice 3: Settings Boundary And Existing Consumers
 
@@ -197,10 +199,11 @@ Use this section only after implementation review.
 - Frontend Slices 2 and 3 were accepted and merged on 2026-07-11 in PR #65. The
   final page uses metadata-first grouping, compact reader-facing rows,
   curated display abbreviations with source fallback, date/source supporting
-  metadata, browser-local scope controls, no Settings rulebook surface, and the
-  accepted Browse/Search links.
+  metadata, browser-local scope controls, date/abbreviation row sorting within
+  stable groups, no Settings rulebook surface, and the accepted Browse/Search
+  links.
 - Frontend validation includes `npm run i18n:check`, `npm run typecheck:web`,
-  `npm run -w web build`, 125 passing web tests, focused publication grouping
+  `npm run -w web build`, 127 passing web tests, focused publication grouping
   tests, `git diff --check`, and EN/ZH desktop/mobile browser smoke without raw
   i18n keys or horizontal overflow.
 - Publication metadata refresh accepted on 2026-07-11. Nested data repo commits:
