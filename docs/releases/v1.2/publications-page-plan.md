@@ -7,9 +7,10 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: ready for merge review. Slice 1 data/API metadata contract is accepted;
-the frontend Publications page and Settings boundary slices are accepted on the
-current frontend branch and tracked in PR #65.
+Status: accepted. Slice 1 data/API metadata contract is accepted; the frontend
+Publications page and Settings boundary slices were accepted and merged in PR
+#65. The follow-up publication metadata refresh has been imported into the local
+content DB for operator-owned deployment.
 
 ## Purpose
 
@@ -76,8 +77,8 @@ surface and a small, explicit publication metadata contract.
 - v1.1 accepted Settings rulebook tabs and rulebook scope links.
 - v1.1 freeze deferred formal publication/rulebook metadata to v1.2.
 - Local content DB import has accepted the Slice 1 rulebook metadata contract:
-  `RulebookContent` has 151 rows, including 37 accepted rows with publication
-  year/date details from ISBN-backed local metadata.
+  `RulebookContent` has 151 rows, including 111 accepted rows with publication
+  year/date details from maintained local metadata.
 - Production DB upload remains operator-owned and outside automatic CD.
 
 ## Plan
@@ -100,14 +101,14 @@ surface and a small, explicit publication metadata contract.
   generated content only exposes those detail fields after a row is marked
   `accepted`. `/api/rulebooks` exposes the metadata so frontend consumers do not
   need publication grouping heuristics.
-- Enrichment notes: 37 non-magazine rulebook rows now have ISBN-backed
-  Open Library edition provenance in local data fields (`isbn10`, `isbn13`,
-  `metadataSources`) and are accepted for publication year/date output. The
-  remaining exact-date gaps are `Web` plus Dragon Magazine issue rows, which
-  should use issue-specific sources instead of the book ISBN workflow.
+- Enrichment notes: 111 rows now have accepted publication year/date output and
+  source provenance in local data fields (`isbn10`, `isbn13`,
+  `metadataSources`). The remaining rows are still `review` or `deferred`;
+  Dragon Magazine issue rows and web-only source metadata should use
+  issue-specific or page-specific sources instead of the book ISBN workflow.
 - Acceptance evidence: local `CONTENT_DATABASE_URL` was migrated/imported by the
-  DB handoff, and read-only verification on 2026-07-10 showed
-  `RulebookContent` has 151 rows, 37 `accepted` rows, and 37 rows with
+  DB handoff, and read-only verification on 2026-07-11 showed
+  `RulebookContent` has 151 rows, 111 `accepted` rows, and 111 rows with
   `publicationDate`.
 
 ### Slice 2: Publications Page
@@ -182,8 +183,8 @@ Use this section only after implementation review.
   tests/typecheck, contracts build/check, server build/tests, and local content
   DB verification showing 151 `RulebookContent` rows with 37 accepted
   publication-date rows.
-- Frontend Slices 2 and 3 were accepted for merge review on 2026-07-10 in PR
-  #65. The final page uses metadata-first grouping, compact reader-facing rows,
+- Frontend Slices 2 and 3 were accepted and merged on 2026-07-11 in PR #65. The
+  final page uses metadata-first grouping, compact reader-facing rows,
   curated display abbreviations with source fallback, date/source supporting
   metadata, browser-local scope controls, no Settings rulebook surface, and the
   accepted Browse/Search links.
@@ -191,3 +192,15 @@ Use this section only after implementation review.
   `npm run -w web build`, 125 passing web tests, focused publication grouping
   tests, `git diff --check`, and EN/ZH desktop/mobile browser smoke without raw
   i18n keys or horizontal overflow.
+- Publication metadata refresh accepted on 2026-07-11. Nested data repo commit:
+  `500e17b`; parent repo commit: `b64cc4f`. Validation:
+  `npm run -w data-tools test:portable`,
+  `npm run -w data-tools rules:content:generate`,
+  `npm run -w data-tools rules:content:import -- --dry-run`,
+  `npm run -w data-tools rules:content:import`,
+  `npm run -w data-tools rules:content:parity`,
+  `npm run -w data-tools rules:content:meta`, and
+  `npm run -w server test -- --run tests/rulebooks.test.ts`. Local content DB
+  meta reports 5097 `SpellContent` rows, 151 `RulebookContent` rows, 111
+  accepted publication rows, 111 publication-date rows, 66 image rows, and 46
+  URL rows.
