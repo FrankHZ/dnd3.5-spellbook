@@ -8,7 +8,8 @@
 > boundaries, or cross-plan conflicts change.
 
 Status: in progress. Slice 1 data/API metadata contract is accepted; the
-Publications page and Settings boundary slices remain planned.
+frontend Publications page and Settings boundary slices are implemented in the
+current frontend branch and awaiting review.
 
 ## Purpose
 
@@ -116,6 +117,10 @@ surface and a small, explicit publication metadata contract.
 - Expected files: web route/components/state/tests and i18n copy.
 - Validation: targeted web tests, `npm run i18n:check`, and manual desktop/
   mobile smoke.
+- Implementation notes: `codex/web-publications-page` adds `/publications`,
+  metadata-first publication grouping, visible-scope select/clear actions,
+  browser-local rulebook selection updates, EN/ZH UI copy, and desktop/mobile
+  smoke coverage.
 
 ### Slice 3: Settings Boundary And Existing Consumers
 
@@ -123,6 +128,9 @@ surface and a small, explicit publication metadata contract.
   scope links point to the correct publication-management surface.
 - Expected files: Settings route updates, scope summary links, feature docs.
 - Validation: Browse/Search/Detail route smoke and regression tests.
+- Implementation notes: `codex/web-publications-page` keeps the legacy Settings
+  rulebook hash as an entry card linking to `/publications`, and updates
+  Browse/Search scope summary links to the Publications page.
 
 ## Acceptance Criteria
 

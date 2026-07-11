@@ -168,10 +168,10 @@ export function SpellFilterScopeSummary({
               <span className="shrink-0 text-muted-foreground">
                 {t("rulebooks.settings-prefix")}
                 <Link
-                  to="/settings#rulebooks"
+                  to="/publications"
                   className="underline-offset-2 hover:text-foreground hover:underline"
                 >
-                  {t("rulebooks.settings-link")}
+                  {t("rulebooks.publications-link")}
                 </Link>
                 {t("rulebooks.settings-suffix")}
               </span>

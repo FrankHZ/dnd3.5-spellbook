@@ -11,6 +11,7 @@ export const I18N_NAMESPACES = [
   "collections",
   "collections-default",
   "metamagic",
+  "publications",
   "settings",
   "spell-browse",
   "spell-filter-vocabulary",

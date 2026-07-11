@@ -62,9 +62,7 @@ function TopBarSearch() {
     e.preventDefault();
     if (!isValid.ok) {
       if (lang == "zh") {
-        setError(
-          t("errors.too-short-cjk"),
-        );
+        setError(t("errors.too-short-cjk"));
       } else {
         setError(t("errors.too-short"));
       }
@@ -118,6 +116,11 @@ function useTopBarItems() {
   return [
     { to: "/browse", label: t("nav.browse"), active: pathname === "/browse" },
     {
+      to: "/publications",
+      label: t("nav.publications"),
+      active: pathname === "/publications",
+    },
+    {
       to: "/spellbooks/default",
       label: t("nav.favorites"),
       active: pathname === "/spellbooks/default",
@@ -136,7 +139,11 @@ function useTopBarItems() {
           pathname !== "/spellbooks/default" &&
           pathname !== "/spellbooks/prepared"),
     },
-    { to: "/settings", label: t("nav.settings"), active: pathname === "/settings" },
+    {
+      to: "/settings",
+      label: t("nav.settings"),
+      active: pathname === "/settings",
+    },
     { to: "/about", label: t("nav.about"), active: pathname === "/about" },
   ];
 }

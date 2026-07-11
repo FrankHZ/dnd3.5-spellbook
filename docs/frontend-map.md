@@ -50,6 +50,16 @@ Purpose:
 - render the detailed spell view, sidebar metadata overview, and related
   reference context
 
+### Publications
+
+- page entry: `web/app/features/publications/PublicationScopePage.tsx`
+- grouping helper: `web/app/features/publications/publication-groups.ts`
+
+Purpose:
+
+- browse publication/rulebook metadata and manage the browser-local rulebook
+  scope used by Browse and Search
+
 ### Collections
 
 - index page: `web/app/features/collections/SpellbooksIndexPage.tsx`
@@ -67,12 +77,11 @@ Purpose:
 ### Settings
 
 - page entry: `web/app/features/settings/SettingsPage.tsx`
-- rulebook selector: `web/app/features/settings/RulebookSelector.tsx`
 
 Purpose:
 
-- user-facing app settings such as language and content preferences, separated
-  into hash-addressable general and rulebook sections
+- user-facing app settings such as language, display, and class preferences;
+  publication/rulebook scope management links out to Publications
 
 ### About / Status
 

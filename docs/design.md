@@ -58,9 +58,10 @@ Primary screens:
 - Search: name lookup with optional Browse-equivalent filters.
 - Spell Detail: rule text, mechanics, components, levels, and related spell
   references.
+- Publications: publication/rulebook metadata browsing and scope management.
 - Spellbooks and Favorites: browser-local spell-id collections.
 - Prepared Spells: class/domain-oriented prepared spell review and editing.
-- Settings: language, rulebook scope, and class-related preferences.
+- Settings: language, display, and class-related preferences.
 
 Shared shell:
 
@@ -284,6 +285,17 @@ the title.
 Related spell references should stay secondary to the current spell
 description.
 
+### Publications
+
+Publications is a scope-management index. Keep it denser than a marketing or
+catalog page: compact controls first, then grouped publication families with
+rulebook rows. Grouping should reflect API-provided publication metadata rather
+than visual parsing of abbreviations or edition names.
+
+The page may show review status, source kind, and publication dates as compact
+metadata badges. These badges should help users understand source scope without
+turning each rulebook row into a large card.
+
 ### Spellbooks And Favorites
 
 Collection screens should make local persistence understandable without heavy
@@ -308,9 +320,11 @@ Treat spreadsheet-friendly copy/export behavior as a core design constraint.
 
 ### Settings
 
-Settings should remain utilitarian. Rulebook and language choices affect many
-other screens, so settings surfaces should emphasize current state, clear
-selection, and predictable persistence.
+Settings should remain utilitarian. Language, display, and class choices affect
+many other screens, so settings surfaces should emphasize current state, clear
+selection, and predictable persistence. Publication/rulebook scope management
+belongs on Publications; Settings can link there but should not duplicate the
+full publication selector.
 
 ## Do / Avoid
 

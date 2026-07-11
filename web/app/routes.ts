@@ -7,6 +7,8 @@ export default [
   route("search", "./routes/search.tsx"),
   route("spells/:id", "./routes/spells.$id.tsx"),
 
+  route("publications", "./routes/publications.tsx"),
+
   route("spellbooks", "./routes/spellbooks.tsx"),
   route("spellbooks/:id", "./routes/spellbooks.$id.tsx"),
 

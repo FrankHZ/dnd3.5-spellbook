@@ -1,11 +1,19 @@
 import ClassSettings from "~/features/settings/ClassSettings";
 import DisplaySettings from "~/features/settings/DisplaySettings";
-import RulebookSelector from "~/features/settings/RulebookSelector";
 import { PageHeader } from "~/components/PageHeader";
 import { Button } from "~/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocation, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
+import { useBootstrap } from "~/bootstrap/useBootstrap";
+import { useUserPrefs } from "~/state/user-prefs-state";
 
 type SettingsTab = "general" | "rulebooks";
 
@@ -19,6 +27,32 @@ function getSettingsTabFromHash(hash: string): SettingsTab {
   return SETTINGS_TABS.includes(value as SettingsTab)
     ? (value as SettingsTab)
     : "general";
+}
+
+function RulebookSettingsEntry() {
+  const { t } = useTranslation("settings");
+  const { state } = useUserPrefs();
+  const boot = useBootstrap(state.includePrestige);
+
+  return (
+    <Card className="gap-0">
+      <CardHeader className="gap-1 py-3">
+        <CardTitle>{t("rulebooks.moved-title")}</CardTitle>
+        <CardDescription>{t("rulebooks.moved-description")}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3 pt-0">
+        <p className="text-sm text-muted-foreground">
+          {t("rulebooks.moved-summary", {
+            selected: state.selectedRulebookIds.length,
+            total: boot.rulebooks.data?.items.length ?? 0,
+          })}
+        </p>
+        <Button asChild size="sm">
+          <Link to="/publications">{t("rulebooks.moved-action")}</Link>
+        </Button>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function SettingsPage() {
@@ -98,7 +132,7 @@ export default function SettingsPage() {
             aria-labelledby={rulebooksTabId}
             role="tabpanel"
           >
-            <RulebookSelector />
+            <RulebookSettingsEntry />
           </div>
         )}
       </div>
