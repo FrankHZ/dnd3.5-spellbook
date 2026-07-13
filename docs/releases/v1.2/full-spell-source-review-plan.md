@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: accepted on 2026-07-13.
 
 ## Purpose
 
@@ -76,12 +76,14 @@ become a dependency for translation, import, or provenance work.
 
 ### Slice 1: Source Inventory
 
+- Status: accepted.
 - Deliverable: inventory report for `data/spells-full/v6.01/`.
 - Expected files: data-tool report output and this plan's completion notes.
 - Validation: command summary plus `git diff --check`.
 
 ### Slice 2: Parsed JSON Quality Review
 
+- Status: accepted.
 - Deliverable: quality report for `data/spells-full/spells-parsed.json` from
   v6.00.
 - Expected files: report output and affected import-workflow notes.
@@ -89,6 +91,7 @@ become a dependency for translation, import, or provenance work.
 
 ### Slice 3: Follow-Up Classification
 
+- Status: accepted.
 - Deliverable: accepted, blocked, deferred, and follow-up categories for later
   import or translation work.
 - Expected files: report output and plan follow-up candidates.
@@ -113,14 +116,45 @@ become a dependency for translation, import, or provenance work.
 
 ## Open Questions
 
-- Which report format should become canonical for later full translation QA?
+- Resolved: use
+  [full-spell-source-review-report.md](./full-spell-source-review-report.md) as
+  the committed v1.2 review record. Timestamped JSON under
+  `data-tools/out/spells-full/` remains rebuildable evidence, not parent-repo
+  source.
 
 ## Follow-Up Candidates
 
-- Future full-spell import candidates discovered by the review.
-- Future full spell-body/name/short-description translation QA after the review
-  model is accepted.
+- Build a v6.01 text parser only if later source work needs a cleaner
+  spell-body source than the existing v6.00 parsed JSON.
+- Review the remaining source-index/name-set differences as bounded queues
+  before promoting import candidates.
+- Use source-specific PDFs or official source pages for future low-confidence
+  gaps instead of trusting the combined parsed dump directly.
+- Future full spell-body/name/short-description translation QA after mechanics
+  localization proves the bounded translation workflow.
 
 ## Completion Notes
 
-Use this section only after implementation review.
+Accepted report:
+
+- [full-spell-source-review-report.md](./full-spell-source-review-report.md)
+
+Accepted command evidence from 2026-07-13:
+
+- `npm run -w data-tools spells-full:inspect -- source-package`
+- `npm run -w data-tools spells-full:inspect -- corpus-inventory`
+- `npm run -w data-tools test:portable`
+- `npm run typecheck:data-tools`
+- `git diff --check`
+
+Key conclusions:
+
+- v6.01 source package inventory is repeatable and local-only.
+- The safer package inventory surface is `Spells v6.01 - List.txt`; full text is
+  retained as source material but not parsed into structured spell rows by this
+  track.
+- The existing v6.00 parsed JSON has `120` high-confidence body/table-name rows
+  and should not be used as a direct future import source without another QA
+  pass.
+- `corpus-inventory` found `0` ready patch rows, so this track produced no DB
+  handoff and made no production content DB changes.
