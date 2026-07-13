@@ -54,15 +54,20 @@ export type InsertSpellOperation = {
   descriptors?: string[];
 };
 
+export type SpellUpdateFields = {
+  slug?: string;
+  extraComponents?: string;
+  description?: string;
+  descriptionHtml?: string;
+};
+
 export type UpdateSpellOperation = {
   op: "updateSpell";
   id?: number;
   source?: {
     provenance?: string;
   };
-  spell?: {
-    slug?: string;
-  };
+  spell?: SpellUpdateFields;
 };
 
 export type PatchOperation = InsertSpellOperation | UpdateSpellOperation;
@@ -239,7 +244,7 @@ export function validateUpdateSpellShape(
     errors.push(`line ${line}: expected updateSpell operation`);
     return {
       spellId: undefined,
-      slug: undefined,
+      fields: {},
     };
   }
 
@@ -248,11 +253,97 @@ export function validateUpdateSpellShape(
     errors.push(`line ${line}: id must be a positive integer`);
   }
 
-  const slug = asString(value.spell?.slug);
-  if (!slug) errors.push(`line ${line}: spell.slug is required`);
-  if (slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
-    errors.push(`line ${line}: spell.slug is not normalized: ${slug}`);
+  if (!isObject(value.spell)) {
+    errors.push(`line ${line}: spell update fields are required`);
+    return { spellId, fields: {} };
   }
 
-  return { spellId, slug };
+  const allowedFields = new Set([
+    "slug",
+    "extraComponents",
+    "description",
+    "descriptionHtml",
+  ]);
+  for (const field of Object.keys(value.spell)) {
+    if (!allowedFields.has(field)) {
+      errors.push(`line ${line}: unsupported spell update field: ${field}`);
+    }
+  }
+
+  const fields: SpellUpdateFields = {};
+  if ("slug" in value.spell) {
+    const slug = asString(value.spell.slug);
+    if (!slug) {
+      errors.push(`line ${line}: spell.slug must be a non-empty string`);
+    } else if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+      errors.push(`line ${line}: spell.slug is not normalized: ${slug}`);
+    } else {
+      fields.slug = slug;
+    }
+  }
+
+  if ("extraComponents" in value.spell) {
+    const extraComponents = asString(value.spell.extraComponents);
+    if (!extraComponents) {
+      errors.push(
+        `line ${line}: spell.extraComponents must be a non-empty string`,
+      );
+    } else {
+      fields.extraComponents = extraComponents;
+    }
+  }
+
+  if ("description" in value.spell) {
+    const description = asString(value.spell.description);
+    if (!description) {
+      errors.push(`line ${line}: spell.description must be a non-empty string`);
+    } else {
+      fields.description = description;
+    }
+  }
+
+  if ("descriptionHtml" in value.spell) {
+    const descriptionHtml = asString(value.spell.descriptionHtml);
+    if (!descriptionHtml) {
+      errors.push(
+        `line ${line}: spell.descriptionHtml must be a non-empty string`,
+      );
+    } else {
+      fields.descriptionHtml = descriptionHtml;
+    }
+  }
+
+  const hasDescription = "description" in value.spell;
+  const hasDescriptionHtml = "descriptionHtml" in value.spell;
+  if (hasDescription !== hasDescriptionHtml) {
+    errors.push(
+      `line ${line}: spell.description and spell.descriptionHtml must be updated together`,
+    );
+  }
+
+  if (Object.keys(value.spell).length === 0) {
+    errors.push(`line ${line}: at least one spell update field is required`);
+  }
+
+  return { spellId, fields };
+}
+
+export type ExistingSpellUpdateValues = {
+  slug: string;
+  extraComponents: string | null;
+  description: string;
+  descriptionHtml: string;
+};
+
+export function isSpellUpdateNoop(
+  fields: SpellUpdateFields,
+  existing: ExistingSpellUpdateValues,
+) {
+  const updates = Object.entries(fields) as Array<
+    [keyof SpellUpdateFields, string]
+  >;
+  return (
+    updates.length > 0 &&
+    updates.every(([field, value]) => existing[field] === value)
+  );
 }

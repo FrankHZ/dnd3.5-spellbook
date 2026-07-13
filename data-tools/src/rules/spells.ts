@@ -13,12 +13,14 @@ import {
   asBoolean,
   asInteger,
   asOptionalString,
+  isSpellUpdateNoop,
   normalizeLookup,
   parsePatchJsonlText,
   validateInsertSpellShape,
   validateLevelShape,
   validateUpdateSpellShape,
   type InsertSpellOperation,
+  type SpellUpdateFields,
   type UpdateSpellOperation,
 } from "./spells-schema";
 
@@ -42,12 +44,15 @@ type ResolvedInsertSpell = {
   domainLevels: Array<{ domainId: number; level: number; extra: string }>;
 };
 
-type ResolvedUpdateSpell = {
+export type SpellUpdateApplyOperation = {
+  spellId: number;
+  fields: SpellUpdateFields;
+};
+
+type ResolvedUpdateSpell = SpellUpdateApplyOperation & {
   kind: "updateSpell";
   line: number;
   op: UpdateSpellOperation;
-  spellId: number;
-  slug: string;
 };
 
 type ResolvedOperation = ResolvedInsertSpell | ResolvedUpdateSpell;
@@ -217,42 +222,68 @@ function validatePatch(db: Database.Database, patchPath: string): ValidationResu
   const seenSpellIds = new Set<number>();
   const seenSpellKeys = new Set<string>();
   const seenSlugs = new Set<string>();
+  const seenUpdateSpellIds = new Set<number>();
   const resolved: ResolvedOperation[] = [];
 
   for (const { line, value } of parsed) {
     if (value.op === "updateSpell") {
       const shape = validateUpdateSpellShape(value, line, errors);
-      if (shape.spellId === undefined || !shape.slug) continue;
+      if (shape.spellId === undefined || Object.keys(shape.fields).length === 0) {
+        continue;
+      }
+      if (seenUpdateSpellIds.has(shape.spellId)) {
+        errors.push(`line ${line}: duplicate spell id in update patch: ${shape.spellId}`);
+        continue;
+      }
+      seenUpdateSpellIds.add(shape.spellId);
       const existing = db
-        .prepare("SELECT id, name, slug FROM dnd_spell WHERE id = ?")
+        .prepare(`
+          SELECT
+            id,
+            name,
+            slug,
+            extra_components AS extraComponents,
+            description,
+            description_html AS descriptionHtml
+          FROM dnd_spell
+          WHERE id = ?
+        `)
         .get(shape.spellId) as
-        | { id: number; name: string; slug: string }
+        | {
+            id: number;
+            name: string;
+            slug: string;
+            extraComponents: string | null;
+            description: string;
+            descriptionHtml: string;
+          }
         | undefined;
       if (!existing) {
         errors.push(`line ${line}: spell id does not exist: ${shape.spellId}`);
         continue;
       }
-      const slugCollision = db
-        .prepare("SELECT id, name FROM dnd_spell WHERE slug = ? AND id <> ?")
-        .get(shape.slug, shape.spellId) as
-        | { id: number; name: string }
-        | undefined;
-      if (slugCollision) {
-        warnings.push(
-          `line ${line}: slug also exists on another spell: ${shape.slug} (${slugCollision.id}, ${slugCollision.name})`,
-        );
+      if (shape.fields.slug) {
+        const slugCollision = db
+          .prepare("SELECT id, name FROM dnd_spell WHERE slug = ? AND id <> ?")
+          .get(shape.fields.slug, shape.spellId) as
+          | { id: number; name: string }
+          | undefined;
+        if (slugCollision) {
+          warnings.push(
+            `line ${line}: slug also exists on another spell: ${shape.fields.slug} (${slugCollision.id}, ${slugCollision.name})`,
+          );
+        }
       }
-      if (existing.slug === shape.slug) {
-        warnings.push(
-          `line ${line}: spell ${shape.spellId} already has slug ${shape.slug}`,
-        );
+      if (isSpellUpdateNoop(shape.fields, existing)) {
+        errors.push(`line ${line}: spell update does not change any listed field`);
+        continue;
       }
       resolved.push({
         kind: "updateSpell",
         line,
         op: value,
         spellId: shape.spellId,
-        slug: shape.slug,
+        fields: shape.fields,
       });
       continue;
     }
@@ -567,16 +598,39 @@ function insertSpells(db: Database.Database, operations: ResolvedInsertSpell[]) 
   run();
 }
 
-function updateSpells(db: Database.Database, operations: ResolvedUpdateSpell[]) {
+export function applySpellUpdates(
+  db: Database.Database,
+  operations: SpellUpdateApplyOperation[],
+) {
   const updateSpell = db.prepare(`
     UPDATE dnd_spell
-    SET slug = @slug
+    SET
+      slug = CASE WHEN @update_slug = 1 THEN @slug ELSE slug END,
+      extra_components = CASE
+        WHEN @update_extra_components = 1 THEN @extra_components
+        ELSE extra_components
+      END,
+      description = CASE WHEN @update_description = 1 THEN @description ELSE description END,
+      description_html = CASE
+        WHEN @update_description_html = 1 THEN @description_html
+        ELSE description_html
+      END
     WHERE id = @id
   `);
 
   const run = db.transaction(() => {
     for (const op of operations) {
-      updateSpell.run({ id: op.spellId, slug: op.slug });
+      updateSpell.run({
+        id: op.spellId,
+        update_slug: op.fields.slug === undefined ? 0 : 1,
+        slug: op.fields.slug ?? null,
+        update_extra_components: op.fields.extraComponents === undefined ? 0 : 1,
+        extra_components: op.fields.extraComponents ?? null,
+        update_description: op.fields.description === undefined ? 0 : 1,
+        description: op.fields.description ?? null,
+        update_description_html: op.fields.descriptionHtml === undefined ? 0 : 1,
+        description_html: op.fields.descriptionHtml ?? null,
+      });
     }
   });
 
@@ -665,7 +719,7 @@ function applyPatch(targetDbPath: string, patchPath: string, dryRun: boolean) {
     );
 
     insertSpells(db, insertOperations);
-    updateSpells(db, updateOperations);
+    applySpellUpdates(db, updateOperations);
     rebuildIndexes(db);
     const after = tableCounts(db);
     const insertedSpells = insertOperations.map((op) => ({
@@ -675,7 +729,7 @@ function applyPatch(targetDbPath: string, patchPath: string, dryRun: boolean) {
     }));
     const updatedSpells = updateOperations.map((op) => ({
       id: op.spellId,
-      slug: op.slug,
+      fields: op.fields,
     }));
     const reportPath = writeReport(
       {
@@ -747,4 +801,6 @@ function main() {
   applyPatch(configuredDbPath, patchPath, false);
 }
 
-main();
+if (require.main === module) {
+  main();
+}

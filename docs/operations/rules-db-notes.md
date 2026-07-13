@@ -197,9 +197,28 @@ those with page-specific or issue-specific sources rather than the book ISBN
 enrichment workflow. The deferred rows remain outside accepted output until
 their source ambiguity is resolved.
 
-The first supported operation is `insertSpell`. It writes one `dnd_spell` row,
-optional `dnd_spell_descriptors` rows, class/domain level rows, and then
-rebuilds `idx_spell_class_level` and `idx_spell_domain_level`.
+`insertSpell` writes one `dnd_spell` row, optional
+`dnd_spell_descriptors` rows, class/domain level rows, and then rebuilds
+`idx_spell_class_level` and `idx_spell_domain_level`. `updateSpell` is a
+narrow field-level correction operation: it can change only `slug`, a non-empty
+raw `extraComponents` value, or a paired non-empty `description` and
+`descriptionHtml` replacement. It rejects unknown fields, unpaired text
+updates, empty updates, and DB no-ops; unlisted spell columns, levels, and
+descriptors remain untouched.
+
+For the post-v1.1 full-corpus correction handoff, use the pending patch and its
+source-located ledger together:
+
+```bash
+npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-v600-v601-corrections.jsonl
+npm run -w data-tools rules:spells:apply -- --dry-run pending/spells/full-corpus-v600-v601-corrections.jsonl
+```
+
+The pending file contains 34 reviewed updates: 26 component tokens preserved in
+`extraComponents` without inventing boolean-component semantics, and 10
+description/text-HTML pairs. `data/spells-full/full-corpus-v600-v601-review.generated.jsonl`
+accounts for all 171 source-reviewed rows; its deferred companion contains the
+two malformed-source rows excluded from the patch.
 
 For v3.4 short-description work, reviewed English rules DB gaps can be
 cross-checked against local `data/spells-full/spells-parsed.json` and converted

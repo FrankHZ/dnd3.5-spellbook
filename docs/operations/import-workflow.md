@@ -68,6 +68,16 @@ npm run -w data-tools rules:content:parity
 npm run -w data-tools rules:content:meta
 ```
 
+The post-v1.1 full-corpus correction handoff stays separate from those historic
+insert patches until a DB/content maintainer accepts it. Its pending file is
+`data/rules-patches/pending/spells/full-corpus-v600-v601-corrections.jsonl` and
+its 171-row review ledger is
+`data/spells-full/full-corpus-v600-v601-review.generated.jsonl`. Before apply,
+run `rules:spells:validate` and `rules:spells:apply -- --dry-run` against that
+specific pending file. After accepted local apply, move only that file to
+`applied/spells/`, rewrite and verify the rules manifest, then regenerate and
+check the content artifact before activation.
+
 After a structured spell JSONL patch is applied to the local locked rules DB,
 move it from `data/rules-patches/pending/spells/` to
 `data/rules-patches/applied/spells/` in the nested local `data/` repo before

@@ -7,8 +7,9 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned. This is a post-review correction plan, not a new v1.2
-acceptance track or a current freeze blocker.
+Status: data-pipeline handoff ready; DB/content maintainer apply remains
+pending. This is a post-review correction plan, not a new v1.2 acceptance track
+or a current freeze blocker.
 
 ## Purpose
 
@@ -92,13 +93,14 @@ it cannot express a safe field-level correction patch yet.
   editorial correction already present, 34 as material drift, and 2 as
   unavailable or ambiguous source evidence. The high-confidence body-name
   parser-artifact set has zero overlap with the accepted rows.
-- The 34 material rows include 26 component differences and 9 body/stat-block
-  differences, with `Magius's Light of Truth` in both groups.
+- The 34 material rows include 26 component differences and 10 body/stat-block
+  differences. `Magius's Light of Truth` and `Minimus Containment` are in both
+  groups.
 - `Components` has boolean material, arcane-focus, and divine-focus fields plus
   `extraComponents`; the v6.00 importer only recognized `M`, `AF`, and `DF`.
-- `UpdateSpellOperation` and its SQLite apply path currently support only a
-  slug update. A generic field update must be designed and tested before a
-  correction JSONL can be applied.
+- `updateSpell` now supports only the reviewed partial fields: `slug`, raw
+  `extraComponents`, and paired `description`/`descriptionHtml`. Unknown,
+  empty, unpaired, and no-op updates are rejected.
 - `data-tools/out/` remains rebuildable audit evidence. Durable review
   decisions and pending patch JSONL belong in the nested `data/` repo.
 
@@ -114,6 +116,10 @@ it cannot express a safe field-level correction patch yet.
   under `data-tools/out/`.
 - Validation: ledger classifications sum to 171; every candidate includes
   spell ID, rulebook, source locator, affected fields, and review rationale.
+- Status: complete. The nested data repo now contains
+  `data/spells-full/full-corpus-v600-v601-review.generated.jsonl` with all 171
+  rows and `full-corpus-v600-v601-deferred.generated.jsonl` with the two
+  malformed-source deferrals.
 
 ### Slice 2: Decide Component And Stat-Block Semantics
 
@@ -125,6 +131,10 @@ it cannot express a safe field-level correction patch yet.
 - Validation: no alternative source component is encoded as multiple required
   boolean components; unsupported structured fields remain raw/deferred rather
   than being repurposed into unrelated columns.
+- Status: complete. Bare `F`, `M/DF`, `F/DF`, and `Dragonmark` are preserved as
+  raw `extraComponents`; existing boolean component columns are not changed.
+  Stat-block/table text, including any aura information, remains in the paired
+  description fields rather than introducing a new raw stat-block contract.
 
 ### Slice 3: Add Narrow Structured Update Support
 
@@ -137,6 +147,9 @@ it cannot express a safe field-level correction patch yet.
 - Validation: portable tests cover valid partial updates, unknown or empty
   update rejection, component-policy edge cases, and no-op protection; apply
   dry-run runs only against a temporary SQLite copy.
+- Status: complete. The portable harness covers shape rejection and in-memory
+  SQLite application while preserving unlisted fields; the reviewed patch also
+  passed read-only validation and a temporary-copy dry-run.
 
 ### Slice 4: Generate And Review The Correction Handoff
 
@@ -148,6 +161,10 @@ it cannot express a safe field-level correction patch yet.
 - Validation: `rules:spells:validate` passes; candidate IDs/slugs match the
   locked rules DB; no operation targets the 2 ambiguous rows or overwrites the
   approved `Cynosure` wording.
+- Status: complete. The pending JSONL contains 34 reviewed operations: 26 raw
+  component-token corrections and 10 paired text/HTML corrections, with two
+  overlapping rows. Validation completed with 0 warnings and 0 errors; dry-run
+  completed against a temporary copy of the local rules DB.
 
 ### Slice 5: DB/Content Maintainer Apply
 
@@ -185,12 +202,6 @@ it cannot express a safe field-level correction patch yet.
 
 ## Open Questions
 
-- Which component forms should remain only in `extraComponents`, and which can
-  safely map to existing structured booleans without losing alternative
-  semantics?
-- Should a corrected `Aura` remain in the spell description until a dedicated
-  stat-block field has a justified consumer, or should it be represented by a
-  new raw-field contract?
 - Does the main gate want this correction implementation promoted into v1.2
   acceptance, or kept as a separate post-review data-quality follow-up?
 
@@ -204,6 +215,13 @@ it cannot express a safe field-level correction patch yet.
 
 ## Completion Notes
 
-Use this section only after implementation review. Link the correction patch,
-validation evidence, and DB/content handoff rather than reproducing command
-logs.
+The data-pipeline handoff is ready for DB/content maintainer review:
+
+- ledger: `data/spells-full/full-corpus-v600-v601-review.generated.jsonl`
+- deferred evidence: `data/spells-full/full-corpus-v600-v601-deferred.generated.jsonl`
+- pending patch:
+  `data/rules-patches/pending/spells/full-corpus-v600-v601-corrections.jsonl`
+
+The DB/content apply slice remains open. Its acceptance evidence must include
+local apply, manifest refresh/verify, regenerated content parity, and focused
+representative spell-detail checks.
