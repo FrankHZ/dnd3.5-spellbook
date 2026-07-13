@@ -88,6 +88,9 @@ delivery sequence, ownership, or accepted release scope.
 
 - [full-spell-source-review-plan.md](./full-spell-source-review-plan.md)
 - [full-spell-source-review-report.md](./full-spell-source-review-report.md)
+- [full-corpus-correction-plan.md](./full-corpus-correction-plan.md): planned
+  post-review corrective-patch workflow. It does not add a v1.2 acceptance
+  track or change the current freeze order.
 - [mechanics-localization-plan.md](./mechanics-localization-plan.md)
 - [publications-page-plan.md](./publications-page-plan.md)
 
