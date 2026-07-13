@@ -38,14 +38,25 @@ v1.0 is the previous frozen formal public release:
 
 The latest frozen pre-release snapshot is `docs/mvp/v3.10/FREEZE.md`.
 
-Use the v1.2 child plans for implementation boundaries. Keep full-spell source
-review, mechanics localization, and the Publications page independently
-reviewable unless a real sequencing conflict appears.
+Use the v1.2 child plans for implementation boundaries. Publications is already
+accepted; keep the remaining full-spell source review and mechanics
+localization tracks independently reviewable unless a real sequencing conflict
+appears.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
 
 ## Recently Completed
+
+The v1.2 Publications track is accepted with:
+
+- `/publications` as the primary publication/rulebook scope management page.
+- Settings no longer acting as the rulebook-scope management surface.
+- accepted publication metadata powering robust page grouping.
+- publication row sorting by accepted date or abbreviation within stable
+  category/family groups.
+- local publication metadata refresh showing 151 `RulebookContent` rows, 111
+  accepted publication rows, and 111 publication-date rows.
 
 The v1.1 release is frozen with:
 
@@ -124,22 +135,32 @@ freeze docs instead of copying them into this roadmap.
 
 Recommended next sequence:
 
-1. **Assign v1.2 specialists**
+1. **Run full-spell source review**
 
    Use a data/corpus branch for the full-spell 6.01 inventory and v6.00 parsed
-   JSON quality review. Use an i18n/data branch for mechanics translation, QA
-   reports, and the reusable workflow/skill handoff. Use a frontend-design
-   branch for Chinese mechanics display and the Publications page. Use a
-   DB/data branch only for the minimum publication metadata needed by the page
-   and rulebook grouping.
+   JSON quality review. The branch should produce a reviewable source/parse QA
+   report, classify later import or translation candidates, and avoid production
+   content DB changes.
 
-2. **Keep v1.3 as the broader design release**
+2. **Run mechanics localization**
+
+   Use an i18n/data branch for normalized mechanics translation, QA reports,
+   and the reusable workflow/skill handoff. Follow with a focused frontend
+   consumer branch only after the mechanics vocabulary and QA shape are stable.
+
+3. **Freeze v1.2 after the remaining tracks are accepted**
+
+   The Publications track is already accepted. After full-spell source review
+   and mechanics localization are accepted, prepare `docs/releases/v1.2/FREEZE.md`
+   as the as-built release snapshot.
+
+4. **Keep v1.3 as the broader design release**
 
    Do not let the v1.2 Publications page become the full sitewide style
    redesign. Keep complete filter UX, spell-card redesign, and broader visual
    system work in v1.3 unless a v1.2 acceptance blocker proves otherwise.
 
-3. **Defer full translation QA**
+5. **Defer full translation QA**
 
    Treat full spell-body/name/short-description translation and proofreading
    as a later release candidate. v1.2 should first review the full-spell
