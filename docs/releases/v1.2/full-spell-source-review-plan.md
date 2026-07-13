@@ -124,6 +124,10 @@ become a dependency for translation, import, or provenance work.
 
 ## Follow-Up Candidates
 
+- [Full-Corpus Correction Plan](./full-corpus-correction-plan.md): a planned,
+  source-located correction workflow for material drift found in accepted v1.1
+  corpus rows. It does not reopen this accepted source-review track or change
+  v1.2 freeze ordering by itself.
 - Build a v6.01 text parser only if later source work needs a cleaner
   spell-body source than the existing v6.00 parsed JSON.
 - Review the remaining source-index/name-set differences as bounded queues
