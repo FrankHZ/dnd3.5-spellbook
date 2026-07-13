@@ -1,6 +1,7 @@
 # v1.2 Release Plan
 
-Status: planned.
+Status: in progress. Publications page and minimum metadata are accepted;
+full-spell source review and mechanics localization remain.
 
 v1.2 is a focused post-v1.1 release. It starts from the accepted full corpus
 runtime state and improves source confidence, bounded mechanics localization,
@@ -56,14 +57,16 @@ not expand into the v1.3 sitewide redesign.
 
 3. **Publications page and minimum metadata**
 
-   Planned in [publications-page-plan.md](./publications-page-plan.md). This
+   Accepted in [publications-page-plan.md](./publications-page-plan.md). This
    owns the publication/rulebook user surface, Settings boundary, and minimum
-   metadata contract required for robust grouping.
+   metadata contract required for robust grouping. PR #65 shipped the page and
+   Settings boundary; PR #66 closed the metadata refresh and row sorting
+   follow-up.
 
 4. **Release acceptance and freeze**
 
-   After the three implementation tracks are accepted, create `FREEZE.md` as the
-   as-built v1.2 snapshot.
+   After full-spell source review and mechanics localization are accepted,
+   create `FREEZE.md` as the as-built v1.2 snapshot.
 
 Do not create an integrated plan unless these tracks start conflicting on
 delivery sequence, ownership, or accepted release scope.

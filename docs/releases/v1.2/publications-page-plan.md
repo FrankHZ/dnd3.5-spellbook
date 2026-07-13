@@ -194,7 +194,7 @@ Use this section only after implementation review.
   `2ba201a`.
 - Validation evidence includes `rules:content:generate`, data-tools portable
   tests/typecheck, contracts build/check, server build/tests, and local content
-  DB verification showing 151 `RulebookContent` rows with 37 accepted
+  DB verification showing 151 `RulebookContent` rows with 111 accepted
   publication-date rows.
 - Frontend Slices 2 and 3 were accepted and merged on 2026-07-11 in PR #65. The
   final page uses metadata-first grouping, compact reader-facing rows,
