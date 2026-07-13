@@ -19,9 +19,11 @@ import {
 } from "../rules/rulebooks-schema";
 import {
   buildReviewArtifacts,
+  extractSourcePackageEntriesFromText,
   makeRulebookResolver,
   manualReviewBlocker,
   parseSourceAppearance,
+  parsedSpellNameIssueCodes,
   sourceAppearances,
   sourceLabelKey,
   spellNameVariants,
@@ -300,6 +302,45 @@ const tests: TestCase[] = [
         "Invisibility, Superior",
         "Superior Invisibility",
       ]);
+      assert.deepEqual(
+        extractSourcePackageEntriesFromText(
+          [
+            "A Moment Ago [Kalamar: Player's Guide 3.0 162]",
+            'Acid Orb (See "Orb of Acid")',
+            'Circle of Doom [Player\'s Handbook 3.0 184] (see "mass inflict light wounds")',
+            "Components: V, S",
+          ].join("\n"),
+        ),
+        [
+          {
+            name: "A Moment Ago",
+            source: "Kalamar: Player's Guide 3.0 162",
+            rawLine: "A Moment Ago [Kalamar: Player's Guide 3.0 162]",
+            kind: "sourced",
+          },
+          {
+            name: "Acid Orb",
+            source: null,
+            rawLine: 'Acid Orb (See "Orb of Acid")',
+            kind: "redirect",
+          },
+          {
+            name: "Circle of Doom",
+            source: "Player's Handbook 3.0 184",
+            rawLine:
+              'Circle of Doom [Player\'s Handbook 3.0 184] (see "mass inflict light wounds")',
+            kind: "sourced",
+          },
+        ],
+      );
+      assert.deepEqual(
+        parsedSpellNameIssueCodes({
+          name: "Material Component: An amount of coin or other valuables equal to 1 gp or more.",
+          source: "",
+          school: "",
+        }),
+        ["missing-source", "sentence-ending", "colon"],
+      );
 
       const resolveRulebook = makeRulebookResolver([
         { id: 1, abbr: "Sc_", name: "Spell Compendium" },

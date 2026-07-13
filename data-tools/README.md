@@ -145,11 +145,19 @@ npm run -w data-tools spells-full:inspect -- known-misses
 npm run -w data-tools spells-full:generate -- known-misses --write-patch pending/spells/spells-full-known-misses.jsonl
 npm run -w data-tools spells-full:inspect -- short-desc-rules-gaps
 npm run -w data-tools spells-full:generate -- short-desc-rules-gaps --write-patch pending/spells/short-desc-rules-gaps.generated.jsonl
+npm run -w data-tools spells-full:inspect -- source-package
 npm run -w data-tools spells-full:inspect -- corpus-inventory
 npm run -w data-tools spells-full:generate -- corpus-inventory --write-patch pending/spells/full-corpus-ready.generated.jsonl
 npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.generated.jsonl
 npm run -w data-tools spells-full:rulebooks
 ```
+
+`source-package` is a local-only v1.2 source-review command. It reads
+`data/spells-full/v6.01/`, hashes the package files, parses the source index
+from `Spells v6.01 - List.txt`, compares that index with
+`data/spells-full/spells-parsed.json`, and writes a rebuildable report under
+`data-tools/out/spells-full/`. It does not open SQLite and does not write patch
+JSONL.
 
 `corpus-inventory` is a local-only v1.1 data-pipeline command. It reads the
 ignored `data/spells-full/spells-parsed.json` source dump and the configured
@@ -368,6 +376,13 @@ content DB rebuild, and production activation stay outside the data-pipeline
 command. The same generate command writes rejected and ambiguous review JSONL
 under `data/spells-full/` so confirmed non-import rows and unresolved rows are
 not mixed back into the ready patch.
+
+For v1.2 source-review work, `spells-full:inspect -- source-package` inventories
+the local v6.01 source package without database access. Treat the v6.01 list
+file as the package-level source/name index. The v6.01 full text is retained as
+source material, but this command does not parse it into structured spell-body
+rows. The committed review record lives under `docs/releases/v1.2/`; the JSON
+report under `data-tools/out/spells-full/` is rebuildable evidence.
 
 Run `spells-full:rulebooks` after generating corpus inventory when deferred
 source labels need review. Its JSONL output belongs in the nested local `data/`

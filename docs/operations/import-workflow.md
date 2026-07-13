@@ -38,6 +38,7 @@ npm run -w data-tools zh:backcheck
 npm run -w data-tools zh:qa
 npm run -w server db:content:import:zh-entities
 npm run -w server db:content:import:zh-chm
+npm run -w data-tools spells-full:inspect -- source-package
 npm run -w data-tools spells-full:inspect -- corpus-inventory
 npm run -w data-tools spells-full:generate -- corpus-inventory --write-patch pending/spells/full-corpus-ready.generated.jsonl
 npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.generated.jsonl
@@ -122,6 +123,7 @@ The parser writes into `data-tools/out/zh-parser/`:
 
 ### English Spells-Full Source
 
+- optional v6.01 source package: `data/spells-full/v6.01/`
 - optional parsed source dump: `data/spells-full/spells-parsed.json`
 - rebuildable inventory reports: `data-tools/out/spells-full/`
 - reviewable structured patch JSONL: `data/rules-patches/pending/spells/`
@@ -146,6 +148,20 @@ review artifacts under `data/spells-full/`, not mixed into the ready patch.
 Deferred source-label review rows classify unmapped sources such as
 periodicals, web articles, licensed d20 settings, conversion material, and
 parser artifacts. They are scope-review data, not rules DB patch operations.
+
+For source/parse QA, run:
+
+```bash
+npm run -w data-tools spells-full:inspect -- source-package
+```
+
+This v1.2 review command reads `data/spells-full/v6.01/`, parses the package
+source/name index from `Spells v6.01 - List.txt`, compares it with
+`data/spells-full/spells-parsed.json`, and writes a report under
+`data-tools/out/spells-full/`. It does not open SQLite, generate patch JSONL, or
+parse the v6.01 full text into structured spell-body rows. The committed v1.2
+review record is
+`docs/releases/v1.2/full-spell-source-review-report.md`.
 
 ### English Short-Description Handoff
 

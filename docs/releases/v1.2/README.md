@@ -1,7 +1,7 @@
 # v1.2 Release Plan
 
-Status: in progress. Publications page and minimum metadata are accepted;
-full-spell source review and mechanics localization remain.
+Status: in progress. Publications page, minimum metadata, and full-spell source
+review are accepted; mechanics localization remains.
 
 v1.2 is a focused post-v1.1 release. It starts from the accepted full corpus
 runtime state and improves source confidence, bounded mechanics localization,
@@ -43,9 +43,11 @@ not expand into the v1.3 sitewide redesign.
 
 1. **Full-spell source review**
 
-   Planned in
-   [full-spell-source-review-plan.md](./full-spell-source-review-plan.md). This
-   owns source inventory, parsed JSON quality review, report shape, and
+   Accepted in
+   [full-spell-source-review-plan.md](./full-spell-source-review-plan.md) with
+   the committed review record in
+   [full-spell-source-review-report.md](./full-spell-source-review-report.md).
+   This owns source inventory, parsed JSON quality review, report shape, and
    follow-up classification for later corpus work.
 
 2. **Mechanics localization**
@@ -65,8 +67,8 @@ not expand into the v1.3 sitewide redesign.
 
 4. **Release acceptance and freeze**
 
-   After full-spell source review and mechanics localization are accepted,
-   create `FREEZE.md` as the as-built v1.2 snapshot.
+   After mechanics localization is accepted, create `FREEZE.md` as the
+   as-built v1.2 snapshot.
 
 Do not create an integrated plan unless these tracks start conflicting on
 delivery sequence, ownership, or accepted release scope.
@@ -85,6 +87,7 @@ delivery sequence, ownership, or accepted release scope.
 ## Plans
 
 - [full-spell-source-review-plan.md](./full-spell-source-review-plan.md)
+- [full-spell-source-review-report.md](./full-spell-source-review-report.md)
 - [mechanics-localization-plan.md](./mechanics-localization-plan.md)
 - [publications-page-plan.md](./publications-page-plan.md)
 

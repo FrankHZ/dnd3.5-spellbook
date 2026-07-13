@@ -1,4 +1,5 @@
 import Database from "better-sqlite3";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -10,7 +11,11 @@ import {
 } from "../shared/env";
 
 type Mode = "inspect" | "generate";
-type ReportTarget = "known-misses" | "short-desc-rules-gaps" | "corpus-inventory";
+type ReportTarget =
+  | "known-misses"
+  | "short-desc-rules-gaps"
+  | "corpus-inventory"
+  | "source-package";
 type InventoryCategory =
   | "ready"
   | "duplicate"
@@ -30,6 +35,43 @@ type ParsedSpell = {
   attributes?: Record<string, string>;
   description?: string[];
   page?: string;
+};
+
+type SourcePackageEntry = {
+  name: string;
+  source: string | null;
+  rawLine: string;
+  kind: "sourced" | "redirect";
+};
+
+type ParsedNameIssueCode =
+  | "missing-source"
+  | "long-name"
+  | "sentence-ending"
+  | "colon"
+  | "table-or-body-like";
+
+type ParsedNameQaIssue = {
+  index: number;
+  name: string;
+  source: string;
+  page?: string;
+  issues: ParsedNameIssueCode[];
+};
+
+type SourcePackageFileReport = {
+  name: string;
+  relativePath: string;
+  extension: string;
+  sizeBytes: number;
+  modifiedTime: string;
+  sha256: string;
+  role: "full-text" | "list" | "pdf" | "word" | "other";
+  lineCount?: number;
+  nonEmptyLineCount?: number;
+  sourcedEntryCount?: number;
+  redirectEntryCount?: number;
+  uniqueEntryNameCount?: number;
 };
 
 type KnownMiss = {
@@ -138,6 +180,7 @@ const DEFAULT_RULES_GAPS_PATH = path.join(
 const REPORT_ROOT = path.join(repoRoot(), "data-tools", "out", "spells-full");
 const PATCH_ROOT = path.join(localDataDir(), "rules-patches");
 const SPELLS_FULL_LOCAL_DIR = path.join(localDataDir(), "spells-full");
+const SPELLS_FULL_V601_DIR = path.join(SPELLS_FULL_LOCAL_DIR, "v6.01");
 const DEFAULT_REJECTED_PATH = path.join(
   SPELLS_FULL_LOCAL_DIR,
   "full-corpus-rejected.generated.jsonl",
@@ -342,10 +385,12 @@ function usage(): never {
   npm run -w data-tools spells-full:generate -- known-misses --write-patch pending/spells/spells-full-known-misses.jsonl
   npm run -w data-tools spells-full:inspect -- short-desc-rules-gaps
   npm run -w data-tools spells-full:generate -- short-desc-rules-gaps --write-patch pending/spells/short-desc-rules-gaps.jsonl
+  npm run -w data-tools spells-full:inspect -- source-package
   npm run -w data-tools spells-full:inspect -- corpus-inventory
   npm run -w data-tools spells-full:generate -- corpus-inventory --write-patch pending/spells/full-corpus-ready.generated.jsonl
 
-spells-full source data is read from data/spells-full/spells-parsed.json.
+spells-full parsed data is read from data/spells-full/spells-parsed.json.
+source-package inventories local data/spells-full/v6.01 without opening SQLite.
 Patch paths are resolved under data/rules-patches/.
 `);
   process.exit(1);
@@ -419,6 +464,159 @@ function writeJsonl(rows: unknown[], outputPath: string) {
   fs.writeFileSync(outputPath, body);
 }
 
+function sha256File(filePath: string) {
+  return crypto.createHash("sha256").update(fs.readFileSync(filePath)).digest("hex");
+}
+
+function textLineCounts(text: string) {
+  const lines = text.split(/\r?\n/);
+  return {
+    lineCount: lines.length,
+    nonEmptyLineCount: lines.filter((line) => line.trim().length > 0).length,
+  };
+}
+
+function sourcePackageFileRole(fileName: string): SourcePackageFileReport["role"] {
+  const lower = fileName.toLowerCase();
+  if (lower.endsWith(".pdf")) return "pdf";
+  if (lower.endsWith(".doc")) return "word";
+  if (lower.endsWith(".txt") && lower.includes(" - list")) return "list";
+  if (lower.endsWith(".txt")) return "full-text";
+  return "other";
+}
+
+function extractSourcePackageEntriesFromText(text: string): SourcePackageEntry[] {
+  return text
+    .split(/\r?\n/)
+    .flatMap((line): SourcePackageEntry[] => {
+      const trimmed = line.trim();
+      if (!trimmed || /^[-\s]+$/.test(trimmed)) return [];
+      const sourcedMatch = /^(.+?)\s+\[([^\]]+)\]\s*(?:\([^)]*\)\s*)?$/.exec(
+        trimmed,
+      );
+      if (sourcedMatch) {
+        return [
+          {
+            name: sourcedMatch[1]!.trim(),
+            source: sourcedMatch[2]!.trim(),
+            rawLine: trimmed,
+            kind: "sourced" as const,
+          },
+        ];
+      }
+
+      const redirectMatch = /^(.+?)\s*\((?:see|See)\s+[“"].+[”"]\)\s*$/.exec(
+        trimmed,
+      );
+      if (redirectMatch) {
+        return [
+          {
+            name: redirectMatch[1]!.trim(),
+            source: null,
+            rawLine: trimmed,
+            kind: "redirect" as const,
+          },
+        ];
+      }
+      return [];
+    });
+}
+
+function parsedSpellNameIssueCodes(spell: ParsedSpell): ParsedNameIssueCode[] {
+  const name = spell.name.trim();
+  const issues: ParsedNameIssueCode[] = [];
+  if (!spell.source?.trim()) issues.push("missing-source");
+  if (name.length > 80) issues.push("long-name");
+  if (/[.!?]$/.test(name)) issues.push("sentence-ending");
+  if (name.includes(":")) issues.push("colon");
+  if (
+    /[-]{3,}|\b(round|caster|creature|object|duration|dc|modifier)\b/i.test(
+      name,
+    )
+  ) {
+    issues.push("table-or-body-like");
+  }
+  return issues;
+}
+
+function isHighConfidenceParsedBodyRow(spell: ParsedSpell) {
+  const issues = parsedSpellNameIssueCodes(spell);
+  return (
+    issues.includes("missing-source") &&
+    issues.some((issue) => issue !== "missing-source")
+  );
+}
+
+function summarizeParsedNameQa(parsedSpells: ParsedSpell[]) {
+  const issueCounts = new Map<ParsedNameIssueCode, number>();
+  const highConfidenceIssues: ParsedNameQaIssue[] = [];
+
+  parsedSpells.forEach((spell, index) => {
+    const issues = parsedSpellNameIssueCodes(spell);
+    for (const issue of issues) {
+      issueCounts.set(issue, (issueCounts.get(issue) ?? 0) + 1);
+    }
+    if (isHighConfidenceParsedBodyRow(spell)) {
+      const qaIssue: ParsedNameQaIssue = {
+        index,
+        name: spell.name,
+        source: spell.source ?? "",
+        issues,
+      };
+      if (spell.page !== undefined) qaIssue.page = spell.page;
+      highConfidenceIssues.push(qaIssue);
+    }
+  });
+
+  return {
+    issueCounts: Object.fromEntries([...issueCounts.entries()].sort()),
+    highConfidenceBodyNameRows: highConfidenceIssues.length,
+    highConfidenceBodyNameSamples: highConfidenceIssues.slice(0, 50),
+  };
+}
+
+function sourcePackageTextStats(
+  filePath: string,
+  role: SourcePackageFileReport["role"],
+) {
+  const text = fs.readFileSync(filePath, "utf-8");
+  const entries = role === "list" ? extractSourcePackageEntriesFromText(text) : [];
+  const sourcedEntries = entries.filter((entry) => entry.kind === "sourced");
+  const redirectEntries = entries.filter((entry) => entry.kind === "redirect");
+  return {
+    ...textLineCounts(text),
+    sourcedEntryCount: sourcedEntries.length,
+    redirectEntryCount: redirectEntries.length,
+    uniqueEntryNameCount: new Set(
+      entries.map((entry) => cleanSpellNameForMatch(entry.name)),
+    ).size,
+    entries,
+  };
+}
+
+function sourcePackageFileReport(
+  filePath: string,
+): SourcePackageFileReport & { entries?: SourcePackageEntry[] } {
+  const stat = fs.statSync(filePath);
+  const relativePath = path.relative(localDataDir(), filePath).replace(/\\/g, "/");
+  const name = path.basename(filePath);
+  const report: SourcePackageFileReport & { entries?: SourcePackageEntry[] } = {
+    name,
+    relativePath,
+    extension: path.extname(name).toLowerCase(),
+    sizeBytes: stat.size,
+    modifiedTime: stat.mtime.toISOString(),
+    sha256: sha256File(filePath),
+    role: sourcePackageFileRole(name),
+  };
+
+  if (report.extension === ".txt") {
+    Object.assign(report, sourcePackageTextStats(filePath, report.role));
+  }
+
+  return report;
+}
+
 function resolvePatchPath(rawPath: string) {
   if (path.isAbsolute(rawPath)) {
     throw new Error(
@@ -446,6 +644,115 @@ function loadParsedSpells() {
     throw new Error("spells-full JSON must be an array");
   }
   return parsed as ParsedSpell[];
+}
+
+function runSourcePackageInventory() {
+  if (!fs.existsSync(SPELLS_FULL_V601_DIR)) {
+    throw new Error(`spells-full v6.01 directory not found: ${SPELLS_FULL_V601_DIR}`);
+  }
+
+  const parsedSpells = loadParsedSpells();
+  const parsedNameQa = summarizeParsedNameQa(parsedSpells);
+  const parsedNameSet = new Set(
+    parsedSpells.map((spell) => cleanSpellNameForMatch(spell.name)),
+  );
+  const parsedReviewNameSet = new Set(
+    parsedSpells
+      .filter((spell) => !isHighConfidenceParsedBodyRow(spell))
+      .map((spell) => cleanSpellNameForMatch(spell.name)),
+  );
+  const fileReportsWithEntries = fs
+    .readdirSync(SPELLS_FULL_V601_DIR)
+    .sort((a, b) => a.localeCompare(b))
+    .map((name) => sourcePackageFileReport(path.join(SPELLS_FULL_V601_DIR, name)));
+
+  const sourceIndexEntries = fileReportsWithEntries.flatMap((file) =>
+    file.entries?.map((entry) => ({
+      ...entry,
+      file: file.relativePath,
+    })) ?? [],
+  );
+  const sourceLabels = new Map<string, number>();
+  for (const entry of sourceIndexEntries) {
+    if (!entry.source) continue;
+    sourceLabels.set(entry.source, (sourceLabels.get(entry.source) ?? 0) + 1);
+  }
+
+  const sourcePackageNameSet = new Set(
+    sourceIndexEntries.map((entry) => cleanSpellNameForMatch(entry.name)),
+  );
+  const parsedMissingFromPackage = [...parsedNameSet]
+    .filter((name) => !sourcePackageNameSet.has(name))
+    .sort();
+  const parsedReviewMissingFromPackage = [...parsedReviewNameSet]
+    .filter((name) => !sourcePackageNameSet.has(name))
+    .sort();
+  const packageMissingFromParsed = [...sourcePackageNameSet]
+    .filter((name) => !parsedNameSet.has(name))
+    .sort();
+
+  const files = fileReportsWithEntries.map(({ entries: _entries, ...file }) => file);
+  const report = {
+    sourcePackagePath: path.relative(repoRoot(), SPELLS_FULL_V601_DIR).replace(/\\/g, "/"),
+    parsedJsonPath: path.relative(repoRoot(), SPELLS_FULL_JSON).replace(/\\/g, "/"),
+    summary: {
+      fileCount: files.length,
+      totalSizeBytes: files.reduce((sum, file) => sum + file.sizeBytes, 0),
+      textFileCount: files.filter((file) => file.extension === ".txt").length,
+      pdfFileCount: files.filter((file) => file.extension === ".pdf").length,
+      wordFileCount: files.filter((file) => file.extension === ".doc").length,
+      parsedSpellRows: parsedSpells.length,
+      parsedUniqueNames: parsedNameSet.size,
+      parsedHighConfidenceBodyNameRows: parsedNameQa.highConfidenceBodyNameRows,
+      parsedReviewUniqueNames: parsedReviewNameSet.size,
+      sourceIndexEntryRows: sourceIndexEntries.length,
+      sourceIndexSourcedEntryRows: sourceIndexEntries.filter(
+        (entry) => entry.kind === "sourced",
+      ).length,
+      sourceIndexRedirectRows: sourceIndexEntries.filter(
+        (entry) => entry.kind === "redirect",
+      ).length,
+      sourceIndexUniqueNames: sourcePackageNameSet.size,
+      parsedNamesMissingFromV601Index: parsedMissingFromPackage.length,
+      parsedReviewNamesMissingFromV601Index: parsedReviewMissingFromPackage.length,
+      v601IndexNamesMissingFromParsedJson: packageMissingFromParsed.length,
+      uniqueSourceLabels: sourceLabels.size,
+    },
+    parsedNameQa,
+    files,
+    topSourceLabels: [...sourceLabels.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, 50)
+      .map(([label, count]) => ({ label, count })),
+    samples: {
+      parsedNamesMissingFromV601Index: parsedMissingFromPackage.slice(0, 50),
+      parsedReviewNamesMissingFromV601Index: parsedReviewMissingFromPackage.slice(
+        0,
+        50,
+      ),
+      v601IndexNamesMissingFromParsedJson: packageMissingFromParsed.slice(0, 50),
+    },
+  };
+
+  const reportPath = writeReport(report, "spells-full-source-package-inventory");
+  console.log("spells-full source-package inspect OK");
+  console.log(`Files: ${report.summary.fileCount}`);
+  console.log(`Total size: ${report.summary.totalSizeBytes} bytes`);
+  console.log(`Parsed JSON rows: ${report.summary.parsedSpellRows}`);
+  console.log(
+    `Parsed high-confidence body-name rows: ${report.summary.parsedHighConfidenceBodyNameRows}`,
+  );
+  console.log(`v6.01 source index entry rows: ${report.summary.sourceIndexEntryRows}`);
+  console.log(
+    `Parsed names missing from v6.01 index: ${report.summary.parsedNamesMissingFromV601Index}`,
+  );
+  console.log(
+    `Parsed review names missing from v6.01 index: ${report.summary.parsedReviewNamesMissingFromV601Index}`,
+  );
+  console.log(
+    `v6.01 index names missing from parsed JSON: ${report.summary.v601IndexNamesMissingFromParsedJson}`,
+  );
+  console.log(`Report: ${reportPath}`);
 }
 
 function parseJsonlFile<T>(filePath: string) {
@@ -1666,7 +1973,8 @@ function main() {
   if (
     target !== "known-misses" &&
     target !== "short-desc-rules-gaps" &&
-    target !== "corpus-inventory"
+    target !== "corpus-inventory" &&
+    target !== "source-package"
   ) {
     usage();
   }
@@ -1686,6 +1994,12 @@ function main() {
     return;
   }
 
+  if (target === "source-package") {
+    if (command !== "inspect" || patchPath) usage();
+    runSourcePackageInventory();
+    return;
+  }
+
   const inputIndex = args.indexOf("--input");
   const inputPathArg =
     inputIndex >= 0 ? args[inputIndex + 1] : DEFAULT_RULES_GAPS_PATH;
@@ -1702,9 +2016,11 @@ export {
   buildReviewArtifacts,
   cleanSpellNameForMatch,
   conversionCheck,
+  extractSourcePackageEntriesFromText,
   makeRulebookResolver,
   manualReviewBlocker,
   parseSourceAppearance,
+  parsedSpellNameIssueCodes,
   sourceAppearances,
   sourceLabelKey,
   spellNameVariants,
