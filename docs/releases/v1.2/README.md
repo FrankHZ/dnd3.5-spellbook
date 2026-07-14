@@ -91,6 +91,8 @@ delivery sequence, ownership, or accepted release scope.
 - [full-corpus-correction-plan.md](./full-corpus-correction-plan.md): planned
   post-review corrective-patch workflow. It does not add a v1.2 acceptance
   track or change the current freeze order.
+- [db-workflow-review-plan.md](./db-workflow-review-plan.md): DB/content update
+  checklist and fixture-manifest hardening for accepted data handoffs.
 - [mechanics-localization-plan.md](./mechanics-localization-plan.md)
 - [publications-page-plan.md](./publications-page-plan.md)
 

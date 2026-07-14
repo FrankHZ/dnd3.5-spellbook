@@ -52,8 +52,8 @@ source files do not belong in the parent repo.
 between maintained local data JSONL inputs and the public-safe portable server
 fixtures that cover the same DB role or table shape. Portable CI validates the
 manifest and the checked-in fixture files. When the nested `data/` repo exists
-locally, the same harness also scans the manifest roots and fails if a
-maintained data JSONL file has no portable fixture mapping.
+locally, the same harness scans each listed JSONL file root or directory root
+and fails if a maintained data JSONL file has no portable fixture mapping.
 
 Server API tests load seed rows through
 `server/tests/support/portable-fixtures.ts`. `server/tests/setup-test-dbs.ts`

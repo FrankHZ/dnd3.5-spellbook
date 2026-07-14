@@ -79,7 +79,9 @@ already-applied field updates. To verify the current baseline, use
 `rules:manifest:verify`, `rules:content:parity`, `rules:content:meta`, and
 focused content checks. If the local content DB must be rebuilt from the
 applied rules baseline, use the normal `rules:content:generate` and
-`rules:content:import` sequence above without rerunning the rules patch.
+`rules:content:import` sequence above without rerunning the rules patch. The
+v1.2 DB/content review checklist lives in
+[`db-workflow-review-plan.md`](../releases/v1.2/db-workflow-review-plan.md).
 
 After a structured spell JSONL patch is applied to the local locked rules DB,
 move it from `data/rules-patches/pending/spells/` to
