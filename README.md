@@ -84,6 +84,7 @@ The current deployment workflow is documented in:
 
 - [docs/operations/README.md](./docs/operations/README.md)
 - [docs/operations/deployment.md](./docs/operations/deployment.md)
+- [docs/operations/db-content-workflow.md](./docs/operations/db-content-workflow.md)
 - [docs/operations/data-setup.md](./docs/operations/data-setup.md)
 - [data-tools/README.md](./data-tools/README.md)
 

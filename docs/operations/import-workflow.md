@@ -14,7 +14,9 @@ It covers:
 - producing reviewed English short-description handoff JSONL from local
   IMarvinTPA source-index data
 
-For database creation and local DB roles, use [data-setup.md](./data-setup.md).
+For the DB/content handoff entry point, use
+[db-content-workflow.md](./db-content-workflow.md). For database creation and
+local DB roles, use [data-setup.md](./data-setup.md).
 
 ## Scope
 
@@ -79,7 +81,11 @@ already-applied field updates. To verify the current baseline, use
 `rules:manifest:verify`, `rules:content:parity`, `rules:content:meta`, and
 focused content checks. If the local content DB must be rebuilt from the
 applied rules baseline, use the normal `rules:content:generate` and
-`rules:content:import` sequence above without rerunning the rules patch.
+`rules:content:import` sequence above without rerunning the rules patch. The
+durable DB/content handoff entry point is
+[`db-content-workflow.md`](./db-content-workflow.md); the v1.2 acceptance record
+lives in
+[`db-workflow-review-plan.md`](../releases/v1.2/db-workflow-review-plan.md).
 
 After a structured spell JSONL patch is applied to the local locked rules DB,
 move it from `data/rules-patches/pending/spells/` to
@@ -385,6 +391,7 @@ This workflow does not:
 
 ## Related Files
 
+- [db-content-workflow.md](./db-content-workflow.md)
 - [data-setup.md](./data-setup.md)
 - [rules-db-notes.md](./rules-db-notes.md)
 - [../../data-tools/README.md](../../data-tools/README.md)

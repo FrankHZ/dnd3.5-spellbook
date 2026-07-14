@@ -8,9 +8,10 @@ The app uses three SQLite database roles:
 - the content database
 - the app-state database
 
-For deployment of already-prepared database files, use
-[deployment.md](./deployment.md). For one-time remote host setup, use
-[bootstrap-remote.md](./bootstrap-remote.md).
+For DB/content handoff flow, use
+[db-content-workflow.md](./db-content-workflow.md). For deployment of
+already-prepared database files, use [deployment.md](./deployment.md). For
+one-time remote host setup, use [bootstrap-remote.md](./bootstrap-remote.md).
 
 ## Local-Only Data Policy
 
@@ -167,6 +168,9 @@ empty locally, but it should not be collapsed into the content DB.
 Normalized rules content is rebuildable from the locked local rules DB plus
 declared review inputs. It should be regenerated through `data-tools`, not
 patched directly in the content DB or by replacing the legacy rules baseline.
+Local rules DB patching is an input-preparation step for accepted handoffs; the
+artifact consumed by the app and activated remotely is the regenerated content
+DB.
 
 ## Environment Variables
 
@@ -404,13 +408,11 @@ For a normal local setup:
 5. Run `npm run -w server db:content:reset`.
 6. Run `npm run -w server db:app-state:reset` if server-side user/app-state
    storage is needed locally.
-7. Run `npm run -w server db:content:import:zh-entities`.
-8. Run `npm run -w server db:content:import:zh-chm`.
-9. Run `npm run -w data-tools summaries:import`.
-10. Run `npm run -w data-tools rules:content:generate`.
-11. Run `npm run -w data-tools rules:content:import`.
-12. Run `npm run -w data-tools rules:content:parity`.
-13. Run `npm run -w data-tools rules:content:meta`.
+
+After the DB files and Prisma clients are ready, use
+[`db-content-workflow.md`](./db-content-workflow.md) as the handoff entry point
+and [`import-workflow.md`](./import-workflow.md) for the canonical local content
+population and rebuild commands.
 
 After that, the backend can use:
 
@@ -440,7 +442,8 @@ After that, the backend can use:
 - `server/db/fixtures.manifest.json` maps maintained local data JSONL inputs to
   their public-safe server DB portable fixture coverage. Portable CI checks the
   parent-repo fixture paths, and local runs with the nested `data/` repo present
-  also catch maintained data JSONL files that have no manifest mapping.
+  also catch maintained data JSONL file roots or files under listed directory
+  roots that have no manifest mapping.
 - The root `data/` directory is a nested local Git repo in this workspace. Use
   that repo to version local source inputs without adding them to the parent
   project repo.
@@ -452,6 +455,7 @@ After that, the backend can use:
 - [../../server/prisma-app-state/prisma.config.ts](../../server/prisma-app-state/prisma.config.ts)
 - [../../server/db/README.md](../../server/db/README.md)
 - [../../server/.env](../../server/.env)
+- [db-content-workflow.md](./db-content-workflow.md)
 - [deployment.md](./deployment.md)
 - [operations/bootstrap-remote.md](./bootstrap-remote.md)
 - [public-repo-notes.md](./public-repo-notes.md)
