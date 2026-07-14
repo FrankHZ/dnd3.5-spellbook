@@ -88,9 +88,9 @@ delivery sequence, ownership, or accepted release scope.
 
 - [full-spell-source-review-plan.md](./full-spell-source-review-plan.md)
 - [full-spell-source-review-report.md](./full-spell-source-review-report.md)
-- [full-corpus-correction-plan.md](./full-corpus-correction-plan.md): planned
-  post-review corrective-patch workflow. It does not add a v1.2 acceptance
-  track or change the current freeze order.
+- [full-corpus-correction-plan.md](./full-corpus-correction-plan.md):
+  post-review corrective-patch apply record. Local DB/content apply is complete,
+  and remote activation remains outside PR scope.
 - [db-workflow-review-plan.md](./db-workflow-review-plan.md): DB/content update
   checklist and fixture-manifest hardening acceptance record for accepted data
   handoffs. The durable workflow entry point is

@@ -12,8 +12,8 @@ directory for release lines after MVP scope is frozen.
 - [v1.2/full-spell-source-review-plan.md](./v1.2/full-spell-source-review-plan.md):
   active full-spell source inventory and parse QA plan.
 - [v1.2/full-corpus-correction-plan.md](./v1.2/full-corpus-correction-plan.md):
-  planned post-review correction workflow for accepted corpus rows; it does not
-  alter current v1.2 acceptance or freeze ordering.
+  post-review correction apply record for accepted corpus rows; local DB/content
+  apply is complete, and remote activation remains outside PR scope.
 - [v1.2/db-workflow-review-plan.md](./v1.2/db-workflow-review-plan.md):
   DB/content update checklist and fixture-manifest hardening acceptance record
   for accepted data handoffs.

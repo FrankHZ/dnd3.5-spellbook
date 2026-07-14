@@ -32,9 +32,9 @@ Use these docs for orientation instead of expanding this file:
   localization, and Publications page release plan.
 - `docs/releases/v1.2/full-spell-source-review-plan.md`: active full-spell
   source inventory and parse QA plan.
-- `docs/releases/v1.2/full-corpus-correction-plan.md`: planned post-review
-  correction workflow for accepted full-corpus rows; it does not currently
-  change v1.2 release acceptance or freeze ordering.
+- `docs/releases/v1.2/full-corpus-correction-plan.md`: post-review correction
+  apply record for accepted full-corpus rows; local DB/content apply is
+  complete, and remote activation remains outside PR scope.
 - `docs/releases/v1.2/db-workflow-review-plan.md`: v1.2 DB/content workflow
   hardening acceptance record.
 - `docs/releases/v1.2/mechanics-localization-plan.md`: active mechanics
