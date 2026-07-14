@@ -13,12 +13,12 @@ remains outside this plan.
 
 ## Purpose
 
-Define the DB/content maintainer workflow for v1.2 data handoffs so local rules
-DB patching, content DB regeneration, portable fixture coverage, and optional
-remote activation use one repeatable sequence. The user-facing/runtime artifact
-for these updates is the content DB; the local `rules-clean.sqlite` patch step
-is a build input used to regenerate normalized content, not the artifact we
-publish or deploy.
+Record the v1.2 acceptance evidence that hardened the DB/content maintainer
+workflow. The durable workflow entry point now lives in
+[`db-content-workflow.md`](../../operations/db-content-workflow.md). The
+user-facing/runtime artifact for these updates is the content DB; the local
+`rules-clean.sqlite` patch step is a build input used to regenerate normalized
+content, not the artifact we publish or deploy.
 
 ## Ownership
 
@@ -69,6 +69,8 @@ DB update knowledge currently spans several documents:
 - `rules-db-notes.md` records rules patch semantics and source-specific notes.
 - `deployment.md` owns remote DB upload and operator activation details.
 - `server/db/README.md` owns portable fixture file layout.
+- `db-content-workflow.md` is the durable entry point that routes DB/content
+  handoffs across those command owners.
 
 That split is valid, but recent handoffs exposed two risks: agents can refresh
 content DBs without first checking whether rules DB patches were accepted and
@@ -116,6 +118,10 @@ its file or directory is not listed in `server/db/fixtures.manifest.json`.
   check.
 
 ## Fixed Workflow
+
+The durable workflow is documented in
+[`db-content-workflow.md`](../../operations/db-content-workflow.md). The outline
+below records the v1.2 acceptance shape that led to that durable entry point.
 
 ### 1. Refresh Context
 

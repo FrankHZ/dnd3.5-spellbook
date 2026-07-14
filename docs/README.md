@@ -121,6 +121,9 @@ baselines.
 
 - [operations/README.md](./operations/README.md): operations map.
 - [deployment.md](./operations/deployment.md): deployment workflow.
+- [db-content-workflow.md](./operations/db-content-workflow.md): DB/content
+  handoff entry point, content artifact regeneration, fixture coverage, and
+  optional remote activation routing.
 - [data-setup.md](./operations/data-setup.md): database roles, local DB setup, and
   fixtures.
 - [import-workflow.md](./operations/import-workflow.md): maintained app-owned import
@@ -171,7 +174,8 @@ handoff records.
 - [releases/v1.2/full-corpus-correction-plan.md](./releases/v1.2/full-corpus-correction-plan.md):
   planned post-review correction workflow for accepted full-corpus rows.
 - [releases/v1.2/db-workflow-review-plan.md](./releases/v1.2/db-workflow-review-plan.md):
-  DB/content update checklist and fixture-manifest hardening for data handoffs.
+  DB/content update checklist and fixture-manifest hardening acceptance record
+  for data handoffs.
 - [releases/v1.2/mechanics-localization-plan.md](./releases/v1.2/mechanics-localization-plan.md):
   active mechanics translation, QA workflow, and frontend consumer plan.
 - [releases/v1.2/publications-page-plan.md](./releases/v1.2/publications-page-plan.md):

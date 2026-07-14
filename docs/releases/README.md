@@ -15,8 +15,8 @@ directory for release lines after MVP scope is frozen.
   planned post-review correction workflow for accepted corpus rows; it does not
   alter current v1.2 acceptance or freeze ordering.
 - [v1.2/db-workflow-review-plan.md](./v1.2/db-workflow-review-plan.md):
-  DB/content update checklist and fixture-manifest hardening for accepted data
-  handoffs.
+  DB/content update checklist and fixture-manifest hardening acceptance record
+  for accepted data handoffs.
 - [v1.2/mechanics-localization-plan.md](./v1.2/mechanics-localization-plan.md):
   active mechanics translation, QA workflow, and frontend consumer plan.
 - [v1.2/publications-page-plan.md](./v1.2/publications-page-plan.md): active

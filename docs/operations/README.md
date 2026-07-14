@@ -16,6 +16,9 @@ their responsibilities clear.
 
 ## Data And Import Operations
 
+- [./db-content-workflow.md](./db-content-workflow.md): durable entry point for
+  DB/content handoffs, content artifact regeneration, fixture coverage, and
+  optional remote activation.
 - [./data-setup.md](./data-setup.md): local database roles, runtime DB files,
   fixture boundaries, and content DB setup.
 - [./import-workflow.md](./import-workflow.md): maintained app-owned import

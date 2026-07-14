@@ -212,8 +212,9 @@ applied locally and moved to
 Do not rerun `rules:spells:apply` against the current local rules DB baseline;
 the no-op guard rejects already-applied updates. Verify the current state with
 `rules:manifest:verify`, content parity/meta, and focused field checks instead.
-Use [`import-workflow.md`](./import-workflow.md) for the canonical local
-validation, manifest, and content DB rebuild sequence.
+Use [`db-content-workflow.md`](./db-content-workflow.md) as the DB/content
+handoff entry point and [`import-workflow.md`](./import-workflow.md) for the
+canonical local validation, manifest, and content DB rebuild commands.
 
 The applied file contains 34 reviewed updates: 26 component tokens preserved in
 `extraComponents` without inventing boolean-component semantics, and 10

@@ -35,6 +35,8 @@ Use these docs for orientation instead of expanding this file:
 - `docs/releases/v1.2/full-corpus-correction-plan.md`: planned post-review
   correction workflow for accepted full-corpus rows; it does not currently
   change v1.2 release acceptance or freeze ordering.
+- `docs/releases/v1.2/db-workflow-review-plan.md`: v1.2 DB/content workflow
+  hardening acceptance record.
 - `docs/releases/v1.2/mechanics-localization-plan.md`: active mechanics
   translation, QA workflow, and frontend consumer plan.
 - `docs/releases/v1.2/publications-page-plan.md`: active Publications page and
@@ -69,6 +71,8 @@ Use these docs for orientation instead of expanding this file:
 - `docs/i18n.md`: frontend copy, language fallback, and locale workflow.
 - `docs/operations/README.md`: deployment, data setup, and remote operations
   map.
+- `docs/operations/db-content-workflow.md`: durable DB/content handoff entry
+  point after v1.2 workflow hardening.
 
 For workspace command references, use:
 

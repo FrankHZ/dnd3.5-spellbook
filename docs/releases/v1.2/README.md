@@ -92,7 +92,9 @@ delivery sequence, ownership, or accepted release scope.
   post-review corrective-patch workflow. It does not add a v1.2 acceptance
   track or change the current freeze order.
 - [db-workflow-review-plan.md](./db-workflow-review-plan.md): DB/content update
-  checklist and fixture-manifest hardening for accepted data handoffs.
+  checklist and fixture-manifest hardening acceptance record for accepted data
+  handoffs. The durable workflow entry point is
+  [db-content-workflow.md](../../operations/db-content-workflow.md).
 - [mechanics-localization-plan.md](./mechanics-localization-plan.md)
 - [publications-page-plan.md](./publications-page-plan.md)
 

@@ -8,9 +8,10 @@ The app uses three SQLite database roles:
 - the content database
 - the app-state database
 
-For deployment of already-prepared database files, use
-[deployment.md](./deployment.md). For one-time remote host setup, use
-[bootstrap-remote.md](./bootstrap-remote.md).
+For DB/content handoff flow, use
+[db-content-workflow.md](./db-content-workflow.md). For deployment of
+already-prepared database files, use [deployment.md](./deployment.md). For
+one-time remote host setup, use [bootstrap-remote.md](./bootstrap-remote.md).
 
 ## Local-Only Data Policy
 
@@ -409,8 +410,9 @@ For a normal local setup:
    storage is needed locally.
 
 After the DB files and Prisma clients are ready, use
-[`import-workflow.md`](./import-workflow.md) for the canonical local content
-population and accepted-handoff rebuild sequence.
+[`db-content-workflow.md`](./db-content-workflow.md) as the handoff entry point
+and [`import-workflow.md`](./import-workflow.md) for the canonical local content
+population and rebuild commands.
 
 After that, the backend can use:
 
@@ -453,6 +455,7 @@ After that, the backend can use:
 - [../../server/prisma-app-state/prisma.config.ts](../../server/prisma-app-state/prisma.config.ts)
 - [../../server/db/README.md](../../server/db/README.md)
 - [../../server/.env](../../server/.env)
+- [db-content-workflow.md](./db-content-workflow.md)
 - [deployment.md](./deployment.md)
 - [operations/bootstrap-remote.md](./bootstrap-remote.md)
 - [public-repo-notes.md](./public-repo-notes.md)
