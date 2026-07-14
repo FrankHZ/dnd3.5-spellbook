@@ -1278,6 +1278,10 @@ const tests: TestCase[] = [
 
 function collectJsonlFiles(root: string): string[] {
   if (!fs.existsSync(root)) return [];
+  const rootStat = fs.statSync(root);
+  if (rootStat.isFile()) return root.endsWith(".jsonl") ? [root] : [];
+  if (!rootStat.isDirectory()) return [];
+
   const entries = fs.readdirSync(root, { withFileTypes: true });
   const files: string[] = [];
   for (const entry of entries) {
