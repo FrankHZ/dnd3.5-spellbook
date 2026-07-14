@@ -407,13 +407,10 @@ For a normal local setup:
 5. Run `npm run -w server db:content:reset`.
 6. Run `npm run -w server db:app-state:reset` if server-side user/app-state
    storage is needed locally.
-7. Run `npm run -w server db:content:import:zh-entities`.
-8. Run `npm run -w server db:content:import:zh-chm`.
-9. Run `npm run -w data-tools summaries:import`.
-10. Run `npm run -w data-tools rules:content:generate`.
-11. Run `npm run -w data-tools rules:content:import`.
-12. Run `npm run -w data-tools rules:content:parity`.
-13. Run `npm run -w data-tools rules:content:meta`.
+
+After the DB files and Prisma clients are ready, use
+[`import-workflow.md`](./import-workflow.md) for the canonical local content
+population and accepted-handoff rebuild sequence.
 
 After that, the backend can use:
 

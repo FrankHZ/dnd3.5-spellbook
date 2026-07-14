@@ -121,28 +121,28 @@ its file or directory is not listed in `server/db/fixtures.manifest.json`.
 - Confirm parent branch, upstream status, and data repo branch:
   `git status --short --branch` and `git -C data status --short --branch`.
 - Read the active handoff plan and relevant operation docs.
-- Run `npm run -w data-tools test:portable` before writing DB files when the
-  change touches data JSONL, fixtures, manifest coverage, or data-tool schema.
+- Run the portable harness before writing DB files when the change touches data
+  JSONL, fixtures, manifest coverage, or data-tool schema.
 
 ### 2. Apply Rules DB Patches Only After Handoff Acceptance
 
-- Validate the specific pending file, not an inferred directory:
-  `npm run -w data-tools rules:spells:validate -- pending/spells/<file>.jsonl`.
+- Use the accepted-handoff apply sequence in
+  [`import-workflow.md`](../../operations/import-workflow.md). That document is
+  the canonical local command sequence for rules patch apply and content DB
+  rebuild.
+- Validate and dry-run the specific pending file, not an inferred directory.
 - Dry-run against a temporary copy before touching local `rules-clean.sqlite`.
 - Apply only after the main gate accepts the handoff for DB/content maintainer
   work.
 - Move the accepted patch from `pending/` to `applied/` in the nested data repo.
-- Run `npm run -w data-tools rules:manifest:write` and then
-  `npm run -w data-tools rules:manifest:verify`.
+- Rewrite and verify the rules manifest after moving the accepted patch.
 
 ### 3. Rebuild Local Content DB
 
-- Run:
-  `npm run -w data-tools rules:content:generate`,
-  `npm run -w data-tools rules:content:import -- --dry-run`,
-  `npm run -w data-tools rules:content:import`,
-  `npm run -w data-tools rules:content:parity`, and
-  `npm run -w data-tools rules:content:meta`.
+- Use [`import-workflow.md`](../../operations/import-workflow.md) for the local
+  content DB rebuild command order and
+  [`data-setup.md`](../../operations/data-setup.md) for DB roles, environment
+  variables, and migration/reset setup.
 - Verify `RulesContentBuild.parentRepoCommit`, `dataRepoCommit`,
   `parentRepoDirty`, and `dataRepoDirty`.
 - Do focused read-only SQLite or API checks for representative rows named by
@@ -159,20 +159,16 @@ its file or directory is not listed in `server/db/fixtures.manifest.json`.
   role or table shape; do not copy real source text into parent fixtures.
 - When a handoff introduces a new patch shape, add a small synthetic fixture
   row that represents the post-apply rules/content shape.
-- Run `npm run -w data-tools test:portable` after manifest or fixture edits.
+- Run the portable harness after manifest or fixture edits.
 
 ### 5. Activate Remote DB Only After Merge Or Explicit Gate Approval
 
-- Regenerate the local content DB from the merged parent commit and the intended
+- Use [`deployment.md`](../../operations/deployment.md) as the canonical remote
+  DB activation procedure.
+- Regenerate the local content DB from the merged parent commit and intended
   data repo commit before upload.
-- Create a SQLite snapshot with the database backup API rather than copying a
-  possibly locked live DB file.
-- Upload only the intended incoming DB file, run `~/update-db.sh`, and verify
-  the active remote DB hash matches the uploaded snapshot.
-- Compare remote `/api/status/db` provenance with local `rules:content:meta`
-  and sample public API responses.
-- Archive the remote incoming file under `~/data/staging-applied-*` after a
-  successful activation.
+- Compare remote `/api/status/db` provenance with local content metadata and
+  sample public API responses after activation.
 
 ## Plan
 
