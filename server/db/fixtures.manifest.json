@@ -5,7 +5,10 @@
     "data/rulebook-publications",
     "data/short-desc-normalized",
     "data/rules-patches/applied/rulebooks",
-    "data/rules-patches/applied/spells"
+    "data/rules-patches/applied/spells",
+    "data/rules-patches/applied/spells/full-corpus-v600-v601-corrections.jsonl",
+    "data/spells-full/full-corpus-v600-v601-deferred.generated.jsonl",
+    "data/spells-full/full-corpus-v600-v601-review.generated.jsonl"
   ],
   "mappings": [
     {
@@ -99,6 +102,30 @@
         "server/db/content/fixtures/portable/normalized-rules-spells.jsonl"
       ],
       "note": "A source-backed rules patch is represented by synthetic spell runtime and content rows."
+    },
+    {
+      "dataPath": "data/rules-patches/applied/spells/full-corpus-v600-v601-corrections.jsonl",
+      "portableFixturePaths": [
+        "server/db/rules-clean/fixtures/portable/spell-runtime.jsonl",
+        "server/db/content/fixtures/portable/normalized-rules-spells.jsonl"
+      ],
+      "note": "Pending full-corpus correction updates are represented by a synthetic post-apply spell row and normalized content row."
+    },
+    {
+      "dataPath": "data/spells-full/full-corpus-v600-v601-deferred.generated.jsonl",
+      "portableFixturePaths": [
+        "server/db/rules-clean/fixtures/portable/spell-runtime.jsonl",
+        "server/db/content/fixtures/portable/normalized-rules-spells.jsonl"
+      ],
+      "note": "Deferred v6.00/v6.01 correction evidence is represented by synthetic spell runtime and normalized content rows."
+    },
+    {
+      "dataPath": "data/spells-full/full-corpus-v600-v601-review.generated.jsonl",
+      "portableFixturePaths": [
+        "server/db/rules-clean/fixtures/portable/spell-runtime.jsonl",
+        "server/db/content/fixtures/portable/normalized-rules-spells.jsonl"
+      ],
+      "note": "The v6.00/v6.01 correction review ledger is represented by synthetic spell runtime and normalized content rows."
     }
   ]
 }

@@ -7,8 +7,10 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned. This is a post-review correction plan, not a new v1.2
-acceptance track or a current freeze blocker.
+Status: local DB/content apply complete. The reviewed correction patch has been
+applied to the local locked rules DB, moved to the nested data repo's applied
+patch set, and regenerated into the local content DB. Remote content DB
+activation remains outside this PR.
 
 ## Purpose
 
@@ -40,7 +42,8 @@ a new source of truth.
   `docs/operations/rules-db-notes.md`, `data-tools/README.md`, and nearby
   `data-tools/src/rules/` patch code/tests.
 - Expected edit surface: data-tool patch schema/apply helpers and focused
-  tests; durable review and pending patch JSONL in the nested `data/` repo;
+  tests; durable review and accepted correction JSONL in the nested `data/`
+  repo;
   this plan and affected workflow docs.
 - Nearby code/tests: `data-tools/src/rules/spells-schema.ts`,
   `data-tools/src/rules/spells.ts`, `data-tools/src/rules/manifest.ts`, and
@@ -70,7 +73,8 @@ it cannot express a safe field-level correction patch yet.
   conjunctions.
 - Extend structured spell updates only as far as needed for reviewed fields and
   descriptions, with focused tests and dry-run evidence.
-- Produce a narrow pending JSONL handoff for DB/content maintainers.
+- Produce a narrow JSONL handoff for DB/content maintainers, then record the
+  accepted local apply and content artifact verification.
 
 ## Non-Goals
 
@@ -92,15 +96,21 @@ it cannot express a safe field-level correction patch yet.
   editorial correction already present, 34 as material drift, and 2 as
   unavailable or ambiguous source evidence. The high-confidence body-name
   parser-artifact set has zero overlap with the accepted rows.
-- The 34 material rows include 26 component differences and 9 body/stat-block
-  differences, with `Magius's Light of Truth` in both groups.
+- The 34 material rows include 26 component differences and 10 body/stat-block
+  differences. `Magius's Light of Truth` and `Minimus Containment` are in both
+  groups.
 - `Components` has boolean material, arcane-focus, and divine-focus fields plus
   `extraComponents`; the v6.00 importer only recognized `M`, `AF`, and `DF`.
-- `UpdateSpellOperation` and its SQLite apply path currently support only a
-  slug update. A generic field update must be designed and tested before a
-  correction JSONL can be applied.
+- `updateSpell` now supports only the reviewed partial fields: `slug`, raw
+  `extraComponents`, and paired `description`/`descriptionHtml`. Unknown,
+  empty, unpaired, and no-op updates are rejected.
 - `data-tools/out/` remains rebuildable audit evidence. Durable review
-  decisions and pending patch JSONL belong in the nested `data/` repo.
+  decisions and accepted correction patch JSONL belong in the nested `data/`
+  repo.
+- The accepted correction patch now lives at
+  `data/rules-patches/applied/spells/full-corpus-v600-v601-corrections.jsonl`.
+  It should not be re-applied to the current local rules DB baseline; the
+  structured updater's no-op guard rejects already-applied field updates.
 
 ## Plan
 
@@ -114,6 +124,10 @@ it cannot express a safe field-level correction patch yet.
   under `data-tools/out/`.
 - Validation: ledger classifications sum to 171; every candidate includes
   spell ID, rulebook, source locator, affected fields, and review rationale.
+- Status: complete. The nested data repo now contains
+  `data/spells-full/full-corpus-v600-v601-review.generated.jsonl` with all 171
+  rows and `full-corpus-v600-v601-deferred.generated.jsonl` with the two
+  malformed-source deferrals.
 
 ### Slice 2: Decide Component And Stat-Block Semantics
 
@@ -125,6 +139,10 @@ it cannot express a safe field-level correction patch yet.
 - Validation: no alternative source component is encoded as multiple required
   boolean components; unsupported structured fields remain raw/deferred rather
   than being repurposed into unrelated columns.
+- Status: complete. Bare `F`, `M/DF`, `F/DF`, and `Dragonmark` are preserved as
+  raw `extraComponents`; existing boolean component columns are not changed.
+  Stat-block/table text, including any aura information, remains in the paired
+  description fields rather than introducing a new raw stat-block contract.
 
 ### Slice 3: Add Narrow Structured Update Support
 
@@ -137,17 +155,24 @@ it cannot express a safe field-level correction patch yet.
 - Validation: portable tests cover valid partial updates, unknown or empty
   update rejection, component-policy edge cases, and no-op protection; apply
   dry-run runs only against a temporary SQLite copy.
+- Status: complete. The portable harness covers shape rejection and in-memory
+  SQLite application while preserving unlisted fields; the reviewed patch also
+  passed read-only validation and a temporary-copy dry-run.
 
 ### Slice 4: Generate And Review The Correction Handoff
 
-- Deliverable: a pending JSONL patch at
-  `data/rules-patches/pending/spells/full-corpus-v600-v601-corrections.jsonl`
-  containing only accepted, source-located corrections.
-- Expected files: pending patch JSONL, its review ledger, and a small generated
+- Deliverable: a reviewed JSONL patch containing only accepted, source-located
+  corrections.
+- Expected files: accepted patch JSONL, its review ledger, and a small generated
   report under `data-tools/out/` that proves row/field counts.
 - Validation: `rules:spells:validate` passes; candidate IDs/slugs match the
   locked rules DB; no operation targets the 2 ambiguous rows or overwrites the
   approved `Cynosure` wording.
+- Status: complete. The JSONL contains 34 reviewed operations: 26 raw
+  component-token corrections and 10 paired text/HTML corrections, with two
+  overlapping rows. Validation completed with 0 warnings and 0 errors; dry-run
+  completed against a temporary copy of the local rules DB. After DB/content
+  maintainer acceptance, the file was moved from `pending/` to `applied/`.
 
 ### Slice 5: DB/Content Maintainer Apply
 
@@ -158,6 +183,16 @@ it cannot express a safe field-level correction patch yet.
 - Validation: temporary-copy dry-run, local apply, `rules:manifest:verify`,
   content generation/import/parity checks, and focused spell-detail checks for
   corrected examples.
+- Status: complete. The applied patch is tracked in the nested data repo at
+  `data/rules-patches/applied/spells/full-corpus-v600-v601-corrections.jsonl`.
+  Local rules manifest verification reports 223/223 spell operations verified.
+  Local content DB rebuild/parity/meta passed against parent commit
+  `0f39a9cd572e99a69131c0ce04a910161ce8d164` and data commit
+  `72606aed5c90d0973e105f45b5e2da5ae96b8b84`; `buildMetaJson` records
+  `parentRepoDirty: false` and `dataRepoDirty: false`. A focused field-level
+  check over all 34 operations reported 0 failures, including `Alliance Undone`
+  (`spell:4932`) with `componentsRaw` and `SpellComponent.other` set to
+  `M/DF`.
 
 ## Acceptance Criteria
 
@@ -167,8 +202,8 @@ it cannot express a safe field-level correction patch yet.
 - Component alternatives are preserved without false required-component
   semantics.
 - The update contract is tested and cannot modify unlisted spell fields.
-- The DB/content maintainer can dry-run and apply independently from the
-  data-pipeline branch.
+- The DB/content maintainer apply is recorded with manifest/content parity and
+  focused field-level verification.
 - The v1.1 freeze remains historical; this plan and any implementation record
   current behavior in v1.2/topic docs instead.
 
@@ -185,12 +220,6 @@ it cannot express a safe field-level correction patch yet.
 
 ## Open Questions
 
-- Which component forms should remain only in `extraComponents`, and which can
-  safely map to existing structured booleans without losing alternative
-  semantics?
-- Should a corrected `Aura` remain in the spell description until a dedicated
-  stat-block field has a justified consumer, or should it be represented by a
-  new raw-field contract?
 - Does the main gate want this correction implementation promoted into v1.2
   acceptance, or kept as a separate post-review data-quality follow-up?
 
@@ -204,6 +233,13 @@ it cannot express a safe field-level correction patch yet.
 
 ## Completion Notes
 
-Use this section only after implementation review. Link the correction patch,
-validation evidence, and DB/content handoff rather than reproducing command
-logs.
+The accepted correction records are:
+
+- ledger: `data/spells-full/full-corpus-v600-v601-review.generated.jsonl`
+- deferred evidence: `data/spells-full/full-corpus-v600-v601-deferred.generated.jsonl`
+- applied patch:
+  `data/rules-patches/applied/spells/full-corpus-v600-v601-corrections.jsonl`
+
+The DB/content apply slice is complete locally. Remote content DB activation is
+not part of this PR; verify or activate the remote artifact through the
+operator-owned deployment workflow only after merge or explicit gate approval.

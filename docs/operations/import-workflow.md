@@ -68,6 +68,19 @@ npm run -w data-tools rules:content:parity
 npm run -w data-tools rules:content:meta
 ```
 
+The post-v1.1 full-corpus correction apply is complete locally. The accepted
+patch now lives at
+`data/rules-patches/applied/spells/full-corpus-v600-v601-corrections.jsonl`; its
+171-row review ledger remains
+`data/spells-full/full-corpus-v600-v601-review.generated.jsonl`. Do not rerun
+`rules:spells:apply` for that patch against the current local rules DB
+baseline: the reviewed updates are already present and the no-op guard rejects
+already-applied field updates. To verify the current baseline, use
+`rules:manifest:verify`, `rules:content:parity`, `rules:content:meta`, and
+focused content checks. If the local content DB must be rebuilt from the
+applied rules baseline, use the normal `rules:content:generate` and
+`rules:content:import` sequence above without rerunning the rules patch.
+
 After a structured spell JSONL patch is applied to the local locked rules DB,
 move it from `data/rules-patches/pending/spells/` to
 `data/rules-patches/applied/spells/` in the nested local `data/` repo before

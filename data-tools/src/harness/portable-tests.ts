@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import Database from "better-sqlite3";
 
 import {
   chooseExact,
@@ -9,9 +10,12 @@ import {
 } from "../short-desc/en-summary-matching";
 import {
   parsePatchJsonlText,
+  isSpellUpdateNoop,
   validateInsertSpellShape,
   validateLevelShape,
+  validateUpdateSpellShape,
 } from "../rules/spells-schema";
+import { applySpellUpdates } from "../rules/spells";
 import {
   parseRulebookPatchJsonlText,
   validateInsertRulebookShape,
@@ -1158,10 +1162,126 @@ const tests: TestCase[] = [
       assert.equal(ok.classLevels[0]?.level, 1);
     },
   },
+  {
+    name: "structured spell updates are narrow, paired, and preserve unlisted fields",
+    run: () => {
+      const validErrors: string[] = [];
+      const valid = validateUpdateSpellShape(
+        {
+          op: "updateSpell",
+          id: 7,
+          spell: {
+            extraComponents: "M/DF",
+            description: "Corrected fixture text.",
+            descriptionHtml: "<p>Corrected fixture text.</p>",
+          },
+        },
+        1,
+        validErrors,
+      );
+      assert.deepEqual(validErrors, []);
+      assert.deepEqual(valid.fields, {
+        extraComponents: "M/DF",
+        description: "Corrected fixture text.",
+        descriptionHtml: "<p>Corrected fixture text.</p>",
+      });
+      assert.equal(
+        isSpellUpdateNoop(valid.fields, {
+          slug: "fixture-spell",
+          extraComponents: "M/DF",
+          description: "Corrected fixture text.",
+          descriptionHtml: "<p>Corrected fixture text.</p>",
+        }),
+        true,
+      );
+
+      const invalidErrors: string[] = [];
+      validateUpdateSpellShape(
+        {
+          op: "updateSpell",
+          id: 7,
+          spell: { description: "Unpaired text.", school: "Evocation" },
+        } as never,
+        2,
+        invalidErrors,
+      );
+      assert.ok(
+        invalidErrors.some((error) => error.includes("unsupported spell update field")),
+      );
+      assert.ok(
+        invalidErrors.some((error) => error.includes("must be updated together")),
+      );
+
+      const emptyErrors: string[] = [];
+      validateUpdateSpellShape(
+        { op: "updateSpell", id: 7, spell: {} },
+        3,
+        emptyErrors,
+      );
+      assert.ok(
+        emptyErrors.some((error) => error.includes("at least one spell update field")),
+      );
+
+      const db = new Database(":memory:");
+      try {
+        db.exec(`
+          CREATE TABLE dnd_spell (
+            id INTEGER PRIMARY KEY,
+            slug TEXT NOT NULL,
+            extra_components TEXT,
+            description TEXT NOT NULL,
+            description_html TEXT NOT NULL,
+            untouched TEXT NOT NULL
+          );
+          INSERT INTO dnd_spell VALUES (
+            7,
+            'fixture-spell',
+            NULL,
+            'Original fixture text.',
+            '<p>Original fixture text.</p>',
+            'preserved'
+          );
+        `);
+        applySpellUpdates(db, [
+          {
+            spellId: 7,
+            fields: valid.fields,
+          },
+        ]);
+        const row = db
+          .prepare(`
+            SELECT slug, extra_components AS extraComponents, description,
+              description_html AS descriptionHtml, untouched
+            FROM dnd_spell
+            WHERE id = 7
+          `)
+          .get() as {
+          slug: string;
+          extraComponents: string | null;
+          description: string;
+          descriptionHtml: string;
+          untouched: string;
+        };
+        assert.deepEqual(row, {
+          slug: "fixture-spell",
+          extraComponents: "M/DF",
+          description: "Corrected fixture text.",
+          descriptionHtml: "<p>Corrected fixture text.</p>",
+          untouched: "preserved",
+        });
+      } finally {
+        db.close();
+      }
+    },
+  },
 ];
 
 function collectJsonlFiles(root: string): string[] {
   if (!fs.existsSync(root)) return [];
+  const rootStat = fs.statSync(root);
+  if (rootStat.isFile()) return root.endsWith(".jsonl") ? [root] : [];
+  if (!rootStat.isDirectory()) return [];
+
   const entries = fs.readdirSync(root, { withFileTypes: true });
   const files: string[] = [];
   for (const entry of entries) {

@@ -38,6 +38,9 @@ type UpdateSpellOperation = {
   id?: number;
   spell?: {
     slug?: string;
+    extraComponents?: string;
+    description?: string;
+    descriptionHtml?: string;
   };
 };
 
@@ -256,6 +259,18 @@ function verifySpellOperation(
   const rulebook =
     isInsertSpell(op) && typeof op.source?.rulebook === "string" ? op.source.rulebook : null;
   const slug = typeof op.spell?.slug === "string" ? op.spell.slug : null;
+  const extraComponents =
+    isUpdateSpell(op) && typeof op.spell?.extraComponents === "string"
+      ? op.spell.extraComponents
+      : null;
+  const description =
+    isUpdateSpell(op) && typeof op.spell?.description === "string"
+      ? op.spell.description
+      : null;
+  const descriptionHtml =
+    isUpdateSpell(op) && typeof op.spell?.descriptionHtml === "string"
+      ? op.spell.descriptionHtml
+      : null;
   const issues: string[] = [];
 
   if (id === null) issues.push("operation id is missing");
@@ -263,7 +278,15 @@ function verifySpellOperation(
     if (!name) issues.push("spell name is missing");
     if (!rulebook) issues.push("source rulebook is missing");
   }
-  if (isUpdateSpell(op) && !slug) issues.push("update slug is missing");
+  if (
+    isUpdateSpell(op) &&
+    !slug &&
+    !extraComponents &&
+    !description &&
+    !descriptionHtml
+  ) {
+    issues.push("update has no supported spell fields");
+  }
 
   const spell =
     id === null
@@ -271,14 +294,29 @@ function verifySpellOperation(
       : (db
           .prepare(
             `
-            SELECT s.id, s.name, s.slug, rb.abbr AS rulebook
+            SELECT
+              s.id,
+              s.name,
+              s.slug,
+              s.extra_components AS extraComponents,
+              s.description,
+              s.description_html AS descriptionHtml,
+              rb.abbr AS rulebook
             FROM dnd_spell s
             JOIN dnd_rulebook rb ON rb.id = s.rulebook_id
             WHERE s.id = ?
           `,
           )
           .get(id) as
-          | { id: number; name: string; slug: string; rulebook: string }
+          | {
+              id: number;
+              name: string;
+              slug: string;
+              extraComponents: string | null;
+              description: string;
+              descriptionHtml: string;
+              rulebook: string;
+            }
           | undefined);
 
   if (!spell) {
@@ -292,6 +330,15 @@ function verifySpellOperation(
     }
     if (slug && spell.slug !== slug) {
       issues.push(`slug mismatch: db=${spell.slug}`);
+    }
+    if (extraComponents && spell.extraComponents !== extraComponents) {
+      issues.push(`extraComponents mismatch: db=${spell.extraComponents ?? "null"}`);
+    }
+    if (description && spell.description !== description) {
+      issues.push("description mismatch");
+    }
+    if (descriptionHtml && spell.descriptionHtml !== descriptionHtml) {
+      issues.push("descriptionHtml mismatch");
     }
   }
 

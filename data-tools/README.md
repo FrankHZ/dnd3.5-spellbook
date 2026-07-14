@@ -343,10 +343,14 @@ runner rejects paths outside that directory. Use `rules:sql:dry-run` before
 
 Structured spell patch JSONL files also live under
 `data/rules-patches/`, normally in `pending/spells/` before apply and
-`applied/spells/` after the locked rules baseline is updated. The first supported
-operation is `insertSpell`, which inserts the base spell row plus descriptors
-and class/domain levels, then rebuilds derived spell indexes. Validation opens
-the configured rules DB read-only; dry-run applies to a temporary copy.
+`applied/spells/` after the locked rules baseline is updated. `insertSpell`
+inserts the base spell row plus descriptors and class/domain levels, then
+rebuilds derived spell indexes. `updateSpell` is intentionally narrow: it can
+update a normalized `slug`, a non-empty raw `extraComponents` value, or a paired
+non-empty `description` and `descriptionHtml` replacement. It rejects unknown
+fields, unpaired text updates, empty updates, and no-op changes; it never
+changes levels, descriptors, or unlisted spell columns. Validation opens the
+configured rules DB read-only; dry-run applies to a temporary copy.
 Because these patch files can contain source text, they are managed by the
 nested local `data/` repo. Keep patch schemas, validators, generators, reports,
 and redacted fixtures in the parent project repo.

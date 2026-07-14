@@ -48,6 +48,12 @@ Parent-repo code should include schemas, validators, fixtures, command
 wrappers, and docs. Do not commit ignored raw CHM data, local SQLite DBs, or
 generated run reports to the parent repo.
 
+Structured spell corrections use a deliberately narrow `updateSpell` contract:
+only `slug`, raw `extraComponents`, and paired `description`/`descriptionHtml`
+updates are allowed. Source-located review ledgers and pending JSONL belong in
+the data repo; reusable validation and temporary-copy apply behavior belong in
+the parent workspace.
+
 ## Harness Boundary
 
 Portable tests should cover reusable helpers behind maintained workflows and
