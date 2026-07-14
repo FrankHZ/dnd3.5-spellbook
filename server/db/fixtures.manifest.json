@@ -6,7 +6,7 @@
     "data/short-desc-normalized",
     "data/rules-patches/applied/rulebooks",
     "data/rules-patches/applied/spells",
-    "data/rules-patches/pending/spells/full-corpus-v600-v601-corrections.jsonl",
+    "data/rules-patches/applied/spells/full-corpus-v600-v601-corrections.jsonl",
     "data/spells-full/full-corpus-v600-v601-deferred.generated.jsonl",
     "data/spells-full/full-corpus-v600-v601-review.generated.jsonl"
   ],
@@ -104,7 +104,7 @@
       "note": "A source-backed rules patch is represented by synthetic spell runtime and content rows."
     },
     {
-      "dataPath": "data/rules-patches/pending/spells/full-corpus-v600-v601-corrections.jsonl",
+      "dataPath": "data/rules-patches/applied/spells/full-corpus-v600-v601-corrections.jsonl",
       "portableFixturePaths": [
         "server/db/rules-clean/fixtures/portable/spell-runtime.jsonl",
         "server/db/content/fixtures/portable/normalized-rules-spells.jsonl"
