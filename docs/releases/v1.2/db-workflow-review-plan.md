@@ -14,7 +14,10 @@ are complete; apply-slice evidence remains pending an accepted DB/content apply.
 
 Define the DB/content maintainer workflow for v1.2 data handoffs so local rules
 DB patching, content DB regeneration, portable fixture coverage, and optional
-remote activation use one repeatable sequence.
+remote activation use one repeatable sequence. The user-facing/runtime artifact
+for these updates is the content DB; the local `rules-clean.sqlite` patch step
+is a build input used to regenerate normalized content, not the artifact we
+publish or deploy.
 
 ## Ownership
 
@@ -101,6 +104,9 @@ its file or directory is not listed in `server/db/fixtures.manifest.json`.
   its review/deferred ledgers.
 - The v1.2 full-corpus correction handoff uses a pending structured patch plus
   review/deferred ledgers before DB/content maintainer apply.
+- Accepted correction data may update the local locked rules DB as a staging
+  input, but app/runtime reads and remote activation are expected to use the
+  regenerated content DB artifact.
 - `rules:content:meta` records parent/data commits and dirty state in
   `RulesContentBuild`; this is the local source for comparing remote DB state.
 - `/api/rulebooks` has server-side process cache behavior, so local API

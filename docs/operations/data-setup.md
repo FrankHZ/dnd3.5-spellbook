@@ -167,6 +167,9 @@ empty locally, but it should not be collapsed into the content DB.
 Normalized rules content is rebuildable from the locked local rules DB plus
 declared review inputs. It should be regenerated through `data-tools`, not
 patched directly in the content DB or by replacing the legacy rules baseline.
+Local rules DB patching is an input-preparation step for accepted handoffs; the
+artifact consumed by the app and activated remotely is the regenerated content
+DB.
 
 ## Environment Variables
 
