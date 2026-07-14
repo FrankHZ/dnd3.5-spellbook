@@ -7,8 +7,9 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: in progress. Fixture manifest coverage and documentation reconciliation
-are complete; apply-slice evidence remains pending an accepted DB/content apply.
+Status: complete. Fixture manifest coverage, documentation reconciliation, and
+the accepted full-corpus apply-slice evidence are complete. Remote activation
+remains outside this plan.
 
 ## Purpose
 
@@ -102,8 +103,8 @@ its file or directory is not listed in `server/db/fixtures.manifest.json`.
 - The manifest previously covered publication, labels, short descriptions, and
   applied rules patches, but did not cover the v1.2 correction patch file or
   its review/deferred ledgers.
-- The v1.2 full-corpus correction handoff uses a pending structured patch plus
-  review/deferred ledgers before DB/content maintainer apply.
+- The v1.2 full-corpus correction handoff is an applied structured patch with
+  review/deferred ledgers preserved in the nested data repo.
 - Accepted correction data may update the local locked rules DB as a staging
   input, but app/runtime reads and remote activation are expected to use the
   regenerated content DB artifact.
@@ -174,7 +175,7 @@ its file or directory is not listed in `server/db/fixtures.manifest.json`.
 
 ### Slice 1: Manifest And Portable Fixture Coverage
 
-- Deliverable: `server/db/fixtures.manifest.json` covers the v1.2 pending
+- Deliverable: `server/db/fixtures.manifest.json` covers the v1.2 applied
   correction patch and its review/deferred ledgers, with synthetic portable
   fixture rows for the post-apply rules/content shape.
 - Expected files: `server/db/fixtures.manifest.json`,
@@ -201,7 +202,12 @@ its file or directory is not listed in `server/db/fixtures.manifest.json`.
   if the workflow changes.
 - Validation: local SQLite/content checks only; remote activation remains
   separate unless requested.
-- Status: planned.
+- Status: complete. The correction patch was applied after validation and
+  temporary-copy dry-run, then recorded in the rules manifest. Manifest
+  verification reports 223 of 223 spell operations with zero missing rows or
+  mismatches. The content artifact was regenerated, parity reports 5,097
+  matching spells, and direct content checks verified all 34 corrections: 26
+  normalized `other` component rows and 10 text/HTML/hash replacements.
 
 ## Acceptance Criteria
 
@@ -245,3 +251,8 @@ its file or directory is not listed in `server/db/fixtures.manifest.json`.
   synthetic rules/content portable fixtures.
 - Validation: `npm run -w data-tools test:portable`, `npm run test:server`, and
   `git diff --check`.
+- Apply acceptance: the 34 correction operations are now under
+  `data/rules-patches/applied/`; the manifest verifies them as part of its 223
+  structured spell operations, and the rebuilt content DB passes parity at
+  5,097 spells. Runtime maintenance and any future activation consume that
+  content artifact rather than the local rules SQLite file.
