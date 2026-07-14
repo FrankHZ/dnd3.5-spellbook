@@ -206,15 +206,14 @@ raw `extraComponents` value, or a paired non-empty `description` and
 updates, empty updates, and DB no-ops; unlisted spell columns, levels, and
 descriptors remain untouched.
 
-For the post-v1.1 full-corpus correction handoff, use the pending patch and its
-source-located ledger together:
+For the post-v1.1 full-corpus correction handoff, the accepted patch has been
+applied locally and moved to
+`data/rules-patches/applied/spells/full-corpus-v600-v601-corrections.jsonl`.
+Do not rerun `rules:spells:apply` against the current local rules DB baseline;
+the no-op guard rejects already-applied updates. Verify the current state with
+`rules:manifest:verify`, content parity/meta, and focused field checks instead.
 
-```bash
-npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-v600-v601-corrections.jsonl
-npm run -w data-tools rules:spells:apply -- --dry-run pending/spells/full-corpus-v600-v601-corrections.jsonl
-```
-
-The pending file contains 34 reviewed updates: 26 component tokens preserved in
+The applied file contains 34 reviewed updates: 26 component tokens preserved in
 `extraComponents` without inventing boolean-component semantics, and 10
 description/text-HTML pairs. `data/spells-full/full-corpus-v600-v601-review.generated.jsonl`
 accounts for all 171 source-reviewed rows; its deferred companion contains the

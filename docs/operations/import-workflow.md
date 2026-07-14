@@ -68,15 +68,18 @@ npm run -w data-tools rules:content:parity
 npm run -w data-tools rules:content:meta
 ```
 
-The post-v1.1 full-corpus correction handoff stays separate from those historic
-insert patches until a DB/content maintainer accepts it. Its pending file is
-`data/rules-patches/pending/spells/full-corpus-v600-v601-corrections.jsonl` and
-its 171-row review ledger is
-`data/spells-full/full-corpus-v600-v601-review.generated.jsonl`. Before apply,
-run `rules:spells:validate` and `rules:spells:apply -- --dry-run` against that
-specific pending file. After accepted local apply, move only that file to
-`applied/spells/`, rewrite and verify the rules manifest, then regenerate and
-check the content artifact before activation.
+The post-v1.1 full-corpus correction apply is complete locally. The accepted
+patch now lives at
+`data/rules-patches/applied/spells/full-corpus-v600-v601-corrections.jsonl`; its
+171-row review ledger remains
+`data/spells-full/full-corpus-v600-v601-review.generated.jsonl`. Do not rerun
+`rules:spells:apply` for that patch against the current local rules DB
+baseline: the reviewed updates are already present and the no-op guard rejects
+already-applied field updates. To verify the current baseline, use
+`rules:manifest:verify`, `rules:content:parity`, `rules:content:meta`, and
+focused content checks. If the local content DB must be rebuilt from the
+applied rules baseline, use the normal `rules:content:generate` and
+`rules:content:import` sequence above without rerunning the rules patch.
 
 After a structured spell JSONL patch is applied to the local locked rules DB,
 move it from `data/rules-patches/pending/spells/` to
