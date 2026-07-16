@@ -13,6 +13,7 @@ import { mapSpellItem, mapSpellDetail } from "#server/services/spells/spells.map
 import {
   fetchSpellsInOrder,
   queryIdsByName,
+  queryFullTextSearch,
   querySpellDetail,
   querySpellsByIds,
   SELECT_SPELL_LIST,
@@ -45,12 +46,32 @@ export const spellsService = {
     i18n: I18nContext;
   }): Promise<SpellSearchResponse> {
     if (input.mode === "full") {
-      throw new ApiError(
-        503,
-        "Full-text search unavailable",
-        "The active spell source does not provide a compatible full-text index",
-        "FULL_TEXT_SEARCH_UNAVAILABLE",
-      );
+      const result = await queryFullTextSearch(input);
+      if (!result) throw fullTextUnavailableError();
+
+      const spells = await fetchSpellsInOrder(result.ids, SELECT_SPELL_LIST);
+      const [i18nMap, summaryMap] = await Promise.all([
+        queryI18nMap(result.ids, input.i18n),
+        queryI18nSummaryMap(result.ids, input.i18n),
+      ]);
+      return {
+        mode: input.mode,
+        page: input.page,
+        pageSize: input.pageSize,
+        total: result.total,
+        q: input.q,
+        rulebookIds: input.rulebookIds,
+        ...input.taxonomyFilters,
+        ...input.componentFilters,
+        ...input.mechanicFilters,
+        items: spells.map((spell) =>
+          mapSpellItem(
+            spell,
+            i18nMap.get(spell.id) ?? null,
+            summaryMap.get(spell.id) ?? null,
+          ),
+        ),
+      };
     }
 
     const doAppQuery = input.i18n.lang != "en";
@@ -268,3 +289,12 @@ export function hasComponentScope(filters: SpellComponentFilters) {
 }
 
 export { hasMechanicScope };
+
+function fullTextUnavailableError() {
+  return new ApiError(
+    503,
+    "Full-text search unavailable",
+    "The active spell source does not provide a compatible full-text index",
+    "FULL_TEXT_SEARCH_UNAVAILABLE",
+  );
+}

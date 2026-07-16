@@ -30,6 +30,21 @@ type MechanicFacetRow = Prisma.SpellMechanicFacetGetPayload<
   Record<string, never>
 >;
 
+const CONTENT_SEARCH_SCHEMA_VERSION = 1;
+
+export type NormalizedFullTextSearchInput = {
+  q: string;
+  rulebookIds: number[];
+  classIds: number[];
+  domainIds: number[];
+  level: number | "all" | null;
+  taxonomyFilters: SpellTaxonomyFilterIds;
+  componentFilters: SpellComponentFilters;
+  mechanicFilters: SpellMechanicFilters;
+  page: number;
+  pageSize: number;
+};
+
 function normalizedTaxonomyWhere(filters: SpellTaxonomyFilterIds) {
   const conditions: Prisma.Sql[] = [];
 
@@ -156,6 +171,138 @@ function normalizedMechanicWhere(filters: SpellMechanicFilters) {
   return conditions.length > 0
     ? Prisma.sql`AND ${Prisma.join(conditions, " AND ")}`
     : Prisma.empty;
+}
+
+function normalizedListWhere(input: NormalizedFullTextSearchInput) {
+  const hasListScope =
+    input.classIds.length > 0 ||
+    input.domainIds.length > 0 ||
+    input.level !== null;
+  if (!hasListScope) return Prisma.empty;
+
+  const listKinds: Prisma.Sql[] = [];
+  if (input.classIds.length > 0) {
+    listKinds.push(Prisma.sql`
+      (le."listType" = 'class' AND le."ownerLegacyId" IN (${Prisma.join(input.classIds)}))
+    `);
+  }
+  if (input.domainIds.length > 0) {
+    listKinds.push(Prisma.sql`
+      (le."listType" = 'domain' AND le."ownerLegacyId" IN (${Prisma.join(input.domainIds)}))
+    `);
+  }
+  if (listKinds.length === 0) {
+    listKinds.push(Prisma.sql`le."listType" IN ('class', 'domain')`);
+  }
+  const levelCondition =
+    typeof input.level === "number"
+      ? Prisma.sql`AND le."level" = ${input.level}`
+      : Prisma.empty;
+
+  return Prisma.sql`
+    AND EXISTS (
+      SELECT 1
+      FROM "SpellListEntry" le
+      WHERE le."spellId" = s."id"
+        AND (${Prisma.join(listKinds, " OR ")})
+        ${levelCondition}
+    )
+  `;
+}
+
+function fullTextEligibleRows(input: NormalizedFullTextSearchInput) {
+  const matchQuery = toFts5Query(input.q);
+  return Prisma.sql`
+    SELECT
+      s."legacySpellId" AS id,
+      -"SpellSearchDocument"."rank" AS score
+    FROM "SpellSearchDocument"
+    JOIN "SpellContent" s
+      ON s."legacySpellId" = CAST("SpellSearchDocument"."spellId" AS INTEGER)
+    WHERE "SpellSearchDocument" MATCH ${matchQuery}
+      AND "SpellSearchDocument"."rank"
+        MATCH 'bm25(0.0, 0.0, 0.0, 12.0, 8.0, 4.0, 2.0, 1.0)'
+      AND s."sourceRulebookId" IN (${Prisma.join(input.rulebookIds)})
+      ${normalizedTaxonomyWhere(input.taxonomyFilters)}
+      ${normalizedComponentWhere(input.componentFilters)}
+      ${normalizedMechanicWhere(input.mechanicFilters)}
+      ${normalizedListWhere(input)}
+  `;
+}
+
+export async function hasCompatibleContentSearchIndex() {
+  const tableRows = await contentPrisma.$queryRaw<Array<{ name: string }>>`
+    SELECT name
+    FROM sqlite_master
+    WHERE type = 'table'
+      AND name IN ('SpellSearchDocument', 'SpellSearchIndexState')
+  `;
+  if (new Set(tableRows.map((row) => row.name)).size !== 2) return false;
+
+  const stateRows = await contentPrisma.$queryRaw<
+    Array<{ schemaVersion: number; documentCount: number }>
+  >`
+    SELECT "schemaVersion", "documentCount"
+    FROM "SpellSearchIndexState"
+    WHERE "id" = 1
+  `;
+  const state = stateRows[0];
+  return (
+    state?.schemaVersion === CONTENT_SEARCH_SCHEMA_VERSION &&
+    Number(state.documentCount) > 0
+  );
+}
+
+export async function queryNormalizedFullTextSearch(
+  input: NormalizedFullTextSearchInput,
+) {
+  if (input.rulebookIds.length === 0) return { total: 0, ids: [] };
+  if (!(await hasCompatibleContentSearchIndex())) return null;
+
+  const eligibleRows = fullTextEligibleRows(input);
+  const countRows = await contentPrisma.$queryRaw<Array<{ total: number }>>(
+    Prisma.sql`
+      WITH eligible AS (${eligibleRows}),
+      best AS (
+        SELECT id, MAX(score) AS score
+        FROM eligible
+        GROUP BY id
+      )
+      SELECT COUNT(*) AS total FROM best
+    `,
+  );
+  const total = Number(countRows[0]?.total ?? 0);
+  const offset = (input.page - 1) * input.pageSize;
+  const pageRows = await contentPrisma.$queryRaw<
+    Array<{ id: number; score: number }>
+  >(
+    Prisma.sql`
+      WITH eligible AS (${eligibleRows}),
+      best AS (
+        SELECT id, MAX(score) AS score
+        FROM eligible
+        GROUP BY id
+      )
+      SELECT best.id, best.score
+      FROM best
+      JOIN "SpellContent" s ON s."legacySpellId" = best.id
+      ORDER BY best.score DESC, s."canonicalName" COLLATE NOCASE ASC, best.id ASC
+      LIMIT ${input.pageSize} OFFSET ${offset}
+    `,
+  );
+  return {
+    total,
+    ids: pageRows.map((row) => Number(row.id)),
+  };
+}
+
+export function toFts5Query(query: string) {
+  return query
+    .trim()
+    .split(/\s+/u)
+    .filter(Boolean)
+    .map((token) => `"${token.replaceAll('"', '""')}"`)
+    .join(" AND ");
 }
 
 export async function queryNormalizedIdsByName(

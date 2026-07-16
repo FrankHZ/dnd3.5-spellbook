@@ -468,6 +468,27 @@ function seedContentDb() {
         detail TEXT
       )
     `,
+    `
+      CREATE VIRTUAL TABLE SpellSearchDocument USING fts5(
+        spellId UNINDEXED,
+        lang UNINDEXED,
+        variant UNINDEXED,
+        name,
+        aliases,
+        summary,
+        mechanics,
+        body,
+        tokenize = 'trigram'
+      )
+    `,
+    `
+      CREATE TABLE SpellSearchIndexState (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        schemaVersion INTEGER NOT NULL,
+        rebuiltAt DATETIME NOT NULL,
+        documentCount INTEGER NOT NULL
+      )
+    `,
   ]);
 
   loadPortableFixtureFile(
@@ -487,6 +508,105 @@ function seedContentDb() {
     db,
     serverDbFixturePath("content", "normalized-rules-spells.jsonl"),
   );
+
+  db.exec(`
+    INSERT INTO SpellSearchDocument (
+      spellId, lang, variant, name, aliases, summary, mechanics, body
+    )
+    SELECT
+      s.legacySpellId,
+      'en',
+      'default',
+      s.canonicalName,
+      COALESCE((
+        SELECT group_concat(i.name, char(10))
+        FROM I18nSpellText i
+        WHERE i.spellId = s.legacySpellId AND i.name IS NOT NULL
+      ), ''),
+      COALESCE((
+        SELECT group_concat(sm.summaryText, char(10))
+        FROM I18nSpellSummaryText sm
+        WHERE sm.spellId = s.legacySpellId
+          AND sm.lang = 'en'
+          AND sm.reviewStatus = 'accepted'
+      ), ''),
+      COALESCE(s.castingTimeRaw, '') || char(10) ||
+        COALESCE(s.rangeRaw, '') || char(10) ||
+        COALESCE(s.targetRaw, '') || char(10) ||
+        COALESCE(s.effectRaw, '') || char(10) ||
+        COALESCE(s.areaRaw, '') || char(10) ||
+        COALESCE(s.durationRaw, '') || char(10) ||
+        COALESCE(s.savingThrowRaw, '') || char(10) ||
+        COALESCE(s.resistanceRaw, '') || char(10) ||
+        COALESCE((
+          SELECT group_concat(COALESCE(mf.normalizedText, mf.rawText, mf.category), char(10))
+          FROM SpellMechanicFacet mf
+          WHERE mf.spellId = s.id AND mf.reviewStatus = 'accepted'
+        ), ''),
+      s.descriptionText
+    FROM SpellContent s;
+
+    INSERT INTO SpellSearchDocument (
+      spellId, lang, variant, name, aliases, summary, mechanics, body
+    )
+    SELECT
+      s.legacySpellId,
+      i.lang,
+      i.variant,
+      COALESCE(i.name, s.canonicalName),
+      s.canonicalName,
+      COALESCE((
+        SELECT group_concat(sm.summaryText, char(10))
+        FROM I18nSpellSummaryText sm
+        WHERE sm.spellId = s.legacySpellId
+          AND sm.lang = i.lang
+          AND sm.reviewStatus = 'accepted'
+      ), ''),
+      COALESCE(s.castingTimeRaw, '') || char(10) ||
+        COALESCE(s.rangeRaw, '') || char(10) ||
+        COALESCE(s.durationRaw, '') || char(10) ||
+        COALESCE(s.savingThrowRaw, '') || char(10) ||
+        COALESCE(s.resistanceRaw, ''),
+      COALESCE(i.descriptionText, '')
+    FROM I18nSpellText i
+    JOIN SpellContent s ON s.legacySpellId = i.spellId;
+
+    INSERT INTO SpellSearchDocument (
+      spellId, lang, variant, name, aliases, summary, mechanics, body
+    )
+    SELECT
+      s.legacySpellId,
+      sm.lang,
+      sm.variant,
+      s.canonicalName,
+      COALESCE((
+        SELECT group_concat(i.name, char(10))
+        FROM I18nSpellText i
+        WHERE i.spellId = s.legacySpellId AND i.name IS NOT NULL
+      ), ''),
+      sm.summaryText,
+      COALESCE(s.castingTimeRaw, '') || char(10) ||
+        COALESCE(s.rangeRaw, '') || char(10) ||
+        COALESCE(s.durationRaw, '') || char(10) ||
+        COALESCE(s.savingThrowRaw, '') || char(10) ||
+        COALESCE(s.resistanceRaw, ''),
+      ''
+    FROM I18nSpellSummaryText sm
+    JOIN SpellContent s ON s.legacySpellId = sm.spellId
+    WHERE sm.reviewStatus = 'accepted'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM I18nSpellText i
+        WHERE i.spellId = sm.spellId
+          AND i.lang = sm.lang
+          AND i.variant = sm.variant
+      );
+
+    INSERT INTO SpellSearchIndexState (
+      id, schemaVersion, rebuiltAt, documentCount
+    )
+    SELECT 1, 1, CURRENT_TIMESTAMP, COUNT(*) FROM SpellSearchDocument;
+  `);
 
   db.close();
 }
