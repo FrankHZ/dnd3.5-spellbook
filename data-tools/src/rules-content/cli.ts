@@ -999,7 +999,7 @@ function buildContentDbMetaReport(db: Database.Database, contentPath: string) {
     rulesContentBuild: build
       ? {
           ...build,
-          buildMetaJson: parseJsonString(build.buildMetaJson),
+          buildMetaJson: build.buildMetaJson,
         }
       : null,
     counts: Object.fromEntries(
