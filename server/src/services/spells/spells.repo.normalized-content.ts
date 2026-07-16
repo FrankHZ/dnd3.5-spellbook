@@ -1,8 +1,10 @@
 import type {
   RulebookId,
   SpellComponentFilters,
+  SpellMechanicDetailFacet,
   SpellMechanicFilters,
   SpellMechanicDetailMetadata,
+  SpellMechanicDisplayCoverage,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
 import { contentPrisma } from "#server/lib/content-prisma-client";
@@ -82,7 +84,10 @@ function normalizedTaxonomyWhere(filters: SpellTaxonomyFilterIds) {
   }
   if (filters.subschoolIds.length > 0) {
     conditions.push(
-      facetCondition("subschool", expandSubschoolFilterIds(filters.subschoolIds)),
+      facetCondition(
+        "subschool",
+        expandSubschoolFilterIds(filters.subschoolIds),
+      ),
     );
   }
   const descriptorCondition = descriptorFacetCondition();
@@ -96,7 +101,8 @@ function normalizedTaxonomyWhere(filters: SpellTaxonomyFilterIds) {
 }
 
 function normalizedComponentWhere(filters: SpellComponentFilters) {
-  const conditions = filters.componentKeys.map((componentType) => Prisma.sql`
+  const conditions = filters.componentKeys.map(
+    (componentType) => Prisma.sql`
     EXISTS (
       SELECT 1
       FROM "SpellComponent" cf
@@ -105,7 +111,8 @@ function normalizedComponentWhere(filters: SpellComponentFilters) {
         AND cf."present" = true
         AND cf."reviewStatus" = 'accepted'
     )
-  `);
+  `,
+  );
 
   return conditions.length > 0
     ? Prisma.sql`AND ${Prisma.join(conditions, " AND ")}`
@@ -114,7 +121,10 @@ function normalizedComponentWhere(filters: SpellComponentFilters) {
 
 function normalizedMechanicWhere(filters: SpellMechanicFilters) {
   const conditions: Prisma.Sql[] = [];
-  const mechanicCondition = (mechanicType: string, keys: string[]) => Prisma.sql`
+  const mechanicCondition = (
+    mechanicType: string,
+    keys: string[],
+  ) => Prisma.sql`
     EXISTS (
       SELECT 1
       FROM "SpellMechanicFacet" mf
@@ -126,9 +136,7 @@ function normalizedMechanicWhere(filters: SpellMechanicFilters) {
   `;
 
   if (filters.castingTimeKeys.length > 0) {
-    conditions.push(
-      mechanicCondition("casting_time", filters.castingTimeKeys),
-    );
+    conditions.push(mechanicCondition("casting_time", filters.castingTimeKeys));
   }
   if (filters.rangeKeys.length > 0) {
     conditions.push(mechanicCondition("range", filters.rangeKeys));
@@ -403,10 +411,6 @@ async function hydrateNormalizedSpells(
         ? contentPrisma.spellMechanicFacet.findMany({
             where: {
               spellId: { in: spellIds },
-              reviewStatus: "accepted",
-              mechanicType: {
-                in: ["duration", "saving_throw", "spell_resistance"],
-              },
             },
             orderBy: [{ spellId: "asc" }, { mechanicType: "asc" }],
           })
@@ -418,7 +422,10 @@ async function hydrateNormalizedSpells(
   );
   const facetsBySpell = groupBy(facets, (facet) => facet.spellId);
   const listEntriesBySpell = groupBy(listEntries, (entry) => entry.spellId);
-  const componentsBySpell = groupBy(components, (component) => component.spellId);
+  const componentsBySpell = groupBy(
+    components,
+    (component) => component.spellId,
+  );
   const mechanicFacetsBySpell = groupBy(
     mechanicFacets,
     (facet) => facet.spellId,
@@ -457,7 +464,9 @@ function toLegacyShapedSpell(
   const school = facets.find((facet) => facet.facetType === "school") ?? null;
   const subschool =
     facets.find((facet) => facet.facetType === "subschool") ?? null;
-  const descriptors = facets.filter((facet) => facet.facetType === "descriptor");
+  const descriptors = facets.filter(
+    (facet) => facet.facetType === "descriptor",
+  );
   const mechanicDetailMetadata = buildMechanicDetailMetadata(mechanicFacets);
 
   const componentPresent = (type: string) =>
@@ -562,37 +571,73 @@ function buildMechanicDetailMetadata(
   const metadata: SpellMechanicDetailMetadata = {};
 
   for (const facet of facets) {
-    if (facet.reviewStatus !== "accepted") continue;
-
     const flags = parseFlagsJson(facet.flagsJson);
-    if (facet.mechanicType === "duration") {
-      const duration = pickTrueFlags(flags, ["dismissible", "discharge"]);
-      if (hasKeys(duration)) metadata.duration = duration;
+    const detail = mechanicDetailFacet(facet, flags);
+
+    if (facet.mechanicType === "casting_time") {
+      metadata.castingTime = detail;
+    } else if (facet.mechanicType === "range") {
+      metadata.range = detail;
+    } else if (facet.mechanicType === "target") {
+      metadata.target = detail;
+    } else if (facet.mechanicType === "effect") {
+      metadata.effect = detail;
+    } else if (facet.mechanicType === "area") {
+      metadata.area = detail;
+    } else if (facet.mechanicType === "duration") {
+      metadata.duration = {
+        ...detail,
+        ...(facet.reviewStatus === "accepted"
+          ? pickTrueFlags(flags, ["dismissible", "discharge"])
+          : {}),
+      };
     } else if (facet.mechanicType === "saving_throw") {
-      const savingThrow = pickTrueFlags(flags, [
-        "partial",
-        "negates",
-        "harmless",
-        "object",
-      ]);
-      if (hasKeys(savingThrow)) metadata.savingThrow = savingThrow;
+      metadata.savingThrow = {
+        ...detail,
+        ...(facet.reviewStatus === "accepted"
+          ? pickTrueFlags(flags, ["partial", "negates", "harmless", "object"])
+          : {}),
+      };
     } else if (facet.mechanicType === "spell_resistance") {
-      const spellResistance = pickTrueFlags(flags, ["harmless", "object"]);
-      if (hasKeys(spellResistance)) {
-        metadata.spellResistance = spellResistance;
-      }
+      metadata.spellResistance = {
+        ...detail,
+        ...(facet.reviewStatus === "accepted"
+          ? pickTrueFlags(flags, ["harmless", "object"])
+          : {}),
+      };
     }
   }
 
   return hasKeys(metadata) ? metadata : undefined;
 }
 
-function parseFlagsJson(value: string | null): Record<string, unknown> {
+function mechanicDetailFacet(
+  facet: MechanicFacetRow,
+  flags: Record<string, boolean | string>,
+): SpellMechanicDetailFacet {
+  return {
+    category: facet.category,
+    amount: facet.amount,
+    unit: facet.unit,
+    flags,
+    normalizedText: facet.normalizedText,
+    displayCoverage: facet.displayCoverage as SpellMechanicDisplayCoverage,
+  };
+}
+
+function parseFlagsJson(
+  value: string | null,
+): Record<string, boolean | string> {
   if (!value) return {};
   try {
     const parsed: unknown = JSON.parse(value);
     if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-      return parsed as Record<string, unknown>;
+      return Object.fromEntries(
+        Object.entries(parsed).filter(
+          (entry): entry is [string, boolean | string] =>
+            typeof entry[1] === "boolean" || typeof entry[1] === "string",
+        ),
+      );
     }
   } catch {
     return {};
@@ -601,7 +646,7 @@ function parseFlagsJson(value: string | null): Record<string, unknown> {
 }
 
 function pickTrueFlags<const T extends string>(
-  flags: Record<string, unknown>,
+  flags: Record<string, boolean | string>,
   keys: readonly T[],
 ): Partial<Record<T, boolean>> {
   const picked: Partial<Record<T, boolean>> = {};

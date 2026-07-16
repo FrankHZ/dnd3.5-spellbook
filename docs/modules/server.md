@@ -114,10 +114,13 @@ every selected component must be present. `castingTimeKeys`, `rangeKeys`, and
 semantics within each family and `all` semantics across selected families.
 Extra component text, unaccepted mechanics facets, and separate Tome of Battle
 query params remain review-only until their owning plan promotes them.
-Content-backed Spell Detail may also include accepted detail-only mechanics
-flags under `casting.mechanics` for duration, saving throw, and spell
-resistance. The legacy rules read source does not infer these flags from raw
-strings.
+Content-backed Spell Detail includes structured normalized facets under
+`casting.mechanics` for casting time, range, target, effect, area, duration,
+saving throw, and spell resistance. Each facet exposes `category`, `amount`,
+`unit`, `flags`, `normalizedText`, and `displayCoverage`. Existing accepted
+duration, saving throw, and spell resistance note flags remain available on
+their facet objects. The legacy rules read source does not infer structured
+mechanics or coverage from raw strings.
 
 Taxonomy vocabulary items include `sourceKind` and `category` metadata. Tome of
 Battle disciplines and maneuver categories are marked as `sourceKind:

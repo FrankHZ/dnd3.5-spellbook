@@ -150,7 +150,10 @@ comparison, and fallback even when coverage is complete.
   and portable tests prove complete/partial/review/empty behavior. The
   conservative complete grammars cover simple casting time, range, duration,
   saving throw, and spell resistance forms; all non-empty target/effect/area
-  rows remain `partial` or `review`.
+  rows remain `partial` or `review`. The local content DB has been migrated and
+  regenerated from this contract. Content-backed Spell Detail now exposes all
+  eight structured mechanic facets with their coverage; legacy rules responses
+  continue to omit this metadata.
 
 ### Slice 4: Localized Frontend Consumer
 
@@ -196,10 +199,10 @@ comparison, and fallback even when coverage is complete.
 
 ## Handoff Notes
 
-- Data-pipeline handoff: first produce and validate English normalized display
-  data plus explicit coverage. This is implemented in generator v7; keep raw
-  text on every facet for provenance and fallback. Apply the content migration
-  and rebuild the content DB before runtime consumption.
+- Data-pipeline handoff: English normalized display data and explicit coverage
+  are implemented in generator v7, migrated into the local content DB, and
+  exposed through the content-backed Spell Detail API. Keep raw text on every
+  facet for provenance and fallback.
 - i18n handoff: translate and QA only the normalized display vocabulary exposed
   by complete rows; the existing public filter/detail audit remains a separate
   bounded check.

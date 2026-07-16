@@ -152,11 +152,14 @@ Current behavior:
 - related result ordering is deterministic by source rulebook abbreviation,
   page, then spell id, while visible labels use the shared rulebook display
   helper
-- content-backed detail responses can include accepted normalized mechanics
-  flags under `casting.mechanics` for duration, saving throw, and spell
-  resistance notes; Spell Detail renders those as secondary text notes beside
-  the raw source field, localizes the note labels in Chinese UI, and keeps
-  legacy raw strings as the displayed fallback text
+- content-backed detail responses expose structured normalized mechanics for
+  casting time, range, target, effect, area, duration, saving throw, and spell
+  resistance under `casting.mechanics`; each facet includes its category,
+  amount/unit, flags, normalized English text, and explicit display coverage
+- Spell Detail still renders accepted duration, saving throw, and spell
+  resistance flags as secondary notes beside the authoritative raw source
+  field; a later consumer may replace raw display only when
+  `displayCoverage = complete`
 
 Key code:
 
@@ -192,9 +195,9 @@ Current behavior:
   buckets under `mechanics.spellResistances`
 - frontend locale QA audits accepted mechanics vocabulary against shared
   contract keys so new mechanics buckets require English and Chinese labels
-- Spell Detail exposes accepted duration, saving throw, and spell resistance
-  flags as optional `casting.mechanics` metadata when served from normalized
-  content
+- Spell Detail exposes structured normalized mechanic facets and display
+  coverage as optional `casting.mechanics` metadata when served from normalized
+  content; the legacy rules read source does not infer that metadata
 - rulebook responses preserve source `abbr` and can include curated
   `displayAbbr` / `displayName` metadata from normalized content
 - rulebook list responses can include publication grouping metadata from

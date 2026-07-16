@@ -5,13 +5,22 @@ import {
   hasMechanicDetailNotes,
 } from "./mechanic-detail-notes";
 
+const facet = () => ({
+  category: "fixture",
+  amount: null,
+  unit: null,
+  flags: {},
+  normalizedText: "Fixture",
+  displayCoverage: "complete" as const,
+});
+
 describe("mechanic detail notes", () => {
   it("keeps only backend-provided supported detail flags", () => {
     expect(
       getMechanicDetailNotes({
-        duration: { dismissible: true },
-        savingThrow: { partial: true, harmless: true },
-        spellResistance: { object: true },
+        duration: { ...facet(), dismissible: true },
+        savingThrow: { ...facet(), partial: true, harmless: true },
+        spellResistance: { ...facet(), object: true },
       }),
     ).toEqual({
       duration: ["dismissible"],
@@ -25,7 +34,7 @@ describe("mechanic detail notes", () => {
       hasMechanicDetailNotes({
         duration: "1 round/level",
         mechanics: {
-          duration: { discharge: true },
+          duration: { ...facet(), discharge: true },
         },
       }),
     ).toBe(true);

@@ -222,21 +222,51 @@ export type SpellCasting = {
   mechanics?: SpellMechanicDetailMetadata | undefined;
 };
 
+export const SPELL_MECHANIC_DISPLAY_COVERAGES = [
+  "complete",
+  "partial",
+  "review",
+  "empty",
+] as const;
+
+export type SpellMechanicDisplayCoverage =
+  (typeof SPELL_MECHANIC_DISPLAY_COVERAGES)[number];
+
+export type SpellMechanicDetailFacet = {
+  category: string;
+  amount: number | null;
+  unit: string | null;
+  flags: Record<string, boolean | string>;
+  normalizedText: string | null;
+  displayCoverage: SpellMechanicDisplayCoverage;
+};
+
 export type SpellMechanicDetailMetadata = {
-  duration?: {
-    dismissible?: boolean | undefined;
-    discharge?: boolean | undefined;
-  };
-  savingThrow?: {
-    partial?: boolean | undefined;
-    negates?: boolean | undefined;
-    harmless?: boolean | undefined;
-    object?: boolean | undefined;
-  };
-  spellResistance?: {
-    harmless?: boolean | undefined;
-    object?: boolean | undefined;
-  };
+  castingTime?: SpellMechanicDetailFacet | undefined;
+  range?: SpellMechanicDetailFacet | undefined;
+  target?: SpellMechanicDetailFacet | undefined;
+  effect?: SpellMechanicDetailFacet | undefined;
+  area?: SpellMechanicDetailFacet | undefined;
+  duration?:
+    | (SpellMechanicDetailFacet & {
+        dismissible?: boolean | undefined;
+        discharge?: boolean | undefined;
+      })
+    | undefined;
+  savingThrow?:
+    | (SpellMechanicDetailFacet & {
+        partial?: boolean | undefined;
+        negates?: boolean | undefined;
+        harmless?: boolean | undefined;
+        object?: boolean | undefined;
+      })
+    | undefined;
+  spellResistance?:
+    | (SpellMechanicDetailFacet & {
+        harmless?: boolean | undefined;
+        object?: boolean | undefined;
+      })
+    | undefined;
 };
 
 type SpellLevelBase = {
