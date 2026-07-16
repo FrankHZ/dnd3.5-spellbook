@@ -49,6 +49,9 @@ normalized filters wherever possible.
   matches.
 - Add enough data-tooling support that the index is rebuildable with the
   content DB workflow.
+- Keep runtime capability failure explicit: full-text mode must be unavailable,
+  rather than silently becoming name search, when the active DB cannot serve
+  the index.
 - Add focused API, data-tooling, URL helper, and frontend tests for the changed
   behavior.
 
@@ -99,6 +102,11 @@ Contract direction:
 - Add `mode=name|full` to Search query and response.
 - Default omitted `mode` to `name`.
 - Keep `q` as the user query string.
+- Rename shared and internal search symbols from the name-only vocabulary to
+  neutral search vocabulary as part of the contract change:
+  `SpellSearchQuery`, `SpellSearchResponse`, and `searchSpells`. Keep
+  `GET /api/spells/search` unchanged. Do not retain parallel
+  `SpellNameSearch*` aliases after all in-repo consumers have migrated.
 - Consider an optional result match payload only if the frontend needs visible
   match context in v1.2.1; otherwise keep the first implementation card-only.
 
@@ -110,10 +118,11 @@ Contract direction:
   - `server/db/content/migrations/*`
   - `server/prisma-content/schema.prisma` only for non-FTS metadata models if
     needed
-  - `data-tools/src/rules-content/*`
+  - `data-tools/src/db/*`
+  - `data-tools/package.json`
   - `data-tools/scripts.manifest.json`
-  - `docs/operations/import-workflow.md` or
-    `docs/operations/db-content-workflow.md` if commands change
+  - `docs/operations/import-workflow.md`
+  - `docs/operations/db-content-workflow.md`
 - Validation:
   - data-tools typecheck
   - data-tools portable helper tests for indexed-document generation
@@ -128,8 +137,18 @@ Index direction:
 - Build indexed text from accepted prepared content: spell name, localized name,
   aliases if available, summary text, spell body text, and stable mechanics/raw
   header text.
-- Regenerate the FTS index from data tooling during content DB rebuild/import.
-  Do not treat FTS shadow tables as portable fixture source-of-truth files.
+- Add `npm run -w data-tools content:search:rebuild` as the single maintained
+  operator boundary. It belongs under `data-tools/src/db/`, is classified in
+  `data-tools/scripts.manifest.json` as `maintained-local`, requires SQLite, and
+  is write-capable unless `--dry-run` is supplied.
+- The dry-run path validates migration/table availability, source-row
+  readability, and generated document counts without changing the DB.
+- Run the rebuild command after all normal content imports so the index reflects
+  Chinese/English body text, summaries, aliases, and normalized mechanics from
+  the final artifact. Document that position in
+  `docs/operations/import-workflow.md`; keep
+  `docs/operations/db-content-workflow.md` as the durable routing entry.
+- Do not treat FTS shadow tables as portable fixture source-of-truth files.
 
 ### Slice 3: Backend Query Path
 
@@ -148,9 +167,10 @@ Index direction:
 Backend direction:
 
 - `mode=name` keeps the current name-search behavior.
-- `mode=full` is content-backed. If the legacy `rules` read source is active,
-  fail closed with a stable unsupported-mode response or degrade explicitly to
-  name search only after the plan accepts that behavior.
+- `mode=full` is content-backed. If the legacy `rules` read source is active or
+  the content DB lacks the compatible FTS schema/index, return HTTP 503 with a
+  stable `FULL_TEXT_SEARCH_UNAVAILABLE` error code. Do not silently degrade to
+  name search.
 - Preserve filter semantics by applying rulebook and normalized filter clauses
   around the FTS result set.
 - Preserve rank order for full-text results instead of re-sorting everything by
@@ -179,6 +199,9 @@ Frontend direction:
 - Keep Search URL state canonical and shareable through `mode`.
 - Header search from Browse should continue to land in name mode unless the
   user is already on Search with `mode=full` and submits another query there.
+- If the API reports `FULL_TEXT_SEARCH_UNAVAILABLE`, preserve the query and
+  filters, show a concise unavailable state, and let the user switch back to
+  name mode.
 - Preserve current Search sidebar filters, scope summary, pagination, density,
   and spell-card display behavior.
 
@@ -193,8 +216,20 @@ Frontend direction:
   queries.
 - Search result ordering is stable and gives higher priority to name/alias
   matches than lower-signal body matches.
-- The content search index is rebuildable through maintained data tooling and
-  documented in the content DB workflow if the operator command changes.
+- Shared DTOs, frontend API helpers, controller/service entry points, and tests
+  use the neutral `SpellSearch*` / `searchSpells` vocabulary; the HTTP endpoint
+  remains `/api/spells/search`.
+- `content:search:rebuild -- --dry-run` validates the index input without
+  mutation, and `content:search:rebuild` reconstructs it through a maintained,
+  manifest-classified data-tool command.
+- A normal content DB rebuild runs the search-index step after content imports,
+  and the operations docs name the command owner and order.
+- Missing/incompatible FTS schema and legacy rules-source behavior return the
+  stable unavailable response and are covered by API and frontend tests.
+- Before freeze, a content DB generated from the merged release commits is
+  manually activated remotely. `/api/status/db` provenance matches the local
+  artifact, and production smoke covers representative name and full-text
+  queries without making DB upload part of CD.
 - Focused server, data-tools, web, contract, and i18n validation pass.
 
 ## Doc Updates
@@ -204,14 +239,16 @@ Frontend direction:
 - Update `docs/roadmap.md` only when v1.2.1 becomes active, frozen, or changes
   the official release sequence.
 - Update `docs/features.md` after implementation is accepted.
-- Update operations docs if content DB rebuild/import commands gain a
-  maintained FTS index step.
+- Update `docs/operations/import-workflow.md` with the maintained
+  `content:search:rebuild` command and its exact rebuild position.
+- Update `docs/operations/db-content-workflow.md` with the search-index routing
+  and manual remote activation gate.
+- Update `docs/operations/deployment.md` only if the existing manual DB upload,
+  activation, or verification sequence changes.
 - Do not update old MVP plans or frozen release docs.
 
 ## Open Questions
 
-- Should `mode=full` on `SPELL_READ_SOURCE=rules` return an unsupported-mode
-  error, or explicitly degrade to name search?
 - Should v1.2.1 expose match snippets, or keep result cards unchanged and
   defer snippets until the broader v1.3 Search/UX pass?
 - Should one- and two-character CJK full-text queries search only names and
