@@ -20,20 +20,33 @@ export type MechanicDetailNotes = {
 export function getMechanicDetailNotes(
   mechanics: SpellMechanicDetailMetadata | undefined,
 ): MechanicDetailNotes {
+  const duration =
+    mechanics?.duration?.displayCoverage === "complete"
+      ? undefined
+      : mechanics?.duration;
+  const savingThrow =
+    mechanics?.savingThrow?.displayCoverage === "complete"
+      ? undefined
+      : mechanics?.savingThrow;
+  const spellResistance =
+    mechanics?.spellResistance?.displayCoverage === "complete"
+      ? undefined
+      : mechanics?.spellResistance;
+
   return {
     duration: [
-      mechanics?.duration?.dismissible ? "dismissible" : null,
-      mechanics?.duration?.discharge ? "discharge" : null,
+      duration?.dismissible ? "dismissible" : null,
+      duration?.discharge ? "discharge" : null,
     ].filter((key): key is MechanicDetailNoteKey => key !== null),
     savingThrow: [
-      mechanics?.savingThrow?.partial ? "partial" : null,
-      mechanics?.savingThrow?.negates ? "negates" : null,
-      mechanics?.savingThrow?.harmless ? "harmless" : null,
-      mechanics?.savingThrow?.object ? "object" : null,
+      savingThrow?.partial ? "partial" : null,
+      savingThrow?.negates ? "negates" : null,
+      savingThrow?.harmless ? "harmless" : null,
+      savingThrow?.object ? "object" : null,
     ].filter((key): key is MechanicDetailNoteKey => key !== null),
     spellResistance: [
-      mechanics?.spellResistance?.harmless ? "harmless" : null,
-      mechanics?.spellResistance?.object ? "object" : null,
+      spellResistance?.harmless ? "harmless" : null,
+      spellResistance?.object ? "object" : null,
     ].filter((key): key is MechanicDetailNoteKey => key !== null),
   };
 }

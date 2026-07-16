@@ -156,14 +156,17 @@ Current behavior:
   casting time, range, target, effect, area, duration, saving throw, and spell
   resistance under `casting.mechanics`; each facet includes its category,
   amount/unit, flags, normalized English text, and explicit display coverage
-- Spell Detail still renders accepted duration, saving throw, and spell
-  resistance flags as secondary notes beside the authoritative raw source
-  field; a later consumer may replace raw display only when
-  `displayCoverage = complete`
+- Spell Detail uses deterministic normalized English text for complete facets
+  in English mode and formats the structured category, amount/unit, and flags
+  through maintained Chinese vocabulary in Chinese mode
+- partial, review, unsupported, and legacy facets preserve the authoritative
+  raw source field; structured secondary notes remain only for raw fallback
+  fields so complete display values do not repeat the same qualifiers
 
 Key code:
 
 - `web/app/features/spells/SpellDetailPage.tsx`
+- `web/app/i18n/display/spell-mechanics.ts`
 - `web/app/features/spells/RelatedSpellsSection.tsx`
 - `web/app/api/spells.ts`
 - `server/src/controllers/spells.controller.ts`

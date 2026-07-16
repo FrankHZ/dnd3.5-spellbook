@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: in progress.
+Status: implementation complete; ready for review.
 
 ## Purpose
 
@@ -162,9 +162,12 @@ comparison, and fallback even when coverage is complete.
 - Expected files: frontend display adapter/components and tests.
 - Validation: `npm run i18n:check`, targeted web tests, and manual display
   smoke for Chinese/English surfaces.
-- Status: pending Slice 3. Existing filter and detail-note consumers remain in
-  place; the main stat-block display must not switch until it receives the
-  explicit coverage contract.
+- Status: implemented. Spell Detail now selects normalized English display for
+  complete facets and formats the structured category, amount/unit, and flags
+  through the maintained `spell-mechanic-vocabulary` namespace in Chinese.
+  Partial, review, unsupported, and legacy facets retain raw text. Complete
+  values suppress duplicate secondary notes, while raw fallback fields keep
+  supported backend-provided notes.
 
 ## Acceptance Criteria
 
@@ -220,4 +223,17 @@ comparison, and fallback even when coverage is complete.
 
 ## Completion Notes
 
-Use this section only after implementation review.
+Frontend implementation evidence:
+
+- focused adapter and note tests cover Chinese complete formatting, English
+  normalized selection, raw fallback, unsupported categories, and note
+  de-duplication
+- `npm run test:web`: 32 files and 132 tests passed
+- `npm run typecheck:web`: passed
+- `npm run i18n:check`: passed with 25 filter keys, 16 detail keys, and 40
+  normalized display keys under mechanics localization audit
+- `npm run -w web build`: passed
+- `npm run verify`: passed
+- local HTTP smoke passed for Spell Detail route, API coverage metadata, and
+  both normalized mechanics locale resources; interactive English/Chinese
+  visual confirmation remains part of review

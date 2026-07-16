@@ -115,6 +115,49 @@ const MECHANIC_DETAIL_TRANSLATION_KEYS = [
   "mechanics.notes.object",
 ] as const;
 
+const MECHANIC_NORMALIZED_DISPLAY_TRANSLATION_KEYS = [
+  "mechanics.values.actions.free-action",
+  "mechanics.values.actions.full-round-action",
+  "mechanics.values.actions.immediate-action",
+  "mechanics.values.actions.standard-action",
+  "mechanics.values.actions.swift-action",
+  "mechanics.values.durations.concentration",
+  "mechanics.values.durations.instantaneous",
+  "mechanics.values.durations.permanent",
+  "mechanics.values.flags.discharge",
+  "mechanics.values.flags.dismissible",
+  "mechanics.values.flags.harmless",
+  "mechanics.values.flags.object",
+  "mechanics.values.qualifiers.half",
+  "mechanics.values.qualifiers.negates",
+  "mechanics.values.qualifiers.partial",
+  "mechanics.values.ranges.close",
+  "mechanics.values.ranges.long",
+  "mechanics.values.ranges.medium",
+  "mechanics.values.ranges.personal",
+  "mechanics.values.ranges.touch",
+  "mechanics.values.ranges.unlimited",
+  "mechanics.values.saving-throws.fortitude",
+  "mechanics.values.saving-throws.none",
+  "mechanics.values.saving-throws.reflex",
+  "mechanics.values.saving-throws.will",
+  "mechanics.values.separators.list",
+  "mechanics.values.spell-resistances.no",
+  "mechanics.values.spell-resistances.yes",
+  "mechanics.values.templates.amount-action",
+  "mechanics.values.templates.amount-unit",
+  "mechanics.values.templates.parenthetical",
+  "mechanics.values.templates.per-level",
+  "mechanics.values.templates.qualified",
+  "mechanics.values.units.action",
+  "mechanics.values.units.day",
+  "mechanics.values.units.ft",
+  "mechanics.values.units.hour",
+  "mechanics.values.units.mile",
+  "mechanics.values.units.minute",
+  "mechanics.values.units.round",
+] as const;
+
 function keySegment(value: string) {
   return value.replaceAll("_", "-");
 }
@@ -168,6 +211,10 @@ function auditMechanicsLocalization(): {
   const detailLocales = {
     en: readLocale("en", "spell-detail"),
     zh: readLocale("zh", "spell-detail"),
+  };
+  const normalizedDisplayLocales = {
+    en: readLocale("en", "spell-mechanic-vocabulary"),
+    zh: readLocale("zh", "spell-mechanic-vocabulary"),
   };
   const expectedFilterLocaleKeys: string[] = [];
 
@@ -248,12 +295,58 @@ function auditMechanicsLocalization(): {
     }
   }
 
+  for (const [lang, locale] of Object.entries(normalizedDisplayLocales)) {
+    const comparison = compareSets(
+      `spell-mechanic-vocabulary ${lang}`,
+      Object.keys(locale).sort(),
+      [...MECHANIC_NORMALIZED_DISPLAY_TRANSLATION_KEYS].sort(),
+    );
+    if (comparison.missing.length > 0) {
+      errors.push(
+        `${comparison.label}: missing ${formatList(comparison.missing)}`,
+      );
+    }
+    if (comparison.extra.length > 0) {
+      errors.push(`${comparison.label}: extra ${formatList(comparison.extra)}`);
+    }
+
+    for (const key of MECHANIC_NORMALIZED_DISPLAY_TRANSLATION_KEYS) {
+      const value = locale[key];
+      if (typeof value !== "string" || isSuspiciousTranslation(value, key)) {
+        errors.push(
+          `${lang} normalized mechanic translation is suspicious: ${key}`,
+        );
+      }
+    }
+  }
+
+  for (const key of MECHANIC_NORMALIZED_DISPLAY_TRANSLATION_KEYS) {
+    const enValue = normalizedDisplayLocales.en[key]?.trim();
+    const zhValue = normalizedDisplayLocales.zh[key]?.trim();
+    if (enValue && zhValue && enValue === zhValue) {
+      errors.push(`zh normalized mechanic translation matches English: ${key}`);
+    }
+  }
+
+  const duplicateNormalizedZh = findDuplicateTranslations(
+    normalizedDisplayLocales.zh,
+    [...MECHANIC_NORMALIZED_DISPLAY_TRANSLATION_KEYS],
+  );
+  if (duplicateNormalizedZh.length > 0) {
+    errors.push(
+      `zh normalized mechanics has duplicate translations ${formatList(
+        duplicateNormalizedZh,
+      )}`,
+    );
+  }
+
   return {
     errors,
     summary: [
       "mechanics-localization",
       `filterKeys=${expectedFilterLocaleKeys.length}`,
       `detailKeys=${MECHANIC_DETAIL_TRANSLATION_KEYS.length}`,
+      `normalizedDisplayKeys=${MECHANIC_NORMALIZED_DISPLAY_TRANSLATION_KEYS.length}`,
     ].join("\t"),
   };
 }

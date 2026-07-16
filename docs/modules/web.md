@@ -42,10 +42,13 @@ shared Advanced filters panel. The panel owns local draft state and writes the
 URL only when the user applies the draft, so long filter lists do not cause
 repeated navigation or scroll resets while users are checking boxes.
 
-Spell Detail may render accepted content-backed `casting.mechanics` flags as
-secondary notes for duration, saving throw, and spell resistance. It should not
-infer structured mechanic notes from legacy raw strings or promote deferred
-target, effect, or area values into normalized UI.
+Spell Detail consumes content-backed `casting.mechanics` through the shared
+display adapter. Complete facets use deterministic normalized English display
+or structured Chinese formatting; partial, review, unsupported, and legacy
+facets keep the authoritative raw text. Secondary duration, saving throw, and
+spell resistance notes remain only for raw fallback fields. Do not infer
+structured mechanic notes from legacy strings or promote deferred target,
+effect, or area values into normalized UI.
 
 Publications owns publication/rulebook scope browsing and management. It should
 consume publication metadata from `/api/rulebooks` and must not regroup
