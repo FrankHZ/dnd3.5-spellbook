@@ -30,6 +30,7 @@ as loose backlog items unless their scope changes again:
 - CF/AWS security acceptance pass
 - v1.1 production hardening and full spell corpus
 - v1.2 full-spell source review, mechanics localization, and Publications page
+- v1.2.1 content-backed online full-text spell search
 - v1.3 sitewide UX / style redesign
 
 ## Current Deferred Areas
@@ -64,7 +65,8 @@ as loose backlog items unless their scope changes again:
 ### Content
 
 - content coverage, provenance, and review-status reporting
-- search/index artifact generation for offline or static deployments
+- search/index artifact generation for offline or static deployments; the
+  promoted v1.2.1 scope covers only online content DB full-text search
 - full spell-body/name/short-description translation and proofreading QA after
   the v1.2 full-spell source review and mechanics translation workflow prove
   the review model

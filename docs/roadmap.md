@@ -38,15 +38,34 @@ v1.0 is the previous frozen formal public release:
 
 The latest frozen pre-release snapshot is `docs/mvp/v3.10/FREEZE.md`.
 
-Use the v1.2 child plans for implementation boundaries. Publications is already
-accepted, and full-spell source review is accepted. Keep the remaining
-mechanics localization track independently reviewable unless a real sequencing
-conflict appears.
+Use the v1.2 child plans for implementation and acceptance history.
+Publications, Full-Spell Source Review, and Mechanics Localization are accepted.
+The next action is the v1.2 freeze sweep; do not start v1.2.1 implementation
+before that snapshot is merged.
+
+v1.2.1 is the planned focused release after v1.2 freeze:
+
+- `docs/releases/v1.2.1/README.md`
+- `docs/releases/v1.2.1/full-text-search-plan.md`
+
+v1.2.1 should add content-backed full-text spell search without reopening v1.2
+mechanics localization or starting the broader v1.3 design release.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
 
 ## Recently Completed
+
+The v1.2 Mechanics Localization track is accepted with:
+
+- explicit normalized mechanics display coverage independent from parser review
+  status.
+- deterministic English normalized display for complete facets while partial,
+  review, unsupported, and legacy rows preserve authoritative raw text.
+- maintained Chinese mechanics vocabulary and portable i18n audit coverage.
+- frontend Spell Detail consumption with complete-only normalized display and
+  tested raw fallback.
+- focused web, i18n, build, and root verification passing before merge in #72.
 
 The v1.2 Publications track is accepted with:
 
@@ -146,17 +165,20 @@ freeze docs instead of copying them into this roadmap.
 
 Recommended next sequence:
 
-1. **Run mechanics localization**
+1. **Freeze v1.2**
 
-   Use an i18n/data branch for normalized mechanics translation, QA reports,
-   and the reusable workflow/skill handoff. Follow with a focused frontend
-   consumer branch only after the mechanics vocabulary and QA shape are stable.
+   Publications, Full-Spell Source Review, and Mechanics Localization are
+   accepted. Prepare `docs/releases/v1.2/FREEZE.md` as the as-built release
+   snapshot and align current navigation/status wording before starting the
+   next release.
 
-2. **Freeze v1.2 after mechanics localization is accepted**
+2. **Run v1.2.1 full-text search**
 
-   The Publications and Full-Spell Source Review tracks are already accepted.
-   After mechanics localization is accepted, prepare
-   `docs/releases/v1.2/FREEZE.md` as the as-built release snapshot.
+   Add a focused content-backed full-text mode to Search after v1.2 freeze.
+   Follow `docs/releases/v1.2.1/full-text-search-plan.md`. Keep existing name
+   search as the default, reuse current Search filters and rulebook scope, and
+   avoid external search services or offline/static search artifacts in this
+   release.
 
 3. **Keep v1.3 as the broader design release**
 
@@ -185,14 +207,22 @@ The expected post-v1.1 release order is:
    management. Add only the publication metadata needed to make that page
    durable.
 
-2. **v1.3 Sitewide UX / Style Redesign**
+2. **v1.2.1 Content-Backed Full-Text Search**
+
+   Add an explicit Search mode for content-backed full-text queries over
+   prepared spell text while preserving name search as the default. Keep the
+   existing Search rulebook scope, class/domain/level filters, taxonomy,
+   component, and mechanics filters active in full-text mode. Use SQLite FTS5
+   inside the content DB rather than a separate search service.
+
+3. **v1.3 Sitewide UX / Style Redesign**
 
    Run a deliberate design-system and sitewide cohesion pass across Browse,
    Search, Detail, About/Status, collections, prepared spells, filters, spell
    cards, layout density, and mobile behavior. Let frontend-design own the
    implementation branch while the main gate controls scope and acceptance.
 
-3. **Later Translation QA**
+4. **Later Translation QA**
 
    Promote full spell-body/name/short-description translation and proofreading
    only after the full-spell source review and mechanics workflow have produced
@@ -206,7 +236,8 @@ The stable-version backlog remains intentionally deferred:
   full-corpus acceptance path
 - static HTML/offline artifact generation to replace old loose HTML
   distribution
-- search/index artifact generation for offline or static deployments
+- search/index artifact generation for offline or static deployments; v1.2.1
+  owns only online content DB full-text search
 - package-manager migration spike, if npm workspaces become a real bottleneck:
   keep npm as the default for now; prefer a focused pnpm spike over Yarn if
   install speed, disk usage, workspace filtering, or dependency isolation become
