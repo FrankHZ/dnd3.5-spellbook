@@ -13,14 +13,22 @@ acceptance can be described.
 
 ## Current Track
 
-v1.2 is the active formal public release plan:
+v1.2.1 is the active formal public release plan:
 
+- `docs/releases/v1.2.1/README.md`
+- `docs/releases/v1.2.1/full-text-search-plan.md`
+
+v1.2 is the latest frozen formal public release:
+
+- `docs/releases/v1.2/FREEZE.md`
 - `docs/releases/v1.2/README.md`
 - `docs/releases/v1.2/full-spell-source-review-plan.md`
+- `docs/releases/v1.2/full-corpus-correction-plan.md`
+- `docs/releases/v1.2/db-workflow-review-plan.md`
 - `docs/releases/v1.2/mechanics-localization-plan.md`
 - `docs/releases/v1.2/publications-page-plan.md`
 
-v1.1 is the latest frozen formal public release:
+v1.1 is the previous frozen formal public release:
 
 - `docs/releases/v1.1/FREEZE.md`
 - `docs/releases/v1.1/README.md`
@@ -28,7 +36,7 @@ v1.1 is the latest frozen formal public release:
 - `docs/releases/v1.1/full-spell-corpus-plan.md`
 - `docs/releases/v1.1/frontend-content-pass-plan.md`
 
-v1.0 is the previous frozen formal public release:
+v1.0 is the older frozen formal public release:
 
 - `docs/releases/v1.0/FREEZE.md`
 - `docs/releases/v1.0/README.md`
@@ -38,23 +46,28 @@ v1.0 is the previous frozen formal public release:
 
 The latest frozen pre-release snapshot is `docs/mvp/v3.10/FREEZE.md`.
 
-Use the v1.2 child plans for implementation and acceptance history.
-Publications, Full-Spell Source Review, and Mechanics Localization are accepted.
-The next action is the v1.2 freeze sweep; do not start v1.2.1 implementation
-before that snapshot is merged.
-
-v1.2.1 is the planned focused release after v1.2 freeze:
-
-- `docs/releases/v1.2.1/README.md`
-- `docs/releases/v1.2.1/full-text-search-plan.md`
-
-v1.2.1 should add content-backed full-text spell search without reopening v1.2
-mechanics localization or starting the broader v1.3 design release.
+Use the v1.2.1 plan for the next specialist handoff. It adds content-backed
+full-text spell search without reopening frozen v1.2 mechanics/publication work
+or starting the broader v1.3 design release.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
 
 ## Recently Completed
+
+The v1.2 release is frozen with:
+
+- `docs/releases/v1.2/FREEZE.md` as the as-built snapshot.
+- full-spell source inventory and parsed-source QA without an unsafe broad
+  import.
+- 34 evidence-backed corpus correction operations and a durable DB/content
+  handoff workflow.
+- explicit mechanics display coverage, Chinese normalized mechanics display,
+  and authoritative raw fallback.
+- accepted publication metadata plus `/publications` as the scope-management
+  surface.
+- production backend `e244a02` and content DB build provenance matching parent
+  `2d98ed4`, data `fbdcc780`, 5,097 spells, and 3,560 issues.
 
 The v1.2 Mechanics Localization track is accepted with:
 
@@ -155,7 +168,7 @@ freeze docs instead of copying them into this roadmap.
 - Rules DB inspection and structured patch notes live in
   `docs/operations/rules-db-notes.md`.
 - Current public release DB/status behavior is frozen in
-  `docs/releases/v1.1/FREEZE.md`.
+  `docs/releases/v1.2/FREEZE.md`.
 - Production still uses an operator-owned content DB upload/activation path;
   DB upload is not part of automatic CD.
 - `GET /api/status/db` remains the remote runtime state check for content DB
@@ -165,39 +178,31 @@ freeze docs instead of copying them into this roadmap.
 
 Recommended next sequence:
 
-1. **Freeze v1.2**
+1. **Run v1.2.1 full-text search**
 
-   Publications, Full-Spell Source Review, and Mechanics Localization are
-   accepted. Prepare `docs/releases/v1.2/FREEZE.md` as the as-built release
-   snapshot and align current navigation/status wording before starting the
-   next release.
-
-2. **Run v1.2.1 full-text search**
-
-   Add a focused content-backed full-text mode to Search after v1.2 freeze.
-   Follow `docs/releases/v1.2.1/full-text-search-plan.md`. Keep existing name
+   Follow `docs/releases/v1.2.1/full-text-search-plan.md`. Implement the
+   backend/data contract first, then the focused frontend consumer. Keep name
    search as the default, reuse current Search filters and rulebook scope, and
-   avoid external search services or offline/static search artifacts in this
-   release.
+   avoid external services, snippets, or offline/static search artifacts.
 
-3. **Keep v1.3 as the broader design release**
+2. **Keep v1.3 as the broader design release**
 
    Do not let the v1.2 Publications page become the full sitewide style
    redesign. Keep complete filter UX, spell-card redesign, and broader visual
    system work in v1.3 unless a v1.2 acceptance blocker proves otherwise.
 
-4. **Defer full translation QA**
+3. **Defer full translation QA**
 
    Treat full spell-body/name/short-description translation and proofreading
-   as a later release candidate. v1.2 should first review the full-spell
-   source/parse boundary and prove the translation workflow on mechanics, then
-   preserve the full-corpus translation plan as follow-up scope.
+   as a later release candidate. Use the frozen v1.2 mechanics workflow and
+   source/parse QA as the starting evidence rather than reopening v1.2.
 
 ## Official Release Sequence
 
 The expected post-v1.1 release order is:
 
-1. **v1.2 Full-Spell Review + Mechanics Localization + Publications Page**
+1. **v1.2 Full-Spell Review + Mechanics Localization + Publications Page
+   (Frozen)**
 
    Review the local full-spell 6.01 source package and the existing v6.00
    parsed JSON quality, translate all normalized mechanics into Chinese, run
@@ -207,7 +212,7 @@ The expected post-v1.1 release order is:
    management. Add only the publication metadata needed to make that page
    durable.
 
-2. **v1.2.1 Content-Backed Full-Text Search**
+2. **v1.2.1 Content-Backed Full-Text Search (Active)**
 
    Add an explicit Search mode for content-backed full-text queries over
    prepared spell text while preserving name search as the default. Keep the

@@ -7,10 +7,9 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: local DB/content apply complete. The reviewed correction patch has been
-applied to the local locked rules DB, moved to the nested data repo's applied
-patch set, and regenerated into the local content DB. Remote content DB
-activation remains outside this PR.
+Status: accepted. The reviewed correction patch was applied to the local locked
+rules DB, moved to the nested data repo's applied patch set, regenerated into
+the content DB, and later activated remotely during v1.2 release closeout.
 
 ## Purpose
 
@@ -220,8 +219,9 @@ it cannot express a safe field-level correction patch yet.
 
 ## Open Questions
 
-- Does the main gate want this correction implementation promoted into v1.2
-  acceptance, or kept as a separate post-review data-quality follow-up?
+- Resolved: the accepted correction apply and matching content artifact are
+  included in the v1.2 freeze evidence. Broader source correction remains
+  follow-up work.
 
 ## Follow-Up Candidates
 
@@ -240,6 +240,7 @@ The accepted correction records are:
 - applied patch:
   `data/rules-patches/applied/spells/full-corpus-v600-v601-corrections.jsonl`
 
-The DB/content apply slice is complete locally. Remote content DB activation is
-not part of this PR; verify or activate the remote artifact through the
-operator-owned deployment workflow only after merge or explicit gate approval.
+The DB/content apply slice is complete. Remote activation remained outside the
+correction PR and was completed later through the operator-owned deployment
+workflow. [FREEZE.md](./FREEZE.md) records the matching local/production
+provenance.

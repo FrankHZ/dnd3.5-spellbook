@@ -7,27 +7,27 @@ directory for release lines after MVP scope is frozen.
 
 ## Current Release Plans
 
-- [v1.2/README.md](./v1.2/README.md): active full-spell source review,
-  mechanics localization, and Publications page release plan.
-- [v1.2/full-spell-source-review-plan.md](./v1.2/full-spell-source-review-plan.md):
-  active full-spell source inventory and parse QA plan.
-- [v1.2/full-corpus-correction-plan.md](./v1.2/full-corpus-correction-plan.md):
-  post-review correction apply record for accepted corpus rows; local DB/content
-  apply is complete, and remote activation remains outside PR scope.
-- [v1.2/db-workflow-review-plan.md](./v1.2/db-workflow-review-plan.md):
-  DB/content update checklist and fixture-manifest hardening acceptance record
-  for accepted data handoffs.
-- [v1.2/mechanics-localization-plan.md](./v1.2/mechanics-localization-plan.md):
-  active mechanics translation, QA workflow, and frontend consumer plan.
-- [v1.2/publications-page-plan.md](./v1.2/publications-page-plan.md): active
-  Publications page and minimum metadata plan.
-- [v1.2.1/README.md](./v1.2.1/README.md): planned focused content-backed
+- [v1.2.1/README.md](./v1.2.1/README.md): active focused content-backed
   full-text spell search release.
 - [v1.2.1/full-text-search-plan.md](./v1.2.1/full-text-search-plan.md):
-  planned Search full-text mode, content DB FTS index, and frontend consumer
-  plan.
-- [v1.1/FREEZE.md](./v1.1/FREEZE.md): frozen production hardening, full spell
-  corpus, and frontend content acceptance release snapshot.
+  accepted Search full-text mode, content DB FTS index, and frontend consumer
+  plan ready for specialist handoff.
+- [v1.2/FREEZE.md](./v1.2/FREEZE.md): latest frozen full-spell review,
+  mechanics localization, Publications, and DB/content workflow snapshot.
+- [v1.2/README.md](./v1.2/README.md): frozen full-spell source review,
+  mechanics localization, and Publications page release plan.
+- [v1.2/full-spell-source-review-plan.md](./v1.2/full-spell-source-review-plan.md):
+  accepted full-spell source inventory and parse QA record.
+- [v1.2/full-corpus-correction-plan.md](./v1.2/full-corpus-correction-plan.md):
+  accepted post-review correction apply and activation record.
+- [v1.2/db-workflow-review-plan.md](./v1.2/db-workflow-review-plan.md):
+  accepted DB/content update and fixture-manifest hardening record.
+- [v1.2/mechanics-localization-plan.md](./v1.2/mechanics-localization-plan.md):
+  accepted mechanics translation, QA workflow, and frontend consumer record.
+- [v1.2/publications-page-plan.md](./v1.2/publications-page-plan.md): accepted
+  Publications page and minimum metadata record.
+- [v1.1/FREEZE.md](./v1.1/FREEZE.md): previous frozen production hardening,
+  full spell corpus, and frontend content acceptance release snapshot.
 - [v1.1/README.md](./v1.1/README.md): frozen production hardening, full spell
   corpus, and frontend content acceptance release plan.
 - [v1.1/production-hardening-plan.md](./v1.1/production-hardening-plan.md):

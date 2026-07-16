@@ -9,8 +9,8 @@
 
 Status: accepted. Slice 1 data/API metadata contract is accepted; the frontend
 Publications page and Settings boundary slices were accepted and merged in PR
-#65. The follow-up publication metadata refresh has been imported into the local
-content DB for operator-owned deployment.
+#65. The follow-up publication metadata refresh is active in the production
+content DB.
 
 ## Purpose
 
@@ -80,6 +80,9 @@ surface and a small, explicit publication metadata contract.
   `RulebookContent` has 151 rows, including 111 accepted rows with publication
   year/date details from maintained local metadata.
 - Production DB upload remains operator-owned and outside automatic CD.
+- v1.2 release closeout activated the content DB with 151 `RulebookContent`
+  rows. Production `/api/rulebooks` exposes 104 spell-bearing rows, including
+  69 accepted/date-bearing publication rows.
 
 ## Plan
 

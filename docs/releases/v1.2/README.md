@@ -1,7 +1,7 @@
 # v1.2 Release Plan
 
-Status: in progress. Publications page, minimum metadata, and full-spell source
-review are accepted; mechanics localization remains.
+Status: frozen on 2026-07-16. Use [FREEZE.md](./FREEZE.md) as the canonical
+as-built v1.2 release snapshot.
 
 v1.2 is a focused post-v1.1 release. It starts from the accepted full corpus
 runtime state and improves source confidence, bounded mechanics localization,
@@ -52,7 +52,7 @@ not expand into the v1.3 sitewide redesign.
 
 2. **Mechanics localization**
 
-   Planned in
+   Accepted in PR #72 and recorded in
    [mechanics-localization-plan.md](./mechanics-localization-plan.md). This owns
    normalized mechanics translation, QA workflow, durable agent handoff, and
    frontend mechanics display in Chinese.
@@ -67,8 +67,8 @@ not expand into the v1.3 sitewide redesign.
 
 4. **Release acceptance and freeze**
 
-   After mechanics localization is accepted, create `FREEZE.md` as the
-   as-built v1.2 snapshot.
+   Accepted on 2026-07-16. [FREEZE.md](./FREEZE.md) records the as-built v1.2
+   snapshot, local validation, and production activation evidence.
 
 Do not create an integrated plan unless these tracks start conflicting on
 delivery sequence, ownership, or accepted release scope.
@@ -90,7 +90,7 @@ delivery sequence, ownership, or accepted release scope.
 - [full-spell-source-review-report.md](./full-spell-source-review-report.md)
 - [full-corpus-correction-plan.md](./full-corpus-correction-plan.md):
   post-review corrective-patch apply record. Local DB/content apply is complete,
-  and remote activation remains outside PR scope.
+  and the regenerated artifact was activated during release closeout.
 - [db-workflow-review-plan.md](./db-workflow-review-plan.md): DB/content update
   checklist and fixture-manifest hardening acceptance record for accepted data
   handoffs. The durable workflow entry point is
@@ -137,7 +137,7 @@ v1.2 release acceptance should include:
 
 ## Handoff Rule
 
-v1.2 is active planning. Implementation branches should update their owning
-child plan and affected topic/operations docs. Use `docs/roadmap.md` for
-current work ordering after a pause, and do not edit frozen v1.1 docs to
-describe v1.2 behavior.
+v1.2 is frozen. Use [FREEZE.md](./FREEZE.md) for shipped state and
+`docs/roadmap.md` for current ordering. Do not add new active scope to this
+folder; future behavior belongs in the owning topic docs or a later release
+plan.
