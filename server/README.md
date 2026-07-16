@@ -77,6 +77,12 @@ taxonomy filters as comma-separated id lists:
 - `subschoolIds`
 - `descriptorIds`
 
+`GET /api/spells/search` defaults to `mode=name`. `mode=full` requires at
+least three Unicode code points and a compatible rebuilt content DB FTS index.
+Full mode reuses the same rulebook, class/domain/level, taxonomy, component,
+and mechanics filters; legacy rules read source or a missing/incompatible index
+returns `FULL_TEXT_SEARCH_UNAVAILABLE` instead of falling back to name search.
+
 Use `GET /api/meta/filters` for the filter vocabulary. It returns stable
 id/key/slug/name values from accepted normalized content facets and overlays
 localized labels when `lang`/`variant` are provided.

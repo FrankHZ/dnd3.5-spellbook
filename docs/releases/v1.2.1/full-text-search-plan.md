@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: accepted plan; ready for specialist handoff.
+Status: implementation active; backend/data slices complete, frontend consumer pending.
 
 ## Purpose
 
@@ -325,5 +325,15 @@ Frontend direction:
 
 ## Completion Notes
 
-Use this section only after implementation review. Keep it short and link to
-merged PRs, validation evidence, or freeze snapshots instead of pasting logs.
+- Backend/data implementation is split across contract (`892bdba`), DB/tooling
+  (`a672efe`), and server query (`3474581`) commits for focused review.
+- The content DB now owns a trigram FTS5 document index plus explicit rebuild
+  state; `content:search:rebuild` is the maintained dry-run/write boundary.
+- API coverage includes default name mode, stable full-mode validation and
+  unavailable errors, weighted multi-variant de-duplication, deterministic
+  pagination, localized text, and the complete existing structured filter set.
+- Local acceptance applied all 11 content migrations, dry-ran and rebuilt
+  11,845 documents from 5,097 spells, and smoked compiled `mode=name` and
+  `mode=full` requests against the real local content DB.
+- Slice 4 remains with the frontend specialist. Do not treat backend URL access
+  to `mode=full` as completion of the reader-facing mode control.

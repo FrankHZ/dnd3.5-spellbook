@@ -66,6 +66,8 @@ npm run -w data-tools rules:content:audit
 npm run -w data-tools rules:content:generate
 npm run -w data-tools rules:content:import -- --dry-run
 npm run -w data-tools rules:content:import
+npm run -w data-tools content:search:rebuild -- --dry-run
+npm run -w data-tools content:search:rebuild
 npm run -w data-tools rules:content:parity
 npm run -w data-tools rules:content:meta
 ```
@@ -81,7 +83,8 @@ already-applied field updates. To verify the current baseline, use
 `rules:manifest:verify`, `rules:content:parity`, `rules:content:meta`, and
 focused content checks. If the local content DB must be rebuilt from the
 applied rules baseline, use the normal `rules:content:generate` and
-`rules:content:import` sequence above without rerunning the rules patch. The
+`rules:content:import` and `content:search:rebuild` sequence above without
+rerunning the rules patch. The
 durable DB/content handoff entry point is
 [`db-content-workflow.md`](./db-content-workflow.md); the v1.2 acceptance record
 lives in
@@ -359,6 +362,7 @@ is:
 2. import CHM spell text
 3. import normalized spell summaries
 4. generate and import normalized rules content
+5. dry-run and rebuild the derived full-text search index
 
 This keeps the content DB populated with both:
 
@@ -367,6 +371,16 @@ This keeps the content DB populated with both:
 - accepted short-summary rows
 - normalized rules-derived spell, taxonomy, component, mechanic, and list-entry
   content
+- one rebuildable FTS5 document index generated from the final imported English,
+  Chinese, summary, body, alias, and mechanics text
+
+Run `content:search:rebuild` only after all content imports for the artifact are
+complete. Its `--dry-run` path validates the FTS migration, source table
+readability, and generated document counts without writing SQLite. The write
+path replaces only `SpellSearchDocument` and `SpellSearchIndexState`; it does
+not mutate source content tables or the rules DB. Re-run it after any later
+text, summary, or normalized-content import that should affect full-text
+results.
 
 If a local development content DB was created with an older migration checksum,
 `db:content:reset` may ask for a Prisma reset instead of applying migrations in
