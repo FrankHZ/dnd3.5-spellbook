@@ -42,6 +42,10 @@ import {
   type LegacyRulesContentInput,
 } from "../rules-content/normalize";
 import {
+  normalizeMechanicValue,
+  validateMechanicDisplayValue,
+} from "../rules-content/mechanics";
+import {
   auditRulebookLabels,
   readRulebookPublicationJsonlText,
 } from "../rulebooks/labels-audit";
@@ -634,6 +638,75 @@ const tests: TestCase[] = [
     },
   },
   {
+    name: "mechanics display coverage requires full grammar consumption",
+    run: () => {
+      const completeDuration = normalizeMechanicValue(
+        "duration",
+        "1 round/level (D)",
+      );
+      assert.deepEqual(
+        {
+          category: completeDuration.category,
+          amount: completeDuration.amount,
+          unit: completeDuration.unit,
+          flags: completeDuration.flags,
+          normalizedText: completeDuration.normalizedText,
+          displayCoverage: completeDuration.displayCoverage,
+        },
+        {
+          category: "timed",
+          amount: 1,
+          unit: "round",
+          flags: {
+            concentration: false,
+            discharge: false,
+            dismissible: true,
+            perLevel: true,
+          },
+          normalizedText: "1 round/level (D)",
+          displayCoverage: "complete",
+        },
+      );
+      assert.deepEqual(validateMechanicDisplayValue(completeDuration), []);
+
+      const partialDuration = normalizeMechanicValue(
+        "duration",
+        "1 round/level or until discharged",
+      );
+      assert.equal(partialDuration.category, "timed");
+      assert.equal(partialDuration.displayCoverage, "partial");
+      assert.equal(partialDuration.normalizedText, null);
+
+      const partialTarget = normalizeMechanicValue(
+        "target",
+        "One creature/level, no two of which can be more than 30 ft. apart",
+      );
+      assert.equal(partialTarget.category, "creature");
+      assert.equal(partialTarget.displayCoverage, "partial");
+
+      const reviewRange = normalizeMechanicValue("range", "See text");
+      assert.equal(reviewRange.displayCoverage, "review");
+      assert.equal(reviewRange.issueCode, "range.review");
+      assert.deepEqual(validateMechanicDisplayValue(reviewRange), []);
+
+      const emptyResistance = normalizeMechanicValue(
+        "spell_resistance",
+        null,
+      );
+      assert.equal(emptyResistance.displayCoverage, "empty");
+      assert.equal(emptyResistance.normalizedText, null);
+
+      assert.deepEqual(
+        validateMechanicDisplayValue({
+          displayCoverage: "complete",
+          normalizedText: null,
+          issueCode: null,
+        }),
+        ["complete mechanics require normalizedText"],
+      );
+    },
+  },
+  {
     name: "rules content normalizer preserves raw mechanics and emits review issues",
     run: () => {
       const input: LegacyRulesContentInput = {
@@ -813,7 +886,9 @@ const tests: TestCase[] = [
           (row) =>
             row.mechanicType === "casting_time" &&
             row.category === "standard_action" &&
-            row.amount === 1,
+            row.amount === 1 &&
+            row.normalizedText === "1 standard action" &&
+            row.displayCoverage === "complete",
         ),
       );
       assert.ok(
@@ -838,6 +913,9 @@ const tests: TestCase[] = [
       const audit = auditNormalizedContent(normalized);
       assert.equal(audit.reviewCounts.components, 1);
       assert.equal(audit.issueCounts["component.extra.review"], 1);
+      assert.equal(audit.mechanicDisplayCoverage.complete, 10);
+      assert.equal(audit.mechanicDisplayCoverage.partial, 2);
+      assert.equal(audit.mechanicDisplayCoverage.empty, 4);
     },
   },
   {

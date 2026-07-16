@@ -68,6 +68,100 @@ function readLocale(lang: string, namespace: string): LocaleMap {
   return readJson<LocaleMap>(join(localesDir, lang, `${namespace}.json`));
 }
 
+const MECHANIC_FILTER_TRANSLATION_GROUPS = [
+  {
+    label: "casting times",
+    exportName: "SPELL_CASTING_TIME_FILTER_KEYS",
+    localePrefix: "mechanics.casting-times.options",
+  },
+  {
+    label: "ranges",
+    exportName: "SPELL_RANGE_FILTER_KEYS",
+    localePrefix: "mechanics.ranges.options",
+  },
+  {
+    label: "durations",
+    exportName: "SPELL_DURATION_FILTER_KEYS",
+    localePrefix: "mechanics.durations.options",
+  },
+  {
+    label: "saving throws",
+    exportName: "SPELL_SAVING_THROW_FILTER_KEYS",
+    localePrefix: "mechanics.saving-throws.options",
+  },
+  {
+    label: "spell resistances",
+    exportName: "SPELL_RESISTANCE_FILTER_KEYS",
+    localePrefix: "mechanics.spell-resistances.options",
+  },
+] as const;
+
+const MECHANIC_DETAIL_TRANSLATION_KEYS = [
+  "sections.mechanics",
+  "mechanics.casting-time",
+  "mechanics.range",
+  "mechanics.target",
+  "mechanics.effect",
+  "mechanics.area",
+  "mechanics.duration",
+  "mechanics.saving-throw",
+  "mechanics.spell-resistance",
+  "mechanics.notes.label",
+  "mechanics.notes.dismissible",
+  "mechanics.notes.discharge",
+  "mechanics.notes.partial",
+  "mechanics.notes.negates",
+  "mechanics.notes.harmless",
+  "mechanics.notes.object",
+] as const;
+
+const MECHANIC_NORMALIZED_DISPLAY_TRANSLATION_KEYS = [
+  "mechanics.values.actions.free-action",
+  "mechanics.values.actions.full-round-action",
+  "mechanics.values.actions.immediate-action",
+  "mechanics.values.actions.standard-action",
+  "mechanics.values.actions.swift-action",
+  "mechanics.values.durations.concentration",
+  "mechanics.values.durations.instantaneous",
+  "mechanics.values.durations.permanent",
+  "mechanics.values.flags.discharge",
+  "mechanics.values.flags.dismissible",
+  "mechanics.values.flags.harmless",
+  "mechanics.values.flags.object",
+  "mechanics.values.qualifiers.half",
+  "mechanics.values.qualifiers.negates",
+  "mechanics.values.qualifiers.partial",
+  "mechanics.values.ranges.close",
+  "mechanics.values.ranges.long",
+  "mechanics.values.ranges.medium",
+  "mechanics.values.ranges.personal",
+  "mechanics.values.ranges.touch",
+  "mechanics.values.ranges.unlimited",
+  "mechanics.values.saving-throws.fortitude",
+  "mechanics.values.saving-throws.none",
+  "mechanics.values.saving-throws.reflex",
+  "mechanics.values.saving-throws.will",
+  "mechanics.values.separators.list",
+  "mechanics.values.spell-resistances.no",
+  "mechanics.values.spell-resistances.yes",
+  "mechanics.values.templates.amount-action",
+  "mechanics.values.templates.amount-unit",
+  "mechanics.values.templates.parenthetical",
+  "mechanics.values.templates.per-level",
+  "mechanics.values.templates.qualified",
+  "mechanics.values.units.action",
+  "mechanics.values.units.day",
+  "mechanics.values.units.ft",
+  "mechanics.values.units.hour",
+  "mechanics.values.units.mile",
+  "mechanics.values.units.minute",
+  "mechanics.values.units.round",
+] as const;
+
+function keySegment(value: string) {
+  return value.replaceAll("_", "-");
+}
+
 function compareSets(label: string, actual: string[], expected: string[]) {
   const actualSet = new Set(actual);
   const expectedSet = new Set(expected);
@@ -79,6 +173,182 @@ function compareSets(label: string, actual: string[], expected: string[]) {
 function formatList(values: string[], limit = 8): string {
   const head = values.slice(0, limit).join(", ");
   return values.length > limit ? `${head}, ... (${values.length} total)` : head;
+}
+
+function isSuspiciousTranslation(value: string, key: string) {
+  const trimmed = value.trim();
+  return (
+    trimmed.length === 0 ||
+    trimmed === key ||
+    /\b(?:todo|tbd|fixme)\b/i.test(trimmed)
+  );
+}
+
+function findDuplicateTranslations(locale: LocaleMap, keys: string[]) {
+  const byValue = new Map<string, string[]>();
+  for (const key of keys) {
+    const value = locale[key]?.trim();
+    if (!value) continue;
+    const normalized = value.toLocaleLowerCase();
+    byValue.set(normalized, [...(byValue.get(normalized) ?? []), key]);
+  }
+
+  return Array.from(byValue.entries())
+    .filter(([, duplicateKeys]) => duplicateKeys.length > 1)
+    .map(([value, duplicateKeys]) => `${value}: ${duplicateKeys.join(", ")}`);
+}
+
+function auditMechanicsLocalization(): {
+  errors: string[];
+  summary: string;
+} {
+  const errors: string[] = [];
+  const contractSpellPath = join(repoDir, "contracts", "src", "dto", "spell.ts");
+  const filterLocales = {
+    en: readLocale("en", "spell-filter-vocabulary"),
+    zh: readLocale("zh", "spell-filter-vocabulary"),
+  };
+  const detailLocales = {
+    en: readLocale("en", "spell-detail"),
+    zh: readLocale("zh", "spell-detail"),
+  };
+  const normalizedDisplayLocales = {
+    en: readLocale("en", "spell-mechanic-vocabulary"),
+    zh: readLocale("zh", "spell-mechanic-vocabulary"),
+  };
+  const expectedFilterLocaleKeys: string[] = [];
+
+  for (const group of MECHANIC_FILTER_TRANSLATION_GROUPS) {
+    const expectedSegments = readStringArrayExport(
+      contractSpellPath,
+      group.exportName,
+    ).map(keySegment);
+    const expectedKeys = expectedSegments.map(
+      (segment) => `${group.localePrefix}.${segment}`,
+    );
+    expectedFilterLocaleKeys.push(...expectedKeys);
+
+    for (const [lang, locale] of Object.entries(filterLocales)) {
+      const actualSegments = Object.keys(locale)
+        .filter((key) => key.startsWith(`${group.localePrefix}.`))
+        .map((key) => key.slice(group.localePrefix.length + 1))
+        .sort();
+      const comparison = compareSets(
+        `spell-filter-vocabulary ${lang} mechanics ${group.label}`,
+        actualSegments,
+        expectedSegments,
+      );
+      if (comparison.missing.length > 0) {
+        errors.push(
+          `${comparison.label}: missing ${formatList(comparison.missing)}`,
+        );
+      }
+      if (comparison.extra.length > 0) {
+        errors.push(
+          `${comparison.label}: extra ${formatList(comparison.extra)}`,
+        );
+      }
+
+      for (const key of expectedKeys) {
+        const value = locale[key];
+        if (typeof value !== "string" || isSuspiciousTranslation(value, key)) {
+          errors.push(`${lang} mechanics translation is suspicious: ${key}`);
+        }
+      }
+    }
+
+    const duplicateZh = findDuplicateTranslations(
+      filterLocales.zh,
+      expectedKeys,
+    );
+    if (duplicateZh.length > 0) {
+      errors.push(
+        `zh mechanics ${group.label} has duplicate translations ${formatList(
+          duplicateZh,
+        )}`,
+      );
+    }
+  }
+
+  for (const key of expectedFilterLocaleKeys) {
+    const enValue = filterLocales.en[key]?.trim();
+    const zhValue = filterLocales.zh[key]?.trim();
+    if (enValue && zhValue && enValue === zhValue) {
+      errors.push(`zh mechanics translation matches English: ${key}`);
+    }
+  }
+
+  for (const [lang, locale] of Object.entries(detailLocales)) {
+    for (const key of MECHANIC_DETAIL_TRANSLATION_KEYS) {
+      const value = locale[key];
+      if (typeof value !== "string" || isSuspiciousTranslation(value, key)) {
+        errors.push(`${lang} mechanic detail translation is suspicious: ${key}`);
+      }
+    }
+  }
+
+  for (const key of MECHANIC_DETAIL_TRANSLATION_KEYS) {
+    const enValue = detailLocales.en[key]?.trim();
+    const zhValue = detailLocales.zh[key]?.trim();
+    if (enValue && zhValue && enValue === zhValue) {
+      errors.push(`zh mechanic detail translation matches English: ${key}`);
+    }
+  }
+
+  for (const [lang, locale] of Object.entries(normalizedDisplayLocales)) {
+    const comparison = compareSets(
+      `spell-mechanic-vocabulary ${lang}`,
+      Object.keys(locale).sort(),
+      [...MECHANIC_NORMALIZED_DISPLAY_TRANSLATION_KEYS].sort(),
+    );
+    if (comparison.missing.length > 0) {
+      errors.push(
+        `${comparison.label}: missing ${formatList(comparison.missing)}`,
+      );
+    }
+    if (comparison.extra.length > 0) {
+      errors.push(`${comparison.label}: extra ${formatList(comparison.extra)}`);
+    }
+
+    for (const key of MECHANIC_NORMALIZED_DISPLAY_TRANSLATION_KEYS) {
+      const value = locale[key];
+      if (typeof value !== "string" || isSuspiciousTranslation(value, key)) {
+        errors.push(
+          `${lang} normalized mechanic translation is suspicious: ${key}`,
+        );
+      }
+    }
+  }
+
+  for (const key of MECHANIC_NORMALIZED_DISPLAY_TRANSLATION_KEYS) {
+    const enValue = normalizedDisplayLocales.en[key]?.trim();
+    const zhValue = normalizedDisplayLocales.zh[key]?.trim();
+    if (enValue && zhValue && enValue === zhValue) {
+      errors.push(`zh normalized mechanic translation matches English: ${key}`);
+    }
+  }
+
+  const duplicateNormalizedZh = findDuplicateTranslations(
+    normalizedDisplayLocales.zh,
+    [...MECHANIC_NORMALIZED_DISPLAY_TRANSLATION_KEYS],
+  );
+  if (duplicateNormalizedZh.length > 0) {
+    errors.push(
+      `zh normalized mechanics has duplicate translations ${formatList(
+        duplicateNormalizedZh,
+      )}`,
+    );
+  }
+
+  return {
+    errors,
+    summary: [
+      "mechanics-localization",
+      `filterKeys=${expectedFilterLocaleKeys.length}`,
+      `detailKeys=${MECHANIC_DETAIL_TRANSLATION_KEYS.length}`,
+      `normalizedDisplayKeys=${MECHANIC_NORMALIZED_DISPLAY_TRANSLATION_KEYS.length}`,
+    ].join("\t"),
+  };
 }
 
 function main() {
@@ -187,6 +457,10 @@ function main() {
       ].join("\t"),
     );
   }
+
+  const mechanicsAudit = auditMechanicsLocalization();
+  errors.push(...mechanicsAudit.errors);
+  namespaceSummaries.push(mechanicsAudit.summary);
 
   if (report) {
     console.log(namespaceSummaries.join("\n"));

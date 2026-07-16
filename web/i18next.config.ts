@@ -4,6 +4,7 @@ export const IGNORED = [
   "metamagic",
   "collections-default",
   "spell-filter-vocabulary",
+  "spell-mechanic-vocabulary",
 ];
 export default defineConfig({
   locales: ["en", "zh"],

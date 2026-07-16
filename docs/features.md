@@ -43,6 +43,8 @@ Current behavior:
   through `castingTimeKeys`, `rangeKeys`, `durationKeys`, and
   `savingThrowKeys`, plus `spellResistanceKeys`; Browse exposes this
   server-provided vocabulary in the Advanced filters panel
+- Chinese UI localizes accepted mechanics filter bucket labels from the
+  maintained `spell-filter-vocabulary` resources
 - the Advanced filters panel drafts taxonomy, component, and mechanics changes
   locally, then applies them to the shareable URL in one action
 - default rulebooks are supplied by the backend when no explicit rulebook ids
@@ -100,6 +102,8 @@ Current behavior:
   Browse
 - the Search sidebar also exposes the same accepted normalized mechanics
   controls as Browse
+- Chinese UI localizes accepted mechanics filter bucket labels from the same
+  maintained vocabulary used by Browse
 - Search uses the same Advanced filters panel as Browse so secondary filter
   changes do not update the URL until users apply the draft
 - header search preserves current Browse or Search filter scope while replacing
@@ -148,15 +152,21 @@ Current behavior:
 - related result ordering is deterministic by source rulebook abbreviation,
   page, then spell id, while visible labels use the shared rulebook display
   helper
-- content-backed detail responses can include accepted normalized mechanics
-  flags under `casting.mechanics` for duration, saving throw, and spell
-  resistance notes; Spell Detail renders those as secondary text notes beside
-  the raw source field, while legacy raw strings remain the displayed fallback
-  text
+- content-backed detail responses expose structured normalized mechanics for
+  casting time, range, target, effect, area, duration, saving throw, and spell
+  resistance under `casting.mechanics`; each facet includes its category,
+  amount/unit, flags, normalized English text, and explicit display coverage
+- Spell Detail uses deterministic normalized English text for complete facets
+  in English mode and formats the structured category, amount/unit, and flags
+  through maintained Chinese vocabulary in Chinese mode
+- partial, review, unsupported, and legacy facets preserve the authoritative
+  raw source field; structured secondary notes remain only for raw fallback
+  fields so complete display values do not repeat the same qualifiers
 
 Key code:
 
 - `web/app/features/spells/SpellDetailPage.tsx`
+- `web/app/i18n/display/spell-mechanics.ts`
 - `web/app/features/spells/RelatedSpellsSection.tsx`
 - `web/app/api/spells.ts`
 - `server/src/controllers/spells.controller.ts`
@@ -186,9 +196,11 @@ Current behavior:
   `mechanics.ranges`, plus duration buckets under `mechanics.durations` and
   saving throw buckets under `mechanics.savingThrows`, and spell resistance
   buckets under `mechanics.spellResistances`
-- Spell Detail exposes accepted duration, saving throw, and spell resistance
-  flags as optional `casting.mechanics` metadata when served from normalized
-  content
+- frontend locale QA audits accepted mechanics vocabulary against shared
+  contract keys so new mechanics buckets require English and Chinese labels
+- Spell Detail exposes structured normalized mechanic facets and display
+  coverage as optional `casting.mechanics` metadata when served from normalized
+  content; the legacy rules read source does not infer that metadata
 - rulebook responses preserve source `abbr` and can include curated
   `displayAbbr` / `displayName` metadata from normalized content
 - rulebook list responses can include publication grouping metadata from

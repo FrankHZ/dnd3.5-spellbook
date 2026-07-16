@@ -7,6 +7,7 @@ import path from "node:path";
 import {
   auditNormalizedContent,
   normalizeRulesContent,
+  RULES_CONTENT_GENERATOR_VERSION,
   type LegacyDescriptorRow,
   type LegacyListEntryRow,
   type LegacyRulebookRow,
@@ -14,6 +15,7 @@ import {
   type LegacySpellRow,
   type NormalizedRulesContent,
 } from "./normalize";
+import { validateMechanicDisplayValue } from "./mechanics";
 import {
   localDataDir,
   loadServerEnv,
@@ -553,7 +555,32 @@ function readGenerated(filePath: string) {
   if (!fs.existsSync(filePath)) {
     throw new Error(`Generated content file not found: ${filePath}`);
   }
-  return JSON.parse(fs.readFileSync(filePath, "utf8")) as NormalizedRulesContent;
+  const parsed = JSON.parse(fs.readFileSync(filePath, "utf8")) as unknown;
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error("Generated content must be a JSON object.");
+  }
+  const content = parsed as NormalizedRulesContent;
+  if (content.generatorVersion !== RULES_CONTENT_GENERATOR_VERSION) {
+    throw new Error(
+      `Generated content uses ${content.generatorVersion ?? "an unknown generator"}; rerun rules:content:generate with ${RULES_CONTENT_GENERATOR_VERSION}.`,
+    );
+  }
+  if (!Array.isArray(content.mechanicFacets)) {
+    throw new Error("Generated content mechanicFacets must be an array.");
+  }
+  const mechanicErrors = content.mechanicFacets.flatMap((row, index) =>
+    validateMechanicDisplayValue(row).map(
+      (error) => `mechanicFacets[${index}] ${error}`,
+    ),
+  );
+  if (mechanicErrors.length > 0) {
+    throw new Error(
+      `Generated mechanics display contract is invalid:\n${mechanicErrors
+        .slice(0, 20)
+        .join("\n")}`,
+    );
+  }
+  return content;
 }
 
 function timestamp() {
@@ -576,6 +603,22 @@ function assertGeneratedTables(db: Database.Database) {
   }
 }
 
+function assertMechanicDisplayColumns(db: Database.Database) {
+  const columns = new Set(
+    (db.prepare(`PRAGMA table_info("SpellMechanicFacet")`).all() as Array<{
+      name: string;
+    }>).map((row) => row.name),
+  );
+  const missing = ["normalizedText", "displayCoverage"].filter(
+    (column) => !columns.has(column),
+  );
+  if (missing.length > 0) {
+    throw new Error(
+      `SpellMechanicFacet display columns are missing. Apply server/db/content migrations first: ${missing.join(", ")}`,
+    );
+  }
+}
+
 function importGenerated(
   db: Database.Database,
   content: NormalizedRulesContent,
@@ -583,6 +626,7 @@ function importGenerated(
   inputPath: string,
 ) {
   assertGeneratedTables(db);
+  assertMechanicDisplayColumns(db);
   const counts = content.counts;
   const inputSha256 = sha256File(inputPath);
   const provenance = collectBuildProvenance(inputPath);
@@ -890,6 +934,8 @@ function runReview() {
   const contentPath = contentDbPath();
   const db = new Database(contentPath, { readonly: true, fileMustExist: true });
   try {
+    assertGeneratedTables(db);
+    assertMechanicDisplayColumns(db);
     const report = buildNormalizedRulesReviewReport(db, contentPath);
     const reportPath = path.join(
       OUT_ROOT,
@@ -906,6 +952,9 @@ function runReview() {
     );
     console.log(
       `Mechanic review rows: ${report.mechanics.reviewStatusCounts.review ?? 0}`,
+    );
+    console.log(
+      `Mechanic complete coverage rows: ${report.mechanics.displayCoverageCounts.complete ?? 0}`,
     );
     console.log(`Report: ${reportPath}`);
   } finally {
@@ -950,7 +999,7 @@ function buildContentDbMetaReport(db: Database.Database, contentPath: string) {
     rulesContentBuild: build
       ? {
           ...build,
-          buildMetaJson: parseJsonString(build.buildMetaJson),
+          buildMetaJson: build.buildMetaJson,
         }
       : null,
     counts: Object.fromEntries(
@@ -1070,12 +1119,13 @@ function buildNormalizedRulesReviewReport(
     `
     SELECT mechanicType,
            category,
+           displayCoverage,
            reviewStatus,
            COALESCE(issueCode, '') AS issueCode,
            COUNT(*) AS count
     FROM SpellMechanicFacet
-    GROUP BY mechanicType, category, reviewStatus, COALESCE(issueCode, '')
-    ORDER BY mechanicType, count DESC, category, reviewStatus, issueCode
+    GROUP BY mechanicType, category, displayCoverage, reviewStatus, COALESCE(issueCode, '')
+    ORDER BY mechanicType, count DESC, category, displayCoverage, reviewStatus, issueCode
   `,
   );
   const mechanicReviewSamples = queryCountRows(
@@ -1094,6 +1144,38 @@ function buildNormalizedRulesReviewReport(
     GROUP BY mechanicType, category, reviewStatus, COALESCE(issueCode, ''), rawText
     ORDER BY count DESC, mechanicType, category, rawText
     LIMIT 200
+  `,
+  );
+  const mechanicCoverageSamples = queryCountRows(
+    db,
+    `
+    WITH grouped AS (
+      SELECT mechanicType,
+             displayCoverage,
+             category,
+             normalizedText,
+             rawText,
+             COUNT(*) AS count
+      FROM SpellMechanicFacet
+      WHERE displayCoverage <> 'empty'
+      GROUP BY mechanicType, displayCoverage, category, normalizedText, rawText
+    ), ranked AS (
+      SELECT *,
+             ROW_NUMBER() OVER (
+               PARTITION BY mechanicType, displayCoverage
+               ORDER BY count DESC, category, rawText
+             ) AS sampleRank
+      FROM grouped
+    )
+    SELECT mechanicType,
+           displayCoverage,
+           category,
+           normalizedText,
+           rawText,
+           count
+    FROM ranked
+    WHERE sampleRank <= 10
+    ORDER BY mechanicType, displayCoverage, sampleRank
   `,
   );
 
@@ -1135,6 +1217,15 @@ function buildNormalizedRulesReviewReport(
     mechanicByType.filter((row) => String(row.reviewStatus) === "review"),
     "mechanicType",
   );
+  const mechanicDisplayCoverageCounts = countMap(
+    mechanicByType,
+    "displayCoverage",
+  );
+  const mechanicDisplayCoverageByType = nestedCountMap(
+    mechanicByType,
+    "mechanicType",
+    "displayCoverage",
+  );
   const issueCountsByCode = groupedCountMap(issuesByCode, "issueCode");
   const readiness = buildReviewReadiness({
     taxonomyReviewRows: taxonomyReviewStatusCounts.review ?? 0,
@@ -1169,6 +1260,9 @@ function buildNormalizedRulesReviewReport(
       reviewStatusCounts: mechanicReviewStatusCounts,
       reviewRowsByMechanicType: mechanicReviewByType,
       reviewSamples: mechanicReviewSamples,
+      displayCoverageCounts: mechanicDisplayCoverageCounts,
+      displayCoverageByMechanicType: mechanicDisplayCoverageByType,
+      displayCoverageSamples: mechanicCoverageSamples,
     },
     issues: {
       byCode: issuesByCode,
@@ -1569,6 +1663,23 @@ function groupedCountMap(rows: Array<Record<string, unknown>>, key: string) {
     accumulator[mapKey] = (accumulator[mapKey] ?? 0) + Number(row.count ?? 0);
     return accumulator;
   }, {});
+}
+
+function nestedCountMap(
+  rows: Array<Record<string, unknown>>,
+  groupKey: string,
+  valueKey: string,
+) {
+  return rows.reduce<Record<string, Record<string, number>>>(
+    (accumulator, row) => {
+      const group = String(row[groupKey] ?? "");
+      const value = String(row[valueKey] ?? "");
+      const counts = (accumulator[group] ??= {});
+      counts[value] = (counts[value] ?? 0) + Number(row.count ?? 0);
+      return accumulator;
+    },
+    {},
+  );
 }
 
 function topRowsByKey(

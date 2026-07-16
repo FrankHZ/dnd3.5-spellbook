@@ -1,6 +1,12 @@
 import crypto from "node:crypto";
 
-export const RULES_CONTENT_GENERATOR_VERSION = "rules-content-normalizer-v6";
+import {
+  normalizeMechanicValue,
+  type MechanicDisplayCoverage,
+  type MechanicType,
+} from "./mechanics";
+
+export const RULES_CONTENT_GENERATOR_VERSION = "rules-content-normalizer-v7";
 
 export type LegacyRulebookRow = {
   id: number;
@@ -221,20 +227,14 @@ export type NormalizedSpellComponentRow = {
 export type NormalizedSpellMechanicFacetRow = {
   id: string;
   spellId: string;
-  mechanicType:
-    | "casting_time"
-    | "range"
-    | "target"
-    | "effect"
-    | "area"
-    | "duration"
-    | "saving_throw"
-    | "spell_resistance";
+  mechanicType: MechanicType;
   rawText: string | null;
   category: string;
   amount: number | null;
   unit: string | null;
   flagsJson: string;
+  normalizedText: string | null;
+  displayCoverage: MechanicDisplayCoverage;
   sourceField: string;
   reviewStatus: "accepted" | "review";
   issueCode: string | null;
@@ -249,14 +249,6 @@ export type NormalizedRulesContentIssueRow = {
   issueCode: string;
   severity: "info" | "warning";
   detail: string | null;
-};
-
-type MechanicParse = {
-  category: string;
-  amount: number | null;
-  unit: string | null;
-  flags: Record<string, boolean | string>;
-  issueCode: string | null;
 };
 
 const COMPONENTS: Array<{
@@ -554,7 +546,6 @@ export function normalizeRulesContent(
       "casting_time",
       "casting_time",
       spell.castingTime,
-      parseCastingTime,
     );
     addMechanicFacet(
       mechanicFacets,
@@ -563,7 +554,6 @@ export function normalizeRulesContent(
       "range",
       "range",
       spell.range,
-      parseRange,
     );
     addMechanicFacet(
       mechanicFacets,
@@ -572,7 +562,6 @@ export function normalizeRulesContent(
       "target",
       "target",
       spell.target,
-      parseTargetLike,
     );
     addMechanicFacet(
       mechanicFacets,
@@ -581,7 +570,6 @@ export function normalizeRulesContent(
       "effect",
       "effect",
       spell.effect,
-      parseTargetLike,
     );
     addMechanicFacet(
       mechanicFacets,
@@ -590,7 +578,6 @@ export function normalizeRulesContent(
       "area",
       "area",
       spell.area,
-      parseTargetLike,
     );
     addMechanicFacet(
       mechanicFacets,
@@ -599,7 +586,6 @@ export function normalizeRulesContent(
       "duration",
       "duration",
       spell.duration,
-      parseDuration,
     );
     addMechanicFacet(
       mechanicFacets,
@@ -608,7 +594,6 @@ export function normalizeRulesContent(
       "saving_throw",
       "saving_throw",
       spell.savingThrow,
-      parseSavingThrow,
     );
     addMechanicFacet(
       mechanicFacets,
@@ -617,7 +602,6 @@ export function normalizeRulesContent(
       "spell_resistance",
       "spell_resistance",
       spell.spellResistance,
-      parseSpellResistance,
     );
   }
 
@@ -658,6 +642,14 @@ export function auditNormalizedContent(content: NormalizedRulesContent) {
     content.mechanicFacets,
     (row) => `${row.mechanicType}:${row.category}`,
   );
+  const mechanicDisplayCoverage = countBy(
+    content.mechanicFacets,
+    (row) => row.displayCoverage,
+  );
+  const mechanicDisplayCoverageByType = countBy(
+    content.mechanicFacets,
+    (row) => `${row.mechanicType}:${row.displayCoverage}`,
+  );
   const listExtras = countBy(
     content.listEntries.filter((row) => row.rawExtra),
     (row) => row.rawExtra ?? "",
@@ -671,6 +663,8 @@ export function auditNormalizedContent(content: NormalizedRulesContent) {
     issueCounts,
     reviewCounts,
     mechanicCategories,
+    mechanicDisplayCoverage,
+    mechanicDisplayCoverageByType,
     dirtyListExtras: listExtras,
     issueSamples: content.issues.slice(0, 100),
   };
@@ -717,10 +711,9 @@ function addMechanicFacet(
   mechanicType: NormalizedSpellMechanicFacetRow["mechanicType"],
   sourceField: string,
   raw: string | null | undefined,
-  parse: (raw: string | null) => MechanicParse,
 ) {
   const rawText = clean(raw);
-  const parsed = parse(rawText);
+  const parsed = normalizeMechanicValue(mechanicType, rawText);
   mechanicFacets.push({
     id: `${spellId}:mechanic:${mechanicType}`,
     spellId,
@@ -730,6 +723,8 @@ function addMechanicFacet(
     amount: parsed.amount,
     unit: parsed.unit,
     flagsJson: stableJson(parsed.flags),
+    normalizedText: parsed.normalizedText,
+    displayCoverage: parsed.displayCoverage,
     sourceField,
     reviewStatus: parsed.issueCode ? "review" : "accepted",
     issueCode: parsed.issueCode,
@@ -747,115 +742,6 @@ function addMechanicFacet(
       ),
     );
   }
-}
-
-function parseCastingTime(raw: string | null): MechanicParse {
-  const text = normalize(raw);
-  if (!text) return mechanic("empty");
-  const amountUnit = parseAmountUnit(text);
-  if (text.includes("immediate action")) {
-    return mechanic("immediate_action", amountUnit.amount, "action");
-  }
-  if (text.includes("swift action")) {
-    return mechanic("swift_action", amountUnit.amount, "action");
-  }
-  if (text.includes("free action")) {
-    return mechanic("free_action", amountUnit.amount, "action");
-  }
-  if (text.includes("standard action")) {
-    return mechanic("standard_action", amountUnit.amount, "action");
-  }
-  if (text.includes("full-round action")) {
-    return mechanic("full_round_action", amountUnit.amount, "action");
-  }
-  if (text.includes("round")) return mechanic("round", amountUnit.amount, "round");
-  if (text.includes("minute")) return mechanic("minute", amountUnit.amount, "minute");
-  if (text.includes("hour")) return mechanic("hour", amountUnit.amount, "hour");
-  return mechanic("special", null, null, {}, "casting_time.review");
-}
-
-function parseRange(raw: string | null): MechanicParse {
-  const text = normalize(raw);
-  if (!text) return mechanic("empty");
-  if (text.startsWith("personal")) return mechanic("personal");
-  if (text.startsWith("touch")) return mechanic("touch");
-  if (text.startsWith("close")) return mechanic("close");
-  if (text.startsWith("medium")) return mechanic("medium");
-  if (text.startsWith("long")) return mechanic("long");
-  if (text.startsWith("unlimited")) return mechanic("unlimited");
-  if (/^\d/.test(text)) {
-    const amountUnit = parseAmountUnit(text);
-    return mechanic("fixed", amountUnit.amount, amountUnit.unit);
-  }
-  return mechanic("special", null, null, {}, "range.review");
-}
-
-function parseTargetLike(raw: string | null): MechanicParse {
-  const text = normalize(raw);
-  if (!text) return mechanic("empty");
-  if (text.includes("creature")) return mechanic("creature");
-  if (text.includes("object")) return mechanic("object");
-  if (text.includes("area")) return mechanic("area");
-  if (text.includes("emanation")) return mechanic("emanation");
-  if (text.includes("burst")) return mechanic("burst");
-  if (text.includes("spread")) return mechanic("spread");
-  if (text.includes("ray")) return mechanic("ray");
-  return mechanic("text", null, null, {}, "target_effect_area.review");
-}
-
-function parseDuration(raw: string | null): MechanicParse {
-  const text = normalize(raw);
-  if (!text) return mechanic("empty");
-  const flags = {
-    concentration: text.includes("concentration"),
-    discharge: text.includes("discharge"),
-    dismissible: text.includes("(d)") || text.includes("dismissible"),
-  };
-  if (text.includes("instantaneous")) return mechanic("instantaneous", null, null, flags);
-  if (text.includes("permanent")) return mechanic("permanent", null, null, flags);
-  if (flags.concentration) return mechanic("concentration", null, null, flags);
-  const amountUnit = parseAmountUnit(text);
-  if (amountUnit.amount !== null) {
-    return mechanic("timed", amountUnit.amount, amountUnit.unit, flags);
-  }
-  return mechanic("special", null, null, flags, "duration.review");
-}
-
-function parseSavingThrow(raw: string | null): MechanicParse {
-  const text = normalize(raw);
-  if (!text || text === "none" || text.startsWith("no ")) {
-    return mechanic("none", null, null, { allowsSave: false });
-  }
-  const flags = {
-    allowsSave: true,
-    fortitude: text.includes("fortitude"),
-    reflex: text.includes("reflex"),
-    will: text.includes("will"),
-    partial: text.includes("partial"),
-    negates: text.includes("negates"),
-    harmless: text.includes("harmless"),
-    object: text.includes("object"),
-  };
-  if (flags.fortitude) return mechanic("fortitude", null, null, flags);
-  if (flags.reflex) return mechanic("reflex", null, null, flags);
-  if (flags.will) return mechanic("will", null, null, flags);
-  return mechanic("special", null, null, flags, "saving_throw.review");
-}
-
-function parseSpellResistance(raw: string | null): MechanicParse {
-  const text = normalize(raw);
-  if (!text) return mechanic("empty");
-  const flags = {
-    harmless: text.includes("harmless"),
-    object: text.includes("object"),
-  };
-  if (text === "yes" || text.startsWith("yes ")) {
-    return mechanic("yes", null, null, flags);
-  }
-  if (text === "no" || text.startsWith("no ")) {
-    return mechanic("no", null, null, flags);
-  }
-  return mechanic("special", null, null, flags, "spell_resistance.review");
 }
 
 function normalizeListExtra(raw: string | null | undefined) {
@@ -878,24 +764,6 @@ function normalizeListExtra(raw: string | null | undefined) {
     };
   }
   return { variantLabel: text, note: null, issueCode: null };
-}
-
-function parseAmountUnit(text: string) {
-  const match = text.match(/(\d+)\s*([a-z-]+)/);
-  return {
-    amount: match ? Number(match[1]) : null,
-    unit: match?.[2] ?? null,
-  };
-}
-
-function mechanic(
-  category: string,
-  amount: number | null = null,
-  unit: string | null = null,
-  flags: Record<string, boolean | string> = {},
-  issueCode: string | null = null,
-): MechanicParse {
-  return { category, amount, unit, flags, issueCode };
 }
 
 function issue(
@@ -949,10 +817,6 @@ function countRows<T extends Record<string, unknown>>(
 function clean(value: string | null | undefined) {
   const text = value?.trim();
   return text ? text : null;
-}
-
-function normalize(value: string | null | undefined) {
-  return clean(value)?.toLowerCase().replace(/\s+/g, " ") ?? "";
 }
 
 function stableJson(value: unknown) {

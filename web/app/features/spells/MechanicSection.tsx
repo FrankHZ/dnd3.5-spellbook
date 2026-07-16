@@ -2,6 +2,11 @@ import type { SpellCasting } from "@dnd/contracts";
 import { useTranslation } from "react-i18next";
 
 import {
+  getSpellMechanicDisplayValue,
+  type SpellMechanicField,
+} from "~/i18n/display/spell-mechanics";
+
+import {
   getMechanicDetailNotes,
   type MechanicDetailNoteKey,
 } from "./mechanic-detail-notes";
@@ -37,11 +42,25 @@ function Field({
 }
 
 export function MechanicsSection({ casting }: { casting: SpellCasting }) {
-  const { t } = useTranslation("spell-detail");
+  const { t, i18n } = useTranslation([
+    "spell-detail",
+    "spell-mechanic-vocabulary",
+  ]);
   const notes = getMechanicDetailNotes(casting.mechanics);
   const noteLabel = t("mechanics.notes.label");
   const translateNote = (key: MechanicDetailNoteKey) =>
     t(`mechanics.notes.${key}`);
+  const displayValue = (
+    field: SpellMechanicField,
+    raw: string | null | undefined,
+  ) =>
+    getSpellMechanicDisplayValue({
+      field,
+      raw,
+      facet: casting.mechanics?.[field],
+      language: i18n.resolvedLanguage ?? i18n.language,
+      t: (key, options) => t(key, options),
+    });
 
   return (
     <section className="space-y-2">
@@ -51,17 +70,29 @@ export function MechanicsSection({ casting }: { casting: SpellCasting }) {
       <dl className="rounded-sm border bg-muted/15 px-2">
         <Field
           label={t("mechanics.casting-time")}
-          value={casting.castingTime}
+          value={displayValue("castingTime", casting.castingTime)}
         />
-        <Field label={t("mechanics.range")} value={casting.range} />
+        <Field
+          label={t("mechanics.range")}
+          value={displayValue("range", casting.range)}
+        />
 
-        <Field label={t("mechanics.target")} value={casting.target} />
-        <Field label={t("mechanics.effect")} value={casting.effect} />
+        <Field
+          label={t("mechanics.target")}
+          value={displayValue("target", casting.target)}
+        />
+        <Field
+          label={t("mechanics.effect")}
+          value={displayValue("effect", casting.effect)}
+        />
 
-        <Field label={t("mechanics.area")} value={casting.area} />
+        <Field
+          label={t("mechanics.area")}
+          value={displayValue("area", casting.area)}
+        />
         <Field
           label={t("mechanics.duration")}
-          value={casting.duration}
+          value={displayValue("duration", casting.duration)}
           notes={notes.duration}
           noteLabel={noteLabel}
           translateNote={translateNote}
@@ -69,14 +100,14 @@ export function MechanicsSection({ casting }: { casting: SpellCasting }) {
 
         <Field
           label={t("mechanics.saving-throw")}
-          value={casting.savingThrow}
+          value={displayValue("savingThrow", casting.savingThrow)}
           notes={notes.savingThrow}
           noteLabel={noteLabel}
           translateNote={translateNote}
         />
         <Field
           label={t("mechanics.spell-resistance")}
-          value={casting.spellResistance}
+          value={displayValue("spellResistance", casting.spellResistance)}
           notes={notes.spellResistance}
           noteLabel={noteLabel}
           translateNote={translateNote}

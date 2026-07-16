@@ -40,11 +40,68 @@ describe("GET /api/spells/:id", () => {
       savingThrow: "Will negates (harmless)",
       spellResistance: "No",
       mechanics: {
-        duration: { dismissible: true },
-        savingThrow: { negates: true, harmless: true },
+        castingTime: {
+          category: "standard_action",
+          amount: 1,
+          unit: "action",
+          flags: {},
+          normalizedText: "1 standard action",
+          displayCoverage: "complete",
+        },
+        range: {
+          category: "medium",
+          amount: null,
+          unit: null,
+          flags: {},
+          normalizedText: "Medium (100 ft. + 10 ft./level)",
+          displayCoverage: "complete",
+        },
+        target: {
+          category: "creature",
+          normalizedText: null,
+          displayCoverage: "partial",
+        },
+        effect: {
+          category: "empty",
+          normalizedText: null,
+          displayCoverage: "empty",
+        },
+        area: {
+          category: "empty",
+          normalizedText: null,
+          displayCoverage: "empty",
+        },
+        duration: {
+          category: "timed",
+          amount: 1,
+          unit: "round",
+          flags: {
+            dismissible: true,
+            discharge: false,
+            concentration: false,
+            perLevel: true,
+          },
+          normalizedText: "1 round/level (D)",
+          displayCoverage: "complete",
+          dismissible: true,
+        },
+        savingThrow: {
+          category: "will",
+          normalizedText: "Will negates (harmless)",
+          displayCoverage: "complete",
+          negates: true,
+          harmless: true,
+        },
+        spellResistance: {
+          category: "no",
+          normalizedText: "No",
+          displayCoverage: "complete",
+        },
       },
     });
-    expect(magicMissile.body.casting.mechanics.spellResistance).toBeUndefined();
+    expect(
+      magicMissile.body.casting.mechanics.spellResistance.harmless,
+    ).toBeUndefined();
 
     const fireball = await request(app).get("/api/spells/100");
 
@@ -52,11 +109,22 @@ describe("GET /api/spells/:id", () => {
     expect(fireball.body.casting).toMatchObject({
       spellResistance: "Yes (harmless)",
       mechanics: {
-        spellResistance: { harmless: true },
+        spellResistance: {
+          category: "yes",
+          normalizedText: "Yes (harmless)",
+          displayCoverage: "complete",
+          harmless: true,
+        },
       },
     });
-    expect(fireball.body.casting.mechanics.duration).toBeUndefined();
-    expect(fireball.body.casting.mechanics.savingThrow).toBeUndefined();
+    expect(fireball.body.casting.mechanics.duration).toMatchObject({
+      category: "instantaneous",
+      displayCoverage: "complete",
+    });
+    expect(fireball.body.casting.mechanics.savingThrow).toMatchObject({
+      category: "none",
+      displayCoverage: "complete",
+    });
   });
 
   it("does not infer normalized mechanics metadata from legacy rules detail", async () => {

@@ -15,6 +15,7 @@ export const I18N_NAMESPACES = [
   "settings",
   "spell-browse",
   "spell-filter-vocabulary",
+  "spell-mechanic-vocabulary",
   "spell-filters",
   "spell-scope",
   "spell-search",
