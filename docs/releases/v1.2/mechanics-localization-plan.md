@@ -136,6 +136,17 @@ the workflow.
 - Frontend handoff: verify accepted mechanics labels in Browse/Search filters
   and Spell Detail note surfaces in both Chinese and English UI. No frontend
   contract change is required unless smoke testing exposes a display issue.
+- Coverage handoff: normalized mechanics rows have internal
+  `reviewStatus`/`issueCode` coverage in `SpellMechanicFacet`, but the public
+  spell DTO does not expose per-field normalized coverage. Accepted mechanics
+  buckets are safe for filters and secondary detail notes only; they are not a
+  guarantee that the original `castingTime`, `range`, `duration`,
+  `savingThrow`, or `spellResistance` raw text is fully replaceable.
+- Frontend display strategy for v1.2: keep raw mechanics text as the
+  authoritative field display, localize normalized filter bucket labels, and
+  localize only the supported `casting.mechanics` detail-note flags. Do not
+  replace raw mechanics fields with bucket labels unless a later backend/server
+  branch exposes an explicit per-field coverage or replacement contract.
 
 ## Follow-Up Candidates
 
