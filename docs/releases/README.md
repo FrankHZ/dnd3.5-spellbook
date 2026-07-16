@@ -21,6 +21,11 @@ directory for release lines after MVP scope is frozen.
   active mechanics translation, QA workflow, and frontend consumer plan.
 - [v1.2/publications-page-plan.md](./v1.2/publications-page-plan.md): active
   Publications page and minimum metadata plan.
+- [v1.2.1/README.md](./v1.2.1/README.md): planned focused content-backed
+  full-text spell search release.
+- [v1.2.1/full-text-search-plan.md](./v1.2.1/full-text-search-plan.md):
+  planned Search full-text mode, content DB FTS index, and frontend consumer
+  plan.
 - [v1.1/FREEZE.md](./v1.1/FREEZE.md): frozen production hardening, full spell
   corpus, and frontend content acceptance release snapshot.
 - [v1.1/README.md](./v1.1/README.md): frozen production hardening, full spell

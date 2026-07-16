@@ -34,6 +34,11 @@ The active formal public release plan is v1.2:
 - [releases/v1.2/mechanics-localization-plan.md](./releases/v1.2/mechanics-localization-plan.md)
 - [releases/v1.2/publications-page-plan.md](./releases/v1.2/publications-page-plan.md)
 
+The planned focused release after v1.2 freeze is v1.2.1:
+
+- [releases/v1.2.1/README.md](./releases/v1.2.1/README.md)
+- [releases/v1.2.1/full-text-search-plan.md](./releases/v1.2.1/full-text-search-plan.md)
+
 The latest frozen formal public release is v1.1:
 
 - [releases/v1.1/FREEZE.md](./releases/v1.1/FREEZE.md)
@@ -181,6 +186,11 @@ handoff records.
   active mechanics translation, QA workflow, and frontend consumer plan.
 - [releases/v1.2/publications-page-plan.md](./releases/v1.2/publications-page-plan.md):
   active Publications page and minimum metadata plan.
+- [releases/v1.2.1/README.md](./releases/v1.2.1/README.md): planned focused
+  content-backed full-text spell search release.
+- [releases/v1.2.1/full-text-search-plan.md](./releases/v1.2.1/full-text-search-plan.md):
+  planned Search full-text mode, content DB FTS index, and frontend consumer
+  plan.
 - [releases/v1.1/FREEZE.md](./releases/v1.1/FREEZE.md): latest frozen formal
   public release snapshot.
 - [releases/v1.1/README.md](./releases/v1.1/README.md): frozen production
