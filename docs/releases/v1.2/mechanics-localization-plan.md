@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: implementation complete; ready for review.
+Status: accepted on 2026-07-16 in PR #72.
 
 ## Purpose
 
@@ -235,5 +235,8 @@ Frontend implementation evidence:
 - `npm run -w web build`: passed
 - `npm run verify`: passed
 - local HTTP smoke passed for Spell Detail route, API coverage metadata, and
-  both normalized mechanics locale resources; interactive English/Chinese
-  visual confirmation remains part of review
+  both normalized mechanics locale resources
+- main-gate review accepted the English/Chinese complete-only display contract
+  and raw fallback before PR #72 merged
+- v1.2 production smoke confirms `Fiery Assault` / `烈焰诀` exposes eight
+  mechanics facets with complete coverage for casting time and range

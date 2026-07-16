@@ -1,6 +1,6 @@
 # v1.2.1 Release Plan
 
-Status: planned. Start after v1.2 is frozen.
+Status: active. v1.2 is frozen; this is the next focused release.
 
 v1.2.1 is a focused post-v1.2 release for content-backed spell full-text
 search. It should add a deliberate full-text search mode without reopening the
@@ -116,7 +116,6 @@ v1.2.1 release acceptance should include:
 
 ## Handoff Rule
 
-v1.2.1 is planned scope, not active implementation until v1.2 is frozen.
-Implementation branches should update the owning child plan, affected
-topic/operations docs, and `docs/roadmap.md` only if the active work order
-changes.
+v1.2.1 is the active release scope. Implementation branches should update the
+owning child plan and affected topic/operations docs. Update
+`docs/roadmap.md` only if the active work order changes.

@@ -28,20 +28,25 @@ Use these docs for orientation instead of expanding this file:
 - `docs/README.md`: canonical documentation map and historical/current doc
   ownership.
 - `docs/roadmap.md`: current active work ordering after a pause.
-- `docs/releases/v1.2/README.md`: active full-spell source review, mechanics
-  localization, and Publications page release plan.
-- `docs/releases/v1.2/full-spell-source-review-plan.md`: active full-spell
-  source inventory and parse QA plan.
+- `docs/releases/v1.2.1/README.md`: active content-backed full-text spell
+  search release plan.
+- `docs/releases/v1.2.1/full-text-search-plan.md`: accepted full-text Search
+  contract, FTS index, backend/data, and frontend consumer plan.
+- `docs/releases/v1.2/FREEZE.md`: latest frozen formal public release
+  snapshot.
+- `docs/releases/v1.2/README.md`: frozen full-spell source review, mechanics
+  localization, and Publications page release planning record.
+- `docs/releases/v1.2/full-spell-source-review-plan.md`: accepted full-spell
+  source inventory and parse QA record.
 - `docs/releases/v1.2/full-corpus-correction-plan.md`: post-review correction
-  apply record for accepted full-corpus rows; local DB/content apply is
-  complete, and remote activation remains outside PR scope.
+  apply record for accepted full-corpus rows and release activation.
 - `docs/releases/v1.2/db-workflow-review-plan.md`: v1.2 DB/content workflow
   hardening acceptance record.
-- `docs/releases/v1.2/mechanics-localization-plan.md`: active mechanics
-  translation, QA workflow, and frontend consumer plan.
-- `docs/releases/v1.2/publications-page-plan.md`: active Publications page and
-  minimum metadata plan.
-- `docs/releases/v1.1/FREEZE.md`: latest frozen formal public release
+- `docs/releases/v1.2/mechanics-localization-plan.md`: accepted mechanics
+  translation, QA workflow, and frontend consumer record.
+- `docs/releases/v1.2/publications-page-plan.md`: accepted Publications page
+  and minimum metadata record.
+- `docs/releases/v1.1/FREEZE.md`: previous frozen formal public release
   snapshot.
 - `docs/releases/v1.1/README.md`: frozen production hardening and full spell
   corpus release plan.

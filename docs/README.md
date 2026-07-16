@@ -22,24 +22,22 @@ execution rules and role boundaries.
 
 ## Active Planning
 
-The active formal public release plan is v1.2:
-
-- [releases/v1.2/README.md](./releases/v1.2/README.md)
-- [releases/v1.2/full-spell-source-review-plan.md](./releases/v1.2/full-spell-source-review-plan.md)
-- [releases/v1.2/full-corpus-correction-plan.md](./releases/v1.2/full-corpus-correction-plan.md):
-  post-review correction apply record; local DB/content apply is complete, and
-  remote activation remains outside PR scope.
-- [releases/v1.2/db-workflow-review-plan.md](./releases/v1.2/db-workflow-review-plan.md):
-  DB/content update checklist and fixture-manifest hardening for data handoffs.
-- [releases/v1.2/mechanics-localization-plan.md](./releases/v1.2/mechanics-localization-plan.md)
-- [releases/v1.2/publications-page-plan.md](./releases/v1.2/publications-page-plan.md)
-
-The planned focused release after v1.2 freeze is v1.2.1:
+The active formal public release plan is v1.2.1:
 
 - [releases/v1.2.1/README.md](./releases/v1.2.1/README.md)
 - [releases/v1.2.1/full-text-search-plan.md](./releases/v1.2.1/full-text-search-plan.md)
 
-The latest frozen formal public release is v1.1:
+The latest frozen formal public release is v1.2:
+
+- [releases/v1.2/FREEZE.md](./releases/v1.2/FREEZE.md)
+- [releases/v1.2/README.md](./releases/v1.2/README.md)
+- [releases/v1.2/full-spell-source-review-plan.md](./releases/v1.2/full-spell-source-review-plan.md)
+- [releases/v1.2/full-corpus-correction-plan.md](./releases/v1.2/full-corpus-correction-plan.md)
+- [releases/v1.2/db-workflow-review-plan.md](./releases/v1.2/db-workflow-review-plan.md)
+- [releases/v1.2/mechanics-localization-plan.md](./releases/v1.2/mechanics-localization-plan.md)
+- [releases/v1.2/publications-page-plan.md](./releases/v1.2/publications-page-plan.md)
+
+The previous frozen formal public release is v1.1:
 
 - [releases/v1.1/FREEZE.md](./releases/v1.1/FREEZE.md)
 - [releases/v1.1/README.md](./releases/v1.1/README.md)
@@ -73,12 +71,17 @@ Use [roadmap.md](./roadmap.md) for current ordering after a pause.
 
 ## Latest Frozen Snapshot
 
-The latest frozen public release snapshot is **v1.1**:
+The latest frozen public release snapshot is **v1.2**:
+
+- [releases/v1.2/FREEZE.md](./releases/v1.2/FREEZE.md)
+- [releases/v1.2/README.md](./releases/v1.2/README.md)
+
+The previous frozen public release snapshot is **v1.1**:
 
 - [releases/v1.1/FREEZE.md](./releases/v1.1/FREEZE.md)
 - [releases/v1.1/README.md](./releases/v1.1/README.md)
 
-The previous frozen public release snapshot is **v1.0**:
+The older frozen public release snapshot is **v1.0**:
 
 - [releases/v1.0/FREEZE.md](./releases/v1.0/FREEZE.md)
 - [releases/v1.0/README.md](./releases/v1.0/README.md)
@@ -173,25 +176,26 @@ handoff records.
 
 - [releases/README.md](./releases/README.md): release planning roles and
   maintenance rules.
-- [releases/v1.2/README.md](./releases/v1.2/README.md): active full-spell
-  source review, mechanics localization, and Publications page release plan.
-- [releases/v1.2/full-spell-source-review-plan.md](./releases/v1.2/full-spell-source-review-plan.md):
-  active full-spell source inventory and parse QA plan.
-- [releases/v1.2/full-corpus-correction-plan.md](./releases/v1.2/full-corpus-correction-plan.md):
-  post-review correction apply record for accepted full-corpus rows.
-- [releases/v1.2/db-workflow-review-plan.md](./releases/v1.2/db-workflow-review-plan.md):
-  DB/content update checklist and fixture-manifest hardening acceptance record
-  for data handoffs.
-- [releases/v1.2/mechanics-localization-plan.md](./releases/v1.2/mechanics-localization-plan.md):
-  active mechanics translation, QA workflow, and frontend consumer plan.
-- [releases/v1.2/publications-page-plan.md](./releases/v1.2/publications-page-plan.md):
-  active Publications page and minimum metadata plan.
-- [releases/v1.2.1/README.md](./releases/v1.2.1/README.md): planned focused
+- [releases/v1.2.1/README.md](./releases/v1.2.1/README.md): active focused
   content-backed full-text spell search release.
 - [releases/v1.2.1/full-text-search-plan.md](./releases/v1.2.1/full-text-search-plan.md):
-  planned Search full-text mode, content DB FTS index, and frontend consumer
+  active Search full-text mode, content DB FTS index, and frontend consumer
   plan.
-- [releases/v1.1/FREEZE.md](./releases/v1.1/FREEZE.md): latest frozen formal
+- [releases/v1.2/FREEZE.md](./releases/v1.2/FREEZE.md): latest frozen formal
+  public release snapshot.
+- [releases/v1.2/README.md](./releases/v1.2/README.md): frozen full-spell
+  source review, mechanics localization, and Publications page release plan.
+- [releases/v1.2/full-spell-source-review-plan.md](./releases/v1.2/full-spell-source-review-plan.md):
+  accepted full-spell source inventory and parse QA record.
+- [releases/v1.2/full-corpus-correction-plan.md](./releases/v1.2/full-corpus-correction-plan.md):
+  accepted post-review correction apply record for full-corpus rows.
+- [releases/v1.2/db-workflow-review-plan.md](./releases/v1.2/db-workflow-review-plan.md):
+  accepted DB/content update and fixture-manifest hardening record.
+- [releases/v1.2/mechanics-localization-plan.md](./releases/v1.2/mechanics-localization-plan.md):
+  accepted mechanics translation, QA workflow, and frontend consumer record.
+- [releases/v1.2/publications-page-plan.md](./releases/v1.2/publications-page-plan.md):
+  accepted Publications page and minimum metadata record.
+- [releases/v1.1/FREEZE.md](./releases/v1.1/FREEZE.md): previous frozen formal
   public release snapshot.
 - [releases/v1.1/README.md](./releases/v1.1/README.md): frozen production
   hardening and full spell corpus release plan.
