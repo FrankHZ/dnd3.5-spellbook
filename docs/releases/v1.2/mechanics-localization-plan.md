@@ -19,8 +19,9 @@ display localized where the Chinese UI shows mechanics.
 
 - Owning version: v1.2
 - Owning domain: i18n/data plus frontend consumer
-- Primary implementation branch or specialist: i18n/data specialist, then
-  frontend-design or focused web specialist for display consumption
+- Primary implementation branch or specialist: i18n/data specialist owns the
+  normalized mechanics locale QA workflow; frontend-design or focused web
+  specialist owns final display consumption and smoke review
 - Related feature/module docs: `docs/i18n.md`, `docs/features.md`,
   `docs/modules/web.md`, `docs/modules/data-tools.md`
 - Upstream dependency plans: v1.1 normalized mechanics/content state
@@ -87,9 +88,11 @@ the workflow.
 - Deliverable: Chinese mechanics translations plus QA report.
 - Expected files: i18n data/resources, QA output, workflow/playbook doc.
 - Validation: QA command summary and reviewed issue categories.
-- Status: in progress on `codex/i18n-mechanics-localization`; the audit fails
-  missing, placeholder, duplicate, or English-identical Chinese mechanics
-  strings in the maintained locale resources.
+- Status: defined on `codex/i18n-mechanics-localization`. The durable workflow
+  lives in `docs/i18n.md` and runs through `npm run i18n:check`; the audit
+  fails missing, placeholder, duplicate, or English-identical Chinese mechanics
+  strings in the maintained locale resources. `npm run -w web i18n:audit --
+  --report` emits the mechanics corpus count used as the QA report summary.
 
 ### Slice 3: Frontend Consumer
 
@@ -100,7 +103,8 @@ the workflow.
 - Status: existing frontend consumers already read mechanics filter labels
   through `web/app/i18n/display/spell-filter.ts` and Spell Detail note labels
   through `spell-detail`; this branch hardens coverage and terminology rather
-  than changing the consumer contract.
+  than changing the consumer contract. Final frontend display review and manual
+  Chinese/English smoke are handed to the frontend agent.
 
 ## Acceptance Criteria
 
@@ -124,6 +128,14 @@ the workflow.
 - Resolved for v1.2: keep the reusable workflow in `docs/i18n.md` and the
   portable i18n audit first. Promote to a repo-local skill only if later full
   translation QA needs delegation beyond frontend locale resources.
+
+## Handoff Notes
+
+- i18n/data handoff: normalized mechanics locale QA is documented in
+  `docs/i18n.md` and enforced by `npm run i18n:check`.
+- Frontend handoff: verify accepted mechanics labels in Browse/Search filters
+  and Spell Detail note surfaces in both Chinese and English UI. No frontend
+  contract change is required unless smoke testing exposes a display issue.
 
 ## Follow-Up Candidates
 
