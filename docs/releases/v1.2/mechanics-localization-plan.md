@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: in progress.
 
 ## Purpose
 
@@ -78,12 +78,18 @@ the workflow.
 - Deliverable: complete mechanics vocabulary to translate and QA.
 - Expected files: data/i18n source or generated report as appropriate.
 - Validation: count comparison against normalized mechanics source.
+- Status: implemented as a portable `npm run i18n:check` audit over
+  `contracts/src/dto/spell.ts` mechanics key exports and Spell Detail
+  mechanics note keys.
 
 ### Slice 2: Translation And QA Workflow
 
 - Deliverable: Chinese mechanics translations plus QA report.
 - Expected files: i18n data/resources, QA output, workflow/playbook doc.
 - Validation: QA command summary and reviewed issue categories.
+- Status: in progress on `codex/i18n-mechanics-localization`; the audit fails
+  missing, placeholder, duplicate, or English-identical Chinese mechanics
+  strings in the maintained locale resources.
 
 ### Slice 3: Frontend Consumer
 
@@ -91,6 +97,10 @@ the workflow.
 - Expected files: frontend display adapter/components and tests.
 - Validation: `npm run i18n:check`, targeted web tests, and manual display
   smoke for Chinese/English surfaces.
+- Status: existing frontend consumers already read mechanics filter labels
+  through `web/app/i18n/display/spell-filter.ts` and Spell Detail note labels
+  through `spell-detail`; this branch hardens coverage and terminology rather
+  than changing the consumer contract.
 
 ## Acceptance Criteria
 
@@ -111,8 +121,9 @@ the workflow.
 
 ## Open Questions
 
-- Should the reusable workflow live as a repo-local skill or as a topic doc
-  first?
+- Resolved for v1.2: keep the reusable workflow in `docs/i18n.md` and the
+  portable i18n audit first. Promote to a repo-local skill only if later full
+  translation QA needs delegation beyond frontend locale resources.
 
 ## Follow-Up Candidates
 

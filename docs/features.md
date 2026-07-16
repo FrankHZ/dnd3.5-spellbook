@@ -43,6 +43,8 @@ Current behavior:
   through `castingTimeKeys`, `rangeKeys`, `durationKeys`, and
   `savingThrowKeys`, plus `spellResistanceKeys`; Browse exposes this
   server-provided vocabulary in the Advanced filters panel
+- Chinese UI localizes accepted mechanics filter bucket labels from the
+  maintained `spell-filter-vocabulary` resources
 - the Advanced filters panel drafts taxonomy, component, and mechanics changes
   locally, then applies them to the shareable URL in one action
 - default rulebooks are supplied by the backend when no explicit rulebook ids
@@ -100,6 +102,8 @@ Current behavior:
   Browse
 - the Search sidebar also exposes the same accepted normalized mechanics
   controls as Browse
+- Chinese UI localizes accepted mechanics filter bucket labels from the same
+  maintained vocabulary used by Browse
 - Search uses the same Advanced filters panel as Browse so secondary filter
   changes do not update the URL until users apply the draft
 - header search preserves current Browse or Search filter scope while replacing
@@ -151,8 +155,8 @@ Current behavior:
 - content-backed detail responses can include accepted normalized mechanics
   flags under `casting.mechanics` for duration, saving throw, and spell
   resistance notes; Spell Detail renders those as secondary text notes beside
-  the raw source field, while legacy raw strings remain the displayed fallback
-  text
+  the raw source field, localizes the note labels in Chinese UI, and keeps
+  legacy raw strings as the displayed fallback text
 
 Key code:
 
@@ -186,6 +190,8 @@ Current behavior:
   `mechanics.ranges`, plus duration buckets under `mechanics.durations` and
   saving throw buckets under `mechanics.savingThrows`, and spell resistance
   buckets under `mechanics.spellResistances`
+- frontend locale QA audits accepted mechanics vocabulary against shared
+  contract keys so new mechanics buckets require English and Chinese labels
 - Spell Detail exposes accepted duration, saving throw, and spell resistance
   flags as optional `casting.mechanics` metadata when served from normalized
   content
