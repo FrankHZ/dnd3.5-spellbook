@@ -17,7 +17,8 @@ source-data operations workspace.
 - `rules/`: rules DB inspection, SQL patching, structured spell patches,
   manifests, and `spells-full` patch generation.
 - `rules-content/`: generated content rows derived from the rules DB, including
-  publication metadata overlays for rulebook consumers.
+  publication metadata overlays and conservative normalized mechanics display
+  coverage for runtime consumers.
 - `rulebooks/`: rulebook label audits, publication metadata helpers, and the
   local publication metadata seed workflow.
 - `short-desc/`: English/Chinese short-description matching, QA,
@@ -66,7 +67,10 @@ but they should remain explicit and outside root `npm run verify` or CI.
 rules content. Its readiness output can mark a family as `detail_only` when
 review rows are intentionally preserved for raw/detail display and should not
 be promoted into public filter vocabulary; `components.other_or_extra` uses
-that classification.
+that classification. Mechanics `reviewStatus` describes parser confidence;
+the independent `displayCoverage` field controls display replacement. Only
+`complete` rows expose canonical English `normalizedText`; every other
+non-empty row stays on raw fallback.
 
 ## Validation
 

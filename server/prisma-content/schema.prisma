@@ -332,12 +332,15 @@ model SpellMechanicFacet {
     amount       Int?
     unit         String?
     flagsJson    String?
+    normalizedText  String?
+    displayCoverage String @default("review")
     sourceField  String
     reviewStatus String  @default("accepted")
     issueCode    String?
 
     @@unique([spellId, mechanicType])
     @@index([mechanicType, category])
+    @@index([mechanicType, displayCoverage])
     @@index([spellId])
 }
 

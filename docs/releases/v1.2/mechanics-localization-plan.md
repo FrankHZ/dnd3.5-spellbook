@@ -88,6 +88,9 @@ coverage decision.
   supported-mechanics notes.
 - The current content DB contains 40,776 mechanics facets: 37,152 accepted and
   3,624 review rows. These are parser-review counts, not display coverage.
+- The v7 read-only rules audit projects 18,097 complete, 4,726 partial, 3,548
+  review, and 14,405 empty display-coverage rows across 5,097 spells. Raw rules
+  fields and existing content facet raw text have zero mismatches.
 - The current frontend mechanics audit covers 25 maintained filter keys and 16
   Spell Detail labels/notes. It is a bounded public-vocabulary audit, not a
   complete normalized corpus audit.
@@ -141,9 +144,13 @@ comparison, and fallback even when coverage is complete.
   needed by the later consumer.
 - Validation: portable helper tests plus local corpus reporting by mechanic
   type and coverage, including representative complete and fallback samples.
-- Status: active. Start conservatively with grammars that can prove full raw
-  consumption. Target/effect/area may remain `partial` or `review` until their
-  structure can preserve the complete source meaning.
+- Status: data-pipeline implementation complete. Generator v7 records
+  `normalizedText` and `displayCoverage`, import validates the artifact and
+  migration columns, the read-only review report groups coverage with samples,
+  and portable tests prove complete/partial/review/empty behavior. The
+  conservative complete grammars cover simple casting time, range, duration,
+  saving throw, and spell resistance forms; all non-empty target/effect/area
+  rows remain `partial` or `review`.
 
 ### Slice 4: Localized Frontend Consumer
 
@@ -190,8 +197,9 @@ comparison, and fallback even when coverage is complete.
 ## Handoff Notes
 
 - Data-pipeline handoff: first produce and validate English normalized display
-  data plus explicit coverage. Keep raw text on every facet for provenance and
-  fallback.
+  data plus explicit coverage. This is implemented in generator v7; keep raw
+  text on every facet for provenance and fallback. Apply the content migration
+  and rebuild the content DB before runtime consumption.
 - i18n handoff: translate and QA only the normalized display vocabulary exposed
   by complete rows; the existing public filter/detail audit remains a separate
   bounded check.

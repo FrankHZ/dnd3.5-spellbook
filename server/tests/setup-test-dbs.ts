@@ -449,6 +449,8 @@ function seedContentDb() {
         amount INTEGER,
         unit TEXT,
         flagsJson TEXT,
+        normalizedText TEXT,
+        displayCoverage TEXT NOT NULL DEFAULT 'review',
         sourceField TEXT NOT NULL,
         reviewStatus TEXT NOT NULL DEFAULT 'accepted',
         issueCode TEXT

@@ -85,7 +85,15 @@ npm run -w data-tools rules:content:review
 `rules:content:audit` and `rules:content:generate` open the configured rules DB
 read-only. The generator writes
 `data-tools/out/rules-content/rules-content.generated.json` plus an audit summary
-of review-worthy legacy strings. `rulebooks:publications:seed` writes the
+of review-worthy legacy strings and normalized mechanics display coverage.
+Each generated mechanics facet keeps `rawText` and records `normalizedText`
+plus `displayCoverage`: only `complete` rows may replace raw display;
+`partial` and `review` rows fall back to raw, while `empty` rows have no display
+value. Parser `reviewStatus` remains a separate filter/review confidence signal
+and must not be used as display coverage. `normalizedText` is the canonical
+English equivalence check; later localized consumers should translate the
+structured category/amount/unit/flags rather than translate that string as
+free-form copy. `rulebooks:publications:seed` writes the
 maintained local publication metadata source at
 `data/rulebook-publications/publications.jsonl` from rules-clean rulebook fields
 and CHM publication labels. Seeded rows use `reviewStatus: "review"` until a
@@ -110,7 +118,9 @@ applying content migrations to validate row counts without mutating SQLite.
 `rules:content:review` opens the configured content DB read-only and inventories
 the normalized taxonomy, component, and mechanic facet tables for filter-contract
 readiness review. It writes a timestamped report under
-`data-tools/out/rules-content/`. Readiness status `detail_only` means the
+`data-tools/out/rules-content/`, including mechanics coverage counts by field
+and representative complete/fallback samples. Readiness status `detail_only`
+means the
 family is intentionally retained for raw/detail display and is not public filter
 vocabulary; for example, `components.other_or_extra` keeps extra component text
 out of filter controls.
@@ -483,21 +493,28 @@ by generation, and writes issue counts plus samples under
 normalized rules content. It writes a single JSON artifact with normalized
 rulebooks, spells, appearances, taxonomy facets, class/domain list entries,
 component rows, mechanics facets, and review issues. The transform preserves raw
-legacy strings beside normalized categories so future runtime reads do not need
-to parse legacy `dnd_spell` text columns.
+legacy strings beside normalized categories and only emits a replacement-safe
+`normalizedText` when `displayCoverage` is `complete`. Conservative grammars
+cover simple casting times, ranges, durations, saving throws, and spell
+resistance; target/effect/area remain raw fallback until their full semantics
+can be represented.
 
 `rules:content:import` is the content DB mutation boundary for normalized rules
 content. It requires the rules-content generated tables from
 `server/db/content` migrations, including `SpellContent`,
-`SpellTaxonomyFacet`, and `RulesContentIssue`. Without `--dry-run`, it replaces
+`SpellTaxonomyFacet`, `SpellMechanicFacet.normalizedText`,
+`SpellMechanicFacet.displayCoverage`, and `RulesContentIssue`. The dry run fails
+with a migration instruction if those display columns are absent. Without
+`--dry-run`, it replaces
 only those generated tables; it does not touch i18n rows, app-state rows, the
 rules DB, or the nested local data repo.
 
 `rules:content:review` is the read-only content DB inventory for post-import
 normalized facet review. It reports taxonomy/component/mechanic review counts,
-issue-code counts, Tome of Battle-like taxonomy rows, and readiness hints for
-future filter-contract work. Reports stay under `data-tools/out/rules-content/`
-and are not parent-repo source artifacts.
+issue-code counts, mechanics display coverage counts and samples, Tome of
+Battle-like taxonomy rows, and readiness hints for future filter-contract work.
+Reports stay under `data-tools/out/rules-content/` and are not parent-repo source
+artifacts.
 
 `rulebooks:labels:audit` is the read-only rulebook display-label review report
 for v3.5. It compares legacy `dnd_rulebook` identity fields, current
