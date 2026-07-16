@@ -1,5 +1,6 @@
 import type {
-  SpellNameSearchResponse,
+  SpellSearchMode,
+  SpellSearchResponse,
   I18nContext,
   SpellBatchResponse,
   SpellComponentFilters,
@@ -7,6 +8,7 @@ import type {
   SpellMechanicFilters,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
+import { ApiError } from "#server/utils/errors";
 import { mapSpellItem, mapSpellDetail } from "#server/services/spells/spells.mapper";
 import {
   fetchSpellsInOrder,
@@ -28,7 +30,8 @@ import {
 import { resolveSpellNames } from "#server/services/spells/spells.service.resolve";
 
 export const spellsService = {
-  async searchByName(input: {
+  async searchSpells(input: {
+    mode: SpellSearchMode;
     q: string;
     rulebookIds: number[];
     classIds: number[];
@@ -40,7 +43,16 @@ export const spellsService = {
     page: number;
     pageSize: number;
     i18n: I18nContext;
-  }): Promise<SpellNameSearchResponse> {
+  }): Promise<SpellSearchResponse> {
+    if (input.mode === "full") {
+      throw new ApiError(
+        503,
+        "Full-text search unavailable",
+        "The active spell source does not provide a compatible full-text index",
+        "FULL_TEXT_SEARCH_UNAVAILABLE",
+      );
+    }
+
     const doAppQuery = input.i18n.lang != "en";
     const hasScope =
       input.classIds.length > 0 ||
@@ -106,6 +118,7 @@ export const spellsService = {
     ]);
 
     return {
+      mode: input.mode,
       page: input.page,
       pageSize: input.pageSize,
       total,

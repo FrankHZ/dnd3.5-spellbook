@@ -100,7 +100,12 @@ export type SpellNormalizedFilterScope = SpellTaxonomyFilterIds &
   SpellComponentFilters &
   SpellMechanicFilters;
 
-export type SpellNameSearchQuery = SpellNormalizedFilterScope & {
+export const SPELL_SEARCH_MODES = ["name", "full"] as const;
+
+export type SpellSearchMode = (typeof SPELL_SEARCH_MODES)[number];
+
+export type SpellSearchQuery = SpellNormalizedFilterScope & {
+  mode: SpellSearchMode;
   q: string;
   rulebookIds: number[];
   classIds: number[];
@@ -153,7 +158,8 @@ export type SpellItemView = SpellItem & {
   i18n?: I18nSpellOverlay | undefined;
 };
 
-export type SpellNameSearchResponse = {
+export type SpellSearchResponse = {
+  mode: SpellSearchMode;
   page: number;
   pageSize: number;
   total: number;

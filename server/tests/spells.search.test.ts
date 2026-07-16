@@ -8,6 +8,7 @@ describe("GET /api/spells/search", () => {
       .query({ q: "fire" });
 
     expect(res.status).toBe(200);
+    expect(res.body.mode).toBe("name");
     expect(Array.isArray(res.body.items)).toBe(true);
   });
 
@@ -47,5 +48,44 @@ describe("GET /api/spells/search", () => {
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body.items)).toBe(true);
     expect(res.body.items.length).toBe(0);
+  });
+
+  it("rejects invalid search modes", async () => {
+    const res = await request(app)
+      .get("/api/spells/search")
+      .query({ q: "fire", mode: "body" });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({
+      message: "Invalid request",
+      error: "mode must be either 'name' or 'full'",
+    });
+  });
+
+  it("rejects short full-text queries with a stable code", async () => {
+    const res = await request(app)
+      .get("/api/spells/search")
+      .query({ q: "火球", mode: "full" });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({
+      message: "Invalid request",
+      error: "full-text query must contain at least 3 Unicode code points",
+      code: "FULL_TEXT_QUERY_TOO_SHORT",
+    });
+  });
+
+  it("fails closed when full-text search is not available", async () => {
+    const res = await request(app)
+      .get("/api/spells/search")
+      .query({ q: "fireball", mode: "full" });
+
+    expect(res.status).toBe(503);
+    expect(res.body).toEqual({
+      message: "Full-text search unavailable",
+      error:
+        "The active spell source does not provide a compatible full-text index",
+      code: "FULL_TEXT_SEARCH_UNAVAILABLE",
+    });
   });
 });

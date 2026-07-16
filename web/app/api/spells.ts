@@ -5,7 +5,8 @@ import type {
   SpellBatchResponse,
   SpellByLevelResponse,
   SpellDetailView,
-  SpellNameSearchResponse,
+  SpellSearchMode,
+  SpellSearchResponse,
   SpellNormalizedFilterScope,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
@@ -48,7 +49,8 @@ export function getSpellsByLevel(params: {
   );
 }
 
-export function searchSpellsByName(params: {
+export function searchSpells(params: {
+  mode?: SpellSearchMode;
   q: string;
   rulebookIds?: number[];
   classIds?: number[];
@@ -62,6 +64,7 @@ export function searchSpellsByName(params: {
 }) {
   const sp = new URLSearchParams();
   sp.set("q", params.q);
+  if (params.mode && params.mode !== "name") sp.set("mode", params.mode);
   sp.set("page", String(params.page));
   sp.set("pageSize", String(params.pageSize));
 
@@ -79,7 +82,7 @@ export function searchSpellsByName(params: {
   }
   setNormalizedFilterParams(sp, params.filters ?? params.taxonomyFilters ?? {});
 
-  return apiGet<SpellNameSearchResponse>(
+  return apiGet<SpellSearchResponse>(
     `/api/spells/search?${sp.toString()}`,
     params.signal,
   );
