@@ -53,6 +53,10 @@ import {
   deriveRulebookPublicationMetadata,
   readRulebookPublicationMetadataJsonlText,
 } from "../rulebooks/publication-metadata";
+import {
+  buildContentSearchDocuments,
+  replaceContentSearchIndex,
+} from "../db/content-search-documents";
 
 type TestCase = {
   name: string;
@@ -70,6 +74,108 @@ type FixtureManifest = {
 };
 
 const tests: TestCase[] = [
+  {
+    name: "content search documents rebuild a portable FTS index",
+    run: () => {
+      const documents = buildContentSearchDocuments({
+        spells: [
+          {
+            spellId: 100,
+            canonicalName: "Fireball",
+            slug: "fireball",
+            descriptionText: "A burst of flame damages creatures in the area.",
+            castingTimeRaw: "1 standard action",
+            rangeRaw: "Long",
+            targetRaw: null,
+            effectRaw: null,
+            areaRaw: "20-ft.-radius spread",
+            durationRaw: "Instantaneous",
+            savingThrowRaw: "Reflex half",
+            resistanceRaw: "Yes",
+          },
+        ],
+        texts: [
+          {
+            spellId: 100,
+            lang: "zh",
+            variant: "chm",
+            name: "火球术",
+            descriptionText: "爆炸火焰对区域内生物造成伤害。",
+          },
+        ],
+        summaries: [
+          {
+            spellId: 100,
+            lang: "en",
+            variant: "imarvin",
+            summaryText: "Deals fire damage in a wide area.",
+          },
+        ],
+        mechanics: [
+          {
+            spellId: 100,
+            rawText: "Long (400 ft. + 40 ft./level)",
+            category: "long",
+            normalizedText: "Long (400 ft. + 40 ft./level)",
+          },
+        ],
+      });
+
+      assert.deepEqual(
+        documents.map((document) => `${document.lang}:${document.variant}`),
+        ["en:default", "en:imarvin", "zh:chm"],
+      );
+
+      const db = new Database(":memory:");
+      try {
+        db.exec(`
+          CREATE VIRTUAL TABLE "SpellSearchDocument" USING fts5(
+            "spellId" UNINDEXED,
+            "lang" UNINDEXED,
+            "variant" UNINDEXED,
+            "name",
+            "aliases",
+            "summary",
+            "mechanics",
+            "body",
+            tokenize = 'trigram'
+          );
+          CREATE TABLE "SpellSearchIndexState" (
+            "id" INTEGER PRIMARY KEY,
+            "schemaVersion" INTEGER NOT NULL,
+            "rebuiltAt" DATETIME NOT NULL,
+            "documentCount" INTEGER NOT NULL
+          );
+        `);
+        replaceContentSearchIndex(db, documents);
+
+        const chineseMatches = db
+          .prepare(`
+            SELECT "spellId", "lang"
+            FROM "SpellSearchDocument"
+            WHERE "SpellSearchDocument" MATCH ?
+          `)
+          .all('"火球术"') as Array<{ spellId: number; lang: string }>;
+        assert.equal(chineseMatches.length, 3);
+        assert.deepEqual(
+          Array.from(new Set(chineseMatches.map((row) => row.spellId))),
+          [100],
+        );
+
+        const state = db
+          .prepare(
+            'SELECT "schemaVersion", "documentCount" FROM "SpellSearchIndexState"',
+          )
+          .get();
+        assert.deepEqual(state, {
+          schemaVersion: 1,
+          documentCount: documents.length,
+        });
+      } finally {
+        db.close();
+      }
+    },
+  },
   {
     name: "script manifest classifies every npm script",
     run: () => {

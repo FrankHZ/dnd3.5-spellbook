@@ -14,6 +14,13 @@
       "requiresSqlite": true,
       "writeCapable": false
     },
+    "content:search:rebuild": {
+      "module": "rules-content",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
     "en:summaries:candidates": {
       "module": "short-desc",
       "lifecycle": "maintained-local",
