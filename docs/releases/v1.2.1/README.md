@@ -1,7 +1,6 @@
 # v1.2.1 Release Plan
 
-Status: planned. Start after v1.2 mechanics localization is accepted and v1.2
-is frozen.
+Status: planned. Start after v1.2 is frozen.
 
 v1.2.1 is a focused post-v1.2 release for content-backed spell full-text
 search. It should add a deliberate full-text search mode without reopening the
@@ -56,6 +55,7 @@ accepted.
 - Do not change the default Search mode away from name search.
 - Do not add an external search service.
 - Do not add offline/static search index artifacts.
+- Do not add snippets, highlighting, or field-specific match badges.
 - Do not make full spell-body translation or translation proofreading part of
   this release.
 - Do not redesign the Search page, filter sidebar, spell cards, or sitewide UI.
@@ -76,10 +76,14 @@ v1.2.1 release acceptance should include:
   behavior.
 - Full-text search uses content-backed indexed text and honors rulebook,
   class/domain/level, taxonomy, component, and mechanics filters.
-- Query validation handles short CJK and non-CJK terms deliberately without
-  broad unindexed body scans.
+- Full-text mode requires at least three Unicode code points after trimming.
+  Short queries preserve Search URL/filter state and prompt for a longer term
+  or name mode; direct API requests receive a stable validation error.
 - Result ordering is deterministic and gives name/alias matches higher weight
   than summary or body-text matches.
+- Multi-language or multi-variant index matches collapse to one result per
+  spell before `total` and pagination. Equal scores sort by canonical spell
+  name and spell ID.
 - Data tooling exposes the maintained, manifest-classified
   `npm run -w data-tools content:search:rebuild` command, including a dry-run
   validation path, and the normal content DB rebuild workflow runs it after
@@ -112,7 +116,7 @@ v1.2.1 release acceptance should include:
 
 ## Handoff Rule
 
-v1.2.1 is planned scope, not active implementation while v1.2 mechanics
-localization remains open. Implementation branches should update the owning
-child plan, affected topic/operations docs, and `docs/roadmap.md` only if the
-active work order changes.
+v1.2.1 is planned scope, not active implementation until v1.2 is frozen.
+Implementation branches should update the owning child plan, affected
+topic/operations docs, and `docs/roadmap.md` only if the active work order
+changes.

@@ -38,10 +38,10 @@ v1.0 is the previous frozen formal public release:
 
 The latest frozen pre-release snapshot is `docs/mvp/v3.10/FREEZE.md`.
 
-Use the v1.2 child plans for implementation boundaries. Publications is already
-accepted, and full-spell source review is accepted. Keep the remaining
-mechanics localization track independently reviewable unless a real sequencing
-conflict appears.
+Use the v1.2 child plans for implementation and acceptance history.
+Publications, Full-Spell Source Review, and Mechanics Localization are accepted.
+The next action is the v1.2 freeze sweep; do not start v1.2.1 implementation
+before that snapshot is merged.
 
 v1.2.1 is the planned focused release after v1.2 freeze:
 
@@ -55,6 +55,17 @@ Older frozen snapshots remain historical comparison points, not active
 baselines.
 
 ## Recently Completed
+
+The v1.2 Mechanics Localization track is accepted with:
+
+- explicit normalized mechanics display coverage independent from parser review
+  status.
+- deterministic English normalized display for complete facets while partial,
+  review, unsupported, and legacy rows preserve authoritative raw text.
+- maintained Chinese mechanics vocabulary and portable i18n audit coverage.
+- frontend Spell Detail consumption with complete-only normalized display and
+  tested raw fallback.
+- focused web, i18n, build, and root verification passing before merge in #72.
 
 The v1.2 Publications track is accepted with:
 
@@ -154,19 +165,14 @@ freeze docs instead of copying them into this roadmap.
 
 Recommended next sequence:
 
-1. **Run mechanics localization**
+1. **Freeze v1.2**
 
-   Use an i18n/data branch for normalized mechanics translation, QA reports,
-   and the reusable workflow/skill handoff. Follow with a focused frontend
-   consumer branch only after the mechanics vocabulary and QA shape are stable.
+   Publications, Full-Spell Source Review, and Mechanics Localization are
+   accepted. Prepare `docs/releases/v1.2/FREEZE.md` as the as-built release
+   snapshot and align current navigation/status wording before starting the
+   next release.
 
-2. **Freeze v1.2 after mechanics localization is accepted**
-
-   The Publications and Full-Spell Source Review tracks are already accepted.
-   After mechanics localization is accepted, prepare
-   `docs/releases/v1.2/FREEZE.md` as the as-built release snapshot.
-
-3. **Run v1.2.1 full-text search**
+2. **Run v1.2.1 full-text search**
 
    Add a focused content-backed full-text mode to Search after v1.2 freeze.
    Follow `docs/releases/v1.2.1/full-text-search-plan.md`. Keep existing name
@@ -174,13 +180,13 @@ Recommended next sequence:
    avoid external search services or offline/static search artifacts in this
    release.
 
-4. **Keep v1.3 as the broader design release**
+3. **Keep v1.3 as the broader design release**
 
    Do not let the v1.2 Publications page become the full sitewide style
    redesign. Keep complete filter UX, spell-card redesign, and broader visual
    system work in v1.3 unless a v1.2 acceptance blocker proves otherwise.
 
-5. **Defer full translation QA**
+4. **Defer full translation QA**
 
    Treat full spell-body/name/short-description translation and proofreading
    as a later release candidate. v1.2 should first review the full-spell

@@ -27,6 +27,41 @@ Status: planned.
 - Upstream dependency plans: v1.2 freeze and the accepted content DB workflow.
 - Downstream consumer plans: v1.3 sitewide UX/style redesign.
 
+## Agent Context
+
+- Main gate outcome: after v1.2 freeze, deliver one focused content-backed
+  full-text Search mode while preserving name search as the default. Backend
+  and data ownership land first; the frontend consumes the accepted contract
+  afterward.
+- Required reading: `AGENTS.md`, `docs/roadmap.md`,
+  `docs/releases/v1.2.1/README.md`, `docs/features.md`,
+  `docs/operations/db-content-workflow.md`,
+  `docs/operations/import-workflow.md`, `docs/modules/server.md`,
+  `docs/modules/data-tools.md`, `docs/modules/web.md`, and the workspace
+  READMEs for every edited workspace.
+- Expected edit surface: shared spell-search DTOs; content DB migrations;
+  server Search controller/service/repository code; the maintained data-tool
+  search-index command and manifest; Search URL/API/page code; focused tests,
+  locale resources, and owning operations/topic docs.
+- Nearby code/tests: `contracts/src/dto/spell.ts`,
+  `server/src/controllers/spells.controller.ts`,
+  `server/src/services/spells/`,
+  `server/tests/spells.search.test.ts`, `web/app/api/spells.ts`,
+  `web/app/features/search/`, `web/app/api/spells.test.ts`, and
+  `data-tools/src/db/`.
+- Validation or acceptance evidence: contract build/runtime check, focused
+  server API tests, data-tools typecheck and portable helper tests, local DB
+  dry-run/rebuild acceptance, focused Search URL/API/page tests, web typecheck,
+  i18n check, and manual English/Chinese plus remote production smoke.
+- Non-goals and follow-up parking: do not add snippets, highlighting, external
+  search infrastructure, offline search artifacts, full-body translation QA,
+  or broader Search/UI redesign. Park those in this plan's follow-up section or
+  the owning later release.
+- Handoff owner: backend/data specialist hands the stable contract and local DB
+  evidence to the focused frontend specialist; both return to the main gate for
+  acceptance. Librarian owns the final cross-doc/freeze sweep after
+  implementation is accepted.
+
 ## Problem
 
 Search currently searches spell names and localized names, then applies the same
@@ -64,6 +99,8 @@ normalized filters wherever possible.
 - Do not search ignored raw source data at request time.
 - Do not make spell translation QA or body translation part of the full-text
   acceptance gate.
+- Do not add result snippets, highlighting, or field-specific match badges;
+  defer those to the v1.3 Search/UX pass.
 - Do not redesign the Search page beyond the minimal mode control and result
   status copy needed for the feature.
 
@@ -79,7 +116,9 @@ normalized filters wherever possible.
 - SQLite in the current `better-sqlite3` runtime supports FTS5. Local probing
   also confirmed `tokenize='trigram'` table creation succeeds.
 - SQLite FTS5 trigram tokenization does not match one- or two-character CJK
-  terms as body text. Short CJK query behavior needs an intentional fallback.
+  terms as body text. v1.2.1 therefore requires at least three Unicode code
+  points for every `mode=full` query; existing name-mode validation remains
+  unchanged.
 
 ## Plan
 
@@ -102,13 +141,18 @@ Contract direction:
 - Add `mode=name|full` to Search query and response.
 - Default omitted `mode` to `name`.
 - Keep `q` as the user query string.
+- Require at least three Unicode code points after trimming for `mode=full`.
+  Keep the existing language-aware name-search minimums for `mode=name`.
+- Return a stable `FULL_TEXT_QUERY_TOO_SHORT` validation error for direct API
+  requests below the full-text minimum. The frontend should apply the same
+  validation before requesting results.
 - Rename shared and internal search symbols from the name-only vocabulary to
   neutral search vocabulary as part of the contract change:
   `SpellSearchQuery`, `SpellSearchResponse`, and `searchSpells`. Keep
   `GET /api/spells/search` unchanged. Do not retain parallel
   `SpellNameSearch*` aliases after all in-repo consumers have migrated.
-- Consider an optional result match payload only if the frontend needs visible
-  match context in v1.2.1; otherwise keep the first implementation card-only.
+- Keep the v1.2.1 response card-oriented. Do not add match snippets or
+  highlighting payloads.
 
 ### Slice 2: Content Search Index
 
@@ -173,8 +217,17 @@ Backend direction:
   name search.
 - Preserve filter semantics by applying rulebook and normalized filter clauses
   around the FTS result set.
-- Preserve rank order for full-text results instead of re-sorting everything by
-  spell name.
+- A spell may have multiple matching language/variant documents. Apply
+  structured filter eligibility, then collapse matches by `spellId` and retain
+  only that spell's best weighted document score. Do not add scores across
+  documents, because spells with more locale/variant rows must not gain an
+  artificial ranking advantage.
+- Compute `total` from the distinct eligible `spellId` set and paginate only
+  after de-duplication. A spell must not appear twice in one page or recur on a
+  later page for the same stable query.
+- Sort by best weighted score descending, then canonical spell name ascending
+  with case-insensitive comparison, then spell ID ascending. This tie-break
+  order is the stable pagination contract.
 - Cap expensive candidate expansion deliberately and document the cap in tests
   if needed.
 
@@ -202,6 +255,9 @@ Frontend direction:
 - If the API reports `FULL_TEXT_SEARCH_UNAVAILABLE`, preserve the query and
   filters, show a concise unavailable state, and let the user switch back to
   name mode.
+- When a full-text query contains fewer than three Unicode code points, keep
+  `mode`, `q`, and every selected filter in the URL, do not issue the full-text
+  request, and prompt the user to enter a longer term or switch to name mode.
 - Preserve current Search sidebar filters, scope summary, pagination, density,
   and spell-card display behavior.
 
@@ -212,10 +268,17 @@ Frontend direction:
   would not find.
 - Full-text search honors rulebook scope and all existing structured Search
   filters.
-- Short-query behavior is deliberate and tested for both CJK and non-CJK
-  queries.
+- Full-text mode requires at least three Unicode code points after trimming.
+  Short CJK and non-CJK queries preserve URL/filter state, show the longer-term
+  or name-mode prompt, and are rejected by the API with
+  `FULL_TEXT_QUERY_TOO_SHORT` if requested directly.
 - Search result ordering is stable and gives higher priority to name/alias
   matches than lower-signal body matches.
+- Multi-language or multi-variant document matches collapse to one result per
+  `spellId` using the best weighted score before `total` and pagination are
+  calculated. Equal scores sort by canonical spell name and then spell ID, so
+  cards cannot duplicate within or across pages.
+- v1.2.1 does not expose snippets, highlighting, or match-detail payloads.
 - Shared DTOs, frontend API helpers, controller/service entry points, and tests
   use the neutral `SpellSearch*` / `searchSpells` vocabulary; the HTTP endpoint
   remains `/api/spells/search`.
@@ -249,10 +312,8 @@ Frontend direction:
 
 ## Open Questions
 
-- Should v1.2.1 expose match snippets, or keep result cards unchanged and
-  defer snippets until the broader v1.3 Search/UX pass?
-- Should one- and two-character CJK full-text queries search only names and
-  summaries, or should the UI ask for a longer term before body search runs?
+- None for specialist handoff. Short-query behavior, snippets, result
+  de-duplication, pagination, and stable tie-breaking are resolved above.
 
 ## Follow-Up Candidates
 
