@@ -190,6 +190,13 @@ model RulesContentBuild {
     @@index([dataRepoCommit])
 }
 
+model SpellSearchIndexState {
+    id            Int      @id
+    schemaVersion Int
+    rebuiltAt     DateTime
+    documentCount Int
+}
+
 model RulebookContent {
     id                      String @id
     legacyRulebookId        Int    @unique

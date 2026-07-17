@@ -2,7 +2,7 @@ import type { SpellDetailView, SpellItemView } from "@dnd/contracts";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
-import { searchSpellsByName } from "~/api/spells";
+import { searchSpells } from "~/api/spells";
 import { SpellCard } from "~/components/SpellCard";
 import {
   Card,
@@ -189,7 +189,7 @@ export default function RelatedSpellsSection({
       const variantContext = getVariantMatchContext(spell.name);
       const [sameNameResponse, localizedSameNameResponse, variantResponse] =
         await Promise.all([
-          searchSpellsByName({
+          searchSpells({
             q: spell.name,
             rulebookIds: resolvedRulebookIds,
             page: 1,
@@ -197,7 +197,7 @@ export default function RelatedSpellsSection({
             signal,
           }),
           localizedExactName
-            ? searchSpellsByName({
+            ? searchSpells({
                 q: localizedName,
                 rulebookIds: resolvedRulebookIds,
                 page: 1,
@@ -205,7 +205,7 @@ export default function RelatedSpellsSection({
                 signal,
               })
             : Promise.resolve(null),
-          searchSpellsByName({
+          searchSpells({
             q: variantContext.baseQuery,
             rulebookIds: resolvedRulebookIds,
             page: 1,

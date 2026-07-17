@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {
-  searchSpellsByName,
+  searchSpells,
   listSpellsByClassAndDomainLevel,
   getSpellDetail,
   batchSpells,
@@ -9,7 +9,7 @@ import {
 
 const spellsRouter = Router();
 
-spellsRouter.get("/search", searchSpellsByName);
+spellsRouter.get("/search", searchSpells);
 spellsRouter.get("/by-level", listSpellsByClassAndDomainLevel);
 spellsRouter.post("/batch", batchSpells);
 spellsRouter.post("/resolve", resolveSpellNames);

@@ -5,7 +5,7 @@ import {
   getSpellsBatch,
   getSpellsByLevel,
   resolveSpellNames,
-  searchSpellsByName,
+  searchSpells,
 } from "./spells";
 
 vi.mock("./http", () => ({
@@ -28,7 +28,7 @@ describe("spell API wrappers", () => {
   it("builds search URLs with pagination and optional rulebooks", async () => {
     mockedApiGet.mockResolvedValue({ items: [] } as any);
 
-    await searchSpellsByName({
+    await searchSpells({
       q: "fire ball",
       rulebookIds: [4, 6],
       classIds: [1],
@@ -47,7 +47,7 @@ describe("spell API wrappers", () => {
   it("builds search URLs with normalized filters", async () => {
     mockedApiGet.mockResolvedValue({ items: [] } as any);
 
-    await searchSpellsByName({
+    await searchSpells({
       q: "fire",
       filters: {
         schoolIds: [2, 2, 0],

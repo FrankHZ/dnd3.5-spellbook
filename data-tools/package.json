@@ -5,6 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "inspect:rules": "tsx src/rules/inspect-rules-db.ts",
+    "content:search:rebuild": "tsx src/db/content-search.ts",
     "rules:index:rebuild": "tsx src/rules/sql.ts index:rebuild",
     "rules:spells:apply": "tsx src/rules/spells.ts apply",
     "rules:spells:validate": "tsx src/rules/spells.ts validate",

@@ -24,6 +24,7 @@ import {
   queryNormalizedByClassAndDomainWithLevel,
   queryNormalizedByExactNames,
   queryNormalizedIdsByName,
+  queryNormalizedFullTextSearch,
   queryNormalizedSpellDetail,
   queryNormalizedSpellsByIds,
 } from "#server/services/spells/spells.repo.normalized-content";
@@ -71,6 +72,13 @@ export async function queryIdsByName(
     mechanicFilters,
     maxCandidates,
   );
+}
+
+export async function queryFullTextSearch(
+  input: Parameters<typeof queryNormalizedFullTextSearch>[0],
+) {
+  if (activeSpellReadSource() !== "content") return null;
+  return queryNormalizedFullTextSearch(input);
 }
 
 export async function queryByClassAndDomainWithLevel(

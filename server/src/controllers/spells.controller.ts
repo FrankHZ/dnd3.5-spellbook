@@ -14,7 +14,8 @@ import type {
   SpellComponentFilters,
   SpellDescriptorBucketKey,
   SpellMechanicFilters,
-  SpellNameSearchResponse,
+  SpellSearchMode,
+  SpellSearchResponse,
   SpellTaxonomyFilterIds,
 } from "@dnd/contracts";
 import {
@@ -29,6 +30,7 @@ import {
 import { getI18nContext, hasCjk } from "#server/utils/i18n";
 import { LevelMode } from "#server/services/spells/spells.service.by-level";
 import { ResolveSpellNamesRequest } from "@dnd/contracts";
+import { fullTextSearchTokens } from "#server/services/spells/full-text-query";
 
 function parseTaxonomyFilterIds(query: Request["query"]): SpellTaxonomyFilterIds {
   const positiveIntIds = (value: unknown) =>
@@ -97,7 +99,7 @@ function parseMechanicFilters(query: Request["query"]): SpellMechanicFilters {
   };
 }
 
-export async function searchSpellsByName(
+export async function searchSpells(
   req: Request,
   res: Response,
   next: NextFunction,
@@ -107,6 +109,19 @@ export async function searchSpellsByName(
     if (!q) {
       next(
         new ApiError(400, "Invalid request", "q must be a non-empty string"),
+      );
+      return;
+    }
+
+    const modeRaw = normalizeString(req.query.mode);
+    const mode: SpellSearchMode = modeRaw === "full" ? "full" : "name";
+    if (modeRaw && modeRaw !== "name" && modeRaw !== "full") {
+      next(
+        new ApiError(
+          400,
+          "Invalid request",
+          "mode must be either 'name' or 'full'",
+        ),
       );
       return;
     }
@@ -146,9 +161,22 @@ export async function searchSpellsByName(
       100,
     );
 
+    if (mode === "full" && fullTextSearchTokens(q).length === 0) {
+      next(
+        new ApiError(
+          400,
+          "Invalid request",
+          "full-text query must contain at least one term with 3 Unicode code points",
+          "FULL_TEXT_QUERY_TOO_SHORT",
+        ),
+      );
+      return;
+    }
+
     const minLen = hasCjk(q) ? 1 : 2;
-    if (q.length < minLen) {
+    if (mode === "name" && q.length < minLen) {
       res.status(200).json({
+        mode,
         q,
         rulebookIds,
         ...taxonomyFilters,
@@ -158,11 +186,12 @@ export async function searchSpellsByName(
         pageSize,
         total: 0,
         items: [],
-      } satisfies SpellNameSearchResponse);
+      } satisfies SpellSearchResponse);
       return;
     }
 
-    const result = await spellsService.searchByName({
+    const result = await spellsService.searchSpells({
+      mode,
       q,
       rulebookIds,
       classIds,

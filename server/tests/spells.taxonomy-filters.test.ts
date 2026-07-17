@@ -2,7 +2,7 @@ import request from "supertest";
 import type {
   SpellByLevelResponse,
   SpellFilterVocabularyResponse,
-  SpellNameSearchResponse,
+  SpellSearchResponse,
 } from "@dnd/contracts";
 import { app } from "#server/app";
 
@@ -153,7 +153,7 @@ describe("spell taxonomy filter contracts", () => {
       .query({ q: "fire", rulebookIds: "4,6", descriptorIds: "1" });
 
     expect(res.status).toBe(200);
-    const body = res.body as SpellNameSearchResponse;
+    const body = res.body as SpellSearchResponse;
 
     expect(body.descriptorIds).toEqual([1]);
     expect(body.schoolIds).toEqual([]);
@@ -171,7 +171,7 @@ describe("spell taxonomy filter contracts", () => {
       .query({ q: "magic", rulebookIds: "4", descriptorBuckets: "see-text" });
 
     expect(res.status).toBe(200);
-    const body = res.body as SpellNameSearchResponse;
+    const body = res.body as SpellSearchResponse;
 
     expect(body.descriptorIds).toEqual([]);
     expect(body.descriptorBuckets).toEqual(["see-text"]);
@@ -216,7 +216,7 @@ describe("spell taxonomy filter contracts", () => {
       });
 
     expect(res.status).toBe(200);
-    const body = res.body as SpellNameSearchResponse;
+    const body = res.body as SpellSearchResponse;
 
     expect(body.componentKeys).toEqual(["material"]);
     expect(body.items.map((item) => item.id)).toEqual([100]);
@@ -254,7 +254,7 @@ describe("spell taxonomy filter contracts", () => {
       });
 
     expect(res.status).toBe(200);
-    const body = res.body as SpellNameSearchResponse;
+    const body = res.body as SpellSearchResponse;
 
     expect(body.castingTimeKeys).toEqual(["standard_action", "minute"]);
     expect(body.rangeKeys).toEqual(["medium"]);
@@ -273,7 +273,7 @@ describe("spell taxonomy filter contracts", () => {
 
     expect(search.status).toBe(200);
     expect(
-      (search.body as SpellNameSearchResponse).items.map((item) => item.id),
+      (search.body as SpellSearchResponse).items.map((item) => item.id),
     ).toEqual([100]);
 
     const combinedSchool = await request(app)
@@ -282,7 +282,7 @@ describe("spell taxonomy filter contracts", () => {
 
     expect(combinedSchool.status).toBe(200);
     expect(
-      (combinedSchool.body as SpellNameSearchResponse).items.map(
+      (combinedSchool.body as SpellSearchResponse).items.map(
         (item) => item.id,
       ),
     ).toEqual([110]);
@@ -293,7 +293,7 @@ describe("spell taxonomy filter contracts", () => {
 
     expect(combinedSubschool.status).toBe(200);
     expect(
-      (combinedSubschool.body as SpellNameSearchResponse).items.map(
+      (combinedSubschool.body as SpellSearchResponse).items.map(
         (item) => item.id,
       ),
     ).toEqual([110]);
@@ -320,10 +320,10 @@ describe("spell taxonomy filter contracts", () => {
 
     expect(otherBucket.status).toBe(200);
     expect(
-      (otherBucket.body as SpellNameSearchResponse).items.map((item) => item.id),
+      (otherBucket.body as SpellSearchResponse).items.map((item) => item.id),
     ).toEqual([101]);
     expect(
-      (otherBucket.body as SpellNameSearchResponse).items[0]?.descriptors,
+      (otherBucket.body as SpellSearchResponse).items[0]?.descriptors,
     ).toEqual([
       {
         key: "see-text",
@@ -347,7 +347,7 @@ describe("spell taxonomy filter contracts", () => {
 
     expect(mechanics.status).toBe(200);
     expect(
-      (mechanics.body as SpellNameSearchResponse).items.map((item) => item.id),
+      (mechanics.body as SpellSearchResponse).items.map((item) => item.id),
     ).toEqual([100]);
 
     const spellResistanceNo = await request(app)
@@ -360,10 +360,10 @@ describe("spell taxonomy filter contracts", () => {
 
     expect(spellResistanceNo.status).toBe(200);
     expect(
-      (spellResistanceNo.body as SpellNameSearchResponse).spellResistanceKeys,
+      (spellResistanceNo.body as SpellSearchResponse).spellResistanceKeys,
     ).toEqual(["no"]);
     expect(
-      (spellResistanceNo.body as SpellNameSearchResponse).items.map(
+      (spellResistanceNo.body as SpellSearchResponse).items.map(
         (item) => item.id,
       ),
     ).toEqual([101]);
@@ -397,7 +397,7 @@ describe("spell taxonomy filter contracts", () => {
       .query({ q: "magic", rulebookIds: "4", descriptorBuckets: "see-text" });
 
     expect(res.status).toBe(200);
-    const body = res.body as SpellNameSearchResponse;
+    const body = res.body as SpellSearchResponse;
 
     expect(body.descriptorIds).toEqual([]);
     expect(body.descriptorBuckets).toEqual(["see-text"]);
@@ -420,7 +420,7 @@ describe("spell taxonomy filter contracts", () => {
       });
 
     expect(res.status).toBe(200);
-    const body = res.body as SpellNameSearchResponse;
+    const body = res.body as SpellSearchResponse;
 
     expect(body.castingTimeKeys).toEqual(["standard_action"]);
     expect(body.rangeKeys).toEqual(["medium"]);

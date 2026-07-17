@@ -79,6 +79,8 @@ npm run -w data-tools rules:content:audit
 npm run -w data-tools rulebooks:publications:seed
 npm run -w data-tools rules:content:generate
 npm run -w data-tools rules:content:import -- --dry-run
+npm run -w data-tools content:search:rebuild -- --dry-run
+npm run -w data-tools content:search:rebuild
 npm run -w data-tools rules:content:review
 ```
 
@@ -114,6 +116,15 @@ instead of deriving publication groups from labels. `rules:content:import` reads
 that generated file and replaces only the
 rules-content generated tables in `CONTENT_DATABASE_URL`; use `--dry-run` after
 applying content migrations to validate row counts without mutating SQLite.
+
+`content:search:rebuild` is the maintained boundary for the derived content DB
+FTS5 index. Run it after every content import in a normal rebuild. It generates
+canonical and localized spell documents from prepared names, aliases,
+summaries, body text, and mechanics/header text, then records the compatible
+schema version and document count in `SpellSearchIndexState`. `--dry-run`
+requires the migration and reads the same source rows without changing the DB.
+FTS shadow tables are rebuildable runtime state, not portable fixture source
+files.
 
 `rules:content:review` opens the configured content DB read-only and inventories
 the normalized taxonomy, component, and mechanic facet tables for filter-contract
@@ -619,6 +630,10 @@ another scoped book. The default scope is the current official 3.5 working set:
   replaces only generated normalized rules content tables. It also records
   `RulesContentBuild` provenance hashes and parent/data commit ids for local
   artifact comparison.
+- `content:search:rebuild -- --dry-run` validates the content search schema and
+  generated document counts without mutation.
+- `content:search:rebuild` replaces only the derived FTS documents and index
+  state in `CONTENT_DATABASE_URL`; it does not change prepared source rows.
 - `rules:spells:validate` opens the SQLite database in read-only mode and
   writes a JSON report under `data-tools/out/rules-patches/`.
 - `rules:rulebooks:validate` opens the SQLite database in read-only mode and

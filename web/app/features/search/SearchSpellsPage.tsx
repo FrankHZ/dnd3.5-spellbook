@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { useSearchParams } from "react-router";
 
 import { ApiError } from "~/api/http";
-import { searchSpellsByName } from "~/api/spells";
+import { searchSpells } from "~/api/spells";
 import Pager from "~/components/Pager";
 import { SpellCard } from "~/components/SpellCard";
 import { StatusCard } from "~/components/StatusCard";
@@ -81,7 +81,7 @@ export default function SearchSpellsPage() {
     ],
     enabled: isValid.ok, // enforce backend contract
     queryFn: ({ signal }) =>
-      searchSpellsByName({
+      searchSpells({
         q: qParam,
         rulebookIds: rulebookIds.length ? rulebookIds : undefined,
         classIds: searchScope.classIds.length
