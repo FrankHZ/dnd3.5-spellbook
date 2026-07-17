@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: implementation active; backend/data slices complete, frontend consumer pending.
+Status: implementation complete; acceptance and freeze pending.
 
 ## Purpose
 
@@ -251,8 +251,10 @@ Frontend direction:
 
 - Add a small segmented control for Name versus Full text.
 - Keep Search URL state canonical and shareable through `mode`.
-- Header search from Browse should continue to land in name mode unless the
-  user is already on Search with `mode=full` and submits another query there.
+- Header search uses a connected dual action: Enter and the primary Search
+  button always land in name mode, while the attached Full text button
+  explicitly submits in `mode=full`. Both preserve current Browse/Search
+  filter scope.
 - If the API reports `FULL_TEXT_SEARCH_UNAVAILABLE`, preserve the query and
   filters, show a concise unavailable state, and let the user switch back to
   name mode.
@@ -341,5 +343,18 @@ Frontend direction:
 - Review follow-up confirmed short connector words are ignored by trigram query
   construction: `wall fire` and `wall of fire` return the same local result
   set, while `shield of faith` returns `Shield of Faith`.
-- Slice 4 remains with the frontend specialist. Do not treat backend URL access
-  to `mode=full` as completion of the reader-facing mode control.
+- The frontend Search consumer now exposes a compact Name / Full text mode
+  control, keeps omitted `mode` canonical as name search, and preserves query,
+  filters, and pagination semantics across shareable URLs.
+- The global search keeps name lookup as its primary Enter/button action and
+  adds an attached Full text action, so users can choose the mode at submission
+  without changing the Search page control first.
+- Frontend validation mirrors the three-code-point token contract without an
+  API request. Stable unavailable responses preserve Search state and provide
+  an explicit switch back to name mode.
+- Focused frontend URL, validation, API-helper, and error-code tests pass.
+  Manual English/Chinese and desktop/mobile smoke covers valid full-text
+  results, short-query guidance, unavailable fallback, and filter preservation.
+- Remaining release work belongs to main-gate acceptance: merge the frontend
+  consumer, activate a compatible content DB remotely, run production name and
+  full-text smoke checks, then complete the v1.2.1 freeze sweep.

@@ -15,6 +15,7 @@ describe("search URL helpers", () => {
     );
 
     expect(scope).toEqual({
+      mode: "name",
       q: "fire",
       classIds: [1, 2],
       domainIds: [8],
@@ -33,6 +34,15 @@ describe("search URL helpers", () => {
       level: 3,
       page: 4,
     });
+  });
+
+  it("parses full mode and normalizes unknown modes to name search", () => {
+    expect(
+      parseSearchScope(new URLSearchParams("mode=full&q=fire")).mode,
+    ).toBe("full");
+    expect(
+      parseSearchScope(new URLSearchParams("mode=unknown&q=fire")).mode,
+    ).toBe("name");
   });
 
   it("parses taxonomy filters from query params", () => {
@@ -85,6 +95,12 @@ describe("search URL helpers", () => {
 
   it("builds clean and scoped search URLs", () => {
     expect(buildSearchUrl({})).toBe("/search");
+    expect(buildSearchUrl({ mode: "name", q: "fire" })).toBe(
+      "/search?q=fire",
+    );
+    expect(buildSearchUrl({ mode: "full", q: "fire" })).toBe(
+      "/search?mode=full&q=fire",
+    );
     expect(
       buildSearchUrl({
         q: "fire ball",
@@ -136,6 +152,29 @@ describe("search URL helpers", () => {
     ).toBe(
       "/search?q=magic+missile&classIds=1%2C2&domainIds=8&schoolIds=5&descriptorIds=9&componentKeys=material",
     );
+
+    expect(
+      buildSearchUrlWithPreservedScope(
+        new URLSearchParams("mode=full&q=old&classIds=2"),
+        "wall of fire",
+      ),
+    ).toBe("/search?mode=full&q=wall+of+fire&classIds=2");
+
+    expect(
+      buildSearchUrlWithPreservedScope(
+        new URLSearchParams("mode=full&q=old&classIds=2"),
+        "wall of fire",
+        { mode: "name" },
+      ),
+    ).toBe("/search?q=wall+of+fire&classIds=2");
+
+    expect(
+      buildSearchUrlWithPreservedScope(
+        new URLSearchParams("q=old&classIds=2"),
+        "wall of fire",
+        { mode: "full" },
+      ),
+    ).toBe("/search?mode=full&q=wall+of+fire&classIds=2");
   });
 
   it("treats taxonomy ids as structured search scope", () => {

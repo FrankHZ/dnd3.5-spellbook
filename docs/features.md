@@ -74,12 +74,21 @@ Key code:
 
 ## Search
 
-Users can search spells by name.
+Users can search spells by name by default or deliberately switch to
+content-backed full-text search.
 
 Current behavior:
 
 - English and other non-CJK queries require at least two characters
 - CJK queries may search from one character
+- Search exposes a compact Name / Full text mode control; omitted `mode` stays
+  canonical as name search, while `mode=full` is explicit and shareable
+- full-text search requires at least one whitespace-delimited token with three
+  Unicode code points; shorter-only queries keep URL/filter state and prompt
+  for a longer term without issuing an API request
+- when full-text search is unavailable, Search preserves the query and filters
+  and offers an explicit switch back to name mode instead of silently changing
+  search behavior
 - rulebook filtering is supported
 - URL filters can constrain search by class, domain, and a specific numeric
   level; omitted level means any level in Search
@@ -107,7 +116,8 @@ Current behavior:
 - Search uses the same Advanced filters panel as Browse so secondary filter
   changes do not update the URL until users apply the draft
 - header search preserves current Browse or Search filter scope while replacing
-  the name query
+  the query; Enter and the primary Search button use name mode, while the
+  attached Full text button explicitly uses full-text mode
 - the spell-list area uses the same compact scope summary as Browse, including
   active taxonomy, component, mechanics, and selected rulebook scope
 - spell list density follows browser-local Display settings, while full-detail
@@ -118,8 +128,8 @@ Current behavior:
 - spell cards can show compact special-component markers such as `M`, `AF`,
   `DF`, or `XP` beside spell names
 - results are paginated
-- empty or too-short usable queries return an empty result set rather than a
-  failed search
+- empty or too-short usable queries show local guidance rather than a failed
+  request
 
 Key code:
 

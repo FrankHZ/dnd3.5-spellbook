@@ -1,10 +1,18 @@
 {
   "actions.clear-filters": "清除搜索筛选",
   "actions.search": "搜索！",
+  "actions.search-full": "全文",
+  "actions.use-name-search": "改用名称搜索",
+  "errors.full-text-too-short": "全文搜索需要至少一个不少于 3 个字符的词，也可以切换到名称搜索。",
+  "errors.full-text-unavailable": "查询内容和筛选条件已保留，请稍后重试或改用名称搜索。",
+  "errors.full-text-unavailable-title": "全文搜索不可用",
   "errors.request-failed": "查询失败。",
   "errors.too-short": "至少输入两个字母吧",
   "errors.too-short-cjk": "至少两个字母或者一个汉字",
   "input.placeholder": "输入名字（中英皆可）",
+  "mode.full": "全文",
+  "mode.label": "搜索方式",
+  "mode.name": "名称",
   "options.show-card-details": "显示更多信息",
   "results.empty": "没有对应\"{{query}}\"的法术。"
 }

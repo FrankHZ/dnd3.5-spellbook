@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
+import type { SpellSearchMode } from "@dnd/contracts";
 import { Menu, SearchIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -9,6 +10,7 @@ import {
   useSearchParams,
 } from "react-router";
 import { Button } from "~/components/ui/button";
+import { ButtonGroup } from "~/components/ui/button-group";
 import { Input } from "~/components/ui/input";
 import {
   NavigationMenu,
@@ -48,7 +50,6 @@ function TopBarSearch() {
   const { t } = useTranslation("spell-search");
 
   const { lang } = useAppI18n();
-  const isValid = isSearchQueryValid(text, lang);
 
   useEffect(() => {
     setError(null);
@@ -58,10 +59,12 @@ function TopBarSearch() {
     setText(q);
   }, [q]);
 
-  const onSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  const runSearch = (mode: SpellSearchMode) => {
+    const isValid = isSearchQueryValid(text, lang, mode);
     if (!isValid.ok) {
-      if (lang == "zh") {
+      if (mode === "full") {
+        setError(t("errors.full-text-too-short"));
+      } else if (lang == "zh") {
         setError(t("errors.too-short-cjk"));
       } else {
         setError(t("errors.too-short"));
@@ -74,9 +77,16 @@ function TopBarSearch() {
       location.pathname === "/search" || location.pathname === "/browse";
     navigate(
       shouldPreserveScope
-        ? buildSearchUrlWithPreservedScope(params, query)
-        : buildSearchUrl({ q: query }),
+        ? buildSearchUrlWithPreservedScope(params, query, {
+            mode,
+          })
+        : buildSearchUrl({ mode, q: query }),
     );
+  };
+
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    runSearch("name");
   };
 
   return (
@@ -90,10 +100,23 @@ function TopBarSearch() {
               placeholder={t("input.placeholder")}
               aria-invalid={Boolean(error)}
             />
-            <Button type="submit" variant="outline" className="shrink-0">
-              <SearchIcon className="size-4" />
-              <span className="hidden sm:inline">{t("actions.search")}</span>
-            </Button>
+            <ButtonGroup className="shrink-0">
+              <Button
+                type="submit"
+                variant="outline"
+                aria-label={t("actions.search")}
+              >
+                <SearchIcon className="size-4" />
+                <span className="hidden sm:inline">{t("actions.search")}</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => runSearch("full")}
+              >
+                {t("actions.search-full")}
+              </Button>
+            </ButtonGroup>
           </form>
         </PopoverAnchor>
         <PopoverContent

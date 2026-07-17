@@ -24,7 +24,10 @@ About / Status, local browser state, and UI i18n display behavior.
 ## Feature Ownership
 
 Browse remains filter-first. Search remains name-first while accepting shared
-structured scope where the feature map says it should. Spell Detail owns detailed
+structured scope where the feature map says it should, with an explicit
+content-backed full-text mode when `mode=full` is present. The frontend mirrors
+the shared full-text token minimum before requesting results and handles stable
+capability errors without discarding URL scope. Spell Detail owns detailed
 reference rendering. Collections own local spellbook and prepared-spell browser
 state.
 

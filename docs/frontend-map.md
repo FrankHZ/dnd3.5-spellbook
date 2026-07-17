@@ -23,7 +23,8 @@ Purpose:
 
 Purpose:
 
-- direct search-driven spell lookup with shared Browse-compatible filter scope
+- name-first spell lookup with an explicit content-backed full-text mode and
+  shared Browse-compatible filter scope
 
 Shared filter components:
 
