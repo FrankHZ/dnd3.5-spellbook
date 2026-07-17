@@ -2,7 +2,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router";
 
-import { ApiError } from "~/api/http";
+import { ApiError, hasApiErrorCode } from "~/api/http";
 import { searchSpells } from "~/api/spells";
 import Pager from "~/components/Pager";
 import { SpellCard } from "~/components/SpellCard";
@@ -10,6 +10,7 @@ import { StatusCard } from "~/components/StatusCard";
 import { Card, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
+import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
 import { AdvancedSpellFiltersPanel } from "~/features/spells/AdvancedSpellFiltersPanel";
 import { FilterSidebarCard } from "~/features/spells/FilterSidebarCard";
@@ -44,7 +45,7 @@ export default function SearchSpellsPage() {
   const { lang } = useAppI18n();
   const searchScope = useMemo(() => parseSearchScope(params), [params]);
   const qParam = searchScope.q;
-  const isValid = isSearchQueryValid(qParam, lang);
+  const isValid = isSearchQueryValid(qParam, lang, searchScope.mode);
   const hasScopedSearch = hasSearchScope(searchScope);
 
   function updateSearchScope(
@@ -61,13 +62,24 @@ export default function SearchSpellsPage() {
   }
 
   function clearSearchScope() {
-    setParams(buildSearchParams({ q: qParam }));
+    setParams(buildSearchParams({ mode: searchScope.mode, q: qParam }));
+  }
+
+  function updateSearchMode(mode: typeof searchScope.mode) {
+    setParams(
+      buildSearchParams({
+        ...searchScope,
+        mode,
+        page: null,
+      }),
+    );
   }
 
   const query = useQuery({
     queryKey: [
       "search",
       {
+        mode: searchScope.mode,
         q: qParam,
         rulebookIds,
         classIds: searchScope.classIds,
@@ -82,6 +94,7 @@ export default function SearchSpellsPage() {
     enabled: isValid.ok, // enforce backend contract
     queryFn: ({ signal }) =>
       searchSpells({
+        mode: searchScope.mode,
         q: qParam,
         rulebookIds: rulebookIds.length ? rulebookIds : undefined,
         classIds: searchScope.classIds.length
@@ -102,13 +115,20 @@ export default function SearchSpellsPage() {
   const errorMessage = useMemo(() => {
     const err = query.error;
     if (!err) return null;
+    if (hasApiErrorCode(err, "FULL_TEXT_SEARCH_UNAVAILABLE")) return null;
     if (err instanceof ApiError) return err.message;
     return t("errors.request-failed");
   }, [query.error, t]);
+  const isFullTextUnavailable = hasApiErrorCode(
+    query.error,
+    "FULL_TEXT_SEARCH_UNAVAILABLE",
+  );
+  const hasDisplayError = isFullTextUnavailable || Boolean(errorMessage);
 
   const data = query.data;
+  const isModeTransition = data != null && data.mode !== searchScope.mode;
   const total = data?.total ?? 0;
-  const items = data?.items ?? [];
+  const items = isModeTransition ? [] : (data?.items ?? []);
   const pageSize = data?.pageSize ?? PAGE_SIZE;
 
   function goToPage(nextPage: number) {
@@ -168,6 +188,30 @@ export default function SearchSpellsPage() {
         </FilterSidebarCard>
 
         <div className="space-y-3">
+          <div className="flex min-h-8 items-center justify-between gap-3 px-1">
+            <span className="text-sm font-medium text-foreground">
+              {t("mode.label")}
+            </span>
+            <ToggleGroup
+              type="single"
+              value={searchScope.mode}
+              variant="outline"
+              size="sm"
+              aria-label={t("mode.label")}
+              onValueChange={(value) => {
+                if (value !== "name" && value !== "full") return;
+                updateSearchMode(value);
+              }}
+            >
+              <ToggleGroupItem value="name">
+                {t("mode.name")}
+              </ToggleGroupItem>
+              <ToggleGroupItem value="full">
+                {t("mode.full")}
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+
           <SpellFilterScopeSummary
             classCount={searchScope.classIds.length}
             domainCount={searchScope.domainIds.length}
@@ -182,7 +226,9 @@ export default function SearchSpellsPage() {
           {!isValid.ok && (
             <StatusCard
               description={
-                lang === "zh"
+                searchScope.mode === "full"
+                  ? t("errors.full-text-too-short")
+                  : lang === "zh"
                   ? t("errors.too-short-cjk")
                   : t("errors.too-short")
               }
@@ -191,17 +237,33 @@ export default function SearchSpellsPage() {
 
           {isValid.ok && (
             <div className="space-y-3">
+              {isFullTextUnavailable && (
+                <StatusCard
+                  title={t("errors.full-text-unavailable-title")}
+                  description={t("errors.full-text-unavailable")}
+                  actions={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => updateSearchMode("name")}
+                    >
+                      {t("actions.use-name-search")}
+                    </Button>
+                  }
+                />
+              )}
+
               {errorMessage && (
                 <StatusCard description={errorMessage} />
               )}
 
-              {!errorMessage && !query.isLoading && items.length === 0 && (
+              {!hasDisplayError && !query.isFetching && items.length === 0 && (
                 <StatusCard
                   description={t("results.empty", { query: qParam })}
                 />
               )}
 
-              {items.length > 0 && (
+              {!hasDisplayError && items.length > 0 && (
                 <Card className="gap-0 overflow-hidden py-0">
                   <CardContent className="space-y-0 px-0 py-0">
                     <div className="px-3 py-2.5 sm:px-6">

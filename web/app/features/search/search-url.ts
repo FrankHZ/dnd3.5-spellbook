@@ -1,5 +1,8 @@
 import type { LevelParam } from "~/api/spells";
-import type { SpellNormalizedFilterScope } from "@dnd/contracts";
+import type {
+  SpellNormalizedFilterScope,
+  SpellSearchMode,
+} from "@dnd/contracts";
 import {
   hasNormalizedFilters,
   normalizeNormalizedFilters,
@@ -14,6 +17,7 @@ import {
 } from "~/lib/utils";
 
 export type SearchScope = {
+  mode: SpellSearchMode;
   q: string;
   classIds: number[];
   domainIds: number[];
@@ -24,6 +28,7 @@ export type SearchScope = {
 
 export function parseSearchScope(params: URLSearchParams): SearchScope {
   return {
+    mode: params.get("mode") === "full" ? "full" : "name",
     q: (params.get("q") ?? "").trim(),
     classIds: parseIdList(params.get("classIds")),
     domainIds: parseIdList(params.get("domainIds")),
@@ -45,6 +50,7 @@ export function parseSearchLevel(raw: string | null): LevelParam | null {
 }
 
 export function buildSearchParams(input: {
+  mode?: SpellSearchMode | null;
   q?: string | null;
   classIds?: number[] | null;
   domainIds?: number[] | null;
@@ -53,6 +59,7 @@ export function buildSearchParams(input: {
   page?: number | null;
 }) {
   const params = new URLSearchParams();
+  setOrDelete(params, "mode", input.mode === "full" ? "full" : null);
   setOrDelete(params, "q", input.q?.trim() || null);
 
   const classIds = normalizeIds(input.classIds ?? []);
@@ -87,9 +94,11 @@ export function buildSearchUrl(input: Parameters<typeof buildSearchParams>[0]) {
 export function buildSearchUrlWithPreservedScope(
   params: URLSearchParams,
   q: string,
+  options?: { mode?: SpellSearchMode },
 ) {
   const scope = parseSearchScope(params);
   return buildSearchUrl({
+    mode: options?.mode ?? scope.mode,
     q,
     classIds: scope.classIds,
     domainIds: scope.domainIds,

@@ -1,6 +1,10 @@
 import { getI18nFromStorage } from "~/i18n/storage";
 
-export type ApiErrorPayload = { message?: string; error?: unknown };
+export type ApiErrorPayload = {
+  message?: string;
+  error?: unknown;
+  code?: string;
+};
 
 export class ApiError extends Error {
   status: number;
@@ -11,6 +15,10 @@ export class ApiError extends Error {
     this.status = status;
     this.payload = payload;
   }
+}
+
+export function hasApiErrorCode(error: unknown, code: string) {
+  return error instanceof ApiError && error.payload?.code === code;
 }
 
 function shouldSendVariant(pathname: string) {

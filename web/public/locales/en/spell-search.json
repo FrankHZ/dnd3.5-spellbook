@@ -1,10 +1,18 @@
 {
   "actions.clear-filters": "Clear Search filters",
   "actions.search": "Search",
+  "actions.search-full": "Full text",
+  "actions.use-name-search": "Use name search",
+  "errors.full-text-too-short": "Enter at least one term with 3 or more characters, or switch to name search.",
+  "errors.full-text-unavailable": "Your query and filters are unchanged. Try again later or switch to name search.",
+  "errors.full-text-unavailable-title": "Full-text search unavailable",
   "errors.request-failed": "Request failed. Please try again.",
   "errors.too-short": "Enter at least 2 characters to run a search.",
   "errors.too-short-cjk": "Enter at least 2 characters, or type a Chinese character.",
   "input.placeholder": "Search spells by name...",
+  "mode.full": "Full text",
+  "mode.label": "Search mode",
+  "mode.name": "Name",
   "options.show-card-details": "Show more information",
   "results.empty": "No spells matched \"{{query}}\"."
 }

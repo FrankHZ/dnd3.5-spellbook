@@ -5,6 +5,7 @@ import {
   ApiError,
   apiPost,
   getConfiguredApiBaseUrl,
+  hasApiErrorCode,
 } from "./http";
 import { getI18nFromStorage } from "~/i18n/storage";
 
@@ -123,5 +124,17 @@ describe("api http helpers", () => {
       status: 400,
       payload: { message: "Invalid request", error: "q is required" },
     } satisfies Partial<ApiError>);
+  });
+
+  it("exposes stable API error codes to feature consumers", () => {
+    const error = new ApiError(503, {
+      message: "Full-text search unavailable",
+      code: "FULL_TEXT_SEARCH_UNAVAILABLE",
+    });
+
+    expect(hasApiErrorCode(error, "FULL_TEXT_SEARCH_UNAVAILABLE")).toBe(true);
+    expect(hasApiErrorCode(error, "OTHER_ERROR")).toBe(false);
+    expect(hasApiErrorCode(new Error("nope"), "FULL_TEXT_SEARCH_UNAVAILABLE"))
+      .toBe(false);
   });
 });

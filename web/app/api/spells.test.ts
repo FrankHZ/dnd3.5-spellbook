@@ -44,6 +44,22 @@ describe("spell API wrappers", () => {
     );
   });
 
+  it("adds full-text mode without changing the search endpoint", async () => {
+    mockedApiGet.mockResolvedValue({ items: [] } as any);
+
+    await searchSpells({
+      mode: "full",
+      q: "wall of fire",
+      page: 1,
+      pageSize: 25,
+    });
+
+    expect(apiGet).toHaveBeenCalledWith(
+      "/api/spells/search?q=wall+of+fire&mode=full&page=1&pageSize=25",
+      undefined,
+    );
+  });
+
   it("builds search URLs with normalized filters", async () => {
     mockedApiGet.mockResolvedValue({ items: [] } as any);
 

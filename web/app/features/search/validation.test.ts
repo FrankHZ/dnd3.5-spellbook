@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { hasChineseChar, isSearchQueryValid } from "./validation";
+import {
+  hasChineseChar,
+  hasFullTextSearchToken,
+  isSearchQueryValid,
+} from "./validation";
 
 describe("search validation", () => {
   it("allows one-character CJK queries in Chinese mode", () => {
@@ -30,6 +34,22 @@ describe("search validation", () => {
       ok: false,
       q: "",
       reason: "empty",
+    });
+  });
+
+  it("requires one three-code-point token for full-text mode", () => {
+    expect(hasFullTextSearchToken("of 火")).toBe(false);
+    expect(hasFullTextSearchToken("of 火焰墙")).toBe(true);
+    expect(hasFullTextSearchToken("wall of fire")).toBe(true);
+
+    expect(isSearchQueryValid("of 火", "zh", "full")).toEqual({
+      ok: false,
+      q: "of 火",
+      reason: "fullTextMin3",
+    });
+    expect(isSearchQueryValid("of 火焰墙", "zh", "full")).toEqual({
+      ok: true,
+      q: "of 火焰墙",
     });
   });
 });
