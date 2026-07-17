@@ -101,6 +101,7 @@ export type SpellNormalizedFilterScope = SpellTaxonomyFilterIds &
   SpellMechanicFilters;
 
 export const SPELL_SEARCH_MODES = ["name", "full"] as const;
+export const SPELL_FULL_TEXT_MIN_TOKEN_CODE_POINTS = 3;
 
 export type SpellSearchMode = (typeof SPELL_SEARCH_MODES)[number];
 

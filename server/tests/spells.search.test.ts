@@ -1,6 +1,10 @@
 import request from "supertest";
 import { app } from "#server/app";
 import { contentPrisma } from "#server/lib/content-prisma-client";
+import {
+  fullTextSearchTokens,
+  toFts5Query,
+} from "#server/services/spells/full-text-query";
 
 async function withSpellReadSource<T>(
   source: "rules" | "content",
@@ -17,6 +21,12 @@ async function withSpellReadSource<T>(
 }
 
 describe("GET /api/spells/search", () => {
+  it("drops short trigram tokens from multi-word queries", () => {
+    expect(toFts5Query("wall of fire")).toBe('"wall" AND "fire"');
+    expect(toFts5Query("Shield of Faith")).toBe('"Shield" AND "Faith"');
+    expect(fullTextSearchTokens("of to a")).toEqual([]);
+  });
+
   it("searches spells by name", async () => {
     const res = await request(app)
       .get("/api/spells/search")
@@ -85,9 +95,19 @@ describe("GET /api/spells/search", () => {
     expect(res.status).toBe(400);
     expect(res.body).toEqual({
       message: "Invalid request",
-      error: "full-text query must contain at least 3 Unicode code points",
+      error:
+        "full-text query must contain at least one term with 3 Unicode code points",
       code: "FULL_TEXT_QUERY_TOO_SHORT",
     });
+  });
+
+  it("rejects full-text queries with only short trigram tokens", async () => {
+    const res = await request(app)
+      .get("/api/spells/search")
+      .query({ q: "of to a", mode: "full" });
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("FULL_TEXT_QUERY_TOO_SHORT");
   });
 
   it("fails closed when the legacy rules source is active", async () => {
@@ -119,6 +139,21 @@ describe("GET /api/spells/search", () => {
     expect(res.body.mode).toBe("full");
     expect(res.body.total).toBe(1);
     expect(res.body.items.map((item: any) => item.id)).toEqual([2441]);
+  });
+
+  it("ignores short words while matching multi-word full-text queries", async () => {
+    const res = await withSpellReadSource("content", () =>
+      request(app)
+        .get("/api/spells/search")
+        .query({
+          q: "summon of monster",
+          mode: "full",
+          rulebookIds: "6",
+        }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.body.items.map((item: any) => item.id)).toContain(2441);
   });
 
   it("searches localized documents and collapses matching variants", async () => {

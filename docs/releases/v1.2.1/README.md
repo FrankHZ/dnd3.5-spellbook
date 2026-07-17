@@ -76,9 +76,10 @@ v1.2.1 release acceptance should include:
   behavior.
 - Full-text search uses content-backed indexed text and honors rulebook,
   class/domain/level, taxonomy, component, and mechanics filters.
-- Full-text mode requires at least three Unicode code points after trimming.
-  Short queries preserve Search URL/filter state and prompt for a longer term
-  or name mode; direct API requests receive a stable validation error.
+- Full-text mode requires at least one whitespace-delimited token with three
+  Unicode code points. Shorter tokens are ignored; queries with no searchable
+  token preserve Search URL/filter state and prompt for a longer term or name
+  mode, while direct API requests receive a stable validation error.
 - Result ordering is deterministic and gives name/alias matches higher weight
   than summary or body-text matches.
 - Multi-language or multi-variant index matches collapse to one result per

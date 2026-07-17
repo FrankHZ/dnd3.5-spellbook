@@ -15,6 +15,7 @@ import {
   expandSchoolFilterIds,
   expandSubschoolFilterIds,
 } from "#server/services/spells/taxonomy-normalization";
+import { toFts5Query } from "#server/services/spells/full-text-query";
 
 type LegacyShapedSpell = SpellRow & {
   added: Date;
@@ -210,8 +211,10 @@ function normalizedListWhere(input: NormalizedFullTextSearchInput) {
   `;
 }
 
-function fullTextEligibleRows(input: NormalizedFullTextSearchInput) {
-  const matchQuery = toFts5Query(input.q);
+function fullTextEligibleRows(
+  input: NormalizedFullTextSearchInput,
+  matchQuery: string,
+) {
   return Prisma.sql`
     SELECT
       s."legacySpellId" AS id,
@@ -257,9 +260,11 @@ export async function queryNormalizedFullTextSearch(
   input: NormalizedFullTextSearchInput,
 ) {
   if (input.rulebookIds.length === 0) return { total: 0, ids: [] };
+  const matchQuery = toFts5Query(input.q);
+  if (!matchQuery) return { total: 0, ids: [] };
   if (!(await hasCompatibleContentSearchIndex())) return null;
 
-  const eligibleRows = fullTextEligibleRows(input);
+  const eligibleRows = fullTextEligibleRows(input, matchQuery);
   const countRows = await contentPrisma.$queryRaw<Array<{ total: number }>>(
     Prisma.sql`
       WITH eligible AS (${eligibleRows}),
@@ -294,15 +299,6 @@ export async function queryNormalizedFullTextSearch(
     total,
     ids: pageRows.map((row) => Number(row.id)),
   };
-}
-
-export function toFts5Query(query: string) {
-  return query
-    .trim()
-    .split(/\s+/u)
-    .filter(Boolean)
-    .map((token) => `"${token.replaceAll('"', '""')}"`)
-    .join(" AND ");
 }
 
 export async function queryNormalizedIdsByName(

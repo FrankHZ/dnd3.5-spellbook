@@ -30,6 +30,7 @@ import {
 import { getI18nContext, hasCjk } from "#server/utils/i18n";
 import { LevelMode } from "#server/services/spells/spells.service.by-level";
 import { ResolveSpellNamesRequest } from "@dnd/contracts";
+import { fullTextSearchTokens } from "#server/services/spells/full-text-query";
 
 function parseTaxonomyFilterIds(query: Request["query"]): SpellTaxonomyFilterIds {
   const positiveIntIds = (value: unknown) =>
@@ -160,12 +161,12 @@ export async function searchSpells(
       100,
     );
 
-    if (mode === "full" && Array.from(q).length < 3) {
+    if (mode === "full" && fullTextSearchTokens(q).length === 0) {
       next(
         new ApiError(
           400,
           "Invalid request",
-          "full-text query must contain at least 3 Unicode code points",
+          "full-text query must contain at least one term with 3 Unicode code points",
           "FULL_TEXT_QUERY_TOO_SHORT",
         ),
       );

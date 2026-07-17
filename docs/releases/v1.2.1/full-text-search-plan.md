@@ -115,10 +115,10 @@ normalized filters wherever possible.
   facets, component facets, and mechanics facets are already content DB data.
 - SQLite in the current `better-sqlite3` runtime supports FTS5. Local probing
   also confirmed `tokenize='trigram'` table creation succeeds.
-- SQLite FTS5 trigram tokenization does not match one- or two-character CJK
-  terms as body text. v1.2.1 therefore requires at least three Unicode code
-  points for every `mode=full` query; existing name-mode validation remains
-  unchanged.
+- SQLite FTS5 trigram tokenization does not match one- or two-code-point terms.
+  v1.2.1 therefore ignores whitespace-delimited tokens shorter than three
+  Unicode code points and requires at least one remaining token for every
+  `mode=full` query; existing name-mode validation remains unchanged.
 
 ## Plan
 
@@ -141,8 +141,9 @@ Contract direction:
 - Add `mode=name|full` to Search query and response.
 - Default omitted `mode` to `name`.
 - Keep `q` as the user query string.
-- Require at least three Unicode code points after trimming for `mode=full`.
-  Keep the existing language-aware name-search minimums for `mode=name`.
+- Ignore whitespace-delimited tokens shorter than three Unicode code points in
+  `mode=full`, and require at least one remaining token. Keep the existing
+  language-aware name-search minimums for `mode=name`.
 - Return a stable `FULL_TEXT_QUERY_TOO_SHORT` validation error for direct API
   requests below the full-text minimum. The frontend should apply the same
   validation before requesting results.
@@ -255,9 +256,10 @@ Frontend direction:
 - If the API reports `FULL_TEXT_SEARCH_UNAVAILABLE`, preserve the query and
   filters, show a concise unavailable state, and let the user switch back to
   name mode.
-- When a full-text query contains fewer than three Unicode code points, keep
-  `mode`, `q`, and every selected filter in the URL, do not issue the full-text
-  request, and prompt the user to enter a longer term or switch to name mode.
+- When a full-text query has no whitespace-delimited token of at least three
+  Unicode code points, keep `mode`, `q`, and every selected filter in the URL,
+  do not issue the full-text request, and prompt the user to enter a longer
+  term or switch to name mode.
 - Preserve current Search sidebar filters, scope summary, pagination, density,
   and spell-card display behavior.
 
@@ -268,9 +270,10 @@ Frontend direction:
   would not find.
 - Full-text search honors rulebook scope and all existing structured Search
   filters.
-- Full-text mode requires at least three Unicode code points after trimming.
-  Short CJK and non-CJK queries preserve URL/filter state, show the longer-term
-  or name-mode prompt, and are rejected by the API with
+- Full-text mode ignores whitespace-delimited tokens shorter than three Unicode
+  code points and requires at least one remaining token. Queries with no
+  searchable token preserve URL/filter state, show the longer-term or name-mode
+  prompt, and are rejected by the API with
   `FULL_TEXT_QUERY_TOO_SHORT` if requested directly.
 - Search result ordering is stable and gives higher priority to name/alias
   matches than lower-signal body matches.
@@ -335,5 +338,8 @@ Frontend direction:
 - Local acceptance applied all 11 content migrations, dry-ran and rebuilt
   11,845 documents from 5,097 spells, and smoked compiled `mode=name` and
   `mode=full` requests against the real local content DB.
+- Review follow-up confirmed short connector words are ignored by trigram query
+  construction: `wall fire` and `wall of fire` return the same local result
+  set, while `shield of faith` returns `Shield of Faith`.
 - Slice 4 remains with the frontend specialist. Do not treat backend URL access
   to `mode=full` as completion of the reader-facing mode control.
