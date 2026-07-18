@@ -49,7 +49,10 @@ script. It is not a second deployment implementation.
 Supported behavior:
 
 - runs portable validation by default
-- invokes `~/deploy-backend.sh` on the remote host
+- uploads the reviewed `deploy-backend.sh` from the workflow checkout to a
+  run-specific remote `/tmp` path
+- passes the validated `$GITHUB_SHA` as the required deploy commit and rejects
+  a different remote `HEAD`
 - writes backend deploy metadata for `GET /api/status/app`
 - does not build, upload, or activate frontend static assets
 
@@ -73,11 +76,14 @@ Portable validation is enabled by default for every manual deploy. Disable the
 `runPortableValidation` input only for an emergency rollback where the operator
 has already accepted the risk.
 
-The workflow injects deploy metadata for the About / Status page:
+The backend helper writes deploy metadata for the About / Status page only
+after it has fetched, reset to, and verified the expected commit:
 
-- backend deploys pass `SPELLBOOK_BACKEND_*` values to `deploy-backend.sh`,
-  which writes the non-secret metadata into `/etc/default/spellbook-api` before
-  restarting the service
+- commit and short SHA come from the verified remote `HEAD`
+- the ref is derived from a remote ref containing that commit, with `detached`
+  as the fallback
+- the version label comes from root `package.json` in that verified checkout
+- GitHub run id and attempt are passed as numeric audit metadata
 
 Cloudflare Workers Builds owns normal production frontend builds and deployment.
 Configure Workers Builds through Git integration with:
@@ -94,9 +100,11 @@ Configure Workers Builds through Git integration with:
   - `NODE_VERSION=24`
   - `VITE_API_BASE_URL=https://api.d20spellcodex.com`
 
-The deploy workflow does not automatically sync changed files under
-`docs/deployment-scripts/` to the remote host. If those tracked scripts change,
-copy them to the remote targets first, then run the workflow.
+The deploy workflow does not depend on the persistent `~/deploy-backend.sh`
+copy: every run uploads and executes the reviewed helper from its own checkout,
+then removes that temporary copy. Persistent remote helper copies remain for
+manual operator use and should still be synced when their tracked sources
+change.
 
 Database deployment is intentionally not a GitHub Actions target yet. The
 current DB update path still depends on operator-controlled SQLite file uploads
@@ -110,7 +118,8 @@ separate artifact and rollback model is accepted.
 
 ## Remote Script Sync Policy
 
-The remote host copies of the deploy scripts are updated manually.
+The persistent remote host copies of the deploy scripts are updated manually.
+GitHub backend deploys use their own temporary checked-out helper instead.
 
 If any tracked remote shell script under `docs/deployment-scripts/` changes,
 recopy it to the remote host. The local helper reads `DEPLOY_SSH_ALIAS` from the
@@ -142,8 +151,8 @@ Copy-Item .env.example .env
 pwsh -NoLogo -NoProfile -File docs/deployment-scripts/sync-remote-scripts.ps1
 ```
 
-There is no automatic sync for these files in the current operator-managed
-workflow.
+There is no automatic sync for these persistent manual copies in the current
+operator-managed workflow.
 
 ## Nginx Site Config
 
@@ -152,7 +161,10 @@ The tracked Nginx site apply script is:
 - `docs/deployment-scripts/apply-nginx-site.sh`
 
 It writes `/etc/nginx/sites-available/spellbook`, enables it, removes the
-default site, runs `nginx -t`, and reloads Nginx.
+default site after candidate validation, runs `nginx -t`, and reloads Nginx.
+If candidate validation or reload fails, it restores the prior site/default
+files, validates the restored configuration, and attempts to reload the prior
+configuration before returning failure.
 
 By default, it writes the v1.0 API-only origin config:
 
@@ -540,11 +552,25 @@ The tracked script in `docs/deployment-scripts/update-db.sh` performs:
 2. Checks whether incoming files exist under `~/data`
 3. Compares incoming and target checksums
 4. Skips unchanged files
-5. Creates timestamped backups before replacement when a target DB exists
-6. Copies incoming files via a temp file and moves them into place
-7. Removes stale `-wal` and `-shm` files
-8. Restarts `spellbook-api`
-9. Smoke-tests `http://127.0.0.1:3000/api/rulebooks` with short retries
+5. Copies changed incoming files to target-side staging paths
+6. Uses `sqlite3` to require `PRAGMA integrity_check=ok` and the minimum table
+   set for the rules, content, or app-state DB role
+7. Rejects incoming DBs that still have `-wal` or `-shm` sidecars
+8. Stops `spellbook-api` before touching active DB state
+9. Checkpoints each existing target WAL, revalidates it, and creates a
+   timestamped backup
+10. Removes checkpointed target sidecars and atomically moves staged DBs into
+    place
+11. Restarts `spellbook-api` and smoke-tests
+    `http://127.0.0.1:3000/api/rulebooks` with short retries
+12. On activation, restart, status, or smoke failure, stops the service,
+    restores every replaced prior DB (or removes a newly introduced DB), and
+    restarts/smoke-tests the restored set before returning failure
+
+The remote host must provide the `sqlite3` CLI. Staging and schema/integrity
+validation complete before the API is stopped, so a bad upload does not disturb
+the running service. Source DBs must be checkpointed before upload; do not copy
+a live SQLite main file while its WAL/SHM sidecars still contain state.
 
 The script updates these target files when matching incoming files exist:
 
@@ -581,36 +607,42 @@ from the machine default. `deploy-backend.sh` uses
 `NODE_OPTIONS`. Override it only when the remote host memory profile changes:
 
 ```bash
-SPELLBOOK_NODE_MAX_OLD_SPACE_SIZE=512 ~/deploy-backend.sh
+SPELLBOOK_NODE_MAX_OLD_SPACE_SIZE=512 \
+  ~/deploy-backend.sh "<expected-40-character-sha>"
 ```
 
 ### Activate On Remote
 
 ```bash
-ssh remote "./deploy-backend.sh"
+expected_sha="$(git rev-parse HEAD)"
+ssh remote "~/deploy-backend.sh '$expected_sha'"
 ```
+
+The expected SHA is mandatory and must be a full 40-character commit id from
+the local checkout that was reviewed or validated.
 
 ### What `deploy-backend.sh` Does
 
 The tracked script in `docs/deployment-scripts/deploy-backend.sh` performs:
 
-1. Ensures `/opt/spellbook/data` exists with correct ownership and permissions
-2. Optionally replaces `spellbook.db`, `content.sqlite`, and
-   `app-state.sqlite` from `~/data` if changed
-3. Enters `~/dnd3.5-spellbook`
-4. Runs `git reset --hard`
-5. Runs `git clean -fd`
-6. Runs `git pull --ff-only`
-7. Runs `npm ci` with configurable constrained `NODE_OPTIONS`
-8. Runs `npm run -w server db:generate`
-9. Runs `npm run build:contracts`
-10. Runs `npm run check:contracts`
-11. Runs `npm run -w server build`
-12. `rsync`s the repo into `/opt/spellbook` with `--exclude 'data/'`
-13. Reapplies ownership
-14. Writes backend deploy metadata to `/etc/default/spellbook-api`
-15. Restarts `spellbook-api`
-16. Smoke-tests `http://127.0.0.1:3000/api/rulebooks` with short retries
+1. Requires an explicit full expected commit SHA
+2. Fetches the configured `github` remote, hard-resets the remote checkout to
+   that commit, cleans untracked files, and rejects a mismatched `HEAD`
+3. Runs `npm ci` with configurable constrained `NODE_OPTIONS`
+4. Generates Prisma clients and builds contracts/server from the verified
+   checkout
+5. Stages and validates any changed incoming SQLite DBs while the API keeps
+   serving the current runtime
+6. Stops `spellbook-api` before syncing code or touching active SQLite files
+7. `rsync`s the verified repo into `/opt/spellbook` with `--exclude 'data/'`
+8. Checkpoints, backs up, and swaps each staged DB using the same safeguards as
+   `update-db.sh`
+9. Derives version/ref/commit metadata from the verified checkout and writes it
+   to `/etc/default/spellbook-api`
+10. Restarts `spellbook-api` and smoke-tests
+    `http://127.0.0.1:3000/api/rulebooks` with short retries
+11. Restores every prior DB and retries the backend start/smoke when runtime
+    activation fails
 
 ## Important Invariants
 
@@ -625,6 +657,7 @@ These should remain true unless the deployment model is deliberately changed:
 - backend builds use plain `tsc`; server package imports must resolve through
   `server/package.json`
 - deployment remains explicit and manual
+- backend deploy metadata must describe the verified deployed commit
 
 ## Operational Risks
 
@@ -660,12 +693,13 @@ Check:
   `#server/*` or `#prisma-*/*`
 - that `/opt/spellbook` received the updated `dist/` output
 
-### Git Pull Fails During Backend Deploy
+### Git Fetch Or Commit Pin Fails During Backend Deploy
 
 Check:
 
 - the remote repo is reachable
 - the remote checkout is still under `~/dnd3.5-spellbook`
+- the expected full commit SHA exists on the configured `github` remote
 - local remote-only edits were not expected to survive `git reset --hard` and `git clean -fd`
 
 ### Nginx Reload Fails

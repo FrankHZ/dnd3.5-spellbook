@@ -27,6 +27,7 @@ jobs:
       DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
       DEPLOY_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
       DEPLOY_SSH_PORT: ${{ vars.DEPLOY_SSH_PORT || '22' }}
+      REMOTE_DEPLOY_SCRIPT: /tmp/spellbook-deploy-${{ github.run_id }}-${{ github.run_attempt }}.sh
 
     steps:
       - name: Checkout
@@ -69,12 +70,31 @@ jobs:
             ssh-keyscan -p "$DEPLOY_SSH_PORT" "$DEPLOY_SSH_HOST" >> ~/.ssh/known_hosts
           fi
 
-      - name: Deploy backend API
+      - name: Upload reviewed backend helper
         shell: bash
         run: |
           set -euo pipefail
-          deployed_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          release_label="$(node scripts/release-metadata.mjs --label)"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          scp -i ~/.ssh/deploy_key -P "$DEPLOY_SSH_PORT" \
+            docs/deployment-scripts/deploy-backend.sh \
+            "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST:$REMOTE_DEPLOY_SCRIPT"
+
+      - name: Deploy backend API at validated commit
+        shell: bash
+        run: |
+          set -euo pipefail
           ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
             "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
-            "SPELLBOOK_VERSION_LABEL='$release_label' SPELLBOOK_BACKEND_COMMIT_SHA='$GITHUB_SHA' SPELLBOOK_BACKEND_REF='$GITHUB_REF_NAME' SPELLBOOK_BACKEND_DEPLOYED_AT='$deployed_at' SPELLBOOK_BACKEND_GITHUB_RUN_ID='$GITHUB_RUN_ID' SPELLBOOK_BACKEND_GITHUB_RUN_ATTEMPT='$GITHUB_RUN_ATTEMPT' ~/deploy-backend.sh"
+            chmod 700 "$REMOTE_DEPLOY_SCRIPT"
+          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
+            "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
+            "$REMOTE_DEPLOY_SCRIPT" "$GITHUB_SHA" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT"
+
+      - name: Remove uploaded backend helper
+        if: ${{ always() }}
+        continue-on-error: true
+        shell: bash
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
+            "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
+            rm -f "$REMOTE_DEPLOY_SCRIPT"
