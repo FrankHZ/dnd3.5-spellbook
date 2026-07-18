@@ -30,6 +30,9 @@ import {
 } from "#server/services/spells/spells.repo.content";
 import { resolveSpellNames } from "#server/services/spells/spells.service.resolve";
 
+// Keep every page on the same bounded candidate set before merging and slicing.
+const NAME_SEARCH_CANDIDATE_LIMIT = 2000;
+
 export const spellsService = {
   async searchSpells(input: {
     mode: SpellSearchMode;
@@ -75,16 +78,6 @@ export const spellsService = {
     }
 
     const doAppQuery = input.i18n.lang != "en";
-    const hasScope =
-      input.classIds.length > 0 ||
-      input.domainIds.length > 0 ||
-      hasTaxonomyScope(input.taxonomyFilters) ||
-      hasComponentScope(input.componentFilters) ||
-      hasMechanicScope(input.mechanicFilters) ||
-      input.level !== null;
-    const maxCandidates = hasScope
-      ? 2000
-      : Math.min(2000, input.page * input.pageSize * 20);
 
     const idsEn = await queryIdsByName(
       input.q,
@@ -92,7 +85,7 @@ export const spellsService = {
       input.taxonomyFilters,
       input.componentFilters,
       input.mechanicFilters,
-      maxCandidates,
+      NAME_SEARCH_CANDIDATE_LIMIT,
     );
     const seen = new Set<number>();
     const merged: number[] = [];
@@ -109,7 +102,7 @@ export const spellsService = {
         input.taxonomyFilters,
         input.componentFilters,
         input.mechanicFilters,
-        maxCandidates,
+        NAME_SEARCH_CANDIDATE_LIMIT,
       );
       for (const id of idsI18n)
         if (!seen.has(id)) {
@@ -127,7 +120,7 @@ export const spellsService = {
     );
     scopedSpells.sort((a, b) => a.name.localeCompare(b.name) || a.id - b.id);
 
-    const total = scopedSpells.length; // capped
+    const total = scopedSpells.length; // bounded by NAME_SEARCH_CANDIDATE_LIMIT per source
 
     const offset = (input.page - 1) * input.pageSize;
     const pagedSpells = scopedSpells.slice(offset, offset + input.pageSize);

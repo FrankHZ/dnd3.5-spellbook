@@ -322,6 +322,7 @@ export async function queryNormalizedIdsByName(
         ${normalizedTaxonomyWhere(taxonomyFilters)}
         ${normalizedComponentWhere(componentFilters)}
         ${normalizedMechanicWhere(mechanicFilters)}
+      ORDER BY LOWER(s."canonicalName") ASC, s."legacySpellId" ASC
       LIMIT ${maxCandidates}
     `,
   );

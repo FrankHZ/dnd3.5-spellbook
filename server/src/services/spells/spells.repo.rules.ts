@@ -266,11 +266,11 @@ export async function fetchSpellsInOrder<T extends Prisma.SpellSelect>(
     select,
   })) as SpellRow<T>[]; // Prisma cannot infer `id` on generic selects; safe cast for reorder logic
 
-  const order = new Map<number, number>();
-  ids.forEach((id, i) => order.set(id, i));
+  const rowById = new Map(rows.map((row) => [row.id, row]));
 
-  rows.sort((a, b) => order.get(a.id)! - order.get(b.id)!);
-  return rows;
+  return ids
+    .map((id) => rowById.get(id))
+    .filter((row): row is SpellRow<T> => Boolean(row));
 }
 
 export async function queryIdsByName(
@@ -295,6 +295,7 @@ export async function queryIdsByName(
           ${rulesTaxonomyWhere(taxonomyFilters)}
           ${rulesComponentWhere(componentFilters)}
           ${rulesMechanicWhere(mechanicFilters)}
+        ORDER BY LOWER(s.name) ASC, s.id ASC
         LIMIT ${maxCandidates}
       `,
   );

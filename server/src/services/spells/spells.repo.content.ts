@@ -201,6 +201,7 @@ export async function queryIdsByI18nName(
           ${normalizedTaxonomyWhere(taxonomyFilters)}
           ${normalizedComponentWhere(componentFilters)}
           ${normalizedMechanicWhere(mechanicFilters)}
+        ORDER BY LOWER(i.name) ASC, i.spellId ASC
         LIMIT ${maxCandidates}
       `,
   );
