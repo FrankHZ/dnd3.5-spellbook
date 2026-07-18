@@ -20,8 +20,8 @@ v1.2.2 is the active internal quality-maintenance release plan:
 - `docs/releases/v1.2.2/code-and-test-qa-plan.md`
 
 Agent Workflow Hardening was accepted and merged in PR #79. The five Code And
-Test QA role audits completed from one shared base; current work is main-gate
-triage followed by bounded, domain-owned fix PRs.
+Test QA role audits completed from one shared base, and main-gate triage is
+complete. Current work is the first bounded, domain-owned fix wave.
 
 v1.2.1 is the latest frozen formal public release:
 
@@ -189,18 +189,19 @@ freeze docs instead of copying them into this roadmap.
 
 Recommended next sequence:
 
-1. **Triage v1.2.2 Code And Test QA findings**
+1. **Run the first v1.2.2 bounded fix wave**
 
-   Follow `docs/releases/v1.2.2/code-and-test-qa-plan.md` and the temporary
-   `docs/releases/v1.2.2/qa-findings/` evidence pack. De-duplicate findings,
-   assign final severity and one owner, and mark each item `fix`, `defer`, or
-   `close` before any remediation branch starts.
+   Follow the final dispositions and batch table in
+   `docs/releases/v1.2.2/qa-findings/README.md`. Run `QA-B1`, `QA-D1`,
+   `QA-W1`, and `QA-P1` in parallel from the same merged triage base. Keep each
+   branch inside its listed findings and validation boundary.
 
-2. **Run bounded v1.2.2 fix PRs**
+2. **Run the dependent v1.2.2 fix waves**
 
-   Resolve every accepted P0/P1 and either fix or explicitly park each P2.
-   Keep one coherent failure mode per branch, add failure-focused regression
-   evidence, and do not let P3 cleanup or broad refactors expand the release.
+   After main-gate acceptance of Wave 1, run the listed Wave 2 batches with
+   same-role work kept sequential. Run frontend-owned `QA-I2` only after
+   `QA-B2`, `QA-W1`, and `QA-W2`, with `i18n-translation` review, so localized
+   errors and accessible labels reuse the accepted contract and UI boundaries.
 
 3. **Accept and freeze v1.2.2**
 
