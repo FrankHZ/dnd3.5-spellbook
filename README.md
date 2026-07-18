@@ -25,7 +25,7 @@ excluded from the public repository, especially runtime databases under
 ## Status
 
 The latest frozen formal release is **v1.2.2**, an internal quality-maintenance
-release. **v1.3** planning is next. **v1.2.1** remains the latest frozen
+release. **v1.3** planning is active. **v1.2.1** remains the latest frozen
 production/public release, and **v3.10** is the latest frozen pre-release stage
 snapshot.
 
@@ -34,6 +34,8 @@ Start here:
 - [docs/README.md](./docs/README.md): documentation map and precedence rules.
 - [docs/roadmap.md](./docs/roadmap.md): current work order.
 - [docs/features.md](./docs/features.md): current feature map.
+- [docs/releases/v1.3/README.md](./docs/releases/v1.3/README.md): active
+  sitewide UX/style release and independent platform prerequisite.
 - [docs/releases/v1.2.2/FREEZE.md](./docs/releases/v1.2.2/FREEZE.md): latest
   frozen internal quality-maintenance release snapshot.
 - [docs/releases/v1.2.2/README.md](./docs/releases/v1.2.2/README.md): accepted

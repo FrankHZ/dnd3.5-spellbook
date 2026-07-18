@@ -20,10 +20,15 @@ decide what to do next after a pause.
 Agents should also read the repository-root [AGENTS.md](../AGENTS.md) for
 execution rules and role boundaries.
 
-## Next Planning
+## Active Planning
 
-v1.3 sitewide UX/style planning is next. No v1.3 plan exists yet; use
-[roadmap.md](./roadmap.md) for the accepted direction and next-work boundary.
+v1.3 planning is active with two independently owned tracks that may proceed in
+parallel. The platform track is a hard freeze prerequisite, not part of the UX
+redesign deliverable:
+
+- [releases/v1.3/README.md](./releases/v1.3/README.md)
+- [releases/v1.3/sitewide-ux-redesign-plan.md](./releases/v1.3/sitewide-ux-redesign-plan.md)
+- [releases/v1.3/platform-deploy-prerequisite-plan.md](./releases/v1.3/platform-deploy-prerequisite-plan.md)
 
 The latest frozen formal release is v1.2.2, an internal quality-maintenance
 release:

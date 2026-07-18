@@ -54,7 +54,8 @@ as loose backlog items unless their scope changes again:
 - static HTML/offline artifact generation to replace old loose HTML
   distribution
 - release automation beyond the v3.5 script-backed CI/CD pass
-- stronger deployment validation and rollback drills
+- deployment validation and rollback drills beyond the bounded v1.3 real-
+  Actions-deploy prerequisite
 
 ### Maintenance
 

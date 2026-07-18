@@ -5,10 +5,18 @@ This directory contains formal post-MVP release plans.
 Use `docs/mvp/` for MVP-stage history and the final MVP closeout. Use this
 directory for release lines after MVP scope is frozen.
 
-v1.3 sitewide UX/style planning is next; no v1.3 plan exists yet.
+v1.3 planning is active. Its sitewide UX/style redesign and independent
+platform deployment prerequisite may proceed in parallel, but both must close
+before freeze.
 
 ## Release Records
 
+- [v1.3/README.md](./v1.3/README.md): active release boundary, ownership, and
+  shared acceptance gate.
+- [v1.3/sitewide-ux-redesign-plan.md](./v1.3/sitewide-ux-redesign-plan.md):
+  active frontend-design plan for sitewide cohesion.
+- [v1.3/platform-deploy-prerequisite-plan.md](./v1.3/platform-deploy-prerequisite-plan.md):
+  independent platform prerequisite for secure Actions deployment acceptance.
 - [v1.2.2/FREEZE.md](./v1.2.2/FREEZE.md): latest frozen formal release
   snapshot for the internal quality-maintenance release.
 - [v1.2.2/README.md](./v1.2.2/README.md): frozen internal quality-maintenance

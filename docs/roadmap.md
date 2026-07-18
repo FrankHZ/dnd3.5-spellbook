@@ -13,9 +13,15 @@ acceptance can be described.
 
 ## Current Track
 
-v1.3 sitewide UX/style planning is next. No v1.3 plan exists yet; the first
-step is to bound the design-system and page-cohesion scope before any
-implementation branch starts.
+v1.3 planning is active:
+
+- `docs/releases/v1.3/README.md`
+- `docs/releases/v1.3/sitewide-ux-redesign-plan.md`
+- `docs/releases/v1.3/platform-deploy-prerequisite-plan.md`
+
+The sitewide UX/style redesign and the independent platform deployment
+prerequisite may proceed in parallel. The deployment prerequisite does not
+belong to the UX deliverable, but it must close before v1.3 freezes.
 
 v1.2.2 is the latest frozen formal release, covering internal quality
 maintenance:
@@ -207,11 +213,14 @@ freeze docs instead of copying them into this roadmap.
 
 Recommended next sequence:
 
-1. **Scope v1.3 before implementation**
+1. **Accept the v1.3 plans, then run the two tracks in parallel**
 
-   Create the v1.3 sitewide UX/style plan only after the design-system,
-   page-cohesion, filter, spell-card, density, and mobile boundaries have a
-   concrete acceptance contract. This v1.2.2 freeze does not create that plan.
+   Use `docs/releases/v1.3/sitewide-ux-redesign-plan.md` for the
+   frontend-design deliverable and
+   `docs/releases/v1.3/platform-deploy-prerequisite-plan.md` for the platform
+   prerequisite. The platform track must prove one secure GitHub Actions
+   backend deploy before final freeze, but it should not interrupt or absorb
+   the UX redesign scope.
 
 2. **Preserve the frozen maintenance boundary**
 
@@ -256,12 +265,15 @@ The expected post-v1.1 release order is:
    frontend/i18n, and platform boundaries. All P1 findings were fixed, every
    P2 was fixed or explicitly deferred, and no user-facing scope was added.
 
-4. **v1.3 Sitewide UX / Style Redesign (Next Planning)**
+4. **v1.3 Sitewide UX / Style Redesign + Platform Prerequisite (Planned)**
 
    Run a deliberate design-system and sitewide cohesion pass across Browse,
    Search, Detail, About/Status, collections, prepared spells, filters, spell
    cards, layout density, and mobile behavior. Let frontend-design own the
    implementation branch while the main gate controls scope and acceptance.
+   In parallel, let platform restore a secure GitHub Actions backend deploy
+   path, normalize the remote/ref/preflight contract, and prove one real deploy.
+   Keep the platform work independent from UX, but require it for freeze.
 
 5. **Later Translation QA**
 
