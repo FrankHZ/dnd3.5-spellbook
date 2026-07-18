@@ -27,20 +27,23 @@ Use these docs for orientation instead of expanding this file:
 
 - `docs/README.md`: canonical documentation map and historical/current doc
   ownership.
-- `docs/roadmap.md`: current active work ordering after a pause.
-- `docs/releases/v1.2.2/README.md`: active internal quality-maintenance release
-  boundary and ordered pass map.
-- `docs/releases/v1.2.2/agent-workflow-hardening-plan.md`: canonical role,
-  thin adapter, context-packet, and correspondence-check plan.
-- `docs/releases/v1.2.2/code-and-test-qa-plan.md`: read-only audit, main-gate
-  triage, bounded fixes, and regression acceptance plan.
-- `docs/releases/v1.2.1/FREEZE.md`: latest frozen formal public release
-  snapshot.
+- `docs/roadmap.md`: current work ordering after a pause; v1.3 planning is
+  next.
+- `docs/releases/v1.2.2/FREEZE.md`: latest frozen formal release snapshot for
+  the internal quality-maintenance release.
+- `docs/releases/v1.2.2/README.md`: frozen internal quality-maintenance release
+  boundary and accepted pass map.
+- `docs/releases/v1.2.2/agent-workflow-hardening-plan.md`: accepted canonical
+  role, thin adapter, context-packet, and correspondence-check record.
+- `docs/releases/v1.2.2/code-and-test-qa-plan.md`: accepted read-only audit,
+  main-gate triage, bounded fixes, and regression record.
+- `docs/releases/v1.2.1/FREEZE.md`: previous frozen formal release and latest
+  frozen production/public release snapshot.
 - `docs/releases/v1.2.1/README.md`: frozen content-backed full-text spell
   search release record.
 - `docs/releases/v1.2.1/full-text-search-plan.md`: accepted full-text Search
   contract, FTS index, backend/data, and frontend consumer record.
-- `docs/releases/v1.2/FREEZE.md`: previous frozen formal public release
+- `docs/releases/v1.2/FREEZE.md`: older frozen formal public release
   snapshot.
 - `docs/releases/v1.2/README.md`: frozen full-spell source review, mechanics
   localization, and Publications page release planning record.
@@ -54,7 +57,7 @@ Use these docs for orientation instead of expanding this file:
   translation, QA workflow, and frontend consumer record.
 - `docs/releases/v1.2/publications-page-plan.md`: accepted Publications page
   and minimum metadata record.
-- `docs/releases/v1.1/FREEZE.md`: previous frozen formal public release
+- `docs/releases/v1.1/FREEZE.md`: older frozen formal public release
   snapshot.
 - `docs/releases/v1.1/README.md`: frozen production hardening and full spell
   corpus release plan.
@@ -64,7 +67,7 @@ Use these docs for orientation instead of expanding this file:
   import and content DB activation plan.
 - `docs/releases/v1.1/frontend-content-pass-plan.md`: frozen focused frontend
   content acceptance plan.
-- `docs/releases/v1.0/FREEZE.md`: previous frozen formal public release
+- `docs/releases/v1.0/FREEZE.md`: older frozen formal public release
   snapshot.
 - `docs/releases/v1.0/README.md`: frozen formal public release planning
   record.

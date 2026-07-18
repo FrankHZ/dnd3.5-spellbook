@@ -1,128 +1,89 @@
-# v1.2.2 Release Plan
+# v1.2.2 Release Record
 
-Status: in progress. v1.2.1 is frozen, Agent Workflow Hardening was accepted
-and merged in PR #79, and Code And Test QA is entering bounded fix work after
-main-gate triage.
+Status: **frozen and accepted**. v1.2.2 is an internal quality-maintenance
+release with no user-facing feature scope. The canonical as-built snapshot is
+[FREEZE.md](./FREEZE.md).
 
-v1.2.2 is an internal quality-maintenance release. It adds no user-facing
-feature scope. The release first hardens the repository's agent workflow, then
-uses that workflow for a structured code and test QA pass.
+The release hardened the repository's agent workflow, then used that workflow
+for a structured code and test QA pass. Agent Workflow Hardening merged in PR
+#79, the read-only findings pack merged in PR #80, main-gate triage merged in
+PR #81, and all ten bounded fix batches merged in PRs #82 through #91.
 
 ## Release Boundary
 
-v1.2.2 owns two strictly ordered acceptance tracks:
+v1.2.2 accepted two strictly ordered tracks:
 
 1. **Agent Workflow Hardening**
 
-   Establish stable role contracts under `.agents/roles/`, add thin
-   project-scoped Codex adapters, keep `AGENTS.md` compact, and add a
-   lightweight `agents:check` correspondence check.
+   Seven canonical role contracts under `.agents/roles/`, seven thin
+   project-scoped Codex adapters, concrete context-packet and handoff rules,
+   and the maintained `agents:check` correspondence check.
 
 2. **Code And Test QA**
 
-   Use the accepted role system for parallel read-only audits, main-gate
-   finding triage, and bounded domain fix PRs with failure-focused regression
-   evidence.
+   Five role-based read-only audits, centralized main-gate triage, and ten
+   dependency-ordered fix PRs covering accepted backend/DB, data-pipeline,
+   frontend/i18n, and platform failure modes.
 
-The second track is the first formal acceptance exercise for the role system.
-It must not begin until the first track is reviewed and merged.
+The second track was the first formal acceptance exercise for the role system.
+No audit agent edited files, no role expanded release scope, and no role merged
+its own PR.
 
-Current position: the freeze prerequisite and workflow tracks are complete.
-Five read-only role audits finished from one shared base; their temporary raw
-handoffs and final main-gate dispositions are preserved while three
-dependency-ordered fix waves run.
+## Accepted Sequence
 
-## Track Order
-
-1. **Freeze prerequisite**
-
-   Merge the v1.2.1 freeze after production backend, content DB, FTS, and
-   frontend acceptance is complete.
-
-2. **Agent Workflow Hardening**
-
-   Follow
-   [agent-workflow-hardening-plan.md](./agent-workflow-hardening-plan.md).
-   Main gate approves role semantics; librarian owns the compact canonical
-   contracts and navigation; platform owns adapter/schema checks and the
-   lightweight correspondence command.
-
-3. **Workflow acceptance**
-
-   Confirm the canonical role set, adapter mapping, context-packet rule,
-   handoff format, and `agents:check` before dispatching QA agents.
-
-4. **Code And Test QA**
-
-   Follow [code-and-test-qa-plan.md](./code-and-test-qa-plan.md). Run bounded
-   read-only audits in parallel, let main gate de-duplicate and disposition
-   findings, then open focused fix PRs by owning domain.
-
-5. **Acceptance and freeze**
-
-   Resolve all P0/P1 findings, explicitly fix or defer every P2, park P3 and
-   broad refactors, run the release gates, smoke critical local pages, and
-   freeze the as-built maintenance release.
+1. v1.2.1 froze before v1.2.2 implementation began.
+2. [Agent Workflow Hardening](./agent-workflow-hardening-plan.md) established
+   and validated the canonical roles, adapters, and orchestration rules.
+3. Five role audits ran read-only from one shared base.
+4. Main gate de-duplicated and dispositioned every finding before fixes.
+5. [Code And Test QA](./code-and-test-qa-plan.md) completed ten bounded fix
+   batches and the merged-state release acceptance matrix.
+6. This freeze sweep preserved the one durable deferred candidate in
+   `docs/stable-backlog.md` and removed the temporary findings pack.
 
 ## Documentation Shape
 
-The durable release plan intentionally uses only:
+The durable v1.2.2 record is intentionally limited to:
 
-- [README.md](./README.md): boundary, sequence, and release acceptance
-- [agent-workflow-hardening-plan.md](./agent-workflow-hardening-plan.md): role
-  contracts, adapters, and workflow validation
-- [code-and-test-qa-plan.md](./code-and-test-qa-plan.md): audit, triage, fixes,
-  and regression acceptance
+- [FREEZE.md](./FREEZE.md): canonical as-built release snapshot and acceptance
+  evidence
+- [README.md](./README.md): release boundary, accepted sequence, and document
+  map
+- [agent-workflow-hardening-plan.md](./agent-workflow-hardening-plan.md):
+  accepted role, adapter, and correspondence-check record
+- [code-and-test-qa-plan.md](./code-and-test-qa-plan.md): accepted audit,
+  disposition, fix, and regression record
 
-The two passes have a simple hard dependency, so v1.2.2 does not need an
-`integrated-plan.md`. Ordinary implementation branches update only their owning
-child plan and affected durable topic/operations docs.
+The two tracks had a simple hard dependency, so v1.2.2 has no
+`integrated-plan.md`. The temporary QA evidence pack was not retained as a
+permanent ledger.
 
-During active QA triage, `qa-findings/` is a temporary working evidence pack,
-not a fourth plan or permanent ledger. Collapse accepted outcomes into the QA
-plan Completion Notes and remove the pack before freeze.
+## Final Disposition
 
-## Non-Goals
+The QA pass triaged 27 findings:
 
-- Do not add user-facing features.
-- Do not start the v1.3 sitewide UX/style redesign.
-- Do not start full spell translation or corpus QA.
-- Do not import new spell or publication data.
-- Do not perform an open-ended architecture rewrite or dependency migration.
-- Do not set a repository-wide test coverage percentage target.
-- Do not turn role profiles into duplicated project documentation or
-  version-specific implementation prompts.
-- Do not add an integrated plan or a permanent findings ledger.
+- P0: 0
+- P1: 11 fixed
+- P2: 14 fixed and one deferred
+- Closed: one unsupported hypothetical path
 
-## Release Acceptance
+The only durable deferred finding is `DP-AUD-007`, parked in
+`docs/stable-backlog.md` for the next reactivation of the dormant local CHM
+preprocessing workflow. No P0 or P1 remains open.
 
-v1.2.2 release acceptance requires:
+## Non-Goals Preserved
 
-- v1.2.1 is frozen before v1.2.2 implementation starts.
-- `.agents/roles/` is the only source of role semantics.
-- Every canonical role remains stable and routes to existing docs entry points
-  plus the task-specific context packet; role files do not copy active version
-  status, module inventories, or command catalogs.
-- Codex adapters stay thin and map one-to-one to the canonical role names.
-- `AGENTS.md` contains only the compact role table and shared orchestration
-  rules needed by every agent.
-- Every delegated agent receives one role plus a concrete context packet; role
-  profiles do not replace release or feature plans.
-- Recursive agent fan-out is disabled by default unless the context packet
-  explicitly authorizes a bounded delegation.
-- `npm run agents:check` verifies canonical role/adapter correspondence without
-  pretending to validate the complete Codex schema.
-- QA begins with read-only audits and main-gate triage before any fix branch.
-- All P0/P1 findings are resolved; every P2 is fixed or deferred with a
-  specific rationale; P3 and broad refactors are parked outside the release.
-- Regression tests demonstrate accepted failure modes rather than increasing
-  test counts for their own sake.
-- `npm run ci:portable`, `npm run verify`, web build, i18n check, server runtime
-  check, `agents:check`, and critical-page local smoke all pass at freeze.
+- No user-facing features were added.
+- The v1.3 sitewide UX/style redesign did not start.
+- Full spell translation and corpus QA did not start.
+- No new spell or publication data was imported.
+- No open-ended architecture rewrite, dependency migration, coverage target,
+  integrated plan, or permanent findings ledger was added.
+- Production deployment was explicitly outside this internal maintenance
+  freeze.
 
-## Handoff Rule
+## Handoff
 
-Use the two child plans as the only v1.2.2 implementation plans. Keep role
-semantics in `.agents/roles/`, current project truth in existing canonical docs,
-and task-specific scope in the context packet. Update `docs/roadmap.md` only
-when active ordering or release status changes.
+Use [FREEZE.md](./FREEZE.md) as the authority for v1.2.2 as-built state and
+`docs/roadmap.md` for next-work ordering. v1.3 planning is next, but no v1.3
+plan is created by this freeze.

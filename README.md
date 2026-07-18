@@ -24,26 +24,29 @@ excluded from the public repository, especially runtime databases under
 
 ## Status
 
-The active internal maintenance release plan is **v1.2.2**. The latest frozen
-public release is **v1.2.1**. The latest frozen pre-release stage snapshot is
-**v3.10**.
+The latest frozen formal release is **v1.2.2**, an internal quality-maintenance
+release. **v1.3** planning is next. **v1.2.1** remains the latest frozen
+production/public release, and **v3.10** is the latest frozen pre-release stage
+snapshot.
 
 Start here:
 
 - [docs/README.md](./docs/README.md): documentation map and precedence rules.
 - [docs/roadmap.md](./docs/roadmap.md): current work order.
 - [docs/features.md](./docs/features.md): current feature map.
-- [docs/releases/v1.2.2/README.md](./docs/releases/v1.2.2/README.md): active
-  agent-workflow hardening and code/test QA release plan.
-- [docs/releases/v1.2.1/FREEZE.md](./docs/releases/v1.2.1/FREEZE.md): latest
-  frozen public release snapshot.
+- [docs/releases/v1.2.2/FREEZE.md](./docs/releases/v1.2.2/FREEZE.md): latest
+  frozen internal quality-maintenance release snapshot.
+- [docs/releases/v1.2.2/README.md](./docs/releases/v1.2.2/README.md): accepted
+  agent-workflow hardening and code/test QA release record.
+- [docs/releases/v1.2.1/FREEZE.md](./docs/releases/v1.2.1/FREEZE.md): previous
+  frozen formal release and latest production/public release snapshot.
 - [docs/releases/v1.2.1/README.md](./docs/releases/v1.2.1/README.md): frozen
   content-backed full-text search release record.
-- [docs/releases/v1.2/FREEZE.md](./docs/releases/v1.2/FREEZE.md): previous
+- [docs/releases/v1.2/FREEZE.md](./docs/releases/v1.2/FREEZE.md): older
   frozen public release snapshot.
 - [docs/releases/v1.2/README.md](./docs/releases/v1.2/README.md): frozen v1.2
   release planning record.
-- [docs/releases/v1.1/FREEZE.md](./docs/releases/v1.1/FREEZE.md): previous
+- [docs/releases/v1.1/FREEZE.md](./docs/releases/v1.1/FREEZE.md): older
   frozen public release snapshot.
 - [docs/releases/v1.1/README.md](./docs/releases/v1.1/README.md): frozen v1.1
   release planning record.
