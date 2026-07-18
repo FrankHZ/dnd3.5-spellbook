@@ -192,9 +192,9 @@ Recommended next sequence:
 1. **Run v1.2.2 Agent Workflow Hardening**
 
    Follow `docs/releases/v1.2.2/agent-workflow-hardening-plan.md`. Establish
-   stable canonical role contracts plus thin Codex, Copilot, and Claude
-   adapters without duplicating current project docs. Accept `agents:check`,
-   context packets, and handoff boundaries before dispatching QA work.
+   stable canonical role contracts plus thin project-scoped Codex adapters
+   without duplicating current project docs. Accept `agents:check`, context
+   packets, and handoff boundaries before dispatching QA work.
 
 2. **Run v1.2.2 Code And Test QA**
 

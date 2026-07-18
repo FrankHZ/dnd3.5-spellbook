@@ -6,12 +6,12 @@
 > `docs/roadmap.md` only when active ordering changes. v1.2.2 has no
 > `integrated-plan.md`.
 
-Status: planned. This pass must complete before Code And Test QA begins.
+Status: implementation ready for main-gate review. This pass must be accepted
+and merged before Code And Test QA begins.
 
 ## Purpose
 
-- Make the repository's existing agent roles explicit and reusable across
-  Codex, GitHub Copilot, and Claude Code.
+- Make the repository's existing agent roles explicit and reusable in Codex.
 - Keep role semantics canonical without creating another copy of project
   documentation for each role or tool.
 - Standardize context packets, boundaries, validation routing, and handoff
@@ -31,28 +31,28 @@ Status: planned. This pass must complete before Code And Test QA begins.
 
 ## Agent Context
 
-- Main gate outcome: establish one stable role vocabulary and three thin tool
-  adapter surfaces without expanding release scope or documentation upkeep.
+- Main gate outcome: establish one stable role vocabulary and a thin Codex
+  adapter surface without expanding release scope or documentation upkeep.
 - Required reading: `AGENTS.md`, `docs/README.md`, `docs/roadmap.md`,
   `docs/feature-workflow.md`, `docs/harness.md`, and this plan.
-- Expected edit surface: `.agents/roles/`, `.codex/agents/`,
-  `.github/agents/`, `.claude/agents/`, a small root validation script and npm
-  entry, `AGENTS.md`, and directly affected navigation/harness docs.
+- Expected edit surface: `.agents/roles/`, `.codex/agents/`, a small root
+  validation script and npm entry, `AGENTS.md`, and directly affected
+  navigation/harness docs.
 - Validation: focused checker tests, `npm run agents:check`, `npm run verify`,
   and tool-specific adapter smoke where the tool is available.
 - Non-goals: product behavior, implementation-domain refactors, a new docs
-  hierarchy, copied module maps, recursive delegation, or full vendor-schema
-  validation inside the shared checker.
-- Handoff: return changed role/adapters, correspondence evidence, available
-  tool smoke, unresolved vendor limitations, and no self-merge.
+  hierarchy, copied module maps, recursive delegation, or full Codex-schema
+  validation inside the correspondence checker.
+- Handoff: return changed role/adapters, correspondence evidence, Codex loading
+  smoke, unresolved client limitations, and no self-merge.
 
 ## Problem
 
 The repository already uses main-gate, librarian, specialist, and subagent
 roles, but their boundaries live partly in a growing `AGENTS.md` and partly in
-conversation convention. Copying full prompts into every tool-specific agent
-format would create three more documentation surfaces that drift whenever the
-repo, roadmap, commands, or module boundaries change.
+conversation convention. Copying full role contracts into Codex adapter files
+would create another documentation surface that drifts whenever the repo,
+roadmap, commands, or module boundaries change.
 
 The durable solution is a small stable role layer. Roles define responsibility
 and handoff behavior; existing canonical docs continue to define current
@@ -78,7 +78,7 @@ They must not contain:
 - active release/version status, branch names, PR numbers, or current counts
 - copied roadmap prose, module/file inventories, or workspace command catalogs
 - feature-specific acceptance criteria that belong in an owning plan
-- vendor-specific adapter schema details
+- Codex-specific adapter schema details
 - temporary findings, implementation progress, or completion logs
 
 All roles read `AGENTS.md`, their canonical role file, and the owning plan
@@ -89,15 +89,15 @@ existing docs. The context packet, not the role profile, supplies current work.
 
 Create `.agents/roles/README.md` plus these canonical contracts:
 
-| Role | Durable responsibility | Stable documentation entry points |
-| ---- | ---------------------- | --------------------------------- |
-| `main-gate` | direction, context packets, cross-domain decisions, finding triage, PR acceptance, and merge readiness | `docs/roadmap.md`, `docs/feature-workflow.md` |
-| `librarian` | plans, docs navigation, roadmap coherence, freeze snapshots, and cross-doc consistency | `docs/README.md`, `docs/releases/README.md`, repo-local planning/freeze skills |
-| `data-pipeline` | data-tools, source/patch/import workflows, fixtures, generated-content reproducibility, and corpus harnesses | `data-tools/README.md`, `docs/modules/data-tools.md`, `docs/operations/db-content-workflow.md` |
-| `backend-db` | contracts, API/runtime behavior, Prisma schemas/clients, three runtime DB boundaries, errors, and read-source fallbacks | `server/README.md`, `contracts/README.md`, `docs/modules/server.md`, `docs/modules/contracts.md` |
-| `i18n-translation` | locale conventions, translation/terminology workflow, i18n QA, and localized display semantics | `docs/i18n.md`, `web/README.md`, `data-tools/README.md` |
-| `frontend-design` | frontend state, URL behavior, interaction design, components, layout, and browser smoke | `web/README.md`, `docs/design.md`, `docs/frontend-map.md`, `docs/modules/web.md` |
-| `platform` | CI, builds, runtime packaging, dependency boundaries, deployment helpers, and environment consistency | `docs/harness.md`, `docs/modules/delivery.md`, `docs/operations/README.md` |
+| Role               | Durable responsibility                                                                                                  | Stable documentation entry points                                                                |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `main-gate`        | direction, context packets, cross-domain decisions, finding triage, PR acceptance, and merge readiness                  | `docs/roadmap.md`, `docs/feature-workflow.md`                                                    |
+| `librarian`        | plans, docs navigation, roadmap coherence, freeze snapshots, and cross-doc consistency                                  | `docs/README.md`, `docs/releases/README.md`, repo-local planning/freeze skills                   |
+| `data-pipeline`    | data-tools, source/patch/import workflows, fixtures, generated-content reproducibility, and corpus harnesses            | `data-tools/README.md`, `docs/modules/data-tools.md`, `docs/operations/db-content-workflow.md`   |
+| `backend-db`       | contracts, API/runtime behavior, Prisma schemas/clients, three runtime DB boundaries, errors, and read-source fallbacks | `server/README.md`, `contracts/README.md`, `docs/modules/server.md`, `docs/modules/contracts.md` |
+| `i18n-translation` | locale conventions, translation/terminology workflow, i18n QA, and localized display semantics                          | `docs/i18n.md`, `web/README.md`, `data-tools/README.md`                                          |
+| `frontend-design`  | frontend state, URL behavior, interaction design, components, layout, and browser smoke                                 | `web/README.md`, `docs/design.md`, `docs/frontend-map.md`, `docs/modules/web.md`                 |
+| `platform`         | CI, builds, runtime packaging, dependency boundaries, deployment helpers, and environment consistency                   | `docs/harness.md`, `docs/modules/delivery.md`, `docs/operations/README.md`                       |
 
 The canonical role filenames are the machine-readable role registry. Do not add
 a second role manifest that would need synchronized updates.
@@ -128,12 +128,10 @@ smallest relevant commands for the task.
 
 ## Adapter Contract
 
-Create one adapter per canonical role in each tool location:
+Create one project-scoped Codex adapter per canonical role:
 
 ```text
 .codex/agents/<role>.toml
-.github/agents/<role>.agent.md
-.claude/agents/<role>.md
 ```
 
 Each adapter contains only what its tool requires:
@@ -145,12 +143,12 @@ Each adapter contains only what its tool requires:
   supplied context packet before acting
 
 Adapters must not repeat role ownership, required-reading lists, validation
-commands, release state, or handoff detail. Tool-specific schema changes should
-normally touch only that tool's adapters, not canonical role contracts.
+commands, release state, or handoff detail. Codex schema changes should
+normally touch only the adapters, not canonical role contracts.
 
 Before implementation acceptance, validate adapter shapes against current
-official vendor documentation or the installed tool. The shared checker only
-proves repository correspondence; it is not a replacement for vendor parsing.
+official OpenAI documentation or the installed Codex client. The checker only
+proves repository correspondence; it is not a replacement for Codex parsing.
 
 ## Orchestration Rules
 
@@ -185,13 +183,13 @@ A context packet must provide:
   not become versioned project descriptions.
 - Validation: manual role-boundary review by main gate and librarian.
 
-### Slice 2: Thin Tool Adapters
+### Slice 2: Thin Codex Adapters
 
-- Deliverable: one Codex, Copilot, and Claude adapter for each canonical role.
+- Deliverable: one project-scoped Codex adapter for each canonical role.
 - Constraint: adapters contain selection/configuration plus the canonical role
   pointer, not copied prompts.
-- Validation: current vendor-doc/schema review and available-tool loading
-  smoke; unavailable tool limitations are reported in handoff.
+- Validation: current OpenAI documentation/schema review and Codex loading
+  smoke; client limitations are reported in handoff.
 
 ### Slice 3: Shared Orchestration Guidance
 
@@ -206,11 +204,12 @@ A context packet must provide:
   `scripts/check-agent-roles.mjs`.
 - The checker verifies:
   - canonical role filenames, excluding `.agents/roles/README.md`
-  - one matching adapter basename in each of the three tool directories
+  - one matching adapter basename in `.codex/agents/`
   - no missing or orphan adapter roles
+  - each adapter's declared `name` matches its basename and canonical role
   - each adapter references its exact canonical role path
-- The checker does not validate complete TOML/frontmatter/vendor schemas,
-  models, permissions, or tool availability.
+- The checker does not validate the complete Codex TOML schema, models,
+  permissions, or tool availability.
 - Validation: root command success plus a bounded temporary negative-case check
   or focused helper test; do not add a second role manifest or permanent copy
   of the adapter tree just for tests.
@@ -223,11 +222,12 @@ A context packet must provide:
   branch, PR, progress, or copied command state.
 - Adjacent data-pipeline/backend-db and frontend-design/i18n boundaries are
   explicit.
-- Every adapter basename maps one-to-one to a canonical role and reads that
-  role before acting.
+- Every adapter basename and declared `name` map one-to-one to a canonical role,
+  and each adapter reads that role before acting.
 - The checker derives role names from canonical filenames rather than another
   maintained manifest.
-- Tool adapters remain thin enough that role semantics can change in one place.
+- Codex adapters remain thin enough that role semantics can change in one
+  place.
 - `AGENTS.md` links the canonical role index without restating every contract.
 - Context packets remain mandatory and carry all task-specific scope.
 - Recursive fan-out is disabled by default; no role expands scope or merges
@@ -250,18 +250,39 @@ A context packet must provide:
 
 ## Open Questions
 
-- None for implementation handoff. Full vendor-schema checking is explicitly
-  outside the shared correspondence command.
+- None for implementation handoff. Full Codex-schema checking is explicitly
+  outside the correspondence command.
 
 ## Follow-Up Candidates
 
 - Additional specialist roles only after repeated work proves a durable,
   non-overlapping ownership boundary; do not add roles for one release task.
-- More tool-specific schema validation only if adapter drift causes a real
-  loading failure.
+- More Codex schema validation only if adapter drift causes a real loading
+  failure.
 
 ## Completion Notes
 
-Use this section after implementation review. Record accepted PRs,
-`agents:check` evidence, available-tool smoke, and any explicit adapter
-limitations without copying the role files.
+Implementation handoff:
+
+- Added seven canonical role contracts under `.agents/roles/` and seven thin,
+  one-to-one project-scoped Codex adapters.
+- Added `scripts/check-agent-roles.mjs`, focused valid and negative-case tests,
+  and root `agents:check` / `test:agents` commands. Both checks are part of
+  `verify` and `ci:portable`.
+- Kept `AGENTS.md` to a compact role table and shared orchestration rules;
+  current project facts and task scope remain in existing docs and context
+  packets.
+- Reviewed adapter shapes against current official OpenAI documentation. All
+  Codex TOML files parse successfully.
+- Live Codex loading smoke passes after updating the PATH-selected npm CLI from
+  `0.128.0` to stable `0.144.5`: a read-only `codex exec` selected the
+  project-scoped `platform` role and returned its `# Platform` heading. The CLI
+  still logs a non-fatal model-catalog cache warning because the refreshed
+  catalog omits a field expected by this client; model execution and the role
+  smoke both complete successfully.
+- `npm run agents:check`, `npm run test:agents`, `npm run verify`, and
+  `npm run ci:portable` pass locally.
+
+Main gate still owns role-boundary acceptance, PR disposition, and permission
+to start Code And Test QA. Record the accepted PR here after review without
+copying role content.

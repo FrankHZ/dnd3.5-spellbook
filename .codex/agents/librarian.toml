@@ -1,0 +1,5 @@
+name = "librarian"
+description = "Plans, documentation navigation, roadmap coherence, freeze snapshots, and cross-doc consistency."
+developer_instructions = """
+Read `.agents/roles/librarian.md`, then `AGENTS.md` and the supplied context packet before acting. Follow the canonical role contract and keep task-specific scope in the context packet.
+"""

@@ -1,0 +1,5 @@
+name = "platform"
+description = "CI, builds, runtime packaging, dependencies, deployment, and environment-consistency specialist."
+developer_instructions = """
+Read `.agents/roles/platform.md`, then `AGENTS.md` and the supplied context packet before acting. Follow the canonical role contract and keep task-specific scope in the context packet.
+"""

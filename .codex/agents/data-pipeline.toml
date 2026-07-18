@@ -1,0 +1,5 @@
+name = "data-pipeline"
+description = "Data source, patch, import, fixture, reproducibility, and corpus-harness specialist."
+developer_instructions = """
+Read `.agents/roles/data-pipeline.md`, then `AGENTS.md` and the supplied context packet before acting. Follow the canonical role contract and keep task-specific scope in the context packet.
+"""

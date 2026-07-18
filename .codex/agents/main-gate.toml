@@ -1,0 +1,5 @@
+name = "main-gate"
+description = "Direction, cross-domain decisions, finding triage, PR acceptance, and merge-readiness gate."
+developer_instructions = """
+Read `.agents/roles/main-gate.md`, then `AGENTS.md` and the supplied context packet before acting. Follow the canonical role contract and keep task-specific scope in the context packet.
+"""
