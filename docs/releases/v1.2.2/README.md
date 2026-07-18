@@ -1,6 +1,7 @@
 # v1.2.2 Release Plan
 
-Status: planned. v1.2.1 must be frozen before implementation begins.
+Status: in progress. v1.2.1 is frozen, Agent Workflow Hardening was accepted
+and merged in PR #79, and Code And Test QA is in main-gate triage.
 
 v1.2.2 is an internal quality-maintenance release. It adds no user-facing
 feature scope. The release first hardens the repository's agent workflow, then
@@ -24,6 +25,11 @@ v1.2.2 owns two strictly ordered acceptance tracks:
 
 The second track is the first formal acceptance exercise for the role system.
 It must not begin until the first track is reviewed and merged.
+
+Current position: the freeze prerequisite and workflow tracks are complete.
+Five read-only role audits finished from one shared base; their temporary raw
+handoffs are preserved while the main gate de-duplicates findings and assigns
+their dispositions before opening bounded fix PRs.
 
 ## Track Order
 
@@ -59,7 +65,7 @@ It must not begin until the first track is reviewed and merged.
 
 ## Documentation Shape
 
-This release intentionally uses only:
+The durable release plan intentionally uses only:
 
 - [README.md](./README.md): boundary, sequence, and release acceptance
 - [agent-workflow-hardening-plan.md](./agent-workflow-hardening-plan.md): role
@@ -70,6 +76,10 @@ This release intentionally uses only:
 The two passes have a simple hard dependency, so v1.2.2 does not need an
 `integrated-plan.md`. Ordinary implementation branches update only their owning
 child plan and affected durable topic/operations docs.
+
+During active QA triage, `qa-findings/` is a temporary working evidence pack,
+not a fourth plan or permanent ledger. Collapse accepted outcomes into the QA
+plan Completion Notes and remove the pack before freeze.
 
 ## Non-Goals
 

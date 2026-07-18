@@ -6,8 +6,8 @@
 > `docs/roadmap.md` only when active ordering changes. v1.2.2 has no
 > `integrated-plan.md`.
 
-Status: implementation ready for main-gate review. This pass must be accepted
-and merged before Code And Test QA begins.
+Status: accepted and merged in PR #79. Code And Test QA is authorized to
+proceed.
 
 ## Purpose
 
@@ -283,6 +283,6 @@ Implementation handoff:
 - `npm run agents:check`, `npm run test:agents`, `npm run verify`, and
   `npm run ci:portable` pass locally.
 
-Main gate still owns role-boundary acceptance, PR disposition, and permission
-to start Code And Test QA. Record the accepted PR here after review without
-copying role content.
+Main gate accepted the role boundary and merged the implementation in PR #79.
+This pass is complete; downstream Code And Test QA uses these canonical roles
+without reopening their semantics.

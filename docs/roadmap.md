@@ -19,9 +19,9 @@ v1.2.2 is the active internal quality-maintenance release plan:
 - `docs/releases/v1.2.2/agent-workflow-hardening-plan.md`
 - `docs/releases/v1.2.2/code-and-test-qa-plan.md`
 
-Run Agent Workflow Hardening first. Code And Test QA is the first formal
-acceptance exercise for the role system and must not start until the workflow
-pass is accepted and merged.
+Agent Workflow Hardening was accepted and merged in PR #79. The five Code And
+Test QA role audits completed from one shared base; current work is main-gate
+triage followed by bounded, domain-owned fix PRs.
 
 v1.2.1 is the latest frozen formal public release:
 
@@ -189,26 +189,33 @@ freeze docs instead of copying them into this roadmap.
 
 Recommended next sequence:
 
-1. **Run v1.2.2 Agent Workflow Hardening**
+1. **Triage v1.2.2 Code And Test QA findings**
 
-   Follow `docs/releases/v1.2.2/agent-workflow-hardening-plan.md`. Establish
-   stable canonical role contracts plus thin project-scoped Codex adapters
-   without duplicating current project docs. Accept `agents:check`, context
-   packets, and handoff boundaries before dispatching QA work.
+   Follow `docs/releases/v1.2.2/code-and-test-qa-plan.md` and the temporary
+   `docs/releases/v1.2.2/qa-findings/` evidence pack. De-duplicate findings,
+   assign final severity and one owner, and mark each item `fix`, `defer`, or
+   `close` before any remediation branch starts.
 
-2. **Run v1.2.2 Code And Test QA**
+2. **Run bounded v1.2.2 fix PRs**
 
-   Follow `docs/releases/v1.2.2/code-and-test-qa-plan.md`. Audit in parallel
-   without edits, let main gate disposition findings once, then open only
-   bounded domain fix PRs with failure-focused regression evidence.
+   Resolve every accepted P0/P1 and either fix or explicitly park each P2.
+   Keep one coherent failure mode per branch, add failure-focused regression
+   evidence, and do not let P3 cleanup or broad refactors expand the release.
 
-3. **Keep v1.3 as the broader design release**
+3. **Accept and freeze v1.2.2**
+
+   Run the release validation matrix and affected critical-page smoke from a
+   clean merged state. Collapse final disposition counts, accepted PRs, and
+   residual risk into Completion Notes, then remove the temporary evidence
+   pack before creating the freeze snapshot.
+
+4. **Keep v1.3 as the broader design release**
 
    Do not let the v1.2 Publications page become the full sitewide style
    redesign. Keep complete filter UX, spell-card redesign, and broader visual
    system work in v1.3 unless a v1.2 acceptance blocker proves otherwise.
 
-4. **Defer full translation QA**
+5. **Defer full translation QA**
 
    Treat full spell-body/name/short-description translation and proofreading
    as a later release candidate. Use the frozen v1.2 mechanics workflow and

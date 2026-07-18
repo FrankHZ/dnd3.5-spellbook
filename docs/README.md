@@ -28,7 +28,9 @@ The active internal quality-maintenance release plan is v1.2.2:
 - [releases/v1.2.2/agent-workflow-hardening-plan.md](./releases/v1.2.2/agent-workflow-hardening-plan.md)
 - [releases/v1.2.2/code-and-test-qa-plan.md](./releases/v1.2.2/code-and-test-qa-plan.md)
 
-Agent Workflow Hardening must be accepted before Code And Test QA begins.
+Agent Workflow Hardening was accepted and merged in PR #79. Five read-only
+role audits are preserved temporarily; current work is main-gate triage before
+bounded fix PRs.
 
 The latest frozen formal public release is v1.2.1:
 

@@ -6,8 +6,9 @@
 > `docs/roadmap.md` only when active ordering changes. v1.2.2 has no
 > `integrated-plan.md`.
 
-Status: planned. Do not begin until Agent Workflow Hardening is accepted and
-merged.
+Status: in progress. Agent Workflow Hardening was accepted and merged in
+PR #79. Five read-only role audits completed at parent-repository base
+`ff4f2ff7eb7158d2007178179c15919923769311`; main-gate triage is next.
 
 ## Purpose
 
