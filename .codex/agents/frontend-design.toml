@@ -1,0 +1,5 @@
+name = "frontend-design"
+description = "Frontend state, URL behavior, interaction, components, layout, and browser-acceptance specialist."
+developer_instructions = """
+Read `.agents/roles/frontend-design.md`, then `AGENTS.md` and the supplied context packet before acting. Follow the canonical role contract and keep task-specific scope in the context packet.
+"""

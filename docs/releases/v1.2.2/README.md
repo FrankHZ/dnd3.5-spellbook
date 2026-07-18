@@ -12,9 +12,9 @@ v1.2.2 owns two strictly ordered acceptance tracks:
 
 1. **Agent Workflow Hardening**
 
-   Establish stable cross-tool role contracts under `.agents/roles/`, add thin
-   Codex, GitHub Copilot, and Claude Code adapters, keep `AGENTS.md` compact,
-   and add a lightweight `agents:check` correspondence check.
+   Establish stable role contracts under `.agents/roles/`, add thin
+   project-scoped Codex adapters, keep `AGENTS.md` compact, and add a
+   lightweight `agents:check` correspondence check.
 
 2. **Code And Test QA**
 
@@ -92,8 +92,7 @@ v1.2.2 release acceptance requires:
 - Every canonical role remains stable and routes to existing docs entry points
   plus the task-specific context packet; role files do not copy active version
   status, module inventories, or command catalogs.
-- Codex, Copilot, and Claude adapters stay thin and map one-to-one to the same
-  canonical role names.
+- Codex adapters stay thin and map one-to-one to the canonical role names.
 - `AGENTS.md` contains only the compact role table and shared orchestration
   rules needed by every agent.
 - Every delegated agent receives one role plus a concrete context packet; role
@@ -101,7 +100,7 @@ v1.2.2 release acceptance requires:
 - Recursive agent fan-out is disabled by default unless the context packet
   explicitly authorizes a bounded delegation.
 - `npm run agents:check` verifies canonical role/adapter correspondence without
-  pretending to validate every vendor schema.
+  pretending to validate the complete Codex schema.
 - QA begins with read-only audits and main-gate triage before any fix branch.
 - All P0/P1 findings are resolved; every P2 is fixed or deferred with a
   specific rationale; P3 and broad refactors are parked outside the release.

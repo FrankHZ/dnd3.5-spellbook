@@ -123,47 +123,44 @@ using repo skills such as `branch-naming` or `commit-message`, read
 `.agents/skills/<skill>/SKILL.md` relative to the active worktree root. Do not
 probe a user-level `.agents` path first.
 
+## Agent Role Routing
+
+Canonical role contracts live in `.agents/roles/`. Project-scoped Codex files
+under `.codex/agents/` are thin adapters, not a separate source of role
+semantics.
+
+| Role               | Durable responsibility                                                          |
+| ------------------ | ------------------------------------------------------------------------------- |
+| `main-gate`        | direction, context packets, cross-domain decisions, triage, and merge readiness |
+| `librarian`        | plans, docs navigation, roadmap coherence, and freeze sweeps                    |
+| `data-pipeline`    | source, patch, import, fixture, and corpus workflows                            |
+| `backend-db`       | contracts, API runtime behavior, Prisma, and database boundaries                |
+| `i18n-translation` | locale conventions, translation workflow, QA, and fallback semantics            |
+| `frontend-design`  | frontend state, interaction, layout, and browser acceptance                     |
+| `platform`         | CI, builds, packaging, dependencies, deployment, and environments               |
+
+Read `.agents/roles/README.md` for role selection and handoff boundaries. Every
+delegated task must name one primary role and provide a concrete context packet
+with the outcome, owning plan or topic doc, required reading, expected edit
+surface, non-goals, validation, handoff owner, and whether bounded child
+delegation is allowed. Role profiles do not replace feature or release plans.
+Recursive agent fan-out is disabled by default. No role may expand release
+scope or merge its own PR.
+
 ## Working Rules
 
 - Prefer existing patterns over new frameworks or broad rewrites.
 - Keep changes scoped to the requested behavior.
-- Use the main gate agent/thread as the planning, direction, and review gate
-  for broad work. The main gate owns roadmap interpretation, cross-plan
-  boundary decisions, branch acceptance, and merge readiness.
-- Use librarian agents for docs and plan PRs. Librarian work should keep docs
-  navigation, roadmap entries, version plans, AGENTS.md guidance, and plan
-  templates coherent; it should not make product or implementation decisions
-  beyond the accepted direction from the main gate.
-- Use librarian agents for freeze sweeps by default. Freeze work owns
-  cross-doc consistency, latest-snapshot navigation, acceptance evidence, and
-  `FREEZE.md` updates after implementation branches have been accepted.
-  At the current project scale, freeze sweeps also own routine closeout
-  hygiene: clearing stale "ready for review" wording, moving roadmap next work
-  to the next active step, preserving non-blocking follow-up candidates, and
-  aligning navigation docs. Do not split a separate pre-freeze branch for those
-  chores unless the cleanup changes release scope, ownership, or implementation
-  behavior.
-- Use specialist agents or focused branches for domain-heavy implementation
-  work such as design, i18n, data tooling, deployment, harness, security,
-  dependency maintenance, or frontend UI passes.
 - Keep specialist feature branches on a small documentation contract: read
   `AGENTS.md`, the closest `docs/features.md` entry, the owning topic doc when
   behavior or workflow changes, and nearby code/tests. Do not make specialist
   branches chase docs navigation, roadmap ordering, module docs, integrated
   plans, or freeze snapshots unless the branch changes scope, ownership,
-  sequencing, or release state.
-- Before handing work to a specialist or librarian branch, the main gate should
-  define the context packet: user-visible outcome, owning plan or topic doc,
-  required reading, expected edit surface, explicit non-goals, validation, and
-  handoff owner. If that packet is missing or conflicts with current docs, fix
-  the packet or route the question back to the main gate instead of letting the
-  specialist broaden scope.
+  sequencing, or release state. Route questions caused by a missing or
+  conflicting context packet back to the main gate.
 - Treat `main` as remote-managed. Work on feature branches, push the branch,
   open a PR, and let remote CI protect merges. Do not locally merge and push
   `main` unless the user explicitly asks for a direct main update.
-- Use subagents for bounded implementation or corpus-inspection slices after
-  the main agent has set the boundary. The main agent still owns review,
-  merge-readiness, and source-of-truth docs.
 - When editing from a sibling worktree, use absolute paths with patch tools or
   otherwise prove the edit target is inside the intended worktree before
   applying changes.
