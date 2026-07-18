@@ -93,17 +93,24 @@
       "requiresSqlite": true,
       "writeCapable": false
     },
+    "rules:content:acceptance:portable": {
+      "module": "rules-content",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": false,
+      "writeCapable": false
+    },
     "rules:content:generate": {
       "module": "rules-content",
       "lifecycle": "local-acceptance",
-      "requiresLocalData": false,
+      "requiresLocalData": true,
       "requiresSqlite": true,
       "writeCapable": false
     },
     "rules:content:import": {
       "module": "rules-content",
       "lifecycle": "maintained-local",
-      "requiresLocalData": false,
+      "requiresLocalData": true,
       "requiresSqlite": true,
       "writeCapable": true
     },

@@ -45,6 +45,11 @@ rows marked `accepted`. Use `isbn10`, `isbn13`, and `metadataSources` in the
 data repo for provenance when publication details are researched from external
 ISBN-backed sources.
 
+An importable rules-content build requires that canonical file and one row for
+every rules-clean rulebook. Explicit audit-only generation may omit it or limit
+spell rows, but the resulting artifact is marked limited and cannot enter the
+content DB import boundary.
+
 Parent-repo code should include schemas, validators, fixtures, command
 wrappers, and docs. Do not commit ignored raw CHM data, local SQLite DBs, or
 generated run reports to the parent repo.
@@ -59,6 +64,11 @@ the parent workspace.
 
 Portable tests should cover reusable helpers behind maintained workflows and
 must not depend on ignored source data or local SQLite DBs.
+
+The portable rules-content import acceptance is the bounded exception for
+database constraints: it applies tracked content migrations to a disposable
+in-memory SQLite database and imports only public-safe portable fixtures. It
+does not read or write `server/db/local/`.
 
 Local acceptance commands may depend on the nested `data/` repo and local DBs,
 but they should remain explicit and outside root `npm run verify` or CI.
