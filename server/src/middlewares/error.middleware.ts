@@ -1,11 +1,12 @@
 import { type Request, type Response, type NextFunction } from "express";
+import type { ApiErrorResponse } from "@dnd/contracts";
 import { ApiError } from "#server/utils/errors";
 import { logger } from "#server/logger";
 
 export function errorMiddleware(
   err: unknown,
   _req: Request,
-  res: Response,
+  res: Response<ApiErrorResponse>,
   _next: NextFunction,
 ) {
   logger.error({

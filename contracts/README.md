@@ -27,6 +27,10 @@ npm run -w @dnd/contracts clean
 
 - If shared DTOs change, rebuild this workspace before validating dependent work in `server` or `web`.
 - Keep this package focused on shared contracts, not runtime app logic.
+- `ResolveSpellNamesRequest` contains body fields only; spell resolve language
+  and variant selection use the same `lang` / `variant` query context as other
+  spell endpoints.
+- `ApiErrorResponse.code` carries optional stable machine-readable error codes.
 - The package is ESM. The CommonJS server can consume current runtime-light
   exports as long as `npm run check:contracts` and
   `npm run -w server check:runtime` pass after a build.

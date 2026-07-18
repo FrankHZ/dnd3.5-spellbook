@@ -1,9 +1,8 @@
+import type { ApiErrorResponse } from "@dnd/contracts";
 import { getI18nFromStorage } from "~/i18n/storage";
 
-export type ApiErrorPayload = {
-  message?: string;
+export type ApiErrorPayload = Partial<Omit<ApiErrorResponse, "error">> & {
   error?: unknown;
-  code?: string;
 };
 
 export class ApiError extends Error {

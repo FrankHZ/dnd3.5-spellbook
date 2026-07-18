@@ -127,6 +127,11 @@ These point to:
 `APP_DATABASE_URL` is still accepted as a temporary fallback for the content DB
 so older local and remote environments keep running during the split.
 
+The rules, content, and app-state database roles are required runtime
+configuration. Missing required configuration fails while the server imports
+its database clients, before the HTTP listener starts. The transitional
+`APP_DATABASE_URL` alias satisfies only the content role.
+
 The canonical data setup and database lifecycle doc is:
 
 - [../docs/operations/data-setup.md](../docs/operations/data-setup.md)

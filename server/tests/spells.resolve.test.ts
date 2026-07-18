@@ -51,6 +51,40 @@ describe("POST /api/spells/resolve", () => {
     }
   });
 
+  it("uses the query locale variant for both matching and response overlays", async () => {
+    const chm = await request(app)
+      .post("/api/spells/resolve")
+      .query({ lang: "zh", variant: "chm" })
+      .send({ names: ["火球术"], rulebookIds: [6] });
+
+    expect(chm.status).toBe(200);
+    expect(chm.body.results[0]).toMatchObject({
+      input: "火球术",
+      status: "resolved",
+      matchedOn: "zh",
+      spellId: 100,
+      spell: {
+        i18n: {
+          lang: "zh",
+          variant: "chm",
+          name: "火球术",
+        },
+      },
+    });
+
+    const unavailableVariant = await request(app)
+      .post("/api/spells/resolve")
+      .query({ lang: "zh", variant: "nonexistent" })
+      .send({ names: ["火球术"], rulebookIds: [6] });
+
+    expect(unavailableVariant.status).toBe(200);
+    expect(unavailableVariant.body.results[0]).toEqual({
+      index: 0,
+      input: "火球术",
+      status: "not_found",
+    });
+  });
+
   it("rejects invalid body", async () => {
     const res = await request(app).post("/api/spells/resolve").send({});
 
