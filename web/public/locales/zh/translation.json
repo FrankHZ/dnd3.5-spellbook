@@ -1,5 +1,6 @@
 {
   "actions.clear": "清空",
+  "actions.close": "关闭",
   "actions.done": "完成",
   "actions.remove-name": "移除{{name}}",
   "bootstrap.load-failed": "读取规则书数据失败。刷新重试。",

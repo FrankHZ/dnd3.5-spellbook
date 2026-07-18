@@ -26,7 +26,10 @@ describe("prepared collection JSON", () => {
       "book-1",
     );
 
-    expect(parsed.entries).toEqual([
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) throw new Error("Expected a successful import parse");
+
+    expect(parsed.value.entries).toEqual([
       {
         entryId: "kept",
         spellId: 4,
@@ -46,21 +49,43 @@ describe("prepared collection JSON", () => {
         notes: undefined,
       },
     ]);
-    expect(parsed.selectedClassIds).toEqual([3, 2]);
-    expect(parsed.selectedDomainIds).toEqual([10, 11]);
-    expect(parsed.invalidEntriesCount).toBe(2);
+    expect(parsed.value.selectedClassIds).toEqual([3, 2]);
+    expect(parsed.value.selectedDomainIds).toEqual([10, 11]);
+    expect(parsed.value.invalidEntriesCount).toBe(2);
   });
 
-  it("rejects invalid schema and payload shapes", () => {
-    expect(() => parsePreparedCollectionImport([], "book-1")).toThrow(
-      "Invalid import JSON format.",
-    );
-    expect(() =>
-      parsePreparedCollectionImport({ schemaVersion: 2, preparedEntries: [] }, "book-1"),
-    ).toThrow("Schema version mismatch: expected 1.");
-    expect(() =>
-      parsePreparedCollectionImport({ schemaVersion: 1, preparedEntries: {} }, "book-1"),
-    ).toThrow("Invalid import JSON: preparedEntries must be an array.");
+  it("returns structured errors for invalid schema and payload shapes", () => {
+    expect(parsePreparedCollectionImport([], "book-1")).toEqual({
+      ok: false,
+      error: {
+        code: "INVALID_ROOT",
+        details: { actualType: "array" },
+      },
+    });
+    expect(
+      parsePreparedCollectionImport(
+        { schemaVersion: 2, preparedEntries: [] },
+        "book-1",
+      ),
+    ).toEqual({
+      ok: false,
+      error: {
+        code: "SCHEMA_VERSION_MISMATCH",
+        details: { expectedVersion: 1, receivedVersion: 2 },
+      },
+    });
+    expect(
+      parsePreparedCollectionImport(
+        { schemaVersion: 1, preparedEntries: {} },
+        "book-1",
+      ),
+    ).toEqual({
+      ok: false,
+      error: {
+        code: "INVALID_ARRAY_FIELD",
+        details: { field: "preparedEntries", actualType: "object" },
+      },
+    });
   });
 
   it("builds stable export payloads from normalized prepared books", () => {

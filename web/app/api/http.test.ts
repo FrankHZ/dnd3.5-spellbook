@@ -4,6 +4,7 @@ import {
   apiGet,
   ApiError,
   apiPost,
+  getApiErrorDisplayMessage,
   getConfiguredApiBaseUrl,
   hasApiErrorCode,
 } from "./http";
@@ -136,5 +137,32 @@ describe("api http helpers", () => {
     expect(hasApiErrorCode(error, "OTHER_ERROR")).toBe(false);
     expect(hasApiErrorCode(new Error("nope"), "FULL_TEXT_SEARCH_UNAVAILABLE"))
       .toBe(false);
+  });
+
+  it("uses localized display copy instead of unknown server messages", () => {
+    const error = new ApiError(500, {
+      message: "Internal server error",
+      error: "database details",
+    });
+
+    expect(
+      getApiErrorDisplayMessage(error, "Request failed. Please try again."),
+    ).toBe("Request failed. Please try again.");
+    expect(getApiErrorDisplayMessage(error, "请求失败，请重试。")).toBe(
+      "请求失败，请重试。",
+    );
+  });
+
+  it("allows stable error codes to keep specific localized behavior", () => {
+    const error = new ApiError(503, {
+      message: "Full-text search unavailable",
+      code: "FULL_TEXT_SEARCH_UNAVAILABLE",
+    });
+
+    expect(
+      getApiErrorDisplayMessage(error, "Request failed.", {
+        FULL_TEXT_SEARCH_UNAVAILABLE: "Full-text search is unavailable.",
+      }),
+    ).toBe("Full-text search is unavailable.");
   });
 });

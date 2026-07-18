@@ -2,7 +2,10 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router";
 
-import { ApiError, hasApiErrorCode } from "~/api/http";
+import {
+  getApiErrorDisplayMessage,
+  hasApiErrorCode,
+} from "~/api/http";
 import { searchSpells } from "~/api/spells";
 import Pager from "~/components/Pager";
 import { SpellCard } from "~/components/SpellCard";
@@ -118,8 +121,7 @@ export default function SearchSpellsPage() {
     const err = query.error;
     if (!err) return null;
     if (hasApiErrorCode(err, "FULL_TEXT_SEARCH_UNAVAILABLE")) return null;
-    if (err instanceof ApiError) return err.message;
-    return t("errors.request-failed");
+    return getApiErrorDisplayMessage(err, t("errors.request-failed"));
   }, [query.error, t]);
   const isFullTextUnavailable = hasApiErrorCode(
     query.error,

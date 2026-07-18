@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 
-import { ApiError } from "~/api/http";
+import { ApiError, getApiErrorDisplayMessage } from "~/api/http";
 import { SpellActionButtons } from "~/components/SpellActionButtons";
 import { StatusCard } from "~/components/StatusCard";
 import { getSpellDetail } from "~/api/spells";
@@ -183,10 +183,10 @@ export default function SpellDetailPage() {
   }
 
   if (query.error) {
-    const msg =
-      query.error instanceof ApiError
-        ? query.error.message
-        : t("errors.request-failed");
+    const msg = getApiErrorDisplayMessage(
+      query.error,
+      t("errors.request-failed"),
+    );
     return (
       <div className="page-side">
         <StatusCard title={t("errors.load-title")} description={msg} />

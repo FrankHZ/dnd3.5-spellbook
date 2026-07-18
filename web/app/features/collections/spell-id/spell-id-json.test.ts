@@ -15,21 +15,46 @@ describe("spell-id book JSON", () => {
     });
 
     expect(parsed).toEqual({
-      spellIds: [3, 2, 4],
-      invalidEntriesCount: 5,
+      ok: true,
+      value: {
+        spellIds: [3, 2, 4],
+        invalidEntriesCount: 5,
+      },
     });
   });
 
-  it("rejects invalid schema and payload shapes", () => {
-    expect(() => parseSpellIdBookImport(null)).toThrow(
-      "Invalid import JSON format.",
-    );
-    expect(() =>
-      parseSpellIdBookImport({ schemaVersion: 999, favoriteSpellIds: [] }),
-    ).toThrow("Schema version mismatch: expected 1.");
-    expect(() =>
-      parseSpellIdBookImport({ schemaVersion: 1, favoriteSpellIds: "1,2" }),
-    ).toThrow("Invalid import JSON: favoriteSpellIds must be an array.");
+  it("returns structured errors for invalid schema and payload shapes", () => {
+    expect(parseSpellIdBookImport(null)).toEqual({
+      ok: false,
+      error: {
+        code: "INVALID_ROOT",
+        details: { actualType: "null" },
+      },
+    });
+    expect(
+      parseSpellIdBookImport({
+        schemaVersion: 999,
+        favoriteSpellIds: [],
+      }),
+    ).toEqual({
+      ok: false,
+      error: {
+        code: "SCHEMA_VERSION_MISMATCH",
+        details: { expectedVersion: 1, receivedVersion: 999 },
+      },
+    });
+    expect(
+      parseSpellIdBookImport({
+        schemaVersion: 1,
+        favoriteSpellIds: "1,2",
+      }),
+    ).toEqual({
+      ok: false,
+      error: {
+        code: "INVALID_ARRAY_FIELD",
+        details: { field: "favoriteSpellIds", actualType: "string" },
+      },
+    });
   });
 
   it("builds stable export payloads from normalized book ids", () => {

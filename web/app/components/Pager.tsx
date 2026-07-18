@@ -152,7 +152,7 @@ export default function Pager({
                 <PaginationLink
                   href={getPageHref(token)}
                   isActive={token === page}
-                  aria-label={`Page ${token}`}
+                  aria-label={t("page.label", { page: token })}
                   onClick={(event) => {
                     handlePageClick(event, token);
                   }}

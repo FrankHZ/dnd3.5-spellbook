@@ -20,6 +20,19 @@ export function hasApiErrorCode(error: unknown, code: string) {
   return error instanceof ApiError && error.payload?.code === code;
 }
 
+export function getApiErrorDisplayMessage(
+  error: unknown,
+  fallbackMessage: string,
+  stableCodeMessages: Readonly<Record<string, string>> = {},
+) {
+  if (error instanceof ApiError) {
+    const code = error.payload?.code;
+    if (code && stableCodeMessages[code]) return stableCodeMessages[code];
+  }
+
+  return fallbackMessage;
+}
+
 function shouldSendVariant(pathname: string) {
   // v2 rule: variant only for spell endpoints
   return pathname.startsWith("/api/spells");

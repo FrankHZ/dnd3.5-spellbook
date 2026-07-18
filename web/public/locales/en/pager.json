@@ -1,6 +1,9 @@
 {
   "actions.next": "Next",
   "actions.prev": "Prev",
+  "navigation.label": "Pagination",
+  "page.label": "Page {{page}}",
+  "pages.more": "More pages",
   "range.empty": "Showing 0 of 0",
   "range.page": "Showing {{start}}-{{end}} of {{total}}"
 }

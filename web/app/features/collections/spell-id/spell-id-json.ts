@@ -1,5 +1,9 @@
 import type { SpellIdBook } from "~/storage/collections.type";
 import { normalizePositiveIntIds } from "~/storage/prepared-normalize";
+import {
+  getImportValueType,
+  type CollectionImportResult,
+} from "../collection-import";
 
 export const SPELL_ID_BOOK_EXPORT_SCHEMA_VERSION = 1 as const;
 
@@ -25,25 +29,54 @@ function asRecord(value: unknown): Record<string, unknown> | null {
   return value as Record<string, unknown>;
 }
 
-export function parseSpellIdBookImport(raw: unknown): SpellIdBookImportParsed {
+export function parseSpellIdBookImport(
+  raw: unknown,
+): CollectionImportResult<SpellIdBookImportParsed> {
   const obj = asRecord(raw) as SpellIdBookLike | null;
-  if (!obj) throw new Error("Invalid import JSON format.");
+  if (!obj) {
+    return {
+      ok: false,
+      error: {
+        code: "INVALID_ROOT",
+        details: { actualType: getImportValueType(raw) },
+      },
+    };
+  }
 
   if (obj.schemaVersion !== SPELL_ID_BOOK_EXPORT_SCHEMA_VERSION) {
-    throw new Error(
-      `Schema version mismatch: expected ${SPELL_ID_BOOK_EXPORT_SCHEMA_VERSION}.`,
-    );
+    return {
+      ok: false,
+      error: {
+        code: "SCHEMA_VERSION_MISMATCH",
+        details: {
+          expectedVersion: SPELL_ID_BOOK_EXPORT_SCHEMA_VERSION,
+          receivedVersion: obj.schemaVersion,
+        },
+      },
+    };
   }
 
   if (!Array.isArray(obj.favoriteSpellIds)) {
-    throw new Error("Invalid import JSON: favoriteSpellIds must be an array.");
+    return {
+      ok: false,
+      error: {
+        code: "INVALID_ARRAY_FIELD",
+        details: {
+          field: "favoriteSpellIds",
+          actualType: getImportValueType(obj.favoriteSpellIds),
+        },
+      },
+    };
   }
 
   const spellIds = normalizePositiveIntIds(obj.favoriteSpellIds);
 
   return {
-    spellIds,
-    invalidEntriesCount: obj.favoriteSpellIds.length - spellIds.length,
+    ok: true,
+    value: {
+      spellIds,
+      invalidEntriesCount: obj.favoriteSpellIds.length - spellIds.length,
+    },
   };
 }
 

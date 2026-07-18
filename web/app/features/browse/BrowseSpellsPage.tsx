@@ -2,7 +2,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ApiError } from "~/api/http";
+import { getApiErrorDisplayMessage } from "~/api/http";
 import { getSpellsByLevel } from "~/api/spells";
 import Pager from "~/components/Pager";
 import { SpellCard } from "~/components/SpellCard";
@@ -92,8 +92,7 @@ export default function BrowsePage() {
   const errorMessage = useMemo(() => {
     const err = browseQuery.error;
     if (!err) return null;
-    if (err instanceof ApiError) return err.message;
-    return t("errors.request-failed");
+    return getApiErrorDisplayMessage(err, t("errors.request-failed"));
   }, [browseQuery.error, t]);
 
   const currentQuery = getCurrentQueryResult(browseQuery);
