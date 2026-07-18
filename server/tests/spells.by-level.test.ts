@@ -1,6 +1,20 @@
 import request from "supertest";
 import { app } from "#server/app";
 
+async function withSpellReadSource<T>(
+  source: "rules" | "content",
+  run: () => Promise<T>,
+) {
+  const previous = process.env.SPELL_READ_SOURCE;
+  process.env.SPELL_READ_SOURCE = source;
+  try {
+    return await run();
+  } finally {
+    if (previous === undefined) delete process.env.SPELL_READ_SOURCE;
+    else process.env.SPELL_READ_SOURCE = previous;
+  }
+}
+
 describe("GET /api/spells/by-level", () => {
   it("lists spells for class + single level (grouped)", async () => {
     const res = await request(app)
@@ -61,6 +75,34 @@ describe("GET /api/spells/by-level", () => {
       expect(Array.isArray(res.body.groups[0].items)).toBe(true);
     }
   });
+
+  it.each(["rules", "content"] as const)(
+    "preserves one spell in each matching all-level group from the %s source",
+    async (source) => {
+      const res = await withSpellReadSource(source, () =>
+        request(app).get("/api/spells/by-level").query({
+          classIds: "1",
+          domainIds: "1",
+          level: "all",
+          rulebookIds: "6",
+          componentKeys: "material",
+          pageSize: 100,
+        }),
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.body.total).toBe(2);
+      expect(
+        res.body.groups.map((group: any) => ({
+          level: group.level,
+          ids: group.items.map((item: any) => item.id),
+        })),
+      ).toEqual([
+        { level: 3, ids: [100] },
+        { level: 4, ids: [100] },
+      ]);
+    },
+  );
 
   it("rejects missing level", async () => {
     const res = await request(app)

@@ -37,6 +37,35 @@ describe("GET /api/spells/search", () => {
     expect(Array.isArray(res.body.items)).toBe(true);
   });
 
+  it.each(["rules", "content"] as const)(
+    "paginates one stable name-search result set from the %s source",
+    async (source) => {
+      const [first, second] = await withSpellReadSource(source, () =>
+        Promise.all([
+          request(app).get("/api/spells/search").query({
+            q: "pagination candidate",
+            rulebookIds: "6",
+            page: 1,
+            pageSize: 1,
+          }),
+          request(app).get("/api/spells/search").query({
+            q: "pagination candidate",
+            rulebookIds: "6",
+            page: 2,
+            pageSize: 1,
+          }),
+        ]),
+      );
+
+      expect(first.status).toBe(200);
+      expect(second.status).toBe(200);
+      expect(first.body.total).toBe(21);
+      expect(second.body.total).toBe(first.body.total);
+      expect(first.body.items.map((item: any) => item.id)).toEqual([5021]);
+      expect(second.body.items.map((item: any) => item.id)).toEqual([5001]);
+    },
+  );
+
   it("returns English short descriptions from the summary overlay", async () => {
     const res = await request(app)
       .get("/api/spells/search")
