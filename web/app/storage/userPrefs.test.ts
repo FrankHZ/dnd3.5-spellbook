@@ -70,6 +70,95 @@ describe("user preferences storage", () => {
     });
   });
 
+  it("sanitizes malformed same-version fields without discarding valid siblings", () => {
+    localStorage.setItem(
+      LS_KEY_PREFS,
+      JSON.stringify({
+        storageVersion: 1,
+        includePrestige: "yes",
+        selectedRulebookIds: "bad",
+        browseQuery: {
+          classIds: [1, "bad"],
+          domainIds: [2],
+          level: 3,
+        },
+        browsePrefs: {
+          cardView: "wide",
+          groupMode: "flat",
+        },
+        displayPrefs: {
+          spellListDensity: "dense",
+          spellCardDetails: "full",
+          zhDisplay: {
+            spellNamesWithEnglish: "yes",
+            classDomainLabelsWithEnglish: true,
+            filterFacetLabelsWithEnglish: null,
+            rulebookLabelStyle: "localized",
+          },
+        },
+        uiPrefs: {
+          lang: "fr",
+          zhVariant: 42,
+          theme: "sepia",
+        },
+      }),
+    );
+
+    const state = loadState();
+
+    expect(state).toEqual({
+      ...DEFAULT_STATE,
+      browseQuery: {
+        ...DEFAULT_STATE.browseQuery,
+        domainIds: [2],
+        level: 3,
+      },
+      browsePrefs: {
+        ...DEFAULT_STATE.browsePrefs,
+        groupMode: "flat",
+      },
+      displayPrefs: {
+        ...DEFAULT_STATE.displayPrefs,
+        spellCardDetails: "full",
+        zhDisplay: {
+          ...DEFAULT_STATE.displayPrefs.zhDisplay,
+          classDomainLabelsWithEnglish: true,
+          rulebookLabelStyle: "localized",
+        },
+      },
+      uiPrefs: {
+        ...DEFAULT_STATE.uiPrefs,
+        lang: detectPreferredLang(),
+      },
+    });
+    expect(state.selectedRulebookIds.join(",")).toBe("4,6");
+  });
+
+  it("uses nested defaults when same-version preference groups are malformed", () => {
+    localStorage.setItem(
+      LS_KEY_PREFS,
+      JSON.stringify({
+        storageVersion: 1,
+        includePrestige: true,
+        selectedRulebookIds: [1, 2],
+        browseQuery: "bad",
+        browsePrefs: [],
+        displayPrefs: null,
+        uiPrefs: 42,
+      }),
+    );
+
+    expect(loadState()).toEqual({
+      ...DEFAULT_STATE,
+      includePrestige: true,
+      selectedRulebookIds: [1, 2],
+      uiPrefs: {
+        ...DEFAULT_STATE.uiPrefs,
+        lang: detectPreferredLang(),
+      },
+    });
+  });
+
   it("merges stored values over defaults", () => {
     localStorage.setItem(
       LS_KEY_PREFS,

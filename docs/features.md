@@ -327,6 +327,9 @@ Current behavior:
 - the prepared view uses responsive per-level cards
 - main prepared actions live in a sticky floating action bar
 - loading and batch-error states avoid showing misleading empty level grids
+- simple and advanced copy actions stay unavailable until every prepared spell
+  has loaded successfully; blank or incomplete TSV output is never reported as
+  a successful copy
 
 Key code:
 

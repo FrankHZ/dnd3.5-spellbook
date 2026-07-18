@@ -30,7 +30,11 @@ import {
   buildPreparedColumns,
   getPreparedSpellIds,
 } from "./prepared-derivation";
-import { buildSimplePreparedTsv } from "./prepared-copy";
+import {
+  buildSimplePreparedTsv,
+  hasPreparedCopyRows,
+  isPreparedCopyReady,
+} from "./prepared-copy";
 
 type ViewMode = "normal" | "edit";
 
@@ -108,6 +112,13 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
 
   const spells = batchQuery.data?.items ?? [];
   const byId = useMemo(() => new Map(spells.map((s) => [s.id, s])), [spells]);
+  const copyReady = isPreparedCopyReady({
+    entries: book.entries,
+    byId,
+    isBatchSuccess: batchQuery.isSuccess,
+    isBatchFetching: batchQuery.isFetching,
+    missingIds: batchQuery.data?.missingIds ?? [],
+  });
 
   const columns = useMemo(
     () =>
@@ -198,11 +209,17 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
 
   const onCopySimple = async () => {
     try {
+      if (!copyReady) {
+        throw new Error("Prepared spell data is incomplete");
+      }
       const tsv = buildSimplePreparedTsv({
         columns,
         byId,
         getVisibleName: name,
       });
+      if (!hasPreparedCopyRows(tsv)) {
+        throw new Error("Prepared copy output has no data rows");
+      }
       if (!navigator.clipboard?.writeText) {
         throw new Error("Clipboard API unavailable");
       }
@@ -277,7 +294,7 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
                     size="icon-sm"
                     variant="outline"
                     onClick={onCopySimple}
-                    disabled={book.entries.length === 0}
+                    disabled={!copyReady}
                     aria-label={t("prepared.copy.table-title")}
                   >
                     <Copy className="h-4 w-4" />
@@ -289,6 +306,7 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
                     selectedClassIds={selectedClassIds}
                     selectedDomainIds={selectedDomainIds}
                     getVisibleName={name}
+                    isCopyReady={copyReady}
                   />
                 </ButtonGroup>
                 <BulkPasteDialog bookId={book.id} />

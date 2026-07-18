@@ -24,6 +24,7 @@ import {
 import {
   buildDetailedPreparedTsv,
   buildSimplePreparedTsv,
+  hasPreparedCopyRows,
 } from "./prepared-copy";
 
 type CopyFormat = "simple" | "detailed";
@@ -42,6 +43,7 @@ export function PreparedCopyDialog({
   selectedClassIds,
   selectedDomainIds,
   getVisibleName,
+  isCopyReady,
   className,
 }: {
   entries: PreparedEntry[];
@@ -50,6 +52,7 @@ export function PreparedCopyDialog({
   selectedClassIds: number[];
   selectedDomainIds: number[];
   getVisibleName: (spell: SpellItemView) => string;
+  isCopyReady: boolean;
   className?: string;
 }) {
   const { t } = useTranslation("collections");
@@ -58,6 +61,7 @@ export function PreparedCopyDialog({
   const [aggregateRows, setAggregateRows] = useState(true);
 
   const tsv = useMemo(() => {
+    if (!isCopyReady) return "";
     if (format === "simple") {
       return buildSimplePreparedTsv({ columns, byId, getVisibleName });
     }
@@ -78,6 +82,7 @@ export function PreparedCopyDialog({
     selectedClassIds,
     selectedDomainIds,
     getVisibleName,
+    isCopyReady,
   ]);
 
   const lineCount = useMemo(
@@ -87,6 +92,9 @@ export function PreparedCopyDialog({
 
   const onCopy = async () => {
     try {
+      if (!isCopyReady || !hasPreparedCopyRows(tsv)) {
+        throw new Error("Prepared copy output is incomplete");
+      }
       await copyText(tsv);
       toast.success(t("prepared.copy.tsv-title"), {
         description: t("prepared.copy.copied-tsv", { count: lineCount }),
@@ -105,7 +113,12 @@ export function PreparedCopyDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button className={className} size="sm" variant="outline">
+        <Button
+          className={className}
+          size="sm"
+          variant="outline"
+          disabled={!isCopyReady}
+        >
           {t("prepared.copy.advanced-title")}
         </Button>
       </DialogTrigger>
@@ -157,7 +170,9 @@ export function PreparedCopyDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t("actions.close")}
           </Button>
-          <Button onClick={onCopy}>{t("prepared.copy.tsv-title")}</Button>
+          <Button onClick={onCopy} disabled={!isCopyReady}>
+            {t("prepared.copy.tsv-title")}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

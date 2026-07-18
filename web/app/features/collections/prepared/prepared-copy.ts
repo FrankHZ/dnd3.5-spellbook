@@ -24,6 +24,46 @@ function toTsv(lines: string[][]): string {
   return lines.map((line) => line.map(sanitizeCell).join("\t")).join("\n");
 }
 
+function getPreparedSpell(
+  entry: PreparedEntry,
+  byId: Map<number, SpellItemView>,
+): SpellItemView {
+  const spell = byId.get(entry.spellId);
+  if (!spell) {
+    throw new Error(`Missing prepared spell data for id ${entry.spellId}`);
+  }
+  return spell;
+}
+
+export function isPreparedCopyReady({
+  entries,
+  byId,
+  isBatchSuccess,
+  isBatchFetching,
+  missingIds,
+}: {
+  entries: PreparedEntry[];
+  byId: Map<number, SpellItemView>;
+  isBatchSuccess: boolean;
+  isBatchFetching: boolean;
+  missingIds: number[];
+}): boolean {
+  return (
+    isBatchSuccess &&
+    !isBatchFetching &&
+    missingIds.length === 0 &&
+    entries.length > 0 &&
+    entries.every((entry) => byId.has(entry.spellId))
+  );
+}
+
+export function hasPreparedCopyRows(tsv: string): boolean {
+  return tsv
+    .split(/\r?\n/)
+    .slice(1)
+    .some((line) => line.split("\t").some((cell) => cell.trim().length > 0));
+}
+
 export function buildSimplePreparedTsv({
   columns,
   byId,
@@ -51,11 +91,7 @@ export function buildSimplePreparedTsv({
         rowCells.push("");
         continue;
       }
-      const spell = byId.get(entry.spellId);
-      if (!spell) {
-        rowCells.push("");
-        continue;
-      }
+      const spell = getPreparedSpell(entry, byId);
       const summary = summarizePreparedEntry(entry, getVisibleName(spell));
       rowCells.push(summary.effectiveDisplayName);
     }
@@ -154,8 +190,7 @@ export function buildDetailedPreparedTsv({
 
   if (!aggregateRows) {
     for (const entry of entries) {
-      const spell = byId.get(entry.spellId);
-      if (!spell) continue;
+      const spell = getPreparedSpell(entry, byId);
       const row = toDetailedRow({
         entry,
         spell,
@@ -181,8 +216,7 @@ export function buildDetailedPreparedTsv({
 
   const grouped = new Map<string, DetailedCopyRow>();
   for (const entry of entries) {
-    const spell = byId.get(entry.spellId);
-    if (!spell) continue;
+    const spell = getPreparedSpell(entry, byId);
     const row = toDetailedRow({
       entry,
       spell,
