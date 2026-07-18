@@ -13,6 +13,7 @@ import {
 import { useCollections } from "~/state/collections-state";
 import type { SpellIdBook } from "~/storage/collections.type";
 
+import { getCollectionImportErrorMessage } from "../collection-import";
 import {
   downloadSpellIdBookExport,
   parseSpellIdBookImport,
@@ -41,10 +42,21 @@ export function SpellIdBookJsonActions({ book }: { book: SpellIdBook }) {
       try {
         parsedRaw = JSON.parse(text);
       } catch {
-        throw new Error(t("import.invalid-json"));
+        toast.error(t("import.failed-title"), {
+          description: t("import.invalid-json"),
+        });
+        return;
       }
 
-      const parsed = parseSpellIdBookImport(parsedRaw);
+      const parseResult = parseSpellIdBookImport(parsedRaw);
+      if (!parseResult.ok) {
+        toast.error(t("import.failed-title"), {
+          description: getCollectionImportErrorMessage(parseResult.error, t),
+        });
+        return;
+      }
+
+      const parsed = parseResult.value;
       const importIds = parsed.spellIds;
       const batch = importIds.length > 0 ? await getSpellsBatch(importIds) : null;
       const missingSpellIdSet = new Set(batch?.missingIds ?? []);
@@ -78,9 +90,10 @@ export function SpellIdBookJsonActions({ book }: { book: SpellIdBook }) {
         .join(" | ");
 
       toast.success(t("import.complete-title"), { description });
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : t("import.failed-description");
-      toast.error(t("import.failed-title"), { description: msg });
+    } catch {
+      toast.error(t("import.failed-title"), {
+        description: t("import.failed-description"),
+      });
     } finally {
       setIsImporting(false);
       if (importInputRef.current) {

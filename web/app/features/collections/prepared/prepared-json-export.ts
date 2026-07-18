@@ -3,6 +3,10 @@ import {
   normalizePositiveIntIds,
   normalizePreparedEntries,
 } from "~/storage/prepared-normalize";
+import {
+  getImportValueType,
+  type CollectionImportResult,
+} from "../collection-import";
 
 export const PREPARED_EXPORT_SCHEMA_VERSION = 1 as const;
 
@@ -44,18 +48,42 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 export function parsePreparedCollectionImport(
   raw: unknown,
   bookId: string,
-): PreparedCollectionImportParsed {
+): CollectionImportResult<PreparedCollectionImportParsed> {
   const obj = asRecord(raw) as PreparedCollectionLike | null;
-  if (!obj) throw new Error("Invalid import JSON format.");
+  if (!obj) {
+    return {
+      ok: false,
+      error: {
+        code: "INVALID_ROOT",
+        details: { actualType: getImportValueType(raw) },
+      },
+    };
+  }
 
   if (obj.schemaVersion !== PREPARED_EXPORT_SCHEMA_VERSION) {
-    throw new Error(
-      `Schema version mismatch: expected ${PREPARED_EXPORT_SCHEMA_VERSION}.`,
-    );
+    return {
+      ok: false,
+      error: {
+        code: "SCHEMA_VERSION_MISMATCH",
+        details: {
+          expectedVersion: PREPARED_EXPORT_SCHEMA_VERSION,
+          receivedVersion: obj.schemaVersion,
+        },
+      },
+    };
   }
 
   if (!Array.isArray(obj.preparedEntries)) {
-    throw new Error("Invalid import JSON: preparedEntries must be an array.");
+    return {
+      ok: false,
+      error: {
+        code: "INVALID_ARRAY_FIELD",
+        details: {
+          field: "preparedEntries",
+          actualType: getImportValueType(obj.preparedEntries),
+        },
+      },
+    };
   }
 
   const entries = normalizePreparedEntries(obj.preparedEntries, bookId);
@@ -66,10 +94,13 @@ export function parsePreparedCollectionImport(
   const selectedDomainIds = normalizePositiveIntIds(prefs?.selectedDomainIds ?? []);
 
   return {
-    entries,
-    selectedClassIds,
-    selectedDomainIds,
-    invalidEntriesCount,
+    ok: true,
+    value: {
+      entries,
+      selectedClassIds,
+      selectedDomainIds,
+      invalidEntriesCount,
+    },
   };
 }
 

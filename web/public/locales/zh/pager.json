@@ -1,6 +1,9 @@
 {
   "actions.next": "后一页",
   "actions.prev": "前一页",
+  "navigation.label": "分页",
+  "page.label": "第{{page}}页",
+  "pages.more": "更多页",
   "range.empty": "共0个",
   "range.page": "第{{start}}-{{end}}个，共{{total}}个"
 }

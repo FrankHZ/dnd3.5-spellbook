@@ -1,5 +1,6 @@
 {
   "actions.clear": "Clear",
+  "actions.close": "Close",
   "actions.done": "Done",
   "actions.remove-name": "Remove {{name}}",
   "bootstrap.load-failed": "Failed to load rules data. Refresh to retry.",
