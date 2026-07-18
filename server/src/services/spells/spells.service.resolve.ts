@@ -94,6 +94,7 @@ export async function resolveSpellNames(input: {
       uniqueNames,
       input.rulebookIds,
       lang,
+      input.i18n.variant,
     );
     for (const sp of zhMatches) {
       const zhName = sp.name;

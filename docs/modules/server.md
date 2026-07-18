@@ -92,11 +92,19 @@ In the v1.0 split frontend/API topology, production browser access to the API
 is cross-origin. Keep `SPELLBOOK_CORS_ORIGINS` explicit for the accepted
 Cloudflare Workers frontend origins; do not make production CORS permissive.
 
+All three database roles must be configured before startup. The rules client
+rejects a missing `RULES_DATABASE_URL` during module import, before the HTTP
+listener starts, matching the existing content and app-state client boundary.
+
 ## Contracts
 
 Server responses should use DTOs exported from `@dnd/contracts`. If a response
 shape changes, update `contracts/` first, rebuild it, and then validate both
 server and web consumers.
+
+`POST /api/spells/resolve` takes names and rulebook ids in its JSON body. Its
+`lang` and `variant` come from the standard spell query context and the selected
+variant is used for both exact localized-name matching and returned overlays.
 
 Browse/Search normalized filter contracts are owned by the server plus
 contracts boundary. The current public normalized filter vocabulary is:

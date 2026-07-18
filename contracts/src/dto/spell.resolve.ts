@@ -1,8 +1,8 @@
-import type { Lang } from "../i18n.js";
 import type { RulebookId } from "./rulebook.js";
 import type { SpellItemView } from "./spell.js";
 
 // NOTE: Backend matching rules (v3.0):
+// - Language and variant are selected through the request query context.
 // - lang="en": exact match on spell.name only
 // - lang="zh": exact match on zh name first (if available), else fallback to spell.name exact match
 // No fuzzy matching. No silent disambiguation.
@@ -10,7 +10,6 @@ import type { SpellItemView } from "./spell.js";
 export type ResolveSpellNamesRequest = {
   names: string[];
   rulebookIds?: RulebookId[] | undefined;
-  lang?: Lang;
 };
 
 // ---------- Response ----------

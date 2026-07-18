@@ -1,9 +1,14 @@
 import express from "express";
 import request from "supertest";
+import type { ApiErrorResponse } from "@dnd/contracts";
 import { app } from "#server/app";
 import { errorMiddleware } from "#server/middlewares/error.middleware";
 
-function expectApiErrorShape(body: any, message: string, error: string) {
+function expectApiErrorShape(
+  body: ApiErrorResponse,
+  message: string,
+  error: string,
+) {
   expect(body).toEqual({ message, error });
 }
 

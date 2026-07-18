@@ -45,6 +45,11 @@ When a shared shape changes:
 
 Server and web code should not define parallel DTOs for the same API response.
 
+`ResolveSpellNamesRequest` defines only the JSON body. Resolve localization is
+selected through the spell endpoint's `lang` and `variant` query context so
+name matching and returned overlays use one variant. `ApiErrorResponse` exposes
+an optional `code` for stable machine-readable server failures.
+
 Current normalized spell query contracts live in `contracts/src/dto/spell.ts`
 and metadata vocabulary lives in `contracts/src/dto/meta.ts`.
 

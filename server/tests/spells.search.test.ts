@@ -1,4 +1,5 @@
 import request from "supertest";
+import type { ApiErrorResponse } from "@dnd/contracts";
 import { app } from "#server/app";
 import { contentPrisma } from "#server/lib/content-prisma-client";
 import {
@@ -120,9 +121,10 @@ describe("GET /api/spells/search", () => {
     const res = await request(app)
       .get("/api/spells/search")
       .query({ q: "火球", mode: "full" });
+    const body: ApiErrorResponse = res.body;
 
     expect(res.status).toBe(400);
-    expect(res.body).toEqual({
+    expect(body).toEqual({
       message: "Invalid request",
       error:
         "full-text query must contain at least one term with 3 Unicode code points",
