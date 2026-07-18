@@ -7,12 +7,14 @@ directory for release lines after MVP scope is frozen.
 
 ## Current Release Plans
 
-- [v1.2.1/README.md](./v1.2.1/README.md): active focused content-backed
-  full-text spell search release.
+- [v1.2.1/FREEZE.md](./v1.2.1/FREEZE.md): latest frozen content-backed
+  full-text spell search release snapshot.
+- [v1.2.1/README.md](./v1.2.1/README.md): frozen focused content-backed
+  full-text spell search release record.
 - [v1.2.1/full-text-search-plan.md](./v1.2.1/full-text-search-plan.md):
   accepted Search full-text mode, content DB FTS index, and frontend consumer
-  plan ready for specialist handoff.
-- [v1.2/FREEZE.md](./v1.2/FREEZE.md): latest frozen full-spell review,
+  record.
+- [v1.2/FREEZE.md](./v1.2/FREEZE.md): previous frozen full-spell review,
   mechanics localization, Publications, and DB/content workflow snapshot.
 - [v1.2/README.md](./v1.2/README.md): frozen full-spell source review,
   mechanics localization, and Publications page release plan.
