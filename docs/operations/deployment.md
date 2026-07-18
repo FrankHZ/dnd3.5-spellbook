@@ -1,6 +1,6 @@
 # Deployment
 
-This document describes the current v1.0 deployment workflow used for the project.
+This document describes the current production deployment workflow used for the project.
 
 It is intentionally simple and optimized for the current stage of the project:
 
@@ -86,7 +86,7 @@ Configure Workers Builds through Git integration with:
 - install command: `npm ci`
 - build command:
   ```bash
-  sh -lc 'commit="${WORKERS_CI_COMMIT_SHA:-$(git rev-parse HEAD 2>/dev/null || true)}"; ref="${WORKERS_CI_BRANCH:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)}"; export VITE_SPELLBOOK_VERSION_LABEL=v1.0 VITE_SPELLBOOK_FRONTEND_COMMIT_SHA="$commit" VITE_SPELLBOOK_FRONTEND_REF="$ref" VITE_SPELLBOOK_FRONTEND_BUILT_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"; npm run build:contracts && npm run -w web build'
+  npm run build:production
   ```
 - deploy command: `npx wrangler deploy`
 - static asset config: root `wrangler.jsonc`
@@ -311,7 +311,7 @@ Backend version metadata is optional in local/manual environments. GitHub
 backend deploys refresh it automatically:
 
 ```dotenv
-SPELLBOOK_VERSION_LABEL=v1.0
+# Managed by deploy-backend.sh from root package.json unless overridden.
 SPELLBOOK_BACKEND_COMMIT_SHA=
 SPELLBOOK_BACKEND_SHORT_SHA=
 SPELLBOOK_BACKEND_REF=
@@ -415,7 +415,7 @@ npm ci
 Build command:
 
 ```bash
-sh -lc 'commit="${WORKERS_CI_COMMIT_SHA:-$(git rev-parse HEAD 2>/dev/null || true)}"; ref="${WORKERS_CI_BRANCH:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)}"; export VITE_SPELLBOOK_VERSION_LABEL=v1.0 VITE_SPELLBOOK_FRONTEND_COMMIT_SHA="$commit" VITE_SPELLBOOK_FRONTEND_REF="$ref" VITE_SPELLBOOK_FRONTEND_BUILT_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"; npm run build:contracts && npm run -w web build'
+npm run build:production
 ```
 
 Deploy command:
@@ -438,10 +438,11 @@ VITE_API_BASE_URL=https://api.d20spellcodex.com
 ```
 
 Workers Builds also injects default `WORKERS_CI_COMMIT_SHA` and
-`WORKERS_CI_BRANCH` values. The production build command exports those into
-`VITE_SPELLBOOK_FRONTEND_COMMIT_SHA` and `VITE_SPELLBOOK_FRONTEND_REF`, with
-`git` fallbacks for manual rebuilds. It also sets
-`VITE_SPELLBOOK_FRONTEND_BUILT_AT` from the build time.
+`WORKERS_CI_BRANCH` values. The repo-owned production build command derives
+`VITE_SPELLBOOK_VERSION_LABEL` from root `package.json`, exports the Workers
+metadata into `VITE_SPELLBOOK_FRONTEND_COMMIT_SHA` and
+`VITE_SPELLBOOK_FRONTEND_REF` with `git` fallbacks for manual rebuilds, and
+sets `VITE_SPELLBOOK_FRONTEND_BUILT_AT` from the build time.
 
 ### Legacy Same-Origin Fallback
 
