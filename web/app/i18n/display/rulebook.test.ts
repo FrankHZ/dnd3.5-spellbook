@@ -80,4 +80,24 @@ describe("rulebook display helpers", () => {
       name: "Player's Handbook",
     });
   });
+
+  it("keeps compact English abbreviations when the Chinese overlay is missing", () => {
+    const rulebook = {
+      id: 4,
+      abbr: "PH",
+      displayAbbr: "PHB",
+      name: "Player's Handbook",
+    };
+
+    expect(getRulebookDisplay(meta, rulebook, "zh")).toMatchObject({
+      abbr: "PHB",
+      name: "Player's Handbook",
+    });
+    expect(
+      getRulebookDisplay(meta, { ...rulebook, displayAbbr: undefined }, "zh"),
+    ).toMatchObject({
+      abbr: "PH",
+      name: "Player's Handbook",
+    });
+  });
 });
