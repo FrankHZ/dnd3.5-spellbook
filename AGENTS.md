@@ -28,7 +28,13 @@ Use these docs for orientation instead of expanding this file:
 - `docs/README.md`: canonical documentation map and historical/current doc
   ownership.
 - `docs/roadmap.md`: current work ordering after a pause; v1.3 planning is
-  next.
+  active.
+- `docs/releases/v1.3/README.md`: active sitewide UX/style release boundary,
+  track ownership, and freeze gate.
+- `docs/releases/v1.3/sitewide-ux-redesign-plan.md`: frontend-design-owned
+  sitewide cohesion plan.
+- `docs/releases/v1.3/platform-deploy-prerequisite-plan.md`: independent
+  platform-owned secure Actions deployment prerequisite.
 - `docs/releases/v1.2.2/FREEZE.md`: latest frozen formal release snapshot for
   the internal quality-maintenance release.
 - `docs/releases/v1.2.2/README.md`: frozen internal quality-maintenance release
