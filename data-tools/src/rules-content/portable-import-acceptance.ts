@@ -246,7 +246,17 @@ function portableArtifact(
     normalizedOperations,
     "RulebookContent",
   );
-  const spells = rows<NormalizedSpellRow>(normalizedOperations, "SpellContent");
+  const spells = rows<NormalizedSpellRow>(
+    normalizedOperations,
+    "SpellContent",
+    { verified: false },
+  );
+  const sparseSpell = spells.find((spell) => spell.id === "spell:5001");
+  assert.ok(sparseSpell, "expected sparse pagination spell fixture");
+  assert.equal(sparseSpell.sourcePage, null);
+  assert.equal(sparseSpell.verified, false);
+  assert.ok(Object.hasOwn(sparseSpell, "sourcePage"));
+  assert.ok(Object.hasOwn(sparseSpell, "verified"));
   const firstSpell = spells[0]!;
   const appearances: NormalizedSpellAppearanceRow[] = [
     {
@@ -348,7 +358,11 @@ function readFixture(filePath: string): PortableFixtureOperation[] {
     .map((line) => JSON.parse(line) as PortableFixtureOperation);
 }
 
-function rows<T>(operations: PortableFixtureOperation[], table: string): T[] {
+function rows<T>(
+  operations: PortableFixtureOperation[],
+  table: string,
+  missingDefaults: Record<string, unknown> = {},
+): T[] {
   const fixtureRows = operations
     .filter((operation) => operation.op === "insert" && operation.table === table)
     .map((operation) => operation.data);
@@ -358,7 +372,14 @@ function rows<T>(operations: PortableFixtureOperation[], table: string): T[] {
   return fixtureRows.map(
     (row) =>
       Object.fromEntries(
-        columns.map((column) => [column, row[column] ?? null]),
+        columns.map((column) => [
+          column,
+          Object.hasOwn(row, column)
+            ? row[column]
+            : Object.hasOwn(missingDefaults, column)
+              ? missingDefaults[column]
+              : null,
+        ]),
       ) as T,
   );
 }
