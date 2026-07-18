@@ -16,9 +16,12 @@ const allowlistPath = join(scriptDir, "i18n-legacy-keys.json");
 const auditRulesPath = pathToFileURL(
   join(webDir, "app", "i18n", "audit-rules.ts"),
 ).href;
-const { isRawEnglishI18nKey, normalizedKeySet, uniqueSorted } = (await import(
-  auditRulesPath
-)) as typeof import("../app/i18n/audit-rules");
+const {
+  isRawEnglishI18nKey,
+  missingRequiredPluralVariantKeys,
+  normalizedKeySet,
+  uniqueSorted,
+} = (await import(auditRulesPath)) as typeof import("../app/i18n/audit-rules");
 
 function readJson<T>(path: string): T {
   return JSON.parse(readFileSync(path, "utf8")) as T;
@@ -446,6 +449,24 @@ function main() {
     }
     if (extraZh.length > 0) {
       errors.push(`${namespace}: zh has extra base keys ${formatList(extraZh)}`);
+    }
+
+    for (const [lang, localeKeys] of [
+      ["en", enKeys],
+      ["zh", zhKeys],
+    ] as const) {
+      const missingPluralVariants = missingRequiredPluralVariantKeys(
+        enKeys,
+        localeKeys,
+        lang,
+      );
+      if (missingPluralVariants.length > 0) {
+        errors.push(
+          `${namespace}: ${lang} missing runtime plural variants ${formatList(
+            missingPluralVariants,
+          )}`,
+        );
+      }
     }
 
     namespaceSummaries.push(

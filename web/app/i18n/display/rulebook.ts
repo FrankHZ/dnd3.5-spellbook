@@ -31,11 +31,13 @@ export function getRulebookDisplay(
   if (!rulebook) return EMPTY_RULEBOOK_DISPLAY;
 
   const zhName = lang === "zh" ? meta?.rulebooks?.[rulebook.id]?.name : undefined;
-  const name = zhName ?? rulebook.displayName ?? rulebook.name;
+  const fallbackName = rulebook.displayName ?? rulebook.name;
+  const name = zhName ?? fallbackName;
+  const fallbackAbbr = rulebook.displayAbbr ?? rulebook.abbr ?? fallbackName;
   const abbr =
-    lang === "zh"
-      ? getLocalizedRulebookAbbr(name)
-      : (rulebook.displayAbbr ?? rulebook.abbr ?? name);
+    lang === "zh" && zhName !== undefined
+      ? getLocalizedRulebookAbbr(zhName)
+      : fallbackAbbr;
 
   return {
     abbr,
