@@ -13,23 +13,26 @@ acceptance can be described.
 
 ## Current Track
 
-v1.2.2 is the active internal quality-maintenance release plan:
+v1.3 sitewide UX/style planning is next. No v1.3 plan exists yet; the first
+step is to bound the design-system and page-cohesion scope before any
+implementation branch starts.
 
+v1.2.2 is the latest frozen formal release, covering internal quality
+maintenance:
+
+- `docs/releases/v1.2.2/FREEZE.md`
 - `docs/releases/v1.2.2/README.md`
 - `docs/releases/v1.2.2/agent-workflow-hardening-plan.md`
 - `docs/releases/v1.2.2/code-and-test-qa-plan.md`
 
-Agent Workflow Hardening was accepted and merged in PR #79. The five Code And
-Test QA role audits completed from one shared base, and main-gate triage is
-complete. Current work is the first bounded, domain-owned fix wave.
-
-v1.2.1 is the latest frozen formal public release:
+v1.2.1 is the previous frozen formal release and latest frozen
+production/public release:
 
 - `docs/releases/v1.2.1/FREEZE.md`
 - `docs/releases/v1.2.1/README.md`
 - `docs/releases/v1.2.1/full-text-search-plan.md`
 
-v1.2 is the previous frozen formal public release:
+v1.2 is an older frozen formal public release:
 
 - `docs/releases/v1.2/FREEZE.md`
 - `docs/releases/v1.2/README.md`
@@ -39,7 +42,7 @@ v1.2 is the previous frozen formal public release:
 - `docs/releases/v1.2/mechanics-localization-plan.md`
 - `docs/releases/v1.2/publications-page-plan.md`
 
-v1.1 is the previous frozen formal public release:
+v1.1 is an older frozen formal public release:
 
 - `docs/releases/v1.1/FREEZE.md`
 - `docs/releases/v1.1/README.md`
@@ -57,14 +60,29 @@ v1.0 is the older frozen formal public release:
 
 The latest frozen pre-release snapshot is `docs/mvp/v3.10/FREEZE.md`.
 
-Use the v1.2.1 freeze for shipped full-text Search behavior. Use the v1.2.2
-plans for the current internal maintenance work without reopening frozen
-search, mechanics, publication, or broader v1.3 design scope.
+Use the v1.2.2 freeze for accepted internal maintenance behavior and the
+v1.2.1 freeze for the latest frozen deployed Search and production state. Do
+not reopen those releases while scoping v1.3.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
 
 ## Recently Completed
+
+The v1.2.2 internal quality-maintenance release is frozen with:
+
+- `docs/releases/v1.2.2/FREEZE.md` as the canonical as-built snapshot.
+- seven canonical roles, seven thin Codex adapters, and maintained
+  role/adapter correspondence checks accepted in PR #79.
+- five read-only role audits, centralized main-gate triage, and 27 final
+  dispositions recorded through PRs #80 and #81.
+- ten bounded fix batches merged in PRs #82 through #91: 25 findings fixed,
+  one P2 deferred, one unsupported path closed, and no open P0/P1.
+- portable, root, deployment, server, web, data, import, i18n, build/runtime,
+  local-data, and English/Chinese desktop/mobile smoke acceptance passing.
+- `DP-AUD-007` preserved in `docs/stable-backlog.md` and the temporary QA
+  evidence pack removed.
+- production deployment explicitly excluded from this internal freeze.
 
 The v1.2 release is frozen with:
 
@@ -189,34 +207,20 @@ freeze docs instead of copying them into this roadmap.
 
 Recommended next sequence:
 
-1. **Run the first v1.2.2 bounded fix wave**
+1. **Scope v1.3 before implementation**
 
-   Follow the final dispositions and batch table in
-   `docs/releases/v1.2.2/qa-findings/README.md`. Run `QA-B1`, `QA-D1`,
-   `QA-W1`, and `QA-P1` in parallel from the same merged triage base. Keep each
-   branch inside its listed findings and validation boundary.
+   Create the v1.3 sitewide UX/style plan only after the design-system,
+   page-cohesion, filter, spell-card, density, and mobile boundaries have a
+   concrete acceptance contract. This v1.2.2 freeze does not create that plan.
 
-2. **Run the dependent v1.2.2 fix waves**
+2. **Preserve the frozen maintenance boundary**
 
-   After main-gate acceptance of Wave 1, run the listed Wave 2 batches with
-   same-role work kept sequential. Run frontend-owned `QA-I2` only after
-   `QA-B2`, `QA-W1`, and `QA-W2`, with `i18n-translation` review, so localized
-   errors and accessible labels reuse the accepted contract and UI boundaries.
+   Treat `docs/releases/v1.2.2/FREEZE.md` as authoritative for the completed
+   internal QA release. Do not restore the temporary findings ledger or pull
+   `DP-AUD-007` into active work unless the dormant CHM preprocessing workflow
+   is intentionally reactivated.
 
-3. **Accept and freeze v1.2.2**
-
-   Run the release validation matrix and affected critical-page smoke from a
-   clean merged state. Collapse final disposition counts, accepted PRs, and
-   residual risk into Completion Notes, then remove the temporary evidence
-   pack before creating the freeze snapshot.
-
-4. **Keep v1.3 as the broader design release**
-
-   Do not let the v1.2 Publications page become the full sitewide style
-   redesign. Keep complete filter UX, spell-card redesign, and broader visual
-   system work in v1.3 unless a v1.2 acceptance blocker proves otherwise.
-
-5. **Defer full translation QA**
+3. **Defer full translation QA**
 
    Treat full spell-body/name/short-description translation and proofreading
    as a later release candidate. Use the frozen v1.2 mechanics workflow and
@@ -245,14 +249,14 @@ The expected post-v1.1 release order is:
    component, and mechanics filters active in full-text mode. Use SQLite FTS5
    inside the content DB rather than a separate search service.
 
-3. **v1.2.2 Internal Quality Maintenance (Active)**
+3. **v1.2.2 Internal Quality Maintenance (Frozen)**
 
-   Harden agent role contracts and tool adapters first, then run a structured
-   code/test QA pass across backend/DB, data tooling, frontend/i18n, and
-   platform boundaries. Resolve P0/P1 findings, explicitly fix or defer P2,
-   and park P3 or broad refactors without adding user-facing features.
+   Hardened agent role contracts and tool adapters first, then completed a
+   structured code/test QA pass across backend/DB, data tooling,
+   frontend/i18n, and platform boundaries. All P1 findings were fixed, every
+   P2 was fixed or explicitly deferred, and no user-facing scope was added.
 
-4. **v1.3 Sitewide UX / Style Redesign**
+4. **v1.3 Sitewide UX / Style Redesign (Next Planning)**
 
    Run a deliberate design-system and sitewide cohesion pass across Browse,
    Search, Detail, About/Status, collections, prepared spells, filters, spell

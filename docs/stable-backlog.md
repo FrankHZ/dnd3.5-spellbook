@@ -61,6 +61,11 @@ as loose backlog items unless their scope changes again:
 - dependency upgrades not accepted into focused version slices remain deferred
 - revisit full server ESM or contracts dual-package output only when the current
   v3.8 package-import boundary stops being sufficient
+- `DP-AUD-007`: when the dormant local CHM preprocessing workflow is next
+  reactivated, reconcile stale generated outputs with a staging-tree
+  replacement or a generated-file manifest plus source deletion/rename
+  regression. Owner: `data-pipeline`; this is outside the active build/import
+  path and did not block the v1.2.2 freeze.
 
 ### Content
 

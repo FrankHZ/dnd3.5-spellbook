@@ -5,23 +5,28 @@ This directory contains formal post-MVP release plans.
 Use `docs/mvp/` for MVP-stage history and the final MVP closeout. Use this
 directory for release lines after MVP scope is frozen.
 
-## Current Release Plans
+v1.3 sitewide UX/style planning is next; no v1.3 plan exists yet.
 
-- [v1.2.2/README.md](./v1.2.2/README.md): active internal quality-maintenance
-  release boundary and ordered pass map.
+## Release Records
+
+- [v1.2.2/FREEZE.md](./v1.2.2/FREEZE.md): latest frozen formal release
+  snapshot for the internal quality-maintenance release.
+- [v1.2.2/README.md](./v1.2.2/README.md): frozen internal quality-maintenance
+  release boundary and accepted pass map.
 - [v1.2.2/agent-workflow-hardening-plan.md](./v1.2.2/agent-workflow-hardening-plan.md):
-  canonical roles, thin tool adapters, and workflow correspondence checks.
+  accepted canonical roles, thin tool adapters, and workflow correspondence
+  checks.
 - [v1.2.2/code-and-test-qa-plan.md](./v1.2.2/code-and-test-qa-plan.md):
-  role-based read-only audits, main-gate triage, bounded fixes, and regression
-  acceptance.
-- [v1.2.1/FREEZE.md](./v1.2.1/FREEZE.md): latest frozen content-backed
-  full-text spell search release snapshot.
+  accepted role-based read-only audits, main-gate triage, bounded fixes, and
+  regression record.
+- [v1.2.1/FREEZE.md](./v1.2.1/FREEZE.md): previous frozen formal release and
+  latest frozen production/public release snapshot.
 - [v1.2.1/README.md](./v1.2.1/README.md): frozen focused content-backed
   full-text spell search release record.
 - [v1.2.1/full-text-search-plan.md](./v1.2.1/full-text-search-plan.md):
   accepted Search full-text mode, content DB FTS index, and frontend consumer
   record.
-- [v1.2/FREEZE.md](./v1.2/FREEZE.md): previous frozen full-spell review,
+- [v1.2/FREEZE.md](./v1.2/FREEZE.md): older frozen full-spell review,
   mechanics localization, Publications, and DB/content workflow snapshot.
 - [v1.2/README.md](./v1.2/README.md): frozen full-spell source review,
   mechanics localization, and Publications page release plan.
@@ -35,7 +40,7 @@ directory for release lines after MVP scope is frozen.
   accepted mechanics translation, QA workflow, and frontend consumer record.
 - [v1.2/publications-page-plan.md](./v1.2/publications-page-plan.md): accepted
   Publications page and minimum metadata record.
-- [v1.1/FREEZE.md](./v1.1/FREEZE.md): previous frozen production hardening,
+- [v1.1/FREEZE.md](./v1.1/FREEZE.md): older frozen production hardening,
   full spell corpus, and frontend content acceptance release snapshot.
 - [v1.1/README.md](./v1.1/README.md): frozen production hardening, full spell
   corpus, and frontend content acceptance release plan.

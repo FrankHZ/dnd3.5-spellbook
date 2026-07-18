@@ -6,8 +6,9 @@
 > `docs/roadmap.md` only when active ordering changes. v1.2.2 has no
 > `integrated-plan.md`.
 
-Status: accepted and merged in PR #79. Code And Test QA is authorized to
-proceed.
+Status: **accepted as built**. PR #79 merged the implementation, downstream
+Code And Test QA completed, and [FREEZE.md](./FREEZE.md) is the canonical
+v1.2.2 snapshot.
 
 ## Purpose
 
@@ -284,5 +285,7 @@ Implementation handoff:
   `npm run ci:portable` pass locally.
 
 Main gate accepted the role boundary and merged the implementation in PR #79.
-This pass is complete; downstream Code And Test QA uses these canonical roles
-without reopening their semantics.
+The downstream QA pass used these canonical roles through audit, triage, ten
+bounded fix PRs, and freeze without reopening their semantics. The v1.2.2
+merged-state acceptance recorded `7/7` canonical role/adapter correspondence
+with `agents:check`, `ci:portable`, and `verify` passing.

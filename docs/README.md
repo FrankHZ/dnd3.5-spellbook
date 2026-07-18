@@ -20,25 +20,27 @@ decide what to do next after a pause.
 Agents should also read the repository-root [AGENTS.md](../AGENTS.md) for
 execution rules and role boundaries.
 
-## Active Planning
+## Next Planning
 
-The active internal quality-maintenance release plan is v1.2.2:
+v1.3 sitewide UX/style planning is next. No v1.3 plan exists yet; use
+[roadmap.md](./roadmap.md) for the accepted direction and next-work boundary.
 
+The latest frozen formal release is v1.2.2, an internal quality-maintenance
+release:
+
+- [releases/v1.2.2/FREEZE.md](./releases/v1.2.2/FREEZE.md)
 - [releases/v1.2.2/README.md](./releases/v1.2.2/README.md)
 - [releases/v1.2.2/agent-workflow-hardening-plan.md](./releases/v1.2.2/agent-workflow-hardening-plan.md)
 - [releases/v1.2.2/code-and-test-qa-plan.md](./releases/v1.2.2/code-and-test-qa-plan.md)
 
-Agent Workflow Hardening was accepted and merged in PR #79. Five read-only
-role audits and final dispositions are preserved temporarily; current work is
-the first bounded fix wave.
-
-The latest frozen formal public release is v1.2.1:
+The previous frozen formal release and latest frozen production/public release
+is v1.2.1:
 
 - [releases/v1.2.1/FREEZE.md](./releases/v1.2.1/FREEZE.md)
 - [releases/v1.2.1/README.md](./releases/v1.2.1/README.md)
 - [releases/v1.2.1/full-text-search-plan.md](./releases/v1.2.1/full-text-search-plan.md)
 
-The previous frozen formal public release is v1.2:
+The older frozen formal public release is v1.2:
 
 - [releases/v1.2/FREEZE.md](./releases/v1.2/FREEZE.md)
 - [releases/v1.2/README.md](./releases/v1.2/README.md)
@@ -56,7 +58,7 @@ The older frozen formal public release is v1.1:
 - [releases/v1.1/full-spell-corpus-plan.md](./releases/v1.1/full-spell-corpus-plan.md)
 - [releases/v1.1/frontend-content-pass-plan.md](./releases/v1.1/frontend-content-pass-plan.md)
 
-The previous frozen formal public release is v1.0:
+The older frozen formal public release is v1.0:
 
 - [releases/v1.0/FREEZE.md](./releases/v1.0/FREEZE.md)
 - [releases/v1.0/README.md](./releases/v1.0/README.md)
@@ -82,12 +84,18 @@ Use [roadmap.md](./roadmap.md) for current ordering after a pause.
 
 ## Latest Frozen Snapshot
 
-The latest frozen public release snapshot is **v1.2.1**:
+The latest frozen formal release snapshot is **v1.2.2**:
+
+- [releases/v1.2.2/FREEZE.md](./releases/v1.2.2/FREEZE.md)
+- [releases/v1.2.2/README.md](./releases/v1.2.2/README.md)
+
+The previous frozen formal release and latest frozen production/public release
+snapshot is **v1.2.1**:
 
 - [releases/v1.2.1/FREEZE.md](./releases/v1.2.1/FREEZE.md)
 - [releases/v1.2.1/README.md](./releases/v1.2.1/README.md)
 
-The previous frozen public release snapshot is **v1.2**:
+The older frozen public release snapshot is **v1.2**:
 
 - [releases/v1.2/FREEZE.md](./releases/v1.2/FREEZE.md)
 - [releases/v1.2/README.md](./releases/v1.2/README.md)
@@ -192,21 +200,24 @@ handoff records.
 
 - [releases/README.md](./releases/README.md): release planning roles and
   maintenance rules.
-- [releases/v1.2.2/README.md](./releases/v1.2.2/README.md): active internal
-  quality-maintenance release boundary and ordered pass map.
+- [releases/v1.2.2/FREEZE.md](./releases/v1.2.2/FREEZE.md): latest frozen
+  formal release snapshot for the internal quality-maintenance release.
+- [releases/v1.2.2/README.md](./releases/v1.2.2/README.md): frozen internal
+  quality-maintenance release boundary and accepted pass map.
 - [releases/v1.2.2/agent-workflow-hardening-plan.md](./releases/v1.2.2/agent-workflow-hardening-plan.md):
-  canonical role contracts, thin tool adapters, and correspondence checks.
+  accepted canonical role contracts, thin tool adapters, and correspondence
+  checks.
 - [releases/v1.2.2/code-and-test-qa-plan.md](./releases/v1.2.2/code-and-test-qa-plan.md):
-  parallel read-only audits, main-gate triage, bounded fixes, and regression
-  acceptance.
-- [releases/v1.2.1/FREEZE.md](./releases/v1.2.1/FREEZE.md): latest frozen
-  formal public release snapshot.
+  accepted read-only audits, main-gate triage, bounded fixes, and regression
+  record.
+- [releases/v1.2.1/FREEZE.md](./releases/v1.2.1/FREEZE.md): previous frozen
+  formal release and latest frozen production/public release snapshot.
 - [releases/v1.2.1/README.md](./releases/v1.2.1/README.md): frozen focused
   content-backed full-text spell search release record.
 - [releases/v1.2.1/full-text-search-plan.md](./releases/v1.2.1/full-text-search-plan.md):
   accepted Search full-text mode, content DB FTS index, and frontend consumer
   record.
-- [releases/v1.2/FREEZE.md](./releases/v1.2/FREEZE.md): previous frozen formal
+- [releases/v1.2/FREEZE.md](./releases/v1.2/FREEZE.md): older frozen formal
   public release snapshot.
 - [releases/v1.2/README.md](./releases/v1.2/README.md): frozen full-spell
   source review, mechanics localization, and Publications page release plan.
@@ -220,7 +231,7 @@ handoff records.
   accepted mechanics translation, QA workflow, and frontend consumer record.
 - [releases/v1.2/publications-page-plan.md](./releases/v1.2/publications-page-plan.md):
   accepted Publications page and minimum metadata record.
-- [releases/v1.1/FREEZE.md](./releases/v1.1/FREEZE.md): previous frozen formal
+- [releases/v1.1/FREEZE.md](./releases/v1.1/FREEZE.md): older frozen formal
   public release snapshot.
 - [releases/v1.1/README.md](./releases/v1.1/README.md): frozen production
   hardening and full spell corpus release plan.
@@ -230,7 +241,7 @@ handoff records.
   frozen full spell corpus import and content DB activation plan.
 - [releases/v1.1/frontend-content-pass-plan.md](./releases/v1.1/frontend-content-pass-plan.md):
   frozen focused frontend content acceptance plan.
-- [releases/v1.0/FREEZE.md](./releases/v1.0/FREEZE.md): previous frozen formal
+- [releases/v1.0/FREEZE.md](./releases/v1.0/FREEZE.md): older frozen formal
   public release snapshot.
 - [releases/v1.0/README.md](./releases/v1.0/README.md): frozen first formal
   public release planning record.

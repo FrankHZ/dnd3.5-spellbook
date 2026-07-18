@@ -6,10 +6,10 @@
 > `docs/roadmap.md` only when active ordering changes. v1.2.2 has no
 > `integrated-plan.md`.
 
-Status: in progress. Agent Workflow Hardening was accepted and merged in
-PR #79. Five read-only role audits completed at parent-repository base
-`ff4f2ff7eb7158d2007178179c15919923769311`; main-gate triage is complete and
-the first bounded fix wave is next.
+Status: **accepted as built**. Five read-only role audits completed at
+parent-repository base `ff4f2ff7eb7158d2007178179c15919923769311`; main-gate
+triage and all ten bounded fix batches are merged. See
+[FREEZE.md](./FREEZE.md) for the canonical v1.2.2 snapshot.
 
 ## Purpose
 
@@ -95,10 +95,9 @@ read-only.
 | `platform` | CI, runtime build/import checks, dependency boundaries, environment/config consistency, deployment and DB helper scripts | Do not change production configuration during audit |
 
 The main gate owns cross-domain findings, duplicate removal, severity, fix
-ownership, and defer decisions. Raw role handoffs may be preserved temporarily
-under `qa-findings/` while triage and fixes are active; proposed severities in
-those files are not final. Librarian does not maintain a second disposition
-ledger.
+ownership, and defer decisions. Raw role handoffs were preserved temporarily
+while triage and fixes were active; proposed severities were not final.
+Librarian does not maintain a second disposition ledger.
 
 ## Finding Handoff
 
@@ -115,12 +114,11 @@ Each audit returns only actionable, evidence-backed findings in this shape:
 Do not return general praise, style preferences, test-count observations, or a
 large refactor proposal without a demonstrated failure mode.
 
-Finding details stay in review/task handoffs, the temporary `qa-findings/`
-evidence pack, and owning fix PRs. This plan's Completion Notes record only the
-final disposition summary and accepted PRs. Delete the temporary evidence pack
-before freeze after accepted deferred items move to this plan's Follow-Up
-Candidates or `docs/stable-backlog.md`; no permanent parallel QA ledger is
-added.
+Finding details stayed in review/task handoffs, the temporary evidence pack,
+and owning fix PRs. This plan's Completion Notes record only the final
+disposition summary and accepted PRs. The temporary evidence pack was deleted
+before freeze after the accepted deferred item moved to
+`docs/stable-backlog.md`; no permanent parallel QA ledger was added.
 
 ## Plan
 
@@ -142,9 +140,9 @@ added.
 - Agents do not edit files, create fix branches, change local DBs, or modify
   remote configuration during this slice.
 - Each role returns the Finding Handoff format above.
-- After all five read-only audits finish, each role may preserve that completed
-  handoff in its own file under `qa-findings/`; this documentation-only capture
-  does not authorize fixes or further discovery.
+- After all five read-only audits finished, each role preserved its completed
+  handoff in the temporary evidence pack; that documentation-only capture did
+  not authorize fixes or further discovery.
 
 ### Slice 3: Main-Gate Triage
 
@@ -222,8 +220,8 @@ this release.
 
 - Update this plan with final disposition counts, accepted fix PRs, validation,
   and non-blocking follow-ups.
-- Use `qa-findings/` only as temporary evidence while triage and fix PRs are
-  active; remove it before freeze after durable follow-ups are parked.
+- Use temporary evidence only while triage and fix PRs are active; remove it
+  before freeze after durable follow-ups are parked.
 - Update owning topic/operations/module docs only when accepted fixes change
   durable truth.
 - Update `docs/roadmap.md` only when release ordering or status changes.
@@ -237,19 +235,34 @@ this release.
 
 ## Follow-Up Candidates
 
-- `DP-AUD-007`: reconcile stale generated CHM preprocessing outputs when the
-  dormant local CHM workflow is next reactivated. Owner: `data-pipeline`.
-  Rationale: it is a credible repeatability gap, but the workflow is outside
-  the active v1.2.2 build/import path. Require a staging-tree replacement or a
-  generated-file manifest plus a source deletion/rename regression before
-  promotion.
-
-Promote only stable, bounded candidates to `docs/stable-backlog.md` during
-freeze.
+No follow-up remains local to this frozen plan. `DP-AUD-007` was preserved in
+`docs/stable-backlog.md` for the next reactivation of the dormant local CHM
+preprocessing workflow.
 
 ## Completion Notes
 
-Use this section after acceptance. Record audit base, final disposition counts,
-accepted fix PRs, validation results, and residual risk without copying the
-full finding handoffs. Confirm the temporary `qa-findings/` evidence pack was
-removed.
+Accepted history:
+
+- PR #79 merged Agent Workflow Hardening. PR #80 preserved the five read-only
+  audit handoffs, and PR #81 recorded final main-gate triage.
+- Ten dependency-ordered fix batches merged in PRs #82, #83, #84, #85, #86,
+  #87, #88, #89, #90, and #91.
+- Final dispositions covered 27 findings: P0 `0`; P1 `11 fixed`; P2 `14 fixed`
+  and `1 deferred`; `1 closed` as an unsupported hypothetical path. In total,
+  25 findings were fixed, one was deferred, and one was closed. No P0 or P1
+  remains open.
+- The deferred item is `DP-AUD-007`, owned by `data-pipeline` and parked in
+  `docs/stable-backlog.md`. The closed item was not retained as backlog noise.
+- Merged-state acceptance passed `agents:check` (`7/7`), `ci:portable`,
+  `verify`, deployment-script tests (`7/7`), server tests (19 files / 98
+  tests), web tests (38 files / 158 tests), data-tool safety and harness tests,
+  portable import, i18n checks, build/runtime gates, local-data acceptance, and
+  English/Chinese desktop/mobile browser smoke.
+- Independent i18n review in PR #91 found no remaining issue and required no
+  `docs/i18n.md` change.
+- The temporary evidence pack was removed during freeze; no permanent QA
+  ledger remains.
+
+Production deployment was not part of this internal maintenance freeze. The
+full command results, local-data counts, and browser scenarios are recorded in
+[FREEZE.md](./FREEZE.md).
