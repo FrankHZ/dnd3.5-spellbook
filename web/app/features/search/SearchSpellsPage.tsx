@@ -16,6 +16,7 @@ import { AdvancedSpellFiltersPanel } from "~/features/spells/AdvancedSpellFilter
 import { FilterSidebarCard } from "~/features/spells/FilterSidebarCard";
 import { SpellCardDetailToggle } from "~/features/spells/SpellCardDetailToggle";
 import { SpellFilterScopeSummary } from "~/features/spells/SpellFilterScopeSummary";
+import { getCurrentQueryResult } from "~/features/spells/query-result-state";
 import {
   countComponentFilters,
   countMechanicFilters,
@@ -30,6 +31,7 @@ import { isSearchQueryValid } from "./validation";
 import { PAGE_SIZE } from "../constants";
 import {
   buildSearchParams,
+  buildSearchPageUrl,
   hasSearchScope,
   parseSearchScope,
 } from "./search-url";
@@ -125,7 +127,8 @@ export default function SearchSpellsPage() {
   );
   const hasDisplayError = isFullTextUnavailable || Boolean(errorMessage);
 
-  const data = query.data;
+  const currentQuery = getCurrentQueryResult(query);
+  const data = currentQuery.data;
   const isModeTransition = data != null && data.mode !== searchScope.mode;
   const total = data?.total ?? 0;
   const items = isModeTransition ? [] : (data?.items ?? []);
@@ -135,6 +138,10 @@ export default function SearchSpellsPage() {
     const next = new URLSearchParams(params);
     next.set("page", String(nextPage));
     setParams(next);
+  }
+
+  function getPageHref(nextPage: number) {
+    return buildSearchPageUrl(searchScope, nextPage);
   }
 
   return (
@@ -257,11 +264,18 @@ export default function SearchSpellsPage() {
                 <StatusCard description={errorMessage} />
               )}
 
-              {!hasDisplayError && !query.isFetching && items.length === 0 && (
-                <StatusCard
-                  description={t("results.empty", { query: qParam })}
-                />
+              {!hasDisplayError && currentQuery.isPending && (
+                <StatusCard description={t("results.loading")} />
               )}
+
+              {!hasDisplayError &&
+                !currentQuery.isPending &&
+                !query.isFetching &&
+                items.length === 0 && (
+                  <StatusCard
+                    description={t("results.empty", { query: qParam })}
+                  />
+                )}
 
               {!hasDisplayError && items.length > 0 && (
                 <Card className="gap-0 overflow-hidden py-0">
@@ -273,6 +287,7 @@ export default function SearchSpellsPage() {
                         total={total}
                         isBusy={query.isFetching}
                         onPageChange={goToPage}
+                        getPageHref={getPageHref}
                       />
                     </div>
 
@@ -297,6 +312,7 @@ export default function SearchSpellsPage() {
                         total={total}
                         isBusy={query.isFetching}
                         onPageChange={goToPage}
+                        getPageHref={getPageHref}
                         showRangeText={false}
                       />
                     </div>

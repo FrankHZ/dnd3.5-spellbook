@@ -31,6 +31,7 @@ import {
   type PublicationCategoryGroup,
   type PublicationSort,
 } from "./publication-groups";
+import { getPublicationQueryState } from "./publication-query-state";
 
 function getCheckState(rulebooks: Rulebook[], selected: Set<number>) {
   const total = rulebooks.length;
@@ -360,8 +361,7 @@ export default function PublicationScopePage() {
     }));
   }
 
-  const isLoading = boot.isLoading && rulebooks.length === 0;
-  const isError = Boolean(boot.error);
+  const { isLoading, isError } = getPublicationQueryState(boot);
 
   return (
     <div className="page-single">

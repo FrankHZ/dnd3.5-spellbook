@@ -91,6 +91,10 @@ export function buildSearchUrl(input: Parameters<typeof buildSearchParams>[0]) {
   return query ? `/search?${query}` : "/search";
 }
 
+export function buildSearchPageUrl(scope: SearchScope, page: number) {
+  return buildSearchUrl({ ...scope, page });
+}
+
 export function buildSearchUrlWithPreservedScope(
   params: URLSearchParams,
   q: string,

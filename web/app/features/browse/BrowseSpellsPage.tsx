@@ -12,6 +12,7 @@ import { Separator } from "~/components/ui/separator";
 import { AdvancedSpellFiltersPanel } from "~/features/spells/AdvancedSpellFiltersPanel";
 import { FilterSidebarCard } from "~/features/spells/FilterSidebarCard";
 import { SpellFilterScopeSummary } from "~/features/spells/SpellFilterScopeSummary";
+import { getCurrentQueryResult } from "~/features/spells/query-result-state";
 import {
   countComponentFilters,
   countMechanicFilters,
@@ -43,6 +44,7 @@ export default function BrowsePage() {
     setDomainIds,
     setNormalizedFilters,
     setPage,
+    getPageHref,
     hasValidSelection,
   } = useBrowseQueryState();
 
@@ -94,9 +96,12 @@ export default function BrowsePage() {
     return t("errors.request-failed");
   }, [browseQuery.error, t]);
 
-  const total = browseQuery.data?.total ?? 0;
-  const groups = browseQuery.data?.groups;
-  const hasSpellData = groups?.flatMap((group) => group.items).length !== 0;
+  const currentQuery = getCurrentQueryResult(browseQuery);
+  const total = currentQuery.data?.total ?? 0;
+  const groups = currentQuery.data?.groups;
+  const spellCount =
+    groups?.reduce((count, group) => count + group.items.length, 0) ?? 0;
+  const hasSpellData = spellCount > 0;
 
   return (
     <div className="page-side">
@@ -150,9 +155,13 @@ export default function BrowsePage() {
             <StatusCard description={errorMessage} />
           )}
 
+          {hasValidSelection && !errorMessage && currentQuery.isPending && (
+            <StatusCard description={t("results.loading")} />
+          )}
+
           {hasValidSelection &&
             !errorMessage &&
-            !browseQuery.isLoading &&
+            !currentQuery.isPending &&
             !hasSpellData && (
               <StatusCard
                 description={t("results.empty-for-level", { level })}
@@ -168,6 +177,7 @@ export default function BrowsePage() {
                     pageSize={pageSize}
                     total={total}
                     onPageChange={setPage}
+                    getPageHref={getPageHref}
                   />
                 </div>
 
@@ -212,6 +222,7 @@ export default function BrowsePage() {
                     pageSize={pageSize}
                     total={total}
                     onPageChange={setPage}
+                    getPageHref={getPageHref}
                     showRangeText={false}
                   />
                 </div>

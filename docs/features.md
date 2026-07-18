@@ -60,6 +60,10 @@ Current behavior:
 - spell cards can show compact special-component markers such as `M`, `AF`,
   `DF`, or `XP` beside spell names
 - results are paginated
+- pagination controls expose ordinary shareable links that preserve the full
+  active URL scope for copied, new-tab, and non-JavaScript navigation
+- initial and replacement requests show a loading state instead of presenting
+  results from the previous visible scope
 - English and Chinese UI/content modes preserve the same response shape
 
 Key code:
@@ -128,6 +132,10 @@ Current behavior:
 - spell cards can show compact special-component markers such as `M`, `AF`,
   `DF`, or `XP` beside spell names
 - results are paginated
+- pagination controls expose ordinary shareable links that preserve the active
+  query, mode, and filter scope while setting the target page
+- valid replacement requests show a loading state instead of presenting
+  results from the previous visible search scope
 - empty or too-short usable queries show local guidance rather than a failed
   request
 
@@ -262,6 +270,8 @@ Current behavior:
   affect Browse/Search behavior
 - Browse/Search scope summaries link rulebook scope management to
   `/publications`
+- page loading and error states follow the rulebook data consumed by this page;
+  failures in unrelated bootstrap metadata do not hide loaded publications
 - English and Chinese UI modes preserve the same page behavior
 
 Key code:

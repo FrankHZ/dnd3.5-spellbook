@@ -14,5 +14,6 @@
   "mode.label": "Search mode",
   "mode.name": "Name",
   "options.show-card-details": "Show more information",
-  "results.empty": "No spells matched \"{{query}}\"."
+  "results.empty": "No spells matched \"{{query}}\".",
+  "results.loading": "Loading spells..."
 }
