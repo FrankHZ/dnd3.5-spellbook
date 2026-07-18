@@ -676,7 +676,9 @@ another scoped book. The default scope is the current official 3.5 working set:
   writes a JSON report under `data-tools/out/rules-patches/`.
 - `rules:spells:apply -- --dry-run` applies to a temporary database copy.
 - `rules:spells:apply` is write-capable and prints the target DB path before
-  mutating it.
+  mutating it. It preloads every required derived-index SQL script, then
+  commits spell inserts, updates, and index rebuilds in one transaction so a
+  rebuild failure leaves all of those rows unchanged.
 - `rules:rulebooks:apply -- --dry-run` applies to a temporary database copy.
 - `rules:rulebooks:apply` is write-capable and prints the target DB path before
   mutating it.
