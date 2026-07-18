@@ -13,12 +13,18 @@ acceptance can be described.
 
 ## Current Track
 
-v1.2.1 is the active formal public release plan:
+v1.2.1 is the latest frozen formal public release:
 
+- `docs/releases/v1.2.1/FREEZE.md`
 - `docs/releases/v1.2.1/README.md`
 - `docs/releases/v1.2.1/full-text-search-plan.md`
 
-v1.2 is the latest frozen formal public release:
+The next accepted planning track is v1.2.2 internal quality maintenance. Create
+its focused release README and two child plans before implementation. The
+release adds no user-facing feature scope and runs agent-workflow hardening
+before code/test QA.
+
+v1.2 is the previous frozen formal public release:
 
 - `docs/releases/v1.2/FREEZE.md`
 - `docs/releases/v1.2/README.md`
@@ -46,9 +52,9 @@ v1.0 is the older frozen formal public release:
 
 The latest frozen pre-release snapshot is `docs/mvp/v3.10/FREEZE.md`.
 
-Use the v1.2.1 plan for the next specialist handoff. It adds content-backed
-full-text spell search without reopening frozen v1.2 mechanics/publication work
-or starting the broader v1.3 design release.
+Use the v1.2.1 freeze for shipped full-text Search behavior. The next librarian
+handoff should establish v1.2.2 planning without reopening frozen search,
+mechanics, publication, or broader v1.3 design scope.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
@@ -168,7 +174,7 @@ freeze docs instead of copying them into this roadmap.
 - Rules DB inspection and structured patch notes live in
   `docs/operations/rules-db-notes.md`.
 - Current public release DB/status behavior is frozen in
-  `docs/releases/v1.2/FREEZE.md`.
+  `docs/releases/v1.2.1/FREEZE.md`.
 - Production still uses an operator-owned content DB upload/activation path;
   DB upload is not part of automatic CD.
 - `GET /api/status/db` remains the remote runtime state check for content DB
@@ -178,12 +184,13 @@ freeze docs instead of copying them into this roadmap.
 
 Recommended next sequence:
 
-1. **Run v1.2.1 full-text search**
+1. **Plan v1.2.2 internal quality maintenance**
 
-   Follow `docs/releases/v1.2.1/full-text-search-plan.md`. Implement the
-   backend/data contract first, then the focused frontend consumer. Keep name
-   search as the default, reuse current Search filters and rulebook scope, and
-   avoid external services, snippets, or offline/static search artifacts.
+   Create `docs/releases/v1.2.2/` with one release README and two ordered child
+   plans. Agent Workflow Hardening should establish stable canonical role
+   contracts plus thin Codex, Copilot, and Claude adapters without duplicating
+   project docs. Code And Test QA should then use those roles for parallel
+   read-only audits, main-gate triage, bounded fixes, and regression tests.
 
 2. **Keep v1.3 as the broader design release**
 
@@ -212,7 +219,7 @@ The expected post-v1.1 release order is:
    management. Add only the publication metadata needed to make that page
    durable.
 
-2. **v1.2.1 Content-Backed Full-Text Search (Active)**
+2. **v1.2.1 Content-Backed Full-Text Search (Frozen)**
 
    Add an explicit Search mode for content-backed full-text queries over
    prepared spell text while preserving name search as the default. Keep the
@@ -220,14 +227,21 @@ The expected post-v1.1 release order is:
    component, and mechanics filters active in full-text mode. Use SQLite FTS5
    inside the content DB rather than a separate search service.
 
-3. **v1.3 Sitewide UX / Style Redesign**
+3. **v1.2.2 Internal Quality Maintenance (Plan Next)**
+
+   Harden agent role contracts and tool adapters first, then run a structured
+   code/test QA pass across backend/DB, data tooling, frontend/i18n, and
+   platform boundaries. Resolve P0/P1 findings, explicitly fix or defer P2,
+   and park P3 or broad refactors without adding user-facing features.
+
+4. **v1.3 Sitewide UX / Style Redesign**
 
    Run a deliberate design-system and sitewide cohesion pass across Browse,
    Search, Detail, About/Status, collections, prepared spells, filters, spell
    cards, layout density, and mobile behavior. Let frontend-design own the
    implementation branch while the main gate controls scope and acceptance.
 
-4. **Later Translation QA**
+5. **Later Translation QA**
 
    Promote full spell-body/name/short-description translation and proofreading
    only after the full-spell source review and mechanics workflow have produced

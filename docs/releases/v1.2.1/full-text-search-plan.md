@@ -7,7 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: implementation complete; acceptance and freeze pending.
+Status: accepted and frozen. See [FREEZE.md](./FREEZE.md) for the canonical
+as-built snapshot.
 
 ## Purpose
 
@@ -355,6 +356,12 @@ Frontend direction:
 - Focused frontend URL, validation, API-helper, and error-code tests pass.
   Manual English/Chinese and desktop/mobile smoke covers valid full-text
   results, short-query guidance, unavailable fallback, and filter preservation.
-- Remaining release work belongs to main-gate acceptance: merge the frontend
-  consumer, activate a compatible content DB remotely, run production name and
-  full-text smoke checks, then complete the v1.2.1 freeze sweep.
+- PR #75 merged the backend/data implementation and PR #76 merged the frontend
+  consumer. Their Portable validation checks and Cloudflare Workers builds
+  passed.
+- Production now runs `main@2b56438` against the activated content DB. Local
+  and remote artifacts share SHA-256 `b326c449...bdc215`, and the remote FTS
+  state records schema version 1 with 11,845 documents.
+- Production smoke confirms default name mode, English and Chinese full-text
+  mode, structured scope preservation, the stable short-query error, and SPA
+  deep-link handling. v1.2.1 is frozen in [FREEZE.md](./FREEZE.md).

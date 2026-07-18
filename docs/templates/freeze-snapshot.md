@@ -14,7 +14,7 @@ over earlier `<Version>` planning documents.
 
 Use this precedence order for `<Version>`:
 
-1. `docs/mvp/<Version>/FREEZE.md`
+1. `<This freeze path under docs/releases/ or docs/mvp/>`
 2. current focused topic docs changed by this version
 3. current operational docs changed by this version
 4. focused `<Version>` plan documents
@@ -46,6 +46,7 @@ Frozen clarification:
 | Check | Result | Notes |
 | ----- | ------ | ----- |
 | `npm run ci:portable` | | |
+| Release metadata (formal releases) | | Root package version plus production frontend/backend label, ref, and commit |
 
 ## Known Deferred Work
 

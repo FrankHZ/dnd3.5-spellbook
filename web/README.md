@@ -74,15 +74,16 @@ Suggested Cloudflare Workers Builds settings:
 - Install command: `npm ci`
 - Build command:
   ```bash
-  sh -lc 'commit="${WORKERS_CI_COMMIT_SHA:-$(git rev-parse HEAD 2>/dev/null || true)}"; ref="${WORKERS_CI_BRANCH:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)}"; export VITE_SPELLBOOK_VERSION_LABEL=v1.0 VITE_SPELLBOOK_FRONTEND_COMMIT_SHA="$commit" VITE_SPELLBOOK_FRONTEND_REF="$ref" VITE_SPELLBOOK_FRONTEND_BUILT_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"; npm run build:contracts && npm run -w web build'
+  npm run build:production
   ```
 - Deploy command: `npx wrangler deploy`
 - Static asset config: root `wrangler.jsonc`
 - Environment variables:
   - `NODE_VERSION=24`
   - `VITE_API_BASE_URL=https://api.d20spellcodex.com`
-- The build command exports Workers Builds `WORKERS_CI_*` metadata into
-  `VITE_SPELLBOOK_*` values before running `npm run -w web build`.
+- The build command derives the release label from root `package.json` and
+  exports Workers Builds `WORKERS_CI_*` metadata into `VITE_SPELLBOOK_*`
+  values before running the contracts and web builds.
 
 For deployment and reverse-proxy expectations, use:
 
@@ -98,7 +99,7 @@ For deployment and reverse-proxy expectations, use:
 - The production build output is written under `build/`; root `wrangler.jsonc`
   publishes `web/build/client` as Workers Static Assets.
 - Deployment workflow and remote activation steps are documented in [../docs/operations/deployment.md](../docs/operations/deployment.md).
-- For current release-level behavior, start with [../docs/releases/v1.0/README.md](../docs/releases/v1.0/README.md).
+- For current release-level behavior, start with [../docs/releases/v1.2.1/FREEZE.md](../docs/releases/v1.2.1/FREEZE.md).
 
 ## Related Docs
 

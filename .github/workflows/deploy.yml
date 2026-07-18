@@ -74,6 +74,7 @@ jobs:
         run: |
           set -euo pipefail
           deployed_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          release_label="$(node scripts/release-metadata.mjs --label)"
           ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
             "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
-            "SPELLBOOK_VERSION_LABEL='v1.0' SPELLBOOK_BACKEND_COMMIT_SHA='$GITHUB_SHA' SPELLBOOK_BACKEND_REF='$GITHUB_REF_NAME' SPELLBOOK_BACKEND_DEPLOYED_AT='$deployed_at' SPELLBOOK_BACKEND_GITHUB_RUN_ID='$GITHUB_RUN_ID' SPELLBOOK_BACKEND_GITHUB_RUN_ATTEMPT='$GITHUB_RUN_ATTEMPT' ~/deploy-backend.sh"
+            "SPELLBOOK_VERSION_LABEL='$release_label' SPELLBOOK_BACKEND_COMMIT_SHA='$GITHUB_SHA' SPELLBOOK_BACKEND_REF='$GITHUB_REF_NAME' SPELLBOOK_BACKEND_DEPLOYED_AT='$deployed_at' SPELLBOOK_BACKEND_GITHUB_RUN_ID='$GITHUB_RUN_ID' SPELLBOOK_BACKEND_GITHUB_RUN_ATTEMPT='$GITHUB_RUN_ATTEMPT' ~/deploy-backend.sh"

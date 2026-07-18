@@ -1,15 +1,16 @@
 # v1.2.1 Release Plan
 
-Status: active. v1.2 is frozen; this is the next focused release.
+Status: frozen. See [FREEZE.md](./FREEZE.md) for the canonical as-built
+snapshot.
 
 v1.2.1 is a focused post-v1.2 release for content-backed spell full-text
-search. It should add a deliberate full-text search mode without reopening the
+search. It adds a deliberate full-text search mode without reopening the
 v1.2 mechanics-localization scope or starting the broader v1.3 sitewide design
 release.
 
 ## Release Boundary
 
-v1.2.1 owns one acceptance track:
+v1.2.1 shipped one acceptance track:
 
 1. **Content-backed full-text spell search**
 
@@ -19,9 +20,8 @@ v1.2.1 owns one acceptance track:
    honor selected rulebooks and the same structured class, domain, level,
    taxonomy, component, and mechanics filters that Search already supports.
 
-The release is intentionally small. It should be safe to hand to a focused
-backend/data specialist plus a small frontend consumer branch after the plan is
-accepted.
+The release remained intentionally small and was delivered through a focused
+backend/data branch followed by a small frontend consumer branch.
 
 ## Track Order
 
@@ -61,16 +61,17 @@ accepted.
 - Do not redesign the Search page, filter sidebar, spell cards, or sitewide UI.
 - Do not add automatic content DB upload to CD.
 
-Manual content DB activation remains part of release acceptance because the
+Manual content DB activation was part of release acceptance because the
 runtime feature depends on the v1.2.1 FTS migration and rebuilt index.
 
 ## Plans
 
+- [FREEZE.md](./FREEZE.md)
 - [full-text-search-plan.md](./full-text-search-plan.md)
 
 ## Release Acceptance
 
-v1.2.1 release acceptance should include:
+v1.2.1 release acceptance required:
 
 - Existing name search remains the default and preserves current URL/filter
   behavior.
@@ -96,6 +97,9 @@ v1.2.1 release acceptance should include:
   on the remote host before freeze. Remote acceptance compares
   `/api/status/db` provenance with the local artifact and smokes representative
   `mode=name` and `mode=full` requests.
+- Production About acceptance verifies the frontend bundle and
+  `/api/status/app` report the current release label, `main`, and the accepted
+  commit; an HTTP 200 route check alone is insufficient.
 - Focused backend, data-tooling, contract, frontend, and i18n validation pass
   for changed surfaces.
 - User-facing docs describe Search as name-first with an optional full-text
@@ -117,6 +121,6 @@ v1.2.1 release acceptance should include:
 
 ## Handoff Rule
 
-v1.2.1 is the active release scope. Implementation branches should update the
-owning child plan and affected topic/operations docs. Update
-`docs/roadmap.md` only if the active work order changes.
+v1.2.1 is frozen. Use [FREEZE.md](./FREEZE.md) for shipped behavior and
+`docs/roadmap.md` for current ordering. New work belongs in a newer release or
+durable topic document; do not add active scope to this folder.

@@ -28,11 +28,13 @@ Use these docs for orientation instead of expanding this file:
 - `docs/README.md`: canonical documentation map and historical/current doc
   ownership.
 - `docs/roadmap.md`: current active work ordering after a pause.
-- `docs/releases/v1.2.1/README.md`: active content-backed full-text spell
-  search release plan.
+- `docs/releases/v1.2.1/FREEZE.md`: latest frozen formal public release
+  snapshot.
+- `docs/releases/v1.2.1/README.md`: frozen content-backed full-text spell
+  search release record.
 - `docs/releases/v1.2.1/full-text-search-plan.md`: accepted full-text Search
-  contract, FTS index, backend/data, and frontend consumer plan.
-- `docs/releases/v1.2/FREEZE.md`: latest frozen formal public release
+  contract, FTS index, backend/data, and frontend consumer record.
+- `docs/releases/v1.2/FREEZE.md`: previous frozen formal public release
   snapshot.
 - `docs/releases/v1.2/README.md`: frozen full-spell source review, mechanics
   localization, and Publications page release planning record.

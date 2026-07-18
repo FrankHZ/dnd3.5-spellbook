@@ -82,7 +82,11 @@ write_backend_metadata() {
   fi
 
   deployed_at="${SPELLBOOK_BACKEND_DEPLOYED_AT:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}"
-  version_label="${SPELLBOOK_VERSION_LABEL:-local}"
+  version_label="${SPELLBOOK_VERSION_LABEL:-}"
+  if [ -z "$version_label" ]; then
+    version_label="$(node "$REPO/scripts/release-metadata.mjs" --label 2>/dev/null || true)"
+  fi
+  version_label="${version_label:-local}"
   run_id="${SPELLBOOK_BACKEND_GITHUB_RUN_ID:-}"
   run_attempt="${SPELLBOOK_BACKEND_GITHUB_RUN_ATTEMPT:-}"
 

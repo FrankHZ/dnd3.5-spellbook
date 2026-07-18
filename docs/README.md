@@ -22,12 +22,17 @@ execution rules and role boundaries.
 
 ## Active Planning
 
-The active formal public release plan is v1.2.1:
+v1.2.1 is frozen. The next accepted step is to create the focused v1.2.2
+internal quality-maintenance plan before implementation begins. Use
+[roadmap.md](./roadmap.md) for that ordering.
 
+The latest frozen formal public release is v1.2.1:
+
+- [releases/v1.2.1/FREEZE.md](./releases/v1.2.1/FREEZE.md)
 - [releases/v1.2.1/README.md](./releases/v1.2.1/README.md)
 - [releases/v1.2.1/full-text-search-plan.md](./releases/v1.2.1/full-text-search-plan.md)
 
-The latest frozen formal public release is v1.2:
+The previous frozen formal public release is v1.2:
 
 - [releases/v1.2/FREEZE.md](./releases/v1.2/FREEZE.md)
 - [releases/v1.2/README.md](./releases/v1.2/README.md)
@@ -37,7 +42,7 @@ The latest frozen formal public release is v1.2:
 - [releases/v1.2/mechanics-localization-plan.md](./releases/v1.2/mechanics-localization-plan.md)
 - [releases/v1.2/publications-page-plan.md](./releases/v1.2/publications-page-plan.md)
 
-The previous frozen formal public release is v1.1:
+The older frozen formal public release is v1.1:
 
 - [releases/v1.1/FREEZE.md](./releases/v1.1/FREEZE.md)
 - [releases/v1.1/README.md](./releases/v1.1/README.md)
@@ -71,12 +76,17 @@ Use [roadmap.md](./roadmap.md) for current ordering after a pause.
 
 ## Latest Frozen Snapshot
 
-The latest frozen public release snapshot is **v1.2**:
+The latest frozen public release snapshot is **v1.2.1**:
+
+- [releases/v1.2.1/FREEZE.md](./releases/v1.2.1/FREEZE.md)
+- [releases/v1.2.1/README.md](./releases/v1.2.1/README.md)
+
+The previous frozen public release snapshot is **v1.2**:
 
 - [releases/v1.2/FREEZE.md](./releases/v1.2/FREEZE.md)
 - [releases/v1.2/README.md](./releases/v1.2/README.md)
 
-The previous frozen public release snapshot is **v1.1**:
+The older frozen public release snapshot is **v1.1**:
 
 - [releases/v1.1/FREEZE.md](./releases/v1.1/FREEZE.md)
 - [releases/v1.1/README.md](./releases/v1.1/README.md)
@@ -176,12 +186,14 @@ handoff records.
 
 - [releases/README.md](./releases/README.md): release planning roles and
   maintenance rules.
-- [releases/v1.2.1/README.md](./releases/v1.2.1/README.md): active focused
-  content-backed full-text spell search release.
+- [releases/v1.2.1/FREEZE.md](./releases/v1.2.1/FREEZE.md): latest frozen
+  formal public release snapshot.
+- [releases/v1.2.1/README.md](./releases/v1.2.1/README.md): frozen focused
+  content-backed full-text spell search release record.
 - [releases/v1.2.1/full-text-search-plan.md](./releases/v1.2.1/full-text-search-plan.md):
-  active Search full-text mode, content DB FTS index, and frontend consumer
-  plan.
-- [releases/v1.2/FREEZE.md](./releases/v1.2/FREEZE.md): latest frozen formal
+  accepted Search full-text mode, content DB FTS index, and frontend consumer
+  record.
+- [releases/v1.2/FREEZE.md](./releases/v1.2/FREEZE.md): previous frozen formal
   public release snapshot.
 - [releases/v1.2/README.md](./releases/v1.2/README.md): frozen full-spell
   source review, mechanics localization, and Publications page release plan.
