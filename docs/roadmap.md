@@ -13,16 +13,21 @@ acceptance can be described.
 
 ## Current Track
 
+v1.2.2 is the active internal quality-maintenance release plan:
+
+- `docs/releases/v1.2.2/README.md`
+- `docs/releases/v1.2.2/agent-workflow-hardening-plan.md`
+- `docs/releases/v1.2.2/code-and-test-qa-plan.md`
+
+Run Agent Workflow Hardening first. Code And Test QA is the first formal
+acceptance exercise for the role system and must not start until the workflow
+pass is accepted and merged.
+
 v1.2.1 is the latest frozen formal public release:
 
 - `docs/releases/v1.2.1/FREEZE.md`
 - `docs/releases/v1.2.1/README.md`
 - `docs/releases/v1.2.1/full-text-search-plan.md`
-
-The next accepted planning track is v1.2.2 internal quality maintenance. Create
-its focused release README and two child plans before implementation. The
-release adds no user-facing feature scope and runs agent-workflow hardening
-before code/test QA.
 
 v1.2 is the previous frozen formal public release:
 
@@ -52,9 +57,9 @@ v1.0 is the older frozen formal public release:
 
 The latest frozen pre-release snapshot is `docs/mvp/v3.10/FREEZE.md`.
 
-Use the v1.2.1 freeze for shipped full-text Search behavior. The next librarian
-handoff should establish v1.2.2 planning without reopening frozen search,
-mechanics, publication, or broader v1.3 design scope.
+Use the v1.2.1 freeze for shipped full-text Search behavior. Use the v1.2.2
+plans for the current internal maintenance work without reopening frozen
+search, mechanics, publication, or broader v1.3 design scope.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
@@ -184,21 +189,26 @@ freeze docs instead of copying them into this roadmap.
 
 Recommended next sequence:
 
-1. **Plan v1.2.2 internal quality maintenance**
+1. **Run v1.2.2 Agent Workflow Hardening**
 
-   Create `docs/releases/v1.2.2/` with one release README and two ordered child
-   plans. Agent Workflow Hardening should establish stable canonical role
-   contracts plus thin Codex, Copilot, and Claude adapters without duplicating
-   project docs. Code And Test QA should then use those roles for parallel
-   read-only audits, main-gate triage, bounded fixes, and regression tests.
+   Follow `docs/releases/v1.2.2/agent-workflow-hardening-plan.md`. Establish
+   stable canonical role contracts plus thin Codex, Copilot, and Claude
+   adapters without duplicating current project docs. Accept `agents:check`,
+   context packets, and handoff boundaries before dispatching QA work.
 
-2. **Keep v1.3 as the broader design release**
+2. **Run v1.2.2 Code And Test QA**
+
+   Follow `docs/releases/v1.2.2/code-and-test-qa-plan.md`. Audit in parallel
+   without edits, let main gate disposition findings once, then open only
+   bounded domain fix PRs with failure-focused regression evidence.
+
+3. **Keep v1.3 as the broader design release**
 
    Do not let the v1.2 Publications page become the full sitewide style
    redesign. Keep complete filter UX, spell-card redesign, and broader visual
    system work in v1.3 unless a v1.2 acceptance blocker proves otherwise.
 
-3. **Defer full translation QA**
+4. **Defer full translation QA**
 
    Treat full spell-body/name/short-description translation and proofreading
    as a later release candidate. Use the frozen v1.2 mechanics workflow and
@@ -227,7 +237,7 @@ The expected post-v1.1 release order is:
    component, and mechanics filters active in full-text mode. Use SQLite FTS5
    inside the content DB rather than a separate search service.
 
-3. **v1.2.2 Internal Quality Maintenance (Plan Next)**
+3. **v1.2.2 Internal Quality Maintenance (Active)**
 
    Harden agent role contracts and tool adapters first, then run a structured
    code/test QA pass across backend/DB, data tooling, frontend/i18n, and

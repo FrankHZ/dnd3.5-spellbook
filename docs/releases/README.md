@@ -7,6 +7,13 @@ directory for release lines after MVP scope is frozen.
 
 ## Current Release Plans
 
+- [v1.2.2/README.md](./v1.2.2/README.md): active internal quality-maintenance
+  release boundary and ordered pass map.
+- [v1.2.2/agent-workflow-hardening-plan.md](./v1.2.2/agent-workflow-hardening-plan.md):
+  canonical roles, thin tool adapters, and workflow correspondence checks.
+- [v1.2.2/code-and-test-qa-plan.md](./v1.2.2/code-and-test-qa-plan.md):
+  role-based read-only audits, main-gate triage, bounded fixes, and regression
+  acceptance.
 - [v1.2.1/FREEZE.md](./v1.2.1/FREEZE.md): latest frozen content-backed
   full-text spell search release snapshot.
 - [v1.2.1/README.md](./v1.2.1/README.md): frozen focused content-backed
