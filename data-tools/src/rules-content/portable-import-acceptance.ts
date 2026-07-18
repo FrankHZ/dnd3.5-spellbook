@@ -349,9 +349,18 @@ function readFixture(filePath: string): PortableFixtureOperation[] {
 }
 
 function rows<T>(operations: PortableFixtureOperation[], table: string): T[] {
-  return operations
+  const fixtureRows = operations
     .filter((operation) => operation.op === "insert" && operation.table === table)
-    .map((operation) => operation.data as T);
+    .map((operation) => operation.data);
+  const columns = Array.from(
+    new Set(fixtureRows.flatMap((row) => Object.keys(row))),
+  );
+  return fixtureRows.map(
+    (row) =>
+      Object.fromEntries(
+        columns.map((column) => [column, row[column] ?? null]),
+      ) as T,
+  );
 }
 
 function writeArtifact(filePath: string, content: NormalizedRulesContent) {
