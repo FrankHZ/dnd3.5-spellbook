@@ -28,6 +28,7 @@ sudo apt install -y \
   curl \
   git \
   rsync \
+  sqlite3 \
   openssh-client \
   build-essential \
   ca-certificates \

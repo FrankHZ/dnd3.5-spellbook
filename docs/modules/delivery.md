@@ -63,8 +63,9 @@ The manual deploy workflow lives at:
 - `.github/workflows/deploy.yml`
 
 In v1.0, that workflow is a thin wrapper for backend API deploys only. It
-invokes the tracked remote backend deploy script; Cloudflare Workers Builds
-owns normal frontend production deployment.
+uploads and invokes the tracked backend deploy script from the workflow
+checkout with an explicit expected commit SHA; Cloudflare Workers Builds owns
+normal frontend production deployment.
 
 Manual deploys run portable validation by default. Skipping validation is an
 emergency rollback option and should leave an explicit workflow warning. SSH
@@ -76,8 +77,8 @@ Deploy metadata for the About / Status page is owned here:
 
 - Cloudflare Workers Builds exports default `WORKERS_CI_*` values into
   `VITE_SPELLBOOK_*` variables before the static build.
-- backend deploys pass `SPELLBOOK_BACKEND_*` values to
-  `deploy-backend.sh`
+- `deploy-backend.sh` derives commit/ref/version metadata after verifying the
+  expected remote commit and accepts GitHub run id/attempt as audit metadata
 - `deploy-backend.sh` writes non-secret backend metadata into
   `/etc/default/spellbook-api` before restart
 

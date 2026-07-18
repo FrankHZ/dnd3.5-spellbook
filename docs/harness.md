@@ -25,6 +25,7 @@ Useful commands:
 
 ```bash
 npm run agents:check
+npm run test:deployment-scripts
 npm run verify
 npm run ci:portable
 npm run -w data-tools test:portable
@@ -34,6 +35,13 @@ npm run -w data-tools test:portable
 builds the server, imports the compiled app entry point, and then runs backend
 API tests against synthetic disposable SQLite fixtures, so it does not read
 ignored local runtime databases.
+
+`npm run test:deployment-scripts` executes the tracked DB, backend deploy, and
+Nginx helpers against temporary directories with deterministic command stubs.
+It proves invalid SQLite rejection before service stop, stop/checkpoint/swap
+ordering, DB rollback after failed smoke, expected-SHA enforcement, reviewed
+workflow helper upload, and Nginx validation/reload rollback without touching a
+real service or database.
 
 Or run the pieces individually:
 

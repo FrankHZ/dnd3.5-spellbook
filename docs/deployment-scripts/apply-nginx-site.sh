@@ -2,8 +2,11 @@
 set -euo pipefail
 
 SITE_NAME="${SPELLBOOK_NGINX_SITE_NAME:-spellbook}"
-SITE_AVAILABLE="/etc/nginx/sites-available/$SITE_NAME"
-SITE_ENABLED="/etc/nginx/sites-enabled/$SITE_NAME"
+SITES_AVAILABLE_DIR="${SPELLBOOK_NGINX_SITES_AVAILABLE_DIR:-/etc/nginx/sites-available}"
+SITES_ENABLED_DIR="${SPELLBOOK_NGINX_SITES_ENABLED_DIR:-/etc/nginx/sites-enabled}"
+SITE_AVAILABLE="$SITES_AVAILABLE_DIR/$SITE_NAME"
+SITE_ENABLED="$SITES_ENABLED_DIR/$SITE_NAME"
+DEFAULT_SITE="$SITES_ENABLED_DIR/default"
 NGINX_MODE="${SPELLBOOK_NGINX_MODE:-api-only}"
 SERVER_NAME="${SPELLBOOK_SERVER_NAME:-api.d20spellcodex.com}"
 FRONTEND_ROOT="${SPELLBOOK_FRONTEND_ROOT:-/var/www/spellbook}"
@@ -16,6 +19,59 @@ ACME_CHALLENGE_ROOT="${SPELLBOOK_ACME_CHALLENGE_ROOT:-/var/www/certbot}"
 echo "==> Apply Nginx site config: $SITE_NAME ($NGINX_MODE)"
 
 tmp="$(mktemp)"
+backup=""
+default_backup=""
+had_site="false"
+enabled_created="false"
+default_removed="false"
+rollback_required="false"
+
+restore_previous_config() {
+  local status=0
+
+  echo "==> Restore prior Nginx configuration" >&2
+  if [ "$had_site" = "true" ]; then
+    sudo cp -a "$backup" "$SITE_AVAILABLE" || status=1
+  else
+    sudo rm -f "$SITE_AVAILABLE" || status=1
+  fi
+
+  if [ "$enabled_created" = "true" ]; then
+    sudo rm -f "$SITE_ENABLED" || status=1
+  fi
+
+  if [ "$default_removed" = "true" ]; then
+    sudo cp -a "$default_backup" "$DEFAULT_SITE" || status=1
+  fi
+
+  if sudo nginx -t; then
+    sudo systemctl reload nginx || status=1
+  else
+    status=1
+  fi
+
+  return "$status"
+}
+
+finish() {
+  local exit_status="$1"
+  trap - EXIT
+  set +e
+
+  if [ "$exit_status" -ne 0 ] && [ "$rollback_required" = "true" ]; then
+    if ! restore_previous_config; then
+      echo "Prior Nginx files were restored incompletely; inspect Nginx before another reload" >&2
+    fi
+  fi
+
+  rm -f "$tmp"
+  if [ -n "$default_backup" ]; then
+    sudo rm -f "$default_backup" 2>/dev/null || true
+  fi
+  exit "$exit_status"
+}
+
+trap 'finish $?' EXIT
 
 write_listen_directive() {
   if [ "$ENABLE_SSL" = "true" ]; then
@@ -188,26 +244,32 @@ EOF
 esac
 
 if sudo test -f "$SITE_AVAILABLE"; then
-  backup="${SITE_AVAILABLE}.bak.$(date -u +%Y%m%dT%H%M%SZ)"
+  backup="${SITE_AVAILABLE}.bak.$(date -u +%Y%m%dT%H%M%SZ).$$"
   echo "==> Backup existing config -> $backup"
   sudo cp -a "$SITE_AVAILABLE" "$backup"
+  had_site="true"
 fi
 
+rollback_required="true"
 sudo install -m 644 -o root -g root "$tmp" "$SITE_AVAILABLE"
-rm -f "$tmp"
 
-if ! sudo test -e "$SITE_ENABLED"; then
+if ! sudo test -e "$SITE_ENABLED" && ! sudo test -L "$SITE_ENABLED"; then
   sudo ln -s "$SITE_AVAILABLE" "$SITE_ENABLED"
-fi
-
-if sudo test -e /etc/nginx/sites-enabled/default; then
-  sudo rm -f /etc/nginx/sites-enabled/default
+  enabled_created="true"
 fi
 
 echo "==> Test Nginx config"
 sudo nginx -t
 
+if sudo test -e "$DEFAULT_SITE" || sudo test -L "$DEFAULT_SITE"; then
+  default_backup="${DEFAULT_SITE}.spellbook-backup.$(date -u +%Y%m%dT%H%M%SZ).$$"
+  sudo cp -a "$DEFAULT_SITE" "$default_backup"
+  sudo rm -f "$DEFAULT_SITE"
+  default_removed="true"
+fi
+
 echo "==> Reload Nginx"
 sudo systemctl reload nginx
 
+rollback_required="false"
 echo "==> Nginx site config applied"

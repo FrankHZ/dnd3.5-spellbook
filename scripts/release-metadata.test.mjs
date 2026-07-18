@@ -13,21 +13,22 @@ test("release label derives from the root package version", () => {
   assert.equal(getReleaseLabel(), "v1.2.1");
 });
 
-test("production deploy paths derive the release label", () => {
+test("the pinned backend helper derives the release label", () => {
   const workflow = readRepoFile(".github/workflows/deploy.yml");
   const backendScript = readRepoFile(
     "docs/deployment-scripts/deploy-backend.sh",
   );
   const packageJson = JSON.parse(readRepoFile("package.json"));
 
-  assert.match(
-    workflow,
-    /release_label="\$\(node scripts\/release-metadata\.mjs --label\)"/,
-  );
-  assert.doesNotMatch(workflow, /SPELLBOOK_VERSION_LABEL='v\d/);
+  assert.doesNotMatch(workflow, /SPELLBOOK_VERSION_LABEL=/);
+  assert.doesNotMatch(workflow, /release_label=/);
   assert.match(
     backendScript,
     /node "\$REPO\/scripts\/release-metadata\.mjs" --label/,
+  );
+  assert.match(
+    backendScript,
+    /upsert_env_var "SPELLBOOK_BACKEND_COMMIT_SHA" "\$VERIFIED_COMMIT"/,
   );
   assert.equal(packageJson.scripts["build:production"], "node scripts/build-production.mjs");
 });
