@@ -21,10 +21,17 @@ sequence, or implementation behavior.
 
 1. Confirm scope.
    - Read `docs/roadmap.md`.
-   - Read `docs/mvp/README.md`.
-   - Read the version integrated plan and acceptance checklist.
+   - Read `docs/releases/README.md` for formal releases or
+     `docs/mvp/README.md` for MVP-stage freezes.
+   - Read the version plans and acceptance checklist.
    - Check `git status --short --branch`.
    - Do not freeze a version while known blocking branches are still unmerged.
+   - For a formal release, confirm root `package.json` is the canonical release
+     version and matches the target version without the leading `v`. Update
+     root `package.json` and `package-lock.json` together when it changes; do
+     not bump workspace package versions unless those packages are released
+     independently. Update any explicit expected-version assertion in
+     `scripts/release-metadata.test.mjs` at the same time.
 
 2. Run acceptance from the target branch, usually `main`.
    - Run the version checklist commands exactly when available.
@@ -44,7 +51,20 @@ sequence, or implementation behavior.
      npm run -w data-tools summaries:coverage-report
      ```
 
-3. Write or update `docs/mvp/<version>/FREEZE.md`.
+   - For a formal release with production version metadata, also run:
+
+     ```bash
+     node scripts/release-metadata.mjs --label
+     npm run test:release-metadata
+     ```
+
+   - Verify the production frontend and backend report the accepted release
+     label, ref, and commit. An HTTP 200 response from `/about` alone is not
+     release-metadata acceptance.
+
+3. Write or update the freeze snapshot.
+   - Use `docs/releases/<version>/FREEZE.md` for formal post-MVP releases.
+   - Use `docs/mvp/<version>/FREEZE.md` for MVP-stage freezes.
    - Start from `docs/templates/freeze-snapshot.md` for new freeze files.
    - Start with status, canonical source order, and frozen deliverables.
    - Record final as-built behavior by shipped workstream.
@@ -55,7 +75,8 @@ sequence, or implementation behavior.
 4. Update navigation surfaces together.
    - Root `README.md`.
    - `docs/README.md`.
-   - `docs/mvp/README.md` when version-folder roles or latest snapshots change.
+   - `docs/releases/README.md` or `docs/mvp/README.md`, matching the freeze
+     surface, when version-folder roles or latest snapshots change.
    - `docs/roadmap.md`.
    - `AGENTS.md` when the latest frozen snapshot or active planning track
      changes.
