@@ -1,7 +1,8 @@
 # v1.2.2 Release Plan
 
 Status: in progress. v1.2.1 is frozen, Agent Workflow Hardening was accepted
-and merged in PR #79, and Code And Test QA is in main-gate triage.
+and merged in PR #79, and Code And Test QA is entering bounded fix work after
+main-gate triage.
 
 v1.2.2 is an internal quality-maintenance release. It adds no user-facing
 feature scope. The release first hardens the repository's agent workflow, then
@@ -28,8 +29,8 @@ It must not begin until the first track is reviewed and merged.
 
 Current position: the freeze prerequisite and workflow tracks are complete.
 Five read-only role audits finished from one shared base; their temporary raw
-handoffs are preserved while the main gate de-duplicates findings and assigns
-their dispositions before opening bounded fix PRs.
+handoffs and final main-gate dispositions are preserved while three
+dependency-ordered fix waves run.
 
 ## Track Order
 

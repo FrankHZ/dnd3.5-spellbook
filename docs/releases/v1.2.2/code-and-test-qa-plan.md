@@ -8,7 +8,8 @@
 
 Status: in progress. Agent Workflow Hardening was accepted and merged in
 PR #79. Five read-only role audits completed at parent-repository base
-`ff4f2ff7eb7158d2007178179c15919923769311`; main-gate triage is next.
+`ff4f2ff7eb7158d2007178179c15919923769311`; main-gate triage is complete and
+the first bounded fix wave is next.
 
 ## Purpose
 
@@ -236,9 +237,15 @@ this release.
 
 ## Follow-Up Candidates
 
-Use this section after triage for accepted P2 deferrals and P3/broad refactors
-worth preserving. Promote only stable, bounded candidates to
-`docs/stable-backlog.md` during freeze.
+- `DP-AUD-007`: reconcile stale generated CHM preprocessing outputs when the
+  dormant local CHM workflow is next reactivated. Owner: `data-pipeline`.
+  Rationale: it is a credible repeatability gap, but the workflow is outside
+  the active v1.2.2 build/import path. Require a staging-tree replacement or a
+  generated-file manifest plus a source deletion/rename regression before
+  promotion.
+
+Promote only stable, bounded candidates to `docs/stable-backlog.md` during
+freeze.
 
 ## Completion Notes
 
