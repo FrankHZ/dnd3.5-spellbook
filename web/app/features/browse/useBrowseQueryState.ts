@@ -14,6 +14,7 @@ import {
   setOrDelete,
 } from "~/lib/utils";
 import { useUserPrefs } from "~/state/user-prefs-state";
+import { buildBrowsePageUrl } from "./browse-url";
 
 export type BrowseQueryState = {
   level: LevelParam | null; // 0-9
@@ -31,6 +32,7 @@ export type BrowseQueryState = {
   setDomainIds: (next: number[]) => void;
   setNormalizedFilters: (next: SpellNormalizedFilterScope) => void;
   setPage: (next: number) => void;
+  getPageHref: (next: number) => string;
 
   // useful flags
   hasValidSelection: boolean;
@@ -215,6 +217,11 @@ export function useBrowseQueryState(): BrowseQueryState {
     [updateParams],
   );
 
+  const getPageHref = useCallback(
+    (nextPage: number) => buildBrowsePageUrl(searchParams, nextPage),
+    [searchParams],
+  );
+
   // -------- persisted rulebook scope (NOT URL) --------
   const rulebookIds = useMemo(
     () => normalizeIds(state.selectedRulebookIds ?? []),
@@ -237,6 +244,7 @@ export function useBrowseQueryState(): BrowseQueryState {
     setDomainIds,
     setNormalizedFilters,
     setPage,
+    getPageHref,
     hasValidSelection,
   };
 }

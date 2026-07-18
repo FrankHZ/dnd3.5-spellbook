@@ -14,5 +14,6 @@
   "mode.label": "搜索方式",
   "mode.name": "名称",
   "options.show-card-details": "显示更多信息",
-  "results.empty": "没有对应\"{{query}}\"的法术。"
+  "results.empty": "没有对应\"{{query}}\"的法术。",
+  "results.loading": "正在加载法术……"
 }

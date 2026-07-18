@@ -1,4 +1,5 @@
 import type { TFunction } from "i18next";
+import type { MouseEvent as ReactMouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
@@ -16,6 +17,7 @@ type PagerProps = {
   total: number;
 
   onPageChange: (nextPage: number) => void;
+  getPageHref: (nextPage: number) => string;
 
   isBusy?: boolean; // disable buttons while fetching
   className?: string;
@@ -63,11 +65,27 @@ function buildPageTokens(currentPage: number, totalPages: number) {
   return tokens;
 }
 
+export function shouldHandlePageClick(
+  event: Pick<
+    ReactMouseEvent<HTMLAnchorElement>,
+    "button" | "altKey" | "ctrlKey" | "metaKey" | "shiftKey"
+  >,
+) {
+  return (
+    event.button === 0 &&
+    !event.altKey &&
+    !event.ctrlKey &&
+    !event.metaKey &&
+    !event.shiftKey
+  );
+}
+
 export default function Pager({
   page,
   pageSize,
   total,
   onPageChange,
+  getPageHref,
   isBusy = false,
   className = "",
   showRangeText = true,
@@ -82,6 +100,15 @@ export default function Pager({
     if (isBusy) return;
     if (nextPage < 1 || nextPage > totalPages || nextPage === page) return;
     onPageChange(nextPage);
+  };
+
+  const handlePageClick = (
+    event: ReactMouseEvent<HTMLAnchorElement>,
+    nextPage: number,
+  ) => {
+    if (!shouldHandlePageClick(event)) return;
+    event.preventDefault();
+    goToPage(nextPage);
   };
 
   return (
@@ -101,7 +128,7 @@ export default function Pager({
         <PaginationContent>
           <PaginationItem>
             <PaginationLink
-              href={`?page=${Math.max(1, page - 1)}`}
+              href={getPageHref(Math.max(1, page - 1))}
               aria-label={t("actions.prev")}
               aria-disabled={!hasPrev || isBusy}
               tabIndex={!hasPrev || isBusy ? -1 : undefined}
@@ -110,8 +137,7 @@ export default function Pager({
                 (!hasPrev || isBusy) && "pointer-events-none opacity-50",
               )}
               onClick={(event) => {
-                event.preventDefault();
-                goToPage(page - 1);
+                handlePageClick(event, page - 1);
               }}
             >
               <ChevronLeft className="size-4" />
@@ -124,12 +150,11 @@ export default function Pager({
                 <PaginationEllipsis />
               ) : (
                 <PaginationLink
-                  href={`?page=${token}`}
+                  href={getPageHref(token)}
                   isActive={token === page}
                   aria-label={`Page ${token}`}
                   onClick={(event) => {
-                    event.preventDefault();
-                    goToPage(token);
+                    handlePageClick(event, token);
                   }}
                 >
                   {token}
@@ -140,7 +165,7 @@ export default function Pager({
 
           <PaginationItem>
             <PaginationLink
-              href={`?page=${Math.min(totalPages, page + 1)}`}
+              href={getPageHref(Math.min(totalPages, page + 1))}
               aria-label={t("actions.next")}
               aria-disabled={!hasNext || isBusy}
               tabIndex={!hasNext || isBusy ? -1 : undefined}
@@ -149,8 +174,7 @@ export default function Pager({
                 (!hasNext || isBusy) && "pointer-events-none opacity-50",
               )}
               onClick={(event) => {
-                event.preventDefault();
-                goToPage(page + 1);
+                handlePageClick(event, page + 1);
               }}
             >
               <ChevronRight className="size-4" />

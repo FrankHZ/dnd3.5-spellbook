@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildSearchParams,
+  buildSearchPageUrl,
   buildSearchUrl,
   buildSearchUrlWithPreservedScope,
   hasSearchScope,
@@ -138,6 +139,18 @@ describe("search URL helpers", () => {
     expect(String(buildSearchParams({ q: "fire", page: 1 }))).toBe("q=fire");
     expect(String(buildSearchParams({ q: "fire", page: 2 }))).toBe(
       "q=fire&page=2",
+    );
+  });
+
+  it("builds pagination URLs with the complete search scope", () => {
+    const scope = parseSearchScope(
+      new URLSearchParams(
+        "mode=full&q=wall+of+fire&classIds=2,1&domainIds=8&level=3&page=4&schoolIds=5&componentKeys=material",
+      ),
+    );
+
+    expect(buildSearchPageUrl(scope, 5)).toBe(
+      "/search?mode=full&q=wall+of+fire&classIds=1%2C2&domainIds=8&schoolIds=5&componentKeys=material&level=3&page=5",
     );
   });
 

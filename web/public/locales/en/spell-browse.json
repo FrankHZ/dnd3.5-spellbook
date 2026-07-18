@@ -13,6 +13,7 @@
   "options.group-by-level": "Group by level",
   "options.show-card-details": "Show more information",
   "results.empty-for-level": "No spells found for selected classes at level {{level}}.",
+  "results.loading": "Loading spells...",
   "validation.choose-scope-and-level": "Choose at least one class or domain, then set a spell level.",
   "validation.select-class-or-domain": "Select at least one class or domain.",
   "validation.select-level": "Select a spell level (0-9)."

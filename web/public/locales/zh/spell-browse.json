@@ -13,6 +13,7 @@
   "options.group-by-level": "按环数分组",
   "options.show-card-details": "显示更多信息",
   "results.empty-for-level": "选择的职业/领域没有{{level}}环法术。",
+  "results.loading": "正在加载法术……",
   "validation.choose-scope-and-level": "选择至少一个职业或者领域，然后选环数",
   "validation.select-class-or-domain": "选择至少一个职业或者领域。",
   "validation.select-level": "选择法术环数"
