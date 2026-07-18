@@ -1,12 +1,11 @@
 import { LS_KEY_PREFS } from "./keys";
 import type { Lang } from "@dnd/contracts";
+import { type UserPrefsState, STORAGE_VERSION } from "./userPrefs.type";
 import {
-  type BrowsePrefs,
-  type DisplayPrefs,
-  type UserPrefsState,
-  STORAGE_VERSION,
-} from "./userPrefs.type";
-import { DEFAULT_LANG, DEFAULT_ZH_VARIANT } from "~/i18n/config";
+  DEFAULT_LANG,
+  DEFAULT_ZH_VARIANT,
+  SUPPORTED_LANGS,
+} from "~/i18n/config";
 
 export const DEFAULT_STATE: UserPrefsState = {
   storageVersion: STORAGE_VERSION,
@@ -60,38 +59,145 @@ function getDefaultState(): UserPrefsState {
   };
 }
 
-type PartialStoredPrefs = Partial<UserPrefsState> & {
-  browsePrefs?: Partial<BrowsePrefs>;
-  displayPrefs?: Partial<DisplayPrefs>;
-};
+type StoredRecord = Record<string, unknown>;
 
-function mergeState(parsed: PartialStoredPrefs): UserPrefsState {
+function asStoredRecord(value: unknown): StoredRecord | undefined {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    return undefined;
+  }
+  return value as StoredRecord;
+}
+
+function isStringChoice<T extends string>(
+  value: unknown,
+  choices: readonly T[],
+): value is T {
+  return (
+    typeof value === "string" &&
+    (choices as readonly string[]).includes(value)
+  );
+}
+
+function isPositiveIntegerArray(value: unknown): value is number[] {
+  return (
+    Array.isArray(value) &&
+    value.every((item) => Number.isInteger(item) && item > 0)
+  );
+}
+
+function isBrowseLevel(
+  value: unknown,
+): value is UserPrefsState["browseQuery"]["level"] {
+  return (
+    value === "all" ||
+    (Number.isInteger(value) && Number(value) >= 0 && Number(value) <= 9)
+  );
+}
+
+function mergeState(parsed: StoredRecord): UserPrefsState {
   const defaults = getDefaultState();
-  const legacyCardDetails =
-    parsed.displayPrefs?.spellCardDetails ??
-    (parsed.browsePrefs?.cardView === "all" ? "full" : undefined);
+  const browseQuery = asStoredRecord(parsed.browseQuery) ?? {};
+  const browsePrefs = asStoredRecord(parsed.browsePrefs) ?? {};
+  const displayPrefs = asStoredRecord(parsed.displayPrefs) ?? {};
+  const zhDisplay = asStoredRecord(displayPrefs.zhDisplay) ?? {};
+  const uiPrefs = asStoredRecord(parsed.uiPrefs) ?? {};
+
+  const storedCardDetails = isStringChoice(
+    displayPrefs.spellCardDetails,
+    ["summary", "full"] as const,
+  )
+    ? displayPrefs.spellCardDetails
+    : undefined;
+  const legacyCardDetails = isStringChoice(
+    browsePrefs.cardView,
+    ["simple", "all"] as const,
+  )
+    ? browsePrefs.cardView === "all"
+      ? "full"
+      : "summary"
+    : undefined;
+
+  const nextUiPrefs: UserPrefsState["uiPrefs"] = {
+    ...defaults.uiPrefs,
+    lang: isStringChoice(uiPrefs.lang, SUPPORTED_LANGS)
+      ? uiPrefs.lang
+      : defaults.uiPrefs.lang,
+    zhVariant:
+      typeof uiPrefs.zhVariant === "string"
+        ? uiPrefs.zhVariant
+        : defaults.uiPrefs.zhVariant,
+  };
+  if (isStringChoice(uiPrefs.theme, ["light", "dark"] as const)) {
+    nextUiPrefs.theme = uiPrefs.theme;
+  }
 
   return {
-    ...defaults,
-    ...parsed,
+    storageVersion: STORAGE_VERSION,
+    includePrestige:
+      typeof parsed.includePrestige === "boolean"
+        ? parsed.includePrestige
+        : defaults.includePrestige,
+    selectedRulebookIds: isPositiveIntegerArray(parsed.selectedRulebookIds)
+      ? parsed.selectedRulebookIds
+      : defaults.selectedRulebookIds,
+    browseQuery: {
+      classIds: isPositiveIntegerArray(browseQuery.classIds)
+        ? browseQuery.classIds
+        : defaults.browseQuery.classIds,
+      domainIds: isPositiveIntegerArray(browseQuery.domainIds)
+        ? browseQuery.domainIds
+        : defaults.browseQuery.domainIds,
+      level: isBrowseLevel(browseQuery.level)
+        ? browseQuery.level
+        : defaults.browseQuery.level,
+    },
     browsePrefs: {
-      ...defaults.browsePrefs,
-      ...parsed.browsePrefs,
+      cardView: isStringChoice(
+        browsePrefs.cardView,
+        ["simple", "all"] as const,
+      )
+        ? browsePrefs.cardView
+        : defaults.browsePrefs.cardView,
+      groupMode: isStringChoice(
+        browsePrefs.groupMode,
+        ["flat", "grouped"] as const,
+      )
+        ? browsePrefs.groupMode
+        : defaults.browsePrefs.groupMode,
     },
     displayPrefs: {
-      ...defaults.displayPrefs,
-      ...parsed.displayPrefs,
-      zhDisplay: {
-        ...defaults.displayPrefs.zhDisplay,
-        ...parsed.displayPrefs?.zhDisplay,
-      },
+      spellListDensity: isStringChoice(
+        displayPrefs.spellListDensity,
+        ["compact", "comfortable"] as const,
+      )
+        ? displayPrefs.spellListDensity
+        : defaults.displayPrefs.spellListDensity,
       spellCardDetails:
-        legacyCardDetails ?? defaults.displayPrefs.spellCardDetails,
+        storedCardDetails ??
+        legacyCardDetails ??
+        defaults.displayPrefs.spellCardDetails,
+      zhDisplay: {
+        spellNamesWithEnglish:
+          typeof zhDisplay.spellNamesWithEnglish === "boolean"
+            ? zhDisplay.spellNamesWithEnglish
+            : defaults.displayPrefs.zhDisplay.spellNamesWithEnglish,
+        classDomainLabelsWithEnglish:
+          typeof zhDisplay.classDomainLabelsWithEnglish === "boolean"
+            ? zhDisplay.classDomainLabelsWithEnglish
+            : defaults.displayPrefs.zhDisplay.classDomainLabelsWithEnglish,
+        filterFacetLabelsWithEnglish:
+          typeof zhDisplay.filterFacetLabelsWithEnglish === "boolean"
+            ? zhDisplay.filterFacetLabelsWithEnglish
+            : defaults.displayPrefs.zhDisplay.filterFacetLabelsWithEnglish,
+        rulebookLabelStyle: isStringChoice(
+          zhDisplay.rulebookLabelStyle,
+          ["localized", "english"] as const,
+        )
+          ? zhDisplay.rulebookLabelStyle
+          : defaults.displayPrefs.zhDisplay.rulebookLabelStyle,
+      },
     },
-    uiPrefs: {
-      ...defaults.uiPrefs,
-      ...parsed.uiPrefs,
-    },
+    uiPrefs: nextUiPrefs,
   };
 }
 
@@ -99,7 +205,7 @@ export function loadState(): UserPrefsState {
   try {
     const raw = localStorage.getItem(LS_KEY_PREFS);
     if (!raw) return getDefaultState();
-    const parsed = JSON.parse(raw);
+    const parsed = asStoredRecord(JSON.parse(raw));
 
     if (parsed?.storageVersion !== STORAGE_VERSION) return getDefaultState();
     return mergeState(parsed);
