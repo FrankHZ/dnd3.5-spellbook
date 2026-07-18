@@ -118,12 +118,20 @@ Shipped behavior:
   index.
 - Frontend production is served by Cloudflare Workers and uses the production
   API origin.
+- Root `package.json` is the release-label source for the repo-owned production
+  frontend build, GitHub backend deploy, and manual backend deploy fallback.
 
 Accepted evidence:
 
 - Public app status reports backend commit
-  `2b564381a00ef0daf3c8acf86cd9aede01d33b0c`, deployed at
-  `2026-07-17T04:01:25Z`, with content status `ok` and read source `content`.
+  `2b564381a00ef0daf3c8acf86cd9aede01d33b0c`, `versionLabel: v1.2.1`,
+  `source: deploy`, `ref: main`, and deployment time
+  `2026-07-18T02:42:17Z`, with content status `ok` and read source `content`.
+- The production About bundle reports frontend `versionLabel: v1.2.1`,
+  commit `2b564381a00ef0daf3c8acf86cd9aede01d33b0c`, and `ref: main`.
+- Cloudflare Workers Builds production and preview triggers both use the
+  repo-owned `npm run build:production` command; their deploy commands remain
+  `wrangler deploy` and `wrangler versions upload`, respectively.
 - Public content status reports generator `rules-content-normalizer-v7`, build
   time `2026-07-17T03:52:00.569Z`, 5,097 spells, and 3,560 review issues.
 - Operator DB status reports `content.sqlite`, a present content DB, a matching
@@ -144,13 +152,14 @@ Accepted evidence:
 | ----- | ------ | ----- |
 | PR #75 | Pass | Backend/data full-text implementation; Portable validation and Workers build passed |
 | PR #76 | Pass | Frontend full-text consumer; Portable validation and Workers build passed |
-| `npm run ci:portable` | Pass | 18 server files / 92 tests; 17 data-tool harness checks; 32 web files / 136 tests; contracts, Prisma generation, runtime check, typechecks, and web build passed |
+| `npm run ci:portable` | Pass | 2 release-metadata tests; 18 server files / 92 tests; 17 data-tool harness checks; 32 web files / 136 tests; contracts, Prisma generation, runtime check, typechecks, and web build passed |
+| Production release metadata | Pass | Frontend and backend both report `v1.2.1`, `main`, and commit `2b56438`; backend source is `deploy`; both Workers build triggers use the repo-owned production build command |
 | `npm run i18n:check` | Pass | 16 namespaces; extraction made no changes |
 | `npm run -w data-tools content:search:rebuild -- --dry-run` | Pass | 5,097 spells and 11,845 generated documents |
 | Local/remote DB SHA-256 | Pass | Both equal `b326c449...bdc215` |
 | Operator DB status | Pass | Content source, build provenance, alias, and counts match the activated artifact |
 | Production API smoke | Pass | Default name mode, English/Chinese full mode, representative rulebook scope, and stable short-query error |
-| Production routes | Pass | `/`, full-text Search deep link, and `/about` returned 200 |
+| Production routes | Pass | `/`, full-text Search deep link, and `/about` returned 200; the About bundle fields were inspected rather than accepting HTTP status alone |
 
 ## Known Deferred Work
 

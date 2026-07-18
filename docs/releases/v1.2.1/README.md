@@ -97,6 +97,9 @@ v1.2.1 release acceptance required:
   on the remote host before freeze. Remote acceptance compares
   `/api/status/db` provenance with the local artifact and smokes representative
   `mode=name` and `mode=full` requests.
+- Production About acceptance verifies the frontend bundle and
+  `/api/status/app` report the current release label, `main`, and the accepted
+  commit; an HTTP 200 route check alone is insufficient.
 - Focused backend, data-tooling, contract, frontend, and i18n validation pass
   for changed surfaces.
 - User-facing docs describe Search as name-first with an optional full-text
