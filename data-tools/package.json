@@ -40,7 +40,7 @@
     "spells-full:generate": "tsx src/rules/spells-full.ts generate",
     "spells-full:inspect": "tsx src/rules/spells-full.ts inspect",
     "spells-full:rulebooks": "tsx src/rules/spells-full-source-rulebooks.ts",
-    "test:portable": "tsx src/rules-content/artifact-tests.ts && tsx src/harness/portable-tests.ts && npm run rules:content:acceptance:portable",
+    "test:portable": "tsx src/rules-content/artifact-tests.ts && tsx src/short-desc/en-summaries-write-safety-tests.ts && tsx src/harness/portable-tests.ts && npm run rules:content:acceptance:portable",
     "acceptance:local": "tsx src/harness/local-acceptance.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "zh:backcheck": "tsx src/zh-parser/scripts/zh-backcheck.ts out/zh-parser/matched.json out/zh-parser/missing-zh.json",

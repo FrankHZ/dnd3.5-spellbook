@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio";
 import Database from "better-sqlite3";
+import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -148,6 +149,19 @@ type RulebookSourceCategory = {
   editionSlug?: string;
 };
 
+type SourceIndexWriteOptions = Pick<
+  SourceIndexReport["options"],
+  "sourceOffset" | "sourceLimit" | "outputName"
+>;
+
+export type SourceIndexWriteTarget = {
+  dataRoot: string;
+  dataDir: string;
+  folderName: string;
+  isCanonical: boolean;
+  isPartial: boolean;
+};
+
 const SEARCH_URL = "https://imarvintpa.com/dndlive/SearchList.php";
 const SOURCE_INDEX_URL = "https://imarvintpa.com/dndlive/Index_Sources.php";
 const DNDLIVE_BASE_URL = "https://imarvintpa.com/dndlive/";
@@ -166,6 +180,10 @@ const MAX_CONCURRENCY = 3;
 const DEFAULT_DELAY_MS = 750;
 const DEFAULT_RETRIES = 2;
 const DEFAULT_IMARVIN_CANDIDATES = "imarvin/short-desc/candidates.json";
+const CANONICAL_SOURCE_INDEX_OUTPUT_NAME = "source-index";
+const PROTECTED_SOURCE_INDEX_OUTPUT_NAMES = new Set(["candidates.json"]);
+const WINDOWS_RESERVED_OUTPUT_NAME =
+  /^(?:con|prn|aux|nul|clock\$|com[1-9]|lpt[1-9])(?:\.|$)/i;
 
 const IMARVIN_SOURCE_RULEBOOK_ABBR: Record<string, string> = {
   Draconomicon: "Dr",
@@ -276,6 +294,14 @@ Options:
   --concurrency <n>        Parallel candidate probes. Default 1, max ${MAX_CONCURRENCY}.
   --delay-ms <n>           Minimum spacing between HTTP requests. Default ${DEFAULT_DELAY_MS}.
   --retries <n>            Retry failed HTTP requests. Default ${DEFAULT_RETRIES}.
+
+  sources mode:
+  --source-offset <n>      Skip the first n source books. Requires a non-canonical output name.
+  --source-limit <n>       Fetch at most n source books. Requires a non-canonical output name.
+  --output-name <name>     Strict output directory basename. Default: source-index.
+
+The canonical source-index target accepts complete crawls only. Source output is
+written to a sibling staging directory before activation.
 
 Input JSON can be an array of strings or objects:
   { "name": "Shield of Faith, Legion", "queryName": "*Shield*Faith*", "exactName": "Mass Shield of Faith", "source": "Miniatures" }
@@ -938,6 +964,193 @@ function safeReportName(outputName: string | null) {
   return outputName.replace(/[^A-Za-z0-9._-]/g, "-");
 }
 
+export function assertStrictDescendant(root: string, target: string) {
+  const resolvedRoot = path.resolve(root);
+  const resolvedTarget = path.resolve(target);
+  const relative = path.relative(resolvedRoot, resolvedTarget);
+  if (
+    !relative ||
+    relative === ".." ||
+    relative.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relative)
+  ) {
+    throw new Error(
+      `Source-index target must be a strict descendant of ${resolvedRoot}: ${resolvedTarget}`,
+    );
+  }
+}
+
+function safeSourceIndexOutputName(outputName: string | null) {
+  if (!outputName || outputName !== outputName.trim()) {
+    throw new Error(
+      "--output-name must be a non-empty basename without surrounding whitespace",
+    );
+  }
+  if (
+    outputName === "." ||
+    outputName === ".." ||
+    outputName.startsWith(".") ||
+    !/^[A-Za-z0-9_-][A-Za-z0-9._-]*$/.test(outputName) ||
+    outputName.endsWith(".")
+  ) {
+    throw new Error(
+      `Unsafe --output-name ${JSON.stringify(outputName)}; use a plain directory basename`,
+    );
+  }
+  if (WINDOWS_RESERVED_OUTPUT_NAME.test(outputName)) {
+    throw new Error(
+      `Unsafe --output-name ${JSON.stringify(outputName)}; Windows device names are reserved`,
+    );
+  }
+  if (PROTECTED_SOURCE_INDEX_OUTPUT_NAMES.has(outputName.toLowerCase())) {
+    throw new Error(
+      `Unsafe --output-name ${JSON.stringify(outputName)}; the name is a protected short-description input`,
+    );
+  }
+  return outputName;
+}
+
+export function resolveSourceIndexWriteTarget(
+  dataRoot: string,
+  options: SourceIndexWriteOptions,
+): SourceIndexWriteTarget {
+  const resolvedRoot = path.resolve(dataRoot);
+  const folderName = safeSourceIndexOutputName(options.outputName);
+  const dataDir = path.resolve(resolvedRoot, folderName);
+  assertStrictDescendant(resolvedRoot, dataDir);
+
+  const isCanonical =
+    folderName.toLowerCase() === CANONICAL_SOURCE_INDEX_OUTPUT_NAME;
+  const isPartial = options.sourceOffset !== 0 || options.sourceLimit !== null;
+  if (isCanonical && isPartial) {
+    throw new Error(
+      "Partial source crawls cannot target canonical source-index; set a distinct --output-name",
+    );
+  }
+
+  if (fs.existsSync(dataDir)) {
+    const targetStat = fs.lstatSync(dataDir);
+    if (!targetStat.isDirectory() || targetStat.isSymbolicLink()) {
+      throw new Error(
+        `Refusing to replace non-directory source-index target: ${dataDir}`,
+      );
+    }
+  }
+
+  return {
+    dataRoot: resolvedRoot,
+    dataDir,
+    folderName,
+    isCanonical,
+    isPartial,
+  };
+}
+
+function internalWritePath(target: SourceIndexWriteTarget, kind: string) {
+  const internalPath = path.join(
+    target.dataRoot,
+    `.${target.folderName}.${kind}-${randomUUID()}`,
+  );
+  assertStrictDescendant(target.dataRoot, internalPath);
+  return internalPath;
+}
+
+function verifySourceIndexWriteTarget(target: SourceIndexWriteTarget) {
+  const dataRoot = path.resolve(target.dataRoot);
+  const folderName = safeSourceIndexOutputName(target.folderName);
+  const dataDir = path.resolve(dataRoot, folderName);
+  assertStrictDescendant(dataRoot, dataDir);
+  if (path.resolve(target.dataDir) !== dataDir) {
+    throw new Error(
+      `Source-index write target does not match its basename: ${target.dataDir}`,
+    );
+  }
+
+  const isCanonical =
+    folderName.toLowerCase() === CANONICAL_SOURCE_INDEX_OUTPUT_NAME;
+  if (target.isCanonical !== isCanonical) {
+    throw new Error(
+      `Source-index write target has inconsistent canonical scope: ${dataDir}`,
+    );
+  }
+  if (isCanonical && target.isPartial) {
+    throw new Error(
+      "Partial source crawls cannot activate canonical source-index",
+    );
+  }
+
+  return { ...target, dataRoot, dataDir, folderName };
+}
+
+function activateStagedSourceIndex(
+  target: SourceIndexWriteTarget,
+  stagingDir: string,
+) {
+  assertStrictDescendant(target.dataRoot, stagingDir);
+  const stagingStat = fs.lstatSync(stagingDir);
+  if (!stagingStat.isDirectory() || stagingStat.isSymbolicLink()) {
+    throw new Error(
+      `Refusing to activate invalid source-index staging path: ${stagingDir}`,
+    );
+  }
+  let backupDir: string | null = null;
+
+  if (fs.existsSync(target.dataDir)) {
+    const targetStat = fs.lstatSync(target.dataDir);
+    if (!targetStat.isDirectory() || targetStat.isSymbolicLink()) {
+      throw new Error(
+        `Refusing to replace non-directory source-index target: ${target.dataDir}`,
+      );
+    }
+    backupDir = internalWritePath(target, "backup");
+    fs.renameSync(target.dataDir, backupDir);
+  }
+
+  try {
+    fs.renameSync(stagingDir, target.dataDir);
+  } catch (error) {
+    if (
+      backupDir &&
+      !fs.existsSync(target.dataDir) &&
+      fs.existsSync(backupDir)
+    ) {
+      fs.renameSync(backupDir, target.dataDir);
+    }
+    throw error;
+  }
+
+  if (backupDir) {
+    fs.rmSync(backupDir, { recursive: true, force: true });
+  }
+}
+
+export function stageAndActivateSourceIndex(
+  target: SourceIndexWriteTarget,
+  writeStaging: (stagingDir: string) => void,
+) {
+  const verifiedTarget = verifySourceIndexWriteTarget(target);
+  fs.mkdirSync(verifiedTarget.dataRoot, { recursive: true });
+  const stagingPrefix = path.join(
+    verifiedTarget.dataRoot,
+    `.${verifiedTarget.folderName}.staging-`,
+  );
+  const stagingDir = fs.mkdtempSync(stagingPrefix);
+  assertStrictDescendant(verifiedTarget.dataRoot, stagingDir);
+
+  let activated = false;
+  try {
+    writeStaging(stagingDir);
+    activateStagedSourceIndex(verifiedTarget, stagingDir);
+    activated = true;
+  } finally {
+    if (!activated && fs.existsSync(stagingDir)) {
+      fs.rmSync(stagingDir, { recursive: true, force: true });
+    }
+  }
+
+  return verifiedTarget.dataDir;
+}
+
 function slugifySource(value: string) {
   return value
     .normalize("NFKD")
@@ -1047,13 +1260,6 @@ function safeSourceFileName(source: SourceIndexSource) {
   return `${slug}.json`;
 }
 
-function assertInside(root: string, target: string) {
-  const relative = path.relative(root, target);
-  if (relative.startsWith("..") || path.isAbsolute(relative)) {
-    throw new Error(`Refusing to write outside ${root}: ${target}`);
-  }
-}
-
 function writeJsonReport(fileStem: string | null, report: unknown) {
   fs.mkdirSync(REPORT_ROOT, { recursive: true });
   const reportPath = path.join(REPORT_ROOT, `${safeReportName(fileStem)}.json`);
@@ -1068,44 +1274,51 @@ function writeReport(report: ProbeReport) {
 function writeSourceIndexData(
   report: SourceIndexReport,
   categories: Map<string, RulebookSourceCategory>,
+  target: SourceIndexWriteTarget,
 ) {
-  const folderName = safeReportName(report.options.outputName ?? "source-index");
-  const dataDir = path.join(SOURCE_INDEX_DATA_ROOT, folderName);
-  assertInside(SOURCE_INDEX_DATA_ROOT, dataDir);
-  fs.rmSync(dataDir, { recursive: true, force: true });
-  fs.mkdirSync(path.join(dataDir, "books"), { recursive: true });
+  let manifest: Omit<SourceIndexReport, "rows" | "coverage"> | undefined;
 
-  const sourceFiles = report.sources.map((source) => {
-    const rows = report.rows.filter((row) => row.sourceToken === source.token);
-    const classification = sourceCategory(source, categories);
-    const file = path.join(
-      "books",
-      classification.category,
-      safeSourceFileName(source),
-    );
-    fs.mkdirSync(path.dirname(path.join(dataDir, file)), { recursive: true });
+  stageAndActivateSourceIndex(target, (stagingDir) => {
+    fs.mkdirSync(path.join(stagingDir, "books"), { recursive: true });
+
+    const sourceFiles = report.sources.map((source) => {
+      const rows = report.rows.filter(
+        (row) => row.sourceToken === source.token,
+      );
+      const classification = sourceCategory(source, categories);
+      const file = path.join(
+        "books",
+        classification.category,
+        safeSourceFileName(source),
+      );
+      fs.mkdirSync(path.dirname(path.join(stagingDir, file)), {
+        recursive: true,
+      });
+      fs.writeFileSync(
+        path.join(stagingDir, file),
+        `${JSON.stringify({ source, rows }, null, 2)}\n`,
+        "utf8",
+      );
+      return { ...source, ...classification, file, rows: rows.length };
+    });
+
+    manifest = {
+      generatedAt: report.generatedAt,
+      source: report.source,
+      options: report.options,
+      summary: report.summary,
+      sources: sourceFiles,
+    };
     fs.writeFileSync(
-      path.join(dataDir, file),
-      `${JSON.stringify({ source, rows }, null, 2)}\n`,
+      path.join(stagingDir, "manifest.json"),
+      `${JSON.stringify(manifest, null, 2)}\n`,
       "utf8",
     );
-    return { ...source, ...classification, file, rows: rows.length };
   });
 
-  const manifest = {
-    generatedAt: report.generatedAt,
-    source: report.source,
-    options: report.options,
-    summary: report.summary,
-    sources: sourceFiles,
-  };
-  fs.writeFileSync(
-    path.join(dataDir, "manifest.json"),
-    `${JSON.stringify(manifest, null, 2)}\n`,
-    "utf8",
-  );
-
-  return { dataDir, manifest };
+  if (!manifest)
+    throw new Error("Source-index staging completed without a manifest");
+  return { dataDir: target.dataDir, manifest };
 }
 
 async function probe(argv: string[]) {
@@ -1197,6 +1410,10 @@ function coverageForCandidates(
 
 async function sources(argv: string[]) {
   const options = parseSourceArgs(argv);
+  const writeTarget = resolveSourceIndexWriteTarget(
+    SOURCE_INDEX_DATA_ROOT,
+    options,
+  );
   const categories = loadRulebookSourceCategories();
   const fetcher = new RateLimitedFetcher(options.delayMs, options.retries);
   const sourceIndexHtml = await fetcher.getUrl(SOURCE_INDEX_URL);
@@ -1265,7 +1482,11 @@ async function sources(argv: string[]) {
     coverage,
   };
 
-  const { dataDir, manifest } = writeSourceIndexData(report, categories);
+  const { dataDir, manifest } = writeSourceIndexData(
+    report,
+    categories,
+    writeTarget,
+  );
   const reportPath = writeJsonReport(`${options.outputName}-run`, {
     ...manifest,
     coverage: report.coverage,
@@ -1295,7 +1516,9 @@ async function main() {
   }
 }
 
-main().catch((error: unknown) => {
-  console.error(error instanceof Error ? error.message : error);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((error: unknown) => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exit(1);
+  });
+}
