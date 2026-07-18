@@ -22,9 +22,13 @@ execution rules and role boundaries.
 
 ## Active Planning
 
-v1.2.1 is frozen. The next accepted step is to create the focused v1.2.2
-internal quality-maintenance plan before implementation begins. Use
-[roadmap.md](./roadmap.md) for that ordering.
+The active internal quality-maintenance release plan is v1.2.2:
+
+- [releases/v1.2.2/README.md](./releases/v1.2.2/README.md)
+- [releases/v1.2.2/agent-workflow-hardening-plan.md](./releases/v1.2.2/agent-workflow-hardening-plan.md)
+- [releases/v1.2.2/code-and-test-qa-plan.md](./releases/v1.2.2/code-and-test-qa-plan.md)
+
+Agent Workflow Hardening must be accepted before Code And Test QA begins.
 
 The latest frozen formal public release is v1.2.1:
 
@@ -186,6 +190,13 @@ handoff records.
 
 - [releases/README.md](./releases/README.md): release planning roles and
   maintenance rules.
+- [releases/v1.2.2/README.md](./releases/v1.2.2/README.md): active internal
+  quality-maintenance release boundary and ordered pass map.
+- [releases/v1.2.2/agent-workflow-hardening-plan.md](./releases/v1.2.2/agent-workflow-hardening-plan.md):
+  canonical role contracts, thin tool adapters, and correspondence checks.
+- [releases/v1.2.2/code-and-test-qa-plan.md](./releases/v1.2.2/code-and-test-qa-plan.md):
+  parallel read-only audits, main-gate triage, bounded fixes, and regression
+  acceptance.
 - [releases/v1.2.1/FREEZE.md](./releases/v1.2.1/FREEZE.md): latest frozen
   formal public release snapshot.
 - [releases/v1.2.1/README.md](./releases/v1.2.1/README.md): frozen focused

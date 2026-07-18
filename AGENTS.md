@@ -28,6 +28,12 @@ Use these docs for orientation instead of expanding this file:
 - `docs/README.md`: canonical documentation map and historical/current doc
   ownership.
 - `docs/roadmap.md`: current active work ordering after a pause.
+- `docs/releases/v1.2.2/README.md`: active internal quality-maintenance release
+  boundary and ordered pass map.
+- `docs/releases/v1.2.2/agent-workflow-hardening-plan.md`: canonical role,
+  thin adapter, context-packet, and correspondence-check plan.
+- `docs/releases/v1.2.2/code-and-test-qa-plan.md`: read-only audit, main-gate
+  triage, bounded fixes, and regression acceptance plan.
 - `docs/releases/v1.2.1/FREEZE.md`: latest frozen formal public release
   snapshot.
 - `docs/releases/v1.2.1/README.md`: frozen content-backed full-text spell

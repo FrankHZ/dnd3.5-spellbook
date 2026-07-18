@@ -24,8 +24,8 @@ excluded from the public repository, especially runtime databases under
 
 ## Status
 
-The latest frozen public release is **v1.2.1**. Use the roadmap for the next
-accepted planning step. The latest frozen pre-release stage snapshot is
+The active internal maintenance release plan is **v1.2.2**. The latest frozen
+public release is **v1.2.1**. The latest frozen pre-release stage snapshot is
 **v3.10**.
 
 Start here:
@@ -33,6 +33,8 @@ Start here:
 - [docs/README.md](./docs/README.md): documentation map and precedence rules.
 - [docs/roadmap.md](./docs/roadmap.md): current work order.
 - [docs/features.md](./docs/features.md): current feature map.
+- [docs/releases/v1.2.2/README.md](./docs/releases/v1.2.2/README.md): active
+  agent-workflow hardening and code/test QA release plan.
 - [docs/releases/v1.2.1/FREEZE.md](./docs/releases/v1.2.1/FREEZE.md): latest
   frozen public release snapshot.
 - [docs/releases/v1.2.1/README.md](./docs/releases/v1.2.1/README.md): frozen
