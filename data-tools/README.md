@@ -78,6 +78,7 @@ Audit and generate normalized spell-facing rules content:
 npm run -w data-tools rules:content:audit
 npm run -w data-tools rulebooks:publications:seed
 npm run -w data-tools rules:content:generate
+npm run -w data-tools rules:content:generate -- --audit-only --limit 100
 npm run -w data-tools rules:content:import -- --dry-run
 npm run -w data-tools content:search:rebuild -- --dry-run
 npm run -w data-tools content:search:rebuild
@@ -85,9 +86,21 @@ npm run -w data-tools rules:content:review
 ```
 
 `rules:content:audit` and `rules:content:generate` open the configured rules DB
-read-only. The generator writes
-`data-tools/out/rules-content/rules-content.generated.json` plus an audit summary
-of review-worthy legacy strings and normalized mechanics display coverage.
+read-only. A normal generator run is a full, importable build and requires the
+canonical `data/rulebook-publications/publications.jsonl`, one metadata row for
+every rules-clean rulebook, the rules DB manifest, and nested-data Git state.
+It writes `data-tools/out/rules-content/rules-content.generated.json` plus an
+audit summary of review-worthy legacy strings and normalized mechanics display
+coverage. The artifact records `scope: "full"`, source-table totals,
+generation-time parent/data commits and dirty flags, canonical-input hashes,
+the actual rules DB hash, and the tracked content-migration hash.
+
+Use `rules:content:generate -- --audit-only [--limit N]` only for incomplete
+inspection artifacts. It writes the distinct
+`rules-content.limited.generated.json` default, records `scope: "limited"` and
+its limitations, and cannot be passed to `rules:content:import`. `--limit`
+without `--audit-only`, or an audit-only run targeting the full default path,
+fails before generation.
 Each generated mechanics facet keeps `rawText` and records `normalizedText`
 plus `displayCoverage`: only `complete` rows may replace raw display;
 `partial` and `review` rows fall back to raw, while `empty` rows have no display
@@ -112,10 +125,14 @@ category bucket plus the rules-clean legacy rulebook id. Consumers that need
 publication order should prefer `publicationDate`, then `publicationYear`, then
 display label/id fallback unless a reviewed row intentionally overrides
 `publicationDisplayOrder`. Frontend code should consume the generated metadata
-instead of deriving publication groups from labels. `rules:content:import` reads
-that generated file and replaces only the
-rules-content generated tables in `CONTENT_DATABASE_URL`; use `--dry-run` after
-applying content migrations to validate row counts without mutating SQLite.
+instead of deriving publication groups from labels. `rules:content:import`
+reads that generated file, rejects limited artifacts, re-hashes the current
+rules DB, canonical inputs, and tracked migrations against the generation
+record, and replaces only the rules-content generated tables in
+`CONTENT_DATABASE_URL`. `RulesContentBuild` commit/hash columns preserve the
+generation state; `buildMetaJson` records generation and importer state
+separately. Use `--dry-run` after applying content migrations to validate the
+same artifact/provenance and row counts without mutating SQLite.
 
 `content:search:rebuild` is the maintained boundary for the derived content DB
 FTS5 index. Run it after every content import in a normal rebuild. It generates
@@ -143,9 +160,16 @@ npm run -w data-tools test:portable
 ```
 
 This command is fixture-only and does not require local CHM/raw source data,
-the nested `data/` repo, or SQLite databases. It covers pure source-label
-mapping, English name normalization, short-description row validation, and
-structured rulebook/spell patch JSONL/schema validation.
+the nested `data/` repo, or configured runtime SQLite databases. It covers pure
+source-label mapping, English name normalization, short-description row
+validation, structured rulebook/spell patch JSONL/schema validation, artifact
+scope/provenance failures, and a disposable in-memory content DB acceptance
+that applies every tracked migration before exercising the real import path and
+constraints. Run that final path directly with:
+
+```bash
+npm run -w data-tools rules:content:acceptance:portable
+```
 
 Run the local v3.4 data acceptance bundle:
 
@@ -508,7 +532,10 @@ legacy strings beside normalized categories and only emits a replacement-safe
 `normalizedText` when `displayCoverage` is `complete`. Conservative grammars
 cover simple casting times, ranges, durations, saving throws, and spell
 resistance; target/effect/area remain raw fallback until their full semantics
-can be represented.
+can be represented. Full artifacts require complete canonical publication
+metadata coverage and carry generation-time source scope, totals, repository
+state, and input hashes. Explicit `--audit-only` artifacts are limited and
+non-importable.
 
 `rules:content:import` is the content DB mutation boundary for normalized rules
 content. It requires the rules-content generated tables from
@@ -518,7 +545,9 @@ content. It requires the rules-content generated tables from
 with a migration instruction if those display columns are absent. Without
 `--dry-run`, it replaces
 only those generated tables; it does not touch i18n rows, app-state rows, the
-rules DB, or the nested local data repo.
+rules DB, or the nested local data repo. It verifies current input hashes
+against the artifact before either dry-run or live import and preserves
+generation provenance separately from importer state.
 
 `rules:content:review` is the read-only content DB inventory for post-import
 normalized facet review. It reports taxonomy/component/mechanic review counts,

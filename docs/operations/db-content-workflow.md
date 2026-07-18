@@ -68,10 +68,15 @@ For setup details, environment variables, and Prisma reset commands, use
 3. Regenerate the content DB artifact.
    - Use [import-workflow.md](./import-workflow.md) for the canonical local
      command order.
+   - Require canonical publication metadata for the full artifact; use the
+     explicit audit-only generator only for limited, non-importable output.
    - Run content generate/import, then dry-run and rebuild the derived search
      index after all text and normalized-content imports.
    - Run parity/meta checks after the artifact is complete.
-   - Record `RulesContentBuild` parent/data commit ids and dirty flags.
+   - Verify the artifact's generation-time rules DB, canonical-input, and
+     migration hashes during import.
+   - Preserve generation-time parent/data commits and dirty flags in artifact
+     metadata; keep importer repository state separate in `buildMetaJson`.
    - Verify representative rows named by the active handoff.
 
 4. Maintain portable fixture coverage.

@@ -1,9 +1,19 @@
 import Database from "better-sqlite3";
-import crypto from "node:crypto";
-import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
+import {
+  assertImportableRulesContentArtifact,
+  assertRulesContentArtifact,
+  collectRulesContentArtifactProvenance,
+  createRulesContentArtifactMetadata,
+  resolveRulesContentGenerationOutput,
+  sha256File,
+  verifyRulesContentArtifactProvenance,
+  type RulesContentArtifactProvenance,
+  type RulesContentProvenancePaths,
+  type RulesContentSourceTotals,
+} from "./artifact";
 import {
   auditNormalizedContent,
   normalizeRulesContent,
@@ -34,6 +44,10 @@ import {
 
 const OUT_ROOT = path.join(repoRoot(), "data-tools", "out", "rules-content");
 const DEFAULT_GENERATED_PATH = path.join(OUT_ROOT, "rules-content.generated.json");
+const DEFAULT_LIMITED_GENERATED_PATH = path.join(
+  OUT_ROOT,
+  "rules-content.limited.generated.json",
+);
 const RULEBOOK_PUBLICATION_METADATA_JSONL_PATH = path.join(
   localDataDir(),
   "rulebook-publications",
@@ -43,6 +57,14 @@ const CHM_RULEBOOK_PUBLICATIONS_JSONL_PATH = path.join(
   localDataDir(),
   "rulebook-labels",
   "chm-publications.jsonl",
+);
+const RULES_MANIFEST_PATH = path.join(localDataDir(), "rules-db-manifest.json");
+const CONTENT_MIGRATIONS_PATH = path.join(
+  repoRoot(),
+  "server",
+  "db",
+  "content",
+  "migrations",
 );
 
 const GENERATED_TABLES = [
@@ -76,6 +98,11 @@ type BuildProvenance = {
   rulesDbSha256: string | null;
   migrationSetSha256: string | null;
   buildMetaJson: string;
+};
+
+export type RulesContentImportContext = {
+  currentProvenance: RulesContentArtifactProvenance;
+  importedAt: string;
 };
 
 type RulesContentBuildMetaRow = {
@@ -134,7 +161,8 @@ const TOME_OF_BATTLE_DISCIPLINES = [
 function usage(): never {
   console.error(`Usage:
   npm run -w data-tools rules:content:audit -- [--limit 100]
-  npm run -w data-tools rules:content:generate -- [--limit 100] [--output data-tools/out/rules-content/rules-content.generated.json]
+  npm run -w data-tools rules:content:generate -- [--output data-tools/out/rules-content/rules-content.generated.json]
+  npm run -w data-tools rules:content:generate -- --audit-only [--limit 100] [--output data-tools/out/rules-content/rules-content.limited.generated.json]
   npm run -w data-tools rules:content:import -- --dry-run [--input data-tools/out/rules-content/rules-content.generated.json]
   npm run -w data-tools rules:content:import -- [--input data-tools/out/rules-content/rules-content.generated.json]
   npm run -w data-tools rules:content:meta
@@ -153,9 +181,10 @@ mechanic facets from CONTENT_DATABASE_URL without writing the database.
 function parseArgs(argv: string[]) {
   const [command, ...rest] = argv;
   let limit: number | null = null;
-  let output = DEFAULT_GENERATED_PATH;
+  let output: string | null = null;
   let input = DEFAULT_GENERATED_PATH;
   let dryRun = false;
+  let auditOnly = false;
 
   for (let index = 0; index < rest.length; index += 1) {
     const arg = rest[index];
@@ -186,6 +215,10 @@ function parseArgs(argv: string[]) {
       dryRun = true;
       continue;
     }
+    if (arg === "--audit-only") {
+      auditOnly = true;
+      continue;
+    }
     usage();
   }
 
@@ -200,7 +233,27 @@ function parseArgs(argv: string[]) {
     usage();
   }
 
-  return { command, limit, output, input, dryRun };
+  if (command !== "generate" && auditOnly) usage();
+
+  const resolvedOutput =
+    command === "generate"
+      ? resolveRulesContentGenerationOutput({
+          auditOnly,
+          limit,
+          requestedOutput: output,
+          fullOutput: DEFAULT_GENERATED_PATH,
+          limitedOutput: DEFAULT_LIMITED_GENERATED_PATH,
+        })
+      : (output ?? DEFAULT_GENERATED_PATH);
+
+  return {
+    command,
+    limit,
+    output: resolvedOutput,
+    input,
+    dryRun,
+    auditOnly,
+  };
 }
 
 function resolveCliPath(value: string) {
@@ -231,14 +284,19 @@ function contentDbPath() {
   return resolveServerRelativePath(raw.slice("file:".length));
 }
 
-function readLegacyInput(db: Database.Database, limit: number | null) {
+function readLegacyInput(
+  db: Database.Database,
+  limit: number | null,
+  requirePublicationMetadata = false,
+) {
   const limitClause = limit ? "LIMIT ?" : "";
   const limitArgs = limit ? [limit] : [];
 
-  const rulebookPublicationMetadata = readRulebookPublicationRowsById();
+  const rulebookPublicationMetadata = readRulebookPublicationRowsById(
+    requirePublicationMetadata,
+  );
   const chmPublicationLabels = readChmRulebookPublicationRowsByName();
-  const rulebooks = (
-    db
+  const legacyRulebooks = db
     .prepare(
       `
       SELECT rb.id,
@@ -258,8 +316,19 @@ function readLegacyInput(db: Database.Database, limit: number | null) {
       ORDER BY rb.id
     `,
     )
-      .all() as LegacyRulebookRow[]
-  ).map((row) => {
+    .all() as LegacyRulebookRow[];
+  if (requirePublicationMetadata) {
+    const missingRulebookIds = legacyRulebooks
+      .map((row) => row.id)
+      .filter((id) => !rulebookPublicationMetadata.has(id));
+    if (missingRulebookIds.length > 0) {
+      throw new Error(
+        `Canonical publication metadata is incomplete; missing legacyRulebookId rows: ${missingRulebookIds.join(", ")}`,
+      );
+    }
+  }
+
+  const rulebooks = legacyRulebooks.map((row) => {
     const publicationRow = rulebookPublicationMetadata.get(row.id);
     const chmLabel = chmPublicationLabels.get(normalizePublicationName(row.name));
     const publicationMetadata = deriveRulebookPublicationMetadata(row, {
@@ -425,9 +494,34 @@ function readLegacyInput(db: Database.Database, limit: number | null) {
   } satisfies LegacyRulesContentInput;
 }
 
-function readRulebookPublicationRowsById() {
+function readLegacySourceTotals(db: Database.Database): RulesContentSourceTotals {
+  const tableCount = (table: string) =>
+    Number(
+      (
+        db.prepare(`SELECT COUNT(*) AS count FROM "${table}"`).get() as {
+          count: number | bigint;
+        }
+      ).count,
+    );
+  return {
+    rulebooks: tableCount("dnd_rulebook"),
+    spells: tableCount("dnd_spell"),
+    descriptors: tableCount("dnd_spell_descriptors"),
+    classListEntries: tableCount("dnd_spellclasslevel"),
+    domainListEntries: tableCount("dnd_spelldomainlevel"),
+  };
+}
+
+function readRulebookPublicationRowsById(required = false) {
   const byId = new Map<number, RulebookPublicationMetadataRow>();
-  if (!fs.existsSync(RULEBOOK_PUBLICATION_METADATA_JSONL_PATH)) return byId;
+  if (!fs.existsSync(RULEBOOK_PUBLICATION_METADATA_JSONL_PATH)) {
+    if (required) {
+      throw new Error(
+        `Importable rules-content generation requires canonical publication metadata: ${RULEBOOK_PUBLICATION_METADATA_JSONL_PATH}`,
+      );
+    }
+    return byId;
+  }
 
   const sourcePath = path.relative(
     localDataDir(),
@@ -551,7 +645,7 @@ function writeJson(filePath: string, value: unknown) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
-function readGenerated(filePath: string) {
+export function readGenerated(filePath: string) {
   if (!fs.existsSync(filePath)) {
     throw new Error(`Generated content file not found: ${filePath}`);
   }
@@ -565,6 +659,7 @@ function readGenerated(filePath: string) {
       `Generated content uses ${content.generatorVersion ?? "an unknown generator"}; rerun rules:content:generate with ${RULES_CONTENT_GENERATOR_VERSION}.`,
     );
   }
+  assertRulesContentArtifact(content);
   if (!Array.isArray(content.mechanicFacets)) {
     throw new Error("Generated content mechanicFacets must be an array.");
   }
@@ -619,17 +714,24 @@ function assertMechanicDisplayColumns(db: Database.Database) {
   }
 }
 
-function importGenerated(
+export function importGenerated(
   db: Database.Database,
   content: NormalizedRulesContent,
   dryRun: boolean,
   inputPath: string,
+  importContext?: RulesContentImportContext,
 ) {
+  assertImportableRulesContentArtifact(content);
   assertGeneratedTables(db);
   assertMechanicDisplayColumns(db);
+  const resolvedImportContext = importContext ?? collectImportContext();
   const counts = content.counts;
   const inputSha256 = sha256File(inputPath);
-  const provenance = collectBuildProvenance(inputPath);
+  const provenance = collectBuildProvenance(
+    content,
+    inputPath,
+    resolvedImportContext,
+  );
   if (dryRun) return { ...counts, inputSha256, provenance };
 
   const run = db.transaction(() => {
@@ -717,106 +819,68 @@ function toSqliteParams(row: Record<string, unknown>) {
   );
 }
 
-function sha256File(filePath: string) {
-  return crypto.createHash("sha256").update(fs.readFileSync(filePath)).digest("hex");
-}
-
-function collectBuildProvenance(inputPath: string): BuildProvenance {
-  const root = repoRoot();
-  const dataRoot = path.join(root, "data");
-  const rulesManifestPath = path.join(dataRoot, "rules-db-manifest.json");
-  const contentMigrationsPath = path.join(root, "server", "db", "content", "migrations");
-  const rulesManifest = readJsonIfExists(rulesManifestPath);
-  const rulesDbHash =
-    readManifestDatabaseHash(rulesManifest) ?? hashFileIfExists(rulesDbPath());
-
-  const buildMeta = {
-    schema: "rules-content-build-meta.v1",
-    generatedInput: relativeRepoPath(inputPath),
-    generatedInputSha256: sha256File(inputPath),
-    rulesManifest: fs.existsSync(rulesManifestPath)
-      ? relativeRepoPath(rulesManifestPath)
-      : null,
-    rulesDb: relativeRepoPath(rulesDbPath()),
-    contentMigrations: relativeRepoPath(contentMigrationsPath),
-    parentRepoDirty: gitDirty(root),
-    dataRepoDirty: fs.existsSync(path.join(dataRoot, ".git"))
-      ? gitDirty(dataRoot)
-      : null,
-  };
+function collectBuildProvenance(
+  content: NormalizedRulesContent & {
+    artifact: NonNullable<NormalizedRulesContent["artifact"]>;
+  },
+  inputPath: string,
+  importContext: RulesContentImportContext,
+): BuildProvenance {
+  const generation = content.artifact.provenance;
+  verifyRulesContentArtifactProvenance(
+    generation,
+    importContext.currentProvenance,
+  );
 
   return {
-    parentRepoCommit: gitCommit(root),
-    dataRepoCommit: fs.existsSync(path.join(dataRoot, ".git"))
-      ? gitCommit(dataRoot)
-      : null,
-    rulesManifestSha256: hashFileIfExists(rulesManifestPath),
-    rulesDbSha256: rulesDbHash,
-    migrationSetSha256: hashDirectoryIfExists(contentMigrationsPath),
-    buildMetaJson: JSON.stringify(buildMeta),
+    parentRepoCommit: generation.parentRepo.commit,
+    dataRepoCommit: generation.dataRepo?.commit ?? null,
+    rulesManifestSha256:
+      generation.canonicalInputs.rulesManifest?.sha256 ?? null,
+    rulesDbSha256: generation.rulesDb.sha256,
+    migrationSetSha256: generation.contentMigrations.sha256,
+    buildMetaJson: JSON.stringify({
+      schema: "rules-content-build-meta.v2",
+      artifact: {
+        scope: content.artifact.scope,
+        sourceTotals: content.artifact.sourceTotals,
+        generation,
+      },
+      importer: {
+        importedAt: importContext.importedAt,
+        generatedInput: relativeRepoPath(inputPath),
+        generatedInputSha256: sha256File(inputPath),
+        current: importContext.currentProvenance,
+      },
+    }),
   };
 }
 
-function gitCommit(cwd: string) {
-  return runGit(cwd, ["rev-parse", "HEAD"]);
+function collectImportContext(): RulesContentImportContext {
+  return {
+    currentProvenance: collectRulesContentArtifactProvenance(
+      provenancePaths(),
+      {
+        requireDataRepo: true,
+        requireRulesManifest: true,
+        requirePublicationMetadata: true,
+      },
+    ),
+    importedAt: new Date().toISOString(),
+  };
 }
 
-function gitDirty(cwd: string) {
-  const status = runGit(cwd, ["status", "--porcelain"]);
-  return status === null ? null : status.length > 0;
-}
-
-function runGit(cwd: string, args: string[]) {
-  try {
-    return execFileSync("git", args, {
-      cwd,
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    }).trim();
-  } catch {
-    return null;
-  }
-}
-
-function hashFileIfExists(filePath: string) {
-  return fs.existsSync(filePath) ? sha256File(filePath) : null;
-}
-
-function hashDirectoryIfExists(dirPath: string) {
-  if (!fs.existsSync(dirPath)) return null;
-  const hash = crypto.createHash("sha256");
-  for (const filePath of listFilesRecursive(dirPath)) {
-    hash.update(relativePath(dirPath, filePath), "utf8");
-    hash.update("\0");
-    hash.update(fs.readFileSync(filePath));
-    hash.update("\0");
-  }
-  return hash.digest("hex");
-}
-
-function listFilesRecursive(dirPath: string): string[] {
-  return fs
-    .readdirSync(dirPath, { withFileTypes: true })
-    .flatMap((entry) => {
-      const entryPath = path.join(dirPath, entry.name);
-      if (entry.isDirectory()) return listFilesRecursive(entryPath);
-      if (entry.isFile()) return [entryPath];
-      return [];
-    })
-    .sort((left, right) => relativePath(dirPath, left).localeCompare(relativePath(dirPath, right)));
-}
-
-function readJsonIfExists(filePath: string): unknown {
-  if (!fs.existsSync(filePath)) return null;
-  return JSON.parse(fs.readFileSync(filePath, "utf8")) as unknown;
-}
-
-function readManifestDatabaseHash(value: unknown) {
-  if (!value || typeof value !== "object") return null;
-  const database = (value as { database?: unknown }).database;
-  if (!database || typeof database !== "object") return null;
-  const sha256 = (database as { sha256?: unknown }).sha256;
-  return typeof sha256 === "string" ? sha256 : null;
+function provenancePaths(): RulesContentProvenancePaths {
+  const root = repoRoot();
+  return {
+    parentRepoRoot: root,
+    dataRepoRoot: localDataDir(),
+    rulesDbPath: rulesDbPath(),
+    rulesManifestPath: RULES_MANIFEST_PATH,
+    rulebookPublicationMetadataPath: RULEBOOK_PUBLICATION_METADATA_JSONL_PATH,
+    chmRulebookPublicationsPath: CHM_RULEBOOK_PUBLICATIONS_JSONL_PATH,
+    contentMigrationsPath: CONTENT_MIGRATIONS_PATH,
+  };
 }
 
 function relativeRepoPath(filePath: string) {
@@ -846,16 +910,41 @@ function runAudit(limit: number | null) {
   }
 }
 
-function runGenerate(limit: number | null, output: string) {
+function runGenerate(
+  limit: number | null,
+  output: string,
+  auditOnly: boolean,
+) {
   const db = new Database(rulesDbPath(), { readonly: true, fileMustExist: true });
   try {
-    const content = normalizeRulesContent(readLegacyInput(db, limit));
+    const sourceTotals = readLegacySourceTotals(db);
+    const content = normalizeRulesContent(
+      readLegacyInput(db, limit, !auditOnly),
+    );
+    const limitations = [
+      ...(auditOnly ? ["audit-only generation"] : []),
+      ...(limit === null ? [] : [`spell query limited to ${limit} rows`]),
+    ];
+    content.artifact = createRulesContentArtifactMetadata({
+      scope: auditOnly ? "limited" : "full",
+      sourceTotals,
+      provenance: collectRulesContentArtifactProvenance(provenancePaths(), {
+        requireDataRepo: !auditOnly,
+        requireRulesManifest: !auditOnly,
+        requirePublicationMetadata: !auditOnly,
+      }),
+      limitations,
+    });
+    assertRulesContentArtifact(content);
     writeJson(output, content);
     const reportPath = path.join(OUT_ROOT, `${timestamp()}-generate-summary.json`);
     writeJson(reportPath, auditNormalizedContent(content));
     console.log("Rules content generated");
+    console.log(`Artifact scope: ${content.artifact.scope}`);
+    console.log(`Importable: ${content.artifact.importable ? "yes" : "no"}`);
     console.log(`Output: ${output}`);
     console.log(`Spells: ${content.counts.spells}`);
+    console.log(`Source spells: ${content.artifact.sourceTotals.spells}`);
     console.log(`Issues: ${content.counts.issues}`);
     console.log(`Report: ${reportPath}`);
   } finally {
@@ -865,6 +954,7 @@ function runGenerate(limit: number | null, output: string) {
 
 function runImport(input: string, dryRun: boolean) {
   const content = readGenerated(input);
+  assertImportableRulesContentArtifact(content);
   const db = new Database(contentDbPath());
   try {
     const result = importGenerated(db, content, dryRun, input);
@@ -1758,7 +1848,9 @@ function parseJsonString(value: unknown) {
 function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.command === "audit") return runAudit(args.limit);
-  if (args.command === "generate") return runGenerate(args.limit, args.output);
+  if (args.command === "generate") {
+    return runGenerate(args.limit, args.output, args.auditOnly);
+  }
   if (args.command === "import") return runImport(args.input, args.dryRun);
   if (args.command === "meta") return runMeta();
   if (args.command === "parity") return runParity();
@@ -1766,4 +1858,4 @@ function main() {
   usage();
 }
 
-main();
+if (require.main === module) main();

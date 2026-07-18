@@ -1,12 +1,13 @@
 import crypto from "node:crypto";
 
+import type { RulesContentArtifactMetadata } from "./artifact";
 import {
   normalizeMechanicValue,
   type MechanicDisplayCoverage,
   type MechanicType,
 } from "./mechanics";
 
-export const RULES_CONTENT_GENERATOR_VERSION = "rules-content-normalizer-v7";
+export const RULES_CONTENT_GENERATOR_VERSION = "rules-content-normalizer-v8";
 
 export type LegacyRulebookRow = {
   id: number;
@@ -102,9 +103,10 @@ export type LegacyRulesContentInput = {
 };
 
 export type NormalizedRulesContent = {
-  schemaVersion: 1;
+  schemaVersion: 2;
   generatorVersion: string;
   generatedAt: string;
+  artifact: RulesContentArtifactMetadata | null;
   counts: Record<string, number>;
   rulebooks: NormalizedRulebookRow[];
   spells: NormalizedSpellRow[];
@@ -606,9 +608,10 @@ export function normalizeRulesContent(
   }
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     generatorVersion: RULES_CONTENT_GENERATOR_VERSION,
     generatedAt,
+    artifact: null,
     counts: {
       rulebooks: rulebooks.length,
       spells: spells.length,

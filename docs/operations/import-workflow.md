@@ -72,6 +72,15 @@ npm run -w data-tools rules:content:parity
 npm run -w data-tools rules:content:meta
 ```
 
+The normal `rules:content:generate` command produces the only importable
+artifact. It requires the canonical publication metadata and records full
+source totals plus generation-time repository and input hashes. For bounded
+inspection, use `rules:content:generate -- --audit-only [--limit N]`; that mode
+writes a distinct limited artifact which `rules:content:import` rejects. Import
+re-hashes the current rules DB, canonical inputs, and tracked migrations before
+dry-run or mutation, while `RulesContentBuild` preserves generation provenance
+and records importer state separately.
+
 The post-v1.1 full-corpus correction apply is complete locally. The accepted
 patch now lives at
 `data/rules-patches/applied/spells/full-corpus-v600-v601-corrections.jsonl`; its
