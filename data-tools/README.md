@@ -249,6 +249,7 @@ npm run -w data-tools en:summaries:probe -- --candidate "Spider Poison" --candid
 npm run -w data-tools en:summaries:probe -- --input imarvin/short-desc/candidates.json --limit 20
 npm run -w data-tools en:summaries:probe -- --input imarvin/short-desc/candidates.json --offset 0 --limit 20 --delay-ms 1500 --output-name imarvin-00000-00020
 npm run -w data-tools en:summaries:sources -- --input imarvin/short-desc/candidates.json --delay-ms 1500
+npm run -w data-tools en:summaries:sources -- --input imarvin/short-desc/candidates.json --source-offset 0 --source-limit 20 --output-name source-index-00000-00020 --delay-ms 1500
 ```
 
 Run the Chinese CHM parser workflow:
@@ -457,7 +458,13 @@ JSON. It is also rate-limited and writes the source-index rows as local source
 data split by our local rules DB edition categories under
 `data/imarvin/short-desc/source-index/` by default. It also writes a compact run
 report under `data-tools/out/en-summaries/` and does not mutate SQLite
-databases.
+databases. The canonical `source-index` directory accepts complete crawls only;
+`--source-offset` or `--source-limit` requires a distinct `--output-name`.
+Source output names must be safe directory basenames and cannot collide with
+protected short-description inputs. Every accepted output is built in a sibling
+staging directory and activated by directory rename only after its source files
+and manifest are complete, so a failed crawl or staging write leaves the prior
+target intact.
 
 `zh:qa` is a mechanical source and parser-output QA report. It checks parser
 hard gates, raw/clean file drift, noisy source labels, empty or very short
@@ -679,6 +686,9 @@ another scoped book. The default scope is the current official 3.5 working set:
   report; it does not mutate source data or SQLite databases.
 - `en:summaries:sources` fetches source-index pages and writes generated review
   output plus local source-index JSON only; it does not mutate SQLite databases.
+  It rejects root-equivalent, path-like, reserved, protected-input, and
+  non-directory targets; partial crawls cannot replace canonical `source-index`,
+  and accepted writes stage before same-parent activation.
 - `summaries:normalize` writes local JSONL/report files only; it does not mutate
   SQLite databases.
 - `summaries:punctuation` without `--write` writes reports only; with `--write`
@@ -707,4 +717,3 @@ another scoped book. The default scope is the current official 3.5 working set:
   sources, or touch SQLite databases.
 - Future rules DB patch commands must clearly distinguish dry-run validation
   from write-capable imports.
-
