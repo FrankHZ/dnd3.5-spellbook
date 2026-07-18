@@ -31,9 +31,7 @@ type LookupValue = {
   label: string;
 };
 
-type ResolvedInsertSpell = {
-  kind: "insertSpell";
-  line: number;
+export type SpellInsertApplyOperation = {
   op: InsertSpellOperation;
   spellId: number;
   rulebookId: number;
@@ -44,9 +42,19 @@ type ResolvedInsertSpell = {
   domainLevels: Array<{ domainId: number; level: number; extra: string }>;
 };
 
+type ResolvedInsertSpell = SpellInsertApplyOperation & {
+  kind: "insertSpell";
+  line: number;
+};
+
 export type SpellUpdateApplyOperation = {
   spellId: number;
   fields: SpellUpdateFields;
+};
+
+export type SpellIndexSqlPatch = {
+  sqlPath: string;
+  sql: string;
 };
 
 type ResolvedUpdateSpell = SpellUpdateApplyOperation & {
@@ -125,6 +133,15 @@ function resolvePatchPath(rawPath: string, expectedExtension: ".jsonl" | ".sql")
     throw new Error(`Patch file not found: ${resolved}`);
   }
   return resolved;
+}
+
+function loadIndexPatches(): SpellIndexSqlPatch[] {
+  const sqlPaths = INDEX_PATCHES.map((patch) => resolvePatchPath(patch, ".sql"));
+  const loadedPatches = sqlPaths.map((sqlPath) => ({
+    sqlPath,
+    sql: fs.readFileSync(sqlPath, "utf-8"),
+  }));
+  return loadedPatches.map(normalizeIndexSqlPatch);
 }
 
 function tempDbPath(sourceDbPath: string) {
@@ -482,7 +499,10 @@ function boolToInt(value: boolean | undefined) {
   return value === true ? 1 : 0;
 }
 
-function insertSpells(db: Database.Database, operations: ResolvedInsertSpell[]) {
+function insertSpells(
+  db: Database.Database,
+  operations: readonly SpellInsertApplyOperation[],
+) {
   let nextDescriptorId =
     ((db
       .prepare("SELECT COALESCE(MAX(id), 0) AS maxId FROM dnd_spell_descriptors")
@@ -530,77 +550,73 @@ function insertSpells(db: Database.Database, operations: ResolvedInsertSpell[]) 
     VALUES (?, ?, ?, ?, ?)
   `);
 
-  const run = db.transaction(() => {
-    for (const op of operations) {
-      const spell = op.op.spell ?? {};
-      const source = op.op.source ?? {};
-      const components = spell.components ?? {};
-      insertSpell.run({
-        id: op.spellId,
-        added: spell.added ?? defaultAddedTime(),
-        rulebook_id: op.rulebookId,
-        page: asInteger(source.page) ?? null,
-        name: spell.name,
-        school_id: op.schoolId,
-        sub_school_id: op.subschoolId,
-        verbal_component: boolToInt(components.verbal),
-        somatic_component: boolToInt(components.somatic),
-        material_component: boolToInt(components.material),
-        arcane_focus_component: boolToInt(components.arcaneFocus),
-        divine_focus_component: boolToInt(components.divineFocus),
-        xp_component: boolToInt(components.xp),
-        casting_time: asOptionalString(spell.castingTime),
-        range: asOptionalString(spell.range),
-        target: asOptionalString(spell.target),
-        effect: asOptionalString(spell.effect),
-        area: asOptionalString(spell.area),
-        duration: asOptionalString(spell.duration),
-        saving_throw: asOptionalString(spell.savingThrow),
-        spell_resistance: asOptionalString(spell.spellResistance),
-        description: spell.description,
-        slug: spell.slug,
-        meta_breath_component: boolToInt(components.metaBreath),
-        true_name_component: boolToInt(components.trueName),
-        extra_components: asOptionalString(spell.extraComponents),
-        description_html: spell.descriptionHtml,
-        corrupt_component: boolToInt(components.corrupt),
-        corrupt_level: asInteger(spell.corruptLevel) ?? null,
-        verified: boolToInt(asBoolean(spell.verified)),
-      });
+  for (const op of operations) {
+    const spell = op.op.spell ?? {};
+    const source = op.op.source ?? {};
+    const components = spell.components ?? {};
+    insertSpell.run({
+      id: op.spellId,
+      added: spell.added ?? defaultAddedTime(),
+      rulebook_id: op.rulebookId,
+      page: asInteger(source.page) ?? null,
+      name: spell.name,
+      school_id: op.schoolId,
+      sub_school_id: op.subschoolId,
+      verbal_component: boolToInt(components.verbal),
+      somatic_component: boolToInt(components.somatic),
+      material_component: boolToInt(components.material),
+      arcane_focus_component: boolToInt(components.arcaneFocus),
+      divine_focus_component: boolToInt(components.divineFocus),
+      xp_component: boolToInt(components.xp),
+      casting_time: asOptionalString(spell.castingTime),
+      range: asOptionalString(spell.range),
+      target: asOptionalString(spell.target),
+      effect: asOptionalString(spell.effect),
+      area: asOptionalString(spell.area),
+      duration: asOptionalString(spell.duration),
+      saving_throw: asOptionalString(spell.savingThrow),
+      spell_resistance: asOptionalString(spell.spellResistance),
+      description: spell.description,
+      slug: spell.slug,
+      meta_breath_component: boolToInt(components.metaBreath),
+      true_name_component: boolToInt(components.trueName),
+      extra_components: asOptionalString(spell.extraComponents),
+      description_html: spell.descriptionHtml,
+      corrupt_component: boolToInt(components.corrupt),
+      corrupt_level: asInteger(spell.corruptLevel) ?? null,
+      verified: boolToInt(asBoolean(spell.verified)),
+    });
 
-      for (const descriptorId of op.descriptorIds) {
-        insertDescriptor.run(nextDescriptorId, op.spellId, descriptorId);
-        nextDescriptorId += 1;
-      }
-      for (const level of op.classLevels) {
-        insertClassLevel.run(
-          nextClassLevelId,
-          level.classId,
-          op.spellId,
-          level.level,
-          level.extra,
-        );
-        nextClassLevelId += 1;
-      }
-      for (const level of op.domainLevels) {
-        insertDomainLevel.run(
-          nextDomainLevelId,
-          level.domainId,
-          op.spellId,
-          level.level,
-          level.extra,
-        );
-        nextDomainLevelId += 1;
-      }
+    for (const descriptorId of op.descriptorIds) {
+      insertDescriptor.run(nextDescriptorId, op.spellId, descriptorId);
+      nextDescriptorId += 1;
     }
-  });
-
-  run();
+    for (const level of op.classLevels) {
+      insertClassLevel.run(
+        nextClassLevelId,
+        level.classId,
+        op.spellId,
+        level.level,
+        level.extra,
+      );
+      nextClassLevelId += 1;
+    }
+    for (const level of op.domainLevels) {
+      insertDomainLevel.run(
+        nextDomainLevelId,
+        level.domainId,
+        op.spellId,
+        level.level,
+        level.extra,
+      );
+      nextDomainLevelId += 1;
+    }
+  }
 }
 
-export function applySpellUpdates(
+function updateSpells(
   db: Database.Database,
-  operations: SpellUpdateApplyOperation[],
+  operations: readonly SpellUpdateApplyOperation[],
 ) {
   const updateSpell = db.prepare(`
     UPDATE dnd_spell
@@ -618,30 +634,102 @@ export function applySpellUpdates(
     WHERE id = @id
   `);
 
-  const run = db.transaction(() => {
-    for (const op of operations) {
-      updateSpell.run({
-        id: op.spellId,
-        update_slug: op.fields.slug === undefined ? 0 : 1,
-        slug: op.fields.slug ?? null,
-        update_extra_components: op.fields.extraComponents === undefined ? 0 : 1,
-        extra_components: op.fields.extraComponents ?? null,
-        update_description: op.fields.description === undefined ? 0 : 1,
-        description: op.fields.description ?? null,
-        update_description_html: op.fields.descriptionHtml === undefined ? 0 : 1,
-        description_html: op.fields.descriptionHtml ?? null,
-      });
-    }
-  });
-
-  run();
+  for (const op of operations) {
+    updateSpell.run({
+      id: op.spellId,
+      update_slug: op.fields.slug === undefined ? 0 : 1,
+      slug: op.fields.slug ?? null,
+      update_extra_components: op.fields.extraComponents === undefined ? 0 : 1,
+      extra_components: op.fields.extraComponents ?? null,
+      update_description: op.fields.description === undefined ? 0 : 1,
+      description: op.fields.description ?? null,
+      update_description_html: op.fields.descriptionHtml === undefined ? 0 : 1,
+      description_html: op.fields.descriptionHtml ?? null,
+    });
+  }
 }
 
-function rebuildIndexes(db: Database.Database) {
-  for (const patch of INDEX_PATCHES) {
-    const sqlPath = resolvePatchPath(patch, ".sql");
-    db.exec(fs.readFileSync(sqlPath, "utf-8"));
+export function applySpellUpdates(
+  db: Database.Database,
+  operations: readonly SpellUpdateApplyOperation[],
+) {
+  db.transaction(() => updateSpells(db, operations))();
+}
+
+function maskSqlCommentsAndQuotedText(sql: string) {
+  return sql.replace(
+    /--[^\r\n]*|\/\*[\s\S]*?\*\/|'(?:''|[^'])*'|"(?:""|[^"])*"|`(?:``|[^`])*`|\[(?:\]\]|[^\]])*\]/g,
+    (match) => {
+      const mask = match.startsWith("--") || match.startsWith("/*") ? " " : "x";
+      return match.replace(/[^\r\n]/g, mask);
+    },
+  );
+}
+
+function normalizeIndexSqlPatch(
+  patch: SpellIndexSqlPatch,
+): SpellIndexSqlPatch {
+  const maskedSql = maskSqlCommentsAndQuotedText(patch.sql);
+  // Legacy rebuild SQL may wrap the whole file in BEGIN/COMMIT. Strip only
+  // those verified boundaries; interior BEGIN/END can belong to a trigger.
+  const beginMatch =
+    /^\s*(BEGIN(?:\s+(?:DEFERRED|IMMEDIATE|EXCLUSIVE))?(?:\s+TRANSACTION)?\s*;)/i.exec(
+      maskedSql,
+    );
+  const commitMatch =
+    /(COMMIT(?:\s+TRANSACTION)?\s*;)\s*$/i.exec(maskedSql);
+
+  let normalizedSql = patch.sql;
+  if (beginMatch && commitMatch && commitMatch.index >= beginMatch[0].length) {
+    const beginStatement = beginMatch[1];
+    const commitStatement = commitMatch[1];
+    if (!beginStatement || !commitStatement) {
+      throw new Error(`Unable to parse index SQL transaction wrapper: ${patch.sqlPath}`);
+    }
+    const beginStart = beginMatch[0].length - beginStatement.length;
+    const beginEnd = beginMatch[0].length;
+    const commitStart = commitMatch.index;
+    const commitEnd = commitStart + commitStatement.length;
+    normalizedSql =
+      patch.sql.slice(0, beginStart) +
+      patch.sql.slice(beginEnd, commitStart) +
+      patch.sql.slice(commitEnd);
   }
+
+  const unexpectedControl =
+    /(?:^|;)\s*(BEGIN(?:\s+(?:DEFERRED|IMMEDIATE|EXCLUSIVE))?(?:\s+TRANSACTION)?\b|COMMIT(?:\s+TRANSACTION)?\b|END\s+TRANSACTION\b|ROLLBACK\b|SAVEPOINT\b|RELEASE(?:\s+SAVEPOINT)?\b)/i.exec(
+      maskSqlCommentsAndQuotedText(normalizedSql),
+    );
+  if (unexpectedControl) {
+    throw new Error(
+      `Index SQL contains unexpected transaction control outside a whole-script wrapper: ${patch.sqlPath}`,
+    );
+  }
+
+  return { ...patch, sql: normalizedSql };
+}
+
+function rebuildIndexes(
+  db: Database.Database,
+  indexPatches: readonly SpellIndexSqlPatch[],
+) {
+  for (const patch of indexPatches) {
+    db.exec(patch.sql);
+  }
+}
+
+export function applySpellPatchAtomically(
+  db: Database.Database,
+  insertOperations: readonly SpellInsertApplyOperation[],
+  updateOperations: readonly SpellUpdateApplyOperation[],
+  indexPatches: readonly SpellIndexSqlPatch[],
+) {
+  const normalizedIndexPatches = indexPatches.map(normalizeIndexSqlPatch);
+  db.transaction(() => {
+    insertSpells(db, insertOperations);
+    updateSpells(db, updateOperations);
+    rebuildIndexes(db, normalizedIndexPatches);
+  })();
 }
 
 function writeReport(report: unknown, mode: Mode) {
@@ -683,6 +771,7 @@ function validateOnly(dbPath: string, patchPath: string) {
 }
 
 function applyPatch(targetDbPath: string, patchPath: string, dryRun: boolean) {
+  const indexPatches = loadIndexPatches();
   const db = new Database(targetDbPath);
   try {
     // The legacy rules DB schema references auth_user, but the prepared rules
@@ -718,9 +807,12 @@ function applyPatch(targetDbPath: string, patchPath: string, dryRun: boolean) {
       (op): op is ResolvedUpdateSpell => op.kind === "updateSpell",
     );
 
-    insertSpells(db, insertOperations);
-    applySpellUpdates(db, updateOperations);
-    rebuildIndexes(db);
+    applySpellPatchAtomically(
+      db,
+      insertOperations,
+      updateOperations,
+      indexPatches,
+    );
     const after = tableCounts(db);
     const insertedSpells = insertOperations.map((op) => ({
       id: op.spellId,

@@ -15,7 +15,10 @@ import {
   validateLevelShape,
   validateUpdateSpellShape,
 } from "../rules/spells-schema";
-import { applySpellUpdates } from "../rules/spells";
+import {
+  applySpellPatchAtomically,
+  applySpellUpdates,
+} from "../rules/spells";
 import {
   parseRulebookPatchJsonlText,
   validateInsertRulebookShape,
@@ -1453,6 +1456,200 @@ const tests: TestCase[] = [
           descriptionHtml: "<p>Corrected fixture text.</p>",
           untouched: "preserved",
         });
+      } finally {
+        db.close();
+      }
+    },
+  },
+  {
+    name: "structured spell apply rolls back every mutation when index rebuild fails",
+    run: () => {
+      const db = new Database(":memory:");
+      try {
+        db.exec(`
+          CREATE TABLE dnd_spell (
+            id INTEGER PRIMARY KEY,
+            added TEXT,
+            rulebook_id INTEGER,
+            page INTEGER,
+            name TEXT,
+            school_id INTEGER,
+            sub_school_id INTEGER,
+            verbal_component INTEGER,
+            somatic_component INTEGER,
+            material_component INTEGER,
+            arcane_focus_component INTEGER,
+            divine_focus_component INTEGER,
+            xp_component INTEGER,
+            casting_time TEXT,
+            range TEXT,
+            target TEXT,
+            effect TEXT,
+            area TEXT,
+            duration TEXT,
+            saving_throw TEXT,
+            spell_resistance TEXT,
+            description TEXT,
+            slug TEXT,
+            meta_breath_component INTEGER,
+            true_name_component INTEGER,
+            extra_components TEXT,
+            description_html TEXT,
+            corrupt_component INTEGER,
+            corrupt_level INTEGER,
+            verified INTEGER,
+            verified_author_id INTEGER,
+            verified_time TEXT
+          );
+          CREATE TABLE dnd_spell_descriptors (
+            id INTEGER PRIMARY KEY,
+            spell_id INTEGER,
+            spelldescriptor_id INTEGER
+          );
+          CREATE TABLE dnd_spellclasslevel (
+            id INTEGER PRIMARY KEY,
+            character_class_id INTEGER,
+            spell_id INTEGER,
+            level INTEGER,
+            extra TEXT
+          );
+          CREATE TABLE dnd_spelldomainlevel (
+            id INTEGER PRIMARY KEY,
+            domain_id INTEGER,
+            spell_id INTEGER,
+            level INTEGER,
+            extra TEXT
+          );
+          CREATE TABLE derived_spell_names (
+            spell_id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL
+          );
+          INSERT INTO dnd_spell (
+            id, added, rulebook_id, name, school_id, description, slug,
+            extra_components, description_html, verified
+          ) VALUES (
+            7, '2026-07-18 00:00:00', 1, 'Existing Spell', 2,
+            'Original text.', 'existing-spell', NULL,
+            '<p>Original text.</p>', 0
+          );
+          INSERT INTO derived_spell_names VALUES (999, 'pre-rebuild marker');
+        `);
+
+        assert.throws(
+          () =>
+            applySpellPatchAtomically(
+              db,
+              [
+                {
+                  op: {
+                    op: "insertSpell",
+                    id: 8,
+                    source: { rulebook: "SC", page: 42 },
+                    spell: {
+                      name: "Atomic Fixture Spell",
+                      slug: "atomic-fixture-spell",
+                      school: "Evocation",
+                      description: "Inserted text.",
+                      descriptionHtml: "<p>Inserted text.</p>",
+                      added: "2026-07-18 00:00:00",
+                    },
+                  },
+                  spellId: 8,
+                  rulebookId: 1,
+                  schoolId: 2,
+                  subschoolId: null,
+                  descriptorIds: [],
+                  classLevels: [],
+                  domainLevels: [],
+                },
+              ],
+              [
+                {
+                  spellId: 7,
+                  fields: {
+                    extraComponents: "M/DF",
+                    description: "Updated text.",
+                    descriptionHtml: "<p>Updated text.</p>",
+                  },
+                },
+              ],
+              [
+                {
+                  sqlPath: "rebuild-derived-spell-names.sql",
+                  sql: `
+                    -- Legacy derive scripts may own a standalone transaction.
+                    BEGIN;
+                    DELETE FROM derived_spell_names;
+                    INSERT INTO derived_spell_names
+                      SELECT id, name FROM dnd_spell;
+                    CREATE TRIGGER derived_spell_names_after_insert
+                    AFTER INSERT ON dnd_spell
+                    BEGIN
+                      INSERT OR REPLACE INTO derived_spell_names
+                        VALUES (NEW.id, NEW.name);
+                    END;
+                    COMMIT;
+                    -- The maintained apply workflow owns the real transaction.
+                  `,
+                },
+                {
+                  sqlPath: "failing-derived-index.sql",
+                  sql: "INSERT INTO missing_spell_index VALUES (1);",
+                },
+              ],
+            ),
+          /no such table: missing_spell_index/,
+        );
+
+        assert.throws(
+          () =>
+            applySpellPatchAtomically(
+              db,
+              [],
+              [{ spellId: 7, fields: { slug: "must-not-change" } }],
+              [
+                {
+                  sqlPath: "unexpected-transaction-control.sql",
+                  sql: "SELECT 1;\nCOMMIT;",
+                },
+              ],
+            ),
+          /unexpected transaction control outside a whole-script wrapper/,
+        );
+
+        const spells = db
+          .prepare(`
+            SELECT id, name, slug, extra_components AS extraComponents,
+              description, description_html AS descriptionHtml
+            FROM dnd_spell
+            ORDER BY id
+          `)
+          .all();
+        assert.deepEqual(spells, [
+          {
+            id: 7,
+            name: "Existing Spell",
+            slug: "existing-spell",
+            extraComponents: null,
+            description: "Original text.",
+            descriptionHtml: "<p>Original text.</p>",
+          },
+        ]);
+        assert.deepEqual(
+          db
+            .prepare("SELECT spell_id AS spellId, name FROM derived_spell_names")
+            .all(),
+          [{ spellId: 999, name: "pre-rebuild marker" }],
+        );
+        assert.equal(
+          db
+            .prepare(
+              "SELECT COUNT(*) AS count FROM sqlite_master WHERE type = 'trigger' AND name = ?",
+            )
+            .pluck()
+            .get("derived_spell_names_after_insert"),
+          0,
+        );
       } finally {
         db.close();
       }
