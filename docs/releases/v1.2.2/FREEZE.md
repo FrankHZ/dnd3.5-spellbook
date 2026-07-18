@@ -87,6 +87,8 @@ Final disposition:
   noise.
 - The temporary findings pack was removed; no permanent parallel ledger
   remains.
+- Detailed reports remain discoverable through the immutable links in
+  [Historical Audit Evidence](./code-and-test-qa-plan.md#historical-audit-evidence).
 
 ### 3. Regression And Runtime Acceptance
 

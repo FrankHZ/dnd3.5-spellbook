@@ -239,6 +239,28 @@ No follow-up remains local to this frozen plan. `DP-AUD-007` was preserved in
 `docs/stable-backlog.md` for the next reactivation of the dormant local CHM
 preprocessing workflow.
 
+## Historical Audit Evidence
+
+The temporary findings pack was removed from the current tree at freeze so it
+would not become a second active QA ledger. The detailed reports remain
+available at immutable Git history:
+
+- [pre-freeze findings index](https://github.com/FrankHZ/dnd3.5-spellbook/blob/9456fbe9cf1b31977ec175b112e045c7832285d1/docs/releases/v1.2.2/qa-findings/README.md)
+  records the final dispositions and dependency-ordered fix batches;
+- [backend/DB](https://github.com/FrankHZ/dnd3.5-spellbook/blob/9456fbe9cf1b31977ec175b112e045c7832285d1/docs/releases/v1.2.2/qa-findings/backend-db.md),
+  [data pipeline](https://github.com/FrankHZ/dnd3.5-spellbook/blob/9456fbe9cf1b31977ec175b112e045c7832285d1/docs/releases/v1.2.2/qa-findings/data-pipeline.md),
+  [frontend design](https://github.com/FrankHZ/dnd3.5-spellbook/blob/9456fbe9cf1b31977ec175b112e045c7832285d1/docs/releases/v1.2.2/qa-findings/frontend-design.md),
+  [i18n/translation](https://github.com/FrankHZ/dnd3.5-spellbook/blob/9456fbe9cf1b31977ec175b112e045c7832285d1/docs/releases/v1.2.2/qa-findings/i18n-translation.md),
+  and [platform](https://github.com/FrankHZ/dnd3.5-spellbook/blob/9456fbe9cf1b31977ec175b112e045c7832285d1/docs/releases/v1.2.2/qa-findings/platform.md)
+  preserve the five specialist handoffs;
+- [PR #80](https://github.com/FrankHZ/dnd3.5-spellbook/pull/80) preserves the
+  raw audit publication history, while
+  [PR #81](https://github.com/FrankHZ/dnd3.5-spellbook/pull/81) preserves
+  main-gate triage and disposition history.
+
+Use these links for forensic detail. The Completion Notes below and
+[FREEZE.md](./FREEZE.md) remain authoritative for the accepted release result.
+
 ## Completion Notes
 
 Accepted history:
