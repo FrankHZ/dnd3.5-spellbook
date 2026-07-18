@@ -93,8 +93,10 @@ read-only.
 | `platform` | CI, runtime build/import checks, dependency boundaries, environment/config consistency, deployment and DB helper scripts | Do not change production configuration during audit |
 
 The main gate owns cross-domain findings, duplicate removal, severity, fix
-ownership, and defer decisions. Librarian does not maintain a separate findings
-document.
+ownership, and defer decisions. Raw role handoffs may be preserved temporarily
+under `qa-findings/` while triage and fixes are active; proposed severities in
+those files are not final. Librarian does not maintain a second disposition
+ledger.
 
 ## Finding Handoff
 
@@ -111,10 +113,12 @@ Each audit returns only actionable, evidence-backed findings in this shape:
 Do not return general praise, style preferences, test-count observations, or a
 large refactor proposal without a demonstrated failure mode.
 
-Finding details stay in review/task handoffs and owning fix PRs. This plan's
-Completion Notes record only the final disposition summary and accepted PRs.
-Deferred P2/P3 items move to this plan's Follow-Up Candidates or
-`docs/stable-backlog.md`; no permanent parallel QA ledger is added.
+Finding details stay in review/task handoffs, the temporary `qa-findings/`
+evidence pack, and owning fix PRs. This plan's Completion Notes record only the
+final disposition summary and accepted PRs. Delete the temporary evidence pack
+before freeze after accepted deferred items move to this plan's Follow-Up
+Candidates or `docs/stable-backlog.md`; no permanent parallel QA ledger is
+added.
 
 ## Plan
 
@@ -136,6 +140,9 @@ Deferred P2/P3 items move to this plan's Follow-Up Candidates or
 - Agents do not edit files, create fix branches, change local DBs, or modify
   remote configuration during this slice.
 - Each role returns the Finding Handoff format above.
+- After all five read-only audits finish, each role may preserve that completed
+  handoff in its own file under `qa-findings/`; this documentation-only capture
+  does not authorize fixes or further discovery.
 
 ### Slice 3: Main-Gate Triage
 
@@ -206,11 +213,15 @@ this release.
   behavior.
 - Durable docs change only where an accepted fix changes behavior, workflow,
   commands, ownership, or validation truth.
+- Temporary raw audit files are removed or collapsed into Completion Notes
+  before freeze.
 
 ## Doc Updates
 
 - Update this plan with final disposition counts, accepted fix PRs, validation,
   and non-blocking follow-ups.
+- Use `qa-findings/` only as temporary evidence while triage and fix PRs are
+  active; remove it before freeze after durable follow-ups are parked.
 - Update owning topic/operations/module docs only when accepted fixes change
   durable truth.
 - Update `docs/roadmap.md` only when release ordering or status changes.
@@ -232,4 +243,5 @@ worth preserving. Promote only stable, bounded candidates to
 
 Use this section after acceptance. Record audit base, final disposition counts,
 accepted fix PRs, validation results, and residual risk without copying the
-full finding handoffs.
+full finding handoffs. Confirm the temporary `qa-findings/` evidence pack was
+removed.
