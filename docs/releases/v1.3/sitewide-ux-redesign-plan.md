@@ -7,7 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: design audit accepted; implementation planned.
 
 ## Purpose
 
@@ -111,6 +111,11 @@ the interface from route to route.
   acceptance, without committing disposable artifacts unless they become a
   maintained harness input.
 
+Audit result: complete. The current interface already has a viable neutral,
+reference-first base. The release should tighten a small shared vocabulary
+rather than introduce a new visual theme or rebuild every page around one
+composition.
+
 ### Slice 2: Shared Interface Vocabulary
 
 - Normalize the accepted layout widths, spacing, typography hierarchy, color
@@ -160,6 +165,120 @@ the interface from route to route.
   result to main gate. Platform deployment acceptance remains independently
   owned and must also close before release freeze.
 
+## Slice 1 Audit Record
+
+### Before-State Evidence
+
+The live local app was reviewed at a `1440 x 900` desktop viewport and a
+`390 x 844` mobile viewport in both English and Chinese. The review covered
+Browse, populated Search, Spell Detail, Publications, the spellbook index,
+Favorites, Prepared, Settings, and About / Status. Disposable screenshots were
+reviewed during the audit and were not committed.
+
+- Browse and Search already share a recognizable side-control, scope-summary,
+  result-card, and responsive-disclosure model. Mobile filters default closed
+  and results remain immediately reachable.
+- Spell Detail already has the strongest reading hierarchy: a fixed desktop
+  metadata column, a wider rule-text surface, and metadata-first mobile
+  stacking. The responsive title currently renders two semantic `h1` elements
+  and hides one with CSS; implementation should retain one semantic title.
+- Publications is a deliberately dense management list. Its grouped rows,
+  two-column desktop layout, one-column mobile layout, and publication controls
+  fit without horizontal overflow.
+- Prepared is a deliberately specialized workflow with its own side selector
+  and action surface. Its mobile selector defaults closed, but its header and
+  toolbar actions need the same priority and wrapping rules as other pages.
+- Settings and About / Status contain the clearest excess framing: repeated
+  bordered cards are nested inside outer cards, making section and field
+  hierarchy less clear, especially on mobile.
+- No scoped route showed incoherent overlap or horizontal document overflow in
+  the audited states. English creates the greatest control-width pressure;
+  Chinese makes excessive framing and weak heading distinctions more visible.
+
+### Classification And Decisions
+
+Shared-system gaps:
+
+- Page headers need one responsive action rail with stable title/description
+  rhythm, predictable wrapping, and explicit neutral, primary, and destructive
+  action priority. Import/export and destructive collection actions are the
+  main acceptance cases.
+- Side-control cards need one section vocabulary for headings, helper text,
+  dividers, disclosure, and reset actions. Class/domain selectors and Settings
+  subsections should not read as decorative cards nested inside cards.
+- Framed surfaces need one density scale for compact controls, ordinary
+  content, and reading content. `StatusCard` remains the shared feedback base;
+  empty pages should not gain decorative filler.
+- Buttons, segmented controls, chips, labels, and disabled/focus states need
+  shared semantic roles rather than route-local visual emphasis. Destructive
+  color must describe a destructive command, not a commonly used import
+  action.
+- Responsive layout should change presentation without duplicating semantic
+  headings or required actions in the DOM. Long English labels are the sizing
+  baseline; Chinese copy must retain an equally clear hierarchy.
+
+Route-specific gaps:
+
+- Spell Detail should consolidate its responsive title structure and align its
+  action row with the shared header vocabulary while preserving the reading
+  layout and metadata-first mobile order.
+- Publications should align its control surface, group headers, and row rhythm
+  with shared tokens without becoming a generic card grid or losing density.
+- Collections and Prepared need clearer action grouping and mobile wrapping;
+  Prepared keeps its specialized mode and copy tools.
+- Settings should replace its nested visual panels with labeled sections or
+  field groups. About / Status should use the same section rhythm while keeping
+  its tabbed status/credits structure and dense metadata values.
+
+Intentional differences to preserve:
+
+- Browse remains filter-first and Search remains name-first with an explicit
+  full-text mode. Their current URL, reset, scope-summary, and collapsed mobile
+  filter behavior remain product contracts.
+- Browse and Search do not need a decorative page title before their working
+  controls. Spell Detail keeps a stronger title scale than utility pages.
+- The existing single-column, side-column, and wide page widths remain useful
+  domain-specific layouts; cohesion does not require one universal max width.
+- Spell Detail remains a reading surface, Publications remains a dense
+  selection surface, and Prepared remains a specialized repeated-action
+  surface. They should share primitives without being forced into one page
+  template.
+- Result pagination, local display preferences, scan-only summary cards, and
+  all accepted backend/query/i18n contracts remain behaviorally unchanged.
+
+### Shared Vocabulary To Implement
+
+Prefer extending the current layout helpers and local UI wrappers over adding
+a parallel component system. The implementation should converge on:
+
+- page rhythm: existing page-width classes plus shared header, content-gap,
+  and responsive action-rail rules;
+- side controls: the existing side-card shell plus a flatter section/fieldset
+  treatment for grouped controls;
+- surfaces: compact control, ordinary content, and reading density roles with
+  consistent border, padding, heading, and muted-text treatment;
+- actions: shared button grouping and priority rules for page headers,
+  toolbars, destructive commands, and narrow-screen wrapping;
+- states: `StatusCard` for loading, empty, validation, and error feedback, with
+  route copy and actions remaining specific;
+- typography: utility-page title, spell title, section heading, field label,
+  body, metadata, and muted-source roles, without a new font or brand palette.
+
+### Bounded Implementation Order
+
+1. Shared shell and semantics: normalize page rhythm, `PageHeader`, action
+   grouping, side-card sections, common surface densities, and focus/disabled
+   roles; add cross-route regressions and remove Spell Detail's duplicate `h1`.
+2. Lookup and reading: apply the vocabulary to Browse, Search, `SpellCard`,
+   scope/status/pagination surfaces, and Spell Detail while preserving search,
+   filter, card-mode, and preference contracts.
+3. Management and utility: apply it to Publications, spellbooks/Favorites,
+   Prepared, Settings, and About / Status, retaining their intentional workflow
+   differences and flattening decorative nesting.
+4. Cohesion acceptance: run the full automated and browser matrix, compare the
+   route set as a whole, then promote only implemented durable rules into
+   `docs/design.md` and update route/component docs where ownership changed.
+
 ## Acceptance Criteria
 
 - Scoped routes use one coherent page, control, state-feedback, and responsive
@@ -196,14 +315,18 @@ the interface from route to route.
 
 ## Open Questions
 
-- Which current visual inconsistencies are durable route-specific differences,
-  and which should become shared components or tokens?
-- Does the accepted filter vocabulary need one presentation model at all
-  densities, or a deliberate desktop/mobile disclosure difference?
-- Which SpellCard details should remain user-selectable rather than becoming a
-  fixed sitewide presentation decision?
+- No design-choice blocker remains before Slice 2. Desktop side controls and
+  mobile default-closed disclosure are an intentional responsive difference.
+- Any proposal to change which SpellCard details are user-selectable remains a
+  separate product decision; the cohesion pass should style the accepted
+  preferences rather than replace them.
 
 ## Follow-Up Candidates
 
 Use this section during implementation for useful, non-blocking discoveries.
 Do not park a release acceptance blocker here.
+
+- Spell Detail currently exposes a raw source-locator string above some rule
+  text. Review whether that provenance belongs in the public reading surface
+  as a separate content/display decision; do not hide or reinterpret it as part
+  of the styling pass.
