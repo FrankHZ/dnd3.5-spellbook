@@ -7,8 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: implemented in PR; awaiting main merge and real Actions acceptance
-before v1.3 freeze.
+Status: accepted in PR #95 and Actions deploy run `29669906495`; frozen in
+[FREEZE.md](./FREEZE.md).
 
 ## Purpose
 
@@ -276,11 +276,25 @@ The deployment path also has three reproducibility gaps:
 
 ## Open Questions
 
-No setup questions remain. The remaining acceptance gate is the real manual
-Actions deploy from an accepted `main` commit after this PR is reviewed and
-merged.
+No setup or acceptance questions remain. The successful main-branch Actions
+deploy closed the platform prerequisite.
 
 ## Follow-Up Candidates
 
 Use this section during implementation for useful, non-blocking discoveries.
 Do not park a release acceptance blocker here.
+
+No platform follow-up was added by this prerequisite. Broader deployment and
+rollback work remains in `docs/stable-backlog.md`.
+
+## Completion Notes
+
+- PR #95 merged at main commit
+  `3ed3f4bc6272ca409e6c7d7bd02f46f05c785e05`.
+- Actions run `29669906495` passed portable validation, OIDC/AWS access,
+  temporary runner `/32` authorization, strict SSH, remote preflight, exact-
+  commit deployment, local/public smoke, metadata verification, and firewall
+  restoration.
+- The accepted backend status reported ref `main`, commit `3ed3f4b`, and
+  GitHub run `29669906495`.
+- Use [FREEZE.md](./FREEZE.md) for the final canonical v1.3 snapshot.

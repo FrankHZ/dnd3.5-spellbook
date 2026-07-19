@@ -82,9 +82,31 @@ sequence, or implementation behavior.
      changes.
    - Current version README and child plans when they still contain stale
      active-implementation or review-pending wording.
+   - Treat each navigation file as a whole document. Some files contain both a
+     short status section and a later detailed index; updating one occurrence
+     does not prove the file is coherent.
 
-5. Verify documentation-only changes.
+5. Run a release-state coherence audit.
+   - Write down the expected state before searching: the new latest frozen
+     version, the previous frozen version, whether production activation is
+     complete, and whether a next active plan exists.
+   - Compare that state across root `README.md`, `docs/README.md`, the matching
+     release/MVP index, `docs/roadmap.md`, `AGENTS.md`, and the current version
+     README. Check both summary sections and detailed indexes.
+   - Search the full current navigation surface and current version folder for
+     outgoing version/status claims and implementation-era wording such as
+     `planned`, `active`, `awaiting`, `ready for`, or `may begin`. Also search
+     for unresolved freeze-prerequisite wording. Review every match in context;
+     these words may remain valid in historical or explicitly deferred prose.
+   - Confirm the new latest freeze is linked wherever the previous latest
+     freeze was linked, and that the previous release is consistently labeled
+     previous rather than latest.
+   - Read the complete diff for every changed navigation or version-status
+     file. Do not rely only on a top-of-file excerpt or a no-match search.
+
+6. Verify documentation-only changes.
    - Run `git diff --check`.
+   - Run the repository formatter over every changed Markdown file.
    - Run a smaller validation command if the freeze docs changed command names
      or script guidance.
 

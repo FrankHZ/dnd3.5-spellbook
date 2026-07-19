@@ -13,17 +13,19 @@ acceptance can be described.
 
 ## Current Track
 
-v1.3 planning is active:
+v1.3 is the latest frozen formal release:
 
+- `docs/releases/v1.3/FREEZE.md`
 - `docs/releases/v1.3/README.md`
 - `docs/releases/v1.3/sitewide-ux-redesign-plan.md`
 - `docs/releases/v1.3/platform-deploy-prerequisite-plan.md`
 
-The sitewide UX/style redesign and the independent platform deployment
-prerequisite may proceed in parallel. The deployment prerequisite does not
-belong to the UX deliverable, but it must close before v1.3 freezes.
+Root release metadata is `v1.3.0`. Production metadata activation follows the
+freeze merge and must be verified separately before tagging. Post-v1.3 planning
+is not yet assigned a version; full translation/proofreading QA is the next
+promoted product candidate.
 
-v1.2.2 is the latest frozen formal release, covering internal quality
+v1.2.2 is the previous frozen formal release, covering internal quality
 maintenance:
 
 - `docs/releases/v1.2.2/FREEZE.md`
@@ -66,14 +68,28 @@ v1.0 is the older frozen formal public release:
 
 The latest frozen pre-release snapshot is `docs/mvp/v3.10/FREEZE.md`.
 
-Use the v1.2.2 freeze for accepted internal maintenance behavior and the
-v1.2.1 freeze for the latest frozen deployed Search and production state. Do
-not reopen those releases while scoping v1.3.
+Use the v1.3 freeze for accepted UI/platform behavior, the v1.2.2 freeze for
+accepted internal maintenance behavior, and the v1.2.1 freeze for the latest
+frozen content-backed Search/DB production snapshot. Do not reopen those
+releases while scoping later work.
 
 Older frozen snapshots remain historical comparison points, not active
 baselines.
 
 ## Recently Completed
+
+The v1.3 sitewide UX/style and platform release is frozen with:
+
+- `docs/releases/v1.3/FREEZE.md` as the canonical as-built snapshot.
+- PR #95 and Actions run `29669906495` accepting the OIDC-backed temporary
+  runner `/32` deployment path, strict SSH identity, exact-commit deploy,
+  metadata, and firewall restoration.
+- PR #96 applying the modern rulebook-inspired interface vocabulary across all
+  scoped routes without changing accepted product contracts.
+- English/Chinese desktop/mobile browser acceptance and merged-main portable
+  CI run `29704940782` passing.
+- root release metadata advanced to `v1.3.0`; production metadata activation
+  remains the explicit post-freeze merge operation before tagging.
 
 The v1.2.2 internal quality-maintenance release is frozen with:
 
@@ -204,6 +220,8 @@ freeze docs instead of copying them into this roadmap.
   `docs/operations/rules-db-notes.md`.
 - Current public release DB/status behavior is frozen in
   `docs/releases/v1.2.1/FREEZE.md`.
+- Current v1.3 UI/platform code acceptance is frozen in
+  `docs/releases/v1.3/FREEZE.md`.
 - Production still uses an operator-owned content DB upload/activation path;
   DB upload is not part of automatic CD.
 - `GET /api/status/db` remains the remote runtime state check for content DB
@@ -213,27 +231,24 @@ freeze docs instead of copying them into this roadmap.
 
 Recommended next sequence:
 
-1. **Accept the v1.3 plans, then run the two tracks in parallel**
+1. **Activate and verify v1.3 release metadata after freeze merge**
 
-   Use `docs/releases/v1.3/sitewide-ux-redesign-plan.md` for the
-   frontend-design deliverable and
-   `docs/releases/v1.3/platform-deploy-prerequisite-plan.md` for the platform
-   prerequisite. The platform track must prove one secure GitHub Actions
-   backend deploy before final freeze, but it should not interrupt or absorb
-   the UX redesign scope.
+   Deploy merged `main` through the accepted Cloudflare frontend and GitHub
+   Actions backend paths. Verify About / Status reports `v1.3.0`, logical ref
+   `main`, and the exact accepted commit before creating the release tag.
 
-2. **Preserve the frozen maintenance boundary**
+2. **Choose the next numbered release before implementation**
 
-   Treat `docs/releases/v1.2.2/FREEZE.md` as authoritative for the completed
-   internal QA release. Do not restore the temporary findings ledger or pull
-   `DP-AUD-007` into active work unless the dormant CHM preprocessing workflow
-   is intentionally reactivated.
+   Full spell-body/name/short-description translation and proofreading QA is
+   the next promoted product candidate. Bound its corpus, review queue,
+   terminology policy, acceptance evidence, and specialist ownership before
+   assigning a version or opening implementation branches.
 
-3. **Defer full translation QA**
+3. **Preserve frozen release boundaries**
 
-   Treat full spell-body/name/short-description translation and proofreading
-   as a later release candidate. Use the frozen v1.2 mechanics workflow and
-   source/parse QA as the starting evidence rather than reopening v1.2.
+   Use the v1.3 freeze for current UI/platform behavior and older freezes for
+   their owned areas. Do not pull `DP-AUD-007` into active work unless the
+   dormant CHM preprocessing workflow is intentionally reactivated.
 
 ## Official Release Sequence
 
@@ -265,15 +280,13 @@ The expected post-v1.1 release order is:
    frontend/i18n, and platform boundaries. All P1 findings were fixed, every
    P2 was fixed or explicitly deferred, and no user-facing scope was added.
 
-4. **v1.3 Sitewide UX / Style Redesign + Platform Prerequisite (Planned)**
+4. **v1.3 Sitewide UX / Style Redesign + Platform Prerequisite (Frozen)**
 
-   Run a deliberate design-system and sitewide cohesion pass across Browse,
-   Search, Detail, About/Status, collections, prepared spells, filters, spell
-   cards, layout density, and mobile behavior. Let frontend-design own the
-   implementation branch while the main gate controls scope and acceptance.
-   In parallel, let platform restore a secure GitHub Actions backend deploy
-   path, normalize the remote/ref/preflight contract, and prove one real deploy.
-   Keep the platform work independent from UX, but require it for freeze.
+   Completed the deliberate sitewide cohesion pass across Browse, Search,
+   Detail, About/Status, collections, prepared spells, Publications, filters,
+   spell cards, density, and mobile behavior. The independent platform track
+   restored and proved the secure GitHub Actions backend deploy path before
+   freeze.
 
 5. **Later Translation QA**
 
