@@ -39,7 +39,7 @@ export default function ComponentsSection({
 
   return (
     <section className="space-y-2">
-      <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+      <div className="app-section-kicker">
         {t("sections.components")}
       </div>
       {chips.length > 0 ? (

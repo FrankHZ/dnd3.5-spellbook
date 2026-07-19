@@ -134,7 +134,7 @@ export function PreparedBookJsonActions({ book }: { book: PreparedBook }) {
         <TooltipTrigger asChild>
           <Button
             size="sm"
-            variant="destructive"
+            variant="outline"
             onClick={openImportPicker}
             disabled={isImporting}
           >

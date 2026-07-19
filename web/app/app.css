@@ -105,43 +105,57 @@
 :root {
   --app-sticky-top-offset: 4.5rem;
 
+  --app-paper: oklch(0.985 0.001 250);
+
+  --app-paper-raised: oklch(0.998 0 0);
+
+  --app-ink: oklch(0.19 0.006 250);
+
+  --app-binding: oklch(0.43 0.105 24);
+
+  --app-binding-strong: oklch(0.34 0.09 24);
+
+  --app-binding-soft: oklch(0.97 0.01 24);
+
+  --app-rule: oklch(0.86 0.004 250);
+
   --radius: 0.625rem;
 
-  --background: oklch(1 0 0);
+  --background: var(--app-paper);
 
-  --foreground: oklch(0.145 0 0);
+  --foreground: var(--app-ink);
 
-  --card: oklch(1 0 0);
+  --card: var(--app-paper-raised);
 
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: var(--app-ink);
 
-  --popover: oklch(1 0 0);
+  --popover: var(--app-paper-raised);
 
-  --popover-foreground: oklch(0.145 0 0);
+  --popover-foreground: var(--app-ink);
 
   --primary: oklch(0.205 0 0);
 
   --primary-foreground: oklch(0.985 0 0);
 
-  --secondary: oklch(0.97 0 0);
+  --secondary: oklch(0.965 0.002 250);
 
   --secondary-foreground: oklch(0.205 0 0);
 
-  --muted: oklch(0.97 0 0);
+  --muted: oklch(0.96 0.002 250);
 
-  --muted-foreground: oklch(0.556 0 0);
+  --muted-foreground: oklch(0.51 0.008 250);
 
-  --accent: oklch(0.97 0 0);
+  --accent: var(--app-binding-soft);
 
-  --accent-foreground: oklch(0.205 0 0);
+  --accent-foreground: var(--app-binding-strong);
 
   --destructive: oklch(0.577 0.245 27.325);
 
-  --border: oklch(0.922 0 0);
+  --border: var(--app-rule);
 
-  --input: oklch(0.922 0 0);
+  --input: oklch(0.88 0.004 250);
 
-  --ring: oklch(0.708 0 0);
+  --ring: oklch(0.55 0.09 24);
 
   --chart-1: oklch(0.646 0.222 41.116);
 
@@ -171,6 +185,20 @@
 }
 
 .dark {
+  --app-paper: oklch(0.16 0.008 35);
+
+  --app-paper-raised: oklch(0.2 0.01 35);
+
+  --app-ink: oklch(0.96 0.004 70);
+
+  --app-binding: oklch(0.68 0.11 24);
+
+  --app-binding-strong: oklch(0.82 0.07 24);
+
+  --app-binding-soft: oklch(0.27 0.035 24);
+
+  --app-rule: oklch(0.34 0.014 45);
+
   --background: oklch(0.145 0 0);
 
   --foreground: oklch(0.985 0 0);
@@ -250,6 +278,263 @@
   }
 }
 
+.app-topbar {
+  border-color: var(--app-rule);
+  background-color: color-mix(in oklch, var(--background) 94%, transparent);
+  box-shadow: 0 1px 0 color-mix(in oklch, var(--app-binding) 12%, transparent);
+}
+
+.app-brand-mark {
+  color: var(--app-binding-strong);
+}
+
+.app-page-header {
+  position: relative;
+  padding-left: 1rem;
+}
+
+.app-page-header::before {
+  position: absolute;
+  inset-block: 0.25rem;
+  left: 0.25rem;
+  width: 2px;
+  border-radius: 999px;
+  background: var(--app-binding);
+  content: "";
+}
+
+.app-page-title,
+.app-spell-title {
+  color: var(--app-binding-strong);
+}
+
+.app-action-rail {
+  min-width: 0;
+}
+
+.app-control-section {
+  min-width: 0;
+  padding-block: 0.125rem;
+}
+
+.app-control-heading {
+  color: var(--foreground);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+}
+
+.app-control-disclosure {
+  border-color: var(--app-rule);
+  background: color-mix(in oklch, var(--card) 92%, var(--muted));
+}
+
+.app-scope-surface {
+  border-color: var(--app-rule);
+  border-left-color: color-mix(in oklch, var(--app-binding) 56%, var(--app-rule));
+  border-left-width: 2px;
+  background: color-mix(in oklch, var(--card) 84%, var(--muted));
+}
+
+.app-status-surface {
+  border-color: var(--app-rule);
+  background: color-mix(in oklch, var(--card) 92%, var(--muted));
+}
+
+.app-side-section-title {
+  border-left: 2px solid color-mix(in oklch, var(--app-binding) 62%, var(--app-rule));
+  padding-left: 0.5rem;
+  color: var(--foreground);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1rem;
+}
+
+.app-compact-row {
+  border-color: var(--app-rule);
+  background: color-mix(in oklch, var(--card) 94%, var(--muted));
+  transition: background-color 150ms ease;
+}
+
+.app-compact-row:hover,
+.app-compact-row:focus-within {
+  background: color-mix(in oklch, var(--app-binding-soft) 28%, var(--card));
+}
+
+.app-index-group-header {
+  border-left: 2px solid color-mix(in oklch, var(--app-binding) 56%, var(--app-rule));
+  background: color-mix(in oklch, var(--app-binding-soft) 38%, var(--muted));
+}
+
+.app-index-toolbar {
+  background: color-mix(in oklch, var(--card) 90%, var(--muted));
+  padding: 0.625rem 0.75rem;
+}
+
+.app-spell-card-details {
+  border-left-color: color-mix(in oklch, var(--app-binding) 30%, var(--app-rule));
+}
+
+.app-detail-list {
+  border-block: 1px solid var(--app-rule);
+}
+
+.app-related-index {
+  border-color: var(--app-rule);
+  background: color-mix(in oklch, var(--card) 96%, var(--muted));
+}
+
+.app-utility-section {
+  gap: 0;
+  overflow: hidden;
+  border-color: var(--app-rule);
+  padding-block: 0;
+}
+
+.app-utility-section-header {
+  border-bottom: 1px solid var(--app-rule);
+  background: color-mix(in oklch, var(--card) 88%, var(--muted));
+  padding: 0.875rem 1rem;
+}
+
+.app-utility-section-content {
+  padding: 1rem;
+}
+
+.app-data-field {
+  min-width: 0;
+  border-top: 1px solid var(--app-rule);
+  padding: 0.5rem 0.125rem;
+}
+
+.app-settings-subsection {
+  border-top: 1px solid var(--app-rule);
+  padding-top: 1rem;
+}
+
+.app-directory-card {
+  border-color: var(--app-rule);
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease;
+}
+
+.app-directory-card:hover,
+.app-directory-card:focus-within {
+  border-color: color-mix(in oklch, var(--app-binding) 34%, var(--app-rule));
+  background: color-mix(in oklch, var(--app-binding-soft) 24%, var(--card));
+}
+
+.app-work-toolbar {
+  border-color: var(--app-rule);
+  background: color-mix(in oklch, var(--background) 92%, transparent);
+}
+
+.app-work-section {
+  border-color: var(--app-rule);
+}
+
+.app-work-section > [data-slot="card-header"] {
+  background: color-mix(in oklch, var(--card) 88%, var(--muted));
+}
+
+.app-source-badge {
+  border-color: color-mix(in oklch, var(--app-binding) 18%, transparent);
+  background: color-mix(in oklch, var(--app-binding-soft) 72%, transparent);
+  color: color-mix(
+    in oklch,
+    var(--app-binding-strong) 72%,
+    var(--muted-foreground)
+  );
+}
+
+.app-index-surface,
+.app-reading-surface,
+.app-publication-controls {
+  border-color: var(--app-rule);
+  border-top-color: var(--app-binding);
+  border-top-width: 2px;
+}
+
+.app-index-row {
+  position: relative;
+}
+
+.app-index-row::before {
+  position: absolute;
+  inset-block: 0.4rem;
+  left: 0;
+  width: 2px;
+  background: var(--app-binding);
+  content: "";
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.app-index-row:hover::before,
+.app-index-row:focus-within::before {
+  opacity: 1;
+}
+
+.app-spell-detail-layout {
+  display: grid;
+  grid-template-areas:
+    "header"
+    "sidebar"
+    "reading";
+  align-items: start;
+  gap: 1rem;
+}
+
+.app-spell-detail-header {
+  grid-area: header;
+  border-bottom: 1px solid var(--app-rule);
+  padding-bottom: 0.5rem;
+}
+
+.app-spell-detail-sidebar {
+  grid-area: sidebar;
+}
+
+.app-spell-detail-reading {
+  grid-area: reading;
+  min-width: 0;
+}
+
+.app-spell-deck {
+  border-left-color: var(--app-binding);
+}
+
+.app-section-kicker {
+  color: var(--app-binding-strong);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1rem;
+  text-transform: uppercase;
+}
+
+.app-publication-section {
+  border-color: var(--app-rule);
+}
+
+.app-publication-category-header {
+  border-bottom: 1px solid var(--app-rule);
+  background: color-mix(in oklch, var(--app-binding-soft) 68%, var(--card));
+}
+
+.app-publication-family-header {
+  background: color-mix(in oklch, var(--muted) 62%, var(--card));
+}
+
+.app-publication-row {
+  transition: background-color 150ms ease;
+}
+
+.app-publication-row:hover,
+.app-publication-row:focus-within {
+  background: color-mix(in oklch, var(--app-binding-soft) 32%, transparent);
+}
+
 .app-side-card {
   align-self: flex-start;
   gap: 0;
@@ -258,11 +543,29 @@
 
 .app-side-card-header {
   border-bottom: 1px solid var(--border);
+  background: color-mix(in oklch, var(--card) 82%, var(--muted));
+  box-shadow: inset 2px 0 0 var(--app-binding);
   padding: 1rem;
 }
 
 .app-side-card-content {
   padding: 1rem;
+}
+
+.app-side-sections > [data-slot="separator"] {
+  background: var(--app-rule);
+}
+
+@media (max-width: 39.999rem) {
+  .app-action-rail {
+    width: 100%;
+  }
+}
+
+@media (min-width: 40rem) {
+  .app-index-toolbar {
+    padding-inline: 1rem;
+  }
 }
 
 .app-side-card-collapsed {
@@ -288,6 +591,14 @@
 
   .app-fixed-side-layout {
     grid-template-columns: 20rem minmax(0, 1fr);
+  }
+
+  .app-spell-detail-layout {
+    grid-template-areas:
+      "sidebar header"
+      "sidebar reading";
+    grid-template-columns: 20rem minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
   }
 
   .app-side-card-scroll-md {

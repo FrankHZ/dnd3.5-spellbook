@@ -26,28 +26,25 @@ import { SpellMetaBadge } from "./SpellMetaBadge";
 function SpellDetailSkeleton() {
   return (
     <div className="page-side">
-      <div className="space-y-2 md:hidden">
-        <Skeleton className="h-8 w-2/3" />
-        <Skeleton className="h-4 w-1/3" />
-      </div>
+      <div className="app-spell-detail-layout">
+        <div className="app-spell-detail-header space-y-2">
+          <Skeleton className="h-8 w-2/3" />
+          <Skeleton className="h-4 w-1/3" />
+        </div>
 
-      <div className="app-fixed-side-layout">
-        <Card className="app-side-card">
-          <CardContent className="app-side-card-content space-y-3">
-            <Skeleton className="h-5 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-24 w-full" />
-          </CardContent>
-        </Card>
+        <div className="app-spell-detail-sidebar">
+          <Card className="app-side-card">
+            <CardContent className="app-side-card-content space-y-3">
+              <Skeleton className="h-5 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-24 w-full" />
+            </CardContent>
+          </Card>
+        </div>
 
-        <div className="space-y-4">
-          <div className="hidden space-y-2 md:block">
-            <Skeleton className="h-8 w-2/3" />
-            <Skeleton className="h-4 w-1/3" />
-            <Skeleton className="h-4 w-1/2" />
-          </div>
+        <div className="app-spell-detail-reading space-y-4">
           <Skeleton className="h-48 w-full" />
           <Skeleton className="h-28 w-full" />
         </div>
@@ -60,27 +57,28 @@ function SpellHeader({
   title,
   shortDescription,
   spellId,
-  className = "",
 }: {
   title: string;
   shortDescription?: string;
   spellId: number;
-  className?: string;
 }) {
   return (
-    <div className={`space-y-3 ${className}`.trim()}>
-      <div className="flex items-start justify-between gap-3">
+    <div className="space-y-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold leading-tight tracking-normal">
+          <h1 className="app-spell-title text-2xl font-semibold leading-tight">
             {title}
           </h1>
           {shortDescription ? (
-            <p className="mt-3 max-w-3xl border-l-2 border-border pl-3 text-sm leading-6 text-foreground/80">
+            <p className="app-spell-deck mt-3 max-w-3xl border-l-2 pl-3 text-sm leading-6 text-foreground/75">
               {shortDescription}
             </p>
           ) : null}
         </div>
-        <SpellActionButtons spellId={spellId} />
+        <SpellActionButtons
+          spellId={spellId}
+          className="app-action-rail self-start sm:justify-end"
+        />
       </div>
     </div>
   );
@@ -99,9 +97,7 @@ function SpellOverviewSection({
 
   return (
     <section className="space-y-2">
-      <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        {t("sections.overview")}
-      </div>
+      <div className="app-section-kicker">{t("sections.overview")}</div>
       <div className="flex flex-wrap gap-1.5">
         <SpellMetaBadge kind="source" size="regular">
           {sourceText}
@@ -210,15 +206,16 @@ export default function SpellDetailPage() {
 
   return (
     <div className="page-side">
-      <SpellHeader
-        title={spellName(spell)}
-        shortDescription={shortDescription}
-        spellId={spell.id}
-        className="md:hidden"
-      />
+      <div className="app-spell-detail-layout">
+        <div className="app-spell-detail-header">
+          <SpellHeader
+            title={spellName(spell)}
+            shortDescription={shortDescription}
+            spellId={spell.id}
+          />
+        </div>
 
-      <div className="app-fixed-side-layout">
-        <div className="space-y-4">
+        <div className="app-spell-detail-sidebar space-y-4">
           <Card className="app-side-card">
             <CardContent className="app-side-card-content space-y-4">
               <SpellOverviewSection
@@ -236,19 +233,8 @@ export default function SpellDetailPage() {
           </Card>
         </div>
 
-        <div className="space-y-4">
-          <div className="hidden md:block">
-            <SpellHeader
-              title={spellName(spell)}
-              shortDescription={shortDescription}
-              spellId={spell.id}
-            />
-            <Separator className="my-2" />
-          </div>
+        <div className="app-spell-detail-reading space-y-4">
           <DescriptionSection description={getSpellDescription(spell, lang)} />
-
-          <Separator />
-
           <RelatedSpellsSection spell={spell} />
         </div>
       </div>

@@ -7,7 +7,7 @@ type SpellMetaBadgeKind = "source" | "taxonomy" | "descriptor" | "scope";
 type SpellMetaBadgeSize = "compact" | "regular";
 
 const kindClasses: Record<SpellMetaBadgeKind, string> = {
-  source: "border-transparent bg-muted/20 text-muted-foreground tracking-wide",
+  source: "app-source-badge",
   taxonomy: "border-transparent bg-muted/55 text-foreground/80",
   descriptor: "border-border/70 bg-background/80 text-muted-foreground",
   scope: "border-border bg-background/70 text-muted-foreground",

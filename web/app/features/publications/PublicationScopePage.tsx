@@ -130,7 +130,7 @@ function PublicationRulebookRow({
   return (
     <Field
       orientation="horizontal"
-      className="min-h-11 min-w-0 items-center border-t border-border/60 py-2"
+      className="app-publication-row min-h-11 min-w-0 items-center border-t border-border/60 py-2"
     >
       <Checkbox
         id={checkboxId}
@@ -197,7 +197,7 @@ function PublicationFamilyCard({
 
   return (
     <section className="border-t first:border-t-0">
-      <div className="flex items-center justify-between gap-4 bg-muted/20 px-4 py-2.5">
+      <div className="app-publication-family-header flex items-center justify-between gap-4 px-4 py-2.5">
         <Field orientation="horizontal" className="min-w-0">
           <Checkbox
             id={checkboxId}
@@ -251,8 +251,8 @@ function PublicationCategorySection({
   const hasMultipleFamilies = group.families.length > 1;
 
   return (
-    <section className="overflow-hidden rounded-md border bg-card shadow-xs">
-      <div className="flex items-center justify-between gap-4 bg-muted/35 px-4 py-2.5">
+    <section className="app-publication-section overflow-hidden rounded-md border bg-card shadow-xs">
+      <div className="app-publication-category-header flex items-center justify-between gap-4 px-4 py-2.5">
         <Field orientation="horizontal" className="min-w-0">
           <Checkbox
             id={checkboxId}
@@ -379,7 +379,7 @@ export default function PublicationScopePage() {
       />
 
       <div className="space-y-4">
-        <section className="space-y-2 rounded-md border bg-card p-3 shadow-xs">
+        <section className="app-publication-controls space-y-2 rounded-md border bg-card p-3 shadow-xs">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <Input
               value={query}

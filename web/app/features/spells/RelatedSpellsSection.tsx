@@ -146,7 +146,7 @@ function RelatedSpellList({
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-medium">{title}</h3>
-      <Card className="gap-0 overflow-hidden py-0">
+      <Card className="app-related-index gap-0 overflow-hidden py-0">
         <CardContent className="divide-y px-0 py-0">
           {items.map((item) => (
             <SpellCard
@@ -287,7 +287,10 @@ export default function RelatedSpellsSection({
   }
 
   return (
-    <section className="space-y-3" aria-label={t("related.title")}>
+    <section
+      className="space-y-3 border-t border-border pt-4"
+      aria-label={t("related.title")}
+    >
       <div>
         <h2 className="text-base font-semibold">{t("related.title")}</h2>
         <p className="text-sm text-muted-foreground">

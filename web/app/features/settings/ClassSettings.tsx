@@ -16,11 +16,11 @@ export default function ClassSettings() {
   const checkboxId = "settings-include-prestige";
 
   return (
-    <Card className="gap-0">
-      <CardHeader className="gap-1 py-3">
+    <Card className="app-utility-section">
+      <CardHeader className="app-utility-section-header gap-1">
         <CardTitle>{t("classes.title")}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2 pt-0">
+      <CardContent className="app-utility-section-content space-y-2">
         <Field orientation="horizontal">
           <FieldContent>
             <FieldLabel htmlFor={checkboxId}>

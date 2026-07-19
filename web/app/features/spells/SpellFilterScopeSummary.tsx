@@ -139,7 +139,7 @@ export function SpellFilterScopeSummary({
   return (
     <div
       data-testid="spell-filter-scope-summary"
-      className="rounded-md border bg-muted/25 px-3 py-2 text-xs leading-5 text-muted-foreground"
+      className="app-scope-surface rounded-md border px-3 py-2 text-xs leading-5 text-muted-foreground"
     >
       <div className="flex flex-wrap items-center gap-1.5">
         <span className="mr-0.5 font-medium text-foreground/75">

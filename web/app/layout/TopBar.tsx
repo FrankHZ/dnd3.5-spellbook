@@ -267,11 +267,11 @@ export default function TopBar() {
   const { t } = useTranslation("topbar");
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur">
+    <header className="app-topbar sticky top-0 z-50 border-b backdrop-blur">
       <div className="flex flex-wrap items-center gap-2 px-3 py-2 sm:flex-nowrap sm:gap-3 sm:px-4 sm:py-3">
         <NavLink
           to="/browse"
-          className="min-w-0 flex-1 truncate text-sm font-bold sm:flex-none sm:text-base"
+          className="app-brand-mark min-w-0 flex-1 truncate text-sm font-bold sm:flex-none sm:text-base"
         >
           {t("brand.title")}
         </NavLink>

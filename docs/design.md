@@ -40,6 +40,24 @@ Useful cues come from rulebook and rules-index structure rather than skinning:
 - restrained accent colors that suggest binding, ink, or source labels without
   turning the app into a themed prop
 
+The accepted site identity is a modern rules index. Use a near-neutral paper
+background, slightly raised reading/control surfaces, dark ink text, fine
+neutral rules, and one restrained binding accent. The binding accent may orient
+the brand, selected navigation, section rules, and source context; it should not
+wash whole pages, ordinary borders, or every control in one hue.
+
+Keep the styling division explicit:
+
+- content surfaces carry the rules-reference identity through hierarchy,
+  source gutters, section lines, and reading rhythm
+- controls remain contemporary and predictable through the existing local UI
+  wrappers
+- Search/Browse may read like an index, Spell Detail like a reference page,
+  and Publications like a compact contents/catalog surface without forcing all
+  three into one template
+- typography should use the existing font stack; establish identity through
+  size, weight, alignment, and rules rather than novelty display fonts
+
 External references such as 5etools, Pf2eTools, Foundry sheets, or printed SRD
 style guides are useful for information structure and rules-reference
 conventions. Do not copy their visual skin wholesale. Translate useful ideas
@@ -107,6 +125,10 @@ description, and action alignment. Feature-specific reading surfaces such as
 Spell Detail may keep their own header when rule text, local actions, or
 metadata hierarchy need a custom reading layout.
 
+Responsive presentation must keep one semantic page title. Reorder or restyle
+the same heading through CSS layout instead of rendering separate desktop and
+mobile `h1` elements.
+
 For empty, loading, validation, and error states on primary pages, use the
 shared `StatusCard` component instead of hand-rolling one-off `CardHeader`
 blocks. Keep status copy concise and put recovery actions in the card action
@@ -117,7 +139,9 @@ For page-level actions in headers, use normal small buttons (`size="sm"`) so
 import/export, destructive collection actions, and navigation controls remain
 legible. Reserve extra-small and icon-only buttons for dense table rows,
 segmented toolbars, and repeated inline controls where compactness is part of
-the workflow.
+the workflow. Keep these actions in the shared action rail: it may wrap beside
+the title on wider screens and should take the available row on narrow screens
+without forcing labels to clip.
 
 For spell metadata badges, keep the vocabulary small and semantic. Use
 `SpellMetaBadge` for source labels, taxonomy labels such as school/subschool,
@@ -135,7 +159,15 @@ secondary filter panels such as Advanced filters.
 For side-column cards such as Browse/Search filters, prepared-spellbook filters,
 and Spell Detail overview metadata, use the shared `app-side-card`,
 `app-side-card-header`, and `app-side-card-content` CSS helpers so outer padding
-and side-card density stay aligned across pages.
+and side-card density stay aligned across pages. The side card owns the frame;
+grouped fields inside it should use flat control sections and separators rather
+than nested bordered cards. A disclosure may keep its own compact boundary when
+the boundary communicates collapsed state.
+
+Keep active scope and feedback visually distinct. A scope summary is a quiet,
+compact context strip immediately before the affected results. Loading, empty,
+validation, and error feedback belongs in `StatusCard`, with enough surface
+weight to read as a state rather than another filter control.
 
 For common side-column page skeletons, prefer the shared `app-filter-layout`,
 `app-fixed-side-layout`, and `app-prepared-layout` CSS helpers over repeating
@@ -151,9 +183,15 @@ Preferred patterns:
 - Use short scope summaries before result lists so users understand the active
   filter state.
 - Keep paginated spell lists in one bordered surface with internal separators.
+- Treat the top and bottom pagination rows as quiet index toolbars, and align
+  group headings with spell-row content rather than centering them as
+  standalone display headings.
 - Use cards for framed tools, repeated collection items, empty states, and
   error states.
 - Use unframed text, separators, and compact badges for supporting metadata.
+- On utility pages such as Settings and About / Status, let one outer section
+  frame own the boundary. Keep subsections and repeated data fields flat, using
+  headings and separators instead of bordered mini-panels nested inside it.
 
 Avoid:
 
@@ -193,11 +231,15 @@ Use that baseline unless a focused design pass intentionally changes it.
 
 Current defaults:
 
-- Background and cards are neutral and high-contrast.
+- Background and cards use near-neutral paper and raised-surface roles with
+  enough contrast to keep dense rows and controls distinct.
 - Radius is modest, based on `--radius: 0.625rem`.
-- Borders and separators carry most structure.
+- Fine neutral borders and separators carry most structure; a restrained
+  binding accent may mark major page, index, or reading boundaries.
 - Primary actions use existing button variants rather than custom one-off
   colors.
+- Source badges may use a quiet tint of the binding accent, while component and
+  taxonomy badges keep their separate semantic treatments.
 - Icons should come from `lucide-react` when an icon is helpful.
 
 Prefer modern reference-book polish over decorative theming:
@@ -286,8 +328,11 @@ and local spell actions. Source, school/subschool, and descriptor badges belong
 in the sidebar overview with the other spell metadata instead of competing with
 the title.
 
-Related spell references should stay secondary to the current spell
-description.
+Loading placeholders should use the same responsive grid and reading order as
+the resolved detail page. Within the metadata card, use separators and flat
+definition rows instead of another bordered panel. Related spell references
+should stay secondary to the current spell description and reuse the compact
+spell-index row vocabulary.
 
 ### Publications
 
@@ -316,7 +361,9 @@ Collection screens should make local persistence understandable without heavy
 explanation. Import, export, merge, replace, and clear actions should stay
 explicit because they affect browser-local data.
 
-Spell rows should remain consistent with Browse and Search where practical.
+Use repeated directory cards for distinct local collections, but keep the
+spell list inside a collection in the same bordered index surface used by
+Browse and Search where practical.
 
 ### Prepared Spells
 
@@ -331,6 +378,9 @@ Preserve:
 - clear loading and batch-error states
 
 Treat spreadsheet-friendly copy/export behavior as a core design constraint.
+The sticky toolbar and per-level sections should share the same restrained work
+surface vocabulary. Import is a neutral data action; reserve destructive
+emphasis for clear and for an explicitly chosen replacement action.
 
 ### Settings
 
@@ -339,6 +389,10 @@ many other screens, so settings surfaces should emphasize current state, clear
 selection, and predictable persistence. Publication/rulebook browsing and scope
 management belong on Publications; Settings should not retain rulebook tabs,
 entries, selectors, or display controls.
+
+Use one framed section per major settings area, with flat field groups and
+subsection dividers inside it. Do not turn related switches or radio groups into
+additional cards merely to create hierarchy.
 
 ## Do / Avoid
 
