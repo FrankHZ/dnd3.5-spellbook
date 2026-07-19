@@ -32,7 +32,7 @@ export function PageHeader({
       </div>
 
       {actions ? (
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
+        <div className="app-action-rail flex flex-wrap items-center gap-2 sm:shrink-0 sm:justify-end">
           {actions}
         </div>
       ) : null}

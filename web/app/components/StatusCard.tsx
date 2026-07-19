@@ -25,7 +25,7 @@ export function StatusCard({
   const hasBody = Boolean(children || actions);
 
   return (
-    <Card className={cn("gap-0", className)}>
+    <Card className={cn("app-status-surface gap-0", className)}>
       <CardHeader className="gap-1 py-3">
         {title ? <CardTitle className="text-base">{title}</CardTitle> : null}
         {description ? (

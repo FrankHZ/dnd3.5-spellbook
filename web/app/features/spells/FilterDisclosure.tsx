@@ -20,7 +20,7 @@ export function FilterDisclosure({
       open={open}
       onToggle={(event) => onToggle(event.currentTarget.open)}
     >
-      <summary className="cursor-pointer list-none rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground">
+      <summary className="app-control-disclosure cursor-pointer list-none rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground">
         <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
           <ChevronRight className="size-4 text-muted-foreground transition-transform group-open/filter-disclosure:rotate-90 group-hover/filter-disclosure:text-accent-foreground" />
           <span className="min-w-0 truncate">{title}</span>

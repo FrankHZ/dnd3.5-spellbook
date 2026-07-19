@@ -18,7 +18,7 @@ export function LevelSelector({
 
   return (
     <div className="space-y-3">
-      <div className="font-medium">{t("level.title")}</div>
+      <div className="app-control-heading">{t("level.title")}</div>
       {allowAnyLevel && (
         <Button
           type="button"

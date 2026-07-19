@@ -166,10 +166,10 @@ export function PreparedClassAndDomainSidebar({
               </CardAction>
             </CardHeader>
 
-            <CardContent className="app-side-card-content app-side-card-scroll-lg space-y-4">
+            <CardContent className="app-side-card-content app-side-card-scroll-lg app-side-sections space-y-4">
               <section className="space-y-2">
                 <div className="space-y-1">
-                  <h3 className="text-sm font-medium leading-none">
+                  <h3 className="app-side-section-title">
                     {t("prepared.sidebar.selected")}
                   </h3>
                   {selected.length === 0 ? (
@@ -184,7 +184,7 @@ export function PreparedClassAndDomainSidebar({
                     {selected.map((opt) => (
                       <div
                         key={`selected-${opt.type}-${opt.id}`}
-                        className="flex items-center justify-between gap-2 rounded-md border px-2 py-1 text-sm"
+                        className="app-compact-row flex items-center justify-between gap-2 rounded-md border px-2 py-1 text-sm"
                       >
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
@@ -214,7 +214,7 @@ export function PreparedClassAndDomainSidebar({
               <Separator />
 
               <section className="space-y-2">
-                <h3 className="text-sm font-medium leading-none">
+                <h3 className="app-side-section-title">
                   {t("prepared.sidebar.candidates")}
                 </h3>
                 {hasCandidates && (
@@ -237,7 +237,7 @@ export function PreparedClassAndDomainSidebar({
                     {filteredCandidates.map((candidate) => (
                       <div
                         key={`candidates-${candidate.type}-${candidate.id}`}
-                        className="flex items-stretch justify-between gap-2 rounded-md border px-2 py-1 text-sm"
+                        className="app-compact-row flex items-stretch justify-between gap-2 rounded-md border px-2 py-1 text-sm"
                       >
                         <div className="min-w-0 flex-1">
                           <div className="flex items-stretch gap-2">

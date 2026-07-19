@@ -308,6 +308,64 @@
   color: var(--app-binding-strong);
 }
 
+.app-action-rail {
+  min-width: 0;
+}
+
+.app-control-section {
+  min-width: 0;
+  padding-block: 0.125rem;
+}
+
+.app-control-heading {
+  color: var(--foreground);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+}
+
+.app-control-disclosure {
+  border-color: var(--app-rule);
+  background: color-mix(in oklch, var(--card) 92%, var(--muted));
+}
+
+.app-scope-surface {
+  border-color: var(--app-rule);
+  border-left-color: color-mix(in oklch, var(--app-binding) 56%, var(--app-rule));
+  border-left-width: 2px;
+  background: color-mix(in oklch, var(--card) 84%, var(--muted));
+}
+
+.app-status-surface {
+  border-color: var(--app-rule);
+  background: color-mix(in oklch, var(--card) 92%, var(--muted));
+}
+
+.app-side-section-title {
+  border-left: 2px solid color-mix(in oklch, var(--app-binding) 62%, var(--app-rule));
+  padding-left: 0.5rem;
+  color: var(--foreground);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1rem;
+}
+
+.app-compact-row {
+  border-color: var(--app-rule);
+  background: color-mix(in oklch, var(--card) 94%, var(--muted));
+  transition: background-color 150ms ease;
+}
+
+.app-compact-row:hover,
+.app-compact-row:focus-within {
+  background: color-mix(in oklch, var(--app-binding-soft) 28%, var(--card));
+}
+
+.app-index-group-header {
+  border-left: 2px solid color-mix(in oklch, var(--app-binding) 56%, var(--app-rule));
+  background: color-mix(in oklch, var(--app-binding-soft) 38%, var(--muted));
+}
+
 .app-source-badge {
   border-color: color-mix(in oklch, var(--app-binding) 18%, transparent);
   background: color-mix(in oklch, var(--app-binding-soft) 72%, transparent);
@@ -413,11 +471,23 @@
 
 .app-side-card-header {
   border-bottom: 1px solid var(--border);
+  background: color-mix(in oklch, var(--card) 82%, var(--muted));
+  box-shadow: inset 2px 0 0 var(--app-binding);
   padding: 1rem;
 }
 
 .app-side-card-content {
   padding: 1rem;
+}
+
+.app-side-sections > [data-slot="separator"] {
+  background: var(--app-rule);
+}
+
+@media (max-width: 39.999rem) {
+  .app-action-rail {
+    width: 100%;
+  }
 }
 
 .app-side-card-collapsed {

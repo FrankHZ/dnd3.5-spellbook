@@ -124,9 +124,9 @@ export function MultiSelectPicker(props: {
   }, [anchor]);
 
   return (
-    <div className="rounded-md border p-3 space-y-3">
+    <div className="app-control-section space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <div className="font-medium">{title}</div>
+        <div className="app-control-heading">{title}</div>
         <div className="flex items-center gap-2">
           {selectedIds.length > 0 && (
             <Button type="button" variant="ghost" size="sm" onClick={clearAll}>

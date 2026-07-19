@@ -7,8 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: representative style spike implemented; user review pending before
-sitewide expansion.
+Status: Slices 1 and 2 implemented and reviewed; route-level cohesion work
+remains active.
 
 ## Purpose
 
@@ -129,6 +129,22 @@ accent while keeping controls contemporary and predictable.
 - Keep familiar icon controls, tooltips, stable dimensions, and accessible
   labels; do not replace clear controls with decorative elements.
 - Add focused regressions for shared behavior that can fail across routes.
+
+Implementation result:
+
+- Shared CSS roles now govern page action wrapping, flat control sections,
+  side-card sections, scope and status surfaces, compact rows, and index group
+  headers without adding a parallel component system.
+- Browse and Search use the same index and scope vocabulary. Class/domain and
+  advanced-filter pickers no longer add decorative frames inside their owning
+  side card or sheet.
+- Prepared reuses the same side-card section hierarchy and responsive action
+  rail while preserving its specialized mode and copy controls.
+- `npm run typecheck:web`, `npm run test:web` (38 files, 158 tests), and
+  `npm run -w web build` passed. Browse, populated Search, Advanced filters,
+  and Prepared were smoked in English and Chinese at `1440 x 900` and
+  `390 x 844`; mobile side controls remained default-collapsed and no checked
+  state showed horizontal document overflow or clipped controls.
 
 ### Slice 3: Lookup And Reading Surfaces
 

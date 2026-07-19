@@ -168,7 +168,7 @@ export default function BrowsePage() {
             )}
 
           {hasValidSelection && hasSpellData && (
-            <Card className="gap-0 overflow-hidden py-0">
+            <Card className="app-index-surface gap-0 overflow-hidden py-0">
               <CardContent className="space-y-0 px-0 py-0">
                 <div className="px-3 py-2.5 sm:px-6">
                   <Pager
@@ -186,7 +186,7 @@ export default function BrowsePage() {
                   {groupMode === "grouped"
                     ? groups?.map((group) => (
                         <div key={group.level} className="divide-y">
-                          <div className="bg-muted/30 px-3 py-2 text-center text-sm font-medium tracking-wide">
+                          <div className="app-index-group-header px-3 py-2 text-center text-sm font-medium">
                             {t("level.value", {
                               ns: "spell-browse",
                               level: group.level,

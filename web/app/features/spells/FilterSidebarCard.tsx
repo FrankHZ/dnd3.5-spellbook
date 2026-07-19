@@ -109,7 +109,7 @@ export function FilterSidebarCard({
               </CardAction>
             </CardHeader>
 
-            <CardContent className="app-side-card-content app-side-card-scroll-md space-y-4">
+            <CardContent className="app-side-card-content app-side-card-scroll-md app-side-sections space-y-4">
               {children}
             </CardContent>
           </Card>

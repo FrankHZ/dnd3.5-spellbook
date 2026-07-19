@@ -139,7 +139,9 @@ For page-level actions in headers, use normal small buttons (`size="sm"`) so
 import/export, destructive collection actions, and navigation controls remain
 legible. Reserve extra-small and icon-only buttons for dense table rows,
 segmented toolbars, and repeated inline controls where compactness is part of
-the workflow.
+the workflow. Keep these actions in the shared action rail: it may wrap beside
+the title on wider screens and should take the available row on narrow screens
+without forcing labels to clip.
 
 For spell metadata badges, keep the vocabulary small and semantic. Use
 `SpellMetaBadge` for source labels, taxonomy labels such as school/subschool,
@@ -157,7 +159,15 @@ secondary filter panels such as Advanced filters.
 For side-column cards such as Browse/Search filters, prepared-spellbook filters,
 and Spell Detail overview metadata, use the shared `app-side-card`,
 `app-side-card-header`, and `app-side-card-content` CSS helpers so outer padding
-and side-card density stay aligned across pages.
+and side-card density stay aligned across pages. The side card owns the frame;
+grouped fields inside it should use flat control sections and separators rather
+than nested bordered cards. A disclosure may keep its own compact boundary when
+the boundary communicates collapsed state.
+
+Keep active scope and feedback visually distinct. A scope summary is a quiet,
+compact context strip immediately before the affected results. Loading, empty,
+validation, and error feedback belongs in `StatusCard`, with enough surface
+weight to read as a state rather than another filter control.
 
 For common side-column page skeletons, prefer the shared `app-filter-layout`,
 `app-fixed-side-layout`, and `app-prepared-layout` CSS helpers over repeating
