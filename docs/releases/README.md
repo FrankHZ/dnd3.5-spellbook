@@ -5,19 +5,19 @@ This directory contains formal post-MVP release plans.
 Use `docs/mvp/` for MVP-stage history and the final MVP closeout. Use this
 directory for release lines after MVP scope is frozen.
 
-v1.3 planning is active. Its sitewide UX/style redesign and independent
-platform deployment prerequisite may proceed in parallel, but both must close
-before freeze.
+v1.3 is the latest frozen formal release. Post-v1.3 planning is not yet assigned
+a version; use `docs/roadmap.md` for next-work ordering.
 
 ## Release Records
 
-- [v1.3/README.md](./v1.3/README.md): active release boundary, ownership, and
-  shared acceptance gate.
+- [v1.3/FREEZE.md](./v1.3/FREEZE.md): latest frozen formal release snapshot.
+- [v1.3/README.md](./v1.3/README.md): frozen release boundary, ownership, and
+  accepted track map.
 - [v1.3/sitewide-ux-redesign-plan.md](./v1.3/sitewide-ux-redesign-plan.md):
-  active frontend-design plan for sitewide cohesion.
+  accepted frontend-design record for sitewide cohesion.
 - [v1.3/platform-deploy-prerequisite-plan.md](./v1.3/platform-deploy-prerequisite-plan.md):
-  independent platform prerequisite for secure Actions deployment acceptance.
-- [v1.2.2/FREEZE.md](./v1.2.2/FREEZE.md): latest frozen formal release
+  accepted independent platform prerequisite for secure Actions deployment.
+- [v1.2.2/FREEZE.md](./v1.2.2/FREEZE.md): previous frozen formal release
   snapshot for the internal quality-maintenance release.
 - [v1.2.2/README.md](./v1.2.2/README.md): frozen internal quality-maintenance
   release boundary and accepted pass map.

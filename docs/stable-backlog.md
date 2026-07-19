@@ -71,6 +71,9 @@ as loose backlog items unless their scope changes again:
 ### Content
 
 - content coverage, provenance, and review-status reporting
+- review whether the raw source-locator string above some Spell Detail rule
+  text belongs in the public reading surface; this is a content/display
+  decision deferred from the v1.3 cohesion pass
 - search/index artifact generation for offline or static deployments; the
   promoted v1.2.1 scope covers only online content DB full-text search
 - full spell-body/name/short-description translation and proofreading QA after

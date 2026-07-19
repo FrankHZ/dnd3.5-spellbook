@@ -7,8 +7,7 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: Slices 1 through 5 implemented and reviewed; frontend cohesion
-acceptance is complete and ready for main-gate handoff.
+Status: accepted in PR #96 and frozen in [FREEZE.md](./FREEZE.md).
 
 ## Purpose
 
@@ -438,4 +437,13 @@ Do not park a release acceptance blocker here.
 - Spell Detail currently exposes a raw source-locator string above some rule
   text. Review whether that provenance belongs in the public reading surface
   as a separate content/display decision; do not hide or reinterpret it as part
-  of the styling pass.
+  of the styling pass. The freeze sweep parked this candidate in
+  `docs/stable-backlog.md`.
+
+## Completion Notes
+
+- PR #96 merged the accepted sitewide cohesion implementation at main commit
+  `1e89afa15877d57a668d777eb4ff2a83da7a11db`.
+- Main CI run `29704940782` passed portable validation after merge.
+- Use [FREEZE.md](./FREEZE.md) for the final canonical v1.3 snapshot; this plan
+  remains the detailed implementation and browser-acceptance record.

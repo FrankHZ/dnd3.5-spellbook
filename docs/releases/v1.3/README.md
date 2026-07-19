@@ -1,15 +1,20 @@
 # v1.3 Release Plan
 
-Status: planned.
+Status: frozen and accepted. See [FREEZE.md](./FREEZE.md) for the canonical
+as-built snapshot.
 
 v1.3 is a focused sitewide UX and style release. It improves the product's
 shared interface language across the existing spellbook workflows without
 adding a new content, query, or data-model deliverable.
 
-The release also carries one independent platform prerequisite: restore a
+The release also carried one independent platform prerequisite: restore a
 secure, reproducible GitHub Actions backend deployment path and prove it with a
-real production deploy before v1.3 freezes. Platform work may run in parallel
-with design work, but it is not part of the UX redesign deliverable.
+real production deploy before v1.3 froze. Platform work proceeded in parallel
+with design work, but it was not part of the UX redesign deliverable.
+
+PR #95 completed the platform prerequisite and Actions run `29669906495`
+accepted the real deploy path. PR #96 completed the sitewide frontend-design
+track. The freeze sweep set root release metadata to `v1.3.0`.
 
 ## Release Boundary
 
@@ -36,17 +41,16 @@ v1.3 owns two acceptance tracks:
   [sitewide-ux-redesign-plan.md](./sitewide-ux-redesign-plan.md).
 - `platform` owns
   [platform-deploy-prerequisite-plan.md](./platform-deploy-prerequisite-plan.md).
-- Both tracks may begin after this plan is accepted and may proceed in
-  parallel.
-- The platform track does not block design exploration or implementation, but
-  it is a hard prerequisite for final v1.3 acceptance and freeze.
-- Main gate controls scope, cross-track decisions, merge readiness, and final
-  acceptance. Neither specialist merges its own PR.
+- Both tracks proceeded in parallel after plan acceptance.
+- The platform track remained independent from design implementation and
+  closed its hard acceptance prerequisite before final v1.3 freeze.
+- Main gate controlled scope, cross-track decisions, merge readiness, and
+  final acceptance. Neither specialist merged its own PR.
 
-This release does not need an `integrated-plan.md`. The two child plans have
-separate owners and edit surfaces; this README is the coordination contract.
-Create an integrated plan only if implementation reveals a real sequence,
-ownership, or cross-plan conflict that cannot be resolved here.
+This release did not need an `integrated-plan.md`. The two child plans retained
+separate owners and edit surfaces, and this README served as the coordination
+contract. Implementation did not reveal a sequence, ownership, or cross-plan
+conflict that required another planning document.
 
 ## Non-Goals
 
@@ -63,7 +67,7 @@ ownership, or cross-plan conflict that cannot be resolved here.
 
 ## Release Acceptance
 
-v1.3 may freeze only when:
+v1.3 acceptance closed with:
 
 - the accepted shared UI vocabulary is applied consistently to the scoped
   screens and states in both English and Chinese;
@@ -82,11 +86,12 @@ v1.3 may freeze only when:
 
 ## Plans
 
+- [FREEZE.md](./FREEZE.md)
 - [sitewide-ux-redesign-plan.md](./sitewide-ux-redesign-plan.md)
 - [platform-deploy-prerequisite-plan.md](./platform-deploy-prerequisite-plan.md)
 
 ## Handoff Rule
 
-Implementation branches update their owning child plan and affected topic docs.
-They should not turn this README into a progress ledger. Update this README only
-when release scope, ownership, track relationship, or acceptance changes.
+v1.3 is frozen. Use [FREEZE.md](./FREEZE.md) for shipped state and
+`docs/roadmap.md` for next-work ordering. Do not add active scope to this
+folder; future behavior belongs in a newer release or durable topic doc.

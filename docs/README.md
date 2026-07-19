@@ -20,17 +20,17 @@ decide what to do next after a pause.
 Agents should also read the repository-root [AGENTS.md](../AGENTS.md) for
 execution rules and role boundaries.
 
-## Active Planning
+## Release Status
 
-v1.3 planning is active with two independently owned tracks that may proceed in
-parallel. The platform track is a hard freeze prerequisite, not part of the UX
-redesign deliverable:
+The latest frozen formal release is v1.3. Post-v1.3 planning is not yet assigned
+a version; use [roadmap.md](./roadmap.md) for the accepted next-work boundary.
 
+- [releases/v1.3/FREEZE.md](./releases/v1.3/FREEZE.md)
 - [releases/v1.3/README.md](./releases/v1.3/README.md)
 - [releases/v1.3/sitewide-ux-redesign-plan.md](./releases/v1.3/sitewide-ux-redesign-plan.md)
 - [releases/v1.3/platform-deploy-prerequisite-plan.md](./releases/v1.3/platform-deploy-prerequisite-plan.md)
 
-The latest frozen formal release is v1.2.2, an internal quality-maintenance
+The previous frozen formal release is v1.2.2, an internal quality-maintenance
 release:
 
 - [releases/v1.2.2/FREEZE.md](./releases/v1.2.2/FREEZE.md)
@@ -89,7 +89,12 @@ Use [roadmap.md](./roadmap.md) for current ordering after a pause.
 
 ## Latest Frozen Snapshot
 
-The latest frozen formal release snapshot is **v1.2.2**:
+The latest frozen formal release snapshot is **v1.3**:
+
+- [releases/v1.3/FREEZE.md](./releases/v1.3/FREEZE.md)
+- [releases/v1.3/README.md](./releases/v1.3/README.md)
+
+The previous frozen formal release snapshot is **v1.2.2**:
 
 - [releases/v1.2.2/FREEZE.md](./releases/v1.2.2/FREEZE.md)
 - [releases/v1.2.2/README.md](./releases/v1.2.2/README.md)
@@ -205,7 +210,16 @@ handoff records.
 
 - [releases/README.md](./releases/README.md): release planning roles and
   maintenance rules.
-- [releases/v1.2.2/FREEZE.md](./releases/v1.2.2/FREEZE.md): latest frozen
+- [releases/v1.3/FREEZE.md](./releases/v1.3/FREEZE.md): latest frozen formal
+  release snapshot for the sitewide UX/style and secure Actions deployment
+  release.
+- [releases/v1.3/README.md](./releases/v1.3/README.md): frozen release boundary
+  and accepted track map.
+- [releases/v1.3/sitewide-ux-redesign-plan.md](./releases/v1.3/sitewide-ux-redesign-plan.md):
+  accepted frontend-design cohesion record.
+- [releases/v1.3/platform-deploy-prerequisite-plan.md](./releases/v1.3/platform-deploy-prerequisite-plan.md):
+  accepted secure Actions deployment prerequisite record.
+- [releases/v1.2.2/FREEZE.md](./releases/v1.2.2/FREEZE.md): previous frozen
   formal release snapshot for the internal quality-maintenance release.
 - [releases/v1.2.2/README.md](./releases/v1.2.2/README.md): frozen internal
   quality-maintenance release boundary and accepted pass map.
