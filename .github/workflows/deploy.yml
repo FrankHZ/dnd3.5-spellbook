@@ -17,24 +17,18 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
-    name: Manual deploy
+  validate:
+    name: Portable validation
     runs-on: ubuntu-latest
-
-    env:
-      DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
-      DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
-      DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
-      DEPLOY_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
-      DEPLOY_SSH_PORT: ${{ vars.DEPLOY_SSH_PORT || '22' }}
-      REMOTE_DEPLOY_SCRIPT: /tmp/spellbook-deploy-${{ github.run_id }}-${{ github.run_attempt }}.sh
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        # actions/checkout v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        # actions/setup-node v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: 24.x
           cache: npm
@@ -50,43 +44,174 @@ jobs:
         if: ${{ !inputs.runPortableValidation }}
         run: echo "::warning::Portable validation was skipped; use only for emergency rollback."
 
+  deploy:
+    name: Production backend deploy
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: production
+
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION || 'ap-northeast-1' }}
+      DEPLOY_LIGHTSAIL_INSTANCE_NAME: ${{ vars.DEPLOY_LIGHTSAIL_INSTANCE_NAME }}
+      DEPLOY_SSH_PORT: ${{ vars.DEPLOY_SSH_PORT || '22' }}
+      REMOTE_DEPLOY_SCRIPT: /tmp/spellbook-deploy-${{ github.run_id }}-${{ github.run_attempt }}.sh
+
+    steps:
+      - name: Require main branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "Deploy workflow must run from refs/heads/main, got $GITHUB_REF" >&2
+            exit 1
+          fi
+
+      - name: Checkout
+        # actions/checkout v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+
+      - name: Setup Node
+        # actions/setup-node v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 24.x
+
+      - name: Configure AWS credentials
+        # aws-actions/configure-aws-credentials v6
+        uses: aws-actions/configure-aws-credentials@f79bc868ee9ca4687c7db10f05fe6a46cdcda892
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Authorize runner SSH ingress
+        id: lightsail_ingress
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${DEPLOY_LIGHTSAIL_INSTANCE_NAME:?Missing variable DEPLOY_LIGHTSAIL_INSTANCE_NAME}"
+
+          runner_ip="$(curl -fsS https://checkip.amazonaws.com | tr -d '[:space:]')"
+          if ! [[ "$runner_ip" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
+            echo "Could not determine an IPv4 runner address" >&2
+            exit 1
+          fi
+          runner_cidr="$runner_ip/32"
+          firewall_state="$RUNNER_TEMP/lightsail-port-states.json"
+          current_ports="$RUNNER_TEMP/lightsail-current-port-states.json"
+          updated_ports="$RUNNER_TEMP/lightsail-authorized-ports.json"
+          printf 'LIGHTSAIL_FIREWALL_STATE=%s\n' "$firewall_state" >> "$GITHUB_ENV"
+          echo "::add-mask::$runner_ip"
+          echo "::add-mask::$runner_cidr"
+
+          aws lightsail get-instance-port-states \
+            --region "$AWS_REGION" \
+            --instance-name "$DEPLOY_LIGHTSAIL_INSTANCE_NAME" \
+            --output json > "$firewall_state"
+
+          node scripts/lightsail-firewall.mjs authorize \
+            --input "$firewall_state" \
+            --output "$updated_ports" \
+            --instance "$DEPLOY_LIGHTSAIL_INSTANCE_NAME" \
+            --port "$DEPLOY_SSH_PORT" \
+            --cidr "$runner_cidr"
+
+          aws lightsail put-instance-public-ports \
+            --region "$AWS_REGION" \
+            --cli-input-json "file://$updated_ports"
+
+          aws lightsail get-instance-port-states \
+            --region "$AWS_REGION" \
+            --instance-name "$DEPLOY_LIGHTSAIL_INSTANCE_NAME" \
+            --output json > "$current_ports"
+
+          node scripts/lightsail-firewall.mjs verify-authorized \
+            --actual "$current_ports" \
+            --expected "$updated_ports" \
+            --port "$DEPLOY_SSH_PORT" \
+            --cidr "$runner_cidr"
+
       - name: Configure SSH
         shell: bash
+        env:
+          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          DEPLOY_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
         run: |
           set -euo pipefail
           : "${DEPLOY_SSH_HOST:?Missing secret DEPLOY_SSH_HOST}"
           : "${DEPLOY_SSH_USER:?Missing secret DEPLOY_SSH_USER}"
           : "${DEPLOY_SSH_PRIVATE_KEY:?Missing secret DEPLOY_SSH_PRIVATE_KEY}"
+          : "${DEPLOY_SSH_KNOWN_HOSTS:?Missing secret DEPLOY_SSH_KNOWN_HOSTS}"
 
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
           printf '%s\n' "$DEPLOY_SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
 
-          if [ -n "${DEPLOY_SSH_KNOWN_HOSTS:-}" ]; then
-            printf '%s\n' "$DEPLOY_SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+          if [ "$DEPLOY_SSH_PORT" = "22" ]; then
+            host_lookup="$DEPLOY_SSH_HOST"
           else
-            echo "::warning::DEPLOY_SSH_KNOWN_HOSTS is not set; falling back to ssh-keyscan trust-on-first-use."
-            ssh-keyscan -p "$DEPLOY_SSH_PORT" "$DEPLOY_SSH_HOST" >> ~/.ssh/known_hosts
+            host_lookup="[$DEPLOY_SSH_HOST]:$DEPLOY_SSH_PORT"
           fi
+          ssh-keygen -F "$host_lookup" -f ~/.ssh/known_hosts >/dev/null
+
+      - name: Verify remote connection and prerequisites
+        shell: bash
+        env:
+          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
+            -o BatchMode=yes \
+            -o ConnectTimeout=15 \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
+            'set -e; command -v sqlite3 >/dev/null; command -v git >/dev/null; command -v node >/dev/null; command -v npm >/dev/null; cd ~/dnd3.5-spellbook; git remote get-url origin >/dev/null'
 
       - name: Upload reviewed backend helper
         shell: bash
+        env:
+          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           scp -i ~/.ssh/deploy_key -P "$DEPLOY_SSH_PORT" \
+            -o BatchMode=yes \
+            -o ConnectTimeout=15 \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
             docs/deployment-scripts/deploy-backend.sh \
             "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST:$REMOTE_DEPLOY_SCRIPT"
 
       - name: Deploy backend API at validated commit
         shell: bash
+        env:
+          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
         run: |
           set -euo pipefail
           ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
+            -o BatchMode=yes \
+            -o ConnectTimeout=15 \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
             "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
             chmod 700 "$REMOTE_DEPLOY_SCRIPT"
           ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
+            -o BatchMode=yes \
+            -o ConnectTimeout=15 \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
             "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
             "$REMOTE_DEPLOY_SCRIPT" "$GITHUB_SHA" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT"
 
@@ -94,7 +219,46 @@ jobs:
         if: ${{ always() }}
         continue-on-error: true
         shell: bash
+        env:
+          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
         run: |
+          if [ ! -f ~/.ssh/deploy_key ] || [ ! -f ~/.ssh/known_hosts ]; then
+            exit 0
+          fi
           ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
+            -o BatchMode=yes \
+            -o ConnectTimeout=15 \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
             "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
             rm -f "$REMOTE_DEPLOY_SCRIPT"
+
+      - name: Restore Lightsail SSH ingress
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${LIGHTSAIL_FIREWALL_STATE:-}" ] || [ ! -s "$LIGHTSAIL_FIREWALL_STATE" ]; then
+            exit 0
+          fi
+          restored_ports="$RUNNER_TEMP/lightsail-restored-ports.json"
+          current_ports="$RUNNER_TEMP/lightsail-restored-current-port-states.json"
+
+          node scripts/lightsail-firewall.mjs restore \
+            --input "$LIGHTSAIL_FIREWALL_STATE" \
+            --output "$restored_ports" \
+            --instance "$DEPLOY_LIGHTSAIL_INSTANCE_NAME"
+
+          aws lightsail put-instance-public-ports \
+            --region "$AWS_REGION" \
+            --cli-input-json "file://$restored_ports"
+
+          aws lightsail get-instance-port-states \
+            --region "$AWS_REGION" \
+            --instance-name "$DEPLOY_LIGHTSAIL_INSTANCE_NAME" \
+            --output json > "$current_ports"
+
+          node scripts/lightsail-firewall.mjs verify-restored \
+            --actual "$current_ports" \
+            --expected "$restored_ports"

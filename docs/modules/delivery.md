@@ -68,17 +68,21 @@ checkout with an explicit expected commit SHA; Cloudflare Workers Builds owns
 normal frontend production deployment.
 
 Manual deploys run portable validation by default. Skipping validation is an
-emergency rollback option and should leave an explicit workflow warning. SSH
-host trust should prefer the pinned `DEPLOY_SSH_KNOWN_HOSTS` secret; the
-`ssh-keyscan` fallback is convenience bootstrap behavior, not the hardened
-default.
+emergency rollback option and should leave an explicit workflow warning.
+Production deploys require pinned `DEPLOY_SSH_KNOWN_HOSTS` host identity and
+must fail closed when it is missing. The workflow uses GitHub OIDC to assume an
+AWS role, temporarily adds the current GitHub-hosted runner `/32` to the
+Lightsail SSH firewall, verifies AWS read-back after both add and restore, and
+restores the prior firewall state after the run. A failed firewall restore is a
+failed deploy workflow, not a warning-only cleanup event.
 
 Deploy metadata for the About / Status page is owned here:
 
 - Cloudflare Workers Builds exports default `WORKERS_CI_*` values into
   `VITE_SPELLBOOK_*` variables before the static build.
 - `deploy-backend.sh` derives commit/ref/version metadata after verifying the
-  expected remote commit and accepts GitHub run id/attempt as audit metadata
+  expected remote commit, prefers logical ref `main` for main deployments, and
+  accepts GitHub run id/attempt as audit metadata
 - `deploy-backend.sh` writes non-secret backend metadata into
   `/etc/default/spellbook-api` before restart
 

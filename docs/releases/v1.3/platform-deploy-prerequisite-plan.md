@@ -7,7 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned; required before v1.3 freeze.
+Status: implemented in PR; awaiting main merge and real Actions acceptance
+before v1.3 freeze.
 
 ## Purpose
 
@@ -118,6 +119,35 @@ The deployment path also has three reproducibility gaps:
   `2026-07-18T18:50:55Z`, and ref `origin/HEAD`. This proves the reviewed commit
   can run on the host and preserves the metadata issue as separate evidence;
   it does not prove the Actions network path.
+- Current GitHub `production` environment secrets now include
+  `DEPLOY_SSH_HOST`, `DEPLOY_SSH_USER`, `DEPLOY_SSH_PRIVATE_KEY`,
+  `DEPLOY_SSH_KNOWN_HOSTS`, and `AWS_DEPLOY_ROLE_ARN`. Current environment
+  variables now include `DEPLOY_SSH_PORT`, `AWS_REGION`, and
+  `DEPLOY_LIGHTSAIL_INSTANCE_NAME`. Repository-level copies may remain only as
+  a short transition bridge for the pre-merge `main` workflow and should be
+  removed after this workflow is merged.
+- AWS CLI setup was verified on 2026-07-18 against the production account and
+  Lightsail region. The target instance is running, HTTP and HTTPS remain
+  public, and SSH remains restricted rather than exposed to
+  `0.0.0.0/0` or `::/0`.
+- The GitHub OIDC provider now exists in IAM. The deploy role
+  `spellbook-github-actions-deploy` trusts only this repository's `main`
+  branch subject with audience `sts.amazonaws.com`.
+- The deploy role's inline policy allows `lightsail:GetInstancePortStates`
+  and `lightsail:PutInstancePublicPorts` only for the required read path and
+  target Lightsail instance update path. IAM policy simulation allowed both
+  workflow actions, and a no-op `put-instance-public-ports` check preserved
+  the exact Lightsail port state.
+- `DEPLOY_SSH_KNOWN_HOSTS` was populated from an existing local `known_hosts`
+  entry for the deployment host. Direct strict SSH to the deployment host
+  succeeded from the operator machine with host-key checking enabled.
+- PR review hardening split validation from deployment, scoped SSH secrets to
+  deploy-only steps, pinned privileged actions to full commit SHAs, made
+  Lightsail restore fail the workflow on error, added AWS read-back checks, and
+  added behavior tests for the firewall transform and restore checks.
+- Live host inspection confirms the production checkout remote is `origin`,
+  the deployed commit is contained by both `origin/HEAD` and `origin/main`,
+  `sqlite3` is installed, and the API process listens on `127.0.0.1:3000`.
 - The backend helper verifies an explicit 40-character commit, builds the
   checked-out source, preserves runtime DB files, writes About / Status
   metadata, restarts the service, and performs a local API smoke.
@@ -146,6 +176,16 @@ The deployment path also has three reproducibility gaps:
   authenticated, and reversible; unrestricted port 22 is disallowed.
 - Define the required GitHub secret/variable set and a rotation/revocation
   path. Host identity must be pinned from an independently verified source.
+- Selected model: keep GitHub-hosted runners, use GitHub OIDC to assume a
+  narrowly scoped AWS role, snapshot the current Lightsail firewall, add only
+  the current runner IPv4 `/32` to the SSH rule for the run, require pinned SSH
+  host identity, then restore the prior firewall state in cleanup.
+- Rejected options for this slice: unrestricted SSH ingress is disallowed;
+  static allowlisting all GitHub-hosted runner ranges is too broad and GitHub
+  documents those ranges as dynamic/shared; a persistent self-hosted runner on
+  the production host adds a larger trust boundary than this prerequisite
+  needs; larger runners with static IPs are unnecessary cost/complexity for
+  this personal deployment path.
 
 ### Slice 2: Workflow And Remote Preflight
 
@@ -161,14 +201,14 @@ The deployment path also has three reproducibility gaps:
 - Include host-drift acceptance that compares the bootstrap package contract
   with the live host and confirms the current server provides `sqlite3`.
 - Keep secret values out of command output and ensure cleanup runs after both
-  success and failure.
+  success and failure. Firewall restore failure must fail the workflow because
+  a stale runner `/32` is a production exposure, not a successful deploy.
 
 ### Slice 3: Git Remote And Metadata Contract
 
 - Reconcile the script's default remote with the AWS checkout's actual
-  `origin` remote. Choose one documented contract: normalize the host checkout
-  or pass an explicit deploy remote. Do not rely on an undocumented local
-  remote name.
+  `origin` remote. Accepted contract: default `deploy-backend.sh` to `origin`
+  and keep `SPELLBOOK_DEPLOY_GIT_REMOTE` as the explicit override.
 - Continue pinning deployment to the validated full commit SHA.
 - Report logical release ref `main` for a main deployment instead of a remote
   symbolic name such as `origin/HEAD`. Keep the commit SHA authoritative and
@@ -210,6 +250,8 @@ The deployment path also has three reproducibility gaps:
   deployment mutation, and live-host acceptance confirms drift is closed.
 - Deployment helper and metadata regression tests cover the changed failure
   modes.
+- Lightsail firewall helper tests cover adding the runner `/32`, rejecting
+  public SSH, restoring the original snapshot, and detecting read-back drift.
 - One real Actions run passes portable validation, secure remote connection,
   backend deployment, local service smoke, and public version/ref/commit smoke.
 - Workflow and operational docs name only required secrets/variables and do not
@@ -234,11 +276,9 @@ The deployment path also has three reproducibility gaps:
 
 ## Open Questions
 
-- Which managed/private connection option best fits the current AWS host and
-  GitHub-hosted runner while preserving simple operator recovery, if the
-  confirmed cause cannot be resolved within the current direct model?
-- Should the remote checkout be normalized to a `github` remote, or should the
-  deploy contract explicitly default/configure `origin`?
+No setup questions remain. The remaining acceptance gate is the real manual
+Actions deploy from an accepted `main` commit after this PR is reviewed and
+merged.
 
 ## Follow-Up Candidates
 

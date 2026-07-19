@@ -14,6 +14,13 @@ import { dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import {
+  assertNoUnrestrictedSsh,
+  assertPortInfosMatch,
+  assertRunnerAuthorized,
+  buildAuthorizePayload,
+  buildRestorePayload,
+} from "./lightsail-firewall.mjs";
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
 
@@ -78,7 +85,7 @@ function createHarness() {
   );
   stub(
     "sqlite3",
-    `printf 'sqlite3 %s\\n' "$*" >> "$FAKE_LOG"\ncase "$*" in\n  *wal_checkpoint*) printf '%s\\n' "\${FAKE_CHECKPOINT_RESULT:-0|0|0}" ;;\n  *integrity_check*) printf '%s\\n' "\${FAKE_INTEGRITY_RESULT:-ok}" ;;\n  *"SELECT count"*) printf '%s\\n' "\${FAKE_SCHEMA_COUNT:-1}" ;;\n  *) exit 1 ;;\nesac\n`,
+    `printf 'sqlite3 %s\\n' "$*" >> "$FAKE_LOG"\ncase "$*" in\n  --version) printf '%s\\n' "3.40.1" ;;\n  *wal_checkpoint*) printf '%s\\n' "\${FAKE_CHECKPOINT_RESULT:-0|0|0}" ;;\n  *integrity_check*) printf '%s\\n' "\${FAKE_INTEGRITY_RESULT:-ok}" ;;\n  *"SELECT count"*) printf '%s\\n' "\${FAKE_SCHEMA_COUNT:-1}" ;;\n  *) exit 1 ;;\nesac\n`,
   );
   stub(
     "systemctl",
@@ -138,6 +145,208 @@ function runBash(args, env) {
 function runScript(relativePath, env) {
   return runBash([toBashPath(join(repoRoot, relativePath))], env);
 }
+
+const baselineLightsailPorts = {
+  portStates: [
+    {
+      fromPort: 80,
+      toPort: 80,
+      protocol: "tcp",
+      state: "open",
+      cidrs: ["0.0.0.0/0"],
+      ipv6Cidrs: ["::/0"],
+      cidrListAliases: [],
+    },
+    {
+      fromPort: 443,
+      toPort: 443,
+      protocol: "tcp",
+      state: "open",
+      cidrs: ["0.0.0.0/0"],
+      ipv6Cidrs: ["::/0"],
+      cidrListAliases: [],
+    },
+    {
+      fromPort: 22,
+      toPort: 22,
+      protocol: "tcp",
+      state: "open",
+      cidrs: ["198.51.100.70/32"],
+      ipv6Cidrs: [],
+      cidrListAliases: ["lightsail-connect"],
+    },
+  ],
+};
+
+test("lightsail firewall helper authorizes only the runner SSH CIDR", () => {
+  const payload = buildAuthorizePayload(
+    baselineLightsailPorts,
+    "dnd3.5-spellbook",
+    22,
+    "203.0.113.10/32",
+  );
+
+  assert.deepEqual(payload, {
+    instanceName: "dnd3.5-spellbook",
+    portInfos: [
+      {
+        fromPort: 22,
+        toPort: 22,
+        protocol: "tcp",
+        cidrs: ["198.51.100.70/32", "203.0.113.10/32"],
+        ipv6Cidrs: [],
+        cidrListAliases: ["lightsail-connect"],
+      },
+      {
+        fromPort: 80,
+        toPort: 80,
+        protocol: "tcp",
+        cidrs: ["0.0.0.0/0"],
+        ipv6Cidrs: ["::/0"],
+        cidrListAliases: [],
+      },
+      {
+        fromPort: 443,
+        toPort: 443,
+        protocol: "tcp",
+        cidrs: ["0.0.0.0/0"],
+        ipv6Cidrs: ["::/0"],
+        cidrListAliases: [],
+      },
+    ],
+  });
+  assertRunnerAuthorized(
+    { portStates: payload.portInfos.map((port) => ({ ...port, state: "open" })) },
+    payload,
+    22,
+    "203.0.113.10/32",
+  );
+});
+
+test("lightsail firewall helper rejects unrestricted SSH before mutation", () => {
+  assert.throws(
+    () =>
+      buildAuthorizePayload(
+        {
+          portStates: [
+            {
+              fromPort: 22,
+              toPort: 22,
+              protocol: "tcp",
+              state: "open",
+              cidrs: ["0.0.0.0/0"],
+              ipv6Cidrs: [],
+              cidrListAliases: [],
+            },
+          ],
+        },
+        "dnd3.5-spellbook",
+        22,
+        "203.0.113.10/32",
+      ),
+    /SSH is unrestricted/u,
+  );
+  assert.throws(
+    () =>
+      buildAuthorizePayload(
+        {
+          portStates: [
+            {
+              fromPort: 0,
+              toPort: 65535,
+              protocol: "all",
+              state: "open",
+              cidrs: ["0.0.0.0/0"],
+              ipv6Cidrs: [],
+              cidrListAliases: [],
+            },
+          ],
+        },
+        "dnd3.5-spellbook",
+        22,
+        "203.0.113.10/32",
+      ),
+    /SSH is unrestricted/u,
+  );
+  assert.throws(
+    () =>
+      assertNoUnrestrictedSsh(
+        {
+          portStates: [
+            {
+              fromPort: 0,
+              toPort: 65535,
+              protocol: "all",
+              state: "open",
+              cidrs: [],
+              ipv6Cidrs: ["::/0"],
+              cidrListAliases: [],
+            },
+          ],
+        },
+        22,
+      ),
+    /SSH is unrestricted/u,
+  );
+});
+
+test("lightsail firewall helper treats protocol all as SSH-capable", () => {
+  const payload = buildAuthorizePayload(
+    {
+      portStates: [
+        {
+          fromPort: 0,
+          toPort: 65535,
+          protocol: "all",
+          state: "open",
+          cidrs: ["198.51.100.70/32"],
+          ipv6Cidrs: [],
+          cidrListAliases: [],
+        },
+      ],
+    },
+    "dnd3.5-spellbook",
+    22,
+    "203.0.113.10/32",
+  );
+
+  assert.deepEqual(payload.portInfos, [
+    {
+      fromPort: 0,
+      toPort: 65535,
+      protocol: "all",
+      cidrs: ["198.51.100.70/32", "203.0.113.10/32"],
+      ipv6Cidrs: [],
+      cidrListAliases: [],
+    },
+  ]);
+  assertRunnerAuthorized(
+    { portStates: payload.portInfos.map((port) => ({ ...port, state: "open" })) },
+    payload,
+    22,
+    "203.0.113.10/32",
+  );
+});
+
+test("lightsail firewall helper restores the snapshot and detects drift", () => {
+  const authorized = buildAuthorizePayload(
+    baselineLightsailPorts,
+    "dnd3.5-spellbook",
+    22,
+    "203.0.113.10/32",
+  );
+  const restored = buildRestorePayload(baselineLightsailPorts, "dnd3.5-spellbook");
+
+  assertPortInfosMatch(baselineLightsailPorts, restored);
+  assert.throws(
+    () =>
+      assertPortInfosMatch(
+        { portStates: authorized.portInfos.map((port) => ({ ...port, state: "open" })) },
+        restored,
+      ),
+    /Lightsail port state mismatch/u,
+  );
+});
 
 function readEvents(harness) {
   return readFileSync(harness.log, "utf8")
@@ -267,7 +476,7 @@ test("deploy-backend rejects a remote HEAD mismatch before build or activation",
     const mismatch = "b".repeat(40);
     harness.stub(
       "git",
-      `printf 'git %s\\n' "$*" >> "$FAKE_LOG"\ncase "$*" in\n  "fetch --prune github"|"reset --hard $FAKE_EXPECTED"|"clean -fd") exit 0 ;;\n  "rev-parse $FAKE_EXPECTED^{commit}") printf '%s\\n' "$FAKE_EXPECTED" ;;\n  "rev-parse HEAD") printf '%s\\n' "$FAKE_MISMATCH" ;;\n  *) exit 1 ;;\nesac\n`,
+      `printf 'git %s\\n' "$*" >> "$FAKE_LOG"\ncase "$*" in\n  "fetch --prune origin"|"reset --hard $FAKE_EXPECTED"|"clean -fd") exit 0 ;;\n  "rev-parse $FAKE_EXPECTED^{commit}") printf '%s\\n' "$FAKE_EXPECTED" ;;\n  "rev-parse HEAD") printf '%s\\n' "$FAKE_MISMATCH" ;;\n  *) exit 1 ;;\nesac\n`,
     );
     harness.stub("npm", `printf 'npm %s\\n' "$*" >> "$FAKE_LOG"\nexit 0\n`);
 
@@ -296,6 +505,40 @@ test("deploy-backend rejects a remote HEAD mismatch before build or activation",
   }
 });
 
+test("deploy-backend requires sqlite3 before Git fetch or activation", () => {
+  const harness = createHarness();
+  try {
+    const repo = join(harness.home, "dnd3.5-spellbook");
+    mkdirSync(repo, { recursive: true });
+    const expected = "d".repeat(40);
+    harness.stub("sqlite3", `exit 127\n`);
+    harness.stub("git", `printf 'git %s\\n' "$*" >> "$FAKE_LOG"\nexit 0\n`);
+    harness.stub("npm", `printf 'npm %s\\n' "$*" >> "$FAKE_LOG"\nexit 0\n`);
+
+    const result = runBash(
+      [
+        toBashPath(join(repoRoot, "docs/deployment-scripts/deploy-backend.sh")),
+        expected,
+        "123",
+        "1",
+      ],
+      {
+        ...harness.env,
+        SPELLBOOK_REPO_DIR: toBashPath(repo),
+      },
+    );
+
+    assert.notEqual(result.status, 0, result.stdout + result.stderr);
+    assert.match(result.stderr, /sqlite3 is required/u);
+    const log = readFileSync(harness.log, "utf8");
+    assert.doesNotMatch(log, /^git /mu);
+    assert.doesNotMatch(log, /^npm /mu);
+    assert.doesNotMatch(log, /systemctl/u);
+  } finally {
+    harness.cleanup();
+  }
+});
+
 test("deploy-backend restores the prior DB when verified runtime smoke fails", () => {
   const harness = createHarness();
   try {
@@ -314,7 +557,7 @@ test("deploy-backend restores the prior DB when verified runtime smoke fails", (
 
     harness.stub(
       "git",
-      `printf 'git %s\\n' "$*" >> "$FAKE_LOG"\ncase "$*" in\n  "fetch --prune github"|"reset --hard $FAKE_EXPECTED"|"clean -fd") exit 0 ;;\n  "rev-parse $FAKE_EXPECTED^{commit}"|"rev-parse HEAD") printf '%s\\n' "$FAKE_EXPECTED" ;;\n  "rev-parse --short=7 HEAD") printf '%s\\n' "${expected.slice(0, 7)}" ;;\n  "branch -r --contains $FAKE_EXPECTED --sort=refname --format=%(refname:short)") printf '%s\\n' "github/main" ;;\n  *) exit 1 ;;\nesac\n`,
+      `printf 'git %s\\n' "$*" >> "$FAKE_LOG"\ncase "$*" in\n  "fetch --prune origin"|"reset --hard $FAKE_EXPECTED"|"clean -fd") exit 0 ;;\n  "rev-parse $FAKE_EXPECTED^{commit}"|"rev-parse HEAD") printf '%s\\n' "$FAKE_EXPECTED" ;;\n  "rev-parse --short=7 HEAD") printf '%s\\n' "${expected.slice(0, 7)}" ;;\n  "branch -r --contains $FAKE_EXPECTED --sort=refname --format=%(refname:short)") printf '%s\\n%s\\n' "origin/HEAD" "origin/main" ;;\n  *) exit 1 ;;\nesac\n`,
     );
     harness.stub("npm", `printf 'npm %s\\n' "$*" >> "$FAKE_LOG"\nexit 0\n`);
     harness.stub("node", `printf 'node %s\\n' "$*" >> "$FAKE_LOG"\nprintf 'v1.2.1\\n'\n`);
@@ -346,6 +589,7 @@ test("deploy-backend restores the prior DB when verified runtime smoke fails", (
       readFileSync(envFile, "utf8"),
       new RegExp(`SPELLBOOK_BACKEND_COMMIT_SHA="${expected}"`, "u"),
     );
+    assert.match(readFileSync(envFile, "utf8"), /SPELLBOOK_BACKEND_REF="main"/u);
 
     const events = readEvents(harness);
     const verifiedHead = indexOfEvent(
@@ -464,6 +708,18 @@ test("workflow uploads the reviewed helper and helper derives metadata from veri
     join(repoRoot, "docs/deployment-scripts/update-db.sh"),
     "utf8",
   );
+  const validateJob = workflow.slice(
+    workflow.indexOf("  validate:"),
+    workflow.indexOf("  deploy:"),
+  );
+  const deployHeader = workflow.slice(
+    workflow.indexOf("  deploy:"),
+    workflow.indexOf("      - name: Configure SSH"),
+  );
+  const restoreStep = workflow.slice(workflow.indexOf("      - name: Restore Lightsail"));
+  const movableActionRefs = [...workflow.matchAll(/uses:\s*[^@\s]+@([^\s]+)/gu)]
+    .map((match) => match[1])
+    .filter((ref) => !/^[a-f0-9]{40}$/u.test(ref));
 
   assert.match(
     workflow,
@@ -473,9 +729,37 @@ test("workflow uploads the reviewed helper and helper derives metadata from veri
     workflow,
     /"\$REMOTE_DEPLOY_SCRIPT" "\$GITHUB_SHA" "\$GITHUB_RUN_ID" "\$GITHUB_RUN_ATTEMPT"/u,
   );
+  assert.deepEqual(movableActionRefs, []);
+  assert.match(workflow, /actions\/checkout v7[\s\S]*actions\/checkout@[a-f0-9]{40}/u);
+  assert.match(workflow, /actions\/setup-node v6[\s\S]*actions\/setup-node@[a-f0-9]{40}/u);
+  assert.match(
+    workflow,
+    /aws-actions\/configure-aws-credentials v6[\s\S]*aws-actions\/configure-aws-credentials@[a-f0-9]{40}/u,
+  );
+  assert.match(workflow, /environment: production/u);
+  assert.match(workflow, /Deploy workflow must run from refs\/heads\/main/u);
+  assert.doesNotMatch(validateJob, /DEPLOY_SSH_|AWS_DEPLOY_ROLE_ARN/u);
+  assert.doesNotMatch(
+    deployHeader,
+    /DEPLOY_SSH_PRIVATE_KEY:|DEPLOY_SSH_KNOWN_HOSTS:/u,
+  );
+  assert.match(workflow, /aws lightsail get-instance-port-states/u);
+  assert.match(workflow, /aws lightsail put-instance-public-ports/u);
+  assert.match(workflow, /lightsail-firewall\.mjs authorize/u);
+  assert.match(workflow, /lightsail-firewall\.mjs verify-authorized/u);
+  assert.match(restoreStep, /if: \$\{\{ always\(\) \}\}/u);
+  assert.doesNotMatch(restoreStep, /continue-on-error:\s*true/u);
+  assert.match(restoreStep, /lightsail-firewall\.mjs restore/u);
+  assert.match(restoreStep, /lightsail-firewall\.mjs verify-restored/u);
+  assert.match(workflow, /DEPLOY_SSH_KNOWN_HOSTS:\?/u);
+  assert.match(workflow, /StrictHostKeyChecking=yes/u);
+  assert.doesNotMatch(workflow, /ssh-keyscan/u);
   assert.doesNotMatch(workflow, /~\/deploy-backend\.sh/u);
   assert.match(helper, /git reset --hard "\$EXPECTED_COMMIT"/u);
   assert.match(helper, /if \[ "\$VERIFIED_COMMIT" != "\$EXPECTED_COMMIT" \]/u);
+  assert.match(helper, /GIT_REMOTE="\$\{SPELLBOOK_DEPLOY_GIT_REMOTE:-origin\}"/u);
+  assert.match(helper, /LOGICAL_REF="\$\{SPELLBOOK_DEPLOY_LOGICAL_REF:-main\}"/u);
+  assert.match(helper, /select_verified_ref/u);
   assert.match(
     helper,
     /upsert_env_var "SPELLBOOK_BACKEND_COMMIT_SHA" "\$VERIFIED_COMMIT"/u,

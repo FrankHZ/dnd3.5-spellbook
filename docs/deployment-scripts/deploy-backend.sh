@@ -9,7 +9,8 @@ INCOMING_DATA_DIR="${SPELLBOOK_INCOMING_DATA_DIR:-$HOME/data}"
 SERVICE="${SPELLBOOK_SERVICE:-spellbook-api}"
 WORKSPACE="server"
 ENV_FILE="${SPELLBOOK_ENV_FILE:-/etc/default/spellbook-api}"
-GIT_REMOTE="${SPELLBOOK_DEPLOY_GIT_REMOTE:-github}"
+GIT_REMOTE="${SPELLBOOK_DEPLOY_GIT_REMOTE:-origin}"
+LOGICAL_REF="${SPELLBOOK_DEPLOY_LOGICAL_REF:-main}"
 SMOKE_URL="${SPELLBOOK_SMOKE_URL:-http://127.0.0.1:3000/api/rulebooks}"
 SMOKE_RETRIES="${SPELLBOOK_SMOKE_RETRIES:-5}"
 SMOKE_DELAY_SECONDS="${SPELLBOOK_SMOKE_DELAY_SECONDS:-2}"
@@ -58,6 +59,44 @@ validate_optional_nonnegative_integer() {
   if [ -n "$value" ]; then
     validate_nonnegative_integer "$name" "$value"
   fi
+}
+
+normalize_remote_ref() {
+  local ref="$1"
+
+  case "$ref" in
+    */HEAD)
+      return 1
+      ;;
+    "$GIT_REMOTE"/*)
+      printf '%s\n' "${ref#"$GIT_REMOTE/"}"
+      ;;
+    *)
+      printf '%s\n' "$ref"
+      ;;
+  esac
+}
+
+select_verified_ref() {
+  local ref normalized
+
+  if [ -n "$LOGICAL_REF" ]; then
+    for ref in "${VERIFIED_REFS[@]}"; do
+      if [ "$ref" = "$GIT_REMOTE/$LOGICAL_REF" ]; then
+        printf '%s\n' "$LOGICAL_REF"
+        return 0
+      fi
+    done
+  fi
+
+  for ref in "${VERIFIED_REFS[@]}"; do
+    if normalized="$(normalize_remote_ref "$ref")"; then
+      printf '%s\n' "$normalized"
+      return 0
+    fi
+  done
+
+  printf '%s\n' "detached"
 }
 
 ensure_data_dir() {
@@ -363,7 +402,7 @@ if [ "$SMOKE_RETRIES" = "0" ]; then
   exit 1
 fi
 
-if ! command -v sqlite3 >/dev/null 2>&1; then
+if ! command -v sqlite3 >/dev/null 2>&1 || ! sqlite3 --version >/dev/null 2>&1; then
   echo "sqlite3 is required for deployment integrity and schema validation" >&2
   exit 1
 fi
@@ -390,7 +429,7 @@ VERIFIED_SHORT="$(git rev-parse --short=7 HEAD)"
 mapfile -t VERIFIED_REFS < <(
   git branch -r --contains "$VERIFIED_COMMIT" --sort=refname --format='%(refname:short)'
 )
-VERIFIED_REF="${VERIFIED_REFS[0]:-detached}"
+VERIFIED_REF="$(select_verified_ref)"
 echo "==> Verified deploy commit: $VERIFIED_COMMIT ($VERIFIED_REF)"
 
 echo "==> Install deps"
