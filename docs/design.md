@@ -40,6 +40,24 @@ Useful cues come from rulebook and rules-index structure rather than skinning:
 - restrained accent colors that suggest binding, ink, or source labels without
   turning the app into a themed prop
 
+The accepted site identity is a modern rules index. Use a near-neutral paper
+background, slightly raised reading/control surfaces, dark ink text, fine
+neutral rules, and one restrained binding accent. The binding accent may orient
+the brand, selected navigation, section rules, and source context; it should not
+wash whole pages, ordinary borders, or every control in one hue.
+
+Keep the styling division explicit:
+
+- content surfaces carry the rules-reference identity through hierarchy,
+  source gutters, section lines, and reading rhythm
+- controls remain contemporary and predictable through the existing local UI
+  wrappers
+- Search/Browse may read like an index, Spell Detail like a reference page,
+  and Publications like a compact contents/catalog surface without forcing all
+  three into one template
+- typography should use the existing font stack; establish identity through
+  size, weight, alignment, and rules rather than novelty display fonts
+
 External references such as 5etools, Pf2eTools, Foundry sheets, or printed SRD
 style guides are useful for information structure and rules-reference
 conventions. Do not copy their visual skin wholesale. Translate useful ideas
@@ -106,6 +124,10 @@ collections, about/status, and similar utility screens keep the same title,
 description, and action alignment. Feature-specific reading surfaces such as
 Spell Detail may keep their own header when rule text, local actions, or
 metadata hierarchy need a custom reading layout.
+
+Responsive presentation must keep one semantic page title. Reorder or restyle
+the same heading through CSS layout instead of rendering separate desktop and
+mobile `h1` elements.
 
 For empty, loading, validation, and error states on primary pages, use the
 shared `StatusCard` component instead of hand-rolling one-off `CardHeader`
@@ -193,11 +215,15 @@ Use that baseline unless a focused design pass intentionally changes it.
 
 Current defaults:
 
-- Background and cards are neutral and high-contrast.
+- Background and cards use near-neutral paper and raised-surface roles with
+  enough contrast to keep dense rows and controls distinct.
 - Radius is modest, based on `--radius: 0.625rem`.
-- Borders and separators carry most structure.
+- Fine neutral borders and separators carry most structure; a restrained
+  binding accent may mark major page, index, or reading boundaries.
 - Primary actions use existing button variants rather than custom one-off
   colors.
+- Source badges may use a quiet tint of the binding accent, while component and
+  taxonomy badges keep their separate semantic treatments.
 - Icons should come from `lucide-react` when an icon is helpful.
 
 Prefer modern reference-book polish over decorative theming:

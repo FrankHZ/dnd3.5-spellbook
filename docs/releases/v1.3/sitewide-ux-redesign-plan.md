@@ -7,7 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: design audit accepted; implementation planned.
+Status: representative style spike implemented; user review pending before
+sitewide expansion.
 
 ## Purpose
 
@@ -113,8 +114,10 @@ the interface from route to route.
 
 Audit result: complete. The current interface already has a viable neutral,
 reference-first base. The release should tighten a small shared vocabulary
-rather than introduce a new visual theme or rebuild every page around one
-composition.
+rather than rebuild every page around one composition. The accepted direction
+adds a recognizable modern-rulebook identity through editorial hierarchy,
+paper/ink contrast, fine rules, source treatment, and one restrained binding
+accent while keeping controls contemporary and predictable.
 
 ### Slice 2: Shared Interface Vocabulary
 
@@ -262,7 +265,40 @@ a parallel component system. The implementation should converge on:
 - states: `StatusCard` for loading, empty, validation, and error feedback, with
   route copy and actions remaining specific;
 - typography: utility-page title, spell title, section heading, field label,
-  body, metadata, and muted-source roles, without a new font or brand palette.
+  body, metadata, and muted-source roles, without introducing a novelty font;
+- visual identity: near-neutral paper and ink roles, fine rule lines, and one
+  restrained binding accent used for navigation, section orientation, and
+  source context rather than broad page washes or decorative chrome.
+
+### Accepted Visual Direction
+
+Use a modern rules index as the visual model. Search and Browse should read
+like an index, Spell Detail like a clean reference page, and Publications like
+a compact contents/catalog surface. Their controls remain part of the existing
+modern UI system; identity comes from hierarchy, alignment, separators, and
+content metadata rather than faux parchment or fantasy ornament.
+
+The first implementation pass is a representative style spike over shared
+tokens plus Search, Spell Detail, and Publications. Accept it in English and
+Chinese at desktop and mobile widths before extending the treatment to the
+remaining routes.
+
+Implementation result:
+
+- `web/app/app.css` now owns near-neutral paper, raised surface, ink, fine-rule,
+  and restrained binding-accent roles. The root shell, brand, shared page
+  header, and source badges consume those roles without replacing local UI
+  wrappers.
+- Search uses an index boundary and quiet source gutter treatment; Spell Detail
+  uses one semantic title in a responsive grid plus a distinct reading surface;
+  Publications uses the shared page hierarchy and compact directory grouping.
+- The first color review rejected warm-tinted ordinary borders and paper. Final
+  tokens keep regular surfaces neutral and reserve the binding accent for
+  brand, selected state, source context, and major structural rules.
+- `npm run typecheck:web`, `npm run test:web`, and `npm run -w web build`
+  passed. Search, Spell Detail, and Publications were smoked in English and
+  Chinese at `1440 x 900` and `390 x 844`; all retained expected content and
+  showed no horizontal document overflow.
 
 ### Bounded Implementation Order
 

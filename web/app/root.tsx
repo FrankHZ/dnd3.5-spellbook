@@ -59,7 +59,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="bg-white text-gray-900">
+      <body className="bg-background text-foreground">
         <TooltipProvider>
           <QueryClientProvider client={queryClient}>
             <UserPrefsProvider>

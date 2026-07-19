@@ -24,9 +24,9 @@ export default function DescriptionSection({
   );
 
   return (
-    <section className="rounded-md border bg-card px-4 py-4 shadow-xs">
+    <section className="app-reading-surface rounded-md border bg-card px-4 py-5 shadow-xs sm:px-5">
       {description.sourceKey && (
-        <div className="mb-3 border-b pb-2 font-mono text-xs text-muted-foreground">
+        <div className="mb-4 border-b pb-2 font-mono text-xs text-muted-foreground">
           {description.sourceKey}
         </div>
       )}

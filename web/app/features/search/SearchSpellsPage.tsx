@@ -280,7 +280,7 @@ export default function SearchSpellsPage() {
                 )}
 
               {!hasDisplayError && items.length > 0 && (
-                <Card className="gap-0 overflow-hidden py-0">
+                <Card className="app-index-surface gap-0 overflow-hidden py-0">
                   <CardContent className="space-y-0 px-0 py-0">
                     <div className="px-3 py-2.5 sm:px-6">
                       <Pager

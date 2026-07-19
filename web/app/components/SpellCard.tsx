@@ -74,7 +74,7 @@ export function SpellCard({
   return (
     <div
       className={cn(
-        "group/spell-card transition-colors hover:bg-muted/35 focus-within:bg-muted/35",
+        "app-index-row group/spell-card transition-colors hover:bg-muted/35 focus-within:bg-muted/35",
         resolvedDensity === "compact" ? "px-3 py-2.5 sm:px-4" : "p-4",
       )}
     >
