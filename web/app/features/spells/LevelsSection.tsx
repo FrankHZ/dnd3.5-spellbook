@@ -10,7 +10,7 @@ export default function LevelsSection({ spell }: { spell: SpellDetailView }) {
     <section className="space-y-2">
       {(spell.classLevels?.length ?? 0) > 0 ? (
         <div className="space-y-1">
-          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="app-section-kicker">
             {t("levels.classes")}
           </div>
           <div className="text-sm leading-5">
@@ -32,7 +32,7 @@ export default function LevelsSection({ spell }: { spell: SpellDetailView }) {
 
       {(spell.domainLevels?.length ?? 0) > 0 && (
         <div className="space-y-1">
-          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="app-section-kicker">
             {t("levels.domains")}
           </div>
           <div className="text-sm leading-5">

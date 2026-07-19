@@ -183,6 +183,9 @@ Preferred patterns:
 - Use short scope summaries before result lists so users understand the active
   filter state.
 - Keep paginated spell lists in one bordered surface with internal separators.
+- Treat the top and bottom pagination rows as quiet index toolbars, and align
+  group headings with spell-row content rather than centering them as
+  standalone display headings.
 - Use cards for framed tools, repeated collection items, empty states, and
   error states.
 - Use unframed text, separators, and compact badges for supporting metadata.
@@ -322,8 +325,11 @@ and local spell actions. Source, school/subschool, and descriptor badges belong
 in the sidebar overview with the other spell metadata instead of competing with
 the title.
 
-Related spell references should stay secondary to the current spell
-description.
+Loading placeholders should use the same responsive grid and reading order as
+the resolved detail page. Within the metadata card, use separators and flat
+definition rows instead of another bordered panel. Related spell references
+should stay secondary to the current spell description and reuse the compact
+spell-index row vocabulary.
 
 ### Publications
 

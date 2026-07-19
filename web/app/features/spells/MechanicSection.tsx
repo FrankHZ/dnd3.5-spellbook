@@ -25,7 +25,7 @@ function Field({
   translateNote?: (key: MechanicDetailNoteKey) => string;
 }) {
   return (
-    <div className="grid grid-cols-[6rem_minmax(0,1fr)] items-baseline gap-2 border-b border-border/70 py-1.5 last:border-b-0">
+    <div className="grid grid-cols-[6rem_minmax(0,1fr)] items-baseline gap-2 py-1.5">
       <dt className="text-xs font-medium leading-5 text-muted-foreground">
         {label}
       </dt>
@@ -64,10 +64,10 @@ export function MechanicsSection({ casting }: { casting: SpellCasting }) {
 
   return (
     <section className="space-y-2">
-      <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+      <div className="app-section-kicker">
         {t("sections.mechanics")}
       </div>
-      <dl className="rounded-sm border bg-muted/15 px-2">
+      <dl className="app-detail-list divide-y px-1">
         <Field
           label={t("mechanics.casting-time")}
           value={displayValue("castingTime", casting.castingTime)}

@@ -98,7 +98,7 @@ export function SpellCard({
         </div>
 
         {showFullDetails && (
-          <div className="mt-3 grid gap-3 border-l border-border/80 pl-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className="app-spell-card-details mt-3 grid gap-3 border-l pl-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
             <div className="min-w-0 space-y-2 text-xs leading-5 text-muted-foreground">
               <div className="flex flex-wrap items-center gap-1.5">
                 <SpellMetaBadge kind="taxonomy">

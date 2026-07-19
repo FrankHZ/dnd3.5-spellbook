@@ -366,6 +366,24 @@
   background: color-mix(in oklch, var(--app-binding-soft) 38%, var(--muted));
 }
 
+.app-index-toolbar {
+  background: color-mix(in oklch, var(--card) 90%, var(--muted));
+  padding: 0.625rem 0.75rem;
+}
+
+.app-spell-card-details {
+  border-left-color: color-mix(in oklch, var(--app-binding) 30%, var(--app-rule));
+}
+
+.app-detail-list {
+  border-block: 1px solid var(--app-rule);
+}
+
+.app-related-index {
+  border-color: var(--app-rule);
+  background: color-mix(in oklch, var(--card) 96%, var(--muted));
+}
+
 .app-source-badge {
   border-color: color-mix(in oklch, var(--app-binding) 18%, transparent);
   background: color-mix(in oklch, var(--app-binding-soft) 72%, transparent);
@@ -487,6 +505,12 @@
 @media (max-width: 39.999rem) {
   .app-action-rail {
     width: 100%;
+  }
+}
+
+@media (min-width: 40rem) {
+  .app-index-toolbar {
+    padding-inline: 1rem;
   }
 }
 

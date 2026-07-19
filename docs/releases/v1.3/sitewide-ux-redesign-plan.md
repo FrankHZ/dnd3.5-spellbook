@@ -7,8 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: Slices 1 and 2 implemented and reviewed; route-level cohesion work
-remains active.
+Status: Slices 1 through 3 implemented and reviewed; management and utility
+route cohesion remains active.
 
 ## Purpose
 
@@ -161,6 +161,25 @@ Implementation result:
   actions, supported mechanics notes, and responsive ordering.
 - Verify long English labels, Chinese copy, long spell names, and dense
   metadata do not overflow or shift controls.
+
+Implementation result:
+
+- Browse and Search now share quiet top and bottom index toolbars. Browse level
+  groups align with row content and read as index sections instead of centered
+  display headings.
+- Full-detail spell rows use a restrained metadata rule while preserving the
+  summary scan-only contract and existing preference/action behavior.
+- Spell Detail loading uses the resolved responsive grid. The title action row
+  wraps predictably, sidebar labels share one hierarchy, and mechanics use flat
+  definition rows rather than a bordered panel nested inside the metadata card.
+- Related spell variants reuse compact index rows behind their own secondary
+  section boundary; matching and sort behavior are unchanged.
+- `npm run typecheck:web`, `npm run test:web` (38 files, 158 tests), and
+  `npm run -w web build` passed. Populated grouped Browse, populated Search in
+  summary and full-detail modes, long-name Spell Detail, and a related-variant
+  Detail were smoked in English and Chinese at `1440 x 900` and `390 x 844`;
+  checked states showed no horizontal overflow, clipped controls, or duplicate
+  page titles.
 
 ### Slice 4: Management And Utility Surfaces
 
