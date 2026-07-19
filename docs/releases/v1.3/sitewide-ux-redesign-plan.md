@@ -7,8 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: Slices 1 through 3 implemented and reviewed; management and utility
-route cohesion remains active.
+Status: Slices 1 through 4 implemented and reviewed; cohesion acceptance
+remains active.
 
 ## Purpose
 
@@ -190,6 +190,26 @@ Implementation result:
   avoid decorative card nesting or marketing-style composition.
 - Close route-specific inconsistencies discovered by the audit only when they
   fit the accepted shared vocabulary.
+
+Implementation result:
+
+- Shared utility-section and flat data-field roles now align Settings and About
+  / Status without nested bordered mini-panels. Their existing preferences,
+  tabs, metadata, and persistence behavior are unchanged.
+- Collection directories retain repeated cards, while spellbook contents reuse
+  the shared index surface. Prepared keeps its specialized selector and table,
+  with a shared sticky work toolbar and restrained per-level sections.
+- Prepared import is presented as a neutral data action. Destructive emphasis
+  remains on clear and on the explicit replacement path; import/export and
+  collection schemas are unchanged.
+- Publications retained its accepted dense grouping, row, selection, and
+  sorting behavior after cross-route review.
+- `npm run typecheck:web`, `npm run test:web` (38 files, 158 tests), and
+  `npm run -w web build` passed. Publications, the spellbook index, Favorites,
+  Prepared, Settings, and the About Status/Credits tabs were smoked in English
+  and Chinese at desktop and mobile widths; checked states showed no horizontal
+  overflow or clipped actions, and the Prepared mobile selector remained
+  default-collapsed.
 
 ### Slice 5: Cohesion Acceptance
 

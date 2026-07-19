@@ -27,12 +27,12 @@ export default function DisplaySettings() {
   const filterFacetEnglishId = "settings-display-zh-filter-facets";
 
   return (
-    <Card className="gap-0">
-      <CardHeader className="gap-1 py-3">
+    <Card className="app-utility-section">
+      <CardHeader className="app-utility-section-header gap-1">
         <CardTitle>{t("display.title")}</CardTitle>
         <CardDescription>{t("display.description")}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3 pt-0">
+      <CardContent className="app-utility-section-content space-y-4">
         <Field orientation="horizontal">
           <FieldContent>
             <FieldLabel htmlFor={compactId}>
@@ -51,7 +51,7 @@ export default function DisplaySettings() {
           />
         </Field>
 
-        <div className="space-y-3 rounded-md border bg-background px-4 py-3">
+        <section className="app-settings-subsection space-y-3">
           <div className="space-y-1">
             <h3 className="text-base font-semibold">{t("display.zh.title")}</h3>
             <CardDescription>{t("display.zh.description")}</CardDescription>
@@ -104,7 +104,7 @@ export default function DisplaySettings() {
               onCheckedChange={setZhFilterFacetLabelsWithEnglish}
             />
           </Field>
-        </div>
+        </section>
       </CardContent>
     </Card>
   );

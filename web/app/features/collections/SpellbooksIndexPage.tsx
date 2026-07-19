@@ -28,7 +28,7 @@ export default function SpellbooksIndexPage() {
             to={`/spellbooks/${b.id}`}
             className="block rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
-            <Card className="h-full gap-0 p-1 transition-colors hover:bg-muted/30">
+            <Card className="app-directory-card h-full gap-0 p-1">
               <CardHeader className="gap-1 py-3">
                 <CardTitle className="text-base">
                   {getCollectionDisplayName(b, tDefault)}

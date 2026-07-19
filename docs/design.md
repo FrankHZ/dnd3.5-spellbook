@@ -189,6 +189,9 @@ Preferred patterns:
 - Use cards for framed tools, repeated collection items, empty states, and
   error states.
 - Use unframed text, separators, and compact badges for supporting metadata.
+- On utility pages such as Settings and About / Status, let one outer section
+  frame own the boundary. Keep subsections and repeated data fields flat, using
+  headings and separators instead of bordered mini-panels nested inside it.
 
 Avoid:
 
@@ -358,7 +361,9 @@ Collection screens should make local persistence understandable without heavy
 explanation. Import, export, merge, replace, and clear actions should stay
 explicit because they affect browser-local data.
 
-Spell rows should remain consistent with Browse and Search where practical.
+Use repeated directory cards for distinct local collections, but keep the
+spell list inside a collection in the same bordered index surface used by
+Browse and Search where practical.
 
 ### Prepared Spells
 
@@ -373,6 +378,9 @@ Preserve:
 - clear loading and batch-error states
 
 Treat spreadsheet-friendly copy/export behavior as a core design constraint.
+The sticky toolbar and per-level sections should share the same restrained work
+surface vocabulary. Import is a neutral data action; reserve destructive
+emphasis for clear and for an explicitly chosen replacement action.
 
 ### Settings
 
@@ -381,6 +389,10 @@ many other screens, so settings surfaces should emphasize current state, clear
 selection, and predictable persistence. Publication/rulebook browsing and scope
 management belong on Publications; Settings should not retain rulebook tabs,
 entries, selectors, or display controls.
+
+Use one framed section per major settings area, with flat field groups and
+subsection dividers inside it. Do not turn related switches or radio groups into
+additional cards merely to create hierarchy.
 
 ## Do / Avoid
 

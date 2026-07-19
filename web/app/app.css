@@ -384,6 +384,60 @@
   background: color-mix(in oklch, var(--card) 96%, var(--muted));
 }
 
+.app-utility-section {
+  gap: 0;
+  overflow: hidden;
+  border-color: var(--app-rule);
+  padding-block: 0;
+}
+
+.app-utility-section-header {
+  border-bottom: 1px solid var(--app-rule);
+  background: color-mix(in oklch, var(--card) 88%, var(--muted));
+  padding: 0.875rem 1rem;
+}
+
+.app-utility-section-content {
+  padding: 1rem;
+}
+
+.app-data-field {
+  min-width: 0;
+  border-top: 1px solid var(--app-rule);
+  padding: 0.5rem 0.125rem;
+}
+
+.app-settings-subsection {
+  border-top: 1px solid var(--app-rule);
+  padding-top: 1rem;
+}
+
+.app-directory-card {
+  border-color: var(--app-rule);
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease;
+}
+
+.app-directory-card:hover,
+.app-directory-card:focus-within {
+  border-color: color-mix(in oklch, var(--app-binding) 34%, var(--app-rule));
+  background: color-mix(in oklch, var(--app-binding-soft) 24%, var(--card));
+}
+
+.app-work-toolbar {
+  border-color: var(--app-rule);
+  background: color-mix(in oklch, var(--background) 92%, transparent);
+}
+
+.app-work-section {
+  border-color: var(--app-rule);
+}
+
+.app-work-section > [data-slot="card-header"] {
+  background: color-mix(in oklch, var(--card) 88%, var(--muted));
+}
+
 .app-source-badge {
   border-color: color-mix(in oklch, var(--app-binding) 18%, transparent);
   background: color-mix(in oklch, var(--app-binding-soft) 72%, transparent);

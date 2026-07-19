@@ -62,7 +62,7 @@ export function SpellIdBookDetail({ book }: { book: SpellIdBook }) {
           )}
 
           {spells.length > 0 && (
-            <Card className="gap-0 overflow-hidden py-0">
+            <Card className="app-index-surface gap-0 overflow-hidden py-0">
               <CardContent className="divide-y px-0 py-0">
                 {spells.map((sp) => (
                   <SpellCard

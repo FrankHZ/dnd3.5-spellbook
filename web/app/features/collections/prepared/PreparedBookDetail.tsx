@@ -254,7 +254,7 @@ export function PreparedBookDetail({ book }: { book: PreparedBook }) {
         />
         <div className="min-w-0 flex-1">
           <div className="sticky top-[var(--app-sticky-top-offset)] z-40 mb-3 flex justify-stretch sm:justify-end">
-            <div className="w-full rounded-md border bg-background/90 px-3 py-2 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:w-fit sm:max-w-full">
+            <div className="app-work-toolbar w-full rounded-md border px-3 py-2 shadow-sm backdrop-blur sm:w-fit sm:max-w-full">
               <div className="flex flex-wrap items-center gap-2">
                 <ToggleGroup
                   size="sm"

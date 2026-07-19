@@ -55,7 +55,7 @@ function StatusField({ label, value }: StatusFieldProps) {
   const displayValue = isUnavailable ? t("common.unavailable") : String(value);
 
   return (
-    <div className="min-w-0 rounded-sm border bg-muted/20 px-3 py-2">
+    <div className="app-data-field">
       <div className="text-xs font-medium text-muted-foreground">{label}</div>
       <div
         className={cn(
@@ -87,12 +87,12 @@ function DeploymentSection({
   const { t } = useTranslation("about");
 
   return (
-    <Card className="gap-0">
-      <CardHeader className="gap-1 py-3">
+    <Card className="app-utility-section">
+      <CardHeader className="app-utility-section-header gap-1">
         <CardTitle className="text-base">{t("deployment.title")}</CardTitle>
         <CardDescription>{t("deployment.description")}</CardDescription>
       </CardHeader>
-      <CardContent className="grid gap-2 pt-0 sm:grid-cols-2">
+      <CardContent className="app-utility-section-content grid gap-x-4 gap-y-0 sm:grid-cols-2">
         <StatusField
           label={t("deployment.frontend-hosting")}
           value={t(getFrontendHostingKey(apiBaseUrl, frontendSource))}
@@ -121,13 +121,13 @@ function VersionSection({
   const timeValue = metadata?.builtAt ?? metadata?.deployedAt;
 
   return (
-    <Card className="gap-0">
-      <CardHeader className="gap-1 py-3">
+    <Card className="app-utility-section">
+      <CardHeader className="app-utility-section-header gap-1">
         <CardTitle className="text-base">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent className="pt-0">
-        <div className="grid gap-2 sm:grid-cols-2">
+      <CardContent className="app-utility-section-content">
+        <div className="grid gap-x-4 gap-y-0 sm:grid-cols-2">
           <StatusField
             label={t("fields.version-label")}
             value={metadata?.versionLabel}
@@ -160,7 +160,7 @@ function DbSummary({ status }: { status: PublicContentStatus }) {
   const build = status.latestBuild;
 
   return (
-    <div className="grid gap-2 sm:grid-cols-2">
+    <div className="grid gap-x-4 gap-y-0 sm:grid-cols-2">
       <StatusField
         label={t("db.active-read-source")}
         value={status.activeSpellReadSource}
@@ -189,12 +189,12 @@ function DatabaseSection({
   const { t } = useTranslation("about");
 
   return (
-    <Card className="gap-0">
-      <CardHeader className="gap-1 py-3">
+    <Card className="app-utility-section">
+      <CardHeader className="app-utility-section-header gap-1">
         <CardTitle className="text-base">{t("db.title")}</CardTitle>
         <CardDescription>{t("db.description")}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3 pt-0">
+      <CardContent className="app-utility-section-content space-y-3">
         {isLoading ? (
           <CardDescription>{t("common.loading")}</CardDescription>
         ) : isError || !data ? (
@@ -243,12 +243,12 @@ function CreditsSection() {
   const { t } = useTranslation("about");
 
   return (
-    <Card className="gap-0">
-      <CardHeader className="gap-1 py-3">
+    <Card className="app-utility-section">
+      <CardHeader className="app-utility-section-header gap-1">
         <CardTitle className="text-base">{t("credits.title")}</CardTitle>
         <CardDescription>{t("credits.description")}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4 pt-0 text-sm leading-6">
+      <CardContent className="app-utility-section-content space-y-4 text-sm leading-6">
         <section className="space-y-2">
           <h3 className="font-medium">{t("credits.english.title")}</h3>
           <div className="space-y-3 text-muted-foreground">
