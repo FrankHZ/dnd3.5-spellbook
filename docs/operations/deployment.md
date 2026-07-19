@@ -56,21 +56,76 @@ Supported behavior:
 - writes backend deploy metadata for `GET /api/status/app`
 - does not build, upload, or activate frontend static assets
 
-Required repository secrets:
+Required GitHub `production` environment secrets:
 
+- `AWS_DEPLOY_ROLE_ARN`
 - `DEPLOY_SSH_HOST`
 - `DEPLOY_SSH_USER`
 - `DEPLOY_SSH_PRIVATE_KEY`
+- `DEPLOY_SSH_KNOWN_HOSTS`: pinned SSH `known_hosts` line for the deployment
+  host
 
-Optional repository variables:
+Required GitHub `production` environment variables:
 
+- `DEPLOY_LIGHTSAIL_INSTANCE_NAME`
+
+Optional GitHub `production` environment variables:
+
+- `AWS_REGION`, default `ap-northeast-1`
 - `DEPLOY_SSH_PORT`, default `22`
 
-Recommended repository secrets:
+The deploy job must reference the `production` environment and run only from
+`refs/heads/main`. Keep validation as a separate no-secret job. SSH secrets
+should be injected only into the SSH setup or remote-operation steps that need
+them, not into the whole workflow or validation job.
 
-- `DEPLOY_SSH_KNOWN_HOSTS`: pinned SSH `known_hosts` line for the deployment
-  host. If absent, the workflow falls back to `ssh-keyscan` with a warning for
-  current convenience.
+The workflow uses GitHub OIDC to assume the AWS role named by
+`AWS_DEPLOY_ROLE_ARN`. That role must be scoped to this repository's deploy
+workflow and to the target Lightsail instance. Do not store long-lived AWS
+access keys in repository secrets for normal deployment.
+
+The AWS role is used only for the temporary Lightsail firewall opening. Its
+policy should be limited to reading and replacing the target instance's
+Lightsail port states, namely `lightsail:GetInstancePortStates` and
+`lightsail:PutInstancePublicPorts`, plus the least IAM/OIDC trust needed for
+this repository's deploy workflow to assume it.
+
+The selected production connection model keeps the Lightsail SSH firewall
+closed to broad public ingress. Each manual deploy snapshots the current
+Lightsail port rules, adds only the current GitHub-hosted runner IPv4 `/32` to
+the SSH rule, verifies the AWS read-back, verifies pinned host identity, runs
+the backend deploy, then restores the prior Lightsail port rule set in an
+`always()` cleanup step. The restore step also reads the port state back and
+must fail the workflow if the prior state was not restored. The workflow
+refuses to continue if the existing SSH rule is unrestricted (`0.0.0.0/0` or
+`::/0`).
+
+Do not manually edit the Lightsail networking rules while a deploy run is in
+progress. Cleanup restores the firewall snapshot captured at the start of the
+run, so concurrent operator edits can be overwritten.
+
+If the GitHub-hosted runner terminates before the restore step can run, restore
+Lightsail networking manually before another deploy:
+
+1. In the Lightsail console, open the target instance's Networking tab.
+2. Remove any stale GitHub runner `/32` CIDR from the SSH rule.
+3. Preserve the intended baseline: HTTP 80 public, HTTPS 443 public, SSH 22
+   limited only to the operator-approved CIDR entries and Lightsail Connect.
+4. Confirm the result with:
+
+   ```bash
+   aws lightsail get-instance-port-states \
+     --region <region> \
+     --instance-name <instance-name>
+   ```
+
+If using the CLI instead of the console, remember that
+`put-instance-public-ports` replaces the full open-port set. Include every
+port that should remain open in the replacement payload, not just SSH.
+
+Pinned host identity is mandatory. Missing `DEPLOY_SSH_KNOWN_HOSTS` fails
+closed before upload or deployment; production deploys must not rely on
+`ssh-keyscan` trust-on-first-use.
 
 Portable validation is enabled by default for every manual deploy. Disable the
 `runPortableValidation` input only for an emergency rollback where the operator
@@ -80,8 +135,8 @@ The backend helper writes deploy metadata for the About / Status page only
 after it has fetched, reset to, and verified the expected commit:
 
 - commit and short SHA come from the verified remote `HEAD`
-- the ref is derived from a remote ref containing that commit, with `detached`
-  as the fallback
+- the ref prefers the logical release ref `main`, then the first non-`HEAD`
+  remote ref containing the commit, with `detached` as the fallback
 - the version label comes from root `package.json` in that verified checkout
 - GitHub run id and attempt are passed as numeric audit metadata
 
@@ -626,7 +681,7 @@ the local checkout that was reviewed or validated.
 The tracked script in `docs/deployment-scripts/deploy-backend.sh` performs:
 
 1. Requires an explicit full expected commit SHA
-2. Fetches the configured `github` remote, hard-resets the remote checkout to
+2. Fetches the configured `origin` remote, hard-resets the remote checkout to
    that commit, cleans untracked files, and rejects a mismatched `HEAD`
 3. Runs `npm ci` with configurable constrained `NODE_OPTIONS`
 4. Generates Prisma clients and builds contracts/server from the verified
@@ -699,7 +754,7 @@ Check:
 
 - the remote repo is reachable
 - the remote checkout is still under `~/dnd3.5-spellbook`
-- the expected full commit SHA exists on the configured `github` remote
+- the expected full commit SHA exists on the configured `origin` remote
 - local remote-only edits were not expected to survive `git reset --hard` and `git clean -fd`
 
 ### Nginx Reload Fails
