@@ -7,8 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: Slices 1 through 4 implemented and reviewed; cohesion acceptance
-remains active.
+Status: Slices 1 through 5 implemented and reviewed; frontend cohesion
+acceptance is complete and ready for main-gate handoff.
 
 ## Purpose
 
@@ -223,6 +223,23 @@ Implementation result:
   result to main gate. Platform deployment acceptance remains independently
   owned and must also close before release freeze.
 
+Acceptance result:
+
+- `npm run verify`, `npm run i18n:check`, and `npm run -w web build` passed.
+  The repository gate included 98 server tests and 158 web tests; the i18n
+  audit covered all 16 namespaces without extraction drift.
+- Browse, populated Search, Spell Detail, Publications, the spellbook index,
+  Favorites, Prepared, Settings, and About Status/Credits were smoked in
+  English and Chinese at `1440 x 900` and `390 x 844` viewports. The matrix
+  showed no horizontal overflow, clipped interactive labels, or duplicate
+  page titles.
+- Mobile Browse, Search, and Prepared controls remained default-collapsed.
+  Search filters and the secondary-filter sheet were also exercised expanded
+  in both locales without content occlusion or unstable control dimensions.
+- Empty Favorites, short-query validation, and missing-spell error states were
+  reviewed alongside populated pages. No frontend cohesion blocker or further
+  UI code change was found during final acceptance.
+
 ## Slice 1 Audit Record
 
 ### Before-State Evidence
@@ -406,8 +423,9 @@ Implementation result:
 
 ## Open Questions
 
-- No design-choice blocker remains before Slice 2. Desktop side controls and
-  mobile default-closed disclosure are an intentional responsive difference.
+- No design-choice blocker remains after cohesion acceptance. Desktop side
+  controls and mobile default-closed disclosure are an intentional responsive
+  difference.
 - Any proposal to change which SpellCard details are user-selectable remains a
   separate product decision; the cohesion pass should style the accepted
   preferences rather than replace them.
