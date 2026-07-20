@@ -48,6 +48,8 @@ pilot:
 npm run -w data-tools phb:source:verify
 npm run -w data-tools phb:source:extract -- --pilot --prepare-only
 npm run -w data-tools phb:source:extract -- --pilot --mineru-output artifacts/mineru/phb35/pilot-output-run4
+npm run -w data-tools phb:source:compare -- --pilot
+npm run -w data-tools phb:source:report -- --pilot
 npm run -w data-tools phb:pilot:verify
 ```
 
@@ -82,6 +84,27 @@ npm run -w data-tools phb:pilot:verify -- --stage page-extraction
 
 This explicit stage check passes for the accepted page review, but it does not
 authorize full-PHB extraction.
+
+`phb:source:compare -- --pilot` extracts the ten selected cases from the PDF.js
+coordinate rows, applies the maintained errata inventory, reads the
+rules/content SQLite databases without writing them, and emits one comparison
+and proposed review per case. Spell-list short descriptions are comparison
+components, including summary-only cases. Source-bearing outputs stay in the
+nested data repo. Four small manifests form the end-to-end provenance chain:
+
+```text
+pages -> entities -> errata overlay -> DB comparison -> row review
+```
+
+Rerunning comparison preserves an existing terminal row decision only when its
+category, evidence-row ids, review flags, and full evidence fingerprint are
+unchanged. `phb:source:report -- --pilot` refuses to propose the end-to-end
+review while any row remains `proposed`.
+After all ten rows have terminal decisions, the report command writes the
+proposed `pilot-e2e-review.json`; main-gate acceptance and a committed clean
+hash chain are still required before the default pilot verifier passes. The
+verifier also checks the current committed errata inventory and current
+rules/content DB hashes against the accepted comparison inputs.
 
 Inspect the local rules DB:
 

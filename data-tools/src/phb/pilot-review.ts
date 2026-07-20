@@ -5,6 +5,24 @@ import {
   resolveInside,
   sha256File,
 } from "./source-manifest";
+import { PHB_ERRATA_INVENTORY_RELATIVE_PATH } from "./errata-inventory";
+import {
+  currentComparisonDatabaseIdentities,
+  type PilotDbComparisonRow,
+  validateComparisonDatabaseIdentities,
+} from "./pilot-comparison";
+import { parsePhbPilotManifestText } from "./pilot-manifest";
+import {
+  PHB_PILOT_DB_COMPARISON_MANIFEST_RELATIVE_PATH,
+  PHB_PILOT_ENTITIES_MANIFEST_RELATIVE_PATH,
+  PHB_PILOT_ERRATA_MANIFEST_RELATIVE_PATH,
+  PHB_PILOT_ROW_REVIEW_MANIFEST_RELATIVE_PATH,
+} from "./pilot-pipeline";
+import {
+  type PilotRowReview,
+  validatePilotRowReviewEvidence,
+  validatePilotRowReviews,
+} from "./pilot-row-review";
 
 export const PHB_PAGE_PILOT_REVIEW_RELATIVE_PATH =
   "phb35/review/pilot-page-extraction-review.json";
@@ -32,6 +50,12 @@ const PAGE_ARTIFACT_PATHS = {
   "runtime-manifest": "phb35/source/mineru-runtime.json",
   "extraction-manifest": "phb35/extracted/pilot/extraction-manifest.json",
   pages: "phb35/extracted/pilot/pages.jsonl",
+} as const;
+const END_TO_END_ARTIFACT_PATHS = {
+  "entity-extraction": PHB_PILOT_ENTITIES_MANIFEST_RELATIVE_PATH,
+  "errata-overlay": PHB_PILOT_ERRATA_MANIFEST_RELATIVE_PATH,
+  "db-comparison": PHB_PILOT_DB_COMPARISON_MANIFEST_RELATIVE_PATH,
+  "row-review": PHB_PILOT_ROW_REVIEW_MANIFEST_RELATIVE_PATH,
 } as const;
 
 export type PhbPilotReviewStage = (typeof STAGES)[number];
@@ -150,6 +174,16 @@ export function validatePhbPilotReview(value: unknown) {
       errors.push(`${role} must use ${expectedPath}`);
     }
   }
+  for (const [role, expectedPath] of Object.entries(
+    END_TO_END_ARTIFACT_PATHS,
+  )) {
+    const artifact = artifacts.find(
+      (candidate) => isRecord(candidate) && candidate.role === role,
+    );
+    if (isRecord(artifact) && artifact.relativePath !== expectedPath) {
+      errors.push(`${role} must use ${expectedPath}`);
+    }
+  }
 
   if (!isRecord(value.reproducibility)) {
     errors.push("reproducibility must be an object");
@@ -242,6 +276,13 @@ export function verifyPhbPilotReview(input: {
     );
   }
   const chain = verifyPageArtifactChain(input.dataRoot, artifacts, review);
+  if (review.stage === "end-to-end") {
+    verifyEndToEndArtifactChain(
+      input.dataRoot,
+      artifacts,
+      input.requireAccepted,
+    );
+  }
   if (input.requireAccepted && review.status !== "accepted") {
     throw new Error(
       `PHB ${review.stage} pilot review is ${review.status}; accepted is required`,
@@ -269,6 +310,209 @@ export function verifyPhbPilotReview(input: {
     sourceStatus: chain.sourceStatus,
     pilotStatus: chain.pilotStatus,
   };
+}
+
+function verifyEndToEndArtifactChain(
+  dataRoot: string,
+  artifacts: Map<
+    PhbPilotReviewArtifactRole,
+    PhbPilotReview["artifacts"][number]
+  >,
+  requireTerminalRows: boolean,
+) {
+  const pilot = requiredArtifact(artifacts, "pilot-manifest");
+  const pages = requiredArtifact(artifacts, "pages");
+  const entities = requiredArtifact(artifacts, "entity-extraction");
+  const errata = requiredArtifact(artifacts, "errata-overlay");
+  const comparison = requiredArtifact(artifacts, "db-comparison");
+  const rowReview = requiredArtifact(artifacts, "row-review");
+  const entitiesJson = readObject(dataRoot, entities.relativePath);
+  expectNestedHash(
+    entitiesJson,
+    ["pilotManifest", "sha256"],
+    pilot.sha256,
+    "entities -> pilot",
+  );
+  expectNestedHash(
+    entitiesJson,
+    ["pages", "sha256"],
+    pages.sha256,
+    "entities -> pages",
+  );
+  const entitiesOutput = verifyOutputArtifact(
+    dataRoot,
+    entitiesJson,
+    "entities",
+  );
+
+  const errataJson = readObject(dataRoot, errata.relativePath);
+  expectNestedHash(
+    errataJson,
+    ["entitiesManifest", "sha256"],
+    entities.sha256,
+    "errata -> entities",
+  );
+  verifyOutputArtifact(dataRoot, errataJson, "errata");
+  const inventoryReference = requiredArtifactReference(
+    errataJson,
+    "inventory",
+    "errata inventory",
+  );
+  if (inventoryReference.relativePath !== PHB_ERRATA_INVENTORY_RELATIVE_PATH) {
+    throw new Error(
+      `errata inventory must use ${PHB_ERRATA_INVENTORY_RELATIVE_PATH}`,
+    );
+  }
+  verifyReferencedArtifact(dataRoot, inventoryReference, "errata inventory");
+  committedFileCommit(
+    dataRoot,
+    resolveInside(dataRoot, inventoryReference.relativePath),
+  );
+
+  const comparisonJson = readObject(dataRoot, comparison.relativePath);
+  expectNestedHash(
+    comparisonJson,
+    ["errataManifest", "sha256"],
+    errata.sha256,
+    "comparison -> errata",
+  );
+  const comparisonOutput = verifyOutputArtifact(
+    dataRoot,
+    comparisonJson,
+    "comparison",
+  );
+  const databaseErrors = validateComparisonDatabaseIdentities(
+    comparisonJson.databases,
+    currentComparisonDatabaseIdentities(),
+  );
+  if (databaseErrors.length > 0) {
+    throw new Error(
+      `PHB pilot comparison database identities are stale:\n${databaseErrors.join("\n")}`,
+    );
+  }
+
+  const rowReviewJson = readObject(dataRoot, rowReview.relativePath);
+  expectNestedHash(
+    rowReviewJson,
+    ["comparisonManifest", "sha256"],
+    comparison.sha256,
+    "row review -> comparison",
+  );
+  const reviewsReference = requiredArtifactReference(
+    rowReviewJson,
+    "reviews",
+    "row review reviews",
+  );
+  verifyReferencedArtifact(dataRoot, reviewsReference, "row review reviews");
+  const reviewsText = fs.readFileSync(
+    resolveInside(dataRoot, reviewsReference.relativePath),
+    "utf8",
+  );
+  const reviews = parseJsonl<PilotRowReview>(reviewsText, "pilot row review");
+  const entityRows = parseJsonl<{ caseId: string; rowId: string }>(
+    fs.readFileSync(
+      resolveInside(dataRoot, entitiesOutput.relativePath),
+      "utf8",
+    ),
+    "pilot entities",
+  );
+  const comparisons = parseJsonl<PilotDbComparisonRow>(
+    fs.readFileSync(
+      resolveInside(dataRoot, comparisonOutput.relativePath),
+      "utf8",
+    ),
+    "pilot comparisons",
+  );
+  const entityRowIdsByCase = new Map<string, string[]>();
+  for (const row of entityRows) {
+    if (typeof row.caseId !== "string" || typeof row.rowId !== "string") {
+      throw new Error("pilot entity row is missing caseId or rowId");
+    }
+    const values = entityRowIdsByCase.get(row.caseId) ?? [];
+    values.push(row.rowId);
+    entityRowIdsByCase.set(row.caseId, values);
+  }
+  const pilotManifest = parsePhbPilotManifestText(
+    fs.readFileSync(resolveInside(dataRoot, pilot.relativePath), "utf8"),
+  );
+  const reviewErrors = validatePilotRowReviews(
+    pilotManifest,
+    reviews,
+    requireTerminalRows,
+  );
+  if (reviewErrors.length > 0) {
+    throw new Error(
+      `PHB pilot row review is invalid:\n${reviewErrors.join("\n")}`,
+    );
+  }
+  const evidenceErrors = validatePilotRowReviewEvidence({
+    manifest: pilotManifest,
+    rows: reviews,
+    comparisons,
+    entityRowIdsByCase,
+  });
+  if (evidenceErrors.length > 0) {
+    throw new Error(
+      `PHB pilot row review evidence is stale:\n${evidenceErrors.join("\n")}`,
+    );
+  }
+}
+
+function verifyOutputArtifact(
+  dataRoot: string,
+  manifest: Record<string, unknown>,
+  label: string,
+) {
+  const reference = requiredArtifactReference(
+    manifest,
+    "output",
+    `${label} output`,
+  );
+  verifyReferencedArtifact(dataRoot, reference, `${label} output`);
+  return reference;
+}
+
+function requiredArtifactReference(
+  value: Record<string, unknown>,
+  field: string,
+  label: string,
+) {
+  const reference = value[field];
+  if (
+    !isRecord(reference) ||
+    !isSafePhbPath(reference.relativePath) ||
+    typeof reference.sha256 !== "string" ||
+    !SHA256_PATTERN.test(reference.sha256)
+  ) {
+    throw new Error(`${label} reference is invalid`);
+  }
+  return reference as { relativePath: string; sha256: string };
+}
+
+export function verifyReferencedArtifact(
+  dataRoot: string,
+  reference: { relativePath: string; sha256: string },
+  label: string,
+) {
+  const actual = sha256File(resolveInside(dataRoot, reference.relativePath));
+  expectHash(actual, reference.sha256, label);
+}
+
+function parseJsonl<T>(text: string, label: string) {
+  return text
+    .split(/\r?\n/u)
+    .filter((line) => line.trim().length > 0)
+    .map((line, index) => {
+      try {
+        return JSON.parse(line) as T;
+      } catch (error) {
+        throw new Error(
+          `${label} line ${index + 1} is invalid JSON: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
+    });
 }
 
 function verifyPageArtifactChain(

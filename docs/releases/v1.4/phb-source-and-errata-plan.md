@@ -8,7 +8,8 @@
 > boundaries, or cross-plan conflicts change.
 
 Status: in progress; Gate 0 and the Slice 3 page-extraction substage are
-accepted, while Gate 1 remains blocked on the end-to-end pilot.
+accepted. Gate 1 is reopened pending a fresh end-to-end main-gate review after
+provenance hardening; Slice 4 remains blocked.
 
 ## Purpose
 
@@ -234,12 +235,27 @@ before write-capable work begins.
 - The accepted page-extraction substage of the ten-case pilot produces 23
   selected source pages. Two pinned MinerU 3.4 runs were byte-identical across
   content-list, v2, middle, model, and Markdown outputs; the imported
-  `pages.jsonl` was also identical. Core-page PDF.js token recall is `0.97443`;
-  errata-page recall is `1.0`. Thirteen table blocks are marked OCR-risk rather
-  than treated as authoritative text. The accepted source, pilot selection, and
-  page-only review chain is recorded in data-repo commit `07bb139`.
-- This accepted substage does not close Gate 1. The page-only decision lives at
-  `data/phb35/review/pilot-page-extraction-review.json`. Entity extraction,
-  errata overlay, DB comparison, and row-level review must produce a separate
-  accepted end-to-end review before the default `phb:pilot:verify` can pass or
-  full-PHB extraction can begin.
+  `pages.jsonl` was also identical. Core-page PDF.js token recall is `0.973984`
+  and MinerU token precision is `0.978041`; errata-page recall is `1.0`.
+  Sixteen core table blocks are marked OCR-risk rather than treated as
+  authoritative text.
+- Data-repo commit `63ac1f7` recorded the first end-to-end acceptance attempt.
+  Subsequent main-gate review reopened Gate 1 because summary-only text was not
+  a comparison component, multi-page errata extraction read only the first
+  page, current inventory/DB identities were not revalidated, and terminal row
+  decisions were not fingerprint-bound. The hardened rerun emits 20 entity
+  rows and ten comparisons, resets all ten row decisions to `proposed`, and
+  removes the stale end-to-end acceptance until fresh review. This proposed
+  review queue is recorded in data-repo commit `853131a`.
+- The corrected pilot continues to prove 124-row Summon Monster cross-column
+  extraction and explicit final-occurrence errata targeting for Polymorph Any
+  Object. It additionally records both Dispel Magic short-description wording
+  groups as comparison components and supports ordered multi-page errata
+  sections such as Divine Favor.
+- `data/phb35/review/pilot-page-extraction-review.json` remains the page-only
+  decision. `data/phb35/review/pilot-e2e-review.json` is the accepted Gate 1
+  decision location. It is intentionally absent while the hardened row reviews
+  remain proposed. The default `npm run -w data-tools phb:pilot:verify` must
+  fail until a fresh committed end-to-end review is accepted; full-PHB
+  extraction, full English acceptance, translation, and DB activation remain
+  unauthorized.
