@@ -65,14 +65,23 @@ export function collectPilotPageMappings(pilot: PhbPilotManifest) {
   return new Map(
     Array.from(bySource, ([sourceId, pages]) => [
       sourceId,
-      Array.from(pages, ([sourcePageIndex, page]) => ({
-        sourcePageIndex,
-        printedPageNumbers: Array.from(page.printedPageNumbers).sort(
+      Array.from(pages, ([sourcePageIndex, page]) => {
+        const printedPageNumbers = Array.from(page.printedPageNumbers).sort(
           (left, right) => left - right,
-        ),
-        caseIds: Array.from(page.caseIds).sort(),
-        kinds: Array.from(page.kinds).sort(),
-      })).sort((left, right) => left.sourcePageIndex - right.sourcePageIndex),
+        );
+        const caseIds = Array.from(page.caseIds).sort();
+        if (printedPageNumbers.length > 1) {
+          throw new Error(
+            `${sourceId} source page ${sourcePageIndex} has conflicting printed pages ${printedPageNumbers.join(", ")} across cases ${caseIds.join(", ")}`,
+          );
+        }
+        return {
+          sourcePageIndex,
+          printedPageNumbers,
+          caseIds,
+          kinds: Array.from(page.kinds).sort(),
+        };
+      }).sort((left, right) => left.sourcePageIndex - right.sourcePageIndex),
     ]),
   );
 }
@@ -138,10 +147,7 @@ export async function buildPilotInputPdfs(input: {
       pages: pages.map((page, subsetPageIndex) => ({
         subsetPageIndex,
         sourcePageIndex: page.sourcePageIndex,
-        printedPageNumber:
-          page.printedPageNumbers.length === 1
-            ? (page.printedPageNumbers[0] ?? null)
-            : null,
+        printedPageNumber: page.printedPageNumbers[0] ?? null,
         caseIds: page.caseIds,
         kinds: page.kinds,
       })),

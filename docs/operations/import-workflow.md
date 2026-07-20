@@ -198,8 +198,9 @@ the exact pilot PDFs, run the pinned MinerU pipeline locally, and import an
 explicit data-relative output directory with `--mineru-output`. PDF.js remains
 the raw text/coordinate baseline; MinerU contributes layout blocks only.
 Neither path writes SQLite. Full-PHB entity extraction, errata overlays, and DB
-comparison must not start until the proposed pilot is accepted by the main
-gate.
+comparison remain the next pilot substage. Full-PHB extraction must not start
+until `phb:pilot:verify` passes against a committed, accepted end-to-end review;
+accepting the page-extraction review alone does not authorize it.
 
 For source/parse QA, run:
 

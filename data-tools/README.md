@@ -48,10 +48,13 @@ pilot:
 npm run -w data-tools phb:source:verify
 npm run -w data-tools phb:source:extract -- --pilot --prepare-only
 npm run -w data-tools phb:source:extract -- --pilot --mineru-output artifacts/mineru/phb35/pilot-output-run4
+npm run -w data-tools phb:pilot:verify
 ```
 
 The first command verifies exact PDF bytes, PDF.js text-layer evidence, the
-ten-case pilot manifest, and the spell-relevant errata inventory. The
+ten-case pilot manifest, the spell-relevant errata inventory, and any committed
+page-pilot review hash chain. Provenance files must be clean and byte-identical
+to the Git commit reported for them. The
 prepare-only command creates deterministic subset PDFs under ignored
 `data/artifacts/mineru/phb35/pilot-input/`. Run pinned MinerU 3.4 externally,
 then pass its data-relative output directory to the import command. Import
@@ -65,6 +68,19 @@ text is marked `ocr-risk`, and merged rows or line-break artifacts must be
 resolved against PDF.js before entity-level acceptance. The tested local
 runtime is pinned by `data/phb35/source/mineru-runtime.json`, including the
 required `pdftext==0.6.3` and `six==1.17.0` compatibility pins.
+
+`phb:pilot:verify` is the acceptance gate, not another report command. By
+default it requires a committed, non-stale, `accepted` end-to-end review with
+entity extraction, errata overlay, DB comparison, and row-review artifacts.
+The linked source and pilot manifests must also be `accepted`.
+The current page-only review cannot satisfy that gate. A main gate reviewing
+only the page-extraction substage may explicitly run:
+
+```bash
+npm run -w data-tools phb:pilot:verify -- --stage page-extraction
+```
+
+That command also fails while the page review remains `proposed`.
 
 Inspect the local rules DB:
 

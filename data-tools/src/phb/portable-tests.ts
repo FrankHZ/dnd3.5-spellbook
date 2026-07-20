@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -37,6 +38,11 @@ try {
     `${JSON.stringify(manifest, null, 2)}\n`,
     "utf8",
   );
+  git(tempRoot, ["init"]);
+  git(tempRoot, ["config", "user.email", "portable@example.invalid"]);
+  git(tempRoot, ["config", "user.name", "Portable Test"]);
+  git(tempRoot, ["add", "phb35/source/source-manifest.json"]);
+  git(tempRoot, ["commit", "-m", "add fixture manifest"]);
 
   assert.deepEqual(
     parsePhbSourceManifestText(JSON.stringify(manifest)),
@@ -44,7 +50,18 @@ try {
   );
   const verified = readAndVerifyPhbSourceManifest(tempRoot);
   assert.equal(verified.artifacts.length, 2);
-  assert.equal(verified.manifestCommit, null);
+  assert.match(verified.manifestCommit, /^[a-f0-9]{40}$/);
+
+  fs.appendFileSync(manifestPath, " ", "utf8");
+  assert.throws(
+    () => readAndVerifyPhbSourceManifest(tempRoot),
+    /Provenance file has uncommitted changes/,
+  );
+  fs.writeFileSync(
+    manifestPath,
+    `${JSON.stringify(manifest, null, 2)}\n`,
+    "utf8",
+  );
 
   const escaping = structuredClone(manifest);
   escaping.artifacts[0]!.relativePath = "../outside.pdf";
@@ -73,6 +90,14 @@ try {
   console.log("PHB portable tests passed");
 } finally {
   fs.rmSync(tempRoot, { recursive: true, force: true });
+}
+
+function git(cwd: string, args: string[]) {
+  execFileSync("git", args, {
+    cwd,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
 }
 
 function sourceManifest(

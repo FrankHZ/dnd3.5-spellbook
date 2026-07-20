@@ -15,6 +15,12 @@ import {
   readPhbPilotManifest,
 } from "./pilot-manifest";
 import {
+  PHB_END_TO_END_PILOT_REVIEW_RELATIVE_PATH,
+  PHB_PAGE_PILOT_REVIEW_RELATIVE_PATH,
+  type PhbPilotReviewStage,
+  verifyPhbPilotReview,
+} from "./pilot-review";
+import {
   PHB_SOURCE_MANIFEST_RELATIVE_PATH,
   parsePhbSourceManifestText,
   readAndVerifyPhbSourceManifest,
@@ -94,6 +100,7 @@ async function verifySource() {
   }
 
   const pilot = readOptionalPilot(dataRoot, verification.manifestSha256);
+  const pagePilotReview = readOptionalPagePilotReview(dataRoot);
   const errataInventory = readPhbErrataInventory(dataRoot);
   const report = {
     schemaVersion: 1,
@@ -105,6 +112,7 @@ async function verifySource() {
     },
     artifacts: pdfReports,
     pilot,
+    pagePilotReview,
     errataInventory: {
       relativePath: PHB_ERRATA_INVENTORY_RELATIVE_PATH,
       sha256: sha256File(errataInventory.filePath),
@@ -129,11 +137,59 @@ async function verifySource() {
         })),
         pilotStatus: pilot?.status ?? null,
         pilotCases: pilot?.caseCount ?? 0,
+        pagePilotReview: pagePilotReview
+          ? {
+              stage: pagePilotReview.stage,
+              status: pagePilotReview.status,
+              sha256: pagePilotReview.sha256,
+              commit: pagePilotReview.commit,
+            }
+          : null,
         errataInventory: summarizePhbErrataInventory(errataInventory.rows),
       },
       null,
       2,
     ),
+  );
+}
+
+async function verifyPilotAcceptance() {
+  await verifySource();
+  const dataRoot = localDataDir();
+  const expectedStage = pilotReviewStage(optionValue("--stage"));
+  const reviewRelativePath =
+    optionValue("--review") ??
+    (expectedStage === "page-extraction"
+      ? PHB_PAGE_PILOT_REVIEW_RELATIVE_PATH
+      : PHB_END_TO_END_PILOT_REVIEW_RELATIVE_PATH);
+  const result = verifyPhbPilotReview({
+    dataRoot,
+    reviewRelativePath,
+    expectedStage,
+    requireAccepted: true,
+  });
+  const reportPath = path.join(
+    repoRoot(),
+    "data-tools",
+    "out",
+    "phb",
+    "pilot-verify.generated.json",
+  );
+  writeJson(reportPath, { schemaVersion: 1, review: result });
+  console.log(`PHB ${expectedStage} pilot acceptance verified`);
+  console.log(`Report: ${reportPath}`);
+}
+
+async function startFullExtraction() {
+  await verifySource();
+  verifyPhbPilotReview({
+    dataRoot: localDataDir(),
+    reviewRelativePath: PHB_END_TO_END_PILOT_REVIEW_RELATIVE_PATH,
+    expectedStage: "end-to-end",
+    requireAccepted: true,
+  });
+  throw new Error(
+    "PHB full extraction is not implemented yet; the accepted end-to-end pilot gate passed",
   );
 }
 
@@ -257,6 +313,25 @@ function readOptionalPilot(dataRoot: string, sourceManifestSha256: string) {
   }
 }
 
+function readOptionalPagePilotReview(dataRoot: string) {
+  try {
+    return verifyPhbPilotReview({
+      dataRoot,
+      reviewRelativePath: PHB_PAGE_PILOT_REVIEW_RELATIVE_PATH,
+      expectedStage: "page-extraction",
+      requireAccepted: false,
+    });
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.startsWith("PHB pilot review not found:")
+    ) {
+      return null;
+    }
+    throw error;
+  }
+}
+
 function compareNullable(
   name: string,
   expected: string | null,
@@ -277,7 +352,7 @@ function writeJson(filePath: string, value: unknown) {
 
 function usage(): never {
   throw new Error(
-    "Usage: phb:source:verify | phb:source:extract -- --pilot --prepare-only | phb:source:extract -- --pilot --mineru-output <data-relative-path>",
+    "Usage: phb:source:verify | phb:pilot:verify [-- --stage page-extraction|end-to-end --review <data-relative-path>] | phb:source:extract -- --pilot --prepare-only | phb:source:extract -- --pilot --mineru-output <data-relative-path>",
   );
 }
 
@@ -286,10 +361,20 @@ function optionValue(name: string) {
   return index >= 0 ? process.argv[index + 1] : undefined;
 }
 
+function pilotReviewStage(value: string | undefined): PhbPilotReviewStage {
+  if (value === undefined || value === "end-to-end") return "end-to-end";
+  if (value === "page-extraction") return value;
+  throw new Error(`Invalid --stage value: ${value}`);
+}
+
 async function main() {
   const command = process.argv[2] ?? "verify";
   if (command === "verify") {
     await verifySource();
+    return;
+  }
+  if (command === "pilot:verify") {
+    await verifyPilotAcceptance();
     return;
   }
   if (
@@ -306,6 +391,10 @@ async function main() {
     process.argv.includes("--mineru-output")
   ) {
     await importPilotExtraction();
+    return;
+  }
+  if (command === "extract" && !process.argv.includes("--pilot")) {
+    await startFullExtraction();
     return;
   }
   usage();

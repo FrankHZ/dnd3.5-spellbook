@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { PDFDocument } from "pdf-lib";
 
-import { buildPilotInputPdfs } from "./pilot-input";
+import { buildPilotInputPdfs, collectPilotPageMappings } from "./pilot-input";
 import type { PhbPilotManifest } from "./pilot-manifest";
 import { sha256File, type PhbSourceManifest } from "./source-manifest";
 
@@ -50,6 +50,13 @@ async function main() {
       "case-5",
       "case-7",
     ]);
+
+    const conflicting = structuredClone(pilotManifest);
+    conflicting.cases[0]!.locations[0]!.printedPageNumber = 99;
+    assert.throws(
+      () => collectPilotPageMappings(conflicting),
+      /source page 1 has conflicting printed pages 1, 99 across cases/,
+    );
     console.log("PHB pilot input portable tests passed");
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });

@@ -70,7 +70,7 @@ export type VerifiedPhbSourceArtifact = {
 export type PhbSourceVerification = {
   manifestPath: string;
   manifestSha256: string;
-  manifestCommit: string | null;
+  manifestCommit: string;
   artifacts: VerifiedPhbSourceArtifact[];
 };
 
@@ -174,7 +174,7 @@ export function readAndVerifyPhbSourceManifest(
   return {
     manifestPath,
     manifestSha256: sha256Buffer(Buffer.from(manifestText, "utf8")),
-    manifestCommit: fileCommit(dataRoot, manifestPath),
+    manifestCommit: committedFileCommit(dataRoot, manifestPath),
     artifacts,
   };
 }
@@ -196,6 +196,56 @@ export function resolveInside(root: string, relativePath: string) {
 
 export function sha256File(filePath: string) {
   return sha256Buffer(fs.readFileSync(filePath));
+}
+
+export function committedFileCommit(dataRoot: string, filePath: string) {
+  const resolvedRoot = path.resolve(dataRoot);
+  const resolvedFile = path.resolve(filePath);
+  const relativePath = path
+    .relative(resolvedRoot, resolvedFile)
+    .replace(/\\/g, "/");
+  if (
+    !relativePath ||
+    relativePath.startsWith("..") ||
+    path.isAbsolute(relativePath)
+  ) {
+    throw new Error(
+      `Provenance file is outside the data repository: ${filePath}`,
+    );
+  }
+
+  const status = runGit(
+    resolvedRoot,
+    ["status", "--porcelain=v1", "--untracked-files=all", "--", relativePath],
+    "utf8",
+  ).trim();
+  if (status.length > 0) {
+    throw new Error(
+      `Provenance file has uncommitted changes: ${relativePath}. Commit it before verification.`,
+    );
+  }
+
+  const commit = runGit(
+    resolvedRoot,
+    ["log", "-1", "--format=%H", "--", relativePath],
+    "utf8",
+  ).trim();
+  if (!commit) {
+    throw new Error(`Provenance file is not committed: ${relativePath}`);
+  }
+  const committedBytes = runGit(
+    resolvedRoot,
+    ["show", `${commit}:${relativePath}`],
+    null,
+  );
+  const currentSha256 = sha256File(resolvedFile);
+  const committedSha256 = sha256Buffer(committedBytes);
+  if (currentSha256 !== committedSha256) {
+    throw new Error(
+      `Provenance file bytes do not match commit ${commit}: ${relativePath}`,
+    );
+  }
+  return commit;
 }
 
 function verifyArtifact(
@@ -437,20 +487,29 @@ function sha256Buffer(value: Buffer) {
   return crypto.createHash("sha256").update(value).digest("hex");
 }
 
-function fileCommit(dataRoot: string, filePath: string) {
-  const relativePath = path.relative(dataRoot, filePath).replace(/\\/g, "/");
+function runGit(cwd: string, args: string[], encoding: "utf8"): string;
+function runGit(cwd: string, args: string[], encoding: null): Buffer;
+function runGit(
+  cwd: string,
+  args: string[],
+  encoding: "utf8" | null,
+): string | Buffer {
   try {
-    const output = execFileSync(
-      "git",
-      ["log", "-1", "--format=%H", "--", relativePath],
-      {
-        cwd: dataRoot,
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "ignore"],
-      },
-    ).trim();
-    return output || null;
-  } catch {
-    return null;
+    const options = {
+      cwd,
+      maxBuffer: 16 * 1024 * 1024,
+      stdio: ["ignore", "pipe", "pipe"] as ["ignore", "pipe", "pipe"],
+    };
+    return encoding === "utf8"
+      ? execFileSync("git", args, { ...options, encoding: "utf8" })
+      : execFileSync("git", args, { ...options, encoding: "buffer" });
+  } catch (error) {
+    const detail =
+      error instanceof Error && "stderr" in error
+        ? String((error as Error & { stderr?: unknown }).stderr ?? "").trim()
+        : "";
+    throw new Error(
+      `Git provenance check failed (${args.join(" ")})${detail ? `: ${detail}` : ""}`,
+    );
   }
 }

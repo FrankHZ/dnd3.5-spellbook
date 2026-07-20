@@ -51,6 +51,13 @@
       "requiresSqlite": true,
       "writeCapable": false
     },
+    "phb:pilot:verify": {
+      "module": "phb",
+      "lifecycle": "local-acceptance",
+      "requiresLocalData": true,
+      "requiresSqlite": false,
+      "writeCapable": false
+    },
     "phb:source:extract": {
       "module": "phb",
       "lifecycle": "maintained-local",

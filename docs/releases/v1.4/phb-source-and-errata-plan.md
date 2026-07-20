@@ -7,8 +7,9 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: in progress; Gate 0 mechanically complete and Gate 1 awaiting main-gate
-pilot acceptance.
+Status: in progress; Gate 0 mechanically complete, the Slice 3 page-extraction
+substage is proposed for review, and Gate 1 remains blocked on the end-to-end
+pilot.
 
 ## Purpose
 
@@ -231,11 +232,14 @@ before write-capable work begins.
 - The spell-relevant errata inventory contains 15 rows: nine applicable and six
   already incorporated. Baleful Polymorph remains explicitly review-required
   because the official replacement contains apparent editorial defects.
-- The ten-case pilot produces 23 selected source pages. Two pinned MinerU 3.4
-  runs were byte-identical across content-list, v2, middle, model, and Markdown
-  outputs; the imported `pages.jsonl` was also identical. Core-page PDF.js token
-  recall is `0.97443`; errata-page recall is `1.0`. Thirteen table blocks are
-  marked OCR-risk rather than treated as authoritative text.
-- Gate 1 is not closed by these automated results. Main-gate review must accept
-  or revise `data/phb35/review/pilot-run-review.json` before Slice 4/full-PHB
-  extraction begins.
+- The page-extraction substage of the ten-case pilot produces 23 selected source
+  pages. Two pinned MinerU 3.4 runs were byte-identical across content-list, v2,
+  middle, model, and Markdown outputs; the imported `pages.jsonl` was also
+  identical. Core-page PDF.js token recall is `0.97443`; errata-page recall is
+  `1.0`. Thirteen table blocks are marked OCR-risk rather than treated as
+  authoritative text.
+- These results do not close Gate 1. The page-only decision lives at
+  `data/phb35/review/pilot-page-extraction-review.json`; accepting it approves
+  only that substage. Entity extraction, errata overlay, DB comparison, and
+  row-level review must produce a separate accepted end-to-end review before
+  `phb:pilot:verify` can pass or full-PHB extraction can begin.
