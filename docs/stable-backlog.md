@@ -32,6 +32,7 @@ as loose backlog items unless their scope changes again:
 - v1.2 full-spell source review, mechanics localization, and Publications page
 - v1.2.1 content-backed online full-text spell search
 - v1.3 sitewide UX / style redesign
+- v1.4 PHB 3.5 source-first translation and proofreading pilot
 
 ## Current Deferred Areas
 
@@ -76,9 +77,9 @@ as loose backlog items unless their scope changes again:
   decision deferred from the v1.3 cohesion pass
 - search/index artifact generation for offline or static deployments; the
   promoted v1.2.1 scope covers only online content DB full-text search
-- full spell-body/name/short-description translation and proofreading QA after
-  the v1.2 full-spell source review and mechanics translation workflow prove
-  the review model
+- translation/proofreading expansion beyond the v1.4 PHB 3.5 source-first
+  pilot; each additional publication needs its own pinned source, QA boundary,
+  and promotion decision
 - expansion work after the v1.1 full-corpus import and v1.2 full-spell review,
   mechanics localization, and Publications tracks are accepted
 

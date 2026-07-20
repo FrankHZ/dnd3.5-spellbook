@@ -5,11 +5,21 @@ This directory contains formal post-MVP release plans.
 Use `docs/mvp/` for MVP-stage history and the final MVP closeout. Use this
 directory for release lines after MVP scope is frozen.
 
-v1.3 is the latest frozen formal release. Post-v1.3 planning is not yet assigned
-a version; use `docs/roadmap.md` for next-work ordering.
+v1.4 planning is active for a PHB 3.5 source-first translation and proofreading
+pilot. v1.3 remains the latest frozen formal release.
 
 ## Release Records
 
+- [v1.4/README.md](./v1.4/README.md): active release boundary, ownership, and
+  acceptance gates.
+- [v1.4/integrated-plan.md](./v1.4/integrated-plan.md): cross-role source,
+  English QA, translation, activation, and freeze sequence.
+- [v1.4/phb-source-and-errata-plan.md](./v1.4/phb-source-and-errata-plan.md):
+  planned pinned-PDF extraction, errata overlay, comparison, and English QA.
+- [v1.4/phb-translation-qa-plan.md](./v1.4/phb-translation-qa-plan.md): planned
+  Chinese translation, proofreading, QA, and reusable skill workflow.
+- [v1.4/phb-content-activation-plan.md](./v1.4/phb-content-activation-plan.md):
+  planned accepted-only content apply, fallback, search, and consumer check.
 - [v1.3/FREEZE.md](./v1.3/FREEZE.md): latest frozen formal release snapshot.
 - [v1.3/README.md](./v1.3/README.md): frozen release boundary, ownership, and
   accepted track map.
