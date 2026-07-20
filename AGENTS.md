@@ -339,7 +339,7 @@ manual browser smoke test of the affected pages.
   app-state Prisma schemas; regenerate clients when schemas change.
 - Data-tool code belongs under the owning `data-tools/src/` module:
   `shared/`, `db/`, `rules/`, `rules-content/`, `rulebooks/`,
-  `short-desc/`, `zh-parser/`, or `harness/`.
+  `short-desc/`, `phb/`, `zh-parser/`, or `harness/`.
 - Classify every `data-tools/package.json` script in
   `data-tools/scripts.manifest.json`.
 - Maintained data-tool commands deserve focused helper tests. One-time or

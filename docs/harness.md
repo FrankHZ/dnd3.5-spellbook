@@ -165,9 +165,26 @@ npm run -w data-tools test:portable
 
 It is fixture-only and covers pure helpers for source-label mapping, English
 name normalization, normalized summary row validation, and structured spell
-patch JSONL/schema validation. Root `npm run test:data-tools` delegates to this
+patch JSONL/schema validation. It also covers PHB source/pilot/errata manifest
+validation, deterministic pilot PDF construction, and source-free token
+comparison helpers. Root `npm run test:data-tools` delegates to this
 command. It must remain independent of ignored CHM/raw source data, the nested
 `data/` repo, and SQLite databases.
+
+The v1.4 PHB source gate is an explicit local-data harness:
+
+```bash
+npm run -w data-tools phb:source:verify
+npm run -w data-tools phb:source:extract -- --pilot --prepare-only
+npm run -w data-tools phb:source:extract -- --pilot --mineru-output <data-relative-output>
+```
+
+The verifier pins source bytes and PDF.js page fingerprints. Pilot preparation
+must reproduce the same subset PDF hashes. A MinerU pilot is accepted only when
+two runs with the pinned runtime reproduce the same normalized imported JSONL,
+all selected pages are accounted for, and OCR-risk table blocks remain explicit.
+These commands depend on ignored local PDFs and therefore do not enter root
+`verify` or portable CI.
 
 The portable harness also validates `server/db/fixtures.manifest.json`. In a
 clean checkout it verifies that every mapped portable fixture path exists. In a
@@ -232,6 +249,7 @@ always-on unit tests:
 - `npm run -w data-tools rules:sql:dry-run -- <patch.sql>`
 - `npm run -w data-tools rules:index:rebuild -- --dry-run`
 - `npm run -w data-tools spells-full:inspect -- known-misses`
+- `npm run -w data-tools phb:source:verify`
 
 Structured spell patch `validate` / `apply -- --dry-run` commands are most
 useful before a patch has been applied. Once a patch is already present in the

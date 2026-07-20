@@ -209,6 +209,7 @@ const tests: TestCase[] = [
 
       const modules = new Set([
         "harness",
+        "phb",
         "rules",
         "rules-content",
         "rulebooks",

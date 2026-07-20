@@ -14,6 +14,13 @@ They are not part of the public repository baseline and may contain:
   patch inputs
 - `data-tools/out/`: generated parser reports and intermediate artifacts
 
+For the PHB 3.5 workflow, raw PDFs, generated subset PDFs, MinerU models,
+virtual environments, images, and raw MinerU output stay ignored under
+`data/artifacts/`. Source-bearing extracted rows and review decisions live only
+in the nested data repo under `data/phb35/`. The parent repo may commit the
+extractor, validators, redacted fixtures, and aggregate reports containing only
+hashes, counts, and statuses.
+
 Public consumers of the repository should expect to provide or recreate those files themselves.
 
 ## Data-Bearing Content
@@ -46,4 +53,3 @@ operator-managed:
 - [data-setup.md](./data-setup.md)
 - [repo-conventions.md](./repo-conventions.md)
 - [stable-backlog.md](../stable-backlog.md)
-

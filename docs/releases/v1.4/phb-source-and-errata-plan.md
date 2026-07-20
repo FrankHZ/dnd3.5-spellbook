@@ -7,7 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned.
+Status: in progress; Gate 0 mechanically complete and Gate 1 awaiting main-gate
+pilot acceptance.
 
 ## Purpose
 
@@ -220,5 +221,21 @@ before write-capable work begins.
 
 ## Completion Notes
 
-Add merged PRs, accepted source hashes, aggregate counts, and validation links
-after implementation review. Do not paste source text or large logs here.
+- The proposed source lock pins a 322-page PHB PDF at SHA-256
+  `6120cfbe12e61c176e078dd43bfe8819753c66b6c0e7315b0e86e933f4430625`
+  and the three-page 2006-02-17 errata at SHA-256
+  `ec2e9cd645226f74547b3c83017c22b1a567ff0766c76ac8edce56dd067c1d82`.
+  The errata file is byte-identical to the member in Wizards' collected errata
+  ZIP; the PHB acquisition URL remains unknown and is not presented as an
+  official digital master.
+- The spell-relevant errata inventory contains 15 rows: nine applicable and six
+  already incorporated. Baleful Polymorph remains explicitly review-required
+  because the official replacement contains apparent editorial defects.
+- The ten-case pilot produces 23 selected source pages. Two pinned MinerU 3.4
+  runs were byte-identical across content-list, v2, middle, model, and Markdown
+  outputs; the imported `pages.jsonl` was also identical. Core-page PDF.js token
+  recall is `0.97443`; errata-page recall is `1.0`. Thirteen table blocks are
+  marked OCR-risk rather than treated as authoritative text.
+- Gate 1 is not closed by these automated results. Main-gate review must accept
+  or revise `data/phb35/review/pilot-run-review.json` before Slice 4/full-PHB
+  extraction begins.
