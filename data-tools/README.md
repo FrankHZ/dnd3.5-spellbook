@@ -18,6 +18,8 @@ serving requests.
   rules DB into content-DB-ready rows and audit reports.
 - `short-desc/`: English source probing, matching helpers, QA, normalization,
   import, coverage, and reuse workflows for short descriptions.
+- `phb/`: PHB 3.5 source locking, PDF.js text baselines, pilot preparation,
+  MinerU layout import, and errata inventory validation.
 - `zh-parser/`: Chinese CHM parser, parser helpers, and parser-local scripts.
 - `harness/`: portable tests and explicit local acceptance bundles.
 
@@ -35,6 +37,51 @@ Current v3.4 planning for data-tooling work lives in:
 - [../docs/mvp/v3.4/integrated-plan.md](../docs/mvp/v3.4/integrated-plan.md)
 - [../docs/mvp/v3.4/short-description-pipeline-plan.md](../docs/mvp/v3.4/short-description-pipeline-plan.md)
 - [../docs/mvp/v3.4/data-harness-hardening-plan.md](../docs/mvp/v3.4/data-harness-hardening-plan.md)
+
+Active PHB source work is owned by
+[../docs/releases/v1.4/phb-source-and-errata-plan.md](../docs/releases/v1.4/phb-source-and-errata-plan.md).
+
+Verify the pinned PHB 3.5 source and errata, then prepare or import the v1.4
+pilot:
+
+```bash
+npm run -w data-tools phb:source:verify
+npm run -w data-tools phb:source:extract -- --pilot --prepare-only
+npm run -w data-tools phb:source:extract -- --pilot --mineru-output artifacts/mineru/phb35/pilot-output-run4
+npm run -w data-tools phb:pilot:verify
+```
+
+The first command verifies exact PDF bytes, PDF.js text-layer evidence, the
+ten-case pilot manifest, the spell-relevant errata inventory, and any committed
+page-pilot review hash chain. Provenance files must be clean and byte-identical
+to the Git commit reported for them. The
+prepare-only command creates deterministic subset PDFs under ignored
+`data/artifacts/mineru/phb35/pilot-input/`. Run pinned MinerU 3.4 externally,
+then pass its data-relative output directory to the import command. Import
+writes source-bearing page rows and provenance under
+`data/phb35/extracted/pilot/`; `data-tools/out/phb/` receives only source-free
+counts and hashes.
+
+MinerU is the layout and reading-order layer, not the text authority. Every
+imported page also stores the PDF.js coordinate text baseline. MinerU table
+text is marked `ocr-risk`, and merged rows or line-break artifacts must be
+resolved against PDF.js before entity-level acceptance. The tested local
+runtime is pinned by `data/phb35/source/mineru-runtime.json`, including the
+required `pdftext==0.6.3` and `six==1.17.0` compatibility pins.
+
+`phb:pilot:verify` is the acceptance gate, not another report command. By
+default it requires a committed, non-stale, `accepted` end-to-end review with
+entity extraction, errata overlay, DB comparison, and row-review artifacts.
+The linked source and pilot manifests must also be `accepted`.
+The accepted page-only review cannot satisfy that end-to-end gate. To verify
+only the accepted page-extraction substage, run:
+
+```bash
+npm run -w data-tools phb:pilot:verify -- --stage page-extraction
+```
+
+This explicit stage check passes for the accepted page review, but it does not
+authorize full-PHB extraction.
 
 Inspect the local rules DB:
 

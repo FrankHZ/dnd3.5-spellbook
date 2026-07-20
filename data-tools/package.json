@@ -5,6 +5,9 @@
   "type": "commonjs",
   "scripts": {
     "inspect:rules": "tsx src/rules/inspect-rules-db.ts",
+    "phb:pilot:verify": "tsx src/phb/cli.ts pilot:verify",
+    "phb:source:extract": "tsx src/phb/cli.ts extract",
+    "phb:source:verify": "tsx src/phb/cli.ts verify",
     "content:search:rebuild": "tsx src/db/content-search.ts",
     "rules:index:rebuild": "tsx src/rules/sql.ts index:rebuild",
     "rules:spells:apply": "tsx src/rules/spells.ts apply",
@@ -40,7 +43,7 @@
     "spells-full:generate": "tsx src/rules/spells-full.ts generate",
     "spells-full:inspect": "tsx src/rules/spells-full.ts inspect",
     "spells-full:rulebooks": "tsx src/rules/spells-full-source-rulebooks.ts",
-    "test:portable": "tsx src/rules-content/artifact-tests.ts && tsx src/short-desc/en-summaries-write-safety-tests.ts && tsx src/harness/portable-tests.ts && npm run rules:content:acceptance:portable",
+    "test:portable": "tsx src/rules-content/artifact-tests.ts && tsx src/short-desc/en-summaries-write-safety-tests.ts && tsx src/phb/portable-tests.ts && tsx src/phb/errata-inventory-portable-tests.ts && tsx src/phb/pilot-input-portable-tests.ts && tsx src/phb/pilot-extraction-portable-tests.ts && tsx src/phb/pilot-review-portable-tests.ts && tsx src/harness/portable-tests.ts && npm run rules:content:acceptance:portable",
     "acceptance:local": "tsx src/harness/local-acceptance.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "zh:backcheck": "tsx src/zh-parser/scripts/zh-backcheck.ts out/zh-parser/matched.json out/zh-parser/missing-zh.json",
@@ -56,6 +59,8 @@
     "cheerio": "^1.2.0",
     "dotenv": "^17.2.3",
     "iconv-lite": "^0.7.3",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.1.200",
     "sanitize-html": "^2.17.0"
   },
   "devDependencies": {

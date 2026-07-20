@@ -275,6 +275,12 @@ For any large-scale source reading or broad content QA over local data sources,
 spawn a subagent to inspect the corpus and return summarized findings instead
 of loading the source corpus into the main agent context.
 
+For the v1.4 PHB workflow, distinguish the page-extraction pilot from the
+end-to-end Gate 1 pilot. A page review cannot authorize full-PHB extraction.
+The full-run boundary must require `npm run -w data-tools phb:pilot:verify`,
+which accepts only clean, committed, non-stale, accepted source/pilot manifests
+and an accepted end-to-end review.
+
 ## Validation Commands
 
 Run the smallest relevant local check first. Do not default to full portable CI
@@ -339,7 +345,7 @@ manual browser smoke test of the affected pages.
   app-state Prisma schemas; regenerate clients when schemas change.
 - Data-tool code belongs under the owning `data-tools/src/` module:
   `shared/`, `db/`, `rules/`, `rules-content/`, `rulebooks/`,
-  `short-desc/`, `zh-parser/`, or `harness/`.
+  `short-desc/`, `phb/`, `zh-parser/`, or `harness/`.
 - Classify every `data-tools/package.json` script in
   `data-tools/scripts.manifest.json`.
 - Maintained data-tool commands deserve focused helper tests. One-time or

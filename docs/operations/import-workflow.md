@@ -13,6 +13,7 @@ It covers:
   source data
 - producing reviewed English short-description handoff JSONL from local
   IMarvinTPA source-index data
+- verifying and extracting the pinned PHB 3.5 plus errata source for v1.4
 
 For the DB/content handoff entry point, use
 [db-content-workflow.md](./db-content-workflow.md). For database creation and
@@ -48,6 +49,8 @@ npm run -w data-tools spells-full:rulebooks
 npm run -w data-tools rules:rulebooks:validate -- pending/rulebooks/full-corpus-rulebooks.generated.jsonl
 npm run -w data-tools rules:rulebooks:apply -- --dry-run pending/rulebooks/full-corpus-rulebooks.generated.jsonl
 npm run -w data-tools summaries:strict35-ready
+npm run -w data-tools phb:source:verify
+npm run -w data-tools phb:source:extract -- --pilot --prepare-only
 ```
 
 DB/content maintainer apply commands for an accepted full-corpus handoff are:
@@ -179,6 +182,25 @@ review artifacts under `data/spells-full/`, not mixed into the ready patch.
 Deferred source-label review rows classify unmapped sources such as
 periodicals, web articles, licensed d20 settings, conversion material, and
 parser artifacts. They are scope-review data, not rules DB patch operations.
+
+### PHB 3.5 Source And Errata
+
+- ignored source PDFs: `data/artifacts/pdf/phb3.5/`
+- ignored deterministic MinerU inputs and raw outputs:
+  `data/artifacts/mineru/phb35/`
+- maintained source/runtime manifests: `data/phb35/source/`
+- maintained pilot selection and errata decisions: `data/phb35/review/`
+- maintained source-bearing pilot rows: `data/phb35/extracted/pilot/`
+- source-free command reports: `data-tools/out/phb/`
+
+Run `phb:source:verify` before extraction. Use `--prepare-only` to construct
+the exact pilot PDFs, run the pinned MinerU pipeline locally, and import an
+explicit data-relative output directory with `--mineru-output`. PDF.js remains
+the raw text/coordinate baseline; MinerU contributes layout blocks only.
+Neither path writes SQLite. Full-PHB entity extraction, errata overlays, and DB
+comparison remain the next pilot substage. Full-PHB extraction must not start
+until `phb:pilot:verify` passes against a committed, accepted end-to-end review;
+accepting the page-extraction review alone does not authorize it.
 
 For source/parse QA, run:
 
@@ -423,4 +445,3 @@ This workflow does not:
 - [../../server/scripts/import-zh-chm.ts](../../server/scripts/import-zh-chm.ts)
 - [../../data-tools/src/zh-parser/cli.ts](../../data-tools/src/zh-parser/cli.ts)
 - [../../data-tools/src/zh-parser/scripts/preprocess-chm-html.ts](../../data-tools/src/zh-parser/scripts/preprocess-chm-html.ts)
-

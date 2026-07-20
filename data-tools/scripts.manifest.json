@@ -51,6 +51,27 @@
       "requiresSqlite": true,
       "writeCapable": false
     },
+    "phb:pilot:verify": {
+      "module": "phb",
+      "lifecycle": "local-acceptance",
+      "requiresLocalData": true,
+      "requiresSqlite": false,
+      "writeCapable": false
+    },
+    "phb:source:extract": {
+      "module": "phb",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": false,
+      "writeCapable": true
+    },
+    "phb:source:verify": {
+      "module": "phb",
+      "lifecycle": "local-acceptance",
+      "requiresLocalData": true,
+      "requiresSqlite": false,
+      "writeCapable": false
+    },
     "rules:index:rebuild": {
       "module": "rules",
       "lifecycle": "maintained-local",
