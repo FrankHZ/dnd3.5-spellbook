@@ -22,8 +22,16 @@ execution rules and role boundaries.
 
 ## Release Status
 
-The latest frozen formal release is v1.3. Post-v1.3 planning is not yet assigned
-a version; use [roadmap.md](./roadmap.md) for the accepted next-work boundary.
+v1.4 planning is active for a PHB 3.5 source-first translation and proofreading
+pilot:
+
+- [releases/v1.4/README.md](./releases/v1.4/README.md)
+- [releases/v1.4/integrated-plan.md](./releases/v1.4/integrated-plan.md)
+- [releases/v1.4/phb-source-and-errata-plan.md](./releases/v1.4/phb-source-and-errata-plan.md)
+- [releases/v1.4/phb-translation-qa-plan.md](./releases/v1.4/phb-translation-qa-plan.md)
+- [releases/v1.4/phb-content-activation-plan.md](./releases/v1.4/phb-content-activation-plan.md)
+
+The latest frozen formal release is v1.3:
 
 - [releases/v1.3/FREEZE.md](./releases/v1.3/FREEZE.md)
 - [releases/v1.3/README.md](./releases/v1.3/README.md)
@@ -210,6 +218,16 @@ handoff records.
 
 - [releases/README.md](./releases/README.md): release planning roles and
   maintenance rules.
+- [releases/v1.4/README.md](./releases/v1.4/README.md): active PHB 3.5
+  source-first translation and proofreading release boundary.
+- [releases/v1.4/integrated-plan.md](./releases/v1.4/integrated-plan.md):
+  cross-role source, English QA, translation, activation, and freeze gates.
+- [releases/v1.4/phb-source-and-errata-plan.md](./releases/v1.4/phb-source-and-errata-plan.md):
+  planned pinned-PDF extraction, errata overlay, comparison, and English QA.
+- [releases/v1.4/phb-translation-qa-plan.md](./releases/v1.4/phb-translation-qa-plan.md):
+  planned Chinese translation, proofreading, QA, and reusable skill workflow.
+- [releases/v1.4/phb-content-activation-plan.md](./releases/v1.4/phb-content-activation-plan.md):
+  planned accepted-only content apply, fallback, search, and consumer check.
 - [releases/v1.3/FREEZE.md](./releases/v1.3/FREEZE.md): latest frozen formal
   release snapshot for the sitewide UX/style and secure Actions deployment
   release.

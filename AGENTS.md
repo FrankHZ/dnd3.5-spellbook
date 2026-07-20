@@ -27,8 +27,18 @@ Use these docs for orientation instead of expanding this file:
 
 - `docs/README.md`: canonical documentation map and historical/current doc
   ownership.
-- `docs/roadmap.md`: current work ordering after a pause; post-v1.3 planning is
-  not yet assigned a version.
+- `docs/roadmap.md`: current work ordering after a pause; v1.4 planning is
+  active.
+- `docs/releases/v1.4/README.md`: active PHB 3.5 source-first translation and
+  proofreading release boundary.
+- `docs/releases/v1.4/integrated-plan.md`: hard sequence from pinned source and
+  errata through English QA, translation, accepted activation, and freeze.
+- `docs/releases/v1.4/phb-source-and-errata-plan.md`: data-pipeline-owned PDF
+  extraction, errata, comparison, and English acceptance plan.
+- `docs/releases/v1.4/phb-translation-qa-plan.md`: i18n-owned translation,
+  proofreading, QA, and reusable skill plan.
+- `docs/releases/v1.4/phb-content-activation-plan.md`: backend-db-owned
+  accepted apply, fallback, search, and consumer acceptance plan.
 - `docs/releases/v1.3/FREEZE.md`: latest frozen formal release snapshot for
   the sitewide UX/style and secure Actions deployment release.
 - `docs/releases/v1.3/README.md`: frozen v1.3 release boundary and accepted

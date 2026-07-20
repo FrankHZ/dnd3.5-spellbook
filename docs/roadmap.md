@@ -13,6 +13,19 @@ acceptance can be described.
 
 ## Current Track
 
+v1.4 planning is active:
+
+- `docs/releases/v1.4/README.md`
+- `docs/releases/v1.4/integrated-plan.md`
+- `docs/releases/v1.4/phb-source-and-errata-plan.md`
+- `docs/releases/v1.4/phb-translation-qa-plan.md`
+- `docs/releases/v1.4/phb-content-activation-plan.md`
+
+The release is deliberately limited to PHB 3.5. It pins the PHB PDF and
+official errata, accepts the effective English source before translation,
+translates/proofreads the accepted Chinese corpus, and activates only accepted
+rows. Source/translation bytes remain in the nested local data repo.
+
 v1.3 is the latest frozen formal release:
 
 - `docs/releases/v1.3/FREEZE.md`
@@ -21,9 +34,7 @@ v1.3 is the latest frozen formal release:
 - `docs/releases/v1.3/platform-deploy-prerequisite-plan.md`
 
 Root release metadata is `v1.3.0`. Production metadata activation follows the
-freeze merge and must be verified separately before tagging. Post-v1.3 planning
-is not yet assigned a version; full translation/proofreading QA is the next
-promoted product candidate.
+freeze merge and must be verified separately before tagging.
 
 v1.2.2 is the previous frozen formal release, covering internal quality
 maintenance:
@@ -231,24 +242,37 @@ freeze docs instead of copying them into this roadmap.
 
 Recommended next sequence:
 
-1. **Activate and verify v1.3 release metadata after freeze merge**
+1. **Close v1.3 production metadata activation independently**
 
    Deploy merged `main` through the accepted Cloudflare frontend and GitHub
    Actions backend paths. Verify About / Status reports `v1.3.0`, logical ref
-   `main`, and the exact accepted commit before creating the release tag.
+   `main`, and the exact accepted commit before creating the release tag. This
+   does not relax or reorder v1.4 source gates.
 
-2. **Choose the next numbered release before implementation**
+2. **Run v1.4 PHB source lock and representative pilot**
 
-   Full spell-body/name/short-description translation and proofreading QA is
-   the next promoted product candidate. Bound its corpus, review queue,
-   terminology policy, acceptance evidence, and specialist ownership before
-   assigning a version or opening implementation branches.
+   Pin the exact PHB 3.5 PDF and official errata by SHA-256. Approve about ten
+   representative extraction cases, then prove deterministic extraction,
+   errata overlay, DB comparison, and source-free reporting before a full run.
 
-3. **Preserve frozen release boundaries**
+3. **Complete English QA before translation**
+
+   Reconcile the complete PHB PDF and current PHB DB sets with terminal
+   comparison/errata decisions and zero unexplained misses. Only after main-gate
+   acceptance may the i18n translation/proofreading track begin.
+
+4. **Activate only accepted v1.4 content**
+
+   Apply accepted English corrections and Chinese reviewed overlays through the
+   maintained DB/content workflow, rebuild search, preserve CHM/English summary
+   fallback, and verify existing frontend consumers without a UI redesign.
+
+5. **Preserve frozen and publication boundaries**
 
    Use the v1.3 freeze for current UI/platform behavior and older freezes for
-   their owned areas. Do not pull `DP-AUD-007` into active work unless the
-   dormant CHM preprocessing workflow is intentionally reactivated.
+   their owned areas. Do not expand v1.4 to DMG, Spell Compendium, PHB II, or
+   another publication, and do not pull `DP-AUD-007` into active work unless
+   the dormant CHM preprocessing workflow is intentionally reactivated.
 
 ## Official Release Sequence
 
@@ -288,11 +312,12 @@ The expected post-v1.1 release order is:
    restored and proved the secure GitHub Actions backend deploy path before
    freeze.
 
-5. **Later Translation QA**
+5. **v1.4 PHB 3.5 Source-First Translation And Proofreading (Planned)**
 
-   Promote full spell-body/name/short-description translation and proofreading
-   only after the full-spell source review and mechanics workflow have produced
-   useful QA reports, review queues, terminology checks, and handoff rules.
+   Pin the PHB 3.5 PDF and official errata, prove extraction/comparison on a
+   representative pilot, accept the complete English source, then translate
+   and proofread PHB names, bodies, and short descriptions. Activate only
+   accepted rows and preserve existing frontend fallback without a redesign.
 
 ## Later Stable Track
 

@@ -27,14 +27,17 @@ excluded from the public repository, especially runtime databases under
 The latest frozen formal release is **v1.3**, covering the sitewide UX/style
 redesign and secure Actions backend deployment prerequisite. Root release
 metadata is **v1.3.0**; production metadata activation follows the freeze merge.
-**v1.2.2** is the previous frozen internal maintenance release, and **v3.10**
-is the latest frozen pre-release stage snapshot.
+**v1.4** planning is active for a PHB 3.5 source-first translation and
+proofreading pilot. **v1.2.2** is the previous frozen internal maintenance
+release, and **v3.10** is the latest frozen pre-release stage snapshot.
 
 Start here:
 
 - [docs/README.md](./docs/README.md): documentation map and precedence rules.
 - [docs/roadmap.md](./docs/roadmap.md): current work order.
 - [docs/features.md](./docs/features.md): current feature map.
+- [docs/releases/v1.4/README.md](./docs/releases/v1.4/README.md): active PHB 3.5
+  source-first translation and proofreading release plan.
 - [docs/releases/v1.3/FREEZE.md](./docs/releases/v1.3/FREEZE.md): latest frozen
   formal release snapshot.
 - [docs/releases/v1.3/README.md](./docs/releases/v1.3/README.md): frozen
