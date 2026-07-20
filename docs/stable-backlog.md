@@ -32,6 +32,7 @@ as loose backlog items unless their scope changes again:
 - v1.2 full-spell source review, mechanics localization, and Publications page
 - v1.2.1 content-backed online full-text spell search
 - v1.3 sitewide UX / style redesign
+- v1.4 PHB 3.5 source-first translation and proofreading pilot
 
 ## Current Deferred Areas
 
