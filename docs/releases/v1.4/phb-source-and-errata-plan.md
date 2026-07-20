@@ -7,8 +7,9 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: in progress; Gate 0 and the complete Slice 3 end-to-end pilot are
-accepted. Gate 1 is closed and Slice 4 full-PHB English comparison is next.
+Status: in progress; Gate 0 and the Slice 3 page-extraction substage are
+accepted. Gate 1 is reopened pending a fresh end-to-end main-gate review after
+provenance hardening; Slice 4 remains blocked.
 
 ## Purpose
 
@@ -238,16 +239,23 @@ before write-capable work begins.
   and MinerU token precision is `0.978041`; errata-page recall is `1.0`.
   Sixteen core table blocks are marked OCR-risk rather than treated as
   authoritative text.
-- Gate 1 is accepted in data-repo commit `63ac1f7`. The pilot emits 20 entity
-  rows, nine spell comparisons, and ten accepted row decisions with zero
-  unresolved rows. Comparison totals are two exact matches, four
-  formatting-only rows, two substantive mismatches, and one manual-review
-  spell row; the separate Dispel Magic summary-group case records its reviewed
-  two-wording-group decision. The pilot also proves 124-row Summon Monster
-  cross-column extraction and explicit final-occurrence errata targeting for
-  Polymorph Any Object.
+- Data-repo commit `63ac1f7` recorded the first end-to-end acceptance attempt.
+  Subsequent main-gate review reopened Gate 1 because summary-only text was not
+  a comparison component, multi-page errata extraction read only the first
+  page, current inventory/DB identities were not revalidated, and terminal row
+  decisions were not fingerprint-bound. The hardened rerun emits 20 entity
+  rows and ten comparisons, resets all ten row decisions to `proposed`, and
+  removes the stale end-to-end acceptance until fresh review. This proposed
+  review queue is recorded in data-repo commit `853131a`.
+- The corrected pilot continues to prove 124-row Summon Monster cross-column
+  extraction and explicit final-occurrence errata targeting for Polymorph Any
+  Object. It additionally records both Dispel Magic short-description wording
+  groups as comparison components and supports ordered multi-page errata
+  sections such as Divine Favor.
 - `data/phb35/review/pilot-page-extraction-review.json` remains the page-only
   decision. `data/phb35/review/pilot-e2e-review.json` is the accepted Gate 1
-  decision, and the default `npm run -w data-tools phb:pilot:verify` validates
-  the complete committed hash chain. This authorizes full-PHB extraction only;
-  it does not accept the full English corpus, translation, or DB activation.
+  decision location. It is intentionally absent while the hardened row reviews
+  remain proposed. The default `npm run -w data-tools phb:pilot:verify` must
+  fail until a fresh committed end-to-end review is accepted; full-PHB
+  extraction, full English acceptance, translation, and DB activation remain
+  unauthorized.

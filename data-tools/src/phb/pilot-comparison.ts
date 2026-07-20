@@ -1,7 +1,11 @@
+import fs from "node:fs";
+import path from "node:path";
+
 import Database from "better-sqlite3";
 
 import { loadServerEnv, resolveServerRelativePath } from "../shared/env";
 import type { PilotErrataOverlayRow } from "./pilot-errata";
+import { sha256File } from "./source-manifest";
 
 export const PHB_COMPARISON_CATEGORIES = [
   "exact-match",
@@ -34,11 +38,18 @@ export type PilotClassListOccurrenceForComparison = {
   printedName: string;
   owner: string;
   level: number;
+  sourcePage: number | null;
   summaryText: string;
   wordingGroupKey: string;
 };
 
-type DbSpell = {
+export type PilotComparisonCase = {
+  caseId: string;
+  printedName: string;
+  reviewFlags: string[];
+};
+
+export type DbSpell = {
   id: number;
   rulebookId: number;
   page: number | null;
@@ -83,7 +94,15 @@ export type PilotDbComparisonRow = {
   reviewFlags: string[];
 };
 
+export type PilotComparisonDatabaseIdentity = {
+  environmentVariable: string;
+  logicalName: string;
+  bytes: number;
+  sha256: string;
+};
+
 export function comparePilotWithLocalDb(input: {
+  cases: PilotComparisonCase[];
   spells: PilotComparisonSpell[];
   overlays: PilotErrataOverlayRow[];
   classListOccurrences: PilotClassListOccurrenceForComparison[];
@@ -98,15 +117,21 @@ export function comparePilotWithLocalDb(input: {
     ? new Database(contentPath, { readonly: true, fileMustExist: true })
     : null;
   try {
-    return input.spells.map((spell) => {
-      const dbSpells = readDbSpells(rulesDb, contentDb, spell.printedName);
+    return input.cases.map((pilotCase) => {
+      const spell = input.spells.find(
+        (candidate) => candidate.caseId === pilotCase.caseId,
+      );
+      const dbSpells = readDbSpells(rulesDb, contentDb, pilotCase.printedName);
+      const occurrences = input.classListOccurrences.filter(
+        (candidate) => candidate.caseId === pilotCase.caseId,
+      );
+      if (!spell) {
+        return compareSummaryOnlyCase(pilotCase, occurrences, dbSpells);
+      }
       const overlay = input.overlays.find(
         (candidate) => candidate.caseId === spell.caseId,
       );
       if (!overlay) throw new Error(`Errata overlay missing: ${spell.caseId}`);
-      const occurrences = input.classListOccurrences.filter(
-        (candidate) => candidate.caseId === spell.caseId,
-      );
       const dbSummonTableValue = spell.summonTable
         ? readDbSummonTable(rulesDb)
         : undefined;
@@ -228,12 +253,77 @@ export function compareSpell(
       ),
     );
   }
+  components.push(...shortDescriptionComponents(occurrences, db.summaryText));
   let category = highestComponentCategory(components);
   if (overlay.reviewRequired || reviewFlags.some(isBlockingReviewFlag)) {
     category = "manual-review";
   }
   return baseComparisonRow(
     spell,
+    category,
+    [db.id],
+    occurrences,
+    wordingGroupKeys,
+    db.summaryText,
+    reviewFlags,
+    components,
+  );
+}
+
+export function compareSummaryOnlyCase(
+  pilotCase: PilotComparisonCase,
+  occurrences: PilotClassListOccurrenceForComparison[],
+  dbSpells: DbSpell[],
+): PilotDbComparisonRow {
+  const wordingGroupKeys = uniqueWordingGroupKeys(occurrences);
+  const reviewFlags = [...pilotCase.reviewFlags];
+  if (wordingGroupKeys.length > 1) {
+    reviewFlags.push("short-description-wording-conflict");
+  }
+  const subject = {
+    caseId: pilotCase.caseId,
+    printedName: pilotCase.printedName,
+    sourcePages: Array.from(
+      new Set(
+        occurrences.flatMap((row) =>
+          row.sourcePage === null ? [] : [row.sourcePage],
+        ),
+      ),
+    ).sort((left, right) => left - right),
+  };
+  if (occurrences.length === 0) {
+    throw new Error(
+      `Summary-only pilot case has no occurrences: ${pilotCase.caseId}`,
+    );
+  }
+  if (dbSpells.length === 0) {
+    return baseComparisonRow(
+      subject,
+      "missing-in-db",
+      [],
+      occurrences,
+      wordingGroupKeys,
+      null,
+      reviewFlags,
+    );
+  }
+  if (dbSpells.length > 1) {
+    return baseComparisonRow(
+      subject,
+      "extra-in-db",
+      dbSpells.map((row) => row.id),
+      occurrences,
+      wordingGroupKeys,
+      dbSpells[0]?.summaryText ?? null,
+      reviewFlags,
+    );
+  }
+  const db = dbSpells[0]!;
+  const components = shortDescriptionComponents(occurrences, db.summaryText);
+  let category = highestComponentCategory(components);
+  if (reviewFlags.some(isBlockingReviewFlag)) category = "manual-review";
+  return baseComparisonRow(
+    subject,
     category,
     [db.id],
     occurrences,
@@ -376,7 +466,7 @@ function readDbSpells(
 }
 
 function baseComparisonRow(
-  spell: PilotComparisonSpell,
+  spell: Pick<PilotComparisonSpell, "caseId" | "printedName" | "sourcePages">,
   category: PhbComparisonCategory,
   dbSpellIds: number[],
   occurrences: PilotClassListOccurrenceForComparison[],
@@ -401,6 +491,35 @@ function baseComparisonRow(
     },
     reviewFlags: Array.from(new Set(reviewFlags)).sort(),
   };
+}
+
+function shortDescriptionComponents(
+  occurrences: PilotClassListOccurrenceForComparison[],
+  dbSummaryText: string | null,
+) {
+  const groups = new Map<string, string>();
+  for (const occurrence of occurrences) {
+    if (!groups.has(occurrence.wordingGroupKey)) {
+      groups.set(occurrence.wordingGroupKey, occurrence.summaryText);
+    }
+  }
+  return Array.from(groups.entries())
+    .sort(([left], [right]) => left.localeCompare(right, "en-US"))
+    .map(([, sourceValue], index) =>
+      compareComponent(
+        `shortDescription:${index + 1}`,
+        sourceValue,
+        dbSummaryText ?? "",
+      ),
+    );
+}
+
+function uniqueWordingGroupKeys(
+  occurrences: PilotClassListOccurrenceForComparison[],
+) {
+  return Array.from(
+    new Set(occurrences.map((row) => row.wordingGroupKey)),
+  ).sort();
 }
 
 function highestComponentCategory(
@@ -598,6 +717,75 @@ export function dbSummonTable(value: string) {
     }
   }
   return rows.join("\n");
+}
+
+export function currentComparisonDatabaseIdentities(): PilotComparisonDatabaseIdentity[] {
+  loadServerEnv();
+  return ["RULES_DATABASE_URL", "CONTENT_DATABASE_URL"].map((name) => {
+    const raw = process.env[name];
+    if (!raw?.startsWith("file:")) {
+      throw new Error(`${name} must be a file: SQLite URL`);
+    }
+    const filePath = resolveServerRelativePath(raw.slice("file:".length));
+    if (!fs.existsSync(filePath)) throw new Error(`${name} file is missing`);
+    return {
+      environmentVariable: name,
+      logicalName: path.basename(filePath),
+      bytes: fs.statSync(filePath).size,
+      sha256: sha256File(filePath),
+    };
+  });
+}
+
+export function validateComparisonDatabaseIdentities(
+  recorded: unknown,
+  current: PilotComparisonDatabaseIdentity[],
+) {
+  if (!Array.isArray(recorded)) return ["databases must be an array"];
+  const errors: string[] = [];
+  const rows = recorded.filter(isDatabaseIdentity);
+  if (rows.length !== recorded.length) {
+    errors.push("databases contains an invalid identity");
+  }
+  const names = rows.map((row) => row.environmentVariable);
+  if (new Set(names).size !== names.length) {
+    errors.push("databases contains duplicate environmentVariable values");
+  }
+  for (const expected of current) {
+    const actual = rows.find(
+      (row) => row.environmentVariable === expected.environmentVariable,
+    );
+    if (!actual) {
+      errors.push(`databases is missing ${expected.environmentVariable}`);
+      continue;
+    }
+    for (const field of ["logicalName", "bytes", "sha256"] as const) {
+      if (actual[field] !== expected[field]) {
+        errors.push(`${expected.environmentVariable} ${field} is stale`);
+      }
+    }
+  }
+  if (rows.length !== current.length) {
+    errors.push("databases identity count does not match current inputs");
+  }
+  return errors;
+}
+
+function isDatabaseIdentity(
+  value: unknown,
+): value is PilotComparisonDatabaseIdentity {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return false;
+  }
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.environmentVariable === "string" &&
+    typeof row.logicalName === "string" &&
+    Number.isInteger(row.bytes) &&
+    (row.bytes as number) > 0 &&
+    typeof row.sha256 === "string" &&
+    /^[a-f0-9]{64}$/u.test(row.sha256)
+  );
 }
 
 function databasePath(name: "RULES_DATABASE_URL" | "CONTENT_DATABASE_URL") {

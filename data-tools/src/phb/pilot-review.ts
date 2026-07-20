@@ -5,6 +5,12 @@ import {
   resolveInside,
   sha256File,
 } from "./source-manifest";
+import { PHB_ERRATA_INVENTORY_RELATIVE_PATH } from "./errata-inventory";
+import {
+  currentComparisonDatabaseIdentities,
+  type PilotDbComparisonRow,
+  validateComparisonDatabaseIdentities,
+} from "./pilot-comparison";
 import { parsePhbPilotManifestText } from "./pilot-manifest";
 import {
   PHB_PILOT_DB_COMPARISON_MANIFEST_RELATIVE_PATH,
@@ -14,6 +20,7 @@ import {
 } from "./pilot-pipeline";
 import {
   type PilotRowReview,
+  validatePilotRowReviewEvidence,
   validatePilotRowReviews,
 } from "./pilot-row-review";
 
@@ -332,7 +339,11 @@ function verifyEndToEndArtifactChain(
     pages.sha256,
     "entities -> pages",
   );
-  verifyOutputArtifact(dataRoot, entitiesJson, "entities");
+  const entitiesOutput = verifyOutputArtifact(
+    dataRoot,
+    entitiesJson,
+    "entities",
+  );
 
   const errataJson = readObject(dataRoot, errata.relativePath);
   expectNestedHash(
@@ -342,6 +353,21 @@ function verifyEndToEndArtifactChain(
     "errata -> entities",
   );
   verifyOutputArtifact(dataRoot, errataJson, "errata");
+  const inventoryReference = requiredArtifactReference(
+    errataJson,
+    "inventory",
+    "errata inventory",
+  );
+  if (inventoryReference.relativePath !== PHB_ERRATA_INVENTORY_RELATIVE_PATH) {
+    throw new Error(
+      `errata inventory must use ${PHB_ERRATA_INVENTORY_RELATIVE_PATH}`,
+    );
+  }
+  verifyReferencedArtifact(dataRoot, inventoryReference, "errata inventory");
+  committedFileCommit(
+    dataRoot,
+    resolveInside(dataRoot, inventoryReference.relativePath),
+  );
 
   const comparisonJson = readObject(dataRoot, comparison.relativePath);
   expectNestedHash(
@@ -350,7 +376,20 @@ function verifyEndToEndArtifactChain(
     errata.sha256,
     "comparison -> errata",
   );
-  verifyOutputArtifact(dataRoot, comparisonJson, "comparison");
+  const comparisonOutput = verifyOutputArtifact(
+    dataRoot,
+    comparisonJson,
+    "comparison",
+  );
+  const databaseErrors = validateComparisonDatabaseIdentities(
+    comparisonJson.databases,
+    currentComparisonDatabaseIdentities(),
+  );
+  if (databaseErrors.length > 0) {
+    throw new Error(
+      `PHB pilot comparison database identities are stale:\n${databaseErrors.join("\n")}`,
+    );
+  }
 
   const rowReviewJson = readObject(dataRoot, rowReview.relativePath);
   expectNestedHash(
@@ -370,6 +409,29 @@ function verifyEndToEndArtifactChain(
     "utf8",
   );
   const reviews = parseJsonl<PilotRowReview>(reviewsText, "pilot row review");
+  const entityRows = parseJsonl<{ caseId: string; rowId: string }>(
+    fs.readFileSync(
+      resolveInside(dataRoot, entitiesOutput.relativePath),
+      "utf8",
+    ),
+    "pilot entities",
+  );
+  const comparisons = parseJsonl<PilotDbComparisonRow>(
+    fs.readFileSync(
+      resolveInside(dataRoot, comparisonOutput.relativePath),
+      "utf8",
+    ),
+    "pilot comparisons",
+  );
+  const entityRowIdsByCase = new Map<string, string[]>();
+  for (const row of entityRows) {
+    if (typeof row.caseId !== "string" || typeof row.rowId !== "string") {
+      throw new Error("pilot entity row is missing caseId or rowId");
+    }
+    const values = entityRowIdsByCase.get(row.caseId) ?? [];
+    values.push(row.rowId);
+    entityRowIdsByCase.set(row.caseId, values);
+  }
   const pilotManifest = parsePhbPilotManifestText(
     fs.readFileSync(resolveInside(dataRoot, pilot.relativePath), "utf8"),
   );
@@ -381,6 +443,17 @@ function verifyEndToEndArtifactChain(
   if (reviewErrors.length > 0) {
     throw new Error(
       `PHB pilot row review is invalid:\n${reviewErrors.join("\n")}`,
+    );
+  }
+  const evidenceErrors = validatePilotRowReviewEvidence({
+    manifest: pilotManifest,
+    rows: reviews,
+    comparisons,
+    entityRowIdsByCase,
+  });
+  if (evidenceErrors.length > 0) {
+    throw new Error(
+      `PHB pilot row review evidence is stale:\n${evidenceErrors.join("\n")}`,
     );
   }
 }
@@ -396,6 +469,7 @@ function verifyOutputArtifact(
     `${label} output`,
   );
   verifyReferencedArtifact(dataRoot, reference, `${label} output`);
+  return reference;
 }
 
 function requiredArtifactReference(
@@ -415,7 +489,7 @@ function requiredArtifactReference(
   return reference as { relativePath: string; sha256: string };
 }
 
-function verifyReferencedArtifact(
+export function verifyReferencedArtifact(
   dataRoot: string,
   reference: { relativePath: string; sha256: string },
   label: string,

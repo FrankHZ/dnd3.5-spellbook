@@ -1,15 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import {
-  loadServerEnv,
-  localDataDir,
-  repoRoot,
-  resolveServerRelativePath,
-} from "../shared/env";
+import { localDataDir, repoRoot } from "../shared/env";
 import { readPhbErrataInventory } from "./errata-inventory";
 import {
   comparePilotWithLocalDb,
+  currentComparisonDatabaseIdentities,
   PHB_COMPARISON_CATEGORIES,
   type PilotClassListOccurrenceForComparison,
   type PilotComparisonSpell,
@@ -24,7 +20,9 @@ import { buildPilotErrataOverlays } from "./pilot-errata";
 import { readPhbPilotManifest } from "./pilot-manifest";
 import {
   buildProposedPilotRowReviews,
+  mergePilotRowReviews,
   type PilotRowReview,
+  validatePilotRowReviewEvidence,
   validatePilotRowReviews,
 } from "./pilot-row-review";
 import { sha256File } from "./source-manifest";
@@ -159,10 +157,16 @@ export function runPilotComparison() {
       printedName: row.printedName,
       owner: row.owner,
       level: row.level,
+      sourcePage: row.sourcePage.printedPageNumber,
       summaryText: row.summaryText,
       wordingGroupKey: row.wordingGroupKey,
     }));
   const comparisons = comparePilotWithLocalDb({
+    cases: manifest.cases.map((pilotCase) => ({
+      caseId: pilotCase.id,
+      printedName: pilotCase.printedName,
+      reviewFlags: pilotCase.selectionReasons,
+    })),
     spells: comparisonSpells,
     overlays,
     classListOccurrences: comparisonOccurrences,
@@ -172,7 +176,7 @@ export function runPilotComparison() {
     PHB_PILOT_DB_COMPARISON_RELATIVE_PATH,
   );
   writeJsonl(comparisonsPath, comparisons);
-  const dbIdentities = comparisonDatabaseIdentities();
+  const dbIdentities = currentComparisonDatabaseIdentities();
   const comparisonManifestPath = resolveDataPath(
     dataRoot,
     PHB_PILOT_DB_COMPARISON_MANIFEST_RELATIVE_PATH,
@@ -200,17 +204,32 @@ export function runPilotComparison() {
   const proposedReviews = buildProposedPilotRowReviews({
     manifest,
     comparisons,
-    classListOccurrences: comparisonOccurrences,
     entityRowIdsByCase: rowIdsByCase,
   });
   const rowReviewPath = resolveDataPath(
     dataRoot,
     PHB_PILOT_ROW_REVIEW_RELATIVE_PATH,
   );
-  const rowReviews = mergeExistingReviews(rowReviewPath, proposedReviews);
+  const rowReviews = mergePilotRowReviews(
+    fs.existsSync(rowReviewPath)
+      ? readJsonl<PilotRowReview>(rowReviewPath)
+      : [],
+    proposedReviews,
+  );
   const reviewErrors = validatePilotRowReviews(manifest, rowReviews, false);
   if (reviewErrors.length > 0) {
     throw new Error(`Pilot row review is invalid:\n${reviewErrors.join("\n")}`);
+  }
+  const evidenceErrors = validatePilotRowReviewEvidence({
+    manifest,
+    rows: rowReviews,
+    comparisons,
+    entityRowIdsByCase: rowIdsByCase,
+  });
+  if (evidenceErrors.length > 0) {
+    throw new Error(
+      `Pilot row review evidence is invalid:\n${evidenceErrors.join("\n")}`,
+    );
   }
   writeJsonl(rowReviewPath, rowReviews);
   const rowReviewManifestPath = resolveDataPath(
@@ -358,27 +377,6 @@ export function writeProposedEndToEndReview() {
   return { reviewPath, review };
 }
 
-function mergeExistingReviews(
-  filePath: string,
-  proposed: PilotRowReview[],
-): PilotRowReview[] {
-  if (!fs.existsSync(filePath)) return proposed;
-  const existing = readJsonl<PilotRowReview>(filePath);
-  const byCase = new Map(existing.map((row) => [row.caseId, row]));
-  return proposed.map((row) => {
-    const previous = byCase.get(row.caseId);
-    if (
-      previous &&
-      previous.proposedCategory === row.proposedCategory &&
-      JSON.stringify(previous.evidenceRowIds) ===
-        JSON.stringify(row.evidenceRowIds)
-    ) {
-      return previous;
-    }
-    return row;
-  });
-}
-
 function entityRowId(row: PilotEntityRow) {
   if (row.entityType === "spell") return `spell:${row.caseId}`;
   if (row.entityType === "summon-table") return `summon-table:${row.caseId}`;
@@ -389,24 +387,6 @@ function entityRowId(row: PilotEntityRow) {
     row.level,
     row.sourcePage.printedPageNumber ?? row.sourcePage.sourcePageIndex,
   ].join(":");
-}
-
-function comparisonDatabaseIdentities() {
-  loadServerEnv();
-  return ["RULES_DATABASE_URL", "CONTENT_DATABASE_URL"].map((name) => {
-    const raw = process.env[name];
-    if (!raw?.startsWith("file:")) {
-      throw new Error(`${name} must be a file: SQLite URL`);
-    }
-    const filePath = resolveServerRelativePath(raw.slice("file:".length));
-    if (!fs.existsSync(filePath)) throw new Error(`${name} file is missing`);
-    return {
-      environmentVariable: name,
-      logicalName: path.basename(filePath),
-      bytes: fs.statSync(filePath).size,
-      sha256: sha256File(filePath),
-    };
-  });
 }
 
 function categoryCounts(rows: PilotDbComparisonRow[]) {

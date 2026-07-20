@@ -200,10 +200,12 @@ the raw text/coordinate baseline; MinerU contributes layout blocks only.
 Neither path writes SQLite. The pilot's entity extraction, errata overlays, and
 DB comparison run with `phb:source:compare -- --pilot`; this command reads both
 configured databases read-only and writes source-bearing entities, overlays,
-comparisons, and proposed row reviews under `data/phb35/`. Review all ten rows,
-rerun comparison to refresh their manifest without discarding unchanged
-terminal decisions, then run `phb:source:report -- --pilot` to propose the
-end-to-end review. Full-PHB extraction requires `phb:pilot:verify` to pass
+comparisons, and proposed row reviews under `data/phb35/`. This includes actual
+short-description comparisons for summary-only cases. Review all ten rows,
+rerun comparison to refresh their manifest without discarding decisions whose
+full evidence fingerprint is unchanged, then run
+`phb:source:report -- --pilot` to propose the end-to-end review. Full-PHB
+extraction requires `phb:pilot:verify` to pass
 against a committed, accepted end-to-end review; accepting the page-extraction
 review alone does not authorize it. The accepted Gate 1 permits the full run,
 but does not accept full-corpus English rows or any DB mutation.

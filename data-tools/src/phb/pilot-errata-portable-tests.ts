@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import type { PhbErrataInventoryRow } from "./errata-inventory";
 import {
   buildPilotErrataOverlays,
+  extractErrataSection,
   parseErrataOperations,
   type PilotErrataPage,
 } from "./pilot-errata";
@@ -27,6 +28,20 @@ const polymorph: PhbErrataInventoryRow = {
   insertBeforeSeparator: "comma",
 };
 
+const divineFavor: PhbErrataInventoryRow = {
+  ...animal,
+  entryId: "divine-favor",
+  printedName: "Divine Favor",
+  errataPages: [2, 3],
+};
+
+const nextSpell: PhbErrataInventoryRow = {
+  ...animal,
+  entryId: "next-spell",
+  printedName: "Next Spell",
+  errataPages: [3],
+};
+
 const pages: PilotErrataPage[] = [
   {
     sourceId: "phb35-errata-2006-02-17",
@@ -47,6 +62,38 @@ const pages: PilotErrataPage[] = [
         { text: "Polymorph Any Object", fontName: "g_f7", hasEol: false },
         {
           text: "Insert “baleful polymorph” in front of “polymorph”. Change “water to dust” to “metal to wood.”",
+          fontName: "g_f5",
+          hasEol: true,
+        },
+        { text: "Divine Favor", fontName: "g_f7", hasEol: false },
+        {
+          text: "Change the bonus from +1 per three levels",
+          fontName: "g_f5",
+          hasEol: true,
+        },
+      ],
+    },
+  },
+  {
+    sourceId: "phb35-errata-2006-02-17",
+    printedPageNumber: 3,
+    pdfjs: {
+      items: [
+        { text: "Player's Handbook", fontName: "g_f1", hasEol: false },
+        { text: "Errata", fontName: "g_f2", hasEol: false },
+        {
+          text: "©2006 Wizards of the Coast, Inc. All rights reserved.",
+          fontName: "g_f3",
+          hasEol: true,
+        },
+        {
+          text: "to +1 per three caster levels.",
+          fontName: "g_f5",
+          hasEol: true,
+        },
+        { text: "Next Spell", fontName: "g_f7", hasEol: false },
+        {
+          text: "This text belongs to the next section.",
           fontName: "g_f5",
           hasEol: true,
         },
@@ -78,6 +125,16 @@ const overlays = buildPilotErrataOverlays(
 assert.equal(
   overlays[0]?.effectiveBodyText,
   "You transform willing creatures. Use alternate form. Remaining sentence.",
+);
+
+assert.equal(
+  extractErrataSection(divineFavor, pages, [
+    animal,
+    polymorph,
+    divineFavor,
+    nextSpell,
+  ]),
+  "Change the bonus from +1 per three levels to +1 per three caster levels.",
 );
 assert.deepEqual(
   overlays[1]?.operationResults.map((result) => result.status),

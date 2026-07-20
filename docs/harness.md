@@ -197,8 +197,13 @@ The end-to-end verifier follows payload hashes through four maintained
 manifests rather than accepting detached files: page rows feed entity
 extraction, entity extraction feeds errata overlay, errata feeds the read-only
 DB comparison, and comparison feeds the ten-case row review. It also validates
-that every pilot case has exactly one terminal review before an accepted
-end-to-end decision can pass. The source-free aggregate under
+that every pilot case has exactly one comparison and terminal review before an
+accepted end-to-end decision can pass. Short descriptions are real comparison
+components, including summary-only cases. Terminal decisions are bound to a
+fingerprint of the current comparison evidence, ids, and flags, so evidence
+changes reset them to `proposed`. Verification re-hashes the current committed
+errata inventory and configured rules/content SQLite files instead of trusting
+only the prior manifests. The source-free aggregate under
 `data-tools/out/phb/` contains only hashes, counts, categories, commands, and
 unresolved totals.
 

@@ -249,13 +249,14 @@ Recommended next sequence:
    `main`, and the exact accepted commit before creating the release tag. This
    does not relax or reorder v1.4 source gates.
 
-2. **v1.4 PHB source lock and representative pilot (Completed)**
+2. **Re-close v1.4 PHB representative pilot (In review)**
 
-   Gate 1 is accepted on a ten-case, 23-page end-to-end pilot with deterministic
-   extraction, errata overlay, DB comparison, terminal row decisions, and a
-   committed provenance verifier. This acceptance authorizes the full PHB run.
+   The source lock and page extraction are accepted. Re-review the hardened
+   ten-case end-to-end evidence after short-description comparison, multi-page
+   errata extraction, current-input verification, and decision fingerprints
+   reset the prior acceptance. Full-PHB extraction remains blocked.
 
-3. **Complete English QA before translation (Next)**
+3. **Complete English QA before translation (Blocked on Gate 1)**
 
    Run full-PHB extraction, then reconcile the complete PDF and current PHB DB
    sets with terminal comparison/errata decisions and zero unexplained misses.

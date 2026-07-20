@@ -4,6 +4,8 @@ type PdfTextItem = {
   text: string;
   fontName: string;
   hasEol: boolean;
+  x?: number;
+  y?: number;
 };
 
 export type PilotErrataPage = {
@@ -128,42 +130,43 @@ export function extractErrataSection(
     if (row.errataAnchor) headings.add(normalizeKey(row.errataAnchor));
   }
   const heading = inventoryRow.errataAnchor ?? inventoryRow.printedName;
-  const page = pages.find(
-    (candidate) =>
-      candidate.sourceId === "phb35-errata-2006-02-17" &&
-      candidate.printedPageNumber === inventoryRow.errataPages[0],
-  );
-  if (!page) {
-    throw new Error(
-      `Errata page ${inventoryRow.errataPages[0]} is missing for ${inventoryRow.entryId}`,
+  const selectedPages = inventoryRow.errataPages.map((pageNumber) => {
+    const page = pages.find(
+      (candidate) =>
+        candidate.sourceId === "phb35-errata-2006-02-17" &&
+        candidate.printedPageNumber === pageNumber,
     );
-  }
-  const start = page.pdfjs.items.findIndex(
-    (item) =>
-      isErrataHeading(item) &&
-      normalizeKey(item.text) === normalizeKey(heading),
-  );
-  if (start < 0) {
-    throw new Error(`Errata heading not found: ${heading}`);
-  }
-  let end = page.pdfjs.items.length;
-  for (let index = start + 1; index < page.pdfjs.items.length; index += 1) {
-    const item = page.pdfjs.items[index];
-    if (!item) continue;
-    if (
-      isErrataHeading(item) &&
-      headings.has(normalizeKey(item.text)) &&
-      normalizeKey(item.text) !== normalizeKey(heading)
-    ) {
-      end = index;
-      break;
+    if (!page) {
+      throw new Error(
+        `Errata page ${pageNumber} is missing for ${inventoryRow.entryId}`,
+      );
     }
+    return page;
+  });
+  const headingKey = normalizeKey(heading);
+  const sectionItems: PdfTextItem[] = [];
+  let started = false;
+  let finished = false;
+  for (const page of selectedPages) {
+    for (const item of page.pdfjs.items) {
+      if (isErrataPageBoilerplate(item)) continue;
+      const itemKey = normalizeKey(item.text);
+      if (!started) {
+        if (isErrataHeading(item) && itemKey === headingKey) started = true;
+        continue;
+      }
+      if (isErrataHeading(item) && itemKey === headingKey) continue;
+      if (isErrataHeading(item) && headings.has(itemKey)) {
+        finished = true;
+        break;
+      }
+      sectionItems.push(item);
+    }
+    if (finished) break;
   }
+  if (!started) throw new Error(`Errata heading not found: ${heading}`);
   return normalizeExtractedText(
-    page.pdfjs.items
-      .slice(start + 1, end)
-      .map((item) => item.text)
-      .join(" "),
+    sectionItems.map((item) => item.text).join(" "),
   );
 }
 
@@ -459,4 +462,12 @@ function normalizeKey(value: string) {
 
 function isErrataHeading(item: PdfTextItem) {
   return item.fontName.endsWith("_f7") && item.text.trim().length > 0;
+}
+
+function isErrataPageBoilerplate(item: PdfTextItem) {
+  return (
+    item.fontName.endsWith("_f1") ||
+    item.fontName.endsWith("_f2") ||
+    /^©2006 Wizards of the Coast\b/u.test(item.text.trim())
+  );
 }
