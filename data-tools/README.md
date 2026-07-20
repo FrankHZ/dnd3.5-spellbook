@@ -73,14 +73,15 @@ required `pdftext==0.6.3` and `six==1.17.0` compatibility pins.
 default it requires a committed, non-stale, `accepted` end-to-end review with
 entity extraction, errata overlay, DB comparison, and row-review artifacts.
 The linked source and pilot manifests must also be `accepted`.
-The current page-only review cannot satisfy that gate. A main gate reviewing
-only the page-extraction substage may explicitly run:
+The accepted page-only review cannot satisfy that end-to-end gate. To verify
+only the accepted page-extraction substage, run:
 
 ```bash
 npm run -w data-tools phb:pilot:verify -- --stage page-extraction
 ```
 
-That command also fails while the page review remains `proposed`.
+This explicit stage check passes for the accepted page review, but it does not
+authorize full-PHB extraction.
 
 Inspect the local rules DB:
 
