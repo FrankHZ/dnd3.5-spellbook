@@ -277,6 +277,9 @@ of loading the source corpus into the main agent context.
 
 For the v1.4 PHB workflow, distinguish the page-extraction pilot from the
 end-to-end Gate 1 pilot. A page review cannot authorize full-PHB extraction.
+Build the end-to-end evidence with `phb:source:compare -- --pilot`, resolve all
+ten case reviews, then use `phb:source:report -- --pilot` to propose the final
+review. The report command must fail while any case remains proposed.
 The full-run boundary must require `npm run -w data-tools phb:pilot:verify`,
 which accepts only clean, committed, non-stale, accepted source/pilot manifests
 and an accepted end-to-end review.

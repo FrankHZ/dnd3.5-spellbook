@@ -177,6 +177,8 @@ The v1.4 PHB source gate is an explicit local-data harness:
 npm run -w data-tools phb:source:verify
 npm run -w data-tools phb:source:extract -- --pilot --prepare-only
 npm run -w data-tools phb:source:extract -- --pilot --mineru-output <data-relative-output>
+npm run -w data-tools phb:source:compare -- --pilot
+npm run -w data-tools phb:source:report -- --pilot
 npm run -w data-tools phb:pilot:verify
 ```
 
@@ -190,6 +192,15 @@ chain also includes entity extraction, errata overlay, DB comparison, and row
 review; the linked source and pilot manifests must also be accepted. These
 commands depend on ignored local PDFs and therefore do not enter root `verify`
 or portable CI.
+
+The end-to-end verifier follows payload hashes through four maintained
+manifests rather than accepting detached files: page rows feed entity
+extraction, entity extraction feeds errata overlay, errata feeds the read-only
+DB comparison, and comparison feeds the ten-case row review. It also validates
+that every pilot case has exactly one terminal review before an accepted
+end-to-end decision can pass. The source-free aggregate under
+`data-tools/out/phb/` contains only hashes, counts, categories, commands, and
+unresolved totals.
 
 The portable harness also validates `server/db/fixtures.manifest.json`. In a
 clean checkout it verifies that every mapped portable fixture path exists. In a

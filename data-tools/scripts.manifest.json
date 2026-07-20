@@ -58,6 +58,20 @@
       "requiresSqlite": false,
       "writeCapable": false
     },
+    "phb:source:compare": {
+      "module": "phb",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "phb:source:report": {
+      "module": "phb",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": false,
+      "writeCapable": true
+    },
     "phb:source:extract": {
       "module": "phb",
       "lifecycle": "maintained-local",

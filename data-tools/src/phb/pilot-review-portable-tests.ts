@@ -20,6 +20,29 @@ const pageArtifacts: PhbPilotReview["artifacts"] = pageArtifactPaths.map(
     sha256: sha,
   }),
 );
+const endToEndArtifacts: PhbPilotReview["artifacts"] = [
+  ...pageArtifacts,
+  {
+    role: "entity-extraction",
+    relativePath: "phb35/extracted/pilot/entities-manifest.json",
+    sha256: sha,
+  },
+  {
+    role: "errata-overlay",
+    relativePath: "phb35/extracted/pilot/errata-overlay-manifest.json",
+    sha256: sha,
+  },
+  {
+    role: "db-comparison",
+    relativePath: "phb35/extracted/pilot/db-comparison-manifest.json",
+    sha256: sha,
+  },
+  {
+    role: "row-review",
+    relativePath: "phb35/review/pilot-row-review-manifest.json",
+    sha256: sha,
+  },
+];
 
 const review: PhbPilotReview = {
   schemaVersion: 1,
@@ -45,6 +68,14 @@ assert.deepEqual(validatePhbPilotReview(review), []);
 assert.match(
   validatePhbPilotReview({ ...review, status: "accepted" }).join("\n"),
   /terminal reviews require reviewer/,
+);
+assert.deepEqual(
+  validatePhbPilotReview({
+    ...review,
+    stage: "end-to-end",
+    artifacts: endToEndArtifacts,
+  }),
+  [],
 );
 assert.match(
   validatePhbPilotReview({ ...review, stage: "end-to-end" }).join("\n"),

@@ -197,10 +197,16 @@ Run `phb:source:verify` before extraction. Use `--prepare-only` to construct
 the exact pilot PDFs, run the pinned MinerU pipeline locally, and import an
 explicit data-relative output directory with `--mineru-output`. PDF.js remains
 the raw text/coordinate baseline; MinerU contributes layout blocks only.
-Neither path writes SQLite. Full-PHB entity extraction, errata overlays, and DB
-comparison remain the next pilot substage. Full-PHB extraction must not start
-until `phb:pilot:verify` passes against a committed, accepted end-to-end review;
-accepting the page-extraction review alone does not authorize it.
+Neither path writes SQLite. The pilot's entity extraction, errata overlays, and
+DB comparison run with `phb:source:compare -- --pilot`; this command reads both
+configured databases read-only and writes source-bearing entities, overlays,
+comparisons, and proposed row reviews under `data/phb35/`. Review all ten rows,
+rerun comparison to refresh their manifest without discarding unchanged
+terminal decisions, then run `phb:source:report -- --pilot` to propose the
+end-to-end review. Full-PHB extraction requires `phb:pilot:verify` to pass
+against a committed, accepted end-to-end review; accepting the page-extraction
+review alone does not authorize it. The accepted Gate 1 permits the full run,
+but does not accept full-corpus English rows or any DB mutation.
 
 For source/parse QA, run:
 

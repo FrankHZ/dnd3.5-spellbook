@@ -7,8 +7,8 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: in progress; Gate 0 and the Slice 3 page-extraction substage are
-accepted, while Gate 1 remains blocked on the end-to-end pilot.
+Status: in progress; Gate 0 and the complete Slice 3 end-to-end pilot are
+accepted. Gate 1 is closed and Slice 4 full-PHB English comparison is next.
 
 ## Purpose
 
@@ -234,12 +234,20 @@ before write-capable work begins.
 - The accepted page-extraction substage of the ten-case pilot produces 23
   selected source pages. Two pinned MinerU 3.4 runs were byte-identical across
   content-list, v2, middle, model, and Markdown outputs; the imported
-  `pages.jsonl` was also identical. Core-page PDF.js token recall is `0.97443`;
-  errata-page recall is `1.0`. Thirteen table blocks are marked OCR-risk rather
-  than treated as authoritative text. The accepted source, pilot selection, and
-  page-only review chain is recorded in data-repo commit `07bb139`.
-- This accepted substage does not close Gate 1. The page-only decision lives at
-  `data/phb35/review/pilot-page-extraction-review.json`. Entity extraction,
-  errata overlay, DB comparison, and row-level review must produce a separate
-  accepted end-to-end review before the default `phb:pilot:verify` can pass or
-  full-PHB extraction can begin.
+  `pages.jsonl` was also identical. Core-page PDF.js token recall is `0.973984`
+  and MinerU token precision is `0.978041`; errata-page recall is `1.0`.
+  Sixteen core table blocks are marked OCR-risk rather than treated as
+  authoritative text.
+- Gate 1 is accepted in data-repo commit `63ac1f7`. The pilot emits 20 entity
+  rows, nine spell comparisons, and ten accepted row decisions with zero
+  unresolved rows. Comparison totals are two exact matches, four
+  formatting-only rows, two substantive mismatches, and one manual-review
+  spell row; the separate Dispel Magic summary-group case records its reviewed
+  two-wording-group decision. The pilot also proves 124-row Summon Monster
+  cross-column extraction and explicit final-occurrence errata targeting for
+  Polymorph Any Object.
+- `data/phb35/review/pilot-page-extraction-review.json` remains the page-only
+  decision. `data/phb35/review/pilot-e2e-review.json` is the accepted Gate 1
+  decision, and the default `npm run -w data-tools phb:pilot:verify` validates
+  the complete committed hash chain. This authorizes full-PHB extraction only;
+  it does not accept the full English corpus, translation, or DB activation.

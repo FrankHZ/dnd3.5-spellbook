@@ -11,6 +11,10 @@ import { inspectPdfTextLayer } from "./pdf-baseline";
 import { buildPilotInputPdfs } from "./pilot-input";
 import { importMineruPilot } from "./pilot-extraction";
 import {
+  runPilotComparison,
+  writeProposedEndToEndReview,
+} from "./pilot-pipeline";
+import {
   PHB_PILOT_MANIFEST_RELATIVE_PATH,
   readPhbPilotManifest,
 } from "./pilot-manifest";
@@ -286,6 +290,19 @@ async function importPilotExtraction() {
   console.log(`Source-free report: ${reportPath}`);
 }
 
+function comparePilot() {
+  const result = runPilotComparison();
+  console.log("PHB end-to-end pilot comparison generated");
+  console.log(`Report: ${result.reportPath}`);
+  console.log(JSON.stringify(result.report.counts, null, 2));
+}
+
+function reportPilot() {
+  const result = writeProposedEndToEndReview();
+  console.log("PHB end-to-end pilot review proposed");
+  console.log(`Review: ${result.reviewPath}`);
+}
+
 function readOptionalPilot(dataRoot: string, sourceManifestSha256: string) {
   try {
     const { filePath, manifest } = readPhbPilotManifest(dataRoot);
@@ -352,7 +369,7 @@ function writeJson(filePath: string, value: unknown) {
 
 function usage(): never {
   throw new Error(
-    "Usage: phb:source:verify | phb:pilot:verify [-- --stage page-extraction|end-to-end --review <data-relative-path>] | phb:source:extract -- --pilot --prepare-only | phb:source:extract -- --pilot --mineru-output <data-relative-path>",
+    "Usage: phb:source:verify | phb:pilot:verify [-- --stage page-extraction|end-to-end --review <data-relative-path>] | phb:source:extract -- --pilot --prepare-only | phb:source:extract -- --pilot --mineru-output <data-relative-path> | phb:source:compare -- --pilot | phb:source:report -- --pilot",
   );
 }
 
@@ -375,6 +392,14 @@ async function main() {
   }
   if (command === "pilot:verify") {
     await verifyPilotAcceptance();
+    return;
+  }
+  if (command === "compare" && process.argv.includes("--pilot")) {
+    comparePilot();
+    return;
+  }
+  if (command === "report" && process.argv.includes("--pilot")) {
+    reportPilot();
     return;
   }
   if (

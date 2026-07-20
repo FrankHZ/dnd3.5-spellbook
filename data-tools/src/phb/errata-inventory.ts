@@ -18,6 +18,9 @@ export type PhbErrataInventoryRow = {
   schemaVersion: 1;
   entryId: string;
   printedName: string;
+  errataAnchor?: string;
+  textTargetOccurrence?: "first" | "last";
+  insertBeforeSeparator?: "space" | "comma";
   phbPages: number[];
   errataPages: number[];
   disposition: PhbErrataDisposition;
@@ -93,6 +96,27 @@ export function validatePhbErrataInventoryRow(value: unknown) {
     if (typeof value[field] !== "string" || value[field].trim().length === 0) {
       errors.push(`${field} must be a non-empty string`);
     }
+  }
+  if (
+    value.errataAnchor !== undefined &&
+    (typeof value.errataAnchor !== "string" ||
+      value.errataAnchor.trim().length === 0)
+  ) {
+    errors.push("errataAnchor must be a non-empty string when present");
+  }
+  if (
+    value.textTargetOccurrence !== undefined &&
+    value.textTargetOccurrence !== "first" &&
+    value.textTargetOccurrence !== "last"
+  ) {
+    errors.push("textTargetOccurrence must be first or last when present");
+  }
+  if (
+    value.insertBeforeSeparator !== undefined &&
+    value.insertBeforeSeparator !== "space" &&
+    value.insertBeforeSeparator !== "comma"
+  ) {
+    errors.push("insertBeforeSeparator must be space or comma when present");
   }
   validatePages(value.phbPages, "phbPages", errors);
   validatePages(value.errataPages, "errataPages", errors);

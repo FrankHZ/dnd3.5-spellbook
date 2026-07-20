@@ -23,6 +23,8 @@ source-data operations workspace.
   local publication metadata seed workflow.
 - `short-desc/`: English/Chinese short-description matching, QA,
   normalization, import, coverage, and reuse workflows.
+- `phb/`: PHB source locking, deterministic PDF.js entity extraction, errata
+  overlays, read-only DB comparison, and pilot acceptance provenance.
 - `zh-parser/`: CHM preprocessing, parsing, QA, matching, and summary
   extraction.
 - `harness/`: portable tests and explicit local acceptance bundles.
@@ -72,6 +74,11 @@ does not read or write `server/db/local/`.
 
 Local acceptance commands may depend on the nested `data/` repo and local DBs,
 but they should remain explicit and outside root `npm run verify` or CI.
+
+The PHB pilot keeps source-bearing rows and review decisions in the nested data
+repo. Public parent-repo reports are aggregates only. MinerU table text is
+never canonical input: entity text and tables come from PDF.js coordinates,
+while MinerU blocks remain recorded layout hints with explicit OCR risk.
 
 `rules:content:review` is the read-only content DB inventory for normalized
 rules content. Its readiness output can mark a family as `detail_only` when
