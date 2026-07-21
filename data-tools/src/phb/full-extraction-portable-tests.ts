@@ -80,6 +80,10 @@ assert.deepEqual(
     .reviewFlags,
   ["detached-named-table", "table-or-list"],
 );
+assert.equal(tableOwner.detachedTables.length, 1);
+assert.equal(tableOwner.detachedTables[0]!.rowId, "detached-table:table-spell");
+assert.equal(tableOwner.detachedTables[0]!.lines[1]!.text, "First row");
+assert.equal(tableOwner.detachedTables[0]!.lines[1]!.segments[0]!.x, 24);
 
 const wrappedResistance = discoverFullSpellEntities([
   fullPage(
@@ -100,6 +104,31 @@ assert.equal(
   "Yes (harm-less)",
 );
 assert.equal(wrappedResistance.spells[0]!.bodyText, "The spell has a body.");
+
+const combinedTarget = discoverFullSpellEntities([
+  fullPage(
+    [
+      "Combined Target",
+      "Divination",
+      "Level: Sor/Wiz 1",
+      "Target or Area: One creature or a 10-ft. burst",
+      "Duration: Instantaneous",
+      "Spell Resistance: No",
+      "The spell has a body.",
+    ],
+    201,
+  ),
+]);
+assert.equal(
+  combinedTarget.spells[0]!.fields.targetOrArea,
+  "One creature or a 10-ft. burst",
+);
+assert.equal(combinedTarget.spells[0]!.fields.target, undefined);
+assert.ok(
+  combinedTarget.spells[0]!.reviewFlags.includes(
+    "uncertain:combined-target-effect-area-field",
+  ),
+);
 
 const editorialBoundary = discoverFullSpellEntities([
   fullPage(

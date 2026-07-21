@@ -32,6 +32,11 @@ assert.equal(
   "substantive-mismatch",
 );
 assert.equal(
+  compareComponent("body", "first row second row", "second row first row")
+    .category,
+  "substantive-mismatch",
+);
+assert.equal(
   compareComponent(
     "school",
     "Illusion (Phantasm) [Mind Affecting, Evil]",
@@ -163,6 +168,36 @@ const wizardAlias = compareSpell(
   [{ ...dbSpell, classLevels: [{ owner: "Wizard", level: 1 }] }],
 );
 assert.equal(wizardAlias.category, "exact-match");
+const combinedTarget = compareSpell(
+  {
+    caseId: "combined-target",
+    printedName: "Spell",
+    sourcePages: [1],
+    school: "Evocation",
+    fields: { targetOrArea: "One creature or a 10-ft. burst" },
+    bodyText: "Body",
+    reviewFlags: ["uncertain:combined-target-effect-area-field"],
+  },
+  {
+    ...overlay,
+    caseId: "combined-target",
+    effectiveFields: { targetOrArea: "One creature or a 10-ft. burst" },
+  },
+  [],
+  [
+    {
+      ...dbSpell,
+      target: "One creature or a 10-ft. burst",
+    },
+  ],
+);
+assert.equal(combinedTarget.category, "manual-review");
+assert.equal(
+  combinedTarget.components.find(
+    (component) => component.component === "targetEffectArea",
+  )?.category,
+  "substantive-mismatch",
+);
 const summaryMismatch = compareSummaryOnlyCase(
   { caseId: "summary", printedName: "Spell", reviewFlags: [] },
   [

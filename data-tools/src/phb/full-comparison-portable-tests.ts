@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   compareFullCorpus,
   validateFullComparisonBalance,
+  validateFullComparisonSourceEvidence,
 } from "./full-comparison";
 import type { FullSpellEntity } from "./full-extraction";
 import type { PilotErrataOverlayRow } from "./pilot-errata";
@@ -35,6 +36,64 @@ assert.deepEqual(
     dbSpellCount: 2,
   }),
   [],
+);
+
+const summon = spell("Summon Nature’s Ally V");
+const summonRows = compareFullCorpus({
+  spells: [summon],
+  overlays: [overlay(summon)],
+  classListOccurrences: [],
+  dbSpells: [dbSpell(3, "Summon Nature’s Ally V")],
+  detachedTables: [
+    {
+      schemaVersion: 1,
+      rowId: "detached-table:summon-nature-s-ally",
+      printedName: "Summon Nature’s Ally",
+      attachToSpell: false,
+      sourcePages: summon.sourcePages,
+      sourceText: "Level Creature",
+      lines: [],
+    },
+  ],
+});
+assert.equal(summonRows[0]!.category, "manual-review");
+assert.deepEqual(summonRows[0]!.sourceEvidence, [
+  {
+    rowId: "detached-table:summon-nature-s-ally",
+    kind: "detached-table",
+    sha256: summonRows[0]!.sourceEvidence[0]!.sha256,
+  },
+]);
+assert.ok(
+  summonRows[0]!.reviewFlags.includes("uncertain:shared-summon-table-unparsed"),
+);
+assert.deepEqual(
+  validateFullComparisonSourceEvidence(summonRows, [
+    {
+      schemaVersion: 1,
+      rowId: "detached-table:summon-nature-s-ally",
+      printedName: "Summon Nature’s Ally",
+      attachToSpell: false,
+      sourcePages: summon.sourcePages,
+      sourceText: "Level Creature",
+      lines: [],
+    },
+  ]),
+  [],
+);
+assert.match(
+  validateFullComparisonSourceEvidence(summonRows, [
+    {
+      schemaVersion: 1,
+      rowId: "detached-table:summon-nature-s-ally",
+      printedName: "Summon Nature’s Ally",
+      attachToSpell: false,
+      sourcePages: summon.sourcePages,
+      sourceText: "Changed",
+      lines: [],
+    },
+  ]).join("\n"),
+  /source evidence is stale/u,
 );
 
 console.log("PHB full comparison portable tests passed");

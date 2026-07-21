@@ -67,6 +67,10 @@ export type PilotSpellFieldName =
   | "castingTime"
   | "range"
   | "target"
+  | "targetOrArea"
+  | "targetEffectOrArea"
+  | "targetEffect"
+  | "areaOrTarget"
   | "effect"
   | "area"
   | "duration"
@@ -399,6 +403,12 @@ export function extractSpellAtHeading(
   const tableOrList = entityLines
     .slice(bodyStart)
     .some(looksLikeTableOrListLine);
+  const combinedTargetField = [
+    "targetOrArea",
+    "targetEffectOrArea",
+    "targetEffect",
+    "areaOrTarget",
+  ].some((name) => fields[name as PilotSpellFieldName] !== undefined);
 
   return {
     printedName,
@@ -410,6 +420,9 @@ export function extractSpellAtHeading(
     reviewFlags: uniqueStrings([
       ...wrappedFields,
       ...(tableOrList ? ["table-or-list"] : []),
+      ...(combinedTargetField
+        ? ["uncertain:combined-target-effect-area-field"]
+        : []),
       ...(sourcePages.length > 1 ? ["cross-page-source"] : []),
     ]),
   };
@@ -883,11 +896,11 @@ export function parseField(text: string): FieldMatch | null {
     Range: "range",
     Target: "target",
     Targets: "target",
-    "Target or Area": "target",
+    "Target or Area": "targetOrArea",
     "Target or Targets": "target",
-    "Target, Effect, or Area": "target",
-    "Target/Effect": "target",
-    "Area or Target": "target",
+    "Target, Effect, or Area": "targetEffectOrArea",
+    "Target/Effect": "targetEffect",
+    "Area or Target": "areaOrTarget",
     Effect: "effect",
     Area: "area",
     Duration: "duration",

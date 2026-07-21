@@ -34,6 +34,8 @@ export const PHB_FULL_ENTITIES_RELATIVE_PATH =
   "phb35/extracted/full/entities.jsonl";
 export const PHB_FULL_ISSUES_RELATIVE_PATH =
   "phb35/extracted/full/issues.jsonl";
+export const PHB_FULL_DETACHED_TABLES_RELATIVE_PATH =
+  "phb35/extracted/full/detached-tables.jsonl";
 export const PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH =
   "phb35/extracted/full/entities-manifest.json";
 export const PHB_FULL_LIST_ROWS_RELATIVE_PATH =
@@ -74,6 +76,25 @@ export type FullSpellEntity = {
   bodyText: string;
   sourceText: string;
   reviewFlags: string[];
+};
+
+export type FullDetachedTableEvidence = {
+  schemaVersion: 1;
+  rowId: string;
+  printedName: string;
+  attachToSpell: boolean;
+  sourcePages: PilotSourcePage[];
+  sourceText: string;
+  lines: Array<{
+    sourceId: string;
+    sourcePageIndex: number;
+    printedPageNumber: number | null;
+    text: string;
+    x: number;
+    y: number;
+    height: number;
+    segments: ReadingLine["segments"];
+  }>;
 };
 
 export type FullExtractionIssue = {
@@ -256,6 +277,10 @@ export async function runFullExtraction(dataRoot: string) {
   }
   const entitiesPath = resolveInside(dataRoot, PHB_FULL_ENTITIES_RELATIVE_PATH);
   const issuesPath = resolveInside(dataRoot, PHB_FULL_ISSUES_RELATIVE_PATH);
+  const detachedTablesPath = resolveInside(
+    dataRoot,
+    PHB_FULL_DETACHED_TABLES_RELATIVE_PATH,
+  );
   const listRowsPath = resolveInside(
     dataRoot,
     PHB_FULL_LIST_ROWS_RELATIVE_PATH,
@@ -274,6 +299,7 @@ export async function runFullExtraction(dataRoot: string) {
   );
   writeJsonl(entitiesPath, discovery.spells);
   writeJsonl(issuesPath, discovery.issues);
+  writeJsonl(detachedTablesPath, discovery.detachedTables);
   writeJsonl(listRowsPath, listExtraction.printedRows);
   writeJsonl(listOccurrencesPath, listExtraction.occurrences);
   writeJsonl(listFootnotesPath, listExtraction.footnotes);
@@ -292,6 +318,10 @@ export async function runFullExtraction(dataRoot: string) {
     outputs: {
       entities: artifact(PHB_FULL_ENTITIES_RELATIVE_PATH, entitiesPath),
       issues: artifact(PHB_FULL_ISSUES_RELATIVE_PATH, issuesPath),
+      detachedTables: artifact(
+        PHB_FULL_DETACHED_TABLES_RELATIVE_PATH,
+        detachedTablesPath,
+      ),
       listRows: artifact(PHB_FULL_LIST_ROWS_RELATIVE_PATH, listRowsPath),
       listOccurrences: artifact(
         PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH,
@@ -321,6 +351,7 @@ export async function runFullExtraction(dataRoot: string) {
     extractionManifestPath,
     entitiesPath,
     issuesPath,
+    detachedTablesPath,
     entitiesManifestPath,
     counts: {
       pages: pages.length,
@@ -502,6 +533,28 @@ export function discoverFullSpellEntities(pages: FullPageRow[]) {
     spells,
     issues,
     detachedTableNames: detached.tables.map((table) => table.printedName),
+    detachedTables: detached.tables.map(
+      (table): FullDetachedTableEvidence => ({
+        schemaVersion: 1,
+        rowId: `detached-table:${slug(table.printedName)}`,
+        printedName: table.printedName,
+        attachToSpell: table.attachToSpell,
+        sourcePages: uniqueSourcePages(
+          table.lines.map((line) => sourcePage(line.page)),
+        ),
+        sourceText: table.lines.map((line) => line.text).join("\n"),
+        lines: table.lines.map((line) => ({
+          sourceId: line.page.sourceId,
+          sourcePageIndex: line.page.sourcePageIndex,
+          printedPageNumber: line.page.printedPageNumber,
+          text: line.text,
+          x: line.x,
+          y: line.y,
+          height: line.height,
+          segments: line.segments,
+        })),
+      }),
+    ),
     removedCaptionCount: captions.removedCount,
   };
 }

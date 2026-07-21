@@ -121,16 +121,22 @@ contain 605 spells, with 1,216 printed list rows, 1,235 expanded occurrences,
 and no parser or set-reconciliation issue. The source-specific layout contract
 also pins seven detached named tables and six illustration-caption runs so a
 PDF content-order change cannot silently move table or caption text into a
-spell body.
+spell body. Detached tables are retained separately with line and PDF.js
+segment coordinates. Combined `Target` / `Effect` / `Area` labels remain
+distinct extraction fields instead of being flattened into `target`.
 
 Full comparison applies the committed errata inventory and operation hints,
 then compares the 605-row source/DB union against read-only rules and content
 databases. It writes component comparisons, DB identities, fingerprint-bound
 row reviews, and source-free aggregate counts. `exact-match` and
 `formatting-only` rows receive deterministic `data-tools:auto` acceptance;
-substantive and manual rows remain `proposed`. The default report command
-refuses to create `full-english-review.json` until every current row decision
-is terminal, so a successful extraction or comparison does not close Gate 2.
+substantive and manual rows remain `proposed`. Combined target/effect/area
+fields and unparsed shared Summon Nature's Ally tables are always manual;
+whole-body token reordering is never accepted as formatting equivalence. The
+default report command recursively re-hashes extraction issues, errata output,
+the pilot summon table, comparison inputs, and review evidence, then refuses
+to create `full-english-review.json` until every current row decision is
+terminal. A successful extraction or comparison does not close Gate 2.
 
 Inspect the local rules DB:
 

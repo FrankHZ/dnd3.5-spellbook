@@ -270,10 +270,10 @@ before write-capable work begins.
   parser or set-reconciliation issues. Seven detached named tables and six
   illustration-caption runs are explicit source-layout gates rather than
   silent parser exceptions.
-- Full source and DB sets balance at 605/605 with zero misses or extras. The
-  current reviewed comparison has 65 exact, 315 formatting-only, 163
-  substantive, and 62 manual rows. Exact and formatting-only evidence gives
-  380 deterministic terminal acceptances; 225 substantive/manual rows remain
+- Full source and DB sets balance at 605/605 with zero misses or extras. After
+  review hardening, the current comparison has 65 exact, 297 formatting-only,
+  163 substantive, and 80 manual rows. Exact and formatting-only evidence gives
+  362 deterministic terminal acceptances; 243 substantive/manual rows remain
   proposed, so `phb:source:report` correctly refuses to propose Gate 2.
 - Independent data-pipeline and English-summary QA reviewed the remaining
   queues. The findings identify deterministic parser/normalization fixes,
@@ -284,3 +284,10 @@ before write-capable work begins.
 - Data-repo commit `18faa9a` pins the deterministic full extraction,
   effective errata overlays, list evidence, DB comparison, 605 fingerprinted
   row decisions, and the proposed main-gate QA packet for this handoff.
+- Review hardening preserves combined target/effect/area labels, records all
+  seven detached tables with PDF.js coordinates, forces the unparsed Summon
+  Nature's Ally shared table to manual review, and removes token-multiset body
+  equivalence. Gate 2 report verification now recursively follows description
+  issues, errata output, pilot summon evidence, comparison inputs, and every
+  row-review evidence artifact. Data-repo commit `f26626c` records the hardened
+  artifacts and resets all affected decisions against their new fingerprints.

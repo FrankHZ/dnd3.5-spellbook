@@ -247,7 +247,6 @@ export function compareSpell(
         ? (db.description.split(/\nh4\./u)[0] ?? "")
         : db.description,
       {
-        allowTokenReorder: spell.reviewFlags.includes("table-or-list"),
         allowDbExpansion:
           /^(?:this spell functions like|this spell is similar to)\b/iu.test(
             overlay.effectiveBodyText,
@@ -411,7 +410,7 @@ export function compareComponent(
   component: string,
   sourceValue: string,
   dbValue: string,
-  options: { allowTokenReorder?: boolean; allowDbExpansion?: boolean } = {},
+  options: { allowDbExpansion?: boolean } = {},
 ) {
   const normalize =
     component === "components" ? normalizeComponents : normalizeExact;
@@ -424,10 +423,6 @@ export function compareComponent(
   const exactSource = normalize(sourceValue);
   const exactDb = normalize(dbValue);
   const meaningMatches = meaning(sourceValue) === meaning(dbValue);
-  const reorderedTokensMatch =
-    options.allowTokenReorder === true &&
-    meaningTokens(normalizeMeaning(sourceValue)).sort().join(" ") ===
-      meaningTokens(normalizeMeaning(dbValue)).sort().join(" ");
   const sourceMeaning = meaning(sourceValue);
   const dbMeaning = meaning(dbValue);
   const dbExpansionMatches =
@@ -437,7 +432,7 @@ export function compareComponent(
   const category =
     exactSource === exactDb
       ? ("exact-match" as const)
-      : meaningMatches || reorderedTokensMatch || dbExpansionMatches
+      : meaningMatches || dbExpansionMatches
         ? ("formatting-only" as const)
         : ("substantive-mismatch" as const);
   return { component, category, sourceValue, dbValue };
@@ -612,28 +607,32 @@ function normalizedFieldMap(fields: Record<string, string>) {
 }
 
 function sourceTargetEffectArea(fields: Record<string, string>) {
-  return uniqueNonempty([
-    fields.targets,
-    fields.target,
-    fields.effect,
-    fields.area,
-  ]).join(" / ");
+  return labeledNonempty([
+    ["Target", fields.targets ?? fields.target],
+    ["Effect", fields.effect],
+    ["Area", fields.area],
+    ["Target or Area", fields.targetorarea],
+    ["Target, Effect, or Area", fields.targeteffectorarea],
+    ["Target/Effect", fields.targeteffect],
+    ["Area or Target", fields.areaortarget],
+  ]);
 }
 
 function dbTargetEffectArea(db: DbSpell) {
-  return uniqueNonempty([db.target, db.effect, db.area]).join(" / ");
+  return labeledNonempty([
+    ["Target", db.target],
+    ["Effect", db.effect],
+    ["Area", db.area],
+  ]);
 }
 
-function uniqueNonempty(values: Array<string | undefined>) {
-  return Array.from(
-    new Map(
-      values.flatMap((value) =>
-        value
-          ? [[value.toLocaleLowerCase("en-US").trim(), value] as const]
-          : [],
-      ),
-    ).values(),
-  );
+function labeledNonempty(
+  values: Array<readonly [label: string, value: string | undefined]>,
+) {
+  return values
+    .filter((entry): entry is readonly [string, string] => Boolean(entry[1]))
+    .map(([label, value]) => `${label}: ${value}`)
+    .join(" / ");
 }
 
 function dbSchool(db: DbSpell) {

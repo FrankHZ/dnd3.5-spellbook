@@ -291,9 +291,14 @@ The default full extraction must continue to hard-gate the independently
 derived 605-spell description/list sets, 1,216 printed rows, 1,235 expanded
 occurrences, zero parser/set issues, and the pinned detached-table/caption
 layout counts. Full comparison may auto-accept only exact and formatting-only
-rows. Substantive or manual rows remain fingerprint-bound review work, and
-`phb:source:report` must fail until every current row is terminal; a successful
-full extraction or comparison does not close Gate 2.
+rows after preserving combined target/effect/area labels and table layout
+boundaries; token-multiset equality is not formatting evidence. Unparsed shared
+tables remain manual and must be included in the row evidence chain.
+Substantive or manual rows remain fingerprint-bound review work. The full
+report must recursively re-hash description/list issues, errata output, pilot
+summon evidence, comparison inputs, and row-review evidence, and must fail
+until every current row is terminal; a successful extraction or comparison
+does not close Gate 2.
 
 ## Validation Commands
 

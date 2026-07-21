@@ -1,5 +1,10 @@
+import { createHash } from "node:crypto";
+
 import type { PilotErrataOverlayRow } from "./pilot-errata";
-import type { FullSpellEntity } from "./full-extraction";
+import type {
+  FullDetachedTableEvidence,
+  FullSpellEntity,
+} from "./full-extraction";
 import {
   compareSpell,
   type DbSpell,
@@ -11,6 +16,11 @@ import {
 
 export type FullDbComparisonRow = PilotDbComparisonRow & {
   setMembership: "both" | "source-only" | "db-only";
+  sourceEvidence: Array<{
+    rowId: string;
+    kind: "detached-table";
+    sha256: string;
+  }>;
 };
 
 export function compareFullCorpus(input: {
@@ -18,6 +28,7 @@ export function compareFullCorpus(input: {
   overlays: PilotErrataOverlayRow[];
   classListOccurrences: PilotClassListOccurrenceForComparison[];
   dbSpells: DbSpell[];
+  detachedTables?: FullDetachedTableEvidence[];
   summonMonsterTable?: PilotComparisonSpell["summonTable"];
   dbSummonTableValue?: string;
 }) {
@@ -46,6 +57,19 @@ export function compareFullCorpus(input: {
       });
     }
     const source = sourceRows[0]!;
+    const sourceEvidence = relatedDetachedTableEvidence(
+      source,
+      input.detachedTables ?? [],
+    );
+    const sourceReviewFlags = [
+      ...source.reviewFlags,
+      ...(sourceEvidence.some(
+        (evidence) =>
+          normalizeName(evidence.printedName) === "summon nature's ally",
+      )
+        ? ["uncertain:shared-summon-table-unparsed"]
+        : []),
+    ];
     if (sourceRows.length > 1) {
       return setOnlyRow({
         printedName: source.printedName,
@@ -54,11 +78,15 @@ export function compareFullCorpus(input: {
         dbRows,
         occurrences,
         source,
-        reviewFlags: ["parser-issue:duplicate-source-spell"],
+        reviewFlags: [
+          ...sourceReviewFlags,
+          "parser-issue:duplicate-source-spell",
+        ],
+        sourceEvidence,
       });
     }
     const comparisonSpell = toComparisonSpell(
-      source,
+      { ...source, reviewFlags: sourceReviewFlags },
       source.printedName === "Summon Monster I"
         ? input.summonMonsterTable
         : undefined,
@@ -77,6 +105,7 @@ export function compareFullCorpus(input: {
     return {
       ...compared,
       setMembership: dbRows.length > 0 ? "both" : "source-only",
+      sourceEvidence: sourceEvidence.map(toSourceEvidenceReference),
     };
   });
 }
@@ -108,6 +137,34 @@ export function validateFullComparisonBalance(input: {
   return errors;
 }
 
+export function validateFullComparisonSourceEvidence(
+  rows: FullDbComparisonRow[],
+  tables: FullDetachedTableEvidence[],
+) {
+  const errors: string[] = [];
+  const tablesById = new Map(tables.map((table) => [table.rowId, table]));
+  for (const row of rows) {
+    const seen = new Set<string>();
+    for (const evidence of row.sourceEvidence) {
+      if (seen.has(evidence.rowId)) {
+        errors.push(`${row.caseId} repeats source evidence ${evidence.rowId}`);
+        continue;
+      }
+      seen.add(evidence.rowId);
+      const table = tablesById.get(evidence.rowId);
+      if (!table) {
+        errors.push(`${row.caseId} source evidence is missing: ${evidence.rowId}`);
+        continue;
+      }
+      const expected = tableSha256(table);
+      if (evidence.sha256 !== expected) {
+        errors.push(`${row.caseId} source evidence is stale: ${evidence.rowId}`);
+      }
+    }
+  }
+  return errors;
+}
+
 function toComparisonSpell(
   source: FullSpellEntity,
   summonTable: PilotComparisonSpell["summonTable"] | undefined,
@@ -134,6 +191,7 @@ function setOnlyRow(input: {
   occurrences: PilotClassListOccurrenceForComparison[];
   source?: FullSpellEntity;
   reviewFlags?: string[];
+  sourceEvidence?: FullDetachedTableEvidence[];
 }): FullDbComparisonRow {
   const sourcePages = input.source
     ? input.source.sourcePages.flatMap((page) =>
@@ -146,6 +204,7 @@ function setOnlyRow(input: {
     printedName: input.printedName,
     category: input.category,
     setMembership: input.membership,
+    sourceEvidence: (input.sourceEvidence ?? []).map(toSourceEvidenceReference),
     sourcePages,
     dbSpellIds: input.dbRows.map((row) => row.id),
     components: [
@@ -168,6 +227,31 @@ function setOnlyRow(input: {
     },
     reviewFlags: Array.from(new Set(input.reviewFlags ?? [])).sort(),
   };
+}
+
+function relatedDetachedTableEvidence(
+  source: FullSpellEntity,
+  tables: FullDetachedTableEvidence[],
+) {
+  const spellName = normalizeName(source.printedName);
+  return tables.filter((table) => {
+    const tableName = normalizeName(table.printedName);
+    return table.attachToSpell
+      ? spellName === tableName
+      : spellName.startsWith(`${tableName} `);
+  });
+}
+
+function toSourceEvidenceReference(table: FullDetachedTableEvidence) {
+  return {
+    rowId: table.rowId,
+    kind: "detached-table" as const,
+    sha256: tableSha256(table),
+  };
+}
+
+function tableSha256(table: FullDetachedTableEvidence) {
+  return createHash("sha256").update(JSON.stringify(table)).digest("hex");
 }
 
 function groupByName<T extends { printedName?: string; name?: string }>(

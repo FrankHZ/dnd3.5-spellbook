@@ -14,6 +14,7 @@ const comparison: FullDbComparisonRow = {
   printedName: "Test",
   category: "exact-match",
   setMembership: "both",
+  sourceEvidence: [],
   sourcePages: [200],
   dbSpellIds: [1],
   components: [],

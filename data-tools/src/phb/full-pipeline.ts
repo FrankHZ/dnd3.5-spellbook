@@ -6,18 +6,22 @@ import { readPhbErrataInventory } from "./errata-inventory";
 import {
   compareFullCorpus,
   validateFullComparisonBalance,
+  validateFullComparisonSourceEvidence,
   type FullDbComparisonRow,
 } from "./full-comparison";
 import {
   PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH,
   PHB_FULL_ENTITIES_RELATIVE_PATH,
+  PHB_FULL_DETACHED_TABLES_RELATIVE_PATH,
   PHB_FULL_EXTRACTION_MANIFEST_RELATIVE_PATH,
+  PHB_FULL_ISSUES_RELATIVE_PATH,
   PHB_FULL_LIST_FOOTNOTES_RELATIVE_PATH,
   PHB_FULL_LIST_ISSUES_RELATIVE_PATH,
   PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH,
   PHB_FULL_LIST_ROWS_RELATIVE_PATH,
   PHB_FULL_PAGES_RELATIVE_PATH,
   type FullPageRow,
+  type FullDetachedTableEvidence,
   type FullSpellEntity,
 } from "./full-extraction";
 import {
@@ -78,6 +82,9 @@ export function runFullComparison() {
   );
   const listOccurrences = readJsonl<FullListOccurrence>(
     resolveInside(dataRoot, PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH),
+  );
+  const detachedTables = readJsonl<FullDetachedTableEvidence>(
+    resolveInside(dataRoot, PHB_FULL_DETACHED_TABLES_RELATIVE_PATH),
   );
   const { filePath: inventoryPath, rows: inventory } =
     readPhbErrataInventory(dataRoot);
@@ -158,6 +165,7 @@ export function runFullComparison() {
     overlays: overlayRows,
     classListOccurrences: comparisonOccurrences,
     dbSpells,
+    detachedTables,
     summonMonsterTable: summonTable.levels.flatMap((level) =>
       level.monsters.map((monster) => ({
         level: level.level,
@@ -175,6 +183,15 @@ export function runFullComparison() {
   if (balanceErrors.length > 0) {
     throw new Error(
       `PHB full comparison does not balance:\n${balanceErrors.join("\n")}`,
+    );
+  }
+  const sourceEvidenceErrors = validateFullComparisonSourceEvidence(
+    comparisons,
+    detachedTables,
+  );
+  if (sourceEvidenceErrors.length > 0) {
+    throw new Error(
+      `PHB full comparison source evidence is invalid:\n${sourceEvidenceErrors.join("\n")}`,
     );
   }
   const comparisonsPath = resolveInside(
@@ -271,6 +288,10 @@ export function runFullComparison() {
         PHB_FULL_LIST_FOOTNOTES_RELATIVE_PATH,
         resolveInside(dataRoot, PHB_FULL_LIST_FOOTNOTES_RELATIVE_PATH),
       ),
+      detachedTables: artifact(
+        PHB_FULL_DETACHED_TABLES_RELATIVE_PATH,
+        resolveInside(dataRoot, PHB_FULL_DETACHED_TABLES_RELATIVE_PATH),
+      ),
     },
     output: artifact(PHB_FULL_ROW_REVIEW_RELATIVE_PATH, rowReviewPath),
     counts: {
@@ -298,7 +319,10 @@ export function runFullComparison() {
       illustrationCaptionRunsRemoved: readObject(
         resolveInside(dataRoot, PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH),
       ).counts.illustrationCaptionRunsRemoved,
-      parserIssues: readJsonl(
+      descriptionIssues: readJsonl(
+        resolveInside(dataRoot, PHB_FULL_ISSUES_RELATIVE_PATH),
+      ).length,
+      listIssues: readJsonl(
         resolveInside(dataRoot, PHB_FULL_LIST_ISSUES_RELATIVE_PATH),
       ).length,
     },
@@ -349,16 +373,7 @@ export function writeProposedFullEnglishReview() {
     PHB_FULL_DB_COMPARISON_MANIFEST_RELATIVE_PATH,
   );
   const comparisonManifest = readObject(comparisonManifestPath);
-  expectArtifact(
-    comparisonManifest.output,
-    comparisonsPath,
-    "comparison manifest -> comparisons",
-  );
-  expectArtifact(
-    comparisonManifest.errataManifest,
-    resolveInside(dataRoot, PHB_FULL_ERRATA_MANIFEST_RELATIVE_PATH),
-    "comparison manifest -> errata",
-  );
+  verifyFullComparisonArtifacts(dataRoot, comparisonManifest);
   const databaseErrors = validateComparisonDatabaseIdentities(
     comparisonManifest.databases,
     currentComparisonDatabaseIdentities(),
@@ -388,7 +403,20 @@ export function writeProposedFullEnglishReview() {
     rowReviewPath,
     "row review manifest -> rows",
   );
+  verifyRowReviewEvidenceArtifacts(dataRoot, rowReviewManifest);
   const comparisons = readJsonl<FullDbComparisonRow>(comparisonsPath);
+  const detachedTables = readJsonl<FullDetachedTableEvidence>(
+    resolveInside(dataRoot, PHB_FULL_DETACHED_TABLES_RELATIVE_PATH),
+  );
+  const sourceEvidenceErrors = validateFullComparisonSourceEvidence(
+    comparisons,
+    detachedTables,
+  );
+  if (sourceEvidenceErrors.length > 0) {
+    throw new Error(
+      `PHB full comparison source evidence is stale:\n${sourceEvidenceErrors.join("\n")}`,
+    );
+  }
   const reviews = readJsonl<FullRowReview>(rowReviewPath);
   const spells = readJsonl<FullSpellEntity>(
     resolveInside(dataRoot, PHB_FULL_ENTITIES_RELATIVE_PATH),
@@ -478,8 +506,8 @@ export function writeProposedFullEnglishReview() {
   return { reviewPath, review };
 }
 
-function verifyFullExtractionChain(dataRoot: string) {
-  const { filePath: fullManifestPath } =
+export function verifyFullExtractionChain(dataRoot: string) {
+  const { filePath: fullManifestPath, manifest: fullManifest } =
     readPhbFullExtractionManifest(dataRoot);
   const extractionManifestPath = resolveInside(
     dataRoot,
@@ -490,6 +518,21 @@ function verifyFullExtractionChain(dataRoot: string) {
     extraction.fullExtractionManifest,
     fullManifestPath,
     "full extraction manifest",
+  );
+  expectArtifact(
+    extraction.sourceManifest,
+    resolveInside(dataRoot, fullManifest.sourceManifest.relativePath),
+    "extraction -> source manifest",
+  );
+  expectArtifact(
+    extraction.gate1Review,
+    resolveInside(dataRoot, fullManifest.gate1Review.relativePath),
+    "extraction -> Gate 1 review",
+  );
+  expectArtifact(
+    extraction.output,
+    resolveInside(dataRoot, PHB_FULL_PAGES_RELATIVE_PATH),
+    "extraction -> pages",
   );
   const entitiesManifestPath = resolveInside(
     dataRoot,
@@ -508,6 +551,8 @@ function verifyFullExtractionChain(dataRoot: string) {
   );
   for (const [field, relativePath] of [
     ["entities", PHB_FULL_ENTITIES_RELATIVE_PATH],
+    ["issues", PHB_FULL_ISSUES_RELATIVE_PATH],
+    ["detachedTables", PHB_FULL_DETACHED_TABLES_RELATIVE_PATH],
     ["listRows", PHB_FULL_LIST_ROWS_RELATIVE_PATH],
     ["listOccurrences", PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH],
     ["listFootnotes", PHB_FULL_LIST_FOOTNOTES_RELATIVE_PATH],
@@ -519,6 +564,78 @@ function verifyFullExtractionChain(dataRoot: string) {
       resolveInside(dataRoot, relativePath),
       `entities -> ${field}`,
     );
+  }
+  assertEmptyJsonl(
+    resolveInside(dataRoot, PHB_FULL_ISSUES_RELATIVE_PATH),
+    "description issues",
+  );
+  assertEmptyJsonl(
+    resolveInside(dataRoot, PHB_FULL_LIST_ISSUES_RELATIVE_PATH),
+    "list issues",
+  );
+}
+
+export function verifyFullErrataChain(dataRoot: string) {
+  const manifestPath = resolveInside(
+    dataRoot,
+    PHB_FULL_ERRATA_MANIFEST_RELATIVE_PATH,
+  );
+  const manifest = readObject(manifestPath);
+  for (const [field, relativePath, label] of [
+    ["entitiesManifest", PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH, "entities"],
+    ["inventory", ERRATA_INVENTORY, "inventory"],
+    ["operationHints", PHB_FULL_ERRATA_HINTS_RELATIVE_PATH, "operation hints"],
+    ["output", PHB_FULL_ERRATA_OVERLAYS_RELATIVE_PATH, "overlays"],
+  ] as const) {
+    expectArtifact(
+      manifest[field],
+      resolveInside(dataRoot, relativePath),
+      `errata manifest -> ${label}`,
+    );
+  }
+}
+
+export function verifyFullComparisonArtifacts(
+  dataRoot: string,
+  comparisonManifest: Record<string, unknown>,
+) {
+  verifyFullErrataChain(dataRoot);
+  for (const [field, relativePath, label] of [
+    ["output", PHB_FULL_DB_COMPARISON_RELATIVE_PATH, "comparisons"],
+    ["errataManifest", PHB_FULL_ERRATA_MANIFEST_RELATIVE_PATH, "errata"],
+    ["pilotSummonTable", PILOT_ENTITIES, "pilot summon table"],
+  ] as const) {
+    expectArtifact(
+      comparisonManifest[field],
+      resolveInside(dataRoot, relativePath),
+      `comparison manifest -> ${label}`,
+    );
+  }
+}
+
+export function verifyRowReviewEvidenceArtifacts(
+  dataRoot: string,
+  rowReviewManifest: Record<string, unknown>,
+) {
+  const evidence = record(rowReviewManifest.evidence, "row review evidence");
+  for (const [field, relativePath] of [
+    ["entities", PHB_FULL_ENTITIES_RELATIVE_PATH],
+    ["listRows", PHB_FULL_LIST_ROWS_RELATIVE_PATH],
+    ["listOccurrences", PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH],
+    ["listFootnotes", PHB_FULL_LIST_FOOTNOTES_RELATIVE_PATH],
+    ["detachedTables", PHB_FULL_DETACHED_TABLES_RELATIVE_PATH],
+  ] as const) {
+    expectArtifact(
+      evidence[field],
+      resolveInside(dataRoot, relativePath),
+      `row review evidence -> ${field}`,
+    );
+  }
+}
+
+export function assertEmptyJsonl(filePath: string, label: string) {
+  if (readJsonl(filePath).length > 0) {
+    throw new Error(`PHB full ${label} must be empty at Gate 2`);
   }
 }
 
@@ -563,6 +680,7 @@ function buildEvidenceRowIds(
           ? [overlaysByCase.get(comparison.caseId)!]
           : []),
         ...comparison.dbSpellIds.map((id) => `db-spell:${id}`),
+        ...comparison.sourceEvidence.map((evidence) => evidence.rowId),
       ];
       return [comparison.caseId, Array.from(new Set(ids)).sort()] as const;
     }),
