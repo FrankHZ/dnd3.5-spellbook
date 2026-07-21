@@ -89,6 +89,16 @@ baselines.
 
 ## Recently Completed
 
+The v1.4 PHB representative Gate 1 pilot is accepted with:
+
+- PR #100 merging summary comparison, multi-page errata extraction, current
+  inventory/DB identity verification, and fingerprint-bound review decisions.
+- ten reviewed outcomes covering 112 comparison components: two exact, four
+  formatting-only, two substantive mismatches, and two explicit manual
+  decisions with zero unresolved rows.
+- nested data commit `c4a1e79` recording the accepted clean provenance chain;
+  the default `phb:pilot:verify` passes and authorizes full-PHB extraction only.
+
 The v1.3 sitewide UX/style and platform release is frozen with:
 
 - `docs/releases/v1.3/FREEZE.md` as the canonical as-built snapshot.
@@ -249,19 +259,18 @@ Recommended next sequence:
    `main`, and the exact accepted commit before creating the release tag. This
    does not relax or reorder v1.4 source gates.
 
-2. **Re-close v1.4 PHB representative pilot (In review)**
+2. **Run full-PHB extraction and English comparison (Gate 1 accepted)**
 
-   The source lock and page extraction are accepted. Re-review the hardened
-   ten-case end-to-end evidence after short-description comparison, multi-page
-   errata extraction, current-input verification, and decision fingerprints
-   reset the prior acceptance. Full-PHB extraction remains blocked.
+   Expand the accepted pilot workflow across the complete in-scope PHB spell
+   and class-list sets. Reconcile PDF+errata source rows with current PHB DB
+   rows, preserve component categories and provenance, and resolve every
+   manual-review or set-accounting issue.
 
-3. **Complete English QA before translation (Blocked on Gate 1)**
+3. **Close English Gate 2 before translation**
 
-   Run full-PHB extraction, then reconcile the complete PDF and current PHB DB
-   sets with terminal comparison/errata decisions and zero unexplained misses.
-   Only after main-gate acceptance may the i18n translation/proofreading track
-   begin.
+   Produce accepted effective English rows with zero unexplained misses and a
+   source-free aggregate handoff. Only after main-gate accepts Gate 2 may the
+   i18n translation/proofreading track begin.
 
 4. **Activate only accepted v1.4 content**
 

@@ -7,9 +7,9 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: in progress; Gate 0 and the Slice 3 page-extraction substage are
-accepted. Gate 1 is reopened pending a fresh end-to-end main-gate review after
-provenance hardening; Slice 4 remains blocked.
+Status: in progress; Gate 0 and the complete Gate 1 representative pilot are
+accepted. Slice 4 full-PHB extraction and English comparison are authorized and
+next.
 
 ## Purpose
 
@@ -252,10 +252,13 @@ before write-capable work begins.
   Object. It additionally records both Dispel Magic short-description wording
   groups as comparison components and supports ordered multi-page errata
   sections such as Divine Favor.
+- Data-repo commit `ba54174` records the ten fingerprint-bound terminal row
+  decisions and the proposed hardened end-to-end review. Independent main-gate
+  review accepted all 112 comparison components, including the two explicit
+  manual decisions, and data-repo commit `c4a1e79` records the final Gate 1
+  acceptance.
 - `data/phb35/review/pilot-page-extraction-review.json` remains the page-only
   decision. `data/phb35/review/pilot-e2e-review.json` is the accepted Gate 1
-  decision location. It is intentionally absent while the hardened row reviews
-  remain proposed. The default `npm run -w data-tools phb:pilot:verify` must
-  fail until a fresh committed end-to-end review is accepted; full-PHB
-  extraction, full English acceptance, translation, and DB activation remain
-  unauthorized.
+  decision, and the default `npm run -w data-tools phb:pilot:verify` passes
+  against its clean committed hash chain. This authorizes full-PHB extraction
+  only; full English acceptance, translation, and DB activation remain gated.
