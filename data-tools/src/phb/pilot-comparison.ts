@@ -149,6 +149,46 @@ export function comparePilotWithLocalDb(input: {
   }
 }
 
+export function readCurrentPhbDbSpells(): DbSpell[] {
+  const rulesPath = databasePath("RULES_DATABASE_URL");
+  const contentPath = optionalDatabasePath("CONTENT_DATABASE_URL");
+  const rulesDb = new Database(rulesPath, {
+    readonly: true,
+    fileMustExist: true,
+  });
+  const contentDb = contentPath
+    ? new Database(contentPath, { readonly: true, fileMustExist: true })
+    : null;
+  try {
+    const names = rulesDb
+      .prepare(
+        `SELECT s.name
+         FROM dnd_spell s
+         JOIN dnd_rulebook rb ON rb.id = s.rulebook_id
+         WHERE rb.abbr = 'PH'
+         ORDER BY s.name, s.id`,
+      )
+      .all() as Array<{ name: string }>;
+    return names.flatMap((row) => readDbSpells(rulesDb, contentDb, row.name));
+  } finally {
+    contentDb?.close();
+    rulesDb.close();
+  }
+}
+
+export function readCurrentPhbSummonTable() {
+  const rulesPath = databasePath("RULES_DATABASE_URL");
+  const rulesDb = new Database(rulesPath, {
+    readonly: true,
+    fileMustExist: true,
+  });
+  try {
+    return readDbSummonTable(rulesDb);
+  } finally {
+    rulesDb.close();
+  }
+}
+
 export function compareSpell(
   spell: PilotComparisonSpell,
   overlay: PilotErrataOverlayRow,
@@ -195,33 +235,10 @@ export function compareSpell(
       spell.sourcePages[0]?.toString() ?? "",
       db.page?.toString() ?? "",
     ),
-    compareComponent("school", spell.school, dbSchool(db)),
     compareComponent(
-      "components",
-      sourceFields.components ?? "",
-      db.components,
-    ),
-    compareComponent(
-      "castingTime",
-      sourceFields.castingtime ?? "",
-      db.castingTime,
-    ),
-    compareComponent("range", sourceFields.range ?? "", db.range),
-    compareComponent(
-      "targetEffectArea",
-      sourceTargetEffectArea(sourceFields),
-      dbTargetEffectArea(db),
-    ),
-    compareComponent("duration", sourceFields.duration ?? "", db.duration),
-    compareComponent(
-      "savingThrow",
-      sourceFields.savingthrow ?? "",
-      db.savingThrow,
-    ),
-    compareComponent(
-      "spellResistance",
-      sourceFields.spellresistance ?? "",
-      db.spellResistance,
+      "school",
+      overlay.effectiveSchool ?? spell.school,
+      dbSchool(db),
     ),
     compareComponent(
       "body",
@@ -229,9 +246,39 @@ export function compareSpell(
       spell.summonTable
         ? (db.description.split(/\nh4\./u)[0] ?? "")
         : db.description,
-      { allowTokenReorder: spell.reviewFlags.includes("table-or-list") },
+      {
+        allowTokenReorder: spell.reviewFlags.includes("table-or-list"),
+        allowDbExpansion:
+          /^(?:this spell functions like|this spell is similar to)\b/iu.test(
+            overlay.effectiveBodyText,
+          ),
+      },
     ),
   ];
+  const optionalFieldComparisons = [
+    ["components", "components", db.components],
+    ["castingTime", "castingtime", db.castingTime],
+    ["range", "range", db.range],
+    ["duration", "duration", db.duration],
+    ["savingThrow", "savingthrow", db.savingThrow],
+    ["spellResistance", "spellresistance", db.spellResistance],
+  ] as const;
+  for (const [component, sourceField, dbValue] of optionalFieldComparisons) {
+    const sourceValue = sourceFields[sourceField];
+    if (sourceValue !== undefined) {
+      components.push(compareComponent(component, sourceValue, dbValue));
+    }
+  }
+  const targetEffectArea = sourceTargetEffectArea(sourceFields);
+  if (targetEffectArea) {
+    components.push(
+      compareComponent(
+        "targetEffectArea",
+        targetEffectArea,
+        dbTargetEffectArea(db),
+      ),
+    );
+  }
   if (spell.summonTable) {
     components.push(
       compareComponent(
@@ -364,12 +411,16 @@ export function compareComponent(
   component: string,
   sourceValue: string,
   dbValue: string,
-  options: { allowTokenReorder?: boolean } = {},
+  options: { allowTokenReorder?: boolean; allowDbExpansion?: boolean } = {},
 ) {
   const normalize =
     component === "components" ? normalizeComponents : normalizeExact;
   const meaning =
-    component === "components" ? normalizeComponents : normalizeMeaning;
+    component === "components"
+      ? normalizeComponents
+      : component === "school"
+        ? normalizeSchool
+        : normalizeMeaning;
   const exactSource = normalize(sourceValue);
   const exactDb = normalize(dbValue);
   const meaningMatches = meaning(sourceValue) === meaning(dbValue);
@@ -377,10 +428,16 @@ export function compareComponent(
     options.allowTokenReorder === true &&
     meaningTokens(normalizeMeaning(sourceValue)).sort().join(" ") ===
       meaningTokens(normalizeMeaning(dbValue)).sort().join(" ");
+  const sourceMeaning = meaning(sourceValue);
+  const dbMeaning = meaning(dbValue);
+  const dbExpansionMatches =
+    options.allowDbExpansion === true &&
+    sourceMeaning.length > 0 &&
+    ` ${dbMeaning} `.includes(` ${sourceMeaning} `);
   const category =
     exactSource === exactDb
       ? ("exact-match" as const)
-      : meaningMatches || reorderedTokensMatch
+      : meaningMatches || reorderedTokensMatch || dbExpansionMatches
         ? ("formatting-only" as const)
         : ("substantive-mismatch" as const);
   return { component, category, sourceValue, dbValue };
@@ -555,17 +612,28 @@ function normalizedFieldMap(fields: Record<string, string>) {
 }
 
 function sourceTargetEffectArea(fields: Record<string, string>) {
-  for (const key of ["targets", "target", "effect", "area"]) {
-    if (fields[key]) return `${key.replace(/s$/, "")}: ${fields[key]}`;
-  }
-  return "";
+  return uniqueNonempty([
+    fields.targets,
+    fields.target,
+    fields.effect,
+    fields.area,
+  ]).join(" / ");
 }
 
 function dbTargetEffectArea(db: DbSpell) {
-  if (db.target) return `target: ${db.target}`;
-  if (db.effect) return `effect: ${db.effect}`;
-  if (db.area) return `area: ${db.area}`;
-  return "";
+  return uniqueNonempty([db.target, db.effect, db.area]).join(" / ");
+}
+
+function uniqueNonempty(values: Array<string | undefined>) {
+  return Array.from(
+    new Map(
+      values.flatMap((value) =>
+        value
+          ? [[value.toLocaleLowerCase("en-US").trim(), value] as const]
+          : [],
+      ),
+    ).values(),
+  );
 }
 
 function dbSchool(db: DbSpell) {
@@ -624,6 +692,7 @@ function parseLevelEntries(value: string) {
     pal: "Paladin",
     rgr: "Ranger",
     "sor/wiz": "Sorcerer/Wizard",
+    wiz: "Wizard",
   };
   return value.split(/,\s*/).flatMap((part) => {
     const match = /^(.*?)\s+(\d+)$/.exec(part.trim());
@@ -669,13 +738,36 @@ function normalizeMeaning(value: string) {
     .replace(/[_*]/g, "")
     .replace(/\|_?\.?/g, " ")
     .replace(/\^([^\^]+)\^/g, "$1")
-    .replace(/--|—/g, "-")
+    .replace(/--|[–—]/g, " ")
+    .replace(/(?<=\d)[x×](?=\d)/gi, " ")
     .replace(/(?<=[a-z])-(?=[a-z])/gi, "")
     .replace(/\b([MF])\/DF\b/g, "$1, DF")
     .replace(/\bTargets:/i, "Target:")
     .replace(/\s+/g, " ")
     .trim();
   return meaningTokens(normalized).join(" ");
+}
+
+function normalizeSchool(value: string) {
+  const normalized = normalizeExact(value);
+  const match = /^([^\[(]+?)(?:\s*\(([^)]*)\))?(?:\s*\[([^\]]*)\])?$/u.exec(
+    normalized,
+  );
+  if (!match) return normalizeMeaning(value);
+  const normalizePart = (part: string) =>
+    meaningTokens(part.replace(/-/gu, " ")).join(" ");
+  const normalizeList = (part: string | undefined) =>
+    (part ?? "")
+      .split(/\s*(?:,|\band\b)\s*/iu)
+      .map(normalizePart)
+      .filter(Boolean)
+      .sort()
+      .join(",");
+  return [
+    normalizePart(match[1]!),
+    normalizeList(match[2]),
+    normalizeList(match[3]),
+  ].join("|");
 }
 
 function meaningTokens(value: string) {
@@ -688,7 +780,7 @@ function normalizeComponents(value: string) {
   return (
     normalizeExact(value)
       .toUpperCase()
-      .match(/DF|XP|V|S|M|F/gu) ?? []
+      .match(/\b(?:DF|XP|V|S|M|F)\b/gu) ?? []
   )
     .sort()
     .join(",");

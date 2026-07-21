@@ -15,6 +15,22 @@ const base = {
 };
 
 assert.deepEqual(validatePhbErrataInventoryRow(base), []);
+assert.deepEqual(
+  validatePhbErrataInventoryRow({
+    ...base,
+    operationHints: [
+      { kind: "replace-text", target: "old", replacement: "new" },
+    ],
+  }),
+  [],
+);
+assert.match(
+  validatePhbErrataInventoryRow({
+    ...base,
+    operationHints: [{ kind: "replace-text", target: "", replacement: "new" }],
+  }).join("\n"),
+  /operationHints\[0\]\.target/u,
+);
 assert.match(
   validatePhbErrataInventoryRow({ ...base, overlayPolicy: "none" }).join("\n"),
   /applicable rows require an overlay policy/,

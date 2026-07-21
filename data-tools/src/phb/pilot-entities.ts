@@ -25,16 +25,12 @@ export type PilotMineruLayoutBlock = {
   textOrigin: "text-layer" | "ocr-risk" | "none";
 };
 
-export type PilotPageRow = {
+export type PhbTextPageRow = {
   schemaVersion: 1;
   sourceId: string;
   sourceArtifactSha256: string;
-  subsetArtifactSha256: string;
-  subsetPageIndex: number;
   sourcePageIndex: number;
   printedPageNumber: number | null;
-  caseIds: string[];
-  kinds: string[];
   pdfjs: {
     extractor: { name: string; version: string };
     width: number;
@@ -42,6 +38,13 @@ export type PilotPageRow = {
     textLayerSha256: string;
     items: PilotPdfTextItem[];
   };
+};
+
+export type PilotPageRow = PhbTextPageRow & {
+  subsetArtifactSha256: string;
+  subsetPageIndex: number;
+  caseIds: string[];
+  kinds: string[];
   mineru: {
     engine: string;
     version: string;
@@ -138,8 +141,8 @@ export type PilotEntityExtraction = {
   rows: PilotEntityRow[];
 };
 
-type ReadingLine = {
-  page: PilotPageRow;
+export type ReadingLine = {
+  page: PhbTextPageRow;
   text: string;
   x: number;
   y: number;
@@ -147,7 +150,7 @@ type ReadingLine = {
   segments: PilotPdfTextItem[];
 };
 
-type FieldMatch = {
+export type FieldMatch = {
   name: PilotSpellFieldName;
   value: string;
 };
@@ -293,27 +296,53 @@ function extractSpellEntity(
     );
   }
   const start = headingIndexes[0]!;
+  const extracted = extractSpellAtHeading(
+    lines,
+    start,
+    `PHB pilot case ${pilotCase.id}`,
+  );
+  return {
+    entityType: "spell",
+    caseId: pilotCase.id,
+    ...extracted,
+    reviewFlags: uniqueStrings([
+      ...pilotCase.selectionReasons,
+      ...extracted.reviewFlags,
+    ]),
+  };
+}
+
+export function extractSpellAtHeading(
+  lines: ReadingLine[],
+  start: number,
+  errorLabel: string,
+) {
+  if (!isSpellHeadingAt(lines, start)) {
+    throw new Error(`${errorLabel} does not start at a spell heading`);
+  }
   let stop = lines.length;
   for (let index = start + 1; index < lines.length; index += 1) {
-    if (isSpellHeadingAt(lines, index)) {
+    if (
+      isSpellHeadingAt(lines, index) ||
+      /^\p{Lu}[\p{L} ]+ \(Spell Name\)$/u.test(lines[index]!.text)
+    ) {
       stop = index;
       break;
     }
   }
   const entityLines = lines.slice(start, stop);
+  const printedName = entityLines[0]!.text;
   const levelIndex = entityLines.findIndex(
     (line, index) => index > 0 && parseField(line.text)?.name === "level",
   );
   if (levelIndex < 2) {
-    throw new Error(`PHB pilot case ${pilotCase.id} has no school/Level block`);
+    throw new Error(`${errorLabel} has no school/Level block`);
   }
   const school = joinWrappedLines(
     entityLines.slice(1, levelIndex).map((line) => line.text),
   );
   if (!SCHOOL_PATTERN.test(school)) {
-    throw new Error(
-      `PHB pilot case ${pilotCase.id} has an unrecognized school line: ${school}`,
-    );
+    throw new Error(`${errorLabel} has an unrecognized school line: ${school}`);
   }
 
   const fields: Partial<Record<PilotSpellFieldName, string>> = {};
@@ -325,67 +354,96 @@ function extractSpellEntity(
     const field = parseField(line.text);
     if (field) {
       if (fieldLines.has(field.name)) {
-        throw new Error(
-          `PHB pilot case ${pilotCase.id} repeats field ${field.name}`,
-        );
+        throw new Error(`${errorLabel} repeats field ${field.name}`);
       }
       currentField = field.name;
       fieldLines.set(field.name, [field.value]);
       continue;
     }
-    if (currentField === "spellResistance") {
+    if (
+      currentField !== null &&
+      startsDescriptionBody(currentField, entityLines[index - 1], line)
+    ) {
       bodyStart = index;
       break;
     }
     if (currentField === null) {
-      throw new Error(
-        `PHB pilot case ${pilotCase.id} has text before its first field`,
-      );
+      throw new Error(`${errorLabel} has text before its first field`);
     }
     fieldLines.get(currentField)!.push(line.text);
   }
   if (bodyStart < 0) {
-    throw new Error(`PHB pilot case ${pilotCase.id} has no description body`);
+    throw new Error(`${errorLabel} has no description body`);
   }
   for (const [name, values] of fieldLines) {
     const value = joinWrappedLines(values);
     if (value.length === 0) {
-      throw new Error(`PHB pilot case ${pilotCase.id} has empty field ${name}`);
+      throw new Error(`${errorLabel} has empty field ${name}`);
     }
     fields[name] = value;
   }
-  for (const required of ["level", "spellResistance"] as const) {
+  for (const required of ["level"] as const) {
     if (!fields[required]) {
-      throw new Error(
-        `PHB pilot case ${pilotCase.id} is missing required field ${required}`,
-      );
+      throw new Error(`${errorLabel} is missing required field ${required}`);
     }
   }
   const bodyLines = entityLines.slice(bodyStart).map((line) => line.text);
   const bodyText = joinWrappedLines(bodyLines);
   if (bodyText.length === 0) {
-    throw new Error(`PHB pilot case ${pilotCase.id} has an empty body`);
+    throw new Error(`${errorLabel} has an empty body`);
   }
   const sourcePages = uniqueSourcePages(entityLines.map((line) => line.page));
   const wrappedFields = [...fieldLines]
     .filter(([, values]) => values.length > 1)
     .map(([name]) => `wrapped-field:${name}`);
+  const tableOrList = entityLines
+    .slice(bodyStart)
+    .some(looksLikeTableOrListLine);
 
   return {
-    entityType: "spell",
-    caseId: pilotCase.id,
-    printedName: pilotCase.printedName,
+    printedName,
     sourcePages,
     school,
     fields,
     bodyText,
     sourceText: entityLines.map((line) => line.text).join("\n"),
     reviewFlags: uniqueStrings([
-      ...pilotCase.selectionReasons,
       ...wrappedFields,
+      ...(tableOrList ? ["table-or-list"] : []),
       ...(sourcePages.length > 1 ? ["cross-page-source"] : []),
     ]),
   };
+}
+
+function looksLikeTableOrListLine(line: ReadingLine) {
+  if (/\u0001/u.test(line.text)) return true;
+  const segments = line.segments
+    .filter((segment) => segment.text.trim().length > 0)
+    .sort((left, right) => left.x - right.x);
+  let wideGaps = 0;
+  for (let index = 1; index < segments.length; index += 1) {
+    const previous = segments[index - 1]!;
+    const current = segments[index]!;
+    if (current.x - (previous.x + previous.width) > 6) wideGaps += 1;
+  }
+  return wideGaps >= 2;
+}
+
+function startsDescriptionBody(
+  currentField: PilotSpellFieldName,
+  previous: ReadingLine | undefined,
+  current: ReadingLine,
+) {
+  if (currentField === "spellResistance") {
+    const previousText = previous?.text.trim() ?? "";
+    const continuation =
+      /[-,;]$/u.test(previousText) ||
+      /^(?:\(|less\)|see\s+text\b|text\b)/iu.test(current.text.trim());
+    return !continuation;
+  }
+  if (!previous || previous.page !== current.page) return true;
+  const verticalGap = previous.y - current.y;
+  return verticalGap < 0 || verticalGap > Math.max(14, previous.height * 1.45);
 }
 
 function extractClassListOccurrence(
@@ -710,7 +768,7 @@ function extractTableFootnotes(
   });
 }
 
-function reconstructReadingLines(page: PilotPageRow): ReadingLine[] {
+export function reconstructReadingLines(page: PhbTextPageRow): ReadingLine[] {
   const lines: ReadingLine[] = [];
   let segments: PilotPdfTextItem[] = [];
   let baseline: number | null = null;
@@ -796,13 +854,13 @@ function reconstructCoordinateText(items: PilotPdfTextItem[]) {
     .trim();
 }
 
-function isSpellHeadingAt(lines: ReadingLine[], index: number) {
+export function isSpellHeadingAt(lines: ReadingLine[], index: number) {
   const heading = lines[index];
   if (
     !heading ||
     heading.text.includes(":") ||
     /[.!?]$/u.test(heading.text) ||
-    !/^\p{Lu}[\p{L}\p{N}’'(),\- ]+$/u.test(heading.text)
+    !/^\p{Lu}[\p{L}\p{N}’'(),/\- ]+$/u.test(heading.text)
   ) {
     return false;
   }
@@ -811,20 +869,25 @@ function isSpellHeadingAt(lines: ReadingLine[], index: number) {
   return following.some((line) => parseField(line.text)?.name === "level");
 }
 
-function parseField(text: string): FieldMatch | null {
+export function parseField(text: string): FieldMatch | null {
   const match =
-    /^(Level|Components|Casting Time|Range|Target or Area|Targets?|Effect|Area|Duration|Saving Throw|Spell Resistance):\s*(.*)$/u.exec(
+    /^(Level|Components?|Casting Time|Range|Target or Area|Target or Targets|Target, Effect, or Area|Target\/Effect|Area or Target|Targets?|Effect|Area|Duration|Saving Throw|Spell Resistance):\s*(.*)$/u.exec(
       text,
     );
   if (!match) return null;
   const names: Record<string, PilotSpellFieldName> = {
     Level: "level",
+    Component: "components",
     Components: "components",
     "Casting Time": "castingTime",
     Range: "range",
     Target: "target",
     Targets: "target",
     "Target or Area": "target",
+    "Target or Targets": "target",
+    "Target, Effect, or Area": "target",
+    "Target/Effect": "target",
+    "Area or Target": "target",
     Effect: "effect",
     Area: "area",
     Duration: "duration",
@@ -841,7 +904,7 @@ function looksLikeClassListEntry(line: ReadingLine, targetX: number) {
   );
 }
 
-function normalizeWordingGroup(value: string) {
+export function normalizeWordingGroup(value: string) {
   return value
     .normalize("NFKC")
     .toLocaleLowerCase("en-US")
@@ -851,7 +914,7 @@ function normalizeWordingGroup(value: string) {
     .trim();
 }
 
-function joinWrappedLines(values: string[]) {
+export function joinWrappedLines(values: string[]) {
   let result = "";
   for (const raw of values) {
     const value = raw.trim();
@@ -1057,7 +1120,7 @@ function uniqueLocations(locations: PhbPilotLocation[]) {
   });
 }
 
-function uniqueSourcePages(pages: PilotPageRow[]) {
+export function uniqueSourcePages(pages: PhbTextPageRow[]) {
   const seen = new Set<string>();
   return pages.flatMap((page) => {
     const key = pageKey(page.sourceId, page.sourcePageIndex);
@@ -1067,7 +1130,7 @@ function uniqueSourcePages(pages: PilotPageRow[]) {
   });
 }
 
-function toSourcePage(page: PilotPageRow): PilotSourcePage {
+export function toSourcePage(page: PhbTextPageRow): PilotSourcePage {
   return {
     sourceId: page.sourceId,
     sourceArtifactSha256: page.sourceArtifactSha256,
@@ -1140,7 +1203,7 @@ function groupClassListLocations(
   return groups;
 }
 
-function isPageFurniture(text: string, page: PilotPageRow) {
+function isPageFurniture(text: string, page: PhbTextPageRow) {
   return (
     (page.printedPageNumber !== null &&
       text === String(page.printedPageNumber)) ||

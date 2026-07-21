@@ -1,0 +1,651 @@
+import fs from "node:fs";
+import path from "node:path";
+
+import { localDataDir, repoRoot } from "../shared/env";
+import { readPhbErrataInventory } from "./errata-inventory";
+import {
+  compareFullCorpus,
+  validateFullComparisonBalance,
+  type FullDbComparisonRow,
+} from "./full-comparison";
+import {
+  PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH,
+  PHB_FULL_ENTITIES_RELATIVE_PATH,
+  PHB_FULL_EXTRACTION_MANIFEST_RELATIVE_PATH,
+  PHB_FULL_LIST_FOOTNOTES_RELATIVE_PATH,
+  PHB_FULL_LIST_ISSUES_RELATIVE_PATH,
+  PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH,
+  PHB_FULL_LIST_ROWS_RELATIVE_PATH,
+  PHB_FULL_PAGES_RELATIVE_PATH,
+  type FullPageRow,
+  type FullSpellEntity,
+} from "./full-extraction";
+import {
+  PHB_FULL_ERRATA_HINTS_RELATIVE_PATH,
+  readPhbFullErrataHints,
+} from "./full-errata-hints";
+import type { FullListOccurrence } from "./full-lists";
+import { readPhbFullExtractionManifest } from "./full-manifest";
+import {
+  buildProposedFullRowReviews,
+  mergeFullRowReviews,
+  validateFullRowReviewEvidence,
+  validateFullRowReviews,
+  type FullRowReview,
+} from "./full-row-review";
+import {
+  normalizeWordingGroup,
+  type PilotEntityRow,
+  type PilotSummonTableEntity,
+} from "./pilot-entities";
+import { buildPilotErrataOverlays } from "./pilot-errata";
+import {
+  currentComparisonDatabaseIdentities,
+  PHB_COMPARISON_CATEGORIES,
+  readCurrentPhbDbSpells,
+  readCurrentPhbSummonTable,
+  type PilotClassListOccurrenceForComparison,
+  validateComparisonDatabaseIdentities,
+} from "./pilot-comparison";
+import { resolveInside, sha256File } from "./source-manifest";
+
+export const PHB_FULL_ERRATA_OVERLAYS_RELATIVE_PATH =
+  "phb35/extracted/full/errata-overlays.jsonl";
+export const PHB_FULL_ERRATA_MANIFEST_RELATIVE_PATH =
+  "phb35/extracted/full/errata-overlay-manifest.json";
+export const PHB_FULL_DB_COMPARISON_RELATIVE_PATH =
+  "phb35/extracted/full/db-comparison.jsonl";
+export const PHB_FULL_DB_COMPARISON_MANIFEST_RELATIVE_PATH =
+  "phb35/extracted/full/db-comparison-manifest.json";
+export const PHB_FULL_ROW_REVIEW_RELATIVE_PATH =
+  "phb35/review/full-row-review.jsonl";
+export const PHB_FULL_ROW_REVIEW_MANIFEST_RELATIVE_PATH =
+  "phb35/review/full-row-review-manifest.json";
+export const PHB_FULL_ENGLISH_REVIEW_RELATIVE_PATH =
+  "phb35/review/full-english-review.json";
+
+const PILOT_ENTITIES = "phb35/extracted/pilot/entities.jsonl";
+const ERRATA_INVENTORY = "phb35/review/errata-inventory.jsonl";
+
+export function runFullComparison() {
+  const dataRoot = localDataDir();
+  verifyFullExtractionChain(dataRoot);
+  const spells = readJsonl<FullSpellEntity>(
+    resolveInside(dataRoot, PHB_FULL_ENTITIES_RELATIVE_PATH),
+  );
+  const pages = readJsonl<FullPageRow>(
+    resolveInside(dataRoot, PHB_FULL_PAGES_RELATIVE_PATH),
+  );
+  const listOccurrences = readJsonl<FullListOccurrence>(
+    resolveInside(dataRoot, PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH),
+  );
+  const { filePath: inventoryPath, rows: inventory } =
+    readPhbErrataInventory(dataRoot);
+  const { filePath: hintsPath, rows: hintRows } =
+    readPhbFullErrataHints(dataRoot);
+  const inventoryIds = new Set(inventory.map((row) => row.entryId));
+  const unknownHints = hintRows.filter((row) => !inventoryIds.has(row.entryId));
+  if (unknownHints.length > 0) {
+    throw new Error(
+      `PHB full errata hints reference unknown inventory rows: ${unknownHints
+        .map((row) => row.entryId)
+        .join(", ")}`,
+    );
+  }
+  const hintsByEntry = new Map(hintRows.map((row) => [row.entryId, row]));
+  const effectiveInventory = inventory.map((row) => {
+    const hint = hintsByEntry.get(row.entryId);
+    return hint ? { ...row, operationHints: hint.operationHints } : row;
+  });
+
+  const overlayRows = buildPilotErrataOverlays(
+    spells.map((spell) => ({
+      caseId: spell.rowId,
+      printedName: spell.printedName,
+      school: spell.school,
+      fields: { ...spell.fields },
+      bodyText: spell.bodyText,
+    })),
+    effectiveInventory,
+    pages,
+  ).map((row) => ({ rowId: `errata:${row.caseId}`, ...row }));
+  const overlaysPath = resolveInside(
+    dataRoot,
+    PHB_FULL_ERRATA_OVERLAYS_RELATIVE_PATH,
+  );
+  writeJsonl(overlaysPath, overlayRows);
+  const errataManifestPath = resolveInside(
+    dataRoot,
+    PHB_FULL_ERRATA_MANIFEST_RELATIVE_PATH,
+  );
+  writeJson(errataManifestPath, {
+    schemaVersion: 1,
+    entitiesManifest: artifact(
+      PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH,
+      resolveInside(dataRoot, PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH),
+    ),
+    inventory: artifact(ERRATA_INVENTORY, inventoryPath),
+    operationHints: artifact(PHB_FULL_ERRATA_HINTS_RELATIVE_PATH, hintsPath),
+    output: artifact(PHB_FULL_ERRATA_OVERLAYS_RELATIVE_PATH, overlaysPath),
+    counts: {
+      rows: overlayRows.length,
+      listed: overlayRows.filter((row) => row.entryId !== null).length,
+      applied: overlayRows.filter((row) =>
+        row.operationResults.some((result) => result.status === "applied"),
+      ).length,
+      alreadyIncorporated: overlayRows.filter(
+        (row) => row.disposition === "already-incorporated",
+      ).length,
+      reviewRequired: overlayRows.filter((row) => row.reviewRequired).length,
+    },
+  });
+
+  const dbSpells = readCurrentPhbDbSpells();
+  const summonTable = readAcceptedPilotSummonTable(dataRoot);
+  const comparisonOccurrences = listOccurrences.map(
+    (row): PilotClassListOccurrenceForComparison => ({
+      caseId: row.occurrenceId,
+      printedName: row.printedName,
+      owner: row.owner,
+      level: row.level,
+      sourcePage: row.sourceStart.printedPageNumber,
+      summaryText: row.summaryText,
+      wordingGroupKey: normalizeWordingGroup(row.summaryText),
+    }),
+  );
+  const comparisons = compareFullCorpus({
+    spells,
+    overlays: overlayRows,
+    classListOccurrences: comparisonOccurrences,
+    dbSpells,
+    summonMonsterTable: summonTable.levels.flatMap((level) =>
+      level.monsters.map((monster) => ({
+        level: level.level,
+        monsterName: monster.monsterName,
+        alignment: monster.alignment,
+      })),
+    ),
+    dbSummonTableValue: readCurrentPhbSummonTable(),
+  });
+  const balanceErrors = validateFullComparisonBalance({
+    rows: comparisons,
+    sourceSpellCount: spells.length,
+    dbSpellCount: dbSpells.length,
+  });
+  if (balanceErrors.length > 0) {
+    throw new Error(
+      `PHB full comparison does not balance:\n${balanceErrors.join("\n")}`,
+    );
+  }
+  const comparisonsPath = resolveInside(
+    dataRoot,
+    PHB_FULL_DB_COMPARISON_RELATIVE_PATH,
+  );
+  writeJsonl(comparisonsPath, comparisons);
+  const comparisonManifestPath = resolveInside(
+    dataRoot,
+    PHB_FULL_DB_COMPARISON_MANIFEST_RELATIVE_PATH,
+  );
+  const dbIdentities = currentComparisonDatabaseIdentities();
+  writeJson(comparisonManifestPath, {
+    schemaVersion: 1,
+    errataManifest: artifact(
+      PHB_FULL_ERRATA_MANIFEST_RELATIVE_PATH,
+      errataManifestPath,
+    ),
+    pilotSummonTable: artifact(
+      PILOT_ENTITIES,
+      resolveInside(dataRoot, PILOT_ENTITIES),
+    ),
+    databases: dbIdentities,
+    output: artifact(PHB_FULL_DB_COMPARISON_RELATIVE_PATH, comparisonsPath),
+    setCounts: {
+      source: spells.length,
+      db: dbSpells.length,
+      both: comparisons.filter((row) => row.setMembership === "both").length,
+      sourceOnly: comparisons.filter(
+        (row) => row.setMembership === "source-only",
+      ).length,
+      dbOnly: comparisons.filter((row) => row.setMembership === "db-only")
+        .length,
+    },
+    categories: categoryCounts(comparisons),
+  });
+
+  const evidenceRowIdsByCase = buildEvidenceRowIds(
+    comparisons,
+    spells,
+    listOccurrences,
+    overlayRows,
+  );
+  const proposedReviews = buildProposedFullRowReviews({
+    comparisons,
+    evidenceRowIdsByCase,
+  });
+  const rowReviewPath = resolveInside(
+    dataRoot,
+    PHB_FULL_ROW_REVIEW_RELATIVE_PATH,
+  );
+  const reviews = mergeFullRowReviews(
+    fs.existsSync(rowReviewPath) ? readJsonl<FullRowReview>(rowReviewPath) : [],
+    proposedReviews,
+  );
+  const reviewErrors = [
+    ...validateFullRowReviews(comparisons, reviews, false),
+    ...validateFullRowReviewEvidence({
+      comparisons,
+      rows: reviews,
+      evidenceRowIdsByCase,
+    }),
+  ];
+  if (reviewErrors.length > 0) {
+    throw new Error(
+      `PHB full row review is invalid:\n${reviewErrors.join("\n")}`,
+    );
+  }
+  writeJsonl(rowReviewPath, reviews);
+  const rowReviewManifestPath = resolveInside(
+    dataRoot,
+    PHB_FULL_ROW_REVIEW_MANIFEST_RELATIVE_PATH,
+  );
+  writeJson(rowReviewManifestPath, {
+    schemaVersion: 1,
+    comparisonManifest: artifact(
+      PHB_FULL_DB_COMPARISON_MANIFEST_RELATIVE_PATH,
+      comparisonManifestPath,
+    ),
+    evidence: {
+      entities: artifact(
+        PHB_FULL_ENTITIES_RELATIVE_PATH,
+        resolveInside(dataRoot, PHB_FULL_ENTITIES_RELATIVE_PATH),
+      ),
+      listRows: artifact(
+        PHB_FULL_LIST_ROWS_RELATIVE_PATH,
+        resolveInside(dataRoot, PHB_FULL_LIST_ROWS_RELATIVE_PATH),
+      ),
+      listOccurrences: artifact(
+        PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH,
+        resolveInside(dataRoot, PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH),
+      ),
+      listFootnotes: artifact(
+        PHB_FULL_LIST_FOOTNOTES_RELATIVE_PATH,
+        resolveInside(dataRoot, PHB_FULL_LIST_FOOTNOTES_RELATIVE_PATH),
+      ),
+    },
+    output: artifact(PHB_FULL_ROW_REVIEW_RELATIVE_PATH, rowReviewPath),
+    counts: {
+      rows: reviews.length,
+      proposed: reviews.filter((row) => row.status === "proposed").length,
+      accepted: reviews.filter((row) => row.status === "accepted").length,
+      rejected: reviews.filter((row) => row.status === "rejected").length,
+    },
+  });
+
+  const report = {
+    schemaVersion: 1,
+    source: {
+      descriptionSpells: spells.length,
+      printedListRows: readJsonl(
+        resolveInside(dataRoot, PHB_FULL_LIST_ROWS_RELATIVE_PATH),
+      ).length,
+      listOccurrences: listOccurrences.length,
+      listFootnotes: readJsonl(
+        resolveInside(dataRoot, PHB_FULL_LIST_FOOTNOTES_RELATIVE_PATH),
+      ).length,
+      detachedNamedTables: readObject(
+        resolveInside(dataRoot, PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH),
+      ).counts.detachedNamedTables,
+      illustrationCaptionRunsRemoved: readObject(
+        resolveInside(dataRoot, PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH),
+      ).counts.illustrationCaptionRunsRemoved,
+      parserIssues: readJsonl(
+        resolveInside(dataRoot, PHB_FULL_LIST_ISSUES_RELATIVE_PATH),
+      ).length,
+    },
+    comparison: {
+      rows: comparisons.length,
+      categories: categoryCounts(comparisons),
+      sourceOnly: comparisons.filter(
+        (row) => row.setMembership === "source-only",
+      ).length,
+      dbOnly: comparisons.filter((row) => row.setMembership === "db-only")
+        .length,
+    },
+    errata: readObject(errataManifestPath).counts,
+    reviews: readObject(rowReviewManifestPath).counts,
+    artifacts: {
+      entitiesManifest: sha256File(
+        resolveInside(dataRoot, PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH),
+      ),
+      comparisonManifest: sha256File(comparisonManifestPath),
+      rowReviewManifest: sha256File(rowReviewManifestPath),
+    },
+    rerun: {
+      extract: "npm run -w data-tools phb:source:extract",
+      compare: "npm run -w data-tools phb:source:compare",
+      report: "npm run -w data-tools phb:source:report",
+    },
+  };
+  const reportPath = path.join(
+    repoRoot(),
+    "data-tools",
+    "out",
+    "phb",
+    "full-comparison.generated.json",
+  );
+  writeJson(reportPath, report);
+  return { report, reportPath, rowReviewPath, rowReviewManifestPath };
+}
+
+export function writeProposedFullEnglishReview() {
+  const dataRoot = localDataDir();
+  verifyFullExtractionChain(dataRoot);
+  const comparisonsPath = resolveInside(
+    dataRoot,
+    PHB_FULL_DB_COMPARISON_RELATIVE_PATH,
+  );
+  const comparisonManifestPath = resolveInside(
+    dataRoot,
+    PHB_FULL_DB_COMPARISON_MANIFEST_RELATIVE_PATH,
+  );
+  const comparisonManifest = readObject(comparisonManifestPath);
+  expectArtifact(
+    comparisonManifest.output,
+    comparisonsPath,
+    "comparison manifest -> comparisons",
+  );
+  expectArtifact(
+    comparisonManifest.errataManifest,
+    resolveInside(dataRoot, PHB_FULL_ERRATA_MANIFEST_RELATIVE_PATH),
+    "comparison manifest -> errata",
+  );
+  const databaseErrors = validateComparisonDatabaseIdentities(
+    comparisonManifest.databases,
+    currentComparisonDatabaseIdentities(),
+  );
+  if (databaseErrors.length > 0) {
+    throw new Error(
+      `PHB full comparison database identities are stale:\n${databaseErrors.join("\n")}`,
+    );
+  }
+
+  const rowReviewPath = resolveInside(
+    dataRoot,
+    PHB_FULL_ROW_REVIEW_RELATIVE_PATH,
+  );
+  const rowReviewManifestPath = resolveInside(
+    dataRoot,
+    PHB_FULL_ROW_REVIEW_MANIFEST_RELATIVE_PATH,
+  );
+  const rowReviewManifest = readObject(rowReviewManifestPath);
+  expectArtifact(
+    rowReviewManifest.comparisonManifest,
+    comparisonManifestPath,
+    "row review -> comparison",
+  );
+  expectArtifact(
+    rowReviewManifest.output,
+    rowReviewPath,
+    "row review manifest -> rows",
+  );
+  const comparisons = readJsonl<FullDbComparisonRow>(comparisonsPath);
+  const reviews = readJsonl<FullRowReview>(rowReviewPath);
+  const spells = readJsonl<FullSpellEntity>(
+    resolveInside(dataRoot, PHB_FULL_ENTITIES_RELATIVE_PATH),
+  );
+  const occurrences = readJsonl<FullListOccurrence>(
+    resolveInside(dataRoot, PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH),
+  );
+  const overlays = readJsonl<ArrayElementWithIds>(
+    resolveInside(dataRoot, PHB_FULL_ERRATA_OVERLAYS_RELATIVE_PATH),
+  );
+  const evidenceRowIdsByCase = buildEvidenceRowIds(
+    comparisons,
+    spells,
+    occurrences,
+    overlays,
+  );
+  const reviewErrors = [
+    ...validateFullRowReviews(comparisons, reviews, true),
+    ...validateFullRowReviewEvidence({
+      comparisons,
+      rows: reviews,
+      evidenceRowIdsByCase,
+    }),
+  ];
+  if (reviewErrors.length > 0) {
+    const proposed = reviews.filter((row) => row.status === "proposed").length;
+    throw new Error(
+      `PHB full English review requires terminal row decisions (${proposed} proposed):\n${reviewErrors
+        .slice(0, 20)
+        .join(
+          "\n",
+        )}${reviewErrors.length > 20 ? `\n... ${reviewErrors.length - 20} more` : ""}`,
+    );
+  }
+
+  const reviewPath = resolveInside(
+    dataRoot,
+    PHB_FULL_ENGLISH_REVIEW_RELATIVE_PATH,
+  );
+  const review = {
+    schemaVersion: 1,
+    workspace: "phb35",
+    stage: "full-english",
+    status: "proposed",
+    reviewer: null,
+    decisionNote: null,
+    artifacts: [
+      reviewArtifact(
+        "entity-extraction",
+        PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH,
+        dataRoot,
+      ),
+      reviewArtifact(
+        "errata-overlay",
+        PHB_FULL_ERRATA_MANIFEST_RELATIVE_PATH,
+        dataRoot,
+      ),
+      reviewArtifact(
+        "db-comparison",
+        PHB_FULL_DB_COMPARISON_MANIFEST_RELATIVE_PATH,
+        dataRoot,
+      ),
+      reviewArtifact(
+        "row-review",
+        PHB_FULL_ROW_REVIEW_MANIFEST_RELATIVE_PATH,
+        dataRoot,
+      ),
+    ],
+    automatedFindings: {
+      sourceSpells: spells.length,
+      dbSpells: comparisons.filter((row) => row.setMembership !== "source-only")
+        .length,
+      comparisons: comparisons.length,
+      comparisonCategories: categoryCounts(comparisons),
+      sourceOnly: comparisons.filter(
+        (row) => row.setMembership === "source-only",
+      ).length,
+      dbOnly: comparisons.filter((row) => row.setMembership === "db-only")
+        .length,
+      rowReviews: reviews.length,
+      unresolvedRowReviews: 0,
+    },
+    requiredDecision:
+      "Accept or reject the terminal full-PHB English row decisions. Acceptance closes integrated Gate 2 only when the owning release plan records it; this review does not activate DB patches or translation.",
+  };
+  writeJson(reviewPath, review);
+  return { reviewPath, review };
+}
+
+function verifyFullExtractionChain(dataRoot: string) {
+  const { filePath: fullManifestPath } =
+    readPhbFullExtractionManifest(dataRoot);
+  const extractionManifestPath = resolveInside(
+    dataRoot,
+    PHB_FULL_EXTRACTION_MANIFEST_RELATIVE_PATH,
+  );
+  const extraction = readObject(extractionManifestPath);
+  expectArtifact(
+    extraction.fullExtractionManifest,
+    fullManifestPath,
+    "full extraction manifest",
+  );
+  const entitiesManifestPath = resolveInside(
+    dataRoot,
+    PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH,
+  );
+  const entities = readObject(entitiesManifestPath);
+  expectArtifact(
+    entities.extractionManifest,
+    extractionManifestPath,
+    "entities -> extraction",
+  );
+  expectArtifact(
+    entities.pages,
+    resolveInside(dataRoot, PHB_FULL_PAGES_RELATIVE_PATH),
+    "entities -> pages",
+  );
+  for (const [field, relativePath] of [
+    ["entities", PHB_FULL_ENTITIES_RELATIVE_PATH],
+    ["listRows", PHB_FULL_LIST_ROWS_RELATIVE_PATH],
+    ["listOccurrences", PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH],
+    ["listFootnotes", PHB_FULL_LIST_FOOTNOTES_RELATIVE_PATH],
+    ["listIssues", PHB_FULL_LIST_ISSUES_RELATIVE_PATH],
+  ] as const) {
+    const outputs = record(entities.outputs, "entities outputs");
+    expectArtifact(
+      outputs[field],
+      resolveInside(dataRoot, relativePath),
+      `entities -> ${field}`,
+    );
+  }
+}
+
+function readAcceptedPilotSummonTable(dataRoot: string) {
+  const rows = readJsonl<PilotEntityRow>(
+    resolveInside(dataRoot, PILOT_ENTITIES),
+  );
+  const matches = rows.filter(
+    (row): row is PilotSummonTableEntity => row.entityType === "summon-table",
+  );
+  if (matches.length !== 1) {
+    throw new Error(
+      `Accepted pilot must contain one Summon Monster table: ${matches.length}`,
+    );
+  }
+  return matches[0]!;
+}
+
+function buildEvidenceRowIds(
+  comparisons: FullDbComparisonRow[],
+  spells: FullSpellEntity[],
+  occurrences: FullListOccurrence[],
+  overlays: ArrayElementWithIds[],
+) {
+  const spellsByCase = new Map(spells.map((spell) => [spell.rowId, spell]));
+  const overlaysByCase = new Map(
+    overlays.map((row) => [row.caseId, row.rowId]),
+  );
+  const occurrencesByName = new Map<string, string[]>();
+  for (const row of occurrences) {
+    const key = normalizeName(row.printedName);
+    const ids = occurrencesByName.get(key) ?? [];
+    ids.push(row.occurrenceId);
+    occurrencesByName.set(key, ids);
+  }
+  return new Map(
+    comparisons.map((comparison) => {
+      const ids = [
+        ...(spellsByCase.has(comparison.caseId) ? [comparison.caseId] : []),
+        ...(occurrencesByName.get(normalizeName(comparison.printedName)) ?? []),
+        ...(overlaysByCase.has(comparison.caseId)
+          ? [overlaysByCase.get(comparison.caseId)!]
+          : []),
+        ...comparison.dbSpellIds.map((id) => `db-spell:${id}`),
+      ];
+      return [comparison.caseId, Array.from(new Set(ids)).sort()] as const;
+    }),
+  );
+}
+
+type ArrayElementWithIds = { rowId: string; caseId: string };
+
+function categoryCounts(rows: FullDbComparisonRow[]) {
+  return Object.fromEntries(
+    PHB_COMPARISON_CATEGORIES.map((category) => [
+      category,
+      rows.filter((row) => row.category === category).length,
+    ]),
+  );
+}
+
+function expectArtifact(value: unknown, filePath: string, label: string) {
+  const artifactValue = record(value, label);
+  if (artifactValue.sha256 !== sha256File(filePath)) {
+    throw new Error(`PHB full artifact is stale: ${label}`);
+  }
+}
+
+function artifact(relativePath: string, filePath: string) {
+  return { relativePath, sha256: sha256File(filePath) };
+}
+
+function reviewArtifact(role: string, relativePath: string, dataRoot: string) {
+  return {
+    role,
+    relativePath,
+    sha256: sha256File(resolveInside(dataRoot, relativePath)),
+  };
+}
+
+function readObject(filePath: string) {
+  if (!fs.existsSync(filePath))
+    throw new Error(`PHB artifact not found: ${filePath}`);
+  return record(
+    JSON.parse(fs.readFileSync(filePath, "utf8")) as unknown,
+    filePath,
+  );
+}
+
+function readJsonl<T = unknown>(filePath: string): T[] {
+  if (!fs.existsSync(filePath))
+    throw new Error(`PHB artifact not found: ${filePath}`);
+  return fs
+    .readFileSync(filePath, "utf8")
+    .split(/\r?\n/u)
+    .filter((line) => line.trim().length > 0)
+    .map((line) => JSON.parse(line) as T);
+}
+
+function writeJson(filePath: string, value: unknown) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+}
+
+function writeJsonl(filePath: string, rows: unknown[]) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(
+    filePath,
+    rows.length > 0
+      ? `${rows.map((row) => JSON.stringify(row)).join("\n")}\n`
+      : "",
+    "utf8",
+  );
+}
+
+function record(value: unknown, label: string): Record<string, any> {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new Error(`PHB ${label} must be an object`);
+  }
+  return value as Record<string, any>;
+}
+
+function normalizeName(value: string) {
+  return value
+    .normalize("NFKC")
+    .toLocaleLowerCase("en-US")
+    .replace(/[‘’]/gu, "'")
+    .replace(/\s+/gu, " ")
+    .trim();
+}

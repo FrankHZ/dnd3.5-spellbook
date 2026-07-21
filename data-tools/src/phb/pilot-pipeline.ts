@@ -87,6 +87,7 @@ export function runPilotComparison() {
     extraction.spells.map((spell) => ({
       caseId: spell.caseId,
       printedName: spell.printedName,
+      school: spell.school,
       fields: { ...spell.fields },
       bodyText: spell.bodyText,
     })),
