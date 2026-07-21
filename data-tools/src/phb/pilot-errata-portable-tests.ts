@@ -158,4 +158,72 @@ const noOp = parseErrataOperations(
 );
 assert.deepEqual(noOp, [{ kind: "delete-text", target: "Saving Throw: None" }]);
 
+const fieldReplacement = parseErrataOperations(
+  { ...animal, entryId: "field", overlayPolicy: "field-replacement" },
+  "Range and area differ. Change range from 30 ft. to 40 ft.",
+);
+assert.deepEqual(fieldReplacement, [
+  { kind: "replace-text", target: "30 ft.", replacement: "40 ft" },
+]);
+
+const sentenceOperations = parseErrataOperations(
+  { ...animal, entryId: "sentences" },
+  "Delete the two sentences beginning with “A slowed creature.” Insert “(see the slow spell)” just before the end of the first sentence of this paragraph.",
+);
+const sentenceRow = {
+  ...animal,
+  entryId: "sentences",
+  printedName: "Sentence Spell",
+};
+assert.deepEqual(
+  buildPilotErrataOverlays(
+    [
+      {
+        caseId: "sentences",
+        printedName: "Sentence Spell",
+        fields: {},
+        bodyText:
+          "The spell slows them for 1d6 rounds. A slowed creature acts once. In addition, it takes a penalty. The spell then ends.",
+      },
+    ],
+    [sentenceRow],
+    [
+      {
+        sourceId: "phb35-errata-2006-02-17",
+        printedPageNumber: 2,
+        pdfjs: {
+          items: [
+            { text: "Sentence Spell", fontName: "g_f7", hasEol: false },
+            {
+              text: "Delete the two sentences beginning with “A slowed creature.” Insert “(see the slow spell)” just before the end of the first sentence of this paragraph.",
+              fontName: "g_f5",
+              hasEol: true,
+            },
+          ],
+        },
+      },
+    ],
+  )[0]?.effectiveBodyText,
+  "The spell slows them for 1d6 rounds (see the slow spell). The spell then ends.",
+);
+assert.deepEqual(
+  sentenceOperations.map((operation) => operation.kind),
+  ["insert-before-previous-sentence-end", "delete-sentences"],
+);
+assert.deepEqual(
+  parseErrataOperations(
+    sentenceRow,
+    "Delete the two sentences beginning with “A slowed creature.” Insert the following text just before the end of the first sentence of this paragraph: (see the slow spell)",
+  ).map((operation) => operation.kind),
+  ["insert-before-previous-sentence-end", "delete-sentences"],
+);
+
+assert.deepEqual(
+  parseErrataOperations(
+    { ...animal, entryId: "boldface" },
+    "Changes to the spell’s description are noted in boldface type: Replacement body.",
+  ),
+  [{ kind: "replace-full-body", replacement: "Replacement body." }],
+);
+
 console.log("PHB pilot errata portable tests passed");

@@ -16,12 +16,58 @@ assert.equal(
   "exact-match",
 );
 assert.equal(
+  compareComponent("components", "V, S, XP; see text", "V, S, XP").category,
+  "exact-match",
+);
+assert.equal(
+  compareComponent("body", "1d4×10 feet", "1d4x10 feet").category,
+  "formatting-only",
+);
+assert.equal(
   compareComponent("body", "_dispel magic_", "dispel magic").category,
   "formatting-only",
 );
 assert.equal(
   compareComponent("range", "30-foot radius", "20-foot radius").category,
   "substantive-mismatch",
+);
+assert.equal(
+  compareComponent("body", "first row second row", "second row first row")
+    .category,
+  "substantive-mismatch",
+);
+assert.equal(
+  compareComponent(
+    "school",
+    "Illusion (Phantasm) [Mind Affecting, Evil]",
+    "Illusion (Phantasm) [Evil, Mind-Affecting]",
+  ).category,
+  "formatting-only",
+);
+assert.equal(
+  compareComponent(
+    "school",
+    "Illusion (Figment, Glamer)",
+    "Illusion (Figment and Glamer)",
+  ).category,
+  "formatting-only",
+);
+assert.equal(
+  compareComponent(
+    "body",
+    "deity—or agents thereof —and powdered",
+    "deity--or agents thereof--and pow-dered",
+  ).category,
+  "formatting-only",
+);
+assert.equal(
+  compareComponent(
+    "body",
+    "This spell functions like sample spell.",
+    "This spell functions like sample spell. Inherited focus: A token.",
+    { allowDbExpansion: true },
+  ).category,
+  "formatting-only",
 );
 
 const overlay: PilotErrataOverlayRow = {
@@ -36,6 +82,7 @@ const overlay: PilotErrataOverlayRow = {
   operations: [],
   operationResults: [],
   effectiveFields: {},
+  effectiveSchool: "Evocation",
   effectiveBodyText: "Body",
   reviewRequired: false,
   reviewFlags: [],
@@ -79,6 +126,78 @@ const dbSpell: DbSpell = {
   descriptors: [],
   summaryText: "DB wording.",
 };
+const inheritedFields = compareSpell(
+  {
+    caseId: "spell",
+    printedName: "Spell",
+    sourcePages: [1],
+    school: "Evocation",
+    fields: { level: "Sor/Wiz 1" },
+    bodyText: "Body",
+    reviewFlags: [],
+  },
+  { ...overlay, effectiveFields: { level: "Sor/Wiz 1" } },
+  [],
+  [
+    {
+      ...dbSpell,
+      classLevels: [
+        { owner: "Sorcerer", level: 1 },
+        { owner: "Wizard", level: 1 },
+      ],
+    },
+  ],
+);
+assert.equal(inheritedFields.category, "exact-match");
+assert.equal(
+  inheritedFields.components.some((row) => row.component === "components"),
+  false,
+);
+const wizardAlias = compareSpell(
+  {
+    caseId: "wizard-alias",
+    printedName: "Spell",
+    sourcePages: [1],
+    school: "Evocation",
+    fields: { level: "Wiz 1" },
+    bodyText: "Body",
+    reviewFlags: [],
+  },
+  { ...overlay, caseId: "wizard-alias", effectiveFields: { level: "Wiz 1" } },
+  [],
+  [{ ...dbSpell, classLevels: [{ owner: "Wizard", level: 1 }] }],
+);
+assert.equal(wizardAlias.category, "exact-match");
+const combinedTarget = compareSpell(
+  {
+    caseId: "combined-target",
+    printedName: "Spell",
+    sourcePages: [1],
+    school: "Evocation",
+    fields: { targetOrArea: "One creature or a 10-ft. burst" },
+    bodyText: "Body",
+    reviewFlags: ["uncertain:combined-target-effect-area-field"],
+  },
+  {
+    ...overlay,
+    caseId: "combined-target",
+    effectiveFields: { targetOrArea: "One creature or a 10-ft. burst" },
+  },
+  [],
+  [
+    {
+      ...dbSpell,
+      target: "One creature or a 10-ft. burst",
+    },
+  ],
+);
+assert.equal(combinedTarget.category, "manual-review");
+assert.equal(
+  combinedTarget.components.find(
+    (component) => component.component === "targetEffectArea",
+  )?.category,
+  "substantive-mismatch",
+);
 const summaryMismatch = compareSummaryOnlyCase(
   { caseId: "summary", printedName: "Spell", reviewFlags: [] },
   [

@@ -17,6 +17,7 @@ export type PilotErrataPage = {
 export type OverlaySpellEntity = {
   caseId: string;
   printedName: string;
+  school?: string;
   fields: Record<string, string>;
   bodyText: string;
 };
@@ -45,6 +46,16 @@ export type PilotErrataOperation =
       occurrence?: "first" | "last";
     }
   | {
+      kind: "delete-sentences";
+      sentencePrefix: string;
+      count: number;
+    }
+  | {
+      kind: "insert-before-previous-sentence-end";
+      followingSentencePrefix: string;
+      insertion: string;
+    }
+  | {
       kind: "replace-full-body";
       replacement: string;
     };
@@ -64,6 +75,7 @@ export type PilotErrataOverlayRow = {
     status: "applied" | "already-present" | "target-not-found";
   }>;
   effectiveFields: Record<string, string>;
+  effectiveSchool: string | null;
   effectiveBodyText: string;
   reviewRequired: boolean;
   reviewFlags: string[];
@@ -111,6 +123,7 @@ export function buildPilotErrataOverlays(
       operations,
       operationResults: applied.results,
       effectiveFields: applied.fields,
+      effectiveSchool: applied.school,
       effectiveBodyText: applied.bodyText,
       reviewRequired: inventoryRow.reviewRequired || reviewFlags.length > 0,
       reviewFlags,
@@ -174,6 +187,9 @@ export function parseErrataOperations(
   inventoryRow: PhbErrataInventoryRow,
   instruction: string,
 ): PilotErrataOperation[] {
+  if (inventoryRow.operationHints) {
+    return inventoryRow.operationHints.map((hint) => ({ ...hint }));
+  }
   if (inventoryRow.overlayPolicy === "none") {
     return parseQuotedOperations(instruction);
   }
@@ -190,6 +206,37 @@ export function parseErrataOperations(
       {
         kind: "replace-full-body",
         replacement: instruction.slice(match.index + match[0].length).trim(),
+      },
+    ];
+  }
+  if (inventoryRow.overlayPolicy === "field-replacement") {
+    const match = /Change\s+.+?\s+from\s+(.+?)\s+to\s+(.+?)\.?$/iu.exec(
+      instruction,
+    );
+    if (!match?.[1] || !match[2]) {
+      throw new Error(
+        `Field replacement instruction is unsupported: ${inventoryRow.entryId}`,
+      );
+    }
+    return [
+      {
+        kind: "replace-text",
+        target: match[1].trim(),
+        replacement: match[2].replace(/\.$/u, "").trim(),
+      },
+    ];
+  }
+  const boldfaceReplacement =
+    /Changes to the spell[’']s description are noted in boldface type:\s*/iu.exec(
+      instruction,
+    );
+  if (boldfaceReplacement) {
+    return [
+      {
+        kind: "replace-full-body",
+        replacement: instruction
+          .slice(boldfaceReplacement.index + boldfaceReplacement[0].length)
+          .trim(),
       },
     ];
   }
@@ -212,6 +259,10 @@ export function parseErrataOperations(
     parseQuotedOperations(instruction),
     inventoryRow,
   );
+  if (operations.length === 0) {
+    const sentenceOperations = parseSentenceOperations(instruction);
+    if (sentenceOperations.length > 0) return sentenceOperations;
+  }
   if (operations.length === 0) {
     throw new Error(
       `No supported errata operations found: ${inventoryRow.entryId}`,
@@ -287,11 +338,48 @@ function parseQuotedOperations(instruction: string): PilotErrataOperation[] {
   return operations;
 }
 
+function parseSentenceOperations(instruction: string): PilotErrataOperation[] {
+  const quote = '[“"]([^”"]+)[”"]';
+  const deleteMatch = new RegExp(
+    `Delete the (one|two|three) sentences beginning with ${quote}`,
+    "iu",
+  ).exec(instruction);
+  if (!deleteMatch?.[1] || !deleteMatch[2]) return [];
+  const count = { one: 1, two: 2, three: 3 }[
+    deleteMatch[1].toLocaleLowerCase("en-US") as "one" | "two" | "three"
+  ];
+  const sentencePrefix = cleanQuoted(deleteMatch[2]).replace(/[.!?]$/u, "");
+  const operations: PilotErrataOperation[] = [];
+  const quotedInsertMatch = new RegExp(
+    `Insert ${quote} just before the end of the first sentence of this paragraph`,
+    "iu",
+  ).exec(instruction);
+  const followingTextInsertMatch =
+    /Insert the following text just before the end of the first sentence of this paragraph:\s*(\([^)]*\))/iu.exec(
+      instruction,
+    );
+  const insertion = cleanQuoted(
+    quotedInsertMatch?.[1] ?? followingTextInsertMatch?.[1],
+  );
+  if (insertion) {
+    operations.push({
+      kind: "insert-before-previous-sentence-end",
+      followingSentencePrefix: sentencePrefix,
+      insertion,
+    });
+  }
+  operations.push({ kind: "delete-sentences", sentencePrefix, count });
+  return operations;
+}
+
 function applyErrataOperations(
   spell: OverlaySpellEntity,
   operations: PilotErrataOperation[],
 ) {
-  const fields = { ...spell.fields };
+  const fields = {
+    ...spell.fields,
+    ...(spell.school ? { __school: spell.school } : {}),
+  };
   let bodyText = spell.bodyText;
   const results: PilotErrataOverlayRow["operationResults"] = [];
   for (const operation of operations) {
@@ -317,12 +405,79 @@ function applyErrataOperations(
       results.push({ kind: operation.kind, status: "applied" });
       continue;
     }
+    if (operation.kind === "insert-before-previous-sentence-end") {
+      const result = insertBeforePreviousSentenceEnd(bodyText, operation);
+      bodyText = result.bodyText;
+      results.push({ kind: operation.kind, status: result.status });
+      continue;
+    }
+    if (operation.kind === "delete-sentences") {
+      const result = deleteSentences(bodyText, operation);
+      bodyText = result.bodyText;
+      results.push({ kind: operation.kind, status: result.status });
+      continue;
+    }
     const applied = applyTextOperation(fields, bodyText, operation);
     Object.assign(fields, applied.fields);
     bodyText = applied.bodyText;
     results.push({ kind: operation.kind, status: applied.status });
   }
-  return { fields, bodyText, results };
+  const school = fields.__school ?? spell.school ?? null;
+  delete fields.__school;
+  return { fields, school, bodyText, results };
+}
+
+function insertBeforePreviousSentenceEnd(
+  bodyText: string,
+  operation: Extract<
+    PilotErrataOperation,
+    { kind: "insert-before-previous-sentence-end" }
+  >,
+) {
+  if (bodyText.includes(operation.insertion)) {
+    return { bodyText, status: "already-present" as const };
+  }
+  const followingIndex = bodyText.indexOf(operation.followingSentencePrefix);
+  if (followingIndex < 0) {
+    return { bodyText, status: "target-not-found" as const };
+  }
+  const before = bodyText.slice(0, followingIndex).trimEnd();
+  const sentenceEnd = Math.max(
+    before.lastIndexOf("."),
+    before.lastIndexOf("!"),
+    before.lastIndexOf("?"),
+  );
+  if (sentenceEnd < 0) {
+    return { bodyText, status: "target-not-found" as const };
+  }
+  return {
+    bodyText: `${bodyText.slice(0, sentenceEnd)} ${operation.insertion}${bodyText.slice(sentenceEnd)}`,
+    status: "applied" as const,
+  };
+}
+
+function deleteSentences(
+  bodyText: string,
+  operation: Extract<PilotErrataOperation, { kind: "delete-sentences" }>,
+) {
+  const start = bodyText.indexOf(operation.sentencePrefix);
+  if (start < 0) return { bodyText, status: "already-present" as const };
+  let end = start;
+  for (let index = 0; index < operation.count; index += 1) {
+    const boundary = /[.!?](?=\s|$)/u.exec(bodyText.slice(end));
+    if (!boundary || boundary.index === undefined) {
+      return { bodyText, status: "target-not-found" as const };
+    }
+    end += boundary.index + boundary[0].length;
+  }
+  return {
+    bodyText:
+      `${bodyText.slice(0, start)}${bodyText.slice(end).replace(/^\s+/u, "")}`.replace(
+        /\s+/gu,
+        " ",
+      ),
+    status: "applied" as const,
+  };
 }
 
 function applyTextOperation(
@@ -330,7 +485,8 @@ function applyTextOperation(
   bodyText: string,
   operation: Exclude<
     PilotErrataOperation,
-    { kind: "replace-full-body" | "replace-first-sentence" }
+    | { kind: "replace-full-body" | "replace-first-sentence" }
+    | { kind: "delete-sentences" | "insert-before-previous-sentence-end" }
   >,
 ) {
   const target = normalizeTypography(operation.target);
@@ -423,6 +579,7 @@ function noErrataOverlay(spell: OverlaySpellEntity): PilotErrataOverlayRow {
     operations: [],
     operationResults: [],
     effectiveFields: { ...spell.fields },
+    effectiveSchool: spell.school ?? null,
     effectiveBodyText: spell.bodyText,
     reviewRequired: false,
     reviewFlags: [],

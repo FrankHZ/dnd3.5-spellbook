@@ -21,6 +21,12 @@ export type PhbErrataInventoryRow = {
   errataAnchor?: string;
   textTargetOccurrence?: "first" | "last";
   insertBeforeSeparator?: "space" | "comma";
+  operationHints?: Array<{
+    kind: "replace-text";
+    target: string;
+    replacement: string;
+    occurrence?: "first" | "last";
+  }>;
   phbPages: number[];
   errataPages: number[];
   disposition: PhbErrataDisposition;
@@ -117,6 +123,39 @@ export function validatePhbErrataInventoryRow(value: unknown) {
     value.insertBeforeSeparator !== "comma"
   ) {
     errors.push("insertBeforeSeparator must be space or comma when present");
+  }
+  if (value.operationHints !== undefined) {
+    if (
+      !Array.isArray(value.operationHints) ||
+      value.operationHints.length === 0
+    ) {
+      errors.push("operationHints must be a non-empty array when present");
+    } else {
+      value.operationHints.forEach((hint, index) => {
+        const prefix = `operationHints[${index}]`;
+        if (!isRecord(hint) || hint.kind !== "replace-text") {
+          errors.push(`${prefix}.kind must be replace-text`);
+          return;
+        }
+        for (const field of ["target", "replacement"] as const) {
+          if (
+            typeof hint[field] !== "string" ||
+            hint[field].trim().length === 0
+          ) {
+            errors.push(`${prefix}.${field} must be a non-empty string`);
+          }
+        }
+        if (
+          hint.occurrence !== undefined &&
+          hint.occurrence !== "first" &&
+          hint.occurrence !== "last"
+        ) {
+          errors.push(
+            `${prefix}.occurrence must be first or last when present`,
+          );
+        }
+      });
+    }
   }
   validatePages(value.phbPages, "phbPages", errors);
   validatePages(value.errataPages, "errataPages", errors);

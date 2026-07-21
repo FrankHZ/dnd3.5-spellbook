@@ -8,8 +8,9 @@
 > boundaries, or cross-plan conflicts change.
 
 Status: in progress; Gate 0 and the complete Gate 1 representative pilot are
-accepted. Slice 4 full-PHB extraction and English comparison are authorized and
-next.
+accepted. Slice 4 full-PHB extraction and English comparison are implemented
+and awaiting main-gate row review. Gate 2 and all downstream
+translation/activation gates remain blocked.
 
 ## Purpose
 
@@ -22,7 +23,8 @@ correction layer before any translation begins.
 
 - Owning version: v1.4.
 - Owning domain: `data-pipeline`.
-- Primary implementation branch: a focused `codex/data-phb-source-qa` branch.
+- Primary source/pilot branch: `codex/data-phb-source-qa`.
+- Full-extraction and comparison branch: `codex/data-phb-full-extraction`.
 - Related docs: `data-tools/README.md`, `docs/operations/import-workflow.md`,
   `docs/operations/db-content-workflow.md`, and
   `docs/operations/public-repo-notes.md`.
@@ -262,3 +264,30 @@ before write-capable work begins.
   decision, and the default `npm run -w data-tools phb:pilot:verify` passes
   against its clean committed hash chain. This authorizes full-PHB extraction
   only; full English acceptance, translation, and DB activation remain gated.
+- The first full run deterministically extracts 126 selected pages, 605 spell
+  descriptions, 1,216 printed class/domain rows, 1,235 expanded occurrences,
+  605 independent list names, and ten list-footnote definitions with zero
+  parser or set-reconciliation issues. Seven detached named tables and six
+  illustration-caption runs are explicit source-layout gates rather than
+  silent parser exceptions.
+- Full source and DB sets balance at 605/605 with zero misses or extras. After
+  review hardening, the current comparison has 65 exact, 297 formatting-only,
+  163 substantive, and 80 manual rows. Exact and formatting-only evidence gives
+  362 deterministic terminal acceptances; 243 substantive/manual rows remain
+  proposed, so `phb:source:report` correctly refuses to propose Gate 2.
+- Independent data-pipeline and English-summary QA reviewed the remaining
+  queues. The findings identify deterministic parser/normalization fixes,
+  source-backed DB correction candidates, intentional DB expansions, explicit
+  short-description canonical candidates, and the already accepted Gate 1
+  Baleful Polymorph decision. Main gate must still record terminal decisions
+  against the current fingerprints before Slice 5 handoff generation begins.
+- Data-repo commit `18faa9a` pins the deterministic full extraction,
+  effective errata overlays, list evidence, DB comparison, 605 fingerprinted
+  row decisions, and the proposed main-gate QA packet for this handoff.
+- Review hardening preserves combined target/effect/area labels, records all
+  seven detached tables with PDF.js coordinates, forces the unparsed Summon
+  Nature's Ally shared table to manual review, and removes token-multiset body
+  equivalence. Gate 2 report verification now recursively follows description
+  issues, errata output, pilot summon evidence, comparison inputs, and every
+  row-review evidence artifact. Data-repo commit `f26626c` records the hardened
+  artifacts and resets all affected decisions against their new fingerprints.

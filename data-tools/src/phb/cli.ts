@@ -8,6 +8,11 @@ import {
   summarizePhbErrataInventory,
 } from "./errata-inventory";
 import { inspectPdfTextLayer } from "./pdf-baseline";
+import { runFullExtraction } from "./full-extraction";
+import {
+  runFullComparison,
+  writeProposedFullEnglishReview,
+} from "./full-pipeline";
 import { buildPilotInputPdfs } from "./pilot-input";
 import { importMineruPilot } from "./pilot-extraction";
 import {
@@ -192,9 +197,29 @@ async function startFullExtraction() {
     expectedStage: "end-to-end",
     requireAccepted: true,
   });
-  throw new Error(
-    "PHB full extraction is not implemented yet; the accepted end-to-end pilot gate passed",
+  const result = await runFullExtraction(localDataDir());
+  const reportPath = path.join(
+    repoRoot(),
+    "data-tools",
+    "out",
+    "phb",
+    "full-extraction.generated.json",
   );
+  writeJson(reportPath, {
+    schemaVersion: 1,
+    counts: result.counts,
+    dataArtifacts: {
+      extractionManifest: path
+        .relative(localDataDir(), result.extractionManifestPath)
+        .replace(/\\/gu, "/"),
+      entityManifest: path
+        .relative(localDataDir(), result.entitiesManifestPath)
+        .replace(/\\/gu, "/"),
+    },
+  });
+  console.log("PHB full PDF.js extraction generated");
+  console.log(`Report: ${reportPath}`);
+  console.log(JSON.stringify(result.counts, null, 2));
 }
 
 async function preparePilotInput() {
@@ -297,9 +322,28 @@ function comparePilot() {
   console.log(JSON.stringify(result.report.counts, null, 2));
 }
 
+function compareFull() {
+  verifyPhbPilotReview({
+    dataRoot: localDataDir(),
+    reviewRelativePath: PHB_END_TO_END_PILOT_REVIEW_RELATIVE_PATH,
+    expectedStage: "end-to-end",
+    requireAccepted: true,
+  });
+  const result = runFullComparison();
+  console.log("PHB full English comparison generated");
+  console.log(`Report: ${result.reportPath}`);
+  console.log(JSON.stringify(result.report.comparison, null, 2));
+}
+
 function reportPilot() {
   const result = writeProposedEndToEndReview();
   console.log("PHB end-to-end pilot review proposed");
+  console.log(`Review: ${result.reviewPath}`);
+}
+
+function reportFull() {
+  const result = writeProposedFullEnglishReview();
+  console.log("PHB full English review proposed");
   console.log(`Review: ${result.reviewPath}`);
 }
 
@@ -369,7 +413,7 @@ function writeJson(filePath: string, value: unknown) {
 
 function usage(): never {
   throw new Error(
-    "Usage: phb:source:verify | phb:pilot:verify [-- --stage page-extraction|end-to-end --review <data-relative-path>] | phb:source:extract -- --pilot --prepare-only | phb:source:extract -- --pilot --mineru-output <data-relative-path> | phb:source:compare -- --pilot | phb:source:report -- --pilot",
+    "Usage: phb:source:verify | phb:pilot:verify [-- --stage page-extraction|end-to-end --review <data-relative-path>] | phb:source:extract | phb:source:extract -- --pilot --prepare-only | phb:source:extract -- --pilot --mineru-output <data-relative-path> | phb:source:compare [-- --pilot] | phb:source:report [-- --pilot]",
   );
 }
 
@@ -398,8 +442,16 @@ async function main() {
     comparePilot();
     return;
   }
+  if (command === "compare" && !process.argv.includes("--pilot")) {
+    compareFull();
+    return;
+  }
   if (command === "report" && process.argv.includes("--pilot")) {
     reportPilot();
+    return;
+  }
+  if (command === "report" && !process.argv.includes("--pilot")) {
+    reportFull();
     return;
   }
   if (

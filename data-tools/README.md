@@ -106,6 +106,38 @@ hash chain are still required before the default pilot verifier passes. The
 verifier also checks the current committed errata inventory and current
 rules/content DB hashes against the accepted comparison inputs.
 
+After the accepted end-to-end pilot passes, run the full source workflow:
+
+```bash
+npm run -w data-tools phb:source:extract
+npm run -w data-tools phb:source:compare
+npm run -w data-tools phb:source:report
+```
+
+The full extractor reads the pinned PDF.js text layer directly and writes
+source-bearing artifacts under `data/phb35/extracted/full/`. It hard-fails
+unless the independently derived description and class/domain-list sets both
+contain 605 spells, with 1,216 printed list rows, 1,235 expanded occurrences,
+and no parser or set-reconciliation issue. The source-specific layout contract
+also pins seven detached named tables and six illustration-caption runs so a
+PDF content-order change cannot silently move table or caption text into a
+spell body. Detached tables are retained separately with line and PDF.js
+segment coordinates. Combined `Target` / `Effect` / `Area` labels remain
+distinct extraction fields instead of being flattened into `target`.
+
+Full comparison applies the committed errata inventory and operation hints,
+then compares the 605-row source/DB union against read-only rules and content
+databases. It writes component comparisons, DB identities, fingerprint-bound
+row reviews, and source-free aggregate counts. `exact-match` and
+`formatting-only` rows receive deterministic `data-tools:auto` acceptance;
+substantive and manual rows remain `proposed`. Combined target/effect/area
+fields and unparsed shared Summon Nature's Ally tables are always manual;
+whole-body token reordering is never accepted as formatting equivalence. The
+default report command recursively re-hashes extraction issues, errata output,
+the pilot summon table, comparison inputs, and review evidence, then refuses
+to create `full-english-review.json` until every current row decision is
+terminal. A successful extraction or comparison does not close Gate 2.
+
 Inspect the local rules DB:
 
 ```bash

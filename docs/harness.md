@@ -207,6 +207,30 @@ only the prior manifests. The source-free aggregate under
 `data-tools/out/phb/` contains only hashes, counts, categories, commands, and
 unresolved totals.
 
+The accepted pilot authorizes, but does not accept, the full local-data run:
+
+```bash
+npm run -w data-tools phb:source:extract
+npm run -w data-tools phb:source:compare
+npm run -w data-tools phb:source:report
+```
+
+Full extraction is gated on 605 description entities, 1,216 printed list
+rows, 1,235 expanded occurrences, 605 independent list names, zero parser/set
+issues, seven detached named tables, and six removed illustration-caption
+runs. Comparison must balance 605 source and 605 PHB DB rows with zero
+source-only or DB-only names and records current rules/content DB hashes.
+Detached table evidence preserves PDF.js coordinates. Combined target/effect/
+area fields and unparsed shared summon tables are manual, and unordered body
+tokens never qualify as formatting-only evidence. Exact and formatting-only
+rows are deterministically accepted only after those layout gates;
+substantive and manual rows require fingerprint-bound terminal decisions. The
+report recursively re-hashes description/list issues, errata output, the pilot
+summon table, comparison artifacts, and every row-review evidence artifact. It
+is expected to fail while any current row remains proposed. These
+commands depend on ignored local PDFs, the nested data repo, and local SQLite,
+so they remain outside root `verify` and portable CI.
+
 The portable harness also validates `server/db/fixtures.manifest.json`. In a
 clean checkout it verifies that every mapped portable fixture path exists. In a
 local workspace where the nested `data/` repo exists, it additionally scans the
