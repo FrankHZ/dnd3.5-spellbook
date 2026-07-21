@@ -8,9 +8,10 @@
 > boundaries, or cross-plan conflicts change.
 
 Status: in progress; Gate 0 and the complete Gate 1 representative pilot are
-accepted. Slice 4 full-PHB extraction and English comparison are implemented
-and awaiting main-gate row review. Gate 2 and all downstream
-translation/activation gates remain blocked.
+accepted. Slice 4 full-PHB extraction and English comparison are implemented.
+Gate 2 now proceeds through a pinned official SRD 3.5 adjudication pass before
+main-gate exception review; all downstream translation/activation gates remain
+blocked.
 
 ## Purpose
 
@@ -28,7 +29,9 @@ correction layer before any translation begins.
 - Related docs: `data-tools/README.md`, `docs/operations/import-workflow.md`,
   `docs/operations/db-content-workflow.md`, and
   `docs/operations/public-repo-notes.md`.
-- Upstream dependency: pinned local PHB 3.5 PDF and official errata bytes.
+- Upstream dependency: pinned local PHB 3.5 PDF, official errata bytes, and a
+  complete hash-pinned official SRD 3.5 spell corpus used only for independent
+  adjudication.
 - Downstream plans: [phb-translation-qa-plan.md](./phb-translation-qa-plan.md)
   and [phb-content-activation-plan.md](./phb-content-activation-plan.md).
 
@@ -57,6 +60,14 @@ correction layer before any translation begins.
   not assumed authoritative.
 - Existing `spells-full` and CHM workflows are useful comparison/tooling
   references but are not PHB source authority.
+- The effective PHB PDF plus official errata remains the display authority.
+  SRD 3.5 is an independent adjudication source, not a replacement display
+  corpus: Product Identity omissions and renamed proper-name spells must be
+  handled through explicit aliases, and PHB page/layout evidence remains PHB
+  only.
+- The existing IMarvin SRD short-description index is incomplete and may be
+  used as discovery input only. It cannot satisfy the SRD source lock or
+  mechanics adjudication contract.
 - The official
   [Wizards 3rd/3.5-edition support page](https://dnd-support.wizards.com/hc/en-us/articles/360000962623-Dungeons-Dragons-3rd-3-5-and-4th-Edition-Rules-Questions)
   links the collected updates and errata package. Implementation must pin the
@@ -81,6 +92,10 @@ follow existing data-repo conventions, but the schemas must preserve:
 - errata artifact hash, errata page/entry, affected PHB page/entity, decision,
   and before/after effective-source hashes;
 - DB comparison identity and exactly one comparison category;
+- SRD artifact/file identity, parsed entity identity, component hashes, and
+  explicit PHB-to-SRD alias provenance;
+- three-way PHB+errata/SRD/DB component disposition and the deterministic rule
+  that produced it;
 - review status, reviewer/decision note, and terminal accepted/rejected state.
 
 No public aggregate report may contain the raw or normalized source text.
@@ -148,12 +163,28 @@ drops, and reviewed outcomes for every pilot row.
   `extra-in-db`, or `manual-review`.
 - Reconcile duplicate short-description occurrences before producing a
   spell-level candidate; disagreement requires a decision, not first-row wins.
-- Resolve every manual-review row and preserve accepted/rejected decisions in
-  the data repo.
+- Pin and parse the complete official SRD 3.5 spell corpus as an independent
+  adjudication source. Preserve source file/hash provenance and reject stale or
+  partial source packages.
+- Match PHB and SRD spell identities by normalized exact name or a reviewed,
+  explicit Product Identity alias. Do not introduce fuzzy reuse.
+- Classify each proposed PHB/DB row through a deterministic three-way matrix:
+  PHB+errata and SRD agreement may establish a source-backed DB correction;
+  registered Product Identity renames establish alias-backed agreement; SRD
+  agreement with an applicable erratum establishes errata-backed agreement;
+  SRD absence or unsupported PHB-only layout evidence preserves the existing
+  PHB review requirement; genuine three-way drift remains an exception.
+- The data-pipeline owner resolves deterministic rows and produces terminal
+  proposals with current evidence fingerprints. Main gate approves the
+  adjudication policy and reviews only residual exceptions; it is not the
+  clerical reviewer for every substantive/manual comparison row.
+- Preserve every terminal decision and residual exception in the data repo.
 
-Validation: both source and DB set totals balance, category totals balance,
-there are zero unexplained misses/extras, and no unresolved manual-review row
-remains at handoff.
+Validation: PHB, SRD, and DB set totals balance under explicit alias/absence
+accounting; category and adjudication totals balance; changing any SRD source
+byte, parsed row, alias, or three-way evidence resets the affected decision;
+there are zero unexplained misses/extras and no unresolved exception remains at
+handoff.
 
 ### Slice 5: English Acceptance Handoff
 
@@ -180,6 +211,9 @@ npm run -w data-tools phb:source:extract -- --pilot
 npm run -w data-tools phb:source:compare -- --pilot
 npm run -w data-tools phb:source:extract
 npm run -w data-tools phb:source:compare
+npm run -w data-tools phb:srd:verify
+npm run -w data-tools phb:srd:extract
+npm run -w data-tools phb:srd:adjudicate
 npm run -w data-tools phb:source:report
 ```
 
@@ -188,13 +222,17 @@ script manifest, tests, and this plan are updated together.
 
 ## Acceptance Criteria
 
-- Both source artifacts are pinned and hash-verified.
+- The PHB, errata, and complete SRD spell artifacts are pinned and
+  hash-verified.
 - Every in-scope description, field, page, and short-description occurrence is
   extracted or has an explicit terminal issue decision.
 - Every relevant errata row has an explained disposition and provenance.
 - The pilot covers the approved difficult cases before the full run.
 - Every extracted/current PHB spell enters exactly one balanced comparison
   category and no unresolved manual-review row remains.
+- Every deterministic three-way result records its adjudication rule and
+  fingerprint-bound evidence; only genuine exceptions require main-gate row
+  review.
 - The English handoff is accepted before any translation branch consumes it.
 - Public fixtures/reports contain no PHB or translated corpus text.
 - Focused tests, `npm run typecheck:data-tools`, portable tests, and local-data
@@ -213,9 +251,10 @@ script manifest, tests, and this plan are updated together.
 
 ## Open Questions
 
-No scope question blocks assignment. The implementation context packet must
-name the exact local PHB and errata files, hashes, and proposed pilot manifest
-before write-capable work begins.
+No scope question blocks assignment. The SRD acquisition record must distinguish
+the official Wizards-authored document from its archival download host, pin the
+exact reviewed bytes, and record both identities without claiming that the
+archive host is the publisher.
 
 ## Follow-Up Candidates
 
@@ -274,13 +313,16 @@ before write-capable work begins.
   review hardening, the current comparison has 65 exact, 297 formatting-only,
   163 substantive, and 80 manual rows. Exact and formatting-only evidence gives
   362 deterministic terminal acceptances; 243 substantive/manual rows remain
-  proposed, so `phb:source:report` correctly refuses to propose Gate 2.
+  proposed, so `phb:source:report` correctly refuses to propose Gate 2. These
+  rows are an adjudication queue owned by data-pipeline, not 243 mandatory
+  main-gate manual decisions.
 - Independent data-pipeline and English-summary QA reviewed the remaining
   queues. The findings identify deterministic parser/normalization fixes,
   source-backed DB correction candidates, intentional DB expansions, explicit
   short-description canonical candidates, and the already accepted Gate 1
-  Baleful Polymorph decision. Main gate must still record terminal decisions
-  against the current fingerprints before Slice 5 handoff generation begins.
+  Baleful Polymorph decision. The next pass must reconcile these against the
+  pinned SRD corpus; main gate then reviews only residual exceptions before
+  Slice 5 handoff generation begins.
 - Data-repo commit `18faa9a` pins the deterministic full extraction,
   effective errata overlays, list evidence, DB comparison, 605 fingerprinted
   row decisions, and the proposed main-gate QA packet for this handoff.

@@ -259,12 +259,12 @@ Recommended next sequence:
    `main`, and the exact accepted commit before creating the release tag. This
    does not relax or reorder v1.4 source gates.
 
-2. **Run full-PHB extraction and English comparison (Gate 1 accepted)**
+2. **Adjudicate the full-PHB comparison with pinned SRD 3.5**
 
-   Expand the accepted pilot workflow across the complete in-scope PHB spell
-   and class-list sets. Reconcile PDF+errata source rows with current PHB DB
-   rows, preserve component categories and provenance, and resolve every
-   manual-review or set-accounting issue.
+   The full 605/605 PHB/DB extraction and comparison is complete. Pin and parse
+   the official SRD 3.5 spell corpus, reconcile the 243 proposed rows through
+   deterministic three-way evidence and explicit Product Identity aliases,
+   and send only residual source conflicts to main-gate.
 
 3. **Close English Gate 2 before translation**
 
