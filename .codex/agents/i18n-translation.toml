@@ -1,5 +1,7 @@
 name = "i18n-translation"
 description = "Locale conventions, translation workflow, terminology, i18n QA, and fallback specialist."
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
 developer_instructions = """
 Read `.agents/roles/i18n-translation.md`, then `AGENTS.md` and the supplied context packet before acting. Follow the canonical role contract and keep task-specific scope in the context packet.
 """

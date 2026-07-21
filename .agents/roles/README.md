@@ -21,6 +21,30 @@ each role.
 | [frontend-design](./frontend-design.md)   | frontend state, interaction, components, layout, and browser acceptance |
 | [platform](./platform.md)                 | CI, builds, packaging, dependencies, deployment, and environments       |
 
+## Execution Profiles
+
+Canonical roles carry durable ownership semantics and use Sol for primary
+work:
+
+- `main-gate` uses `gpt-5.6-sol` with `xhigh` reasoning for cross-domain
+  decisions and merge readiness.
+- Librarian and the five specialist roles use `gpt-5.6-sol` with `high`
+  reasoning for dedicated planning and implementation tasks.
+
+Project-scoped child profiles keep bounded delegation efficient:
+
+| Profile    | Runtime                    | Use for                                           |
+| ---------- | -------------------------- | ------------------------------------------------- |
+| `explorer` | `gpt-5.6-terra` / `medium` | read-heavy scans, triage, and evidence summaries  |
+| `worker`   | `gpt-5.6-terra` / `high`   | small implementations with a narrow write surface |
+
+Use canonical specialist agents for dedicated root tasks or a top-level
+delegation that genuinely needs domain ownership. Use `explorer` or `worker`
+for bounded child work by default. Escalating a child to a Sol role or an
+explicit Sol model requires a task-specific reason in the context packet. Do
+not add a project-scoped `default` override; ordinary root sessions should
+continue to follow the user's selected model and global configuration.
+
 ## Shared Rules
 
 Every delegated task names exactly one primary role and supplies a context

@@ -160,6 +160,13 @@ semantics.
 | `frontend-design`  | frontend state, interaction, layout, and browser acceptance                     |
 | `platform`         | CI, builds, packaging, dependencies, deployment, and environments               |
 
+The project adapters pin `main-gate` to Sol `xhigh` and the other canonical
+roles to Sol `high`. Bounded child delegation should use the Terra-backed
+`explorer` profile for read-only investigation or `worker` for narrowly scoped
+implementation. Do not use a canonical Sol role as a generic child merely to
+inherit its tools or context; select it only when the delegated task needs that
+domain ownership. Do not add a project `default` override.
+
 Read `.agents/roles/README.md` for role selection and handoff boundaries. Every
 delegated task must name one primary role and provide a concrete context packet
 with the outcome, owning plan or topic doc, required reading, expected edit
