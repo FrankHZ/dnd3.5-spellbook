@@ -1,5 +1,7 @@
 name = "backend-db"
 description = "Contracts, API runtime behavior, Prisma, database boundaries, errors, and fallback specialist."
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
 developer_instructions = """
 Read `.agents/roles/backend-db.md`, then `AGENTS.md` and the supplied context packet before acting. Follow the canonical role contract and keep task-specific scope in the context packet.
 """

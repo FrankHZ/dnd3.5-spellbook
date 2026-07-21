@@ -8,6 +8,18 @@ const adapterSpec = {
   label: "Codex",
 };
 
+const executionProfiles = {
+  explorer: {
+    model: "gpt-5.6-terra",
+    reasoningEffort: "medium",
+    sandboxMode: "read-only",
+  },
+  worker: {
+    model: "gpt-5.6-terra",
+    reasoningEffort: "high",
+  },
+};
+
 function listRoleNames(directory, suffix, excludedNames = new Set()) {
   return readdirSync(directory, { withFileTypes: true })
     .filter(
@@ -25,14 +37,16 @@ function difference(left, right) {
   return left.filter((value) => !rightSet.has(value));
 }
 
-function readAdapterName(adapter, role, errors) {
+function readQuotedSetting(adapter, role, setting, errors) {
   const matches = [
-    ...adapter.matchAll(/^\s*name\s*=\s*"([^"\r\n]+)"\s*(?:#.*)?$/gm),
+    ...adapter.matchAll(
+      new RegExp(`^\\s*${setting}\\s*=\\s*"([^"\\r\\n]+)"\\s*(?:#.*)?$`, "gm"),
+    ),
   ];
 
   if (matches.length !== 1) {
     errors.push(
-      `${adapterSpec.label} adapter ${role} must define exactly one quoted name`,
+      `${adapterSpec.label} adapter ${role} must define exactly one quoted ${setting}`,
     );
     return undefined;
   }
@@ -55,11 +69,19 @@ export function checkAgentRoles(repoRoot) {
 
   const adapterDirectory = resolve(repoRoot, adapterSpec.directory);
   const adapterRoles = listRoleNames(adapterDirectory, adapterSpec.suffix);
+  const profileNames = Object.keys(executionProfiles).sort();
+  const expectedAdapters = [...canonicalRoles, ...profileNames].sort();
   const missing = difference(canonicalRoles, adapterRoles);
-  const orphaned = difference(adapterRoles, canonicalRoles);
+  const missingProfiles = difference(profileNames, adapterRoles);
+  const orphaned = difference(adapterRoles, expectedAdapters);
 
   if (missing.length > 0) {
     errors.push(`${adapterSpec.label} adapters missing: ${missing.join(", ")}`);
+  }
+  if (missingProfiles.length > 0) {
+    errors.push(
+      `${adapterSpec.label} execution profiles missing: ${missingProfiles.join(", ")}`,
+    );
   }
   if (orphaned.length > 0) {
     errors.push(
@@ -68,19 +90,62 @@ export function checkAgentRoles(repoRoot) {
   }
 
   for (const role of adapterRoles.filter((name) =>
-    canonicalRoles.includes(name),
+    expectedAdapters.includes(name),
   )) {
     const adapterPath = resolve(
       adapterDirectory,
       `${role}${adapterSpec.suffix}`,
     );
-    const canonicalReference = `.agents/roles/${role}.md`;
+    const canonicalReference = canonicalRoles.includes(role)
+      ? `.agents/roles/${role}.md`
+      : ".agents/roles/README.md";
     const adapter = readFileSync(adapterPath, "utf8");
-    const declaredName = readAdapterName(adapter, role, errors);
+    const declaredName = readQuotedSetting(adapter, role, "name", errors);
+    const declaredModel = readQuotedSetting(adapter, role, "model", errors);
+    const declaredReasoningEffort = readQuotedSetting(
+      adapter,
+      role,
+      "model_reasoning_effort",
+      errors,
+    );
+    const expectedExecution = canonicalRoles.includes(role)
+      ? {
+          model: "gpt-5.6-sol",
+          reasoningEffort: role === "main-gate" ? "xhigh" : "high",
+        }
+      : executionProfiles[role];
+    const declaredSandboxMode = expectedExecution.sandboxMode
+      ? readQuotedSetting(adapter, role, "sandbox_mode", errors)
+      : undefined;
 
     if (declaredName !== undefined && declaredName !== role) {
       errors.push(
         `${adapterSpec.label} adapter ${role} declares name ${declaredName}`,
+      );
+    }
+
+    if (
+      declaredModel !== undefined &&
+      declaredModel !== expectedExecution.model
+    ) {
+      errors.push(
+        `${adapterSpec.label} adapter ${role} declares model ${declaredModel}, expected ${expectedExecution.model}`,
+      );
+    }
+    if (
+      declaredReasoningEffort !== undefined &&
+      declaredReasoningEffort !== expectedExecution.reasoningEffort
+    ) {
+      errors.push(
+        `${adapterSpec.label} adapter ${role} declares model_reasoning_effort ${declaredReasoningEffort}, expected ${expectedExecution.reasoningEffort}`,
+      );
+    }
+    if (
+      declaredSandboxMode !== undefined &&
+      declaredSandboxMode !== expectedExecution.sandboxMode
+    ) {
+      errors.push(
+        `${adapterSpec.label} adapter ${role} declares sandbox_mode ${declaredSandboxMode}, expected ${expectedExecution.sandboxMode}`,
       );
     }
 
@@ -99,7 +164,8 @@ export function checkAgentRoles(repoRoot) {
 
   return {
     roles: canonicalRoles,
-    adapterCount: canonicalRoles.length,
+    executionProfiles: profileNames,
+    adapterCount: expectedAdapters.length,
   };
 }
 
@@ -109,6 +175,6 @@ const invokedPath = process.argv[1] ? resolve(process.argv[1]) : undefined;
 if (invokedPath === fileURLToPath(import.meta.url)) {
   const result = checkAgentRoles(repoRoot);
   process.stdout.write(
-    `Agent role correspondence valid: ${result.roles.length} roles, ${result.adapterCount} adapters.\n`,
+    `Agent role correspondence valid: ${result.roles.length} roles, ${result.executionProfiles.length} execution profiles, ${result.adapterCount} adapters.\n`,
   );
 }
