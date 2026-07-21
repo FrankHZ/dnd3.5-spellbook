@@ -8,7 +8,7 @@ import { checkAgentRoles } from "./check-agent-roles.mjs";
 
 const adapterDirectory = ".codex/agents";
 const executionProfiles = {
-  explorer: ["gpt-5.6-terra", "medium"],
+  explorer: ["gpt-5.6-terra", "medium", "read-only"],
   worker: ["gpt-5.6-terra", "high"],
 };
 
@@ -36,20 +36,27 @@ function createFixture(t, roles = ["main-gate", "platform"]) {
     );
   }
 
-  for (const [profile, [model, reasoningEffort]] of Object.entries(
+  for (const [profile, [model, reasoningEffort, sandboxMode]] of Object.entries(
     executionProfiles,
   )) {
     writeFileSync(
       join(root, adapterDirectory, `${profile}.toml`),
-      adapter(profile, model, reasoningEffort, ".agents/roles/README.md"),
+      adapter(
+        profile,
+        model,
+        reasoningEffort,
+        ".agents/roles/README.md",
+        sandboxMode,
+      ),
     );
   }
 
   return root;
 }
 
-function adapter(name, model, reasoningEffort, reference) {
-  return `name = "${name}"\nmodel = "${model}"\nmodel_reasoning_effort = "${reasoningEffort}"\nRead ${reference}\n`;
+function adapter(name, model, reasoningEffort, reference, sandboxMode) {
+  const sandbox = sandboxMode ? `sandbox_mode = "${sandboxMode}"\n` : "";
+  return `name = "${name}"\nmodel = "${model}"\nmodel_reasoning_effort = "${reasoningEffort}"\n${sandbox}Read ${reference}\n`;
 }
 
 test("accepts one matching Codex adapter per canonical role", (t) => {
@@ -102,7 +109,13 @@ test("enforces the Sol role and Terra child execution tiers", (t) => {
   );
   writeFileSync(
     join(root, ".codex/agents/explorer.toml"),
-    adapter("explorer", "gpt-5.6-sol", "medium", ".agents/roles/README.md"),
+    adapter(
+      "explorer",
+      "gpt-5.6-sol",
+      "medium",
+      ".agents/roles/README.md",
+      "workspace-write",
+    ),
   );
 
   assert.throws(
@@ -115,6 +128,10 @@ test("enforces the Sol role and Terra child execution tiers", (t) => {
       assert.match(
         error.message,
         /explorer declares model gpt-5\.6-sol, expected gpt-5\.6-terra/,
+      );
+      assert.match(
+        error.message,
+        /explorer declares sandbox_mode workspace-write, expected read-only/,
       );
       return true;
     },

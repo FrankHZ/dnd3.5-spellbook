@@ -165,7 +165,9 @@ roles to Sol `high`. Bounded child delegation should use the Terra-backed
 `explorer` profile for read-only investigation or `worker` for narrowly scoped
 implementation. Do not use a canonical Sol role as a generic child merely to
 inherit its tools or context; select it only when the delegated task needs that
-domain ownership. Do not add a project `default` override.
+domain ownership. Set `agent_type` explicitly when spawning `explorer` or
+`worker`; task names and prompt wording do not select an execution profile. Do
+not add a project `default` override.
 
 Read `.agents/roles/README.md` for role selection and handoff boundaries. Every
 delegated task must name one primary role and provide a concrete context packet

@@ -12,6 +12,7 @@ const executionProfiles = {
   explorer: {
     model: "gpt-5.6-terra",
     reasoningEffort: "medium",
+    sandboxMode: "read-only",
   },
   worker: {
     model: "gpt-5.6-terra",
@@ -113,6 +114,9 @@ export function checkAgentRoles(repoRoot) {
           reasoningEffort: role === "main-gate" ? "xhigh" : "high",
         }
       : executionProfiles[role];
+    const declaredSandboxMode = expectedExecution.sandboxMode
+      ? readQuotedSetting(adapter, role, "sandbox_mode", errors)
+      : undefined;
 
     if (declaredName !== undefined && declaredName !== role) {
       errors.push(
@@ -134,6 +138,14 @@ export function checkAgentRoles(repoRoot) {
     ) {
       errors.push(
         `${adapterSpec.label} adapter ${role} declares model_reasoning_effort ${declaredReasoningEffort}, expected ${expectedExecution.reasoningEffort}`,
+      );
+    }
+    if (
+      declaredSandboxMode !== undefined &&
+      declaredSandboxMode !== expectedExecution.sandboxMode
+    ) {
+      errors.push(
+        `${adapterSpec.label} adapter ${role} declares sandbox_mode ${declaredSandboxMode}, expected ${expectedExecution.sandboxMode}`,
       );
     }
 

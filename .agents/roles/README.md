@@ -45,6 +45,10 @@ explicit Sol model requires a task-specific reason in the context packet. Do
 not add a project-scoped `default` override; ordinary root sessions should
 continue to follow the user's selected model and global configuration.
 
+Set `agent_type` explicitly to `explorer` or `worker` when spawning one of
+these profiles. A task name or prompt mentioning the profile does not select
+it, and callers should not override the model pinned by the selected profile.
+
 ## Shared Rules
 
 Every delegated task names exactly one primary role and supplies a context
