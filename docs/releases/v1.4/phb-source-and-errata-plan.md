@@ -370,8 +370,9 @@ archive host is the publisher.
 - Architecture review found that the first full run promoted the PDF.js text
   layer from independent baseline to primary parser and did not consume MinerU
   blocks at all. Gate 2 is reopened at the full-extraction boundary. The 605-row
-  comparison, its 243-row queue, and subsequent SRD terminal candidates remain
-  provisional until a full MinerU run regenerates their evidence fingerprints.
+  comparison, its 243-row queue, and subsequent SRD terminal candidates were
+  provisional until the replacement full MinerU run regenerated their evidence
+  fingerprints.
 - The replacement full run uses pinned MinerU 3.4 over all 126 in-scope pages
   and records 4,493 ordered blocks, including all 59 table blocks. Its
   block-bounded PDF.js projection records token recall `0.970167` and precision
@@ -380,7 +381,11 @@ archive host is the publisher.
   description image blocks with zero parser or set-reconciliation issue.
 - All 59 MinerU table artifacts are fingerprinted and page-linked into affected
   spell review evidence. The regenerated 605-row comparison retains 65 exact,
-  297 formatting-only, 163 substantive, and 80 manual categories. Before the
-  latest SRD candidates are applied, 461 decisions remain accepted and 144 are
-  proposed; three-way adjudication produces 69 terminal candidates and 75
-  residual exceptions. Gate 2 remains open for those 75 exception decisions.
+  297 formatting-only, 163 substantive, and 80 manual categories. Three-way
+  adjudication applied 69 newly current terminal candidates, leaving 530
+  accepted decisions and 75 residual exceptions. Gate 2 remains open only for
+  those 75 exception decisions.
+- Data-repo commit `5fa62a2` records the complete MinerU extraction, regenerated
+  comparison, table-linked row evidence, and current adjudication matrix.
+  Commit `bbdc949` applies the 69 new terminal candidates while preserving all
+  168 current SRD-backed decisions across future adjudication reruns.

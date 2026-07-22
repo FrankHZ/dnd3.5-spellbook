@@ -269,10 +269,10 @@ Recommended next sequence:
 3. **Review 75 residual exceptions and close English Gate 2**
 
    The regenerated comparison has passed through the pinned official SRD 3.5
-   corpus and explicit Product Identity aliases. Apply the 69 committed
-   terminal candidates, send only the remaining 75 source conflicts to
-   main-gate, and produce accepted effective English rows with zero unexplained
-   misses. Only after main-gate accepts Gate 2 may the i18n translation and
+   corpus and explicit Product Identity aliases, and all 69 new terminal
+   candidates are applied. Send only the remaining 75 source conflicts to main
+   gate and produce accepted effective English rows with zero unexplained
+   misses. Only after main gate accepts Gate 2 may the i18n translation and
    proofreading track begin.
 
 4. **Activate only accepted v1.4 content**
