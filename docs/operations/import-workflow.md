@@ -231,6 +231,13 @@ and exposes only allowlisted queues/items/source ids. The API writes only:
 - `data/phb35/review/full-mineru-layout-review.jsonl`
 - `data/phb35/review/full-row-review.jsonl`
 
+The browser workspace provides queue/status/kind/category filters, stable row
+navigation, the actual PHB PDF page with independent MinerU/PDF.js/target
+overlays, joined PHB/SRD/DB evidence, and an explicit decision form. The
+client does not derive candidates, eligible targets, fingerprints, or terminal
+state. Do not bypass the disabled English queue or reuse cached residual rows
+after a layout decision.
+
 Each decision must include the currently displayed review fingerprint,
 terminal status, reviewer, and note. Layout placement rows also require an
 eligible target block or anchor. Stale tabs receive `409` with refreshed

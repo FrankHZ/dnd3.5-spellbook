@@ -3,6 +3,14 @@
 Private localhost-only shell for the PHB Gate 2 review service. It is not part
 of the public web app or production server.
 
+The React consumer presents the current MinerU layout and English residual
+queues as a dense review workspace. Queue/status/kind/category filters and
+stable previous/next navigation sit beside an actual PDF.js-rendered PHB page,
+independent MinerU/PDF.js/target overlays, joined PHB/SRD/DB evidence, and an
+explicit decision form. The browser owns only display, navigation, filters,
+draft form values, and stale-response recovery; the API remains authoritative
+for candidates, eligible targets, fingerprints, validation, and writes.
+
 From this directory, run `npm run dev` for the Vite-backed local shell, or run
 `npm run build` followed by `npm run start` for a production-like local smoke.
 Set `PHB_REVIEW_PORT` to a numeric port when the default `4174` is unavailable.
@@ -16,8 +24,13 @@ the API never accepts or returns a filesystem path.
 All API requests require the per-process `x-phb-review-token`; mutating calls
 also require an exact same-origin `Origin` header. The API emits no CORS
 headers. The launcher injects the token into a `phb-review-token` HTML meta tag
-at runtime for the same-origin Slice 3 client. It is never written to the built
-files, a URL, or console output.
+at runtime for the same-origin client. It is never written to the built files,
+a URL, or console output.
+
+Saving a layout decision unloads the English queue until the canonical full
+chain is current again. A stale decision response refreshes the displayed
+evidence while preserving unsaved reviewer, note, decision, and target fields.
+Every save remains a decision-file edit; it is not Gate 2 acceptance.
 
 Validate with:
 

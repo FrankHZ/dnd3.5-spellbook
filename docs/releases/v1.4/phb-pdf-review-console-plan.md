@@ -8,8 +8,9 @@
 > boundaries, or cross-plan conflicts change.
 
 Status: in progress. Slices 1-2, the data-tools review service and localhost
-API/workspace shell, are implemented and main-gate accepted. The bounded React
-consumer and Gate 2 review handoff in Slices 3-4 remain.
+API/workspace shell, are implemented and main-gate accepted. Slice 3's bounded
+React consumer is implemented and locally validated, pending main-gate review.
+The Gate 2 review handoff in Slice 4 remains.
 
 ## Purpose
 
@@ -387,6 +388,29 @@ acceptance boundaries above remain unchanged.
 
 ## Completion Notes
 
-Use this section only after implementation review. Link merged data/API and
-frontend PRs plus Gate 2 validation evidence instead of copying logs or source
-rows into the public repo.
+Slices 1-2 merged in PR #107 with the data-tools review service, localhost API,
+private workspace shell, security boundary, and portable validation.
+
+Slice 3 implementation result:
+
+- The React consumer provides queue/status/kind/category filters, stable
+  navigation, actual PDF.js page rendering, independent MinerU/PDF.js/target
+  overlays, joined layout or PHB/SRD/DB evidence, and explicit decision forms.
+- Client state remains limited to display, filters, navigation, form drafts,
+  and stale UX. Server-returned allowed actions, candidate targets,
+  fingerprints, current evidence, and queue availability remain authoritative.
+- A stale decision refresh preserves the unsaved draft. An unavailable English
+  queue unloads cached list/detail state, and every save continues to state the
+  required canonical rerun.
+- `npm run verify` passed, including `typecheck:review-console`,
+  `test:review-console` (3 files, 12 tests), and
+  `build:review-console`. The read-only real-data `smoke:local` also passed
+  with 131 layout rows and 75 English residuals.
+- Desktop `1440 x 900` and narrow `700 x 900` browser smoke covered both
+  queues, PDF rendering, target overlays, three-way component evidence,
+  filters/reset, required disabled form state, overflow, and clipped controls
+  with no browser console errors. No decision was submitted during smoke.
+
+Add the merged frontend PR and Slice 4 Gate 2 validation evidence here after
+main-gate acceptance instead of copying logs or source rows into the public
+repo.

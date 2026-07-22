@@ -44,6 +44,25 @@ from those current manifests. It remains `phb:source:extract` or
 `phb:source:compare` across reloads and no-op submissions until the canonical
 command refreshes the corresponding manifest.
 
+## Browser Consumer
+
+- Queue filters and previous/next navigation operate only on server-returned
+  list items and preserve source order.
+- PDF.js renders the verified source URL through the same token-protected
+  origin. MinerU blocks, PDF.js items, and selected/eligible targets are
+  independent display overlays; their geometry comes from item detail DTOs.
+- Layout forms expose only server-returned eligible blocks or page anchors.
+  English forms expose the server-returned allowed actions and joined
+  PHB/SRD/DB evidence.
+- Submission stays disabled until the visible decision, reviewer, note, and
+  required target fields are present. The API still revalidates every value.
+- A stale decision loads the API's current evidence while preserving draft
+  form state. An unavailable English queue unloads list/detail state rather
+  than leaving cached residual evidence visible.
+- The responsive layout keeps the dense queue/PDF/evidence workspace on
+  desktop and stacks the same surfaces at narrow widths. It is not treated as
+  a general mobile product.
+
 ## Validation
 
 ```bash

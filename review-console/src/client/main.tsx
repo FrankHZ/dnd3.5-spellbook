@@ -1,19 +1,11 @@
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import type { PhbReviewQueueSummary } from "data-tools/phb-review";
 
-const knownQueues: readonly PhbReviewQueueSummary["queueId"][] = [
-  "mineru-layout",
-  "english-residual",
-];
+import { ReviewConsoleApp } from "./ReviewConsoleApp";
+import "./styles.css";
 
-function ShellPlaceholder() {
-  return (
-    <main>
-      <h1>PHB Review Console</h1>
-      <p>The review interface will be added in Slice 3.</p>
-      <p>Supported queues: {knownQueues.join(", ")}.</p>
-    </main>
-  );
-}
-
-createRoot(document.getElementById("root")!).render(<ShellPlaceholder />);
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <ReviewConsoleApp />
+  </StrictMode>,
+);
