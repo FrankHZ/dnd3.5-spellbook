@@ -64,12 +64,15 @@ writes source-bearing page rows and provenance under
 `data/phb35/extracted/pilot/`; `data-tools/out/phb/` receives only source-free
 counts and hashes.
 
-MinerU is the layout and reading-order layer, not the text authority. Every
-imported page also stores the PDF.js coordinate text baseline. MinerU table
-text is marked `ocr-risk`, and merged rows or line-break artifacts must be
-resolved against PDF.js before entity-level acceptance. The tested local
-runtime is pinned by `data/phb35/source/mineru-runtime.json`, including the
-required `pdftext==0.6.3` and `six==1.17.0` compatibility pins.
+MinerU is the primary structured extractor for blocks, reading order, fields,
+lists, and tables. Every imported page also stores an independently derived
+PDF.js exact-character and coordinate baseline. PDF.js items may repair glyphs
+only after deterministic projection into MinerU block boundaries; they never
+define spell segmentation, reading order, or table structure. MinerU table
+text is marked `ocr-risk`, and unresolved projection or layout drift blocks
+entity-level acceptance. The tested local runtime is pinned by
+`data/phb35/source/mineru-runtime.json`, including the required
+`pdftext==0.6.3` and `six==1.17.0` compatibility pins.
 
 `phb:pilot:verify` is the acceptance gate, not another report command. By
 default it requires a committed, non-stale, `accepted` end-to-end review with
@@ -85,8 +88,8 @@ npm run -w data-tools phb:pilot:verify -- --stage page-extraction
 This explicit stage check passes for the accepted page review, but it does not
 authorize full-PHB extraction.
 
-`phb:source:compare -- --pilot` extracts the ten selected cases from the PDF.js
-coordinate rows, applies the maintained errata inventory, reads the
+`phb:source:compare -- --pilot` consumes the ten selected imported page rows,
+applies the maintained errata inventory, reads the
 rules/content SQLite databases without writing them, and emits one comparison
 and proposed review per case. Spell-list short descriptions are comparison
 components, including summary-only cases. Source-bearing outputs stay in the
@@ -109,20 +112,29 @@ rules/content DB hashes against the accepted comparison inputs.
 After the accepted end-to-end pilot passes, run the full source workflow:
 
 ```bash
+npm run -w data-tools phb:source:extract -- --full --prepare-only
+npm run -w data-tools phb:source:extract -- --full --mineru-output artifacts/mineru/phb35/full-output
 npm run -w data-tools phb:source:extract
 npm run -w data-tools phb:source:compare
+npm run -w data-tools phb:srd:verify
+npm run -w data-tools phb:srd:extract
+npm run -w data-tools phb:srd:adjudicate
+npm run -w data-tools phb:srd:apply
 npm run -w data-tools phb:source:report
 ```
 
-The full extractor reads the pinned PDF.js text layer directly and writes
-source-bearing artifacts under `data/phb35/extracted/full/`. It hard-fails
-unless the independently derived description and class/domain-list sets both
-contain 605 spells, with 1,216 printed list rows, 1,235 expanded occurrences,
-and no parser or set-reconciliation issue. The source-specific layout contract
-also pins seven detached named tables and six illustration-caption runs so a
-PDF content-order change cannot silently move table or caption text into a
-spell body. Detached tables are retained separately with line and PDF.js
-segment coordinates. Combined `Target` / `Effect` / `Area` labels remain
+The prepare command creates deterministic 126-page subset PDFs for the pinned
+MinerU runtime. Import preserves all ordered MinerU blocks and table HTML under
+`data/phb35/extracted/full/`, projects the PDF.js text layer inside those
+blocks, and then runs entity extraction. The plain extract command only
+reparses the already imported MinerU page rows; it cannot fall back to a
+PDF.js-only full run. The extractor hard-fails unless the independently derived
+description and class/domain-list sets both contain 605 spells, with 1,216
+printed list rows, 1,235 expanded occurrences, and no parser or set-
+reconciliation issue. The source-specific layout contract also pins 59 MinerU
+table blocks, seven detached named tables, and seven excluded description image
+blocks. Every table artifact and its page-linked spell references enter the
+row-review evidence chain. Combined `Target` / `Effect` / `Area` labels remain
 distinct extraction fields instead of being flattened into `target`.
 
 Full comparison applies the committed errata inventory and operation hints,
@@ -137,6 +149,10 @@ default report command recursively re-hashes extraction issues, errata output,
 the pilot summon table, comparison inputs, and review evidence, then refuses
 to create `full-english-review.json` until every current row decision is
 terminal. A successful extraction or comparison does not close Gate 2.
+The SRD commands verify and parse the pinned official 3.5 corpus, generate a
+three-way PHB+errata/SRD/DB adjudication queue, and apply only committed,
+fingerprint-current terminal candidates to row review. Residual exceptions
+remain explicit main-gate work.
 
 Inspect the local rules DB:
 

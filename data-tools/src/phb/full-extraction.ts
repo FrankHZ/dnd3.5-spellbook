@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -5,37 +6,37 @@ import {
   extractSpellAtHeading,
   isSpellHeadingAt,
   joinWrappedLines,
-  reconstructReadingLines,
   type PhbTextPageRow,
   type PilotSpellFieldName,
   type PilotSourcePage,
   type ReadingLine,
 } from "./pilot-entities";
-import { inspectPdfTextLayer } from "./pdf-baseline";
 import {
-  PHB_FULL_MANIFEST_RELATIVE_PATH,
   readPhbFullExtractionManifest,
   type PhbFullExtractionManifest,
-  type PhbFullRangeKind,
 } from "./full-manifest";
-import { extractFullSpellLists } from "./full-lists";
 import {
-  PHB_SOURCE_MANIFEST_RELATIVE_PATH,
-  parsePhbSourceManifestText,
-  readAndVerifyPhbSourceManifest,
-  resolveInside,
-  sha256File,
-} from "./source-manifest";
+  PHB_FULL_EXTRACTION_MANIFEST_RELATIVE_PATH,
+  PHB_FULL_PAGES_RELATIVE_PATH,
+  parseFullMineruPageRows,
+  reconstructMineruReadingLines,
+  type FullMineruPageRow,
+} from "./full-mineru";
+import { extractFullSpellLists } from "./full-lists";
+import { resolveInside, sha256File } from "./source-manifest";
 
-export const PHB_FULL_PAGES_RELATIVE_PATH = "phb35/extracted/full/pages.jsonl";
-export const PHB_FULL_EXTRACTION_MANIFEST_RELATIVE_PATH =
-  "phb35/extracted/full/extraction-manifest.json";
+export {
+  PHB_FULL_EXTRACTION_MANIFEST_RELATIVE_PATH,
+  PHB_FULL_PAGES_RELATIVE_PATH,
+} from "./full-mineru";
 export const PHB_FULL_ENTITIES_RELATIVE_PATH =
   "phb35/extracted/full/entities.jsonl";
 export const PHB_FULL_ISSUES_RELATIVE_PATH =
   "phb35/extracted/full/issues.jsonl";
 export const PHB_FULL_DETACHED_TABLES_RELATIVE_PATH =
   "phb35/extracted/full/detached-tables.jsonl";
+export const PHB_FULL_MINERU_TABLES_RELATIVE_PATH =
+  "phb35/extracted/full/mineru-tables.jsonl";
 export const PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH =
   "phb35/extracted/full/entities-manifest.json";
 export const PHB_FULL_LIST_ROWS_RELATIVE_PATH =
@@ -61,9 +62,7 @@ const SHARED_DETACHED_TABLES = new Set([
   "summon nature's ally",
 ]);
 
-export type FullPageRow = PhbTextPageRow & {
-  rangeKinds: PhbFullRangeKind[];
-};
+export type FullPageRow = FullMineruPageRow;
 
 export type FullSpellEntity = {
   schemaVersion: 1;
@@ -76,6 +75,25 @@ export type FullSpellEntity = {
   bodyText: string;
   sourceText: string;
   reviewFlags: string[];
+  mineruTableEvidence: Array<{
+    rowId: string;
+    evidenceSha256: string;
+  }>;
+};
+
+export type FullMineruTableEvidence = {
+  schemaVersion: 1;
+  rowId: string;
+  sourceId: string;
+  sourcePageIndex: number;
+  printedPageNumber: number | null;
+  blockIndex: number;
+  bbox: [number, number, number, number] | null;
+  tableHtml: string | null;
+  captions: string[];
+  footnotes: string[];
+  projectedText: string;
+  evidenceSha256: string;
 };
 
 export type FullDetachedTableEvidence = {
@@ -100,7 +118,10 @@ export type FullDetachedTableEvidence = {
 export type FullExtractionIssue = {
   schemaVersion: 1;
   issueId: string;
-  kind: "spell-block-parse-failed" | "duplicate-spell-heading";
+  kind:
+    | "spell-block-parse-failed"
+    | "duplicate-spell-heading"
+    | "mineru-projection-failed";
   printedName: string;
   sourceId: string;
   sourcePageIndex: number;
@@ -112,141 +133,48 @@ export type FullExtractionIssue = {
 };
 
 export async function runFullExtraction(dataRoot: string) {
-  const sourceVerification = readAndVerifyPhbSourceManifest(dataRoot);
-  const sourceManifest = parsePhbSourceManifestText(
-    fs.readFileSync(sourceVerification.manifestPath, "utf8"),
-  );
-  const { filePath: fullManifestPath, manifest } =
-    readPhbFullExtractionManifest(dataRoot);
-  if (manifest.sourceManifest.sha256 !== sourceVerification.manifestSha256) {
-    throw new Error(
-      `PHB full manifest pins source ${manifest.sourceManifest.sha256}, expected ${sourceVerification.manifestSha256}`,
-    );
-  }
-
-  const pages: FullPageRow[] = [];
-  const sourceReports: Array<{
-    sourceId: string;
-    sourceArtifactSha256: string;
-    selectedPageCount: number;
-    rangeKinds: PhbFullRangeKind[];
-  }> = [];
-  for (const sourceConfig of manifest.sources) {
-    const verified = sourceVerification.artifacts.find(
-      (artifact) => artifact.id === sourceConfig.sourceId,
-    );
-    const source = sourceManifest.artifacts.find(
-      (artifact) => artifact.id === sourceConfig.sourceId,
-    );
-    if (!verified || !source) {
-      throw new Error(
-        `PHB full source is not pinned: ${sourceConfig.sourceId}`,
-      );
-    }
-    const selectedIndexes = pageIndexes(sourceConfig.ranges);
-    for (const index of selectedIndexes) {
-      if (index >= source.pdf.pageCount) {
-        throw new Error(
-          `PHB full source page exceeds ${sourceConfig.sourceId} page count: ${index}`,
-        );
-      }
-    }
-    const { baseline, sourcePages } = await inspectPdfTextLayer(
-      verified.path,
-      selectedIndexes,
-    );
-    const byIndex = new Map(
-      sourcePages.map((page) => [page.zeroBasedPageIndex, page]),
-    );
-    for (const sourcePageIndex of [...selectedIndexes].sort(
-      (left, right) => left - right,
-    )) {
-      const page = byIndex.get(sourcePageIndex);
-      if (!page) {
-        throw new Error(
-          `PHB full PDF.js extraction omitted ${sourceConfig.sourceId}:${sourcePageIndex}`,
-        );
-      }
-      const matchingRanges = sourceConfig.ranges.filter(
-        (range) =>
-          sourcePageIndex >= range.startPageIndex &&
-          sourcePageIndex <= range.endPageIndex,
-      );
-      const offsets = new Set(
-        matchingRanges.map((range) => range.printedPageOffset),
-      );
-      if (offsets.size !== 1) {
-        throw new Error(
-          `PHB full page has conflicting printed-page offsets: ${sourceConfig.sourceId}:${sourcePageIndex}`,
-        );
-      }
-      const printedPageOffset = [...offsets][0]!;
-      pages.push({
-        schemaVersion: 1,
-        sourceId: sourceConfig.sourceId,
-        sourceArtifactSha256: verified.sha256,
-        sourcePageIndex,
-        printedPageNumber: sourcePageIndex + printedPageOffset,
-        rangeKinds: Array.from(
-          new Set(matchingRanges.map((range) => range.kind)),
-        ).sort(),
-        pdfjs: {
-          extractor: baseline.extractor,
-          width: page.width,
-          height: page.height,
-          textLayerSha256: page.textLayerSha256,
-          items: page.items,
-        },
-      });
-    }
-    sourceReports.push({
-      sourceId: sourceConfig.sourceId,
-      sourceArtifactSha256: verified.sha256,
-      selectedPageCount: selectedIndexes.size,
-      rangeKinds: Array.from(
-        new Set(sourceConfig.ranges.map((range) => range.kind)),
-      ).sort(),
-    });
-  }
-
+  const { manifest } = readPhbFullExtractionManifest(dataRoot);
   const pagesPath = resolveInside(dataRoot, PHB_FULL_PAGES_RELATIVE_PATH);
-  writeJsonl(pagesPath, pages);
   const extractionManifestPath = resolveInside(
     dataRoot,
     PHB_FULL_EXTRACTION_MANIFEST_RELATIVE_PATH,
   );
-  writeJson(extractionManifestPath, {
-    schemaVersion: 1,
-    sourceManifest: artifact(
-      PHB_SOURCE_MANIFEST_RELATIVE_PATH,
-      sourceVerification.manifestPath,
-    ),
-    gate1Review: artifact(
-      manifest.gate1Review.relativePath,
-      resolveInside(dataRoot, manifest.gate1Review.relativePath),
-    ),
-    fullExtractionManifest: artifact(
-      PHB_FULL_MANIFEST_RELATIVE_PATH,
-      fullManifestPath,
-    ),
-    sources: sourceReports,
-    output: artifact(PHB_FULL_PAGES_RELATIVE_PATH, pagesPath),
-    counts: {
-      pages: pages.length,
-      corePages: pages.filter((page) => page.sourceId === "phb35-core").length,
-      errataPages: pages.filter((page) => page.rangeKinds.includes("errata"))
-        .length,
-    },
-  });
+  if (!fs.existsSync(extractionManifestPath) || !fs.existsSync(pagesPath)) {
+    throw new Error(
+      "PHB full MinerU import is missing; prepare and import the full MinerU output first",
+    );
+  }
+  const pages = parseFullMineruPageRows(fs.readFileSync(pagesPath, "utf8"));
 
   const descriptionPages = pages.filter((page) =>
     page.rangeKinds.includes("description"),
   );
   const discovery = discoverFullSpellEntities(descriptionPages);
-  assertDetachedTableSet(discovery.detachedTableNames);
-  if (discovery.removedCaptionCount !== 6) {
+  const mineruTables = extractFullMineruTables(descriptionPages);
+  if (mineruTables.length !== 59) {
     throw new Error(
-      `PHB illustration caption count changed: ${discovery.removedCaptionCount} != 6`,
+      `PHB MinerU table-block count changed: ${mineruTables.length} != 59`,
+    );
+  }
+  for (const spell of discovery.spells) {
+    const pageKeys = new Set(
+      spell.sourcePages.map(
+        (page) => `${page.sourceId}:${page.sourcePageIndex}`,
+      ),
+    );
+    spell.mineruTableEvidence = mineruTables
+      .filter((table) =>
+        pageKeys.has(`${table.sourceId}:${table.sourcePageIndex}`),
+      )
+      .map((table) => ({
+        rowId: table.rowId,
+        evidenceSha256: table.evidenceSha256,
+      }));
+  }
+  assertDetachedTableSet(discovery.detachedTableNames);
+  if (discovery.excludedImageBlockCount !== 7) {
+    throw new Error(
+      `PHB description image-block count changed: ${discovery.excludedImageBlockCount} != 7`,
     );
   }
   const listExtraction = extractFullSpellLists(
@@ -281,6 +209,10 @@ export async function runFullExtraction(dataRoot: string) {
     dataRoot,
     PHB_FULL_DETACHED_TABLES_RELATIVE_PATH,
   );
+  const mineruTablesPath = resolveInside(
+    dataRoot,
+    PHB_FULL_MINERU_TABLES_RELATIVE_PATH,
+  );
   const listRowsPath = resolveInside(
     dataRoot,
     PHB_FULL_LIST_ROWS_RELATIVE_PATH,
@@ -300,6 +232,7 @@ export async function runFullExtraction(dataRoot: string) {
   writeJsonl(entitiesPath, discovery.spells);
   writeJsonl(issuesPath, discovery.issues);
   writeJsonl(detachedTablesPath, discovery.detachedTables);
+  writeJsonl(mineruTablesPath, mineruTables);
   writeJsonl(listRowsPath, listExtraction.printedRows);
   writeJsonl(listOccurrencesPath, listExtraction.occurrences);
   writeJsonl(listFootnotesPath, listExtraction.footnotes);
@@ -322,6 +255,10 @@ export async function runFullExtraction(dataRoot: string) {
         PHB_FULL_DETACHED_TABLES_RELATIVE_PATH,
         detachedTablesPath,
       ),
+      mineruTables: artifact(
+        PHB_FULL_MINERU_TABLES_RELATIVE_PATH,
+        mineruTablesPath,
+      ),
       listRows: artifact(PHB_FULL_LIST_ROWS_RELATIVE_PATH, listRowsPath),
       listOccurrences: artifact(
         PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH,
@@ -341,7 +278,8 @@ export async function runFullExtraction(dataRoot: string) {
         (issue) => issue.status === "proposed",
       ).length,
       detachedNamedTables: discovery.detachedTableNames.length,
-      illustrationCaptionRunsRemoved: discovery.removedCaptionCount,
+      mineruTableBlocks: mineruTables.length,
+      mineruImageBlocksExcluded: discovery.excludedImageBlockCount,
       ...listExtraction.counts,
     },
     sourceSetReconciliation,
@@ -363,7 +301,8 @@ export async function runFullExtraction(dataRoot: string) {
       uniqueListSpellNames: listExtraction.counts.uniqueSpellNames,
       listFootnotes: listExtraction.counts.footnotes,
       detachedNamedTables: discovery.detachedTableNames.length,
-      illustrationCaptionRunsRemoved: discovery.removedCaptionCount,
+      mineruTableBlocks: mineruTables.length,
+      mineruImageBlocksExcluded: discovery.excludedImageBlockCount,
     },
   };
 }
@@ -436,17 +375,38 @@ export function discoverFullSpellEntities(pages: FullPageRow[]) {
   const sortedPages = [...pages].sort(
     (left, right) => left.sourcePageIndex - right.sourcePageIndex,
   );
+  const projections = sortedPages.map(reconstructMineruReadingLines);
   const reconstructed = mergeWrappedSpellHeadings(
-    sortedPages.flatMap(reconstructReadingLines),
+    projections.flatMap((projection) => projection.lines),
   );
-  const captions = removeIllustrationCaptions(reconstructed);
-  const detached = detachNamedTables(captions.readingLines);
+  const detached = detachNamedTables(reconstructed);
   const lines = detached.readingLines;
   const headingIndexes = lines.flatMap((line, index) =>
     isSpellHeadingAt(lines, index) ? [index] : [],
   );
   const spells: FullSpellEntity[] = [];
-  const issues: FullExtractionIssue[] = [];
+  const issues: FullExtractionIssue[] = projections.flatMap((projection) =>
+    projection.issues.map((projectionIssue) => {
+      const page = sortedPages.find(
+        (candidate) =>
+          candidate.sourceId === projectionIssue.sourceId &&
+          candidate.sourcePageIndex === projectionIssue.sourcePageIndex,
+      )!;
+      return {
+        schemaVersion: 1,
+        issueId: `mineru-projection:${slug(projectionIssue.sourceId)}:${projectionIssue.sourcePageIndex}:${projectionIssue.blockIndex}`,
+        kind: "mineru-projection-failed",
+        printedName: `MinerU block ${projectionIssue.blockIndex}`,
+        sourceId: projectionIssue.sourceId,
+        sourcePageIndex: projectionIssue.sourcePageIndex,
+        printedPageNumber: page.printedPageNumber,
+        message: projectionIssue.message,
+        status: "proposed",
+        reviewer: null,
+        decisionNote: null,
+      } satisfies FullExtractionIssue;
+    }),
+  );
   const names = new Map<string, number>();
   for (const headingIndex of headingIndexes) {
     const heading = lines[headingIndex]!;
@@ -477,6 +437,7 @@ export function discoverFullSpellEntities(pages: FullPageRow[]) {
         rowId: `spell:${slug(printedName)}`,
         entityType: "spell",
         ...extracted,
+        mineruTableEvidence: [],
       });
     } catch (error) {
       issues.push(
@@ -533,74 +494,79 @@ export function discoverFullSpellEntities(pages: FullPageRow[]) {
     spells,
     issues,
     detachedTableNames: detached.tables.map((table) => table.printedName),
-    detachedTables: detached.tables.map(
-      (table): FullDetachedTableEvidence => ({
-        schemaVersion: 1,
-        rowId: `detached-table:${slug(table.printedName)}`,
-        printedName: table.printedName,
-        attachToSpell: table.attachToSpell,
-        sourcePages: uniqueSourcePages(
-          table.lines.map((line) => sourcePage(line.page)),
-        ),
-        sourceText: table.lines.map((line) => line.text).join("\n"),
-        lines: table.lines.map((line) => ({
-          sourceId: line.page.sourceId,
-          sourcePageIndex: line.page.sourcePageIndex,
-          printedPageNumber: line.page.printedPageNumber,
-          text: line.text,
-          x: line.x,
-          y: line.y,
-          height: line.height,
-          segments: line.segments,
-        })),
-      }),
+    detachedTables: detached.tables.map((table): FullDetachedTableEvidence => ({
+      schemaVersion: 1,
+      rowId: `detached-table:${slug(table.printedName)}`,
+      printedName: table.printedName,
+      attachToSpell: table.attachToSpell,
+      sourcePages: uniqueSourcePages(
+        table.lines.map((line) => sourcePage(line.page)),
+      ),
+      sourceText: table.lines.map((line) => line.text).join("\n"),
+      lines: table.lines.map((line) => ({
+        sourceId: line.page.sourceId,
+        sourcePageIndex: line.page.sourcePageIndex,
+        printedPageNumber: line.page.printedPageNumber,
+        text: line.text,
+        x: line.x,
+        y: line.y,
+        height: line.height,
+        segments: line.segments,
+      })),
+    })),
+    excludedImageBlockCount: pages.reduce(
+      (count, page) =>
+        count +
+        page.mineru.blocks.filter((block) => block.type === "image").length,
+      0,
     ),
-    removedCaptionCount: captions.removedCount,
   };
 }
 
-function removeIllustrationCaptions(lines: ReadingLine[]) {
-  const readingLines: ReadingLine[] = [];
-  let removedCount = 0;
-  for (let index = 0; index < lines.length;) {
-    const first = lines[index]!;
-    if (!isStandaloneItalicLine(first)) {
-      readingLines.push(first);
-      index += 1;
-      continue;
-    }
-    const run = [first];
-    let stop = index + 1;
-    while (
-      stop < lines.length &&
-      isStandaloneItalicLine(lines[stop]!) &&
-      lines[stop]!.page === first.page &&
-      Math.abs(lines[stop]!.x - first.x) < 12 &&
-      run[run.length - 1]!.y - lines[stop]!.y < 16
-    ) {
-      run.push(lines[stop]!);
-      stop += 1;
-    }
-    const text = joinWrappedLines(run.map((line) => line.text));
-    if (
-      /^(?:Illus\. by\b|The subject of\b|[A-Z][a-z]+ (?:casts|summons)\b|Prismatic wall makes\b)/u.test(
-        text,
-      )
-    ) {
-      removedCount += 1;
-    } else {
-      readingLines.push(...run);
-    }
-    index = stop;
-  }
-  return { readingLines, removedCount };
-}
-
-function isStandaloneItalicLine(line: ReadingLine) {
-  const visible = line.segments.filter(
-    (segment) => segment.text.trim().length > 0,
-  );
-  return visible.length === 1 && visible[0]!.fontName === "g_d2_f9";
+export function extractFullMineruTables(
+  pages: FullPageRow[],
+): FullMineruTableEvidence[] {
+  return pages.flatMap((page) => {
+    const projection = reconstructMineruReadingLines(page);
+    return page.mineru.blocks
+      .filter((block) => block.type === "table")
+      .map((block) => {
+        const rowId = [
+          "mineru-table",
+          slug(page.sourceId),
+          page.sourcePageIndex,
+          block.blockIndex,
+        ].join(":");
+        const projectedText = projection.lines
+          .filter(
+            (line) =>
+              line.mineruBlockIndex === block.blockIndex &&
+              line.mineruBlockType === "table",
+          )
+          .map((line) => line.text)
+          .join("\n");
+        const evidence = {
+          sourceId: page.sourceId,
+          sourcePageIndex: page.sourcePageIndex,
+          printedPageNumber: page.printedPageNumber,
+          blockIndex: block.blockIndex,
+          bbox: block.bbox,
+          tableHtml: block.tableHtml,
+          captions: block.captions,
+          footnotes: block.footnotes,
+          projectedText,
+        };
+        return {
+          schemaVersion: 1,
+          rowId,
+          ...evidence,
+          evidenceSha256: crypto
+            .createHash("sha256")
+            .update(JSON.stringify(evidence))
+            .digest("hex"),
+        };
+      });
+  });
 }
 
 function detachNamedTables(lines: ReadingLine[]) {
@@ -723,9 +689,7 @@ function uniqueSourcePages(pages: PilotSourcePage[]) {
   );
 }
 
-function mergeWrappedSpellHeadings(
-  lines: ReturnType<typeof reconstructReadingLines>,
-) {
+function mergeWrappedSpellHeadings(lines: ReadingLine[]) {
   const merged = [...lines];
   for (let index = 1; index < merged.length; index += 1) {
     if (!isSpellHeadingAt(merged, index)) continue;
@@ -787,22 +751,6 @@ function issue(
     reviewer: null,
     decisionNote: null,
   };
-}
-
-function pageIndexes(
-  ranges: PhbFullExtractionManifest["sources"][number]["ranges"],
-) {
-  const result = new Set<number>();
-  for (const range of ranges) {
-    for (
-      let page = range.startPageIndex;
-      page <= range.endPageIndex;
-      page += 1
-    ) {
-      result.add(page);
-    }
-  }
-  return result;
 }
 
 function normalizeNameKey(value: string) {

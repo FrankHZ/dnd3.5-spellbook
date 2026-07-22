@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { extractFullSpellLists } from "./full-lists";
 import type { FullPageRow } from "./full-extraction";
 import type { PilotPdfTextItem } from "./pilot-entities";
+import { compareTokenMultisets } from "./pilot-extraction";
 
 const classPages = [
   page(181, [
@@ -195,6 +196,39 @@ assert.equal(
 );
 assert.equal(materialMarkerResult.issues.length, 0);
 
+const contentOrderResult = extractFullSpellLists([
+  page(184, [
+    line("BARD SPELLS", 70, 600, "heading", 18),
+    line("1ST-LEVEL BARD SPELLS", 70, 590, "heading", 12),
+    ...splitLine(
+      [
+        ["Content First:", "bold"],
+        [" Listed first by MinerU.", "body"],
+      ],
+      70,
+      580,
+    ),
+    // These blocks are physically higher on the PDF, but later in the content list.
+    line("2ND-LEVEL BARD SPELLS", 330, 740, "heading", 12),
+    ...splitLine(
+      [
+        ["Content Second:", "bold"],
+        [" Listed second by MinerU.", "body"],
+      ],
+      330,
+      729,
+    ),
+  ]),
+]);
+assert.deepEqual(
+  contentOrderResult.printedRows.map((row) => [row.level, row.printedName]),
+  [
+    [1, "Content First"],
+    [2, "Content Second"],
+  ],
+);
+assert.equal(contentOrderResult.issues.length, 0);
+
 console.log("PHB full-list portable tests passed");
 
 function page(sourcePageIndex: number, items: PilotPdfTextItem[]): FullPageRow {
@@ -212,6 +246,56 @@ function page(sourcePageIndex: number, items: PilotPdfTextItem[]): FullPageRow {
       textLayerSha256: "b".repeat(64),
       items,
     },
+    ...mineruPayload(items),
+  };
+}
+
+function mineruPayload(
+  items: FullPageRow["pdfjs"]["items"],
+): Pick<FullPageRow, "mineru" | "comparison"> {
+  const groups = items.reduce<Array<typeof items>>((result, item) => {
+    const last = result.at(-1);
+    if (last && last[0]?.y === item.y) {
+      last.push(item);
+    } else {
+      result.push([item]);
+    }
+    return result;
+  }, []);
+  const blocks = groups.map((group, blockIndex) => {
+    const centers = group.map((item) => ({
+      x: ((item.x + item.width / 2) / 612) * 1000,
+      y: ((792 - (item.y + item.height / 2)) / 792) * 1000,
+    }));
+    return {
+      blockIndex,
+      type: "text",
+      bbox: [
+        Math.min(...centers.map((center) => center.x)) - 1,
+        Math.min(...centers.map((center) => center.y)) - 1,
+        Math.max(...centers.map((center) => center.x)) + 1,
+        Math.max(...centers.map((center) => center.y)) + 1,
+      ] as [number, number, number, number],
+      text: group.map((item) => item.text).join(""),
+      textLevel: null,
+      tableHtml: null,
+      listItems: [],
+      captions: [],
+      footnotes: [],
+      assetPath: null,
+      textOrigin: "text-layer" as const,
+    };
+  });
+  const pdfText = items.map((item) => item.text).join(" ");
+  const mineruText = blocks.map((block) => block.text).join(" ");
+  return {
+    mineru: {
+      engine: "MinerU",
+      version: "fixture",
+      contentListSha256: "c".repeat(64),
+      blocks,
+    },
+    comparison: compareTokenMultisets(pdfText, mineruText),
   };
 }
 

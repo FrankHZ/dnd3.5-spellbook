@@ -422,9 +422,13 @@ export function compareComponent(
         : normalizeMeaning;
   const exactSource = normalize(sourceValue);
   const exactDb = normalize(dbValue);
-  const meaningMatches = meaning(sourceValue) === meaning(dbValue);
-  const sourceMeaning = meaning(sourceValue);
-  const dbMeaning = meaning(dbValue);
+  const sourceMeanings = normalizeMeaningVariants(sourceValue, meaning);
+  const dbMeanings = normalizeMeaningVariants(dbValue, meaning);
+  const meaningMatches = sourceMeanings.some((source) =>
+    dbMeanings.includes(source),
+  );
+  const sourceMeaning = sourceMeanings[0] ?? "";
+  const dbMeaning = dbMeanings[0] ?? "";
   const dbExpansionMatches =
     options.allowDbExpansion === true &&
     sourceMeaning.length > 0 &&
@@ -436,6 +440,18 @@ export function compareComponent(
         ? ("formatting-only" as const)
         : ("substantive-mismatch" as const);
   return { component, category, sourceValue, dbValue };
+}
+
+function normalizeMeaningVariants(
+  value: string,
+  normalize: (candidate: string) => string,
+) {
+  return Array.from(
+    new Set([
+      normalize(value),
+      normalize(value.replace(/([a-z])-\1(?=[a-z])/giu, "$1")),
+    ]),
+  );
 }
 
 function readDbSpells(

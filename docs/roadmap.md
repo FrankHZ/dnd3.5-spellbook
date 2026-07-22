@@ -259,21 +259,21 @@ Recommended next sequence:
    `main`, and the exact accepted commit before creating the release tag. This
    does not relax or reorder v1.4 source gates.
 
-2. **Replace the provisional PDF.js inventory with full MinerU extraction**
+2. **Completed: replace the provisional PDF.js inventory with full MinerU extraction**
 
-   The 605/605 PDF.js run establishes useful count and identity expectations,
-   but it is not the accepted structured source extraction. Run pinned MinerU
-   over all 126 in-scope pages, import ordered blocks and tables, compare them
-   against a PDF.js exact-character/coordinate baseline projected only inside
-   MinerU blocks, and regenerate every affected evidence fingerprint.
+   Pinned MinerU 3.4 now covers all 126 in-scope pages and preserves 4,493
+   ordered blocks, including 59 table blocks. PDF.js exact-character items are
+   projected only inside MinerU boundaries, all extraction counts reconcile,
+   and affected evidence fingerprints have been regenerated.
 
-3. **Re-run SRD adjudication and close English Gate 2**
+3. **Review 75 residual exceptions and close English Gate 2**
 
-   Reconcile the regenerated PHB comparison through the pinned official SRD
-   3.5 corpus and explicit Product Identity aliases, send only residual source
-   conflicts to main-gate, and produce accepted effective English rows with
-   zero unexplained misses. Only after main-gate accepts Gate 2 may the i18n
-   translation/proofreading track begin.
+   The regenerated comparison has passed through the pinned official SRD 3.5
+   corpus and explicit Product Identity aliases. Apply the 69 committed
+   terminal candidates, send only the remaining 75 source conflicts to
+   main-gate, and produce accepted effective English rows with zero unexplained
+   misses. Only after main-gate accepts Gate 2 may the i18n translation and
+   proofreading track begin.
 
 4. **Activate only accepted v1.4 content**
 

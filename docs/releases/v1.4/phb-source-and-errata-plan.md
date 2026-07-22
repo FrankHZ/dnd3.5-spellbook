@@ -8,11 +8,11 @@
 > boundaries, or cross-plan conflicts change.
 
 Status: in progress; Gate 0 and the complete Gate 1 representative pilot are
-accepted. The first Slice 4 PDF.js run is a provisional inventory, not an
-accepted full extraction. Gate 2 is blocked on a full MinerU structured run,
-block-bounded PDF.js text-fidelity projection and verification, regenerated
-comparison evidence, and the pinned official SRD 3.5 adjudication pass; all
-downstream translation/activation gates remain blocked.
+accepted. The full MinerU structured run, block-bounded PDF.js text-fidelity
+projection, regenerated comparison, and official SRD 3.5 adjudication are
+complete. Gate 2 is now blocked only on review of 75 residual exceptions and
+the resulting English handoff; downstream translation/activation gates remain
+blocked.
 
 ## Purpose
 
@@ -372,3 +372,15 @@ archive host is the publisher.
   blocks at all. Gate 2 is reopened at the full-extraction boundary. The 605-row
   comparison, its 243-row queue, and subsequent SRD terminal candidates remain
   provisional until a full MinerU run regenerates their evidence fingerprints.
+- The replacement full run uses pinned MinerU 3.4 over all 126 in-scope pages
+  and records 4,493 ordered blocks, including all 59 table blocks. Its
+  block-bounded PDF.js projection records token recall `0.970167` and precision
+  `0.977233`; entity extraction reproduces 605 descriptions, 1,216 printed
+  list rows, 1,235 occurrences, seven detached named tables, and seven excluded
+  description image blocks with zero parser or set-reconciliation issue.
+- All 59 MinerU table artifacts are fingerprinted and page-linked into affected
+  spell review evidence. The regenerated 605-row comparison retains 65 exact,
+  297 formatting-only, 163 substantive, and 80 manual categories. Before the
+  latest SRD candidates are applied, 461 decisions remain accepted and 144 are
+  proposed; three-way adjudication produces 69 terminal candidates and 75
+  residual exceptions. Gate 2 remains open for those 75 exception decisions.

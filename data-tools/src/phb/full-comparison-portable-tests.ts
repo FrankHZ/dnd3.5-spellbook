@@ -39,6 +39,23 @@ assert.deepEqual(
 );
 
 const summon = spell("Summon Nature’s Ally V");
+const mineruTable = {
+  schemaVersion: 1 as const,
+  rowId: "mineru-table:phb35-core:200:7",
+  sourceId: "phb35-core",
+  sourcePageIndex: 200,
+  printedPageNumber: 200,
+  blockIndex: 7,
+  bbox: [10, 20, 30, 40] as [number, number, number, number],
+  tableHtml: "<table><tr><td>Level</td></tr></table>",
+  captions: [],
+  footnotes: [],
+  projectedText: "Level Creature",
+  evidenceSha256: "c".repeat(64),
+};
+summon.mineruTableEvidence = [
+  { rowId: mineruTable.rowId, evidenceSha256: mineruTable.evidenceSha256 },
+];
 const summonRows = compareFullCorpus({
   spells: [summon],
   overlays: [overlay(summon)],
@@ -63,37 +80,54 @@ assert.deepEqual(summonRows[0]!.sourceEvidence, [
     kind: "detached-table",
     sha256: summonRows[0]!.sourceEvidence[0]!.sha256,
   },
+  {
+    rowId: mineruTable.rowId,
+    kind: "mineru-table",
+    sha256: mineruTable.evidenceSha256,
+  },
 ]);
 assert.ok(
   summonRows[0]!.reviewFlags.includes("uncertain:shared-summon-table-unparsed"),
 );
 assert.deepEqual(
-  validateFullComparisonSourceEvidence(summonRows, [
-    {
-      schemaVersion: 1,
-      rowId: "detached-table:summon-nature-s-ally",
-      printedName: "Summon Nature’s Ally",
-      attachToSpell: false,
-      sourcePages: summon.sourcePages,
-      sourceText: "Level Creature",
-      lines: [],
-    },
-  ]),
+  validateFullComparisonSourceEvidence(
+    summonRows,
+    [
+      {
+        schemaVersion: 1,
+        rowId: "detached-table:summon-nature-s-ally",
+        printedName: "Summon Nature’s Ally",
+        attachToSpell: false,
+        sourcePages: summon.sourcePages,
+        sourceText: "Level Creature",
+        lines: [],
+      },
+    ],
+    [mineruTable],
+  ),
   [],
 );
 assert.match(
-  validateFullComparisonSourceEvidence(summonRows, [
-    {
-      schemaVersion: 1,
-      rowId: "detached-table:summon-nature-s-ally",
-      printedName: "Summon Nature’s Ally",
-      attachToSpell: false,
-      sourcePages: summon.sourcePages,
-      sourceText: "Changed",
-      lines: [],
-    },
-  ]).join("\n"),
+  validateFullComparisonSourceEvidence(
+    summonRows,
+    [
+      {
+        schemaVersion: 1,
+        rowId: "detached-table:summon-nature-s-ally",
+        printedName: "Summon Nature’s Ally",
+        attachToSpell: false,
+        sourcePages: summon.sourcePages,
+        sourceText: "Changed",
+        lines: [],
+      },
+    ],
+    [mineruTable],
+  ).join("\n"),
   /source evidence is stale/u,
+);
+assert.match(
+  validateFullComparisonSourceEvidence(summonRows, [], []).join("\n"),
+  /source evidence is missing/u,
 );
 
 console.log("PHB full comparison portable tests passed");
@@ -117,6 +151,7 @@ function spell(printedName: string): FullSpellEntity {
     fields: { level: "Sor/Wiz 1", spellResistance: "Yes" },
     bodyText: "Body text.",
     sourceText: "Source text.",
+    mineruTableEvidence: [],
     reviewFlags: [],
   };
 }

@@ -215,6 +215,20 @@ const summaryMismatch = compareSummaryOnlyCase(
 );
 assert.equal(summaryMismatch.category, "substantive-mismatch");
 assert.equal(summaryMismatch.components[0]?.component, "shortDescription:1");
+
+assert.equal(
+  compareComponent(
+    "body",
+    "Dispelling effect-tively ends it.",
+    "Dispelling effectively ends it.",
+  ).category,
+  "formatting-only",
+);
+assert.equal(
+  compareComponent("body", "A shell-like field.", "A shelllike field.")
+    .category,
+  "formatting-only",
+);
 assert.equal(summaryMismatch.components[0]?.category, "substantive-mismatch");
 
 assert.equal(

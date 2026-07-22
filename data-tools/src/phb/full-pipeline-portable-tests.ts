@@ -11,6 +11,7 @@ import {
   PHB_FULL_LIST_FOOTNOTES_RELATIVE_PATH,
   PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH,
   PHB_FULL_LIST_ROWS_RELATIVE_PATH,
+  PHB_FULL_MINERU_TABLES_RELATIVE_PATH,
 } from "./full-extraction";
 import { PHB_FULL_ERRATA_HINTS_RELATIVE_PATH } from "./full-errata-hints";
 import {
@@ -37,6 +38,7 @@ try {
     PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH,
     PHB_FULL_LIST_FOOTNOTES_RELATIVE_PATH,
     PHB_FULL_DETACHED_TABLES_RELATIVE_PATH,
+    PHB_FULL_MINERU_TABLES_RELATIVE_PATH,
     PHB_FULL_ISSUES_RELATIVE_PATH,
   ];
   inputs.forEach((relativePath) => write(relativePath, ""));
@@ -76,6 +78,7 @@ try {
       listOccurrences: artifact(PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH),
       listFootnotes: artifact(PHB_FULL_LIST_FOOTNOTES_RELATIVE_PATH),
       detachedTables: artifact(PHB_FULL_DETACHED_TABLES_RELATIVE_PATH),
+      mineruTables: artifact(PHB_FULL_MINERU_TABLES_RELATIVE_PATH),
     },
   };
   verifyRowReviewEvidenceArtifacts(dataRoot, rowReviewManifest);
@@ -84,8 +87,17 @@ try {
     () => verifyRowReviewEvidenceArtifacts(dataRoot, rowReviewManifest),
     /detachedTables/u,
   );
+  write(PHB_FULL_DETACHED_TABLES_RELATIVE_PATH, "");
+  write(PHB_FULL_MINERU_TABLES_RELATIVE_PATH, "changed\n");
+  assert.throws(
+    () => verifyRowReviewEvidenceArtifacts(dataRoot, rowReviewManifest),
+    /mineruTables/u,
+  );
 
-  assertEmptyJsonl(resolve(PHB_FULL_ISSUES_RELATIVE_PATH), "description issues");
+  assertEmptyJsonl(
+    resolve(PHB_FULL_ISSUES_RELATIVE_PATH),
+    "description issues",
+  );
   write(PHB_FULL_ISSUES_RELATIVE_PATH, '{"issue":"unresolved"}\n');
   assert.throws(
     () =>

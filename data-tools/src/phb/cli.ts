@@ -10,6 +10,15 @@ import {
 import { inspectPdfTextLayer } from "./pdf-baseline";
 import { runFullExtraction } from "./full-extraction";
 import {
+  PHB_FULL_MANIFEST_RELATIVE_PATH,
+  readPhbFullExtractionManifest,
+} from "./full-manifest";
+import {
+  PHB_FULL_MINERU_INPUT_MANIFEST_RELATIVE_PATH,
+  buildFullInputPdfs,
+  importMineruFull,
+} from "./full-mineru";
+import {
   runFullComparison,
   writeProposedFullEnglishReview,
 } from "./full-pipeline";
@@ -35,6 +44,12 @@ import {
   readAndVerifyPhbSourceManifest,
   sha256File,
 } from "./source-manifest";
+import { runSrdExtraction } from "./srd-extraction";
+import {
+  applySrdTerminalCandidates,
+  runSrdAdjudication,
+} from "./srd-adjudication";
+import { readAndVerifySrdSourceManifest } from "./srd-source";
 
 const REPORT_PATH = path.join(
   repoRoot(),
@@ -217,9 +232,110 @@ async function startFullExtraction() {
         .replace(/\\/gu, "/"),
     },
   });
-  console.log("PHB full PDF.js extraction generated");
+  console.log("PHB full MinerU-backed entity extraction generated");
   console.log(`Report: ${reportPath}`);
   console.log(JSON.stringify(result.counts, null, 2));
+}
+
+async function prepareFullInput() {
+  const dataRoot = localDataDir();
+  const verification = readAndVerifyPhbSourceManifest(dataRoot);
+  const sourceManifest = parsePhbSourceManifestText(
+    fs.readFileSync(verification.manifestPath, "utf8"),
+  );
+  const { filePath: fullPath, manifest: fullManifest } =
+    readPhbFullExtractionManifest(dataRoot);
+  const outputRoot = path.join(
+    dataRoot,
+    "artifacts",
+    "mineru",
+    "phb35",
+    "full-input",
+  );
+  const artifacts = await buildFullInputPdfs({
+    dataRoot,
+    outputRoot,
+    sourceManifest,
+    fullManifest,
+  });
+  const inputManifestPath = path.join(
+    dataRoot,
+    PHB_FULL_MINERU_INPUT_MANIFEST_RELATIVE_PATH,
+  );
+  writeJson(inputManifestPath, {
+    schemaVersion: 1,
+    sourceManifest: {
+      relativePath: PHB_SOURCE_MANIFEST_RELATIVE_PATH,
+      sha256: verification.manifestSha256,
+    },
+    fullManifest: {
+      relativePath: PHB_FULL_MANIFEST_RELATIVE_PATH,
+      sha256: sha256File(fullPath),
+    },
+    artifacts,
+  });
+  console.log("PHB full MinerU subset PDFs prepared");
+  console.log(`Manifest: ${inputManifestPath}`);
+  console.log(
+    JSON.stringify(
+      artifacts.map((artifact) => ({
+        sourceId: artifact.sourceId,
+        pages: artifact.pages.length,
+        bytes: artifact.bytes,
+        sha256: artifact.sha256,
+      })),
+      null,
+      2,
+    ),
+  );
+}
+
+async function importFullExtraction() {
+  const outputArg = optionValue("--mineru-output");
+  if (!outputArg) {
+    throw new Error(
+      "--mineru-output is required when importing the full MinerU run",
+    );
+  }
+  const dataRoot = localDataDir();
+  const verification = readAndVerifyPhbSourceManifest(dataRoot);
+  const sourceManifest = parsePhbSourceManifestText(
+    fs.readFileSync(verification.manifestPath, "utf8"),
+  );
+  const { filePath: fullPath, manifest: fullManifest } =
+    readPhbFullExtractionManifest(dataRoot);
+  const imported = await importMineruFull({
+    dataRoot,
+    mineruOutputRoot: outputArg,
+    sourceManifest,
+    sourceManifestSha256: verification.manifestSha256,
+    fullManifest,
+    fullManifestSha256: sha256File(fullPath),
+  });
+  const extracted = await runFullExtraction(dataRoot);
+  const reportPath = path.join(
+    repoRoot(),
+    "data-tools",
+    "out",
+    "phb",
+    "full-extraction.generated.json",
+  );
+  writeJson(reportPath, {
+    schemaVersion: 2,
+    import: imported.report,
+    counts: extracted.counts,
+    dataArtifacts: {
+      extractionManifest: path
+        .relative(dataRoot, imported.extractionManifestPath)
+        .replace(/\\/gu, "/"),
+      entityManifest: path
+        .relative(dataRoot, extracted.entitiesManifestPath)
+        .replace(/\\/gu, "/"),
+    },
+  });
+  console.log("PHB full MinerU output imported and parsed");
+  console.log(`Report: ${reportPath}`);
+  console.log(JSON.stringify(extracted.counts, null, 2));
 }
 
 async function preparePilotInput() {
@@ -347,6 +463,43 @@ function reportFull() {
   console.log(`Review: ${result.reviewPath}`);
 }
 
+function verifySrdSource() {
+  const result = readAndVerifySrdSourceManifest(localDataDir());
+  console.log("PHB SRD source verification OK");
+  console.log(
+    JSON.stringify(
+      {
+        manifestSha256: result.manifestSha256,
+        manifestCommit: result.manifestCommit,
+        package: result.manifest.package,
+        members: result.manifest.members.length,
+      },
+      null,
+      2,
+    ),
+  );
+}
+
+async function extractSrdSource() {
+  const result = await runSrdExtraction(localDataDir());
+  console.log("PHB SRD spell extraction generated");
+  console.log(`Manifest: ${result.manifestPath}`);
+  console.log(JSON.stringify(result.manifest.counts, null, 2));
+}
+
+function adjudicateSrdSource() {
+  const result = runSrdAdjudication(localDataDir());
+  console.log("PHB SRD three-way adjudication generated");
+  console.log(`Manifest: ${result.manifestPath}`);
+  console.log(JSON.stringify(result.manifest.counts, null, 2));
+}
+
+function applySrdAdjudication() {
+  const result = applySrdTerminalCandidates(localDataDir());
+  console.log("PHB SRD terminal candidates applied to row review");
+  console.log(JSON.stringify(result, null, 2));
+}
+
 function readOptionalPilot(dataRoot: string, sourceManifestSha256: string) {
   try {
     const { filePath, manifest } = readPhbPilotManifest(dataRoot);
@@ -413,7 +566,7 @@ function writeJson(filePath: string, value: unknown) {
 
 function usage(): never {
   throw new Error(
-    "Usage: phb:source:verify | phb:pilot:verify [-- --stage page-extraction|end-to-end --review <data-relative-path>] | phb:source:extract | phb:source:extract -- --pilot --prepare-only | phb:source:extract -- --pilot --mineru-output <data-relative-path> | phb:source:compare [-- --pilot] | phb:source:report [-- --pilot]",
+    "Usage: phb:source:verify | phb:pilot:verify [-- --stage page-extraction|end-to-end --review <data-relative-path>] | phb:source:extract | phb:source:extract -- --pilot --prepare-only | phb:source:extract -- --pilot --mineru-output <data-relative-path> | phb:source:extract -- --full --prepare-only | phb:source:extract -- --full --mineru-output <data-relative-path> | phb:source:compare [-- --pilot] | phb:source:report [-- --pilot] | phb:srd:verify | phb:srd:extract | phb:srd:adjudicate | phb:srd:apply",
   );
 }
 
@@ -438,6 +591,22 @@ async function main() {
     await verifyPilotAcceptance();
     return;
   }
+  if (command === "srd:verify") {
+    verifySrdSource();
+    return;
+  }
+  if (command === "srd:extract") {
+    await extractSrdSource();
+    return;
+  }
+  if (command === "srd:adjudicate") {
+    adjudicateSrdSource();
+    return;
+  }
+  if (command === "srd:apply") {
+    applySrdAdjudication();
+    return;
+  }
   if (command === "compare" && process.argv.includes("--pilot")) {
     comparePilot();
     return;
@@ -452,6 +621,22 @@ async function main() {
   }
   if (command === "report" && !process.argv.includes("--pilot")) {
     reportFull();
+    return;
+  }
+  if (
+    command === "extract" &&
+    process.argv.includes("--full") &&
+    process.argv.includes("--prepare-only")
+  ) {
+    await prepareFullInput();
+    return;
+  }
+  if (
+    command === "extract" &&
+    process.argv.includes("--full") &&
+    process.argv.includes("--mineru-output")
+  ) {
+    await importFullExtraction();
     return;
   }
   if (

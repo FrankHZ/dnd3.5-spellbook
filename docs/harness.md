@@ -166,8 +166,9 @@ npm run -w data-tools test:portable
 It is fixture-only and covers pure helpers for source-label mapping, English
 name normalization, normalized summary row validation, and structured spell
 patch JSONL/schema validation. It also covers PHB source/pilot/errata manifest
-validation, deterministic pilot PDF construction, and source-free token
-comparison helpers. Root `npm run test:data-tools` delegates to this
+validation, deterministic PDF construction, MinerU block-order and bounded
+PDF.js projection behavior, table evidence, and source-free comparison helpers.
+Root `npm run test:data-tools` delegates to this
 command. It must remain independent of ignored CHM/raw source data, the nested
 `data/` repo, and SQLite databases.
 
@@ -210,26 +211,38 @@ unresolved totals.
 The accepted pilot authorizes, but does not accept, the full local-data run:
 
 ```bash
+npm run -w data-tools phb:source:extract -- --full --prepare-only
+npm run -w data-tools phb:source:extract -- --full --mineru-output <data-relative-output>
 npm run -w data-tools phb:source:extract
 npm run -w data-tools phb:source:compare
+npm run -w data-tools phb:srd:verify
+npm run -w data-tools phb:srd:extract
+npm run -w data-tools phb:srd:adjudicate
+npm run -w data-tools phb:srd:apply
 npm run -w data-tools phb:source:report
 ```
 
-Full extraction is gated on 605 description entities, 1,216 printed list
-rows, 1,235 expanded occurrences, 605 independent list names, zero parser/set
-issues, seven detached named tables, and six removed illustration-caption
-runs. Comparison must balance 605 source and 605 PHB DB rows with zero
-source-only or DB-only names and records current rules/content DB hashes.
-Detached table evidence preserves PDF.js coordinates. Combined target/effect/
-area fields and unparsed shared summon tables are manual, and unordered body
-tokens never qualify as formatting-only evidence. Exact and formatting-only
-rows are deterministically accepted only after those layout gates;
-substantive and manual rows require fingerprint-bound terminal decisions. The
-report recursively re-hashes description/list issues, errata output, the pilot
-summon table, comparison artifacts, and every row-review evidence artifact. It
-is expected to fail while any current row remains proposed. These
-commands depend on ignored local PDFs, the nested data repo, and local SQLite,
-so they remain outside root `verify` and portable CI.
+Full extraction requires imported MinerU output and is gated on 605 description
+entities, 1,216 printed list rows, 1,235 expanded occurrences, 605 independent
+list names, zero parser/set issues, 59 MinerU table blocks, seven detached named
+tables, and seven excluded description image blocks. MinerU defines block order
+and table structure; the PDF.js exact-character baseline is projected only
+inside those boundaries. The plain extraction command reparses imported rows
+and cannot silently fall back to PDF.js-only extraction. Comparison must balance
+605 source and 605 PHB DB rows with zero source-only or DB-only names and records
+current rules/content DB hashes. Table artifacts are fingerprinted in both the
+recursive manifest and affected row evidence. Combined target/effect/area fields
+and unparsed shared summon tables are manual, and unordered body tokens never
+qualify as formatting-only evidence. Exact and formatting-only rows are
+deterministically accepted only after those layout gates; substantive and
+manual rows require fingerprint-bound terminal decisions. SRD adjudication may
+resolve deterministic three-way cases only from committed, current evidence.
+The report recursively re-hashes description/list issues, errata output, the
+pilot summon table, comparison artifacts, MinerU table artifacts, SRD-backed
+decisions, and every row-review evidence artifact. It is expected to fail while
+any current row remains proposed. These commands depend on ignored local PDFs,
+the nested data repo, and local SQLite, so they remain outside root `verify` and
+portable CI.
 
 The portable harness also validates `server/db/fixtures.manifest.json`. In a
 clean checkout it verifies that every mapped portable fixture path exists. In a

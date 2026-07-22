@@ -12,7 +12,7 @@ export const PHB_MINERU_RUNTIME_RELATIVE_PATH =
   "phb35/source/mineru-runtime.json";
 const SHA256_PATTERN = /^[a-f0-9]{64}$/;
 
-type PilotPageMapping = {
+export type PilotPageMapping = {
   subsetPageIndex: number;
   sourcePageIndex: number;
   printedPageNumber: number | null;
@@ -20,7 +20,7 @@ type PilotPageMapping = {
   kinds: string[];
 };
 
-type PilotInputArtifact = {
+export type PilotInputArtifact = {
   sourceId: string;
   sourceSha256: string;
   relativePath: string;
@@ -36,7 +36,7 @@ type PilotInputManifest = {
   artifacts: PilotInputArtifact[];
 };
 
-type MineruRuntimeManifest = {
+export type MineruRuntimeManifest = {
   schemaVersion: 1;
   engine: "MinerU";
   version: string;
@@ -48,7 +48,7 @@ type MineruRuntimeManifest = {
   options: Record<string, boolean | number | string>;
 };
 
-type MineruBlock = {
+export type MineruBlock = {
   type: string;
   page_idx: number;
   bbox?: unknown;
@@ -60,14 +60,16 @@ type MineruBlock = {
   image_caption?: unknown;
   image_footnote?: unknown;
   img_path?: unknown;
+  list_items?: unknown;
 };
 
-type StableMineruBlock = {
+export type StableMineruBlock = {
   type: string;
   bbox: [number, number, number, number] | null;
   text: string | null;
   textLevel: number | null;
   tableHtml: string | null;
+  listItems: string[];
   captions: string[];
   footnotes: string[];
   assetPath: string | null;
@@ -350,7 +352,7 @@ function parseInputManifest(value: unknown): PilotInputManifest {
   return value as PilotInputManifest;
 }
 
-function parseRuntimeManifest(value: unknown): MineruRuntimeManifest {
+export function parseRuntimeManifest(value: unknown): MineruRuntimeManifest {
   if (
     !isRecord(value) ||
     value.schemaVersion !== 1 ||
@@ -370,7 +372,7 @@ function parseRuntimeManifest(value: unknown): MineruRuntimeManifest {
   return value as MineruRuntimeManifest;
 }
 
-function parseMineruContentList(value: unknown, pageCount: number) {
+export function parseMineruContentList(value: unknown, pageCount: number) {
   if (!Array.isArray(value))
     throw new Error("MinerU content list must be an array");
   return value.map((entry, index) => {
@@ -387,13 +389,13 @@ function parseMineruContentList(value: unknown, pageCount: number) {
   });
 }
 
-function groupBlocksByPage(blocks: MineruBlock[], pageCount: number) {
+export function groupBlocksByPage(blocks: MineruBlock[], pageCount: number) {
   const pages = Array.from({ length: pageCount }, () => [] as MineruBlock[]);
   for (const block of blocks) pages[block.page_idx]?.push(block);
   return pages;
 }
 
-function toStableMineruBlock(block: MineruBlock): StableMineruBlock {
+export function toStableMineruBlock(block: MineruBlock): StableMineruBlock {
   const captions = strings(
     block.type === "table" ? block.table_caption : block.image_caption,
   );
@@ -408,6 +410,7 @@ function toStableMineruBlock(block: MineruBlock): StableMineruBlock {
       ? (block.text_level as number)
       : null,
     tableHtml: typeof block.table_body === "string" ? block.table_body : null,
+    listItems: strings(block.list_items),
     captions,
     footnotes,
     assetPath: typeof block.img_path === "string" ? block.img_path : null,
@@ -420,10 +423,11 @@ function toStableMineruBlock(block: MineruBlock): StableMineruBlock {
   };
 }
 
-function blockText(block: StableMineruBlock) {
+export function blockText(block: StableMineruBlock) {
   return [
     block.text ?? "",
     stripHtml(block.tableHtml ?? ""),
+    ...block.listItems,
     ...block.captions,
     ...block.footnotes,
   ].join(" ");
@@ -448,7 +452,7 @@ function sumCounts(counts: Map<string, number>) {
   return total;
 }
 
-function ratio(numerator: number, denominator: number) {
+export function ratio(numerator: number, denominator: number) {
   return denominator === 0
     ? 1
     : Math.round((numerator / denominator) * 1_000_000) / 1_000_000;
@@ -475,11 +479,15 @@ function stripHtml(value: string) {
   return value.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ");
 }
 
-function safeId(value: string) {
+export function safeId(value: string) {
   return value.replace(/[^a-z0-9-]/gi, "-").toLowerCase();
 }
 
-function verifyFileIdentity(filePath: string, bytes: number, sha256: string) {
+export function verifyFileIdentity(
+  filePath: string,
+  bytes: number,
+  sha256: string,
+) {
   const actualBytes = fs.statSync(filePath).size;
   const actualSha256 = sha256File(filePath);
   if (actualBytes !== bytes || actualSha256 !== sha256) {
@@ -487,7 +495,7 @@ function verifyFileIdentity(filePath: string, bytes: number, sha256: string) {
   }
 }
 
-function resolveAbsoluteInside(root: string, candidate: string) {
+export function resolveAbsoluteInside(root: string, candidate: string) {
   const resolved = path.resolve(root, candidate);
   const relative = path.relative(root, resolved);
   if (
@@ -499,7 +507,7 @@ function resolveAbsoluteInside(root: string, candidate: string) {
   throw new Error(`Path escapes local data root: ${candidate}`);
 }
 
-function readJson(filePath: string, label: string) {
+export function readJson(filePath: string, label: string) {
   if (!fs.existsSync(filePath))
     throw new Error(`${label} not found: ${filePath}`);
   try {
