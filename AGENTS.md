@@ -207,6 +207,10 @@ scope or merge its own PR.
   `web`.
 - If behavior differs from documentation, update the newest topic-specific
   canonical doc rather than editing old MVP history.
+- At main-gate review, run the architecture correspondence gate in
+  `docs/feature-workflow.md`. Documentation edits in an implementation PR do
+  not silently redefine accepted authority, fallback, ownership, ordering, or
+  source-of-truth boundaries; those changes require a plan-first scope decision.
 - Treat version `integrated-plan.md` files as sequencing and conflict-review
   docs, not implementation ledgers. Ordinary implementation branches should
   update their owning child plan, affected topic docs, and `docs/roadmap.md`

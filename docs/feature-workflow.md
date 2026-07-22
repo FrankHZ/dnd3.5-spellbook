@@ -47,6 +47,40 @@ The sequence is:
 3. Implement the deliverable in a follow-up commit.
 4. Update durable docs if shipped behavior differs from the plan.
 
+## Architecture Correspondence Gate
+
+Use this gate when a plan or durable topic doc assigns authority to a source,
+engine, module, schema, ordering rule, or fallback boundary. Output parity,
+stable counts, and passing tests do not by themselves prove that the assigned
+architecture was preserved.
+
+Before implementation, record only the boundaries material to the change:
+
+- the authoritative input or component
+- the derived or consuming surfaces
+- allowed fallback and repair behavior
+- forbidden substitutions, reorderings, or parallel sources of truth
+- the condition that requires a scope decision instead of implementation
+
+During main-gate review:
+
+1. Compare the executable path with the accepted plan and durable topic docs,
+   including their state before the implementation branch changed them.
+2. Trace the authority through the actual imports, calls, manifests, and runtime
+   wiring. Do not infer compliance from names, summaries, counts, or generated
+   artifacts alone.
+3. Require counterfactual evidence for material boundaries. Examples include a
+   missing authority causing failure, stale evidence being rejected, ordering
+   changes affecting fingerprints, or a forbidden fallback being impossible.
+4. Treat an implementation that changes authority, fallback, ownership, or
+   source-of-truth semantics as a scope change. Return to a plan-first decision
+   before accepting the implementation.
+
+An implementation PR may update documentation to describe shipped behavior,
+but those edits do not retroactively authorize an unapproved architecture
+change. A documentation-only clarification may accompany the implementation
+only when it preserves the previously accepted boundary.
+
 ## Agent Assignment Workflow
 
 Use this when work is split across the main gate, specialist branches,
@@ -83,6 +117,8 @@ content unless the workflow change reveals a current source-of-truth conflict.
 - State the user-visible outcome before choosing files.
 - List reuse targets before adding new modules.
 - Mark explicit non-goals when the request could balloon.
+- Record architecture and authority boundaries when the change depends on a
+  particular source, engine, module, ordering rule, or fallback policy.
 - Treat contract changes as cross-workspace work: update `contracts`, then
   validate `server` and `web`.
 - Treat UI copy changes as i18n work and follow `docs/i18n.md`.
