@@ -214,7 +214,9 @@ drops, and reviewed outcomes for every pilot row.
   into Gate 2 acceptance without the normal rerun. A layout decision requires
   a full rerun beginning at `phb:source:extract`; the English residual queue
   must remain unavailable until extraction, comparison, SRD adjudication, and
-  SRD apply are mutually current again.
+  SRD apply are mutually current again. An English residual save makes the
+  row-review manifest stale; after residual-only review, rerun
+  `phb:source:compare` before `phb:source:report`.
 - Preserve every terminal decision and residual exception in the data repo.
 
 Validation: the MinerU input/output/runtime chain and PDF.js baseline are both
@@ -280,12 +282,15 @@ script manifest, tests, and this plan are updated together.
 - Every deterministic three-way result records its adjudication rule and
   fingerprint-bound evidence; only genuine exceptions require main-gate row
   review.
-- Any console-recorded decision survives the canonical compare/adjudication
-  rerun with the same current fingerprint; stale or invalid decisions fail
-  closed before the English report is proposed.
+- Any console-recorded decision survives its required canonical rerun with the
+  same current fingerprint; stale or invalid decisions fail closed before the
+  English report is proposed.
 - Any layout decision restarts canonical regeneration at full
   `phb:source:extract`; stale English residual rows cannot be read or edited
   until the regenerated compare/adjudication/apply chain validates.
+- After the final English residual decision, `phb:source:compare` refreshes the
+  stale row-review manifest before `phb:source:report`; report cannot consume
+  the decision JSONL directly while that manifest is stale.
 - The English handoff is accepted before any translation branch consumes it.
 - Public fixtures/reports contain no PHB or translated corpus text.
 - Focused tests, `npm run typecheck:data-tools`, portable tests, and local-data

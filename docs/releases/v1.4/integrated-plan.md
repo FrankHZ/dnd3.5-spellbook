@@ -85,7 +85,9 @@ Owner: `data-pipeline`; approver: `main-gate`.
   the English residual queue unavailable until the canonical full rerun starts
   at `phb:source:extract` and completes compare, SRD adjudication, and SRD
   apply. Review only the regenerated residual queue, then run the report after
-  every current residual decision is terminal.
+  every current residual decision is terminal. Because each residual save
+  stales the row-review manifest, rerun `phb:source:compare` after the final
+  residual decision and before `phb:source:report`.
 
 Exit: complete set accounting, zero unexplained misses, accepted effective
 English rows, and no translation work started early.

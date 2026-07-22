@@ -207,6 +207,14 @@ data-tools service. Once the chain is current, the regenerated English queue
 may reopen; `phb:source:report` still remains blocked until all current
 residual decisions are terminal.
 
+A saved `english-residual` decision changes the full row-review JSONL and makes
+its row-review manifest stale even when extraction and adjudication inputs are
+otherwise unchanged. After residual-only review, run
+`npm run -w data-tools phb:source:compare` to preserve current decisions while
+refreshing that manifest, and only then run `phb:source:report`. A direct report
+attempt against the stale manifest must fail closed. This shorter recovery path
+is valid only when no layout or other upstream evidence changed.
+
 ## Review Experience
 
 - Use a dense split workspace: PDF page and overlays on the left; evidence,
@@ -252,7 +260,9 @@ Validation: focused portable tests cover stale fingerprints, invalid targets,
 validation failure, concurrent writes, atomic replacement failure, preserved
 row ordering, zero mutation outside the selected decision JSONL, package-entry
 runtime resolution, and English queue invalidation/re-enablement across a
-layout decision and canonical rebuild.
+layout decision and canonical rebuild. A residual-save regression proves the
+row-review manifest becomes stale, report fails closed, and compare refreshes
+the manifest without discarding the current terminal decision.
 
 ### Slice 2: Local API And Workspace Shell
 
@@ -300,8 +310,9 @@ Owners: `data-pipeline` for rerun evidence; `main-gate` for acceptance.
 - After any layout decision, restart the canonical full chain at
   `phb:source:extract`, then run compare, SRD adjudication, and SRD apply before
   reopening English review. After the regenerated residual decisions are
-  terminal, run `phb:source:report`; do not treat console save responses as
-  pipeline acceptance.
+  terminal, rerun `phb:source:compare` to refresh the row-review manifest, then
+  run `phb:source:report`; do not treat console save responses as pipeline
+  acceptance.
 - Confirm zero stale/proposed residual decisions before producing the English
   handoff. Keep the console local and source-bearing outputs in the nested data
   repo.
@@ -334,8 +345,9 @@ main-gate review, and the standard v1.4 data/portable checks.
   canonical rerun beginning at full `phb:source:extract` regenerates and
   validates extraction, comparison, adjudication, and apply artifacts.
 - Saving any decision clearly leaves final canonical acceptance pending;
-  `phb:source:report` succeeds only after every current residual row is
-  terminal.
+  after an English residual save, `phb:source:compare` must refresh the stale
+  row-review manifest before `phb:source:report` may succeed. This residual-only
+  shortcut is forbidden when layout or other upstream evidence changed.
 - Portable CI passes without local source files. Focused data service, API,
   frontend, typecheck, and build checks pass, followed by real local smoke and
   Gate 2 data acceptance.

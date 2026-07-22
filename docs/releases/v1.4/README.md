@@ -104,7 +104,8 @@ the resulting effective-source hash.
 4. Accept the localhost review service/API and React consumer, then review the
    current layout decisions. If layout changes, rerun from full source
    extraction before the regenerated English residual queue may reopen; review
-   those residuals and complete the canonical Gate 2 report.
+   those residuals, rerun source comparison to refresh the row-review manifest,
+   and only then complete the canonical Gate 2 report.
 5. Translate and proofread only the accepted effective English corpus.
 6. Apply accepted rows, rebuild derived content/search artifacts, verify API
    fallback and frontend consumption, then run release acceptance.
