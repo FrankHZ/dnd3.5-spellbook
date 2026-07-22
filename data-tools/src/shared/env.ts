@@ -3,7 +3,27 @@ import path from "node:path";
 import dotenv from "dotenv";
 
 export function repoRoot() {
-  return path.resolve(__dirname, "..", "..", "..");
+  for (const start of [__dirname, process.cwd()]) {
+    let current = path.resolve(start);
+    while (true) {
+      const packagePath = path.join(current, "package.json");
+      if (fs.existsSync(packagePath)) {
+        const packageJson = JSON.parse(
+          fs.readFileSync(packagePath, "utf8"),
+        ) as { workspaces?: unknown };
+        if (
+          Array.isArray(packageJson.workspaces) &&
+          packageJson.workspaces.includes("data-tools")
+        ) {
+          return current;
+        }
+      }
+      const parent = path.dirname(current);
+      if (parent === current) break;
+      current = parent;
+    }
+  }
+  throw new Error("Could not locate the dnd-spellbook workspace root");
 }
 
 export function serverDir() {

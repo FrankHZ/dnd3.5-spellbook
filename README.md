@@ -97,6 +97,7 @@ The main workspace commands and constraints are documented in:
 - [web/README.md](./web/README.md)
 - [contracts/README.md](./contracts/README.md)
 - [data-tools/README.md](./data-tools/README.md)
+- [review-console/README.md](./review-console/README.md)
 
 ## Operational Helpers
 
@@ -127,6 +128,7 @@ For local database setup and data origins, use [docs/operations/data-setup.md](.
 |- contracts/   Shared DTOs and TypeScript types
 |- data-tools/  Data inspection, parser, and rules DB tooling
 |  `- out/      Generated parser output and data-tool reports
+|- review-console/  Private localhost PHB evidence-review API and UI shell
 |- data/        Nested local repo for upstream/source inputs and rules patches
 |- docs/        Durable docs, operations docs, module docs, and version history
 ```

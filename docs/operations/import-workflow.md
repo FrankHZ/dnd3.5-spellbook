@@ -215,6 +215,49 @@ against a committed, accepted end-to-end review; accepting the page-extraction
 review alone does not authorize it. The accepted Gate 1 permits the full run,
 but does not accept full-corpus English rows or any DB mutation.
 
+#### Local PHB Review Console
+
+Use the private console only after the current full extraction, comparison,
+SRD adjudication, and terminal-candidate apply artifacts exist. Start it with:
+
+```bash
+npm run -w phb-review-console dev
+```
+
+The launcher builds the public `data-tools/phb-review` package entry, binds one
+server to `127.0.0.1`, injects its process-local API token into the served HTML,
+and exposes only allowlisted queues/items/source ids. The API writes only:
+
+- `data/phb35/review/full-mineru-layout-review.jsonl`
+- `data/phb35/review/full-row-review.jsonl`
+
+Each decision must include the currently displayed review fingerprint,
+terminal status, reviewer, and note. Layout placement rows also require an
+eligible target block or anchor. Stale tabs receive `409` with refreshed
+evidence and do not overwrite the newer decision.
+
+After any layout decision, discard cached English rows and restart the
+canonical chain at:
+
+```bash
+npm run -w data-tools phb:source:extract
+npm run -w data-tools phb:source:compare
+npm run -w data-tools phb:srd:adjudicate
+npm run -w data-tools phb:srd:apply
+```
+
+When only English residual decisions change, complete the bounded review batch,
+then refresh the row-review manifest before reporting:
+
+```bash
+npm run -w data-tools phb:source:compare
+npm run -w data-tools phb:source:report
+```
+
+`npm run -w phb-review-console smoke:local` is the explicit read-only real-data
+acceptance command for the service/API/PDF boundary. A console save is never
+itself Gate 2 acceptance.
+
 For source/parse QA, run:
 
 ```bash

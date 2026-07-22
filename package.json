@@ -4,6 +4,7 @@
   "private": true,
   "workspaces": [
     "data-tools",
+    "review-console",
     "server",
     "web",
     "contracts"
@@ -12,21 +13,26 @@
     "agents:check": "node scripts/check-agent-roles.mjs",
     "build:production": "node scripts/build-production.mjs",
     "build:contracts": "npm run -w @dnd/contracts build",
+    "build:data-tools": "npm run -w data-tools build",
+    "build:review-console": "npm run -w phb-review-console build",
     "check:contracts": "node --input-type=module -e \"await import('@dnd/contracts')\"",
+    "check:data-tools-review": "node --input-type=module -e \"const m = await import('data-tools/phb-review'); if (typeof m.createPhbReviewService !== 'function') process.exit(1)\"",
     "build:server": "npm run -w server build",
     "build:web": "npm run -w web build",
     "typecheck:data-tools": "npm run -w data-tools typecheck",
+    "typecheck:review-console": "npm run -w phb-review-console typecheck",
     "test:data-tools": "npm run -w data-tools test:portable",
+    "test:review-console": "npm run -w phb-review-console test",
     "test:server": "npm run -w server test -- --run",
     "test:web": "npm run -w web test -- --run",
     "typecheck:web": "npm run -w web typecheck",
-    "ci:portable": "npm run test:release-metadata && npm run test:deployment-scripts && npm run test:agents && npm run agents:check && npm run build:contracts && npm run check:contracts && npm run -w server db:generate && npm run build:server && npm run -w server check:runtime && npm run test:server && npm run typecheck:data-tools && npm run test:data-tools && npm run test:web && npm run typecheck:web && npm run -w web build",
+    "ci:portable": "npm run test:release-metadata && npm run test:deployment-scripts && npm run test:agents && npm run agents:check && npm run build:contracts && npm run check:contracts && npm run -w server db:generate && npm run build:server && npm run -w server check:runtime && npm run test:server && npm run typecheck:data-tools && npm run test:data-tools && npm run build:data-tools && npm run check:data-tools-review && npm run typecheck:review-console && npm run test:review-console && npm run build:review-console && npm run test:web && npm run typecheck:web && npm run -w web build",
     "i18n:sync": "npm run -w web i18n:sync",
     "i18n:check": "npm run -w web i18n:check",
     "i18n:diff": "npm run -w web i18n:diff",
     "test:agents": "node --test scripts/check-agent-roles.test.mjs",
     "test:deployment-scripts": "node --test scripts/deployment-scripts.test.mjs",
     "test:release-metadata": "node --test scripts/release-metadata.test.mjs",
-    "verify": "npm run test:release-metadata && npm run test:deployment-scripts && npm run test:agents && npm run agents:check && npm run build:contracts && npm run check:contracts && npm run typecheck:data-tools && npm run test:data-tools && npm run test:server && npm run test:web && npm run typecheck:web"
+    "verify": "npm run test:release-metadata && npm run test:deployment-scripts && npm run test:agents && npm run agents:check && npm run build:contracts && npm run check:contracts && npm run typecheck:data-tools && npm run test:data-tools && npm run build:data-tools && npm run check:data-tools-review && npm run typecheck:review-console && npm run test:review-console && npm run build:review-console && npm run test:server && npm run test:web && npm run typecheck:web"
   }
 }

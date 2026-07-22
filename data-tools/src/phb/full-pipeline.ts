@@ -250,7 +250,7 @@ export function runFullComparison() {
     categories: categoryCounts(comparisons),
   });
 
-  const evidenceRowIdsByCase = buildEvidenceRowIds(
+  const evidenceRowIdsByCase = buildFullEvidenceRowIds(
     comparisons,
     spells,
     listOccurrences,
@@ -465,7 +465,7 @@ export function writeProposedFullEnglishReview() {
   const overlays = readJsonl<ArrayElementWithIds>(
     resolveInside(dataRoot, PHB_FULL_ERRATA_OVERLAYS_RELATIVE_PATH),
   );
-  const evidenceRowIdsByCase = buildEvidenceRowIds(
+  const evidenceRowIdsByCase = buildFullEvidenceRowIds(
     comparisons,
     spells,
     occurrences,
@@ -887,7 +887,7 @@ function readAcceptedPilotSummonTable(dataRoot: string) {
   return matches[0]!;
 }
 
-function buildEvidenceRowIds(
+export function buildFullEvidenceRowIds(
   comparisons: FullDbComparisonRow[],
   spells: FullSpellEntity[],
   occurrences: FullListOccurrence[],

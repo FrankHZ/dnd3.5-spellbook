@@ -191,6 +191,7 @@ baselines.
 - [modules/web.md](./modules/web.md)
 - [modules/contracts.md](./modules/contracts.md)
 - [modules/data-tools.md](./modules/data-tools.md)
+- [modules/review-console.md](./modules/review-console.md)
 - [modules/delivery.md](./modules/delivery.md)
 
 ### Versioned MVP Docs
@@ -299,6 +300,7 @@ handoff records.
 - [../web/README.md](../web/README.md)
 - [../contracts/README.md](../contracts/README.md)
 - [../data-tools/README.md](../data-tools/README.md)
+- [../review-console/README.md](../review-console/README.md)
 
 ## Precedence Rule
 

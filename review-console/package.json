@@ -1,0 +1,28 @@
+{
+  "name": "phb-review-console",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prepare-runtime": "npm --prefix ../data-tools run build",
+    "dev": "npm run prepare-runtime && tsx src/server/launcher.ts",
+    "build": "vite build",
+    "start": "npm run prepare-runtime && tsx src/server/launcher.ts --preview",
+    "smoke:local": "npm run prepare-runtime && vite build && tsx src/server/local-smoke.ts",
+    "typecheck": "npm run prepare-runtime && tsc -p tsconfig.json --noEmit",
+    "test": "npm run prepare-runtime && vite build && vitest run"
+  },
+  "dependencies": {
+    "data-tools": "0.0.1",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
+  "devDependencies": {
+    "@types/node": "26.1.0",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "tsx": "4.23.0",
+    "typescript": "6.0.3",
+    "vite": "8.1.3",
+    "vitest": "4.1.9"
+  }
+}

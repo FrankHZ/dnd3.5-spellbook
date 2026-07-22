@@ -25,6 +25,8 @@ source-data operations workspace.
   normalization, import, coverage, and reuse workflows.
 - `phb/`: PHB source locking, deterministic PDF.js entity extraction, errata
   overlays, read-only DB comparison, and pilot acceptance provenance.
+- `phb-review/`: Node-only review DTOs and service over the canonical PHB
+  candidate, fingerprint, freshness, validation, and atomic-write helpers.
 - `zh-parser/`: CHM preprocessing, parsing, QA, matching, and summary
   extraction.
 - `harness/`: portable tests and explicit local acceptance bundles.
@@ -75,10 +77,13 @@ does not read or write `server/db/local/`.
 Local acceptance commands may depend on the nested `data/` repo and local DBs,
 but they should remain explicit and outside root `npm run verify` or CI.
 
-The PHB pilot keeps source-bearing rows and review decisions in the nested data
-repo. Public parent-repo reports are aggregates only. MinerU table text is
-never canonical input: entity text and tables come from PDF.js coordinates,
-while MinerU blocks remain recorded layout hints with explicit OCR risk.
+The PHB workflow keeps source-bearing rows and review decisions in the nested
+data repo. Public parent-repo reports are aggregates only. The full run uses
+MinerU for structure, order, fields, bodies, and tables; exact PDF.js text may
+project only inside MinerU boundaries or through current reviewed layout
+decisions. The `data-tools/phb-review` package exposes those existing rules to
+the private localhost console without making the browser or API a second
+decision authority.
 
 `rules:content:review` is the read-only content DB inventory for normalized
 rules content. Its readiness output can mark a family as `detail_only` when

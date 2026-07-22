@@ -1,6 +1,8 @@
 .env
 *.sqlite
 node_modules
+data-tools/dist/
+review-console/dist/
 *.bat
 docs/tmp-feature-plan.md
 .local/

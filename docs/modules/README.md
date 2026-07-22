@@ -16,6 +16,8 @@ whether an accepted merge changed a durable design boundary.
 - [contracts.md](./contracts.md): shared DTO package used by server and web.
 - [data-tools.md](./data-tools.md): parser, import, rules patch, short
   description, and portable/local data harness tooling.
+- [review-console.md](./review-console.md): private loopback-only PHB evidence
+  review API, PDF serving, and bounded React consumer shell.
 - [delivery.md](./delivery.md): CI, deployment, local validation, and release
   wrapper boundaries.
 
