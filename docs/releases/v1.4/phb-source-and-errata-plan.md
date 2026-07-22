@@ -72,9 +72,10 @@ correction layer before any translation begins.
 - Extraction engines are evidence producers, not source authority. MinerU is
   the primary structured extractor for reading order, fields, body blocks, and
   tables. PDF.js is an independently derived exact-character and coordinate
-  baseline: its text items may be projected only inside MinerU-defined blocks
-  to avoid OCR/glyph drift, but it must not define reading order, field/table
-  boundaries, or silently resolve a MinerU/source-layout conflict.
+  baseline. Items inside strict MinerU bboxes may project directly; an
+  outside-bbox item or MinerU/source order conflict requires a current,
+  fingerprint-bound accepted decision over enumerated MinerU blocks. PDF.js
+  must not define spell segmentation or silently resolve a layout conflict.
 - The official
   [Wizards 3rd/3.5-edition support page](https://dnd-support.wizards.com/hc/en-us/articles/360000962623-Dungeons-Dragons-3rd-3-5-and-4th-Edition-Rules-Questions)
   links the collected updates and errata package. Implementation must pin the
@@ -140,10 +141,11 @@ downstream acceptance artifacts.
   continuation, footnotes, tables, cross-references, and uncertain spell
   segmentation.
 - Derive a separate PDF.js text-layer and coordinate baseline for the same page
-  set. Project exact text into MinerU-defined block boundaries by deterministic
-  coordinates, and use the raw MinerU text for recall/drift comparison. Emit an
-  issue when projection cannot preserve a block unambiguously; never replace
-  MinerU reading order or table structure with a PDF.js-only parse.
+  set. Project exact text inside strict MinerU bboxes by deterministic
+  coordinates. Emit a fingerprinted review row for every outside-bbox item or
+  MinerU/source order conflict, and use the raw MinerU text for recall/drift
+  comparison. Never replace MinerU reading order or table structure with a
+  PDF.js-only parse.
 
 Validation: schema tests plus redacted/minimal fixtures that cover every
 supported layout failure mode.
@@ -389,3 +391,13 @@ archive host is the publisher.
   comparison, table-linked row evidence, and current adjudication matrix.
   Commit `bbdc949` applies the 69 new terminal candidates while preserving all
   168 current SRD-backed decisions across future adjudication reruns.
+- Main-gate follow-up removed two silent layout heuristics. The full run now
+  records 126 accepted outside-bbox PDF.js item decisions and two accepted
+  MinerU/source order overrides. Every decision fingerprints the source item,
+  eligible MinerU blocks, and selected block or anchor; proposed or stale rows
+  block extraction, and the layout-review manifest is recursively re-hashed by
+  comparison and report verification.
+- Data-repo commits `95c9ecd` through `4f59217` record the reviewed layout
+  evidence, correct three initially mis-grouped list runs, regenerate the
+  605-row comparison without semantic drift, and restore 168 SRD-backed
+  terminal decisions with 75 residual exceptions.

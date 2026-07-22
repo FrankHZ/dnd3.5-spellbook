@@ -6,6 +6,11 @@ import type {
   FullMineruTableEvidence,
   FullSpellEntity,
 } from "./full-extraction";
+import type {
+  FullMineruLayoutEvidenceReference,
+  FullMineruLayoutReview,
+} from "./full-mineru";
+import { fullMineruLayoutDecisionFingerprint } from "./full-mineru";
 import {
   compareSpell,
   type DbSpell,
@@ -17,7 +22,7 @@ import {
 
 export type FullSourceEvidenceReference = {
   rowId: string;
-  kind: "detached-table" | "mineru-table";
+  kind: "detached-table" | "mineru-table" | "mineru-layout";
   sha256: string;
 };
 
@@ -29,7 +34,11 @@ export type FullDbComparisonRow = PilotDbComparisonRow & {
 export function compareFullCorpus(input: {
   spells: FullSpellEntity[];
   overlays: PilotErrataOverlayRow[];
-  classListOccurrences: PilotClassListOccurrenceForComparison[];
+  classListOccurrences: Array<
+    PilotClassListOccurrenceForComparison & {
+      mineruLayoutEvidence?: FullMineruLayoutEvidenceReference[];
+    }
+  >;
   dbSpells: DbSpell[];
   detachedTables?: FullDetachedTableEvidence[];
   summonMonsterTable?: PilotComparisonSpell["summonTable"];
@@ -71,7 +80,16 @@ export function compareFullCorpus(input: {
         kind: "mineru-table" as const,
         sha256: evidence.evidenceSha256,
       })),
+      ...source.mineruLayoutEvidence.map(toLayoutEvidenceReference),
+      ...occurrences.flatMap((occurrence) =>
+        (occurrence.mineruLayoutEvidence ?? []).map(toLayoutEvidenceReference),
+      ),
     ];
+    const uniqueSourceEvidence = Array.from(
+      new Map(
+        sourceEvidence.map((evidence) => [evidence.rowId, evidence]),
+      ).values(),
+    ).sort((left, right) => left.rowId.localeCompare(right.rowId, "en-US"));
     const sourceReviewFlags = [
       ...source.reviewFlags,
       ...(detachedEvidence.some(
@@ -93,7 +111,7 @@ export function compareFullCorpus(input: {
           ...sourceReviewFlags,
           "parser-issue:duplicate-source-spell",
         ],
-        sourceEvidence,
+        sourceEvidence: uniqueSourceEvidence,
       });
     }
     const comparisonSpell = toComparisonSpell(
@@ -116,7 +134,7 @@ export function compareFullCorpus(input: {
     return {
       ...compared,
       setMembership: dbRows.length > 0 ? "both" : "source-only",
-      sourceEvidence,
+      sourceEvidence: uniqueSourceEvidence,
     };
   });
 }
@@ -152,12 +170,16 @@ export function validateFullComparisonSourceEvidence(
   rows: FullDbComparisonRow[],
   detachedTables: FullDetachedTableEvidence[],
   mineruTables: FullMineruTableEvidence[] = [],
+  layoutReviews: FullMineruLayoutReview[] = [],
 ) {
   const errors: string[] = [];
   const detachedById = new Map(
     detachedTables.map((table) => [table.rowId, table]),
   );
   const mineruById = new Map(mineruTables.map((table) => [table.rowId, table]));
+  const layoutById = new Map(
+    layoutReviews.map((review) => [review.rowId, review]),
+  );
   for (const row of rows) {
     const seen = new Set<string>();
     for (const evidence of row.sourceEvidence) {
@@ -171,13 +193,23 @@ export function validateFullComparisonSourceEvidence(
           ? detachedById.has(evidence.rowId)
             ? detachedTableSha256(detachedById.get(evidence.rowId)!)
             : null
-          : mineruById.get(evidence.rowId)?.evidenceSha256 ?? null;
+          : evidence.kind === "mineru-table"
+            ? (mineruById.get(evidence.rowId)?.evidenceSha256 ?? null)
+            : layoutById.get(evidence.rowId)?.status === "accepted"
+              ? fullMineruLayoutDecisionFingerprint(
+                  layoutById.get(evidence.rowId)!,
+                )
+              : null;
       if (expected === null) {
-        errors.push(`${row.caseId} source evidence is missing: ${evidence.rowId}`);
+        errors.push(
+          `${row.caseId} source evidence is missing: ${evidence.rowId}`,
+        );
         continue;
       }
       if (evidence.sha256 !== expected) {
-        errors.push(`${row.caseId} source evidence is stale: ${evidence.rowId}`);
+        errors.push(
+          `${row.caseId} source evidence is stale: ${evidence.rowId}`,
+        );
       }
     }
   }
@@ -268,6 +300,16 @@ function toDetachedTableReference(
     rowId: table.rowId,
     kind: "detached-table" as const,
     sha256: detachedTableSha256(table),
+  };
+}
+
+function toLayoutEvidenceReference(
+  evidence: FullMineruLayoutEvidenceReference,
+): FullSourceEvidenceReference {
+  return {
+    rowId: evidence.rowId,
+    kind: "mineru-layout",
+    sha256: evidence.evidenceFingerprintSha256,
   };
 }
 

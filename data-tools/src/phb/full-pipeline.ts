@@ -33,7 +33,12 @@ import {
 } from "./full-errata-hints";
 import type { FullListOccurrence } from "./full-lists";
 import { readPhbFullExtractionManifest } from "./full-manifest";
-import { PHB_FULL_MINERU_INPUT_MANIFEST_RELATIVE_PATH } from "./full-mineru";
+import {
+  PHB_FULL_LAYOUT_REVIEW_MANIFEST_RELATIVE_PATH,
+  PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH,
+  PHB_FULL_MINERU_INPUT_MANIFEST_RELATIVE_PATH,
+  type FullMineruLayoutReview,
+} from "./full-mineru";
 import {
   buildProposedFullRowReviews,
   mergeFullRowReviews,
@@ -98,6 +103,9 @@ export function runFullComparison() {
   const mineruTables = readJsonl<FullMineruTableEvidence>(
     resolveInside(dataRoot, PHB_FULL_MINERU_TABLES_RELATIVE_PATH),
   );
+  const layoutReviews = readJsonl<FullMineruLayoutReview>(
+    resolveInside(dataRoot, PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH),
+  );
   const { filePath: inventoryPath, rows: inventory } =
     readPhbErrataInventory(dataRoot);
   const { filePath: hintsPath, rows: hintRows } =
@@ -161,17 +169,16 @@ export function runFullComparison() {
 
   const dbSpells = readCurrentPhbDbSpells();
   const summonTable = readAcceptedPilotSummonTable(dataRoot);
-  const comparisonOccurrences = listOccurrences.map(
-    (row): PilotClassListOccurrenceForComparison => ({
-      caseId: row.occurrenceId,
-      printedName: row.printedName,
-      owner: row.owner,
-      level: row.level,
-      sourcePage: row.sourceStart.printedPageNumber,
-      summaryText: row.summaryText,
-      wordingGroupKey: normalizeWordingGroup(row.summaryText),
-    }),
-  );
+  const comparisonOccurrences = listOccurrences.map((row) => ({
+    caseId: row.occurrenceId,
+    printedName: row.printedName,
+    owner: row.owner,
+    level: row.level,
+    sourcePage: row.sourceStart.printedPageNumber,
+    summaryText: row.summaryText,
+    wordingGroupKey: normalizeWordingGroup(row.summaryText),
+    mineruLayoutEvidence: row.mineruLayoutEvidence,
+  }));
   const comparisons = compareFullCorpus({
     spells,
     overlays: overlayRows,
@@ -201,6 +208,7 @@ export function runFullComparison() {
     comparisons,
     detachedTables,
     mineruTables,
+    layoutReviews,
   );
   if (sourceEvidenceErrors.length > 0) {
     throw new Error(
@@ -308,6 +316,10 @@ export function runFullComparison() {
       mineruTables: artifact(
         PHB_FULL_MINERU_TABLES_RELATIVE_PATH,
         resolveInside(dataRoot, PHB_FULL_MINERU_TABLES_RELATIVE_PATH),
+      ),
+      mineruLayoutReview: artifact(
+        PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH,
+        resolveInside(dataRoot, PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH),
       ),
     },
     output: artifact(PHB_FULL_ROW_REVIEW_RELATIVE_PATH, rowReviewPath),
@@ -428,10 +440,14 @@ export function writeProposedFullEnglishReview() {
   const mineruTables = readJsonl<FullMineruTableEvidence>(
     resolveInside(dataRoot, PHB_FULL_MINERU_TABLES_RELATIVE_PATH),
   );
+  const layoutReviews = readJsonl<FullMineruLayoutReview>(
+    resolveInside(dataRoot, PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH),
+  );
   const sourceEvidenceErrors = validateFullComparisonSourceEvidence(
     comparisons,
     detachedTables,
     mineruTables,
+    layoutReviews,
   );
   if (sourceEvidenceErrors.length > 0) {
     throw new Error(
@@ -646,6 +662,12 @@ export function verifyFullExtractionChain(dataRoot: string) {
     resolveInside(dataRoot, PHB_FULL_PAGES_RELATIVE_PATH),
     "entities -> pages",
   );
+  expectArtifact(
+    entities.layoutReviewManifest,
+    resolveInside(dataRoot, PHB_FULL_LAYOUT_REVIEW_MANIFEST_RELATIVE_PATH),
+    "entities -> MinerU layout review",
+  );
+  verifyFullMineruLayoutReviewChain(dataRoot);
   for (const [field, relativePath] of [
     ["entities", PHB_FULL_ENTITIES_RELATIVE_PATH],
     ["issues", PHB_FULL_ISSUES_RELATIVE_PATH],
@@ -693,6 +715,37 @@ export function verifyFullErrataChain(dataRoot: string) {
   }
 }
 
+export function verifyFullMineruLayoutReviewChain(dataRoot: string) {
+  const manifestPath = resolveInside(
+    dataRoot,
+    PHB_FULL_LAYOUT_REVIEW_MANIFEST_RELATIVE_PATH,
+  );
+  const manifest = readObject(manifestPath);
+  for (const [field, relativePath, label] of [
+    [
+      "extractionManifest",
+      PHB_FULL_EXTRACTION_MANIFEST_RELATIVE_PATH,
+      "extraction",
+    ],
+    ["pages", PHB_FULL_PAGES_RELATIVE_PATH, "pages"],
+    ["output", PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH, "review rows"],
+  ] as const) {
+    expectArtifact(
+      manifest[field],
+      resolveInside(dataRoot, relativePath),
+      `MinerU layout review -> ${label}`,
+    );
+  }
+  const proposed = readJsonl<FullMineruLayoutReview>(
+    resolveInside(dataRoot, PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH),
+  ).filter((review) => review.status === "proposed");
+  if (proposed.length > 0) {
+    throw new Error(
+      `PHB full MinerU layout review has ${proposed.length} proposed rows`,
+    );
+  }
+}
+
 export function verifyFullComparisonArtifacts(
   dataRoot: string,
   comparisonManifest: Record<string, unknown>,
@@ -723,6 +776,7 @@ export function verifyRowReviewEvidenceArtifacts(
     ["listFootnotes", PHB_FULL_LIST_FOOTNOTES_RELATIVE_PATH],
     ["detachedTables", PHB_FULL_DETACHED_TABLES_RELATIVE_PATH],
     ["mineruTables", PHB_FULL_MINERU_TABLES_RELATIVE_PATH],
+    ["mineruLayoutReview", PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH],
   ] as const) {
     expectArtifact(
       evidence[field],

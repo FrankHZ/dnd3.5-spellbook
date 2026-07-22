@@ -7,19 +7,26 @@ import {
   PHB_FULL_DETACHED_TABLES_RELATIVE_PATH,
   PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH,
   PHB_FULL_ENTITIES_RELATIVE_PATH,
+  PHB_FULL_EXTRACTION_MANIFEST_RELATIVE_PATH,
   PHB_FULL_ISSUES_RELATIVE_PATH,
   PHB_FULL_LIST_FOOTNOTES_RELATIVE_PATH,
   PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH,
   PHB_FULL_LIST_ROWS_RELATIVE_PATH,
   PHB_FULL_MINERU_TABLES_RELATIVE_PATH,
+  PHB_FULL_PAGES_RELATIVE_PATH,
 } from "./full-extraction";
 import { PHB_FULL_ERRATA_HINTS_RELATIVE_PATH } from "./full-errata-hints";
+import {
+  PHB_FULL_LAYOUT_REVIEW_MANIFEST_RELATIVE_PATH,
+  PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH,
+} from "./full-mineru";
 import {
   assertEmptyJsonl,
   PHB_FULL_DB_COMPARISON_RELATIVE_PATH,
   PHB_FULL_ERRATA_MANIFEST_RELATIVE_PATH,
   PHB_FULL_ERRATA_OVERLAYS_RELATIVE_PATH,
   verifyFullComparisonArtifacts,
+  verifyFullMineruLayoutReviewChain,
   verifyRowReviewEvidenceArtifacts,
 } from "./full-pipeline";
 import { sha256File } from "./source-manifest";
@@ -28,6 +35,8 @@ const dataRoot = fs.mkdtempSync(path.join(os.tmpdir(), "phb-full-chain-"));
 try {
   const inputs = [
     PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH,
+    PHB_FULL_EXTRACTION_MANIFEST_RELATIVE_PATH,
+    PHB_FULL_PAGES_RELATIVE_PATH,
     "phb35/review/errata-inventory.jsonl",
     PHB_FULL_ERRATA_HINTS_RELATIVE_PATH,
     PHB_FULL_ERRATA_OVERLAYS_RELATIVE_PATH,
@@ -39,9 +48,27 @@ try {
     PHB_FULL_LIST_FOOTNOTES_RELATIVE_PATH,
     PHB_FULL_DETACHED_TABLES_RELATIVE_PATH,
     PHB_FULL_MINERU_TABLES_RELATIVE_PATH,
+    PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH,
     PHB_FULL_ISSUES_RELATIVE_PATH,
   ];
   inputs.forEach((relativePath) => write(relativePath, ""));
+
+  const layoutManifest = {
+    extractionManifest: artifact(PHB_FULL_EXTRACTION_MANIFEST_RELATIVE_PATH),
+    pages: artifact(PHB_FULL_PAGES_RELATIVE_PATH),
+    output: artifact(PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH),
+  };
+  write(
+    PHB_FULL_LAYOUT_REVIEW_MANIFEST_RELATIVE_PATH,
+    JSON.stringify(layoutManifest),
+  );
+  verifyFullMineruLayoutReviewChain(dataRoot);
+  write(PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH, "changed\n");
+  assert.throws(
+    () => verifyFullMineruLayoutReviewChain(dataRoot),
+    /layout review -> review rows/u,
+  );
+  write(PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH, "");
 
   const errataManifest = {
     entitiesManifest: artifact(PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH),
@@ -79,6 +106,7 @@ try {
       listFootnotes: artifact(PHB_FULL_LIST_FOOTNOTES_RELATIVE_PATH),
       detachedTables: artifact(PHB_FULL_DETACHED_TABLES_RELATIVE_PATH),
       mineruTables: artifact(PHB_FULL_MINERU_TABLES_RELATIVE_PATH),
+      mineruLayoutReview: artifact(PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH),
     },
   };
   verifyRowReviewEvidenceArtifacts(dataRoot, rowReviewManifest);

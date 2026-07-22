@@ -262,9 +262,10 @@ Recommended next sequence:
 2. **Completed: replace the provisional PDF.js inventory with full MinerU extraction**
 
    Pinned MinerU 3.4 now covers all 126 in-scope pages and preserves 4,493
-   ordered blocks, including 59 table blocks. PDF.js exact-character items are
-   projected only inside MinerU boundaries, all extraction counts reconcile,
-   and affected evidence fingerprints have been regenerated.
+   ordered blocks, including 59 table blocks. Strict-inside PDF.js items project
+   directly; 126 outside-bbox items and two source-order conflicts now require
+   accepted fingerprint-bound MinerU layout decisions. All extraction counts
+   reconcile, and affected evidence fingerprints have been regenerated.
 
 3. **Review 75 residual exceptions and close English Gate 2**
 

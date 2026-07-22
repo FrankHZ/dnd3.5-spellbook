@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 
 import {
+  buildFullMineruLayoutReviewCandidates,
+  fullMineruLayoutDecisionFingerprint,
+  mergeFullMineruLayoutReviews,
   reconstructMineruReadingLines,
+  validateFullMineruLayoutReviews,
   type FullMineruBlock,
   type FullMineruPageRow,
 } from "./full-mineru";
@@ -26,8 +30,29 @@ const headerRepair = page(
     block(1, "header", [50, 90, 400, 140], "Target: One creature"),
   ],
 );
+const headerProposed = reconstructMineruReadingLines(headerRepair);
 assert.deepEqual(
-  reconstructMineruReadingLines(headerRepair).lines.map((line) => line.text),
+  headerProposed.lines.map((line) => line.text),
+  ["Description", "Target: One creature"],
+);
+assert.equal(headerProposed.issues.length, 1);
+assert.match(headerProposed.issues[0]!.message, /content-order conflict/u);
+const acceptedHeaderReviews = acceptCandidates([headerRepair]);
+assert.notEqual(
+  fullMineruLayoutDecisionFingerprint(acceptedHeaderReviews[0]!),
+  acceptedHeaderReviews[0]!.evidenceFingerprintSha256,
+);
+assert.notEqual(
+  fullMineruLayoutDecisionFingerprint(acceptedHeaderReviews[0]!),
+  fullMineruLayoutDecisionFingerprint({
+    ...acceptedHeaderReviews[0]!,
+    decisionNote: "A different review decision note",
+  }),
+);
+assert.deepEqual(
+  reconstructMineruReadingLines(headerRepair, acceptedHeaderReviews).lines.map(
+    (line) => line.text,
+  ),
   ["Target: One creature", "Description"],
 );
 
@@ -36,11 +61,30 @@ const boundedRepair = page(
   [block(0, "text", [50, 90, 300, 140], "Near block edge")],
 );
 const boundedResult = reconstructMineruReadingLines(boundedRepair);
+assert.equal(boundedResult.lines.length, 0);
+assert.equal(boundedResult.issues.length, 1);
+const boundedCandidates = buildFullMineruLayoutReviewCandidates([
+  boundedRepair,
+]);
+assert.equal(boundedCandidates.length, 1);
+assert.equal(boundedCandidates[0]!.kind, "outside-bbox-projection");
 assert.deepEqual(
-  boundedResult.lines.map((line) => line.text),
+  reconstructMineruReadingLines(
+    boundedRepair,
+    acceptCandidates([boundedRepair]),
+  ).lines.map((line) => line.text),
   ["Near block edge"],
 );
-assert.equal(boundedResult.issues.length, 0);
+const invalidTarget = mergeFullMineruLayoutReviews([], boundedCandidates).map(
+  (review) =>
+    review.kind === "outside-bbox-projection"
+      ? { ...review, targetBlockIndex: 999 }
+      : review,
+);
+assert.match(
+  validateFullMineruLayoutReviews([boundedRepair], invalidTarget).join("\n"),
+  /targetBlockIndex is not an eligible block/u,
+);
 
 const excludedImage = page(
   [item("Illustration text", 40, 700)],
@@ -51,6 +95,15 @@ assert.equal(excludedResult.lines.length, 0);
 assert.equal(excludedResult.issues.length, 0);
 
 console.log("PHB full MinerU portable tests passed");
+
+function acceptCandidates(pages: FullMineruPageRow[]) {
+  return buildFullMineruLayoutReviewCandidates(pages).map((review) => ({
+    ...review,
+    status: "accepted" as const,
+    reviewer: "portable-test",
+    decisionNote: "Portable fixture explicitly accepts this layout action.",
+  }));
+}
 
 function page(
   items: FullMineruPageRow["pdfjs"]["items"],

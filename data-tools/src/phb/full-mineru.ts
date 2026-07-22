@@ -27,6 +27,7 @@ import { inspectPdfTextLayer } from "./pdf-baseline";
 import {
   reconstructReadingLines,
   type PhbTextPageRow,
+  type PilotSourcePage,
   type ReadingLine,
 } from "./pilot-entities";
 import {
@@ -40,6 +41,10 @@ export const PHB_FULL_MINERU_INPUT_MANIFEST_RELATIVE_PATH =
 export const PHB_FULL_PAGES_RELATIVE_PATH = "phb35/extracted/full/pages.jsonl";
 export const PHB_FULL_EXTRACTION_MANIFEST_RELATIVE_PATH =
   "phb35/extracted/full/extraction-manifest.json";
+export const PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH =
+  "phb35/review/full-mineru-layout-review.jsonl";
+export const PHB_FULL_LAYOUT_REVIEW_MANIFEST_RELATIVE_PATH =
+  "phb35/review/full-mineru-layout-review-manifest.json";
 
 const FIXED_PDF_DATE = new Date("2000-01-01T00:00:00.000Z");
 
@@ -81,12 +86,72 @@ export type FullMineruReadingLine = ReadingLine & {
 };
 
 export type FullMineruProjectionIssue = {
+  evidenceId: string | null;
   sourceId: string;
   sourcePageIndex: number;
   blockIndex: number;
   blockType: string;
   message: string;
 };
+
+export type FullMineruLayoutEvidenceReference = {
+  rowId: string;
+  evidenceFingerprintSha256: string;
+};
+
+type FullMineruLayoutReviewBase = {
+  schemaVersion: 1;
+  rowId: string;
+  sourceId: string;
+  sourceArtifactSha256: string;
+  sourcePageIndex: number;
+  printedPageNumber: number | null;
+  contentListSha256: string;
+  textLayerSha256: string;
+  evidenceFingerprintSha256: string;
+  status: "proposed" | "accepted" | "rejected";
+  reviewer: string | null;
+  decisionNote: string | null;
+};
+
+export type FullMineruOutsideBboxReview = FullMineruLayoutReviewBase & {
+  kind: "outside-bbox-projection";
+  candidateAlgorithmVersion: "mineru-bbox-candidates-v1";
+  targetBlockIndex: number;
+  pdfItem: {
+    itemIndex: number;
+    text: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    normalizedCenter: { x: number; y: number };
+  };
+  eligibleBlocks: Array<{
+    blockIndex: number;
+    blockType: string;
+    blockBbox: [number, number, number, number];
+    mineruText: string;
+    distance: { horizontal: number; vertical: number };
+  }>;
+};
+
+export type FullMineruOrderReview = FullMineruLayoutReviewBase & {
+  kind: "content-order-conflict";
+  candidateAlgorithmVersion: "mineru-header-order-conflict-v1";
+  blockIndex: number;
+  originalOrdinal: number;
+  anchorBlockIndex: number;
+  anchorOrdinal: number;
+  blockType: string;
+  blockBbox: [number, number, number, number];
+  blockText: string;
+  anchorBbox: [number, number, number, number];
+  anchorText: string;
+};
+
+export type FullMineruLayoutReview =
+  FullMineruOutsideBboxReview | FullMineruOrderReview;
 
 type FullMineruInputManifest = {
   schemaVersion: 1;
@@ -386,10 +451,21 @@ export async function importMineruFull(input: {
   };
 }
 
-export function reconstructMineruReadingLines(page: FullMineruPageRow) {
+export function reconstructMineruReadingLines(
+  page: FullMineruPageRow,
+  layoutReviews: FullMineruLayoutReview[] = [],
+) {
   const lines: FullMineruReadingLine[] = [];
   const issues: FullMineruProjectionIssue[] = [];
-  const contentBlocks = orderedContentBlocks(page.mineru.blocks);
+  const pageReviews = mergeFullMineruLayoutReviews(
+    layoutReviews.filter(
+      (review) =>
+        review.sourceId === page.sourceId &&
+        review.sourcePageIndex === page.sourcePageIndex,
+    ),
+    buildFullMineruLayoutReviewCandidates([page]),
+  );
+  const contentBlocks = orderedContentBlocks(page.mineru.blocks, pageReviews);
   const excludedBlocks = page.mineru.blocks.filter(
     (
       block,
@@ -409,7 +485,7 @@ export function reconstructMineruReadingLines(page: FullMineruPageRow) {
     }
     const point = normalizedItemCenter(page, item);
     const containing = contentBlocks
-      .filter((block) => pointInside(point, block.bbox, 3))
+      .filter((block) => pointInside(point, block.bbox, 0))
       .sort(
         (left, right) =>
           bboxArea(left.bbox) - bboxArea(right.bbox) ||
@@ -419,7 +495,7 @@ export function reconstructMineruReadingLines(page: FullMineruPageRow) {
       assignments.get(containing.blockIndex)!.push(index);
       return;
     }
-    if (excludedBlocks.some((block) => pointInside(point, block.bbox, 3))) {
+    if (excludedBlocks.some((block) => pointInside(point, block.bbox, 0))) {
       return;
     }
     if (
@@ -432,22 +508,14 @@ export function reconstructMineruReadingLines(page: FullMineruPageRow) {
     ) {
       return;
     }
-    const nearest = contentBlocks
-      .map((block) => ({
-        block,
-        distance: bboxDistance(point, block.bbox),
-      }))
-      .filter(
-        ({ distance }) => distance.horizontal <= 12 && distance.vertical <= 65,
-      )
-      .sort(
-        (left, right) =>
-          left.distance.vertical - right.distance.vertical ||
-          left.distance.horizontal - right.distance.horizontal ||
-          left.block.blockIndex - right.block.blockIndex,
-      )[0]?.block;
-    if (nearest) {
-      assignments.get(nearest.blockIndex)!.push(index);
+    const accepted = pageReviews.find(
+      (review): review is FullMineruOutsideBboxReview =>
+        review.kind === "outside-bbox-projection" &&
+        review.status === "accepted" &&
+        review.pdfItem.itemIndex === index,
+    );
+    if (accepted && assignments.has(accepted.targetBlockIndex)) {
+      assignments.get(accepted.targetBlockIndex)!.push(index);
     } else {
       unassigned.push(index);
     }
@@ -462,8 +530,19 @@ export function reconstructMineruReadingLines(page: FullMineruPageRow) {
         items: indexes.map((index) => page.pdfjs.items[index]!),
       },
     });
-    if (projected.length === 0 && blockText(block).trim().length > 0) {
+    const hasProposedOutsideProjection = pageReviews.some(
+      (review) =>
+        review.kind === "outside-bbox-projection" &&
+        review.status === "proposed" &&
+        review.targetBlockIndex === block.blockIndex,
+    );
+    if (
+      projected.length === 0 &&
+      blockText(block).trim().length > 0 &&
+      !hasProposedOutsideProjection
+    ) {
       issues.push({
+        evidenceId: null,
         sourceId: page.sourceId,
         sourcePageIndex: page.sourcePageIndex,
         blockIndex: block.blockIndex,
@@ -482,19 +561,165 @@ export function reconstructMineruReadingLines(page: FullMineruPageRow) {
       })),
     );
   }
-  if (unassigned.length > 0) {
+  for (const review of pageReviews.filter(
+    (candidate) => candidate.status === "proposed",
+  )) {
     issues.push({
+      evidenceId: review.rowId,
+      sourceId: page.sourceId,
+      sourcePageIndex: page.sourcePageIndex,
+      blockIndex:
+        review.kind === "content-order-conflict"
+          ? review.blockIndex
+          : review.targetBlockIndex,
+      blockType:
+        review.kind === "content-order-conflict"
+          ? review.blockType
+          : (review.eligibleBlocks.find(
+              (block) => block.blockIndex === review.targetBlockIndex,
+            )?.blockType ?? "unknown"),
+      message:
+        review.kind === "content-order-conflict"
+          ? `MinerU content-order conflict remains proposed before block ${review.anchorBlockIndex}`
+          : `PDF.js item ${review.pdfItem.itemIndex} remains outside the accepted MinerU block boundary`,
+    });
+  }
+  if (unassigned.length > 0) {
+    const reviewedIndexes = new Set(
+      pageReviews
+        .filter(
+          (review): review is FullMineruOutsideBboxReview =>
+            review.kind === "outside-bbox-projection",
+        )
+        .map((review) => review.pdfItem.itemIndex),
+    );
+    const unexplained = unassigned.filter(
+      (index) => !reviewedIndexes.has(index),
+    );
+    if (unexplained.length === 0)
+      return {
+        lines,
+        issues,
+        layoutEvidence: acceptedLayoutEvidence(pageReviews),
+      };
+    issues.push({
+      evidenceId: null,
       sourceId: page.sourceId,
       sourcePageIndex: page.sourcePageIndex,
       blockIndex: -1,
       blockType: "unassigned-pdfjs",
-      message: `${unassigned.length} PDF.js text items are outside all MinerU content/non-content block boundaries: ${unassigned
+      message: `${unexplained.length} PDF.js text items are outside all MinerU content/non-content block boundaries and layout review: ${unexplained
         .slice(0, 3)
         .map((index) => page.pdfjs.items[index]!.text.trim())
         .join(" | ")}`,
     });
   }
-  return { lines, issues };
+  return { lines, issues, layoutEvidence: acceptedLayoutEvidence(pageReviews) };
+}
+
+export function buildFullMineruLayoutReviewCandidates(
+  pages: FullMineruPageRow[],
+): FullMineruLayoutReview[] {
+  return pages.flatMap((page) => [
+    ...outsideBboxCandidates(page),
+    ...contentOrderCandidates(page),
+  ]);
+}
+
+export function mergeFullMineruLayoutReviews(
+  existing: FullMineruLayoutReview[],
+  candidates: FullMineruLayoutReview[],
+) {
+  const byId = new Map(existing.map((review) => [review.rowId, review]));
+  return candidates.map((candidate) => {
+    const previous = byId.get(candidate.rowId);
+    if (
+      !previous ||
+      previous.kind !== candidate.kind ||
+      previous.evidenceFingerprintSha256 !== candidate.evidenceFingerprintSha256
+    ) {
+      return candidate;
+    }
+    return {
+      ...candidate,
+      ...(candidate.kind === "outside-bbox-projection" &&
+      previous.kind === "outside-bbox-projection"
+        ? { targetBlockIndex: previous.targetBlockIndex }
+        : {}),
+      ...(candidate.kind === "content-order-conflict" &&
+      previous.kind === "content-order-conflict"
+        ? { anchorBlockIndex: previous.anchorBlockIndex }
+        : {}),
+      status: previous.status,
+      reviewer: previous.reviewer,
+      decisionNote: previous.decisionNote,
+    } satisfies FullMineruLayoutReview;
+  });
+}
+
+export function validateFullMineruLayoutReviews(
+  pages: FullMineruPageRow[],
+  reviews: FullMineruLayoutReview[],
+) {
+  const errors: string[] = [];
+  const candidates = buildFullMineruLayoutReviewCandidates(pages);
+  const expected = new Map(candidates.map((row) => [row.rowId, row]));
+  const seen = new Set<string>();
+  const seenItems = new Set<string>();
+  for (const [index, review] of reviews.entries()) {
+    const prefix = `layoutReviews[${index}]`;
+    if (seen.has(review.rowId)) errors.push(`${prefix}.rowId is duplicated`);
+    seen.add(review.rowId);
+    const candidate = expected.get(review.rowId);
+    if (!candidate) {
+      errors.push(`${prefix}.rowId is not a current layout candidate`);
+      continue;
+    }
+    if (
+      candidate.evidenceFingerprintSha256 !== review.evidenceFingerprintSha256
+    ) {
+      errors.push(`${prefix}.evidenceFingerprintSha256 is stale`);
+    }
+    if (
+      review.status !== "proposed" &&
+      (!review.reviewer || !review.decisionNote)
+    ) {
+      errors.push(`${prefix} terminal decision requires reviewer and note`);
+    }
+    const page = pages.find(
+      (value) =>
+        value.sourceId === review.sourceId &&
+        value.sourcePageIndex === review.sourcePageIndex,
+    );
+    const blockIndexes = new Set(
+      page?.mineru.blocks.map((block) => block.blockIndex) ?? [],
+    );
+    if (
+      review.kind === "outside-bbox-projection" &&
+      !review.eligibleBlocks.some(
+        (block) => block.blockIndex === review.targetBlockIndex,
+      )
+    ) {
+      errors.push(`${prefix}.targetBlockIndex is not an eligible block`);
+    }
+    if (review.kind === "outside-bbox-projection") {
+      const itemKey = `${review.sourceId}:${review.sourcePageIndex}:${review.pdfItem.itemIndex}`;
+      if (seenItems.has(itemKey)) {
+        errors.push(`${prefix}.pdfItem is claimed by another review row`);
+      }
+      seenItems.add(itemKey);
+    }
+    if (
+      review.kind === "content-order-conflict" &&
+      !blockIndexes.has(review.anchorBlockIndex)
+    ) {
+      errors.push(`${prefix}.anchorBlockIndex is not on the source page`);
+    }
+  }
+  for (const rowId of expected.keys()) {
+    if (!seen.has(rowId)) errors.push(`layout review is missing ${rowId}`);
+  }
+  return errors;
 }
 
 export function parseFullMineruPageRows(text: string): FullMineruPageRow[] {
@@ -577,7 +802,10 @@ function isContentBlock(block: FullMineruBlock) {
   );
 }
 
-function orderedContentBlocks(blocks: FullMineruBlock[]) {
+function orderedContentBlocks(
+  blocks: FullMineruBlock[],
+  reviews: FullMineruLayoutReview[],
+) {
   type PositionedBlock = FullMineruBlock & {
     bbox: [number, number, number, number];
   };
@@ -585,16 +813,279 @@ function orderedContentBlocks(blocks: FullMineruBlock[]) {
     (block): block is PositionedBlock =>
       isContentBlock(block) && block.bbox !== null,
   );
-  const ordered = positioned.filter((block) => block.type !== "header");
-  for (const header of positioned.filter((block) => block.type === "header")) {
-    const insertAt = ordered.findIndex(
-      (block) =>
-        horizontalOverlap(header.bbox, block.bbox) > 0 &&
-        block.bbox[1] >= header.bbox[3] - 5,
+  const ordered = [...positioned];
+  for (const review of reviews.filter(
+    (candidate): candidate is FullMineruOrderReview =>
+      candidate.kind === "content-order-conflict" &&
+      candidate.status === "accepted",
+  )) {
+    const currentIndex = ordered.findIndex(
+      (block) => block.blockIndex === review.blockIndex,
     );
-    ordered.splice(insertAt >= 0 ? insertAt : 0, 0, header);
+    const anchorIndex = ordered.findIndex(
+      (block) => block.blockIndex === review.anchorBlockIndex,
+    );
+    if (currentIndex < 0 || anchorIndex < 0) continue;
+    const [block] = ordered.splice(currentIndex, 1);
+    const updatedAnchor = ordered.findIndex(
+      (candidate) => candidate.blockIndex === review.anchorBlockIndex,
+    );
+    ordered.splice(updatedAnchor, 0, block!);
   }
   return ordered;
+}
+
+function outsideBboxCandidates(
+  page: FullMineruPageRow,
+): FullMineruOutsideBboxReview[] {
+  const contentBlocks = page.mineru.blocks.filter(
+    (
+      block,
+    ): block is FullMineruBlock & {
+      bbox: [number, number, number, number];
+    } => isContentBlock(block) && block.bbox !== null,
+  );
+  const excludedBlocks = page.mineru.blocks.filter(
+    (
+      block,
+    ): block is FullMineruBlock & {
+      bbox: [number, number, number, number];
+    } => !isContentBlock(block) && block.bbox !== null,
+  );
+  return page.pdfjs.items.flatMap((item, itemIndex) => {
+    if (
+      item.text.trim().length === 0 ||
+      isKnownPageFurniture(page, item.text)
+    ) {
+      return [];
+    }
+    const point = normalizedItemCenter(page, item);
+    if (
+      contentBlocks.some((block) => pointInside(point, block.bbox, 0)) ||
+      excludedBlocks.some((block) => pointInside(point, block.bbox, 0))
+    ) {
+      return [];
+    }
+    if (
+      excludedBlocks
+        .filter((block) => block.type === "image")
+        .some((block) => {
+          const distance = bboxDistance(point, block.bbox);
+          return distance.horizontal <= 30 && distance.vertical <= 100;
+        })
+    ) {
+      return [];
+    }
+    const eligibleBlocks = projectionBlockCandidates(point, contentBlocks);
+    if (eligibleBlocks.length === 0) return [];
+    const pdfItem = {
+      itemIndex,
+      text: item.text,
+      x: item.x,
+      y: item.y,
+      width: item.width,
+      height: item.height,
+      normalizedCenter: point,
+    };
+    const targetBlockIndex = eligibleBlocks[0]!.blockIndex;
+    const evidence = layoutEvidenceBase(page, {
+      kind: "outside-bbox-projection",
+      candidateAlgorithmVersion: "mineru-bbox-candidates-v1",
+      pdfItem,
+      eligibleBlocks,
+    });
+    return [
+      {
+        schemaVersion: 1,
+        rowId: `mineru-layout:${safeId(page.sourceId)}:${page.sourcePageIndex}:outside-bbox:${itemIndex}`,
+        sourceId: page.sourceId,
+        sourceArtifactSha256: page.sourceArtifactSha256,
+        sourcePageIndex: page.sourcePageIndex,
+        printedPageNumber: page.printedPageNumber,
+        contentListSha256: page.mineru.contentListSha256,
+        textLayerSha256: page.pdfjs.textLayerSha256,
+        kind: "outside-bbox-projection" as const,
+        candidateAlgorithmVersion: "mineru-bbox-candidates-v1" as const,
+        targetBlockIndex,
+        pdfItem,
+        eligibleBlocks,
+        evidenceFingerprintSha256: hashStableJson(evidence),
+        status: "proposed" as const,
+        reviewer: null,
+        decisionNote: null,
+      },
+    ];
+  });
+}
+
+function contentOrderCandidates(
+  page: FullMineruPageRow,
+): FullMineruOrderReview[] {
+  type PositionedBlock = FullMineruBlock & {
+    bbox: [number, number, number, number];
+  };
+  const positioned = page.mineru.blocks.filter(
+    (block): block is PositionedBlock =>
+      isContentBlock(block) && block.bbox !== null,
+  );
+  return positioned.flatMap((block, blockPosition) => {
+    if (block.type !== "header") return [];
+    const anchor = positioned.find(
+      (candidate, candidatePosition) =>
+        candidatePosition < blockPosition &&
+        candidate.type !== "header" &&
+        horizontalOverlap(block.bbox, candidate.bbox) > 0 &&
+        candidate.bbox[1] >= block.bbox[3] - 5,
+    );
+    if (!anchor) return [];
+    const evidence = layoutEvidenceBase(page, {
+      kind: "content-order-conflict",
+      candidateAlgorithmVersion: "mineru-header-order-conflict-v1",
+      blockIndex: block.blockIndex,
+      originalOrdinal: blockPosition,
+      anchorBlockIndex: anchor.blockIndex,
+      anchorOrdinal: positioned.findIndex(
+        (candidate) => candidate.blockIndex === anchor.blockIndex,
+      ),
+      blockType: block.type,
+      blockBbox: block.bbox,
+      blockText: blockText(block),
+      anchorBbox: anchor.bbox,
+      anchorText: blockText(anchor),
+    });
+    return [
+      {
+        schemaVersion: 1,
+        rowId: `mineru-layout:${safeId(page.sourceId)}:${page.sourcePageIndex}:content-order:${block.blockIndex}`,
+        sourceId: page.sourceId,
+        sourceArtifactSha256: page.sourceArtifactSha256,
+        sourcePageIndex: page.sourcePageIndex,
+        printedPageNumber: page.printedPageNumber,
+        contentListSha256: page.mineru.contentListSha256,
+        textLayerSha256: page.pdfjs.textLayerSha256,
+        kind: "content-order-conflict" as const,
+        candidateAlgorithmVersion: "mineru-header-order-conflict-v1" as const,
+        blockIndex: block.blockIndex,
+        originalOrdinal: blockPosition,
+        anchorBlockIndex: anchor.blockIndex,
+        anchorOrdinal: positioned.findIndex(
+          (candidate) => candidate.blockIndex === anchor.blockIndex,
+        ),
+        blockType: block.type,
+        blockBbox: block.bbox,
+        blockText: blockText(block),
+        anchorBbox: anchor.bbox,
+        anchorText: blockText(anchor),
+        evidenceFingerprintSha256: hashStableJson(evidence),
+        status: "proposed" as const,
+        reviewer: null,
+        decisionNote: null,
+      },
+    ];
+  });
+}
+
+function projectionBlockCandidates(
+  point: { x: number; y: number },
+  blocks: Array<FullMineruBlock & { bbox: [number, number, number, number] }>,
+) {
+  return blocks
+    .map((block) => ({
+      blockIndex: block.blockIndex,
+      blockType: block.type,
+      blockBbox: block.bbox,
+      mineruText: blockText(block),
+      distance: bboxDistance(point, block.bbox),
+    }))
+    .filter(
+      ({ distance }) => distance.horizontal <= 12 && distance.vertical <= 65,
+    )
+    .sort(
+      (left, right) =>
+        left.distance.vertical - right.distance.vertical ||
+        left.distance.horizontal - right.distance.horizontal ||
+        left.blockIndex - right.blockIndex,
+    );
+}
+
+function layoutEvidenceBase(
+  page: FullMineruPageRow,
+  evidence: Record<string, unknown>,
+) {
+  return {
+    sourceId: page.sourceId,
+    sourceArtifactSha256: page.sourceArtifactSha256,
+    sourcePageIndex: page.sourcePageIndex,
+    printedPageNumber: page.printedPageNumber,
+    contentListSha256: page.mineru.contentListSha256,
+    textLayerSha256: page.pdfjs.textLayerSha256,
+    ...evidence,
+  };
+}
+
+function hashStableJson(value: unknown) {
+  return crypto
+    .createHash("sha256")
+    .update(JSON.stringify(stableValue(value)))
+    .digest("hex");
+}
+
+export function fullMineruLayoutDecisionFingerprint(
+  review: FullMineruLayoutReview,
+) {
+  return hashStableJson({
+    rowId: review.rowId,
+    evidenceFingerprintSha256: review.evidenceFingerprintSha256,
+    selectedTarget:
+      review.kind === "outside-bbox-projection"
+        ? { targetBlockIndex: review.targetBlockIndex }
+        : { anchorBlockIndex: review.anchorBlockIndex },
+    status: review.status,
+    reviewer: review.reviewer,
+    decisionNote: review.decisionNote,
+  });
+}
+
+function stableValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(stableValue);
+  if (value === null || typeof value !== "object") return value;
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .sort(([left], [right]) => left.localeCompare(right, "en-US"))
+      .map(([key, nested]) => [key, stableValue(nested)]),
+  );
+}
+
+function acceptedLayoutEvidence(
+  reviews: FullMineruLayoutReview[],
+): FullMineruLayoutEvidenceReference[] {
+  return reviews
+    .filter((review) => review.status === "accepted")
+    .map((review) => ({
+      rowId: review.rowId,
+      evidenceFingerprintSha256: fullMineruLayoutDecisionFingerprint(review),
+    }))
+    .sort((left, right) => left.rowId.localeCompare(right.rowId, "en-US"));
+}
+
+export function layoutEvidenceForSourcePages(
+  pages: PilotSourcePage[],
+  reviews: FullMineruLayoutReview[],
+) {
+  const pageKeys = new Set(
+    pages.map((page) => `${page.sourceId}:${page.sourcePageIndex}`),
+  );
+  return reviews
+    .filter(
+      (review) =>
+        review.status === "accepted" &&
+        pageKeys.has(`${review.sourceId}:${review.sourcePageIndex}`),
+    )
+    .map((review) => ({
+      rowId: review.rowId,
+      evidenceFingerprintSha256: fullMineruLayoutDecisionFingerprint(review),
+    }))
+    .sort((left, right) => left.rowId.localeCompare(right.rowId, "en-US"));
 }
 
 function horizontalOverlap(

@@ -226,8 +226,10 @@ Full extraction requires imported MinerU output and is gated on 605 description
 entities, 1,216 printed list rows, 1,235 expanded occurrences, 605 independent
 list names, zero parser/set issues, 59 MinerU table blocks, seven detached named
 tables, and seven excluded description image blocks. MinerU defines block order
-and table structure; the PDF.js exact-character baseline is projected only
-inside those boundaries. The plain extraction command reparses imported rows
+and table structure. Strict-inside PDF.js items may project directly; every
+outside-bbox item or source-order conflict must have a current accepted row in
+the full MinerU layout review, with the PDF.js item, eligible MinerU blocks,
+chosen target or anchor, source hashes, and decision fingerprint. The plain extraction command reparses imported rows
 and cannot silently fall back to PDF.js-only extraction. Comparison must balance
 605 source and 605 PHB DB rows with zero source-only or DB-only names and records
 current rules/content DB hashes. Table artifacts are fingerprinted in both the
@@ -238,7 +240,8 @@ deterministically accepted only after those layout gates; substantive and
 manual rows require fingerprint-bound terminal decisions. SRD adjudication may
 resolve deterministic three-way cases only from committed, current evidence.
 The report recursively re-hashes description/list issues, errata output, the
-pilot summon table, comparison artifacts, MinerU table artifacts, SRD-backed
+pilot summon table, comparison artifacts, MinerU table and layout-review
+artifacts, SRD-backed
 decisions, and every row-review evidence artifact. It is expected to fail while
 any current row remains proposed. These commands depend on ignored local PDFs,
 the nested data repo, and local SQLite, so they remain outside root `verify` and

@@ -6,6 +6,10 @@ import {
   validateFullComparisonSourceEvidence,
 } from "./full-comparison";
 import type { FullSpellEntity } from "./full-extraction";
+import {
+  fullMineruLayoutDecisionFingerprint,
+  type FullMineruLayoutReview,
+} from "./full-mineru";
 import type { PilotErrataOverlayRow } from "./pilot-errata";
 import type { DbSpell } from "./pilot-comparison";
 
@@ -53,8 +57,40 @@ const mineruTable = {
   projectedText: "Level Creature",
   evidenceSha256: "c".repeat(64),
 };
+const layoutReview: FullMineruLayoutReview = {
+  schemaVersion: 1,
+  rowId: "mineru-layout:phb35-core:200:content-order:9",
+  sourceId: "phb35-core",
+  sourceArtifactSha256: "a".repeat(64),
+  sourcePageIndex: 200,
+  printedPageNumber: 200,
+  contentListSha256: "c".repeat(64),
+  textLayerSha256: "b".repeat(64),
+  kind: "content-order-conflict",
+  candidateAlgorithmVersion: "mineru-header-order-conflict-v1",
+  blockIndex: 9,
+  originalOrdinal: 9,
+  anchorBlockIndex: 1,
+  anchorOrdinal: 1,
+  blockType: "header",
+  blockBbox: [10, 20, 30, 40],
+  blockText: "Target: You",
+  anchorBbox: [10, 50, 30, 70],
+  anchorText: "Description",
+  evidenceFingerprintSha256: "d".repeat(64),
+  status: "accepted",
+  reviewer: "portable-test",
+  decisionNote: "Portable layout evidence fixture.",
+};
 summon.mineruTableEvidence = [
   { rowId: mineruTable.rowId, evidenceSha256: mineruTable.evidenceSha256 },
+];
+summon.mineruLayoutEvidence = [
+  {
+    rowId: layoutReview.rowId,
+    evidenceFingerprintSha256:
+      fullMineruLayoutDecisionFingerprint(layoutReview),
+  },
 ];
 const summonRows = compareFullCorpus({
   spells: [summon],
@@ -81,6 +117,11 @@ assert.deepEqual(summonRows[0]!.sourceEvidence, [
     sha256: summonRows[0]!.sourceEvidence[0]!.sha256,
   },
   {
+    rowId: layoutReview.rowId,
+    kind: "mineru-layout",
+    sha256: fullMineruLayoutDecisionFingerprint(layoutReview),
+  },
+  {
     rowId: mineruTable.rowId,
     kind: "mineru-table",
     sha256: mineruTable.evidenceSha256,
@@ -104,6 +145,7 @@ assert.deepEqual(
       },
     ],
     [mineruTable],
+    [layoutReview],
   ),
   [],
 );
@@ -122,6 +164,7 @@ assert.match(
       },
     ],
     [mineruTable],
+    [layoutReview],
   ).join("\n"),
   /source evidence is stale/u,
 );
@@ -152,6 +195,7 @@ function spell(printedName: string): FullSpellEntity {
     bodyText: "Body text.",
     sourceText: "Source text.",
     mineruTableEvidence: [],
+    mineruLayoutEvidence: [],
     reviewFlags: [],
   };
 }

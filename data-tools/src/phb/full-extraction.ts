@@ -17,9 +17,17 @@ import {
 } from "./full-manifest";
 import {
   PHB_FULL_EXTRACTION_MANIFEST_RELATIVE_PATH,
+  PHB_FULL_LAYOUT_REVIEW_MANIFEST_RELATIVE_PATH,
+  PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH,
   PHB_FULL_PAGES_RELATIVE_PATH,
+  buildFullMineruLayoutReviewCandidates,
+  mergeFullMineruLayoutReviews,
+  layoutEvidenceForSourcePages,
   parseFullMineruPageRows,
   reconstructMineruReadingLines,
+  validateFullMineruLayoutReviews,
+  type FullMineruLayoutEvidenceReference,
+  type FullMineruLayoutReview,
   type FullMineruPageRow,
 } from "./full-mineru";
 import { extractFullSpellLists } from "./full-lists";
@@ -79,6 +87,7 @@ export type FullSpellEntity = {
     rowId: string;
     evidenceSha256: string;
   }>;
+  mineruLayoutEvidence: FullMineruLayoutEvidenceReference[];
 };
 
 export type FullMineruTableEvidence = {
@@ -145,12 +154,18 @@ export async function runFullExtraction(dataRoot: string) {
     );
   }
   const pages = parseFullMineruPageRows(fs.readFileSync(pagesPath, "utf8"));
+  const layoutReviews = writeFullMineruLayoutReview(
+    dataRoot,
+    pages,
+    extractionManifestPath,
+    pagesPath,
+  );
 
   const descriptionPages = pages.filter((page) =>
     page.rangeKinds.includes("description"),
   );
-  const discovery = discoverFullSpellEntities(descriptionPages);
-  const mineruTables = extractFullMineruTables(descriptionPages);
+  const discovery = discoverFullSpellEntities(descriptionPages, layoutReviews);
+  const mineruTables = extractFullMineruTables(descriptionPages, layoutReviews);
   if (mineruTables.length !== 59) {
     throw new Error(
       `PHB MinerU table-block count changed: ${mineruTables.length} != 59`,
@@ -170,6 +185,10 @@ export async function runFullExtraction(dataRoot: string) {
         rowId: table.rowId,
         evidenceSha256: table.evidenceSha256,
       }));
+    spell.mineruLayoutEvidence = layoutEvidenceForSourcePages(
+      spell.sourcePages,
+      layoutReviews,
+    );
   }
   assertDetachedTableSet(discovery.detachedTableNames);
   if (discovery.excludedImageBlockCount !== 7) {
@@ -179,6 +198,7 @@ export async function runFullExtraction(dataRoot: string) {
   }
   const listExtraction = extractFullSpellLists(
     pages.filter((page) => page.rangeKinds.includes("class-list")),
+    layoutReviews,
   );
   const sourceSetReconciliation = reconcileSourceSpellSets(
     discovery.spells,
@@ -248,6 +268,10 @@ export async function runFullExtraction(dataRoot: string) {
       extractionManifestPath,
     ),
     pages: artifact(PHB_FULL_PAGES_RELATIVE_PATH, pagesPath),
+    layoutReviewManifest: artifact(
+      PHB_FULL_LAYOUT_REVIEW_MANIFEST_RELATIVE_PATH,
+      resolveInside(dataRoot, PHB_FULL_LAYOUT_REVIEW_MANIFEST_RELATIVE_PATH),
+    ),
     outputs: {
       entities: artifact(PHB_FULL_ENTITIES_RELATIVE_PATH, entitiesPath),
       issues: artifact(PHB_FULL_ISSUES_RELATIVE_PATH, issuesPath),
@@ -371,11 +395,16 @@ function assertExpectedCounts(
   }
 }
 
-export function discoverFullSpellEntities(pages: FullPageRow[]) {
+export function discoverFullSpellEntities(
+  pages: FullPageRow[],
+  layoutReviews: FullMineruLayoutReview[] = [],
+) {
   const sortedPages = [...pages].sort(
     (left, right) => left.sourcePageIndex - right.sourcePageIndex,
   );
-  const projections = sortedPages.map(reconstructMineruReadingLines);
+  const projections = sortedPages.map((page) =>
+    reconstructMineruReadingLines(page, layoutReviews),
+  );
   const reconstructed = mergeWrappedSpellHeadings(
     projections.flatMap((projection) => projection.lines),
   );
@@ -394,7 +423,9 @@ export function discoverFullSpellEntities(pages: FullPageRow[]) {
       )!;
       return {
         schemaVersion: 1,
-        issueId: `mineru-projection:${slug(projectionIssue.sourceId)}:${projectionIssue.sourcePageIndex}:${projectionIssue.blockIndex}`,
+        issueId:
+          projectionIssue.evidenceId ??
+          `mineru-projection:${slug(projectionIssue.sourceId)}:${projectionIssue.sourcePageIndex}:${projectionIssue.blockIndex}`,
         kind: "mineru-projection-failed",
         printedName: `MinerU block ${projectionIssue.blockIndex}`,
         sourceId: projectionIssue.sourceId,
@@ -438,6 +469,7 @@ export function discoverFullSpellEntities(pages: FullPageRow[]) {
         entityType: "spell",
         ...extracted,
         mineruTableEvidence: [],
+        mineruLayoutEvidence: [],
       });
     } catch (error) {
       issues.push(
@@ -525,9 +557,10 @@ export function discoverFullSpellEntities(pages: FullPageRow[]) {
 
 export function extractFullMineruTables(
   pages: FullPageRow[],
+  layoutReviews: FullMineruLayoutReview[] = [],
 ): FullMineruTableEvidence[] {
   return pages.flatMap((page) => {
-    const projection = reconstructMineruReadingLines(page);
+    const projection = reconstructMineruReadingLines(page, layoutReviews);
     return page.mineru.blocks
       .filter((block) => block.type === "table")
       .map((block) => {
@@ -766,6 +799,73 @@ function slug(value: string) {
   return normalizeNameKey(value)
     .replace(/[^a-z0-9]+/gu, "-")
     .replace(/^-|-$/gu, "");
+}
+
+function writeFullMineruLayoutReview(
+  dataRoot: string,
+  pages: FullMineruPageRow[],
+  extractionManifestPath: string,
+  pagesPath: string,
+) {
+  const reviewPath = resolveInside(
+    dataRoot,
+    PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH,
+  );
+  const existing = fs.existsSync(reviewPath)
+    ? readJsonl<FullMineruLayoutReview>(reviewPath)
+    : [];
+  const reviews = mergeFullMineruLayoutReviews(
+    existing,
+    buildFullMineruLayoutReviewCandidates(pages),
+  );
+  const errors = validateFullMineruLayoutReviews(pages, reviews);
+  if (errors.length > 0) {
+    throw new Error(
+      `PHB full MinerU layout review is invalid:\n${errors.join("\n")}`,
+    );
+  }
+  const outside = reviews.filter(
+    (review) => review.kind === "outside-bbox-projection",
+  );
+  const order = reviews.filter(
+    (review) => review.kind === "content-order-conflict",
+  );
+  if (outside.length !== 126 || order.length !== 2) {
+    throw new Error(
+      `PHB full MinerU layout candidate counts changed: outside=${outside.length} order=${order.length}`,
+    );
+  }
+  writeJsonl(reviewPath, reviews);
+  const manifestPath = resolveInside(
+    dataRoot,
+    PHB_FULL_LAYOUT_REVIEW_MANIFEST_RELATIVE_PATH,
+  );
+  writeJson(manifestPath, {
+    schemaVersion: 1,
+    extractionManifest: artifact(
+      PHB_FULL_EXTRACTION_MANIFEST_RELATIVE_PATH,
+      extractionManifestPath,
+    ),
+    pages: artifact(PHB_FULL_PAGES_RELATIVE_PATH, pagesPath),
+    output: artifact(PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH, reviewPath),
+    counts: {
+      rows: reviews.length,
+      outsideBboxProjection: outside.length,
+      contentOrderConflict: order.length,
+      accepted: reviews.filter((review) => review.status === "accepted").length,
+      proposed: reviews.filter((review) => review.status === "proposed").length,
+      rejected: reviews.filter((review) => review.status === "rejected").length,
+    },
+  });
+  return reviews;
+}
+
+function readJsonl<T>(filePath: string): T[] {
+  return fs
+    .readFileSync(filePath, "utf8")
+    .split(/\r?\n/gu)
+    .filter((line) => line.trim().length > 0)
+    .map((line) => JSON.parse(line) as T);
 }
 
 function artifact(relativePath: string, filePath: string) {

@@ -304,8 +304,10 @@ The default full extraction must continue to hard-gate the independently
 derived 605-spell description/list sets, 1,216 printed rows, 1,235 expanded
 occurrences, zero parser/set issues, 59 MinerU table blocks, seven detached
 named tables, and seven excluded description image blocks. MinerU owns block
-order, spell segmentation, and table structure; PDF.js exact-character items
-may be projected only inside MinerU boundaries. Full comparison may auto-accept
+order, spell segmentation, and table structure. PDF.js exact-character items
+inside strict MinerU bboxes may project directly; every outside-bbox item and
+MinerU/source order conflict requires a current, fingerprint-bound accepted
+layout decision targeting an enumerated MinerU block or anchor. Full comparison may auto-accept
 only exact and formatting-only
 rows after preserving combined target/effect/area labels and table layout
 boundaries; token-multiset equality is not formatting evidence. Unparsed shared

@@ -5,7 +5,12 @@ import {
   type ReadingLine,
 } from "./pilot-entities";
 import type { FullPageRow } from "./full-extraction";
-import { reconstructMineruReadingLines } from "./full-mineru";
+import {
+  layoutEvidenceForSourcePages,
+  reconstructMineruReadingLines,
+  type FullMineruLayoutEvidenceReference,
+  type FullMineruLayoutReview,
+} from "./full-mineru";
 
 const CLASS_OWNERS = new Map([
   ["BARD", "Bard"],
@@ -75,6 +80,7 @@ export type FullListPrintedRow = {
   footnotes: string[];
   sourceStart: FullListSourceStart;
   sourcePages: PilotSourcePage[];
+  mineruLayoutEvidence: FullMineruLayoutEvidenceReference[];
   reviewFlags: string[];
 };
 
@@ -93,6 +99,7 @@ export type FullListOccurrence = {
   rawText: string;
   sourceStart: FullListSourceStart;
   sourcePages: PilotSourcePage[];
+  mineruLayoutEvidence: FullMineruLayoutEvidenceReference[];
   reviewFlags: string[];
 };
 
@@ -163,6 +170,7 @@ type MutablePrintedRow = {
 
 export function extractFullSpellLists(
   pages: FullPageRow[],
+  layoutReviews: FullMineruLayoutReview[] = [],
 ): FullListExtraction {
   const printedRows: FullListPrintedRow[] = [];
   const occurrences: FullListOccurrence[] = [];
@@ -248,6 +256,10 @@ export function extractFullSpellLists(
       footnotes: [...activeRow.footnotes],
       sourceStart: sourceStart(first),
       sourcePages,
+      mineruLayoutEvidence: layoutEvidenceForSourcePages(
+        sourcePages,
+        layoutReviews,
+      ),
       reviewFlags: flags,
     };
     if (rowIds.has(rowId)) {
@@ -280,6 +292,7 @@ export function extractFullSpellLists(
           rawText: row.rawText,
           sourceStart: row.sourceStart,
           sourcePages: row.sourcePages,
+          mineruLayoutEvidence: row.mineruLayoutEvidence,
           reviewFlags: occurrenceFlags,
         });
       }
@@ -307,7 +320,7 @@ export function extractFullSpellLists(
   );
 
   for (const page of sortedPages) {
-    const projection = reconstructMineruReadingLines(page);
+    const projection = reconstructMineruReadingLines(page, layoutReviews);
     for (const projectionIssue of projection.issues) {
       issueSequence += 1;
       issues.push({
