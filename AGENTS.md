@@ -35,6 +35,8 @@ Use these docs for orientation instead of expanding this file:
   errata through English QA, translation, accepted activation, and freeze.
 - `docs/releases/v1.4/phb-source-and-errata-plan.md`: data-pipeline-owned PDF
   extraction, errata, comparison, and English acceptance plan.
+- `docs/releases/v1.4/phb-pdf-review-console-plan.md`: localhost-only PHB PDF
+  review console, fingerprint validation, and nested-data write boundary.
 - `docs/releases/v1.4/phb-translation-qa-plan.md`: i18n-owned translation,
   proofreading, QA, and reusable skill plan.
 - `docs/releases/v1.4/phb-content-activation-plan.md`: backend-db-owned

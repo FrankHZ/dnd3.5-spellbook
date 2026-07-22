@@ -10,7 +10,7 @@ source rows.
 
 ## Release Boundary
 
-v1.4 owns three implementation tracks with hard stage gates:
+v1.4 owns four implementation tracks with hard stage gates:
 
 1. **PHB source and errata QA**
 
@@ -20,13 +20,21 @@ v1.4 owns three implementation tracks with hard stage gates:
    auditable correction layer and compare the effective English source with
    the current DB.
 
-2. **PHB Chinese translation and proofreading**
+2. **Local PDF evidence review**
+
+   Build a private localhost-only React/Vite review console over the existing
+   data-tools candidate, fingerprint, and validation logic. It supports only
+   the current MinerU layout and English residual queues, writes decisions only
+   to nested-data JSONL through a loopback Node API, and does not replace the
+   canonical Gate 2 rerun or acceptance commands.
+
+3. **PHB Chinese translation and proofreading**
 
    Begin only after the full English source gate closes. Translate and review
    accepted PHB spell names, bodies, and short descriptions with source-page
    provenance, terminology checks, review queues, and terminal row decisions.
 
-3. **Accepted content activation and consumer verification**
+4. **Accepted content activation and consumer verification**
 
    Apply only accepted English corrections and accepted Chinese overlays
    through the existing rules/content workflows. Preserve current Chinese CHM
@@ -61,19 +69,23 @@ the resulting effective-source hash.
   minimal synthetic or redacted fixtures, and aggregate reports without spell
   text.
 - Runtime SQLite files remain ignored under `server/db/local/`.
+- The PDF review console is local-only, accepts no arbitrary source path, and
+  never reads or writes production DB state.
 - Content DB activation remains an explicit operator step and is not added to
   automatic CD.
 
 ## Ownership
 
 - `data-pipeline`: pinned-source manifests, extraction, errata overlay,
-  comparison, the representative pilot, full English QA, and reproducibility.
+  comparison, the representative pilot, full English QA, reproducibility, and
+  the review-console service/API/write boundary.
 - `i18n-translation`: Chinese terminology, translation/proofreading queues,
   row decisions, translation QA, and the reusable corpus-translation skill.
 - `backend-db`: accepted patch/overlay schemas, content DB apply, provenance,
   fallback/read behavior, search rebuild, and API acceptance.
-- `frontend-design`: only a bounded consumer compatibility check if existing
-  display code needs adjustment; no redesign or new visual system.
+- `frontend-design`: the bounded internal PDF review-console consumer, then
+  only a compatibility check for the public app if existing display code needs
+  adjustment; no public-app redesign or new visual system.
 - `librarian`: release plans, cross-doc coherence, and freeze sweep.
 - `main-gate`: approves the pilot manifest, closes each stage gate, resolves
   cross-role decisions, and decides merge/freeze readiness.
@@ -87,8 +99,10 @@ the resulting effective-source hash.
 3. Run full PHB English source QA. Every extracted PHB row and every current
    PHB DB spell must receive an explained status; unresolved manual review
    blocks the English gate.
-4. Translate and proofread only the accepted effective English corpus.
-5. Apply accepted rows, rebuild derived content/search artifacts, verify API
+4. Accept the localhost review service/API and React consumer, then review the
+   current residual exceptions and rerun the canonical Gate 2 chain.
+5. Translate and proofread only the accepted effective English corpus.
+6. Apply accepted rows, rebuild derived content/search artifacts, verify API
    fallback and frontend consumption, then run release acceptance.
 
 ## Non-Goals
@@ -99,12 +113,15 @@ the resulting effective-source hash.
 - Do not use the combined `spells-full` dump or CHM content as PHB authority.
 - Do not publish source text, PDF pages, or translations in the parent repo.
 - Do not redesign Spell Detail, cards, Browse, Search, or language settings.
+- Do not deploy the review console, add network access, accept arbitrary file
+  paths, or generalize it into a translation/generic annotation platform.
 - Do not add automatic production DB deployment.
 
 ## Plans
 
 - [integrated-plan.md](./integrated-plan.md)
 - [phb-source-and-errata-plan.md](./phb-source-and-errata-plan.md)
+- [phb-pdf-review-console-plan.md](./phb-pdf-review-console-plan.md)
 - [phb-translation-qa-plan.md](./phb-translation-qa-plan.md)
 - [phb-content-activation-plan.md](./phb-content-activation-plan.md)
 
@@ -121,6 +138,9 @@ v1.4 may freeze only when:
   extracted and current-DB PHB sets with no unexplained missing rows;
 - every in-scope errata entry is classified as applicable,
   already-incorporated, out-of-scope, or manually resolved;
+- the localhost-only review console proves current-fingerprint validation,
+  atomic nested-data decision writes, loopback/path/production isolation, and
+  both bounded queue experiences without becoming a deployed surface;
 - no Chinese work began from rows that lacked accepted English source state;
 - every in-scope Chinese name, body, and available short description is
   accepted after proofreading; rejected attempts and manual-review rows do not
