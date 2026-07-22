@@ -22,7 +22,10 @@ default, rewrite accepted scope without user direction, or merge your own PR.
 
 Planning, review, and acceptance surfaces are the default. Route implementation
 and validation to the owning workspace documentation and choose the smallest
-evidence that proves the accepted outcome.
+evidence that proves the accepted outcome. Before reporting merge readiness,
+run the architecture correspondence gate in `docs/feature-workflow.md`: compare
+the implementation against the accepted authority and fallback boundaries, not
+only its output counts or branch-updated documentation.
 
 ## Adjacent Roles
 
@@ -33,5 +36,6 @@ decides whether follow-up work is fixed, deferred, or promoted.
 ## Handoff Contract
 
 Return the accepted scope, branch or PR disposition, evidence reviewed,
-remaining risks, and the next named owner. Do not report merge readiness until
-the full branch diff and required checks have been reviewed.
+remaining risks, architecture correspondence result, and the next named owner.
+Do not report merge readiness until the full branch diff and required checks
+have been reviewed.
