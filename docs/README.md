@@ -28,6 +28,7 @@ pilot:
 - [releases/v1.4/README.md](./releases/v1.4/README.md)
 - [releases/v1.4/integrated-plan.md](./releases/v1.4/integrated-plan.md)
 - [releases/v1.4/phb-source-and-errata-plan.md](./releases/v1.4/phb-source-and-errata-plan.md)
+- [releases/v1.4/phb-pdf-review-console-plan.md](./releases/v1.4/phb-pdf-review-console-plan.md)
 - [releases/v1.4/phb-translation-qa-plan.md](./releases/v1.4/phb-translation-qa-plan.md)
 - [releases/v1.4/phb-content-activation-plan.md](./releases/v1.4/phb-content-activation-plan.md)
 
@@ -224,6 +225,8 @@ handoff records.
   cross-role source, English QA, translation, activation, and freeze gates.
 - [releases/v1.4/phb-source-and-errata-plan.md](./releases/v1.4/phb-source-and-errata-plan.md):
   planned pinned-PDF extraction, errata overlay, comparison, and English QA.
+- [releases/v1.4/phb-pdf-review-console-plan.md](./releases/v1.4/phb-pdf-review-console-plan.md):
+  planned localhost-only PDF review console and fingerprint-safe decision flow.
 - [releases/v1.4/phb-translation-qa-plan.md](./releases/v1.4/phb-translation-qa-plan.md):
   planned Chinese translation, proofreading, QA, and reusable skill workflow.
 - [releases/v1.4/phb-content-activation-plan.md](./releases/v1.4/phb-content-activation-plan.md):

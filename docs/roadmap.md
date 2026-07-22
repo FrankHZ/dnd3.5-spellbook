@@ -18,11 +18,13 @@ v1.4 planning is active:
 - `docs/releases/v1.4/README.md`
 - `docs/releases/v1.4/integrated-plan.md`
 - `docs/releases/v1.4/phb-source-and-errata-plan.md`
+- `docs/releases/v1.4/phb-pdf-review-console-plan.md`
 - `docs/releases/v1.4/phb-translation-qa-plan.md`
 - `docs/releases/v1.4/phb-content-activation-plan.md`
 
 The release is deliberately limited to PHB 3.5. It pins the PHB PDF and
 official errata, accepts the effective English source before translation,
+uses a localhost-only PDF review console for the bounded Gate 2 queues,
 translates/proofreads the accepted Chinese corpus, and activates only accepted
 rows. Source/translation bytes remain in the nested local data repo.
 
@@ -268,7 +270,15 @@ Recommended next sequence:
    decisions. Unknown review statuses fail closed. All extraction counts
    reconcile, and affected evidence fingerprints have been regenerated.
 
-3. **Review 75 residual exceptions and close English Gate 2**
+3. **Build the localhost-only PHB PDF review console**
+
+   Add the private `review-console/` workspace after the data-tools review
+   service and fingerprint-safe write contract are accepted. Support only the
+   current MinerU layout decisions and 75 English residual exceptions; bind to
+   `127.0.0.1`, expose no arbitrary paths or production DB, and keep canonical
+   PHB reruns as the acceptance authority.
+
+4. **Review 75 residual exceptions and close English Gate 2**
 
    The regenerated comparison has passed through the pinned official SRD 3.5
    corpus and explicit Product Identity aliases, and all 69 new terminal
@@ -277,13 +287,13 @@ Recommended next sequence:
    misses. Only after main gate accepts Gate 2 may the i18n translation and
    proofreading track begin.
 
-4. **Activate only accepted v1.4 content**
+5. **Activate only accepted v1.4 content**
 
    Apply accepted English corrections and Chinese reviewed overlays through the
    maintained DB/content workflow, rebuild search, preserve CHM/English summary
    fallback, and verify existing frontend consumers without a UI redesign.
 
-5. **Preserve frozen and publication boundaries**
+6. **Preserve frozen and publication boundaries**
 
    Use the v1.3 freeze for current UI/platform behavior and older freezes for
    their owned areas. Do not expand v1.4 to DMG, Spell Compendium, PHB II, or
@@ -331,9 +341,10 @@ The expected post-v1.1 release order is:
 5. **v1.4 PHB 3.5 Source-First Translation And Proofreading (Planned)**
 
    Pin the PHB 3.5 PDF and official errata, prove extraction/comparison on a
-   representative pilot, accept the complete English source, then translate
-   and proofread PHB names, bodies, and short descriptions. Activate only
-   accepted rows and preserve existing frontend fallback without a redesign.
+   representative pilot, use the localhost-only PDF console for bounded review
+   queues, accept the complete English source, then translate and proofread PHB
+   names, bodies, and short descriptions. Activate only accepted rows and
+   preserve existing frontend fallback without a redesign.
 
 ## Later Stable Track
 

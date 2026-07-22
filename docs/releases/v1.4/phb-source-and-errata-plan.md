@@ -10,9 +10,9 @@
 Status: in progress; Gate 0 and the complete Gate 1 representative pilot are
 accepted. The full MinerU structured run, block-bounded PDF.js text-fidelity
 projection, regenerated comparison, and official SRD 3.5 adjudication are
-complete. Gate 2 is now blocked only on review of 75 residual exceptions and
-the resulting English handoff; downstream translation/activation gates remain
-blocked.
+complete. Gate 2 is now blocked on the accepted localhost PDF review-console
+prerequisite, review of 75 residual exceptions, and the resulting English
+handoff; downstream translation/activation gates remain blocked.
 
 ## Purpose
 
@@ -33,8 +33,10 @@ correction layer before any translation begins.
 - Upstream dependency: pinned local PHB 3.5 PDF, official errata bytes, and a
   complete hash-pinned official SRD 3.5 spell corpus used only for independent
   adjudication.
-- Downstream plans: [phb-translation-qa-plan.md](./phb-translation-qa-plan.md)
-  and [phb-content-activation-plan.md](./phb-content-activation-plan.md).
+- Downstream plans:
+  [phb-pdf-review-console-plan.md](./phb-pdf-review-console-plan.md), then
+  [phb-translation-qa-plan.md](./phb-translation-qa-plan.md) and
+  [phb-content-activation-plan.md](./phb-content-activation-plan.md).
 
 ## Agent Context
 
@@ -53,7 +55,8 @@ correction layer before any translation begins.
   counts, hash checks, portable tests, typecheck, and local-data acceptance.
 - Non-goals: no translation, content DB write, non-PHB publication, or public
   source text.
-- Handoff owner: `main-gate`, then `i18n-translation` only after Gate 2 closes.
+- Handoff owner: `main-gate`; the review-console slices may begin against the
+  current queues, then `i18n-translation` begins only after Gate 2 closes.
 
 ## Current Facts
 
@@ -205,6 +208,15 @@ drops, and reviewed outcomes for every pilot row.
   proposals with current evidence fingerprints. Main gate approves the
   adjudication policy and reviews only residual exceptions; it is not the
   clerical reviewer for every substantive/manual comparison row.
+- Review those residual exceptions through the accepted localhost console or
+  an equivalent fingerprint-safe data-tools command. The console must reuse
+  the canonical candidate/validation logic and cannot turn a saved decision
+  into Gate 2 acceptance without the normal rerun. A layout decision requires
+  a full rerun beginning at `phb:source:extract`; the English residual queue
+  must remain unavailable until extraction, comparison, SRD adjudication, and
+  SRD apply are mutually current again. An English residual save makes the
+  row-review manifest stale; after residual-only review, rerun
+  `phb:source:compare` before `phb:source:report`.
 - Preserve every terminal decision and residual exception in the data repo.
 
 Validation: the MinerU input/output/runtime chain and PDF.js baseline are both
@@ -245,6 +257,7 @@ npm run -w data-tools phb:source:compare
 npm run -w data-tools phb:srd:verify
 npm run -w data-tools phb:srd:extract
 npm run -w data-tools phb:srd:adjudicate
+npm run -w data-tools phb:srd:apply
 npm run -w data-tools phb:source:report
 ```
 
@@ -269,6 +282,15 @@ script manifest, tests, and this plan are updated together.
 - Every deterministic three-way result records its adjudication rule and
   fingerprint-bound evidence; only genuine exceptions require main-gate row
   review.
+- Any console-recorded decision survives its required canonical rerun with the
+  same current fingerprint; stale or invalid decisions fail closed before the
+  English report is proposed.
+- Any layout decision restarts canonical regeneration at full
+  `phb:source:extract`; stale English residual rows cannot be read or edited
+  until the regenerated compare/adjudication/apply chain validates.
+- After the final English residual decision, `phb:source:compare` refreshes the
+  stale row-review manifest before `phb:source:report`; report cannot consume
+  the decision JSONL directly while that manifest is stale.
 - The English handoff is accepted before any translation branch consumes it.
 - Public fixtures/reports contain no PHB or translated corpus text.
 - Focused tests, `npm run typecheck:data-tools`, portable tests, and local-data

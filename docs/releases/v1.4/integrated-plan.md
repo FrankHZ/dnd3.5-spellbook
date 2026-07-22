@@ -9,10 +9,10 @@ Status: planned.
 
 ## Purpose
 
-Coordinate the hard gates between PHB source extraction, errata review,
-English acceptance, Chinese translation/proofreading, and accepted content
-activation. No downstream agent may infer that an upstream artifact is
-accepted merely because it exists.
+Coordinate the hard gates between PHB source extraction, errata review, local
+PDF evidence review, English acceptance, Chinese translation/proofreading, and
+accepted content activation. No downstream agent may infer that an upstream
+artifact is accepted merely because it exists.
 
 ## Canonical Sequence
 
@@ -23,6 +23,7 @@ pinned PHB PDF + pinned official errata
   -> block-bounded PDF.js text-fidelity projection and verification
   -> errata-effective English source
   -> pinned official SRD 3.5 adjudication
+  -> localhost PDF review service/API/consumer acceptance
   -> English source QA exception review and acceptance
   -> Chinese translation + independent proofreading
   -> accepted-only DB/content activation
@@ -77,6 +78,16 @@ Owner: `data-pipeline`; approver: `main-gate`.
   Product Identity aliases, and errata-backed agreement. Route only residual
   source conflicts to main-gate, then preserve every decision and its current
   evidence fingerprint in the data repo.
+- Before reviewing the residual exceptions through a browser, accept the
+  localhost-only review service/API and bounded React consumer in
+  [phb-pdf-review-console-plan.md](./phb-pdf-review-console-plan.md). Console
+  saves are decision-file edits, not Gate 2 acceptance. Any layout save makes
+  the English residual queue unavailable until the canonical full rerun starts
+  at `phb:source:extract` and completes compare, SRD adjudication, and SRD
+  apply. Review only the regenerated residual queue, then run the report after
+  every current residual decision is terminal. Because each residual save
+  stales the row-review manifest, rerun `phb:source:compare` after the final
+  residual decision and before `phb:source:report`.
 
 Exit: complete set accounting, zero unexplained misses, accepted effective
 English rows, and no translation work started early.
@@ -125,6 +136,10 @@ explicit operator handoff for any later remote DB activation.
 - Main gate approves the SRD adjudication policy and residual exceptions; the
   data-pipeline owner is responsible for deterministic row resolution and the
   resulting review bundle.
+- The PDF review console consumes data-tools candidates and validators through
+  a narrow local API. It binds only to loopback, exposes only allowlisted
+  source/queue ids, writes only decision JSONL in the nested data repo, and is
+  never deployed or connected to production DB state.
 - Short descriptions are extracted as list-owner/level/page occurrences first.
   A spell-level candidate is accepted only after duplicate occurrences are
   reconciled.
@@ -140,6 +155,9 @@ explicit operator handoff for any later remote DB activation.
 
 - Source identity, extraction, matching, or set-accounting conflict:
   `data-pipeline` -> `main-gate`.
+- Review candidate, fingerprint, local API, or decision-write conflict:
+  `data-pipeline` -> `main-gate`; bounded review UI behavior:
+  `frontend-design` -> `main-gate`.
 - Terminology, translation, or proofreading conflict: `i18n-translation` ->
   `main-gate`.
 - Schema, variant, fallback, API, or apply conflict: `backend-db` ->

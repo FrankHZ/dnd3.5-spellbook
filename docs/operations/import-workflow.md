@@ -195,13 +195,18 @@ parser artifacts. They are scope-review data, not rules DB patch operations.
 
 Run `phb:source:verify` before extraction. Use `--prepare-only` to construct
 the exact pilot PDFs, run the pinned MinerU pipeline locally, and import an
-explicit data-relative output directory with `--mineru-output`. PDF.js remains
-the raw text/coordinate baseline; MinerU contributes layout blocks only.
-Neither path writes SQLite. The pilot's entity extraction, errata overlays, and
-DB comparison run with `phb:source:compare -- --pilot`; this command reads both
-configured databases read-only and writes source-bearing entities, overlays,
-comparisons, and proposed row reviews under `data/phb35/`. This includes actual
-short-description comparisons for summary-only cases. Review all ten rows,
+explicit data-relative output directory with `--mineru-output`. In the accepted
+Gate 1 pilot, PDF.js remains the raw text/coordinate baseline and MinerU
+contributes layout evidence. That pilot contract does not authorize the full
+run to replace MinerU structure: full-PHB extraction uses MinerU for reading
+order, spell segmentation, fields, bodies, and tables, with PDF.js exact text
+projected only inside MinerU blocks unless a current fingerprint-bound layout
+decision permits otherwise. Neither path writes SQLite. The pilot's entity
+extraction, errata overlays, and DB comparison run with
+`phb:source:compare -- --pilot`; this command reads both configured databases
+read-only and writes source-bearing entities, overlays, comparisons, and
+proposed row reviews under `data/phb35/`. This includes actual short-description
+comparisons for summary-only cases. Review all ten rows,
 rerun comparison to refresh their manifest without discarding decisions whose
 full evidence fingerprint is unchanged, then run
 `phb:source:report -- --pilot` to propose the end-to-end review. Full-PHB

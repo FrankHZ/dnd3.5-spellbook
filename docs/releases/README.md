@@ -16,6 +16,8 @@ pilot. v1.3 remains the latest frozen formal release.
   English QA, translation, activation, and freeze sequence.
 - [v1.4/phb-source-and-errata-plan.md](./v1.4/phb-source-and-errata-plan.md):
   planned pinned-PDF extraction, errata overlay, comparison, and English QA.
+- [v1.4/phb-pdf-review-console-plan.md](./v1.4/phb-pdf-review-console-plan.md):
+  planned localhost-only PDF evidence review and fingerprint-safe data writes.
 - [v1.4/phb-translation-qa-plan.md](./v1.4/phb-translation-qa-plan.md): planned
   Chinese translation, proofreading, QA, and reusable skill workflow.
 - [v1.4/phb-content-activation-plan.md](./v1.4/phb-content-activation-plan.md):
