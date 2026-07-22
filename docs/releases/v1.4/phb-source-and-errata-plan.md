@@ -211,7 +211,10 @@ drops, and reviewed outcomes for every pilot row.
 - Review those residual exceptions through the accepted localhost console or
   an equivalent fingerprint-safe data-tools command. The console must reuse
   the canonical candidate/validation logic and cannot turn a saved decision
-  into Gate 2 acceptance without the normal rerun.
+  into Gate 2 acceptance without the normal rerun. A layout decision requires
+  a full rerun beginning at `phb:source:extract`; the English residual queue
+  must remain unavailable until extraction, comparison, SRD adjudication, and
+  SRD apply are mutually current again.
 - Preserve every terminal decision and residual exception in the data repo.
 
 Validation: the MinerU input/output/runtime chain and PDF.js baseline are both
@@ -252,6 +255,7 @@ npm run -w data-tools phb:source:compare
 npm run -w data-tools phb:srd:verify
 npm run -w data-tools phb:srd:extract
 npm run -w data-tools phb:srd:adjudicate
+npm run -w data-tools phb:srd:apply
 npm run -w data-tools phb:source:report
 ```
 
@@ -279,6 +283,9 @@ script manifest, tests, and this plan are updated together.
 - Any console-recorded decision survives the canonical compare/adjudication
   rerun with the same current fingerprint; stale or invalid decisions fail
   closed before the English report is proposed.
+- Any layout decision restarts canonical regeneration at full
+  `phb:source:extract`; stale English residual rows cannot be read or edited
+  until the regenerated compare/adjudication/apply chain validates.
 - The English handoff is accepted before any translation branch consumes it.
 - Public fixtures/reports contain no PHB or translated corpus text.
 - Focused tests, `npm run typecheck:data-tools`, portable tests, and local-data

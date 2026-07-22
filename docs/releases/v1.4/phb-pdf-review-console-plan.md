@@ -92,9 +92,16 @@ The current committed data snapshot has two bounded review surfaces:
   and validators remain the only decision-rule implementation. The browser
   receives display DTOs and allowed actions; it does not recompute candidates,
   fingerprints, eligible blocks, or terminal validity.
-- The local Node API is the only write-capable layer. It imports a narrow,
-  explicit data-tools review-service entry point rather than reaching into
-  queue files or duplicating PHB rules in `review-console/`.
+- The local Node API is the only write-capable layer. `data-tools` must expose
+  the review service through one documented, Node-only public package subpath,
+  provisionally `data-tools/phb-review`. The Node API imports only that public
+  entry; it must not use relative or package-deep imports into
+  `data-tools/src/**`.
+- The public service entry owns candidate/detail/action DTOs, fingerprints,
+  freshness checks, merges, validation, and atomic writes. `review-console/`
+  must not copy those rules, queue schemas, or validators. Its browser bundle
+  consumes HTTP DTOs and may share types only through an explicit type-only
+  boundary; it must never import the Node service runtime.
 - The nested `data/` JSONL remains the decision source of truth. The console
   never writes parent-repo fixtures, SQLite, accepted content, search artifacts,
   or production state.
@@ -119,7 +126,10 @@ The first release supports exactly two queue ids:
    full row review, PHB comparison/entity evidence, SRD components, DB diff,
    page provenance, and errata evidence. Accept/reject updates the canonical
    full-row review decision; deterministic terminal candidates are not exposed
-   as clerical review work.
+   as clerical review work. This queue is available only while the full
+   extraction, comparison, SRD adjudication, and terminal-candidate apply
+   artifacts are mutually current. The service must fail closed when any
+   upstream layout decision or artifact makes that chain stale.
 
 Both queues expose a stable item id, status, kind/category, printed name/page,
 current evidence fingerprint, evidence references, allowed actions, and a
@@ -144,6 +154,11 @@ current artifacts and are never hard-coded into the client.
   keeping the absolute source path out of API responses.
 - Do not import production server routes, Prisma clients, SQLite drivers, or
   deployment configuration.
+- Resolve the public data-tools service entry under the actual local launcher,
+  tests, and production-like local build/start path from a clean checkout. A
+  package export, source condition, or built artifact may follow the
+  repository's chosen module convention, but the supported package subpath is
+  the sole runtime boundary; a TypeScript-only alias is insufficient.
 
 ## Decision Write Contract
 
@@ -174,10 +189,23 @@ and does not retry the old decision automatically. Two tabs submitting from
 the same fingerprint must result in one accepted write and one stale response.
 
 The console must not silently refresh downstream manifests or acceptance
-reports. Existing CLI verification should remain fail-closed after a decision
-file changes until the owning data-pipeline command regenerates and validates
-the derived chain. The UI should show that rerun requirement instead of
-presenting a saved row as Gate 2 acceptance.
+reports. A saved `mineru-layout` decision invalidates the derived English
+review chain. Its canonical rerun must begin with the full
+`npm run -w data-tools phb:source:extract` command, then continue through
+`phb:source:compare`, `phb:srd:adjudicate`, and `phb:srd:apply`. Starting at
+compare or adjudication is not an accepted shortcut after a layout write.
+
+Until that chain has been regenerated and the data-tools freshness check
+passes, the service must mark `english-residual` unavailable. The client must
+disable its queue entry, discard any previously loaded residual rows, and show
+the required rerun start command. Direct English queue/detail/write requests
+must fail closed with a stable `409 stale-queue` response carrying
+`requiredRerunFrom: "phb:source:extract"`; a UI warning alone is insufficient.
+No separate console-owned freshness flag becomes authority: availability is
+derived from current manifests, artifacts, and fingerprints through the
+data-tools service. Once the chain is current, the regenerated English queue
+may reopen; `phb:source:report` still remains blocked until all current
+residual decisions are terminal.
 
 ## Review Experience
 
@@ -207,15 +235,24 @@ Owner: `data-pipeline`.
 
 - Extract a narrow reusable service over the existing MinerU layout and full
   row review builders, fingerprints, merges, and validators.
+- Publish that service through the documented `data-tools/phb-review` package
+  subpath (or the final equivalently named public subpath recorded in the
+  implementation docs). Add a correspondence/runtime test that rejects deep
+  source imports and proves the public entry resolves under supported local
+  execution paths.
 - Define the two allowlisted queue/detail/action DTOs and the stale-decision
-  result without exposing arbitrary paths or generic JSONL mutation.
+  result without exposing arbitrary paths or generic JSONL mutation. Include a
+  server-derived queue-availability result that detects the stale English
+  dependency chain.
 - Add atomic queue replacement and process-local write serialization.
 - Prove the service against synthetic fixtures for both queue types before any
   browser implementation begins.
 
 Validation: focused portable tests cover stale fingerprints, invalid targets,
 validation failure, concurrent writes, atomic replacement failure, preserved
-row ordering, and zero mutation outside the selected decision JSONL.
+row ordering, zero mutation outside the selected decision JSONL, package-entry
+runtime resolution, and English queue invalidation/re-enablement across a
+layout decision and canonical rebuild.
 
 ### Slice 2: Local API And Workspace Shell
 
@@ -223,6 +260,9 @@ Owner: `data-pipeline`.
 
 - Add the private `review-console/` workspace, local Node launcher, shared DTO
   boundary, allowlisted read/write routes, PDF range route, and session token.
+- Depend on the public data-tools review-service package subpath only. Add a
+  lint/correspondence check that fails on `data-tools/src/**` deep imports from
+  `review-console/`, and keep the Node runtime out of the Vite browser graph.
 - Keep the API same-origin and loopback-only with no CORS, host override,
   filesystem path parameter, SQLite access, or deploy target.
 - Wire focused typecheck/test/build commands into root portable validation with
@@ -230,7 +270,9 @@ Owner: `data-pipeline`.
 
 Validation: API integration tests prove loopback binding, host/origin/token
 rejection, unknown queue/item rejection, path non-disclosure, PDF range
-behavior, `409` stale handling, and no-write failures.
+behavior, stale-fingerprint handling, `409 stale-queue` handling, and no-write
+failures. A clean-checkout launch/build smoke proves the package runtime entry
+resolves without pre-existing generated output.
 
 ### Slice 3: React Review Consumer
 
@@ -240,6 +282,9 @@ Owner: `frontend-design`, after Slice 2's API contract is accepted.
   PHB/SRD/DB evidence, layout target selection, and explicit decision forms.
 - Keep all candidate and validation decisions server-owned. Client state owns
   only display, navigation, filters, draft form values, and stale-response UX.
+- Disable and unload the English queue while the API reports stale upstream
+  layout evidence; never continue displaying cached residual rows during the
+  canonical rebuild.
 - Add focused component/pure-logic tests for filtering, stable navigation,
   required controls, target selection, and stale refresh behavior.
 
@@ -252,8 +297,11 @@ Owners: `data-pipeline` for rerun evidence; `main-gate` for acceptance.
 
 - Run both current queues through the console, preserving the current 131-row
   layout inventory and presenting exactly the current 75 residual exceptions.
-- After decisions, run the canonical PHB compare/adjudication/report commands;
-  do not treat console save responses as pipeline acceptance.
+- After any layout decision, restart the canonical full chain at
+  `phb:source:extract`, then run compare, SRD adjudication, and SRD apply before
+  reopening English review. After the regenerated residual decisions are
+  terminal, run `phb:source:report`; do not treat console save responses as
+  pipeline acceptance.
 - Confirm zero stale/proposed residual decisions before producing the English
   handoff. Keep the console local and source-bearing outputs in the nested data
   repo.
@@ -270,6 +318,9 @@ main-gate review, and the standard v1.4 data/portable checks.
   item ids; no endpoint accepts or returns an arbitrary absolute path.
 - The client does not implement PHB candidate, fingerprint, eligible-target,
   terminal-state, or JSONL write rules.
+- The console's Node API consumes one documented public data-tools package
+  subpath. No review-console file deep-imports `data-tools/src/**`, copies its
+  queue/validation rules, or bundles the Node review runtime into the browser.
 - Every write revalidates the current fingerprint and complete queue before an
   atomic replacement. Stale, invalid, concurrent-loser, or simulated I/O
   failures preserve the previous file unchanged.
@@ -278,9 +329,13 @@ main-gate review, and the standard v1.4 data/portable checks.
 - Both current queues render their required PDF/evidence/diff context and
   support filter, previous/next, accept/reject, decision note, and required
   layout target selection.
-- Saving a decision clearly leaves canonical rerun/acceptance pending. The
-  existing CLI chain detects stale derived manifests until it is intentionally
-  regenerated.
+- Saving a layout decision makes `english-residual` unavailable immediately.
+  It stays disabled, including direct API access and cached UI rows, until a
+  canonical rerun beginning at full `phb:source:extract` regenerates and
+  validates extraction, comparison, adjudication, and apply artifacts.
+- Saving any decision clearly leaves final canonical acceptance pending;
+  `phb:source:report` succeeds only after every current residual row is
+  terminal.
 - Portable CI passes without local source files. Focused data service, API,
   frontend, typecheck, and build checks pass, followed by real local smoke and
   Gate 2 data acceptance.
@@ -302,9 +357,10 @@ main-gate review, and the standard v1.4 data/portable checks.
 
 ## Open Questions
 
-No product or authority question remains open for the first release. Exact
-component names and the default loopback port may follow repository conventions
-as long as the boundaries and acceptance criteria above remain unchanged.
+No product or authority question remains open for the first release. The final
+public package-subpath spelling, component names, and default loopback port may
+follow repository conventions as long as the package/runtime, stale-queue, and
+acceptance boundaries above remain unchanged.
 
 ## Follow-Up Candidates
 

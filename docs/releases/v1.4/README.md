@@ -26,7 +26,9 @@ v1.4 owns four implementation tracks with hard stage gates:
    data-tools candidate, fingerprint, and validation logic. It supports only
    the current MinerU layout and English residual queues, writes decisions only
    to nested-data JSONL through a loopback Node API, and does not replace the
-   canonical Gate 2 rerun or acceptance commands.
+   canonical Gate 2 rerun or acceptance commands. Layout writes invalidate and
+   disable the English queue until a full rerun beginning at source extraction
+   regenerates the dependent chain.
 
 3. **PHB Chinese translation and proofreading**
 
@@ -100,7 +102,9 @@ the resulting effective-source hash.
    PHB DB spell must receive an explained status; unresolved manual review
    blocks the English gate.
 4. Accept the localhost review service/API and React consumer, then review the
-   current residual exceptions and rerun the canonical Gate 2 chain.
+   current layout decisions. If layout changes, rerun from full source
+   extraction before the regenerated English residual queue may reopen; review
+   those residuals and complete the canonical Gate 2 report.
 5. Translate and proofread only the accepted effective English corpus.
 6. Apply accepted rows, rebuild derived content/search artifacts, verify API
    fallback and frontend consumption, then run release acceptance.

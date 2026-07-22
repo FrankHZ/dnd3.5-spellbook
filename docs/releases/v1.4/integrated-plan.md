@@ -81,8 +81,11 @@ Owner: `data-pipeline`; approver: `main-gate`.
 - Before reviewing the residual exceptions through a browser, accept the
   localhost-only review service/API and bounded React consumer in
   [phb-pdf-review-console-plan.md](./phb-pdf-review-console-plan.md). Console
-  saves are decision-file edits, not Gate 2 acceptance; rerun the canonical
-  compare/adjudication/report chain afterward.
+  saves are decision-file edits, not Gate 2 acceptance. Any layout save makes
+  the English residual queue unavailable until the canonical full rerun starts
+  at `phb:source:extract` and completes compare, SRD adjudication, and SRD
+  apply. Review only the regenerated residual queue, then run the report after
+  every current residual decision is terminal.
 
 Exit: complete set accounting, zero unexplained misses, accepted effective
 English rows, and no translation work started early.
