@@ -173,9 +173,12 @@ review queues to the private localhost console:
   row-review, PHB, errata, table, and list evidence.
 
 The service rebuilds candidates before every write, checks both evidence and
-review-state fingerprints, validates the complete queue, serializes writes in
-the process, and atomically replaces only the selected nested-data JSONL. A
-layout save invalidates the English chain and requires a rerun beginning at
+review-state fingerprints, including current SRD adjudication evidence for
+English residuals, validates the complete queue, serializes writes in the
+process, and atomically replaces only the selected nested-data JSONL. Queue
+summaries and decision responses derive `canonicalRerunRequired` from current
+manifests, so reloads and no-op submissions retain pending rerun state. A layout
+save invalidates the English chain and requires a rerun beginning at
 `phb:source:extract`. English residual decisions may be completed as one batch;
 after the final save, rerun `phb:source:compare` to refresh the stale row-review
 manifest before `phb:source:report`.

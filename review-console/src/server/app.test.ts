@@ -309,6 +309,7 @@ class FakePhbReviewService implements PhbReviewService {
       summary: {
         queueId,
         availability: { available: true },
+        canonicalRerunRequired: null,
         total: 1,
         countsByStatus: { proposed: 1, accepted: 0, rejected: 0 },
         facets: { kind: { "image-adjacent-exclusion": 1 }, category: {} },

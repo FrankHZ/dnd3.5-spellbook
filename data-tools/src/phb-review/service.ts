@@ -30,6 +30,8 @@ import {
   buildFullEvidenceRowIds,
   verifyFullComparisonArtifacts,
   verifyFullExtractionChain,
+  verifyFullMineruLayoutReviewArtifacts,
+  verifyFullRowReviewArtifacts,
   verifySrdBackedReviews,
 } from "../phb/full-pipeline";
 import {
@@ -52,6 +54,7 @@ import {
   PHB_REVIEW_QUEUE_IDS,
   type EnglishResidualReviewDetail,
   type MineruLayoutReviewDetail,
+  type PhbCanonicalRerunRequired,
   type PhbReviewDecisionRequest,
   type PhbReviewDecisionResult,
   type PhbReviewItemDetail,
@@ -69,6 +72,10 @@ type ServiceOptions = {
   dataRoot?: string;
   atomicWriter?: AtomicJsonlWriter;
   verifyEnglishQueue?: (dataRoot: string) => void;
+  deriveCanonicalRerunRequired?: (
+    dataRoot: string,
+    queueId: PhbReviewQueueId,
+  ) => PhbCanonicalRerunRequired;
 };
 
 type EnglishQueueState = {
@@ -90,6 +97,8 @@ export function createPhbReviewService(
   const atomicWriter = options.atomicWriter ?? writeJsonlAtomically;
   const verifyEnglishQueue =
     options.verifyEnglishQueue ?? verifyCanonicalEnglishQueue;
+  const deriveCanonicalRerunRequired =
+    options.deriveCanonicalRerunRequired ?? deriveCanonicalRerunFromArtifacts;
   let writeTail: Promise<void> = Promise.resolve();
 
   function listQueues() {
@@ -104,6 +113,7 @@ export function createPhbReviewService(
         summary: summaryForItems(
           queueId,
           { available: true },
+          deriveCanonicalRerunRequired(dataRoot, queueId),
           rows.map(layoutListItem),
         ),
         items: rows.map(layoutListItem),
@@ -116,11 +126,17 @@ export function createPhbReviewService(
       });
     }
     const state = loadEnglishState(dataRoot);
-    const items = state.residuals.map(({ comparison, review, source }) =>
-      englishListItem(comparison, review, source),
+    const items = state.residuals.map(
+      ({ comparison, review, source, adjudication }) =>
+        englishListItem(comparison, review, source, adjudication),
     );
     return {
-      summary: summaryForItems(queueId, availability, items),
+      summary: summaryForItems(
+        queueId,
+        availability,
+        deriveCanonicalRerunRequired(dataRoot, queueId),
+        items,
+      ),
       items,
     };
   }
@@ -199,7 +215,10 @@ export function createPhbReviewService(
         return {
           item: layoutListItem(current),
           changed: false,
-          canonicalRerunRequired: null,
+          canonicalRerunRequired: deriveCanonicalRerunRequired(
+            dataRoot,
+            request.queueId,
+          ),
         };
       }
       await atomicWriter(
@@ -209,7 +228,10 @@ export function createPhbReviewService(
       return {
         item: layoutListItem(next),
         changed: true,
-        canonicalRerunRequired: { from: "phb:source:extract" },
+        canonicalRerunRequired: deriveCanonicalRerunRequired(
+          dataRoot,
+          request.queueId,
+        ),
       };
     }
 
@@ -252,9 +274,17 @@ export function createPhbReviewService(
     }
     if (stableJson(current) === stableJson(next)) {
       return {
-        item: englishListItem(residual!.comparison, current, residual!.source),
+        item: englishListItem(
+          residual!.comparison,
+          current,
+          residual!.source,
+          residual!.adjudication,
+        ),
         changed: false,
-        canonicalRerunRequired: null,
+        canonicalRerunRequired: deriveCanonicalRerunRequired(
+          dataRoot,
+          request.queueId,
+        ),
       };
     }
     await atomicWriter(
@@ -262,9 +292,17 @@ export function createPhbReviewService(
       nextRows,
     );
     return {
-      item: englishListItem(residual!.comparison, next, residual!.source),
+      item: englishListItem(
+        residual!.comparison,
+        next,
+        residual!.source,
+        residual!.adjudication,
+      ),
       changed: true,
-      canonicalRerunRequired: { from: "phb:source:compare" },
+      canonicalRerunRequired: deriveCanonicalRerunRequired(
+        dataRoot,
+        request.queueId,
+      ),
     };
   }
 
@@ -286,14 +324,22 @@ export function createPhbReviewService(
     if (queueId === "mineru-layout") return getQueue(queueId).summary;
     const availability = englishAvailability();
     if (!availability.available) {
-      return summaryForItems(queueId, availability, []);
+      return summaryForItems(
+        queueId,
+        availability,
+        availability.requiredRerunFrom
+          ? { from: availability.requiredRerunFrom }
+          : deriveCanonicalRerunRequired(dataRoot, queueId),
+        [],
+      );
     }
     const state = loadEnglishState(dataRoot);
     return summaryForItems(
       queueId,
       availability,
-      state.residuals.map(({ comparison, review, source }) =>
-        englishListItem(comparison, review, source),
+      deriveCanonicalRerunRequired(dataRoot, queueId),
+      state.residuals.map(({ comparison, review, source, adjudication }) =>
+        englishListItem(comparison, review, source, adjudication),
       ),
     );
   }
@@ -444,6 +490,7 @@ function englishDetailFromState(
       residual.comparison,
       residual.review,
       residual.source,
+      residual.adjudication,
     ),
     comparison: residual.comparison,
     rowReview: residual.review,
@@ -499,6 +546,7 @@ function englishListItem(
   comparison: FullDbComparisonRow,
   review: FullRowReview,
   source: FullSpellEntity | null,
+  adjudication: SrdAdjudicationRow,
 ): PhbReviewListItem {
   const sourcePage = source?.sourcePages[0];
   return {
@@ -513,7 +561,7 @@ function englishListItem(
     printedPageNumber:
       sourcePage?.printedPageNumber ?? comparison.sourcePages[0] ?? null,
     evidenceFingerprintSha256: review.evidenceFingerprintSha256,
-    reviewFingerprintSha256: reviewFingerprint(review),
+    reviewFingerprintSha256: reviewFingerprint({ review, adjudication }),
     reviewer: review.reviewer,
     decisionNote: review.decisionNote,
     allowedActions: ["accepted", "rejected"],
@@ -583,14 +631,35 @@ function verifyCanonicalEnglishQueue(dataRoot: string) {
   verifySrdBackedReviews(dataRoot, reviews);
 }
 
+function deriveCanonicalRerunFromArtifacts(
+  dataRoot: string,
+  queueId: PhbReviewQueueId,
+): PhbCanonicalRerunRequired {
+  try {
+    verifyFullMineruLayoutReviewArtifacts(dataRoot);
+  } catch {
+    return { from: "phb:source:extract" };
+  }
+  if (queueId === "english-residual") {
+    try {
+      verifyFullRowReviewArtifacts(dataRoot);
+    } catch {
+      return { from: "phb:source:compare" };
+    }
+  }
+  return null;
+}
+
 function summaryForItems(
   queueId: PhbReviewQueueId,
   availability: PhbReviewQueueAvailability,
+  canonicalRerunRequired: PhbCanonicalRerunRequired,
   items: PhbReviewListItem[],
 ): PhbReviewQueueSummary {
   return {
     queueId,
     availability,
+    canonicalRerunRequired,
     total: items.length,
     countsByStatus: countValues(
       ["proposed", "accepted", "rejected"],

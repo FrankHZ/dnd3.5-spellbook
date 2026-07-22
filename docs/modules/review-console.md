@@ -39,6 +39,11 @@ the row-review manifest stale; after the final residual decision, run
 `phb:source:compare` to preserve terminal decisions and refresh that manifest
 before `phb:source:report`.
 
+Queue summaries and decision responses expose `canonicalRerunRequired` derived
+from those current manifests. It remains `phb:source:extract` or
+`phb:source:compare` across reloads and no-op submissions until the canonical
+command refreshes the corresponding manifest.
+
 ## Validation
 
 ```bash

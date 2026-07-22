@@ -23,6 +23,8 @@ export const PHB_REVIEW_QUEUE_IDS = [
 export type PhbReviewQueueId = (typeof PHB_REVIEW_QUEUE_IDS)[number];
 export type PhbReviewStatus = "proposed" | "accepted" | "rejected";
 export type PhbReviewDecisionStatus = Exclude<PhbReviewStatus, "proposed">;
+export type PhbCanonicalRerunRequired =
+  { from: "phb:source:extract" } | { from: "phb:source:compare" } | null;
 
 export type PhbReviewQueueAvailability =
   | { available: true }
@@ -36,6 +38,7 @@ export type PhbReviewQueueAvailability =
 export type PhbReviewQueueSummary = {
   queueId: PhbReviewQueueId;
   availability: PhbReviewQueueAvailability;
+  canonicalRerunRequired: PhbCanonicalRerunRequired;
   total: number;
   countsByStatus: Record<PhbReviewStatus, number>;
   facets: Record<string, Record<string, number>>;
@@ -114,8 +117,7 @@ export type PhbReviewDecisionRequest = {
 export type PhbReviewDecisionResult = {
   item: PhbReviewListItem;
   changed: boolean;
-  canonicalRerunRequired:
-    { from: "phb:source:extract" } | { from: "phb:source:compare" } | null;
+  canonicalRerunRequired: PhbCanonicalRerunRequired;
 };
 
 export type PhbReviewSourcePdf = {

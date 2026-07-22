@@ -29,6 +29,7 @@ import { compareTokenMultisets } from "../phb/pilot-extraction";
 import { PHB_SRD_ADJUDICATION_RELATIVE_PATH } from "../phb/srd-adjudication";
 import { PhbReviewError } from "./errors";
 import { createPhbReviewService } from "./service";
+import type { PhbCanonicalRerunRequired, PhbReviewQueueId } from "./types";
 
 async function main() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "phb-review-service-"));
@@ -37,6 +38,7 @@ async function main() {
     const service = createPhbReviewService({
       dataRoot: root,
       verifyEnglishQueue: verifySyntheticFreshness,
+      deriveCanonicalRerunRequired: deriveSyntheticCanonicalRerun,
     });
 
     const queues = service.listQueues();
@@ -100,6 +102,26 @@ async function main() {
     assert.deepEqual(layoutResult.canonicalRerunRequired, {
       from: "phb:source:extract",
     });
+    const reloadedLayout = service.getQueue("mineru-layout");
+    assert.deepEqual(reloadedLayout.summary.canonicalRerunRequired, {
+      from: "phb:source:extract",
+    });
+    const currentLayout = reloadedLayout.items.find(
+      (item) => item.itemId === first.itemId,
+    )!;
+    const layoutNoOp = await service.submitDecision({
+      queueId: "mineru-layout",
+      itemId: currentLayout.itemId,
+      reviewFingerprintSha256: currentLayout.reviewFingerprintSha256,
+      status: "accepted",
+      reviewer: currentLayout.reviewer!,
+      decisionNote: currentLayout.decisionNote!,
+      selection: { targetBlockIndex },
+    });
+    assert.equal(layoutNoOp.changed, false);
+    assert.deepEqual(layoutNoOp.canonicalRerunRequired, {
+      from: "phb:source:extract",
+    });
     assert.deepEqual(
       service.getQueue("mineru-layout").items.map((item) => item.itemId),
       originalLayoutOrder,
@@ -112,20 +134,70 @@ async function main() {
     );
 
     refreshSyntheticFreshness(root);
+    assert.equal(
+      service.getQueue("mineru-layout").summary.canonicalRerunRequired,
+      null,
+    );
     assert.equal(service.getQueue("english-residual").items.length, 1);
 
     const english = service.getQueue("english-residual").items[0]!;
     assert.equal(english.sourcePageIndex, 12);
     assert.equal(english.printedPageNumber, 200);
+    const adjudicationPath = inside(root, PHB_SRD_ADJUDICATION_RELATIVE_PATH);
+    const adjudication = JSON.parse(
+      fs.readFileSync(adjudicationPath, "utf8").trim(),
+    ) as Record<string, unknown>;
+    writeJsonl(adjudicationPath, [
+      { ...adjudication, evidenceFingerprintSha256: "e".repeat(64) },
+    ]);
+    const beforeStaleAdjudication = fs.readFileSync(rowReviewPath, "utf8");
+    await assert.rejects(
+      service.submitDecision({
+        queueId: "english-residual",
+        itemId: english.itemId,
+        reviewFingerprintSha256: english.reviewFingerprintSha256,
+        status: "accepted",
+        reviewer: "portable-reviewer",
+        decisionNote: "This decision observed the old SRD evidence.",
+      }),
+      (error: unknown) =>
+        error instanceof PhbReviewError && error.code === "stale-decision",
+    );
+    assert.equal(
+      fs.readFileSync(rowReviewPath, "utf8"),
+      beforeStaleAdjudication,
+    );
+    const currentEnglish = service.getQueue("english-residual").items[0]!;
+    assert.notEqual(
+      currentEnglish.reviewFingerprintSha256,
+      english.reviewFingerprintSha256,
+    );
     const englishResult = await service.submitDecision({
       queueId: "english-residual",
-      itemId: english.itemId,
-      reviewFingerprintSha256: english.reviewFingerprintSha256,
+      itemId: currentEnglish.itemId,
+      reviewFingerprintSha256: currentEnglish.reviewFingerprintSha256,
       status: "accepted",
       reviewer: "portable-reviewer",
       decisionNote: "PHB evidence is accepted for this residual exception.",
     });
     assert.deepEqual(englishResult.canonicalRerunRequired, {
+      from: "phb:source:compare",
+    });
+    const reloadedEnglish = service.getQueue("english-residual");
+    assert.deepEqual(reloadedEnglish.summary.canonicalRerunRequired, {
+      from: "phb:source:compare",
+    });
+    const currentAcceptedEnglish = reloadedEnglish.items[0]!;
+    const englishNoOp = await service.submitDecision({
+      queueId: "english-residual",
+      itemId: currentAcceptedEnglish.itemId,
+      reviewFingerprintSha256: currentAcceptedEnglish.reviewFingerprintSha256,
+      status: "accepted",
+      reviewer: currentAcceptedEnglish.reviewer!,
+      decisionNote: currentAcceptedEnglish.decisionNote!,
+    });
+    assert.equal(englishNoOp.changed, false);
+    assert.deepEqual(englishNoOp.canonicalRerunRequired, {
       from: "phb:source:compare",
     });
     assert.throws(
@@ -138,6 +210,10 @@ async function main() {
     );
     refreshSyntheticRowReviewManifest(root);
     assert.doesNotThrow(() => verifySyntheticRowReviewManifest(root));
+    assert.equal(
+      service.getQueue("english-residual").summary.canonicalRerunRequired,
+      null,
+    );
     await assert.rejects(
       service.submitDecision({
         queueId: "english-residual",
@@ -185,6 +261,7 @@ async function main() {
     const failingService = createPhbReviewService({
       dataRoot: root,
       verifyEnglishQueue: verifySyntheticFreshness,
+      deriveCanonicalRerunRequired: deriveSyntheticCanonicalRerun,
       atomicWriter: async () => {
         throw new Error("simulated atomic replacement failure");
       },
@@ -399,6 +476,25 @@ function verifySyntheticRowReviewManifest(root: string) {
   if (expected.rowReviewSha256 !== actual) {
     throw new Error("Synthetic row-review manifest is stale");
   }
+}
+
+function deriveSyntheticCanonicalRerun(
+  root: string,
+  queueId: PhbReviewQueueId,
+): PhbCanonicalRerunRequired {
+  try {
+    verifySyntheticFreshness(root);
+  } catch {
+    return { from: "phb:source:extract" };
+  }
+  if (queueId === "english-residual") {
+    try {
+      verifySyntheticRowReviewManifest(root);
+    } catch {
+      return { from: "phb:source:compare" };
+    }
+  }
+  return null;
 }
 
 function writeJsonl(filePath: string, rows: unknown[]) {

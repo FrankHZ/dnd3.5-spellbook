@@ -22,11 +22,16 @@ import {
 } from "./full-mineru";
 import {
   assertEmptyJsonl,
+  PHB_FULL_DB_COMPARISON_MANIFEST_RELATIVE_PATH,
   PHB_FULL_DB_COMPARISON_RELATIVE_PATH,
   PHB_FULL_ERRATA_MANIFEST_RELATIVE_PATH,
   PHB_FULL_ERRATA_OVERLAYS_RELATIVE_PATH,
+  PHB_FULL_ROW_REVIEW_MANIFEST_RELATIVE_PATH,
+  PHB_FULL_ROW_REVIEW_RELATIVE_PATH,
   verifyFullComparisonArtifacts,
+  verifyFullMineruLayoutReviewArtifacts,
   verifyFullMineruLayoutReviewChain,
+  verifyFullRowReviewArtifacts,
   verifyRowReviewEvidenceArtifacts,
 } from "./full-pipeline";
 import { sha256File } from "./source-manifest";
@@ -79,6 +84,7 @@ try {
     () => verifyFullMineruLayoutReviewChain(dataRoot),
     /invalid status values/u,
   );
+  assert.doesNotThrow(() => verifyFullMineruLayoutReviewArtifacts(dataRoot));
   write(PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH, "");
   layoutManifest.output = artifact(PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH);
   write(
@@ -136,6 +142,28 @@ try {
   assert.throws(
     () => verifyRowReviewEvidenceArtifacts(dataRoot, rowReviewManifest),
     /mineruTables/u,
+  );
+  write(PHB_FULL_MINERU_TABLES_RELATIVE_PATH, "");
+
+  write(
+    PHB_FULL_DB_COMPARISON_MANIFEST_RELATIVE_PATH,
+    JSON.stringify(comparisonManifest),
+  );
+  write(PHB_FULL_ROW_REVIEW_RELATIVE_PATH, "");
+  const completeRowReviewManifest = {
+    comparisonManifest: artifact(PHB_FULL_DB_COMPARISON_MANIFEST_RELATIVE_PATH),
+    output: artifact(PHB_FULL_ROW_REVIEW_RELATIVE_PATH),
+    evidence: rowReviewManifest.evidence,
+  };
+  write(
+    PHB_FULL_ROW_REVIEW_MANIFEST_RELATIVE_PATH,
+    JSON.stringify(completeRowReviewManifest),
+  );
+  verifyFullRowReviewArtifacts(dataRoot);
+  write(PHB_FULL_ROW_REVIEW_RELATIVE_PATH, "changed\n");
+  assert.throws(
+    () => verifyFullRowReviewArtifacts(dataRoot),
+    /row review manifest -> rows/u,
   );
 
   assertEmptyJsonl(

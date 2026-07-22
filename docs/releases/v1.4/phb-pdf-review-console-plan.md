@@ -7,9 +7,9 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: in progress. Data-tools review service and localhost API/workspace shell
-are implemented on `codex/data-phb-review-console` pending main-gate acceptance;
-the bounded React consumer and Gate 2 review handoff remain.
+Status: in progress. Slices 1-2, the data-tools review service and localhost
+API/workspace shell, are implemented and main-gate accepted. The bounded React
+consumer and Gate 2 review handoff in Slices 3-4 remain.
 
 ## Purpose
 
