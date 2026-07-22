@@ -8,10 +8,11 @@
 > boundaries, or cross-plan conflicts change.
 
 Status: in progress; Gate 0 and the complete Gate 1 representative pilot are
-accepted. Slice 4 full-PHB extraction and English comparison are implemented.
-Gate 2 now proceeds through a pinned official SRD 3.5 adjudication pass before
-main-gate exception review; all downstream translation/activation gates remain
-blocked.
+accepted. The first Slice 4 PDF.js run is a provisional inventory, not an
+accepted full extraction. Gate 2 is blocked on a full MinerU structured run,
+block-bounded PDF.js text-fidelity projection and verification, regenerated
+comparison evidence, and the pinned official SRD 3.5 adjudication pass; all
+downstream translation/activation gates remain blocked.
 
 ## Purpose
 
@@ -68,6 +69,12 @@ correction layer before any translation begins.
 - The existing IMarvin SRD short-description index is incomplete and may be
   used as discovery input only. It cannot satisfy the SRD source lock or
   mechanics adjudication contract.
+- Extraction engines are evidence producers, not source authority. MinerU is
+  the primary structured extractor for reading order, fields, body blocks, and
+  tables. PDF.js is an independently derived exact-character and coordinate
+  baseline: its text items may be projected only inside MinerU-defined blocks
+  to avoid OCR/glyph drift, but it must not define reading order, field/table
+  boundaries, or silently resolve a MinerU/source-layout conflict.
 - The official
   [Wizards 3rd/3.5-edition support page](https://dnd-support.wizards.com/hc/en-us/articles/360000962623-Dungeons-Dragons-3rd-3-5-and-4th-Edition-Rules-Questions)
   links the collected updates and errata package. Implementation must pin the
@@ -119,6 +126,9 @@ downstream acceptance artifacts.
 
 ### Slice 2: Structured Extraction
 
+- Run the pinned MinerU configuration over every in-scope source page and
+  preserve its ordered blocks, table structure, source-page mapping, and
+  runtime provenance as the primary structured extraction.
 - Extract spell headings, stat-block fields, body text, and description page
   provenance from the PHB spell chapter.
 - Extract each class spell-list short-description occurrence with list owner,
@@ -129,6 +139,11 @@ downstream acceptance artifacts.
 - Emit explicit parser issues for page/column boundaries, headings, field
   continuation, footnotes, tables, cross-references, and uncertain spell
   segmentation.
+- Derive a separate PDF.js text-layer and coordinate baseline for the same page
+  set. Project exact text into MinerU-defined block boundaries by deterministic
+  coordinates, and use the raw MinerU text for recall/drift comparison. Emit an
+  issue when projection cannot preserve a block unambiguously; never replace
+  MinerU reading order or table structure with a PDF.js-only parse.
 
 Validation: schema tests plus redacted/minimal fixtures that cover every
 supported layout failure mode.
@@ -149,6 +164,14 @@ drops, and reviewed outcomes for every pilot row.
 
 ### Slice 4: Full English Comparison And Decisions
 
+- Require the full in-scope MinerU output and its imported page/block manifest
+  before entity extraction. The earlier PDF.js-only full run may seed count and
+  identity expectations, but none of its row decisions can close Gate 2.
+- Compare MinerU structured output against the independent PDF.js baseline and
+  emit explicit block/page issues for unexplained recall or layout differences.
+  PDF.js text projection must remain inside MinerU block boundaries. Do not
+  synthesize effective text or structure by choosing whichever engine happens
+  to match the current DB.
 - Determine the PHB spell set independently from both extracted descriptions
   and current DB PHB appearances, then reconcile the sets.
 - Compare effective PDF+errata source with current DB spell names, fields,
@@ -180,11 +203,13 @@ drops, and reviewed outcomes for every pilot row.
   clerical reviewer for every substantive/manual comparison row.
 - Preserve every terminal decision and residual exception in the data repo.
 
-Validation: PHB, SRD, and DB set totals balance under explicit alias/absence
-accounting; category and adjudication totals balance; changing any SRD source
-byte, parsed row, alias, or three-way evidence resets the affected decision;
-there are zero unexplained misses/extras and no unresolved exception remains at
-handoff.
+Validation: the MinerU input/output/runtime chain and PDF.js baseline are both
+current; every engine difference is deterministic or explicitly reviewed; PHB,
+SRD, and DB set totals balance under explicit alias/absence accounting;
+category and adjudication totals balance; changing either extraction evidence,
+any SRD source byte, parsed row, alias, or three-way evidence resets the
+affected decision; there are zero unexplained misses/extras and no unresolved
+exception remains at handoff.
 
 ### Slice 5: English Acceptance Handoff
 
@@ -209,6 +234,8 @@ equivalent to:
 npm run -w data-tools phb:source:verify
 npm run -w data-tools phb:source:extract -- --pilot
 npm run -w data-tools phb:source:compare -- --pilot
+npm run -w data-tools phb:source:extract -- --full --prepare-only
+npm run -w data-tools phb:source:extract -- --full --mineru-output <data-relative-output>
 npm run -w data-tools phb:source:extract
 npm run -w data-tools phb:source:compare
 npm run -w data-tools phb:srd:verify
@@ -224,8 +251,13 @@ script manifest, tests, and this plan are updated together.
 
 - The PHB, errata, and complete SRD spell artifacts are pinned and
   hash-verified.
-- Every in-scope description, field, page, and short-description occurrence is
-  extracted or has an explicit terminal issue decision.
+- Every in-scope description, field, page, table, and short-description
+  occurrence is extracted from the pinned full MinerU run or has an explicit
+  terminal issue decision backed by source-page evidence.
+- The independent PDF.js baseline has complete page accounting and zero
+  unexplained recall/layout issue. Any accepted text projection is bound to a
+  MinerU block; PDF.js never defines spell segmentation, reading order, or
+  table structure.
 - Every relevant errata row has an explained disposition and provenance.
 - The pilot covers the approved difficult cases before the full run.
 - Every extracted/current PHB spell enters exactly one balanced comparison
@@ -303,12 +335,14 @@ archive host is the publisher.
   decision, and the default `npm run -w data-tools phb:pilot:verify` passes
   against its clean committed hash chain. This authorizes full-PHB extraction
   only; full English acceptance, translation, and DB activation remain gated.
-- The first full run deterministically extracts 126 selected pages, 605 spell
-  descriptions, 1,216 printed class/domain rows, 1,235 expanded occurrences,
+- The first PDF.js-only full run deterministically inventories 126 selected
+  pages, 605 spell descriptions, 1,216 printed class/domain rows, 1,235
+  expanded occurrences,
   605 independent list names, and ten list-footnote definitions with zero
   parser or set-reconciliation issues. Seven detached named tables and six
   illustration-caption runs are explicit source-layout gates rather than
-  silent parser exceptions.
+  silent parser exceptions. These counts are regression expectations for the
+  full MinerU run, not accepted Gate 2 extraction evidence.
 - Full source and DB sets balance at 605/605 with zero misses or extras. After
   review hardening, the current comparison has 65 exact, 297 formatting-only,
   163 substantive, and 80 manual rows. Exact and formatting-only evidence gives
@@ -333,3 +367,8 @@ archive host is the publisher.
   issues, errata output, pilot summon evidence, comparison inputs, and every
   row-review evidence artifact. Data-repo commit `f26626c` records the hardened
   artifacts and resets all affected decisions against their new fingerprints.
+- Architecture review found that the first full run promoted the PDF.js text
+  layer from independent baseline to primary parser and did not consume MinerU
+  blocks at all. Gate 2 is reopened at the full-extraction boundary. The 605-row
+  comparison, its 243-row queue, and subsequent SRD terminal candidates remain
+  provisional until a full MinerU run regenerates their evidence fingerprints.
