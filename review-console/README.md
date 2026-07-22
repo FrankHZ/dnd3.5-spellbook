@@ -1,0 +1,33 @@
+# PHB Review Console
+
+Private localhost-only shell for the PHB Gate 2 review service. It is not part
+of the public web app or production server.
+
+From this directory, run `npm run dev` for the Vite-backed local shell, or run
+`npm run build` followed by `npm run start` for a production-like local smoke.
+Set `PHB_REVIEW_PORT` to a numeric port when the default `4174` is unavailable.
+The launcher always binds the literal `127.0.0.1` address.
+
+The Node API imports only `data-tools/phb-review`. The data-tools build runs
+before launch, typecheck, and tests so its public Node package entry exists in
+a clean workspace. Source PDFs are selected only through verified source ids;
+the API never accepts or returns a filesystem path.
+
+All API requests require the per-process `x-phb-review-token`; mutating calls
+also require an exact same-origin `Origin` header. The API emits no CORS
+headers. The launcher injects the token into a `phb-review-token` HTML meta tag
+at runtime for the same-origin Slice 3 client. It is never written to the built
+files, a URL, or console output.
+
+Validate with:
+
+```text
+npm run typecheck
+npm run test
+npm run build
+```
+
+With the nested data repo and pinned PHB source available, run the read-only
+real-data API/PDF acceptance smoke with `npm run smoke:local`. It starts an
+ephemeral loopback server, checks both current queues and one detail from each,
+verifies a PDF byte range, and closes without submitting a decision.

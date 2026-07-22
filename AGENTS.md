@@ -13,6 +13,7 @@ belongs in `docs/roadmap.md`.
 - `contracts/`: shared TypeScript DTOs used by both `server` and `web`.
 - `data-tools/`: parser, import, inspection, rules patch, short-description,
   and data harness tooling.
+- `review-console/`: private localhost PHB evidence-review API and React shell.
 - `docs/`: durable project docs, operational docs, and MVP history.
 - `data/`: ignored nested local data repo for source inputs, maintained patch
   data, normalized import JSONL, and review decisions.
@@ -116,6 +117,7 @@ For workspace command references, use:
 - `web/README.md`
 - `contracts/README.md`
 - `data-tools/README.md`
+- `review-console/README.md`
 
 Version folders under `docs/mvp/` are stage records and active plan spaces. A
 `FREEZE.md` records a shipped stage; it is not automatically the baseline for
@@ -388,7 +390,10 @@ manual browser smoke test of the affected pages.
   app-state Prisma schemas; regenerate clients when schemas change.
 - Data-tool code belongs under the owning `data-tools/src/` module:
   `shared/`, `db/`, `rules/`, `rules-content/`, `rulebooks/`,
-  `short-desc/`, `phb/`, `zh-parser/`, or `harness/`.
+  `short-desc/`, `phb/`, `phb-review/`, `zh-parser/`, or `harness/`.
+- The private review console imports Node review behavior only from
+  `data-tools/phb-review`; browser files may use its types but must not import
+  the runtime or deep paths under `data-tools/src/`.
 - Classify every `data-tools/package.json` script in
   `data-tools/scripts.manifest.json`.
 - Maintained data-tool commands deserve focused helper tests. One-time or

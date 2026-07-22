@@ -16,6 +16,8 @@ The repository currently has:
 - runtime import smoke for the built `@dnd/contracts` package
 - runtime import smoke for the built server app and Prisma clients
 - data-tooling TypeScript checks in `data-tools`
+- built runtime resolution for `data-tools/phb-review`
+- private review-console service/API tests, typecheck, and Vite build
 - backend API tests with Vitest and Supertest
 - frontend type generation and TypeScript checks
 - current feature behavior described by `docs/features.md`
@@ -51,6 +53,11 @@ npm run build:contracts
 npm run check:contracts
 npm run typecheck:data-tools
 npm run test:data-tools
+npm run build:data-tools
+npm run check:data-tools-review
+npm run typecheck:review-console
+npm run test:review-console
+npm run build:review-console
 npm run test:server
 npm run test:web
 npm run typecheck:web
@@ -167,10 +174,32 @@ It is fixture-only and covers pure helpers for source-label mapping, English
 name normalization, normalized summary row validation, and structured spell
 patch JSONL/schema validation. It also covers PHB source/pilot/errata manifest
 validation, deterministic PDF construction, MinerU block-order and bounded
-PDF.js projection behavior, table evidence, and source-free comparison helpers.
+PDF.js projection behavior, table evidence, source-free comparison helpers,
+and the two-queue review service's stale fingerprints, target validation,
+serialized atomic writes, preserved row order, and no-write failures.
 Root `npm run test:data-tools` delegates to this
 command. It must remain independent of ignored CHM/raw source data, the nested
 `data/` repo, and SQLite databases.
+
+The private review-console portable gate builds the public data-tools package
+entry, proves that `data-tools/phb-review` resolves from a clean workspace,
+rejects deep `data-tools/src/**` and browser runtime imports, and exercises the
+loopback API with a fake service/PDF:
+
+```bash
+npm run typecheck:review-console
+npm run test:review-console
+npm run build:review-console
+```
+
+It covers Host/Origin/token rejection before writes, stale decision/queue
+responses, allowlisted queue/item/source ids, path non-disclosure, and PDF byte
+ranges. Real source bytes and nested-data decisions remain outside portable CI.
+Use the explicit read-only local acceptance smoke when they are present:
+
+```bash
+npm run -w phb-review-console smoke:local
+```
 
 The v1.4 PHB source gate is an explicit local-data harness:
 

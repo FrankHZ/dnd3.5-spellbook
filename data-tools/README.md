@@ -20,6 +20,8 @@ serving requests.
   import, coverage, and reuse workflows for short descriptions.
 - `phb/`: PHB 3.5 source locking, PDF.js text baselines, pilot preparation,
   MinerU layout import, and errata inventory validation.
+- `phb-review/`: public Node-only review service and DTO boundary for the
+  localhost PHB review console.
 - `zh-parser/`: Chinese CHM parser, parser helpers, and parser-local scripts.
 - `harness/`: portable tests and explicit local acceptance bundles.
 
@@ -162,6 +164,35 @@ The SRD commands verify and parse the pinned official 3.5 corpus, generate a
 three-way PHB+errata/SRD/DB adjudication queue, and apply only committed,
 fingerprint-current terminal candidates to row review. Residual exceptions
 remain explicit main-gate work.
+
+The maintained `data-tools/phb-review` package subpath exposes exactly two
+review queues to the private localhost console:
+
+- `mineru-layout`: current candidate/page evidence for all layout statuses;
+- `english-residual`: current SRD exception rows joined to comparison,
+  row-review, PHB, errata, table, and list evidence.
+
+The service rebuilds candidates before every write, checks both evidence and
+review-state fingerprints, including current SRD adjudication evidence for
+English residuals, validates the complete queue, serializes writes in the
+process, and atomically replaces only the selected nested-data JSONL. Queue
+summaries and decision responses derive `canonicalRerunRequired` from current
+manifests, so reloads and no-op submissions retain pending rerun state. A layout
+save invalidates the English chain and requires a rerun beginning at
+`phb:source:extract`. English residual decisions may be completed as one batch;
+after the final save, rerun `phb:source:compare` to refresh the stale row-review
+manifest before `phb:source:report`.
+
+The package is built before the review-console runtime resolves it:
+
+```bash
+npm run build:data-tools
+npm run check:data-tools-review
+npm run -w phb-review-console smoke:local
+```
+
+The local smoke is read-only and checks the real queues, joined detail, runtime
+token handoff, and verified PDF byte-range route without submitting a decision.
 
 Inspect the local rules DB:
 

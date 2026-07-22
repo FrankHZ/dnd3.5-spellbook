@@ -250,7 +250,7 @@ export function runFullComparison() {
     categories: categoryCounts(comparisons),
   });
 
-  const evidenceRowIdsByCase = buildEvidenceRowIds(
+  const evidenceRowIdsByCase = buildFullEvidenceRowIds(
     comparisons,
     spells,
     listOccurrences,
@@ -465,7 +465,7 @@ export function writeProposedFullEnglishReview() {
   const overlays = readJsonl<ArrayElementWithIds>(
     resolveInside(dataRoot, PHB_FULL_ERRATA_OVERLAYS_RELATIVE_PATH),
   );
-  const evidenceRowIdsByCase = buildEvidenceRowIds(
+  const evidenceRowIdsByCase = buildFullEvidenceRowIds(
     comparisons,
     spells,
     occurrences,
@@ -716,6 +716,28 @@ export function verifyFullErrataChain(dataRoot: string) {
 }
 
 export function verifyFullMineruLayoutReviewChain(dataRoot: string) {
+  verifyFullMineruLayoutReviewArtifacts(dataRoot);
+  const reviews = readJsonl<FullMineruLayoutReview>(
+    resolveInside(dataRoot, PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH),
+  );
+  const invalidStatuses = reviews.filter(
+    (review) =>
+      !new Set(["proposed", "accepted", "rejected"]).has(review.status),
+  );
+  if (invalidStatuses.length > 0) {
+    throw new Error(
+      `PHB full MinerU layout review has ${invalidStatuses.length} invalid status values`,
+    );
+  }
+  const proposed = reviews.filter((review) => review.status === "proposed");
+  if (proposed.length > 0) {
+    throw new Error(
+      `PHB full MinerU layout review has ${proposed.length} proposed rows`,
+    );
+  }
+}
+
+export function verifyFullMineruLayoutReviewArtifacts(dataRoot: string) {
   const manifestPath = resolveInside(
     dataRoot,
     PHB_FULL_LAYOUT_REVIEW_MANIFEST_RELATIVE_PATH,
@@ -736,24 +758,31 @@ export function verifyFullMineruLayoutReviewChain(dataRoot: string) {
       `MinerU layout review -> ${label}`,
     );
   }
-  const reviews = readJsonl<FullMineruLayoutReview>(
-    resolveInside(dataRoot, PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH),
+}
+
+export function verifyFullRowReviewArtifacts(dataRoot: string) {
+  const comparisonManifestPath = resolveInside(
+    dataRoot,
+    PHB_FULL_DB_COMPARISON_MANIFEST_RELATIVE_PATH,
   );
-  const invalidStatuses = reviews.filter(
-    (review) =>
-      !new Set(["proposed", "accepted", "rejected"]).has(review.status),
+  const rowReviewPath = resolveInside(
+    dataRoot,
+    PHB_FULL_ROW_REVIEW_RELATIVE_PATH,
   );
-  if (invalidStatuses.length > 0) {
-    throw new Error(
-      `PHB full MinerU layout review has ${invalidStatuses.length} invalid status values`,
-    );
-  }
-  const proposed = reviews.filter((review) => review.status === "proposed");
-  if (proposed.length > 0) {
-    throw new Error(
-      `PHB full MinerU layout review has ${proposed.length} proposed rows`,
-    );
-  }
+  const rowReviewManifest = readObject(
+    resolveInside(dataRoot, PHB_FULL_ROW_REVIEW_MANIFEST_RELATIVE_PATH),
+  );
+  expectArtifact(
+    rowReviewManifest.comparisonManifest,
+    comparisonManifestPath,
+    "row review -> comparison",
+  );
+  expectArtifact(
+    rowReviewManifest.output,
+    rowReviewPath,
+    "row review manifest -> rows",
+  );
+  verifyRowReviewEvidenceArtifacts(dataRoot, rowReviewManifest);
 }
 
 export function verifyFullComparisonArtifacts(
@@ -887,7 +916,7 @@ function readAcceptedPilotSummonTable(dataRoot: string) {
   return matches[0]!;
 }
 
-function buildEvidenceRowIds(
+export function buildFullEvidenceRowIds(
   comparisons: FullDbComparisonRow[],
   spells: FullSpellEntity[],
   occurrences: FullListOccurrence[],

@@ -254,6 +254,14 @@ export function applySrdTerminalCandidates(dataRoot: string) {
   };
 }
 
+export function verifySrdAdjudicationArtifacts(dataRoot: string) {
+  const manifestPath = resolveInside(
+    dataRoot,
+    PHB_SRD_ADJUDICATION_MANIFEST_RELATIVE_PATH,
+  );
+  verifyAdjudicationManifest(dataRoot, manifestPath);
+}
+
 export function isSrdAdjudicationInput(review: FullRowReview) {
   return (
     review.status === "proposed" ||
