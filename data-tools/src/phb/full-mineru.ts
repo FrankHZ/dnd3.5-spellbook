@@ -136,6 +136,19 @@ export type FullMineruOutsideBboxReview = FullMineruLayoutReviewBase & {
   }>;
 };
 
+export type FullMineruImageAdjacentReview = FullMineruLayoutReviewBase & {
+  kind: "image-adjacent-exclusion";
+  candidateAlgorithmVersion: "mineru-image-adjacent-v1";
+  pdfItem: FullMineruOutsideBboxReview["pdfItem"];
+  eligibleImageBlocks: Array<{
+    blockIndex: number;
+    blockBbox: [number, number, number, number];
+    assetPath: string | null;
+    captions: string[];
+    distance: { horizontal: number; vertical: number };
+  }>;
+};
+
 export type FullMineruOrderReview = FullMineruLayoutReviewBase & {
   kind: "content-order-conflict";
   candidateAlgorithmVersion: "mineru-header-order-conflict-v1";
@@ -151,7 +164,9 @@ export type FullMineruOrderReview = FullMineruLayoutReviewBase & {
 };
 
 export type FullMineruLayoutReview =
-  FullMineruOutsideBboxReview | FullMineruOrderReview;
+  | FullMineruOutsideBboxReview
+  | FullMineruImageAdjacentReview
+  | FullMineruOrderReview;
 
 type FullMineruInputManifest = {
   schemaVersion: 1;
@@ -498,14 +513,13 @@ export function reconstructMineruReadingLines(
     if (excludedBlocks.some((block) => pointInside(point, block.bbox, 0))) {
       return;
     }
-    if (
-      excludedBlocks
-        .filter((block) => block.type === "image")
-        .some((block) => {
-          const distance = bboxDistance(point, block.bbox);
-          return distance.horizontal <= 30 && distance.vertical <= 100;
-        })
-    ) {
+    const acceptedImageExclusion = pageReviews.find(
+      (review): review is FullMineruImageAdjacentReview =>
+        review.kind === "image-adjacent-exclusion" &&
+        review.status === "accepted" &&
+        review.pdfItem.itemIndex === index,
+    );
+    if (acceptedImageExclusion) {
       return;
     }
     const accepted = pageReviews.find(
@@ -571,25 +585,35 @@ export function reconstructMineruReadingLines(
       blockIndex:
         review.kind === "content-order-conflict"
           ? review.blockIndex
-          : review.targetBlockIndex,
+          : review.kind === "outside-bbox-projection"
+            ? review.targetBlockIndex
+            : (review.eligibleImageBlocks[0]?.blockIndex ?? -1),
       blockType:
         review.kind === "content-order-conflict"
           ? review.blockType
-          : (review.eligibleBlocks.find(
-              (block) => block.blockIndex === review.targetBlockIndex,
-            )?.blockType ?? "unknown"),
+          : review.kind === "outside-bbox-projection"
+            ? (review.eligibleBlocks.find(
+                (block) => block.blockIndex === review.targetBlockIndex,
+              )?.blockType ?? "unknown")
+            : "image",
       message:
         review.kind === "content-order-conflict"
           ? `MinerU content-order conflict remains proposed before block ${review.anchorBlockIndex}`
-          : `PDF.js item ${review.pdfItem.itemIndex} remains outside the accepted MinerU block boundary`,
+          : review.kind === "outside-bbox-projection"
+            ? `PDF.js item ${review.pdfItem.itemIndex} remains outside the accepted MinerU block boundary`
+            : `PDF.js item ${review.pdfItem.itemIndex} remains adjacent to an image without an accepted exclusion`,
     });
   }
   if (unassigned.length > 0) {
     const reviewedIndexes = new Set(
       pageReviews
         .filter(
-          (review): review is FullMineruOutsideBboxReview =>
-            review.kind === "outside-bbox-projection",
+          (
+            review,
+          ): review is
+            FullMineruOutsideBboxReview | FullMineruImageAdjacentReview =>
+            review.kind === "outside-bbox-projection" ||
+            review.kind === "image-adjacent-exclusion",
         )
         .map((review) => review.pdfItem.itemIndex),
     );
@@ -621,6 +645,7 @@ export function buildFullMineruLayoutReviewCandidates(
   pages: FullMineruPageRow[],
 ): FullMineruLayoutReview[] {
   return pages.flatMap((page) => [
+    ...imageAdjacentCandidates(page),
     ...outsideBboxCandidates(page),
     ...contentOrderCandidates(page),
   ]);
@@ -680,6 +705,9 @@ export function validateFullMineruLayoutReviews(
     ) {
       errors.push(`${prefix}.evidenceFingerprintSha256 is stale`);
     }
+    if (!new Set(["proposed", "accepted", "rejected"]).has(review.status)) {
+      errors.push(`${prefix}.status is invalid`);
+    }
     if (
       review.status !== "proposed" &&
       (!review.reviewer || !review.decisionNote)
@@ -702,12 +730,21 @@ export function validateFullMineruLayoutReviews(
     ) {
       errors.push(`${prefix}.targetBlockIndex is not an eligible block`);
     }
-    if (review.kind === "outside-bbox-projection") {
+    if (
+      review.kind === "outside-bbox-projection" ||
+      review.kind === "image-adjacent-exclusion"
+    ) {
       const itemKey = `${review.sourceId}:${review.sourcePageIndex}:${review.pdfItem.itemIndex}`;
       if (seenItems.has(itemKey)) {
         errors.push(`${prefix}.pdfItem is claimed by another review row`);
       }
       seenItems.add(itemKey);
+    }
+    if (
+      review.kind === "image-adjacent-exclusion" &&
+      review.eligibleImageBlocks.length === 0
+    ) {
+      errors.push(`${prefix}.eligibleImageBlocks must not be empty`);
     }
     if (
       review.kind === "content-order-conflict" &&
@@ -835,6 +872,59 @@ function orderedContentBlocks(
   return ordered;
 }
 
+function imageAdjacentCandidates(
+  page: FullMineruPageRow,
+): FullMineruImageAdjacentReview[] {
+  const positionedBlocks = page.mineru.blocks.filter(
+    (
+      block,
+    ): block is FullMineruBlock & {
+      bbox: [number, number, number, number];
+    } => block.bbox !== null,
+  );
+  return page.pdfjs.items.flatMap((item, itemIndex) => {
+    if (
+      item.text.trim().length === 0 ||
+      isKnownPageFurniture(page, item.text)
+    ) {
+      return [];
+    }
+    const point = normalizedItemCenter(page, item);
+    if (positionedBlocks.some((block) => pointInside(point, block.bbox, 0))) {
+      return [];
+    }
+    const eligibleImageBlocks = adjacentImageBlocks(page, point);
+    if (eligibleImageBlocks.length === 0) return [];
+    const pdfItem = layoutPdfItem(item, itemIndex, point);
+    const evidence = layoutEvidenceBase(page, {
+      kind: "image-adjacent-exclusion",
+      candidateAlgorithmVersion: "mineru-image-adjacent-v1",
+      pdfItem,
+      eligibleImageBlocks,
+    });
+    return [
+      {
+        schemaVersion: 1,
+        rowId: `mineru-layout:${safeId(page.sourceId)}:${page.sourcePageIndex}:image-adjacent:${itemIndex}`,
+        sourceId: page.sourceId,
+        sourceArtifactSha256: page.sourceArtifactSha256,
+        sourcePageIndex: page.sourcePageIndex,
+        printedPageNumber: page.printedPageNumber,
+        contentListSha256: page.mineru.contentListSha256,
+        textLayerSha256: page.pdfjs.textLayerSha256,
+        kind: "image-adjacent-exclusion" as const,
+        candidateAlgorithmVersion: "mineru-image-adjacent-v1" as const,
+        pdfItem,
+        eligibleImageBlocks,
+        evidenceFingerprintSha256: hashStableJson(evidence),
+        status: "proposed" as const,
+        reviewer: null,
+        decisionNote: null,
+      },
+    ];
+  });
+}
+
 function outsideBboxCandidates(
   page: FullMineruPageRow,
 ): FullMineruOutsideBboxReview[] {
@@ -866,27 +956,12 @@ function outsideBboxCandidates(
     ) {
       return [];
     }
-    if (
-      excludedBlocks
-        .filter((block) => block.type === "image")
-        .some((block) => {
-          const distance = bboxDistance(point, block.bbox);
-          return distance.horizontal <= 30 && distance.vertical <= 100;
-        })
-    ) {
+    if (adjacentImageBlocks(page, point).length > 0) {
       return [];
     }
     const eligibleBlocks = projectionBlockCandidates(point, contentBlocks);
     if (eligibleBlocks.length === 0) return [];
-    const pdfItem = {
-      itemIndex,
-      text: item.text,
-      x: item.x,
-      y: item.y,
-      width: item.width,
-      height: item.height,
-      normalizedCenter: point,
-    };
+    const pdfItem = layoutPdfItem(item, itemIndex, point);
     const targetBlockIndex = eligibleBlocks[0]!.blockIndex;
     const evidence = layoutEvidenceBase(page, {
       kind: "outside-bbox-projection",
@@ -1008,6 +1083,53 @@ function projectionBlockCandidates(
     );
 }
 
+function adjacentImageBlocks(
+  page: FullMineruPageRow,
+  point: { x: number; y: number },
+) {
+  return page.mineru.blocks
+    .filter(
+      (
+        block,
+      ): block is FullMineruBlock & {
+        bbox: [number, number, number, number];
+      } => block.type === "image" && block.bbox !== null,
+    )
+    .map((block) => ({
+      blockIndex: block.blockIndex,
+      blockBbox: block.bbox,
+      assetPath: block.assetPath,
+      captions: block.captions,
+      distance: bboxDistance(point, block.bbox),
+    }))
+    .filter(
+      (block) =>
+        block.distance.horizontal <= 30 && block.distance.vertical <= 100,
+    )
+    .sort(
+      (left, right) =>
+        left.distance.vertical - right.distance.vertical ||
+        left.distance.horizontal - right.distance.horizontal ||
+        left.blockIndex - right.blockIndex,
+    );
+}
+
+function layoutPdfItem(
+  item: PhbTextPageRow["pdfjs"]["items"][number],
+  itemIndex: number,
+  normalizedCenter: { x: number; y: number },
+) {
+  return {
+    itemIndex,
+    text: item.text,
+    x: item.x,
+    y: item.y,
+    width: item.width,
+    height: item.height,
+    normalizedCenter,
+  };
+}
+
 function layoutEvidenceBase(
   page: FullMineruPageRow,
   evidence: Record<string, unknown>,
@@ -1039,7 +1161,13 @@ export function fullMineruLayoutDecisionFingerprint(
     selectedTarget:
       review.kind === "outside-bbox-projection"
         ? { targetBlockIndex: review.targetBlockIndex }
-        : { anchorBlockIndex: review.anchorBlockIndex },
+        : review.kind === "content-order-conflict"
+          ? { anchorBlockIndex: review.anchorBlockIndex }
+          : {
+              excludedImageBlockIndexes: review.eligibleImageBlocks.map(
+                (block) => block.blockIndex,
+              ),
+            },
     status: review.status,
     reviewer: review.reviewer,
     decisionNote: review.decisionNote,

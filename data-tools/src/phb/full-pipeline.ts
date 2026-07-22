@@ -736,9 +736,19 @@ export function verifyFullMineruLayoutReviewChain(dataRoot: string) {
       `MinerU layout review -> ${label}`,
     );
   }
-  const proposed = readJsonl<FullMineruLayoutReview>(
+  const reviews = readJsonl<FullMineruLayoutReview>(
     resolveInside(dataRoot, PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH),
-  ).filter((review) => review.status === "proposed");
+  );
+  const invalidStatuses = reviews.filter(
+    (review) =>
+      !new Set(["proposed", "accepted", "rejected"]).has(review.status),
+  );
+  if (invalidStatuses.length > 0) {
+    throw new Error(
+      `PHB full MinerU layout review has ${invalidStatuses.length} invalid status values`,
+    );
+  }
+  const proposed = reviews.filter((review) => review.status === "proposed");
   if (proposed.length > 0) {
     throw new Error(
       `PHB full MinerU layout review has ${proposed.length} proposed rows`,

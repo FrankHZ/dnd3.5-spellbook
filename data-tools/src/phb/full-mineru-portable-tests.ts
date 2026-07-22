@@ -7,6 +7,7 @@ import {
   reconstructMineruReadingLines,
   validateFullMineruLayoutReviews,
   type FullMineruBlock,
+  type FullMineruLayoutReview,
   type FullMineruPageRow,
 } from "./full-mineru";
 import { compareTokenMultisets } from "./pilot-extraction";
@@ -87,12 +88,31 @@ assert.match(
 );
 
 const excludedImage = page(
-  [item("Illustration text", 40, 700)],
+  [item("Illustration text", 40, 720)],
   [block(0, "image", [50, 90, 400, 140], null)],
 );
 const excludedResult = reconstructMineruReadingLines(excludedImage);
 assert.equal(excludedResult.lines.length, 0);
-assert.equal(excludedResult.issues.length, 0);
+assert.equal(excludedResult.issues.length, 1);
+const excludedCandidates = buildFullMineruLayoutReviewCandidates([
+  excludedImage,
+]);
+assert.equal(excludedCandidates.length, 1);
+assert.equal(excludedCandidates[0]!.kind, "image-adjacent-exclusion");
+const acceptedExclusion = acceptCandidates([excludedImage]);
+assert.equal(
+  reconstructMineruReadingLines(excludedImage, acceptedExclusion).issues.length,
+  0,
+);
+
+const invalidStatus = acceptedExclusion.map((review) => ({
+  ...review,
+  status: "accpeted",
+})) as unknown as FullMineruLayoutReview[];
+assert.match(
+  validateFullMineruLayoutReviews([excludedImage], invalidStatus).join("\n"),
+  /status is invalid/u,
+);
 
 console.log("PHB full MinerU portable tests passed");
 

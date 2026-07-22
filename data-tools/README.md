@@ -67,8 +67,8 @@ counts and hashes.
 MinerU is the primary structured extractor for blocks, reading order, fields,
 lists, and tables. Every imported page also stores an independently derived
 PDF.js exact-character and coordinate baseline. Items inside strict MinerU
-bboxes may repair glyphs directly. An outside-bbox item or MinerU/source order
-conflict requires a current accepted row in
+bboxes may repair glyphs directly. An outside-bbox item, image-adjacent caption
+exclusion, or MinerU/source order conflict requires a current accepted row in
 `data/phb35/review/full-mineru-layout-review.jsonl`; each row fingerprints the
 PDF.js item, all eligible MinerU blocks, the selected block or anchor, and the
 source inputs. PDF.js never defines spell segmentation, reading order, or table structure. MinerU table
@@ -129,7 +129,8 @@ npm run -w data-tools phb:source:report
 The prepare command creates deterministic 126-page subset PDFs for the pinned
 MinerU runtime. Import preserves all ordered MinerU blocks and table HTML under
 `data/phb35/extracted/full/`, projects strict-inside PDF.js items, generates or
-refreshes explicit review rows for every outside-bbox item and order conflict,
+refreshes explicit review rows for every outside-bbox item, image-adjacent
+caption exclusion, and order conflict,
 and then runs entity extraction. The plain extract command only
 reparses the already imported MinerU page rows; it cannot fall back to a
 PDF.js-only full run. The extractor hard-fails unless the independently derived
@@ -139,9 +140,10 @@ reconciliation issue. The source-specific layout contract also pins 59 MinerU
 table blocks, seven detached named tables, and seven excluded description image
 blocks. Every table artifact and its page-linked spell references enter the
 row-review evidence chain. The accepted full corpus currently has 126 reviewed
-outside-bbox item projections and two reviewed order overrides; proposed or
-stale layout rows block extraction, and their manifest is recursively verified
-by the full report. Combined `Target` / `Effect` / `Area` labels remain
+outside-bbox item projections, three reviewed image-caption exclusions, and two
+reviewed order overrides. Proposed, stale, or invalid-status layout rows block
+extraction, and their manifest is recursively verified by the full report.
+Combined `Target` / `Effect` / `Area` labels remain
 distinct extraction fields instead of being flattened into `target`.
 
 Full comparison applies the committed errata inventory and operation hints,

@@ -229,7 +229,10 @@ tables, and seven excluded description image blocks. MinerU defines block order
 and table structure. Strict-inside PDF.js items may project directly; every
 outside-bbox item or source-order conflict must have a current accepted row in
 the full MinerU layout review, with the PDF.js item, eligible MinerU blocks,
-chosen target or anchor, source hashes, and decision fingerprint. The plain extraction command reparses imported rows
+chosen target or anchor, source hashes, and decision fingerprint. Text near an
+image requires a reviewed caption-exclusion row instead of a distance-only
+drop. Status is a closed `proposed` / `accepted` / `rejected` enum; extraction
+and recursive verification both reject unknown values. The plain extraction command reparses imported rows
 and cannot silently fall back to PDF.js-only extraction. Comparison must balance
 605 source and 605 PHB DB rows with zero source-only or DB-only names and records
 current rules/content DB hashes. Table artifacts are fingerprinted in both the

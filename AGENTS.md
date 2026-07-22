@@ -307,7 +307,10 @@ named tables, and seven excluded description image blocks. MinerU owns block
 order, spell segmentation, and table structure. PDF.js exact-character items
 inside strict MinerU bboxes may project directly; every outside-bbox item and
 MinerU/source order conflict requires a current, fingerprint-bound accepted
-layout decision targeting an enumerated MinerU block or anchor. Full comparison may auto-accept
+layout decision targeting an enumerated MinerU block or anchor. Image-adjacent
+caption exclusions are explicit layout decisions, never distance-only drops.
+Only `proposed`, `accepted`, and `rejected` are valid review statuses; unknown
+values must fail extraction and recursive verification. Full comparison may auto-accept
 only exact and formatting-only
 rows after preserving combined target/effect/area labels and table layout
 boundaries; token-multiset equality is not formatting evidence. Unparsed shared

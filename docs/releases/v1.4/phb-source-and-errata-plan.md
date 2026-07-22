@@ -76,6 +76,8 @@ correction layer before any translation begins.
   outside-bbox item or MinerU/source order conflict requires a current,
   fingerprint-bound accepted decision over enumerated MinerU blocks. PDF.js
   must not define spell segmentation or silently resolve a layout conflict.
+  Image-adjacent text requires an explicit caption-exclusion decision rather
+  than a proximity-only drop.
 - The official
   [Wizards 3rd/3.5-edition support page](https://dnd-support.wizards.com/hc/en-us/articles/360000962623-Dungeons-Dragons-3rd-3-5-and-4th-Edition-Rules-Questions)
   links the collected updates and errata package. Implementation must pin the
@@ -397,7 +399,11 @@ archive host is the publisher.
   eligible MinerU blocks, and selected block or anchor; proposed or stale rows
   block extraction, and the layout-review manifest is recursively re-hashed by
   comparison and report verification.
-- Data-repo commits `95c9ecd` through `4f59217` record the reviewed layout
+- A second follow-up records three explicit illustration-caption exclusions
+  that were formerly suppressed only by image distance. Layout status is now a
+  closed runtime enum, and both generation and recursive report verification
+  reject unknown values rather than treating them as terminal.
+- Data-repo commits `95c9ecd` through `58d1b59` record the reviewed layout
   evidence, correct three initially mis-grouped list runs, regenerate the
   605-row comparison without semantic drift, and restore 168 SRD-backed
   terminal decisions with 75 residual exceptions.

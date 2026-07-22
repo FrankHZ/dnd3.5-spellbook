@@ -830,9 +830,16 @@ function writeFullMineruLayoutReview(
   const order = reviews.filter(
     (review) => review.kind === "content-order-conflict",
   );
-  if (outside.length !== 126 || order.length !== 2) {
+  const imageAdjacent = reviews.filter(
+    (review) => review.kind === "image-adjacent-exclusion",
+  );
+  if (
+    outside.length !== 126 ||
+    imageAdjacent.length !== 3 ||
+    order.length !== 2
+  ) {
     throw new Error(
-      `PHB full MinerU layout candidate counts changed: outside=${outside.length} order=${order.length}`,
+      `PHB full MinerU layout candidate counts changed: outside=${outside.length} imageAdjacent=${imageAdjacent.length} order=${order.length}`,
     );
   }
   writeJsonl(reviewPath, reviews);
@@ -851,6 +858,7 @@ function writeFullMineruLayoutReview(
     counts: {
       rows: reviews.length,
       outsideBboxProjection: outside.length,
+      imageAdjacentExclusion: imageAdjacent.length,
       contentOrderConflict: order.length,
       accepted: reviews.filter((review) => review.status === "accepted").length,
       proposed: reviews.filter((review) => review.status === "proposed").length,

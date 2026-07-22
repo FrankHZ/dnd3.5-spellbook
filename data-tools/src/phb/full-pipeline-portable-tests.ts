@@ -69,6 +69,22 @@ try {
     /layout review -> review rows/u,
   );
   write(PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH, "");
+  write(PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH, '{"status":"accpeted"}\n');
+  layoutManifest.output = artifact(PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH);
+  write(
+    PHB_FULL_LAYOUT_REVIEW_MANIFEST_RELATIVE_PATH,
+    JSON.stringify(layoutManifest),
+  );
+  assert.throws(
+    () => verifyFullMineruLayoutReviewChain(dataRoot),
+    /invalid status values/u,
+  );
+  write(PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH, "");
+  layoutManifest.output = artifact(PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH);
+  write(
+    PHB_FULL_LAYOUT_REVIEW_MANIFEST_RELATIVE_PATH,
+    JSON.stringify(layoutManifest),
+  );
 
   const errataManifest = {
     entitiesManifest: artifact(PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH),
