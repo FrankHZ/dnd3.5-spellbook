@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -19,9 +20,11 @@ import {
   PHB_FULL_LIST_ISSUES_RELATIVE_PATH,
   PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH,
   PHB_FULL_LIST_ROWS_RELATIVE_PATH,
+  PHB_FULL_MINERU_TABLES_RELATIVE_PATH,
   PHB_FULL_PAGES_RELATIVE_PATH,
   type FullPageRow,
   type FullDetachedTableEvidence,
+  type FullMineruTableEvidence,
   type FullSpellEntity,
 } from "./full-extraction";
 import {
@@ -30,6 +33,12 @@ import {
 } from "./full-errata-hints";
 import type { FullListOccurrence } from "./full-lists";
 import { readPhbFullExtractionManifest } from "./full-manifest";
+import {
+  PHB_FULL_LAYOUT_REVIEW_MANIFEST_RELATIVE_PATH,
+  PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH,
+  PHB_FULL_MINERU_INPUT_MANIFEST_RELATIVE_PATH,
+  type FullMineruLayoutReview,
+} from "./full-mineru";
 import {
   buildProposedFullRowReviews,
   mergeFullRowReviews,
@@ -43,6 +52,7 @@ import {
   type PilotSummonTableEntity,
 } from "./pilot-entities";
 import { buildPilotErrataOverlays } from "./pilot-errata";
+import { PHB_MINERU_RUNTIME_RELATIVE_PATH } from "./pilot-extraction";
 import {
   currentComparisonDatabaseIdentities,
   PHB_COMPARISON_CATEGORIES,
@@ -68,6 +78,10 @@ export const PHB_FULL_ROW_REVIEW_MANIFEST_RELATIVE_PATH =
 export const PHB_FULL_ENGLISH_REVIEW_RELATIVE_PATH =
   "phb35/review/full-english-review.json";
 
+const SRD_ADJUDICATION_RELATIVE_PATH = "phb35/review/srd-adjudication.jsonl";
+const SRD_ADJUDICATION_MANIFEST_RELATIVE_PATH =
+  "phb35/review/srd-adjudication-manifest.json";
+
 const PILOT_ENTITIES = "phb35/extracted/pilot/entities.jsonl";
 const ERRATA_INVENTORY = "phb35/review/errata-inventory.jsonl";
 
@@ -85,6 +99,12 @@ export function runFullComparison() {
   );
   const detachedTables = readJsonl<FullDetachedTableEvidence>(
     resolveInside(dataRoot, PHB_FULL_DETACHED_TABLES_RELATIVE_PATH),
+  );
+  const mineruTables = readJsonl<FullMineruTableEvidence>(
+    resolveInside(dataRoot, PHB_FULL_MINERU_TABLES_RELATIVE_PATH),
+  );
+  const layoutReviews = readJsonl<FullMineruLayoutReview>(
+    resolveInside(dataRoot, PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH),
   );
   const { filePath: inventoryPath, rows: inventory } =
     readPhbErrataInventory(dataRoot);
@@ -149,17 +169,16 @@ export function runFullComparison() {
 
   const dbSpells = readCurrentPhbDbSpells();
   const summonTable = readAcceptedPilotSummonTable(dataRoot);
-  const comparisonOccurrences = listOccurrences.map(
-    (row): PilotClassListOccurrenceForComparison => ({
-      caseId: row.occurrenceId,
-      printedName: row.printedName,
-      owner: row.owner,
-      level: row.level,
-      sourcePage: row.sourceStart.printedPageNumber,
-      summaryText: row.summaryText,
-      wordingGroupKey: normalizeWordingGroup(row.summaryText),
-    }),
-  );
+  const comparisonOccurrences = listOccurrences.map((row) => ({
+    caseId: row.occurrenceId,
+    printedName: row.printedName,
+    owner: row.owner,
+    level: row.level,
+    sourcePage: row.sourceStart.printedPageNumber,
+    summaryText: row.summaryText,
+    wordingGroupKey: normalizeWordingGroup(row.summaryText),
+    mineruLayoutEvidence: row.mineruLayoutEvidence,
+  }));
   const comparisons = compareFullCorpus({
     spells,
     overlays: overlayRows,
@@ -188,6 +207,8 @@ export function runFullComparison() {
   const sourceEvidenceErrors = validateFullComparisonSourceEvidence(
     comparisons,
     detachedTables,
+    mineruTables,
+    layoutReviews,
   );
   if (sourceEvidenceErrors.length > 0) {
     throw new Error(
@@ -292,6 +313,14 @@ export function runFullComparison() {
         PHB_FULL_DETACHED_TABLES_RELATIVE_PATH,
         resolveInside(dataRoot, PHB_FULL_DETACHED_TABLES_RELATIVE_PATH),
       ),
+      mineruTables: artifact(
+        PHB_FULL_MINERU_TABLES_RELATIVE_PATH,
+        resolveInside(dataRoot, PHB_FULL_MINERU_TABLES_RELATIVE_PATH),
+      ),
+      mineruLayoutReview: artifact(
+        PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH,
+        resolveInside(dataRoot, PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH),
+      ),
     },
     output: artifact(PHB_FULL_ROW_REVIEW_RELATIVE_PATH, rowReviewPath),
     counts: {
@@ -316,9 +345,9 @@ export function runFullComparison() {
       detachedNamedTables: readObject(
         resolveInside(dataRoot, PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH),
       ).counts.detachedNamedTables,
-      illustrationCaptionRunsRemoved: readObject(
+      mineruImageBlocksExcluded: readObject(
         resolveInside(dataRoot, PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH),
-      ).counts.illustrationCaptionRunsRemoved,
+      ).counts.mineruImageBlocksExcluded,
       descriptionIssues: readJsonl(
         resolveInside(dataRoot, PHB_FULL_ISSUES_RELATIVE_PATH),
       ).length,
@@ -408,9 +437,17 @@ export function writeProposedFullEnglishReview() {
   const detachedTables = readJsonl<FullDetachedTableEvidence>(
     resolveInside(dataRoot, PHB_FULL_DETACHED_TABLES_RELATIVE_PATH),
   );
+  const mineruTables = readJsonl<FullMineruTableEvidence>(
+    resolveInside(dataRoot, PHB_FULL_MINERU_TABLES_RELATIVE_PATH),
+  );
+  const layoutReviews = readJsonl<FullMineruLayoutReview>(
+    resolveInside(dataRoot, PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH),
+  );
   const sourceEvidenceErrors = validateFullComparisonSourceEvidence(
     comparisons,
     detachedTables,
+    mineruTables,
+    layoutReviews,
   );
   if (sourceEvidenceErrors.length > 0) {
     throw new Error(
@@ -418,6 +455,7 @@ export function writeProposedFullEnglishReview() {
     );
   }
   const reviews = readJsonl<FullRowReview>(rowReviewPath);
+  const srdAdjudication = verifySrdBackedReviews(dataRoot, reviews);
   const spells = readJsonl<FullSpellEntity>(
     resolveInside(dataRoot, PHB_FULL_ENTITIES_RELATIVE_PATH),
   );
@@ -484,6 +522,15 @@ export function writeProposedFullEnglishReview() {
         PHB_FULL_ROW_REVIEW_MANIFEST_RELATIVE_PATH,
         dataRoot,
       ),
+      ...(srdAdjudication
+        ? [
+            reviewArtifact(
+              "srd-adjudication",
+              SRD_ADJUDICATION_MANIFEST_RELATIVE_PATH,
+              dataRoot,
+            ),
+          ]
+        : []),
     ],
     automatedFindings: {
       sourceSpells: spells.length,
@@ -514,6 +561,9 @@ export function verifyFullExtractionChain(dataRoot: string) {
     PHB_FULL_EXTRACTION_MANIFEST_RELATIVE_PATH,
   );
   const extraction = readObject(extractionManifestPath);
+  if (extraction.schemaVersion !== 2) {
+    throw new Error("PHB full extraction must use the MinerU-backed schema");
+  }
   expectArtifact(
     extraction.fullExtractionManifest,
     fullManifestPath,
@@ -534,6 +584,69 @@ export function verifyFullExtractionChain(dataRoot: string) {
     resolveInside(dataRoot, PHB_FULL_PAGES_RELATIVE_PATH),
     "extraction -> pages",
   );
+  expectArtifact(
+    extraction.runtimeManifest,
+    resolveInside(dataRoot, PHB_MINERU_RUNTIME_RELATIVE_PATH),
+    "extraction -> MinerU runtime",
+  );
+  const inputManifestPath = resolveInside(
+    dataRoot,
+    PHB_FULL_MINERU_INPUT_MANIFEST_RELATIVE_PATH,
+  );
+  expectArtifact(
+    extraction.inputManifest,
+    inputManifestPath,
+    "extraction -> MinerU input manifest",
+  );
+  const inputManifest = readObject(inputManifestPath);
+  expectArtifact(
+    inputManifest.sourceManifest,
+    resolveInside(dataRoot, fullManifest.sourceManifest.relativePath),
+    "MinerU input -> source manifest",
+  );
+  expectArtifact(
+    inputManifest.fullManifest,
+    fullManifestPath,
+    "MinerU input -> full extraction manifest",
+  );
+  const inputArtifacts = Array.isArray(inputManifest.artifacts)
+    ? inputManifest.artifacts
+    : [];
+  if (inputArtifacts.length !== fullManifest.sources.length) {
+    throw new Error("PHB full MinerU input artifact count changed");
+  }
+  for (const value of inputArtifacts) {
+    const inputArtifact = record(value, "MinerU input artifact");
+    if (typeof inputArtifact.relativePath !== "string") {
+      throw new Error("PHB full MinerU input artifact path is invalid");
+    }
+    expectArtifact(
+      inputArtifact,
+      resolveInside(dataRoot, inputArtifact.relativePath),
+      "MinerU input -> subset PDF",
+    );
+  }
+  const sourceReports = Array.isArray(extraction.sources)
+    ? extraction.sources
+    : [];
+  if (sourceReports.length !== fullManifest.sources.length) {
+    throw new Error("PHB full MinerU output source count changed");
+  }
+  for (const value of sourceReports) {
+    const sourceReport = record(value, "MinerU output source");
+    const contentList = record(
+      sourceReport.mineruContentList,
+      "MinerU content-list artifact",
+    );
+    if (typeof contentList.relativePath !== "string") {
+      throw new Error("PHB full MinerU content-list path is invalid");
+    }
+    expectArtifact(
+      contentList,
+      resolveInside(dataRoot, contentList.relativePath),
+      "MinerU output -> content list",
+    );
+  }
   const entitiesManifestPath = resolveInside(
     dataRoot,
     PHB_FULL_ENTITIES_MANIFEST_RELATIVE_PATH,
@@ -549,10 +662,17 @@ export function verifyFullExtractionChain(dataRoot: string) {
     resolveInside(dataRoot, PHB_FULL_PAGES_RELATIVE_PATH),
     "entities -> pages",
   );
+  expectArtifact(
+    entities.layoutReviewManifest,
+    resolveInside(dataRoot, PHB_FULL_LAYOUT_REVIEW_MANIFEST_RELATIVE_PATH),
+    "entities -> MinerU layout review",
+  );
+  verifyFullMineruLayoutReviewChain(dataRoot);
   for (const [field, relativePath] of [
     ["entities", PHB_FULL_ENTITIES_RELATIVE_PATH],
     ["issues", PHB_FULL_ISSUES_RELATIVE_PATH],
     ["detachedTables", PHB_FULL_DETACHED_TABLES_RELATIVE_PATH],
+    ["mineruTables", PHB_FULL_MINERU_TABLES_RELATIVE_PATH],
     ["listRows", PHB_FULL_LIST_ROWS_RELATIVE_PATH],
     ["listOccurrences", PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH],
     ["listFootnotes", PHB_FULL_LIST_FOOTNOTES_RELATIVE_PATH],
@@ -595,6 +715,47 @@ export function verifyFullErrataChain(dataRoot: string) {
   }
 }
 
+export function verifyFullMineruLayoutReviewChain(dataRoot: string) {
+  const manifestPath = resolveInside(
+    dataRoot,
+    PHB_FULL_LAYOUT_REVIEW_MANIFEST_RELATIVE_PATH,
+  );
+  const manifest = readObject(manifestPath);
+  for (const [field, relativePath, label] of [
+    [
+      "extractionManifest",
+      PHB_FULL_EXTRACTION_MANIFEST_RELATIVE_PATH,
+      "extraction",
+    ],
+    ["pages", PHB_FULL_PAGES_RELATIVE_PATH, "pages"],
+    ["output", PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH, "review rows"],
+  ] as const) {
+    expectArtifact(
+      manifest[field],
+      resolveInside(dataRoot, relativePath),
+      `MinerU layout review -> ${label}`,
+    );
+  }
+  const reviews = readJsonl<FullMineruLayoutReview>(
+    resolveInside(dataRoot, PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH),
+  );
+  const invalidStatuses = reviews.filter(
+    (review) =>
+      !new Set(["proposed", "accepted", "rejected"]).has(review.status),
+  );
+  if (invalidStatuses.length > 0) {
+    throw new Error(
+      `PHB full MinerU layout review has ${invalidStatuses.length} invalid status values`,
+    );
+  }
+  const proposed = reviews.filter((review) => review.status === "proposed");
+  if (proposed.length > 0) {
+    throw new Error(
+      `PHB full MinerU layout review has ${proposed.length} proposed rows`,
+    );
+  }
+}
+
 export function verifyFullComparisonArtifacts(
   dataRoot: string,
   comparisonManifest: Record<string, unknown>,
@@ -624,6 +785,8 @@ export function verifyRowReviewEvidenceArtifacts(
     ["listOccurrences", PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH],
     ["listFootnotes", PHB_FULL_LIST_FOOTNOTES_RELATIVE_PATH],
     ["detachedTables", PHB_FULL_DETACHED_TABLES_RELATIVE_PATH],
+    ["mineruTables", PHB_FULL_MINERU_TABLES_RELATIVE_PATH],
+    ["mineruLayoutReview", PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH],
   ] as const) {
     expectArtifact(
       evidence[field],
@@ -631,6 +794,76 @@ export function verifyRowReviewEvidenceArtifacts(
       `row review evidence -> ${field}`,
     );
   }
+}
+
+export function verifySrdBackedReviews(
+  dataRoot: string,
+  reviews: FullRowReview[],
+) {
+  const backed = reviews.filter(
+    (row) => row.reviewer === "data-tools:srd-adjudication",
+  );
+  if (backed.length === 0) return null;
+  const manifestPath = resolveInside(
+    dataRoot,
+    SRD_ADJUDICATION_MANIFEST_RELATIVE_PATH,
+  );
+  const adjudicationPath = resolveInside(
+    dataRoot,
+    SRD_ADJUDICATION_RELATIVE_PATH,
+  );
+  const manifest = readObject(manifestPath);
+  const inputs = record(manifest.inputs, "SRD adjudication inputs");
+  for (const [field, label] of [
+    ["extractionManifest", "extraction manifest"],
+    ["comparisons", "comparisons"],
+    ["aliases", "aliases"],
+  ] as const) {
+    const value = record(inputs[field], `SRD adjudication ${label}`);
+    if (typeof value.relativePath !== "string") {
+      throw new Error(`PHB SRD adjudication ${label} path is invalid`);
+    }
+    expectArtifact(
+      value,
+      resolveInside(dataRoot, value.relativePath),
+      `SRD adjudication -> ${label}`,
+    );
+  }
+  expectArtifact(manifest.output, adjudicationPath, "SRD adjudication -> rows");
+  const currentReviewEvidence = hashStableJson(
+    reviews.map((row) => ({
+      caseId: row.caseId,
+      proposedCategory: row.proposedCategory,
+      evidenceRowIds: row.evidenceRowIds,
+      evidenceFingerprintSha256: row.evidenceFingerprintSha256,
+    })),
+  );
+  if (inputs.rowReviewEvidenceSha256 !== currentReviewEvidence) {
+    throw new Error("PHB SRD adjudication row review evidence is stale");
+  }
+  const adjudications = new Map(
+    readJsonl<{
+      caseId: string;
+      status: string;
+      rule: string;
+      evidenceFingerprintSha256: string;
+    }>(adjudicationPath).map((row) => [row.caseId, row]),
+  );
+  for (const review of backed) {
+    const row = adjudications.get(review.caseId);
+    if (!row || row.status !== "terminal-candidate") {
+      throw new Error(
+        `PHB SRD-backed review has no terminal evidence: ${review.caseId}`,
+      );
+    }
+    const expected = `Accepted by SRD adjudication ${row.evidenceFingerprintSha256}: ${row.rule}.`;
+    if (review.status !== "accepted" || review.decisionNote !== expected) {
+      throw new Error(
+        `PHB SRD-backed review decision is stale: ${review.caseId}`,
+      );
+    }
+  }
+  return { manifestPath, adjudicationPath, rows: backed.length };
 }
 
 export function assertEmptyJsonl(filePath: string, label: string) {
@@ -707,6 +940,23 @@ function expectArtifact(value: unknown, filePath: string, label: string) {
 
 function artifact(relativePath: string, filePath: string) {
   return { relativePath, sha256: sha256File(filePath) };
+}
+
+function hashStableJson(value: unknown) {
+  return crypto
+    .createHash("sha256")
+    .update(JSON.stringify(stableValue(value)))
+    .digest("hex");
+}
+
+function stableValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(stableValue);
+  if (typeof value !== "object" || value === null) return value;
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .sort(([left], [right]) => left.localeCompare(right, "en-US"))
+      .map(([key, nested]) => [key, stableValue(nested)]),
+  );
 }
 
 function reviewArtifact(role: string, relativePath: string, dataRoot: string) {

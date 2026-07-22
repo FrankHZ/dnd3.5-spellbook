@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
 import { discoverFullSpellEntities, type FullPageRow } from "./full-extraction";
+import { compareTokenMultisets } from "./pilot-extraction";
 
 const page = fullPage([
   "First Spell",
@@ -150,6 +151,15 @@ assert.equal(editorialBoundary.spells[0]!.bodyText, "The spell has a body.");
 console.log("PHB full extraction portable tests passed");
 
 function fullPage(lines: string[], sourcePageIndex = 196): FullPageRow {
+  const items = lines.map((text, index) => ({
+    text,
+    x: 36,
+    y: 750 - index * 12,
+    width: text.length * 5,
+    height: 10,
+    fontName: "fixture",
+    hasEol: true,
+  }));
   return {
     schemaVersion: 1,
     sourceId: "phb35-core",
@@ -162,16 +172,9 @@ function fullPage(lines: string[], sourcePageIndex = 196): FullPageRow {
       width: 612,
       height: 792,
       textLayerSha256: "b".repeat(64),
-      items: lines.map((text, index) => ({
-        text,
-        x: 36,
-        y: 750 - index * 12,
-        width: text.length * 5,
-        height: 10,
-        fontName: "fixture",
-        hasEol: true,
-      })),
+      items,
     },
+    ...mineruPayload(items),
   };
 }
 
@@ -189,20 +192,22 @@ function fullPageWithWrappedHeading(sourcePageIndex: number): FullPageRow {
       fontName: "body",
     },
   ];
+  const items = lines.map((line) => ({
+    text: line.text,
+    x: 36,
+    y: line.y,
+    width: line.text.length * 5,
+    height: line.height,
+    fontName: line.fontName,
+    hasEol: true,
+  }));
   return {
     ...fullPage([], sourcePageIndex),
     pdfjs: {
       ...fullPage([], sourcePageIndex).pdfjs,
-      items: lines.map((line) => ({
-        text: line.text,
-        x: 36,
-        y: line.y,
-        width: line.text.length * 5,
-        height: line.height,
-        fontName: line.fontName,
-        hasEol: true,
-      })),
+      items,
     },
+    ...mineruPayload(items),
   };
 }
 
@@ -226,8 +231,8 @@ function fullPageWithDetachedTable(sourcePageIndex: number): FullPageRow {
     ],
     sourcePageIndex,
   );
-  page.pdfjs.items.push(
-    ...["Table Spell", "First row", "Second row"].map((text, index) => ({
+  const tableItems = ["Table Spell", "First row", "Second row"].map(
+    (text, index) => ({
       text,
       x: 24,
       y: 300 - index * 12,
@@ -235,7 +240,65 @@ function fullPageWithDetachedTable(sourcePageIndex: number): FullPageRow {
       height: index === 0 ? 9.96 : 9,
       fontName: index === 0 ? "table-heading" : "body",
       hasEol: true,
-    })),
+    }),
+  );
+  page.pdfjs.items.push(...tableItems);
+  Object.assign(
+    page,
+    mineruPayload([
+      ...page.pdfjs.items.slice(0, 9),
+      ...tableItems,
+      ...page.pdfjs.items.slice(9, -tableItems.length),
+    ]),
   );
   return page;
+}
+
+function mineruPayload(
+  items: FullPageRow["pdfjs"]["items"],
+): Pick<FullPageRow, "mineru" | "comparison"> {
+  const groups = items.reduce<Array<typeof items>>((result, item) => {
+    const last = result.at(-1);
+    if (last && last[0]?.y === item.y) {
+      last.push(item);
+    } else {
+      result.push([item]);
+    }
+    return result;
+  }, []);
+  const blocks = groups.map((group, blockIndex) => {
+    const centers = group.map((item) => ({
+      x: ((item.x + item.width / 2) / 612) * 1000,
+      y: ((792 - (item.y + item.height / 2)) / 792) * 1000,
+    }));
+    return {
+      blockIndex,
+      type: "text",
+      bbox: [
+        Math.min(...centers.map((center) => center.x)) - 1,
+        Math.min(...centers.map((center) => center.y)) - 1,
+        Math.max(...centers.map((center) => center.x)) + 1,
+        Math.max(...centers.map((center) => center.y)) + 1,
+      ] as [number, number, number, number],
+      text: group.map((item) => item.text).join(""),
+      textLevel: null,
+      tableHtml: null,
+      listItems: [],
+      captions: [],
+      footnotes: [],
+      assetPath: null,
+      textOrigin: "text-layer" as const,
+    };
+  });
+  const pdfText = items.map((item) => item.text).join(" ");
+  const mineruText = blocks.map((block) => block.text).join(" ");
+  return {
+    mineru: {
+      engine: "MinerU",
+      version: "fixture",
+      contentListSha256: "c".repeat(64),
+      blocks,
+    },
+    comparison: compareTokenMultisets(pdfText, mineruText),
+  };
 }

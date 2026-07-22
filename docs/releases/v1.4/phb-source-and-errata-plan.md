@@ -8,9 +8,11 @@
 > boundaries, or cross-plan conflicts change.
 
 Status: in progress; Gate 0 and the complete Gate 1 representative pilot are
-accepted. Slice 4 full-PHB extraction and English comparison are implemented
-and awaiting main-gate row review. Gate 2 and all downstream
-translation/activation gates remain blocked.
+accepted. The full MinerU structured run, block-bounded PDF.js text-fidelity
+projection, regenerated comparison, and official SRD 3.5 adjudication are
+complete. Gate 2 is now blocked only on review of 75 residual exceptions and
+the resulting English handoff; downstream translation/activation gates remain
+blocked.
 
 ## Purpose
 
@@ -28,7 +30,9 @@ correction layer before any translation begins.
 - Related docs: `data-tools/README.md`, `docs/operations/import-workflow.md`,
   `docs/operations/db-content-workflow.md`, and
   `docs/operations/public-repo-notes.md`.
-- Upstream dependency: pinned local PHB 3.5 PDF and official errata bytes.
+- Upstream dependency: pinned local PHB 3.5 PDF, official errata bytes, and a
+  complete hash-pinned official SRD 3.5 spell corpus used only for independent
+  adjudication.
 - Downstream plans: [phb-translation-qa-plan.md](./phb-translation-qa-plan.md)
   and [phb-content-activation-plan.md](./phb-content-activation-plan.md).
 
@@ -57,6 +61,23 @@ correction layer before any translation begins.
   not assumed authoritative.
 - Existing `spells-full` and CHM workflows are useful comparison/tooling
   references but are not PHB source authority.
+- The effective PHB PDF plus official errata remains the display authority.
+  SRD 3.5 is an independent adjudication source, not a replacement display
+  corpus: Product Identity omissions and renamed proper-name spells must be
+  handled through explicit aliases, and PHB page/layout evidence remains PHB
+  only.
+- The existing IMarvin SRD short-description index is incomplete and may be
+  used as discovery input only. It cannot satisfy the SRD source lock or
+  mechanics adjudication contract.
+- Extraction engines are evidence producers, not source authority. MinerU is
+  the primary structured extractor for reading order, fields, body blocks, and
+  tables. PDF.js is an independently derived exact-character and coordinate
+  baseline. Items inside strict MinerU bboxes may project directly; an
+  outside-bbox item or MinerU/source order conflict requires a current,
+  fingerprint-bound accepted decision over enumerated MinerU blocks. PDF.js
+  must not define spell segmentation or silently resolve a layout conflict.
+  Image-adjacent text requires an explicit caption-exclusion decision rather
+  than a proximity-only drop.
 - The official
   [Wizards 3rd/3.5-edition support page](https://dnd-support.wizards.com/hc/en-us/articles/360000962623-Dungeons-Dragons-3rd-3-5-and-4th-Edition-Rules-Questions)
   links the collected updates and errata package. Implementation must pin the
@@ -81,6 +102,10 @@ follow existing data-repo conventions, but the schemas must preserve:
 - errata artifact hash, errata page/entry, affected PHB page/entity, decision,
   and before/after effective-source hashes;
 - DB comparison identity and exactly one comparison category;
+- SRD artifact/file identity, parsed entity identity, component hashes, and
+  explicit PHB-to-SRD alias provenance;
+- three-way PHB+errata/SRD/DB component disposition and the deterministic rule
+  that produced it;
 - review status, reviewer/decision note, and terminal accepted/rejected state.
 
 No public aggregate report may contain the raw or normalized source text.
@@ -104,6 +129,9 @@ downstream acceptance artifacts.
 
 ### Slice 2: Structured Extraction
 
+- Run the pinned MinerU configuration over every in-scope source page and
+  preserve its ordered blocks, table structure, source-page mapping, and
+  runtime provenance as the primary structured extraction.
 - Extract spell headings, stat-block fields, body text, and description page
   provenance from the PHB spell chapter.
 - Extract each class spell-list short-description occurrence with list owner,
@@ -114,6 +142,12 @@ downstream acceptance artifacts.
 - Emit explicit parser issues for page/column boundaries, headings, field
   continuation, footnotes, tables, cross-references, and uncertain spell
   segmentation.
+- Derive a separate PDF.js text-layer and coordinate baseline for the same page
+  set. Project exact text inside strict MinerU bboxes by deterministic
+  coordinates. Emit a fingerprinted review row for every outside-bbox item or
+  MinerU/source order conflict, and use the raw MinerU text for recall/drift
+  comparison. Never replace MinerU reading order or table structure with a
+  PDF.js-only parse.
 
 Validation: schema tests plus redacted/minimal fixtures that cover every
 supported layout failure mode.
@@ -134,6 +168,14 @@ drops, and reviewed outcomes for every pilot row.
 
 ### Slice 4: Full English Comparison And Decisions
 
+- Require the full in-scope MinerU output and its imported page/block manifest
+  before entity extraction. The earlier PDF.js-only full run may seed count and
+  identity expectations, but none of its row decisions can close Gate 2.
+- Compare MinerU structured output against the independent PDF.js baseline and
+  emit explicit block/page issues for unexplained recall or layout differences.
+  PDF.js text projection must remain inside MinerU block boundaries. Do not
+  synthesize effective text or structure by choosing whichever engine happens
+  to match the current DB.
 - Determine the PHB spell set independently from both extracted descriptions
   and current DB PHB appearances, then reconcile the sets.
 - Compare effective PDF+errata source with current DB spell names, fields,
@@ -148,12 +190,30 @@ drops, and reviewed outcomes for every pilot row.
   `extra-in-db`, or `manual-review`.
 - Reconcile duplicate short-description occurrences before producing a
   spell-level candidate; disagreement requires a decision, not first-row wins.
-- Resolve every manual-review row and preserve accepted/rejected decisions in
-  the data repo.
+- Pin and parse the complete official SRD 3.5 spell corpus as an independent
+  adjudication source. Preserve source file/hash provenance and reject stale or
+  partial source packages.
+- Match PHB and SRD spell identities by normalized exact name or a reviewed,
+  explicit Product Identity alias. Do not introduce fuzzy reuse.
+- Classify each proposed PHB/DB row through a deterministic three-way matrix:
+  PHB+errata and SRD agreement may establish a source-backed DB correction;
+  registered Product Identity renames establish alias-backed agreement; SRD
+  agreement with an applicable erratum establishes errata-backed agreement;
+  SRD absence or unsupported PHB-only layout evidence preserves the existing
+  PHB review requirement; genuine three-way drift remains an exception.
+- The data-pipeline owner resolves deterministic rows and produces terminal
+  proposals with current evidence fingerprints. Main gate approves the
+  adjudication policy and reviews only residual exceptions; it is not the
+  clerical reviewer for every substantive/manual comparison row.
+- Preserve every terminal decision and residual exception in the data repo.
 
-Validation: both source and DB set totals balance, category totals balance,
-there are zero unexplained misses/extras, and no unresolved manual-review row
-remains at handoff.
+Validation: the MinerU input/output/runtime chain and PDF.js baseline are both
+current; every engine difference is deterministic or explicitly reviewed; PHB,
+SRD, and DB set totals balance under explicit alias/absence accounting;
+category and adjudication totals balance; changing either extraction evidence,
+any SRD source byte, parsed row, alias, or three-way evidence resets the
+affected decision; there are zero unexplained misses/extras and no unresolved
+exception remains at handoff.
 
 ### Slice 5: English Acceptance Handoff
 
@@ -178,8 +238,13 @@ equivalent to:
 npm run -w data-tools phb:source:verify
 npm run -w data-tools phb:source:extract -- --pilot
 npm run -w data-tools phb:source:compare -- --pilot
+npm run -w data-tools phb:source:extract -- --full --prepare-only
+npm run -w data-tools phb:source:extract -- --full --mineru-output <data-relative-output>
 npm run -w data-tools phb:source:extract
 npm run -w data-tools phb:source:compare
+npm run -w data-tools phb:srd:verify
+npm run -w data-tools phb:srd:extract
+npm run -w data-tools phb:srd:adjudicate
 npm run -w data-tools phb:source:report
 ```
 
@@ -188,13 +253,22 @@ script manifest, tests, and this plan are updated together.
 
 ## Acceptance Criteria
 
-- Both source artifacts are pinned and hash-verified.
-- Every in-scope description, field, page, and short-description occurrence is
-  extracted or has an explicit terminal issue decision.
+- The PHB, errata, and complete SRD spell artifacts are pinned and
+  hash-verified.
+- Every in-scope description, field, page, table, and short-description
+  occurrence is extracted from the pinned full MinerU run or has an explicit
+  terminal issue decision backed by source-page evidence.
+- The independent PDF.js baseline has complete page accounting and zero
+  unexplained recall/layout issue. Any accepted text projection is bound to a
+  MinerU block; PDF.js never defines spell segmentation, reading order, or
+  table structure.
 - Every relevant errata row has an explained disposition and provenance.
 - The pilot covers the approved difficult cases before the full run.
 - Every extracted/current PHB spell enters exactly one balanced comparison
   category and no unresolved manual-review row remains.
+- Every deterministic three-way result records its adjudication rule and
+  fingerprint-bound evidence; only genuine exceptions require main-gate row
+  review.
 - The English handoff is accepted before any translation branch consumes it.
 - Public fixtures/reports contain no PHB or translated corpus text.
 - Focused tests, `npm run typecheck:data-tools`, portable tests, and local-data
@@ -213,9 +287,10 @@ script manifest, tests, and this plan are updated together.
 
 ## Open Questions
 
-No scope question blocks assignment. The implementation context packet must
-name the exact local PHB and errata files, hashes, and proposed pilot manifest
-before write-capable work begins.
+No scope question blocks assignment. The SRD acquisition record must distinguish
+the official Wizards-authored document from its archival download host, pin the
+exact reviewed bytes, and record both identities without claiming that the
+archive host is the publisher.
 
 ## Follow-Up Candidates
 
@@ -264,23 +339,28 @@ before write-capable work begins.
   decision, and the default `npm run -w data-tools phb:pilot:verify` passes
   against its clean committed hash chain. This authorizes full-PHB extraction
   only; full English acceptance, translation, and DB activation remain gated.
-- The first full run deterministically extracts 126 selected pages, 605 spell
-  descriptions, 1,216 printed class/domain rows, 1,235 expanded occurrences,
+- The first PDF.js-only full run deterministically inventories 126 selected
+  pages, 605 spell descriptions, 1,216 printed class/domain rows, 1,235
+  expanded occurrences,
   605 independent list names, and ten list-footnote definitions with zero
   parser or set-reconciliation issues. Seven detached named tables and six
   illustration-caption runs are explicit source-layout gates rather than
-  silent parser exceptions.
+  silent parser exceptions. These counts are regression expectations for the
+  full MinerU run, not accepted Gate 2 extraction evidence.
 - Full source and DB sets balance at 605/605 with zero misses or extras. After
   review hardening, the current comparison has 65 exact, 297 formatting-only,
   163 substantive, and 80 manual rows. Exact and formatting-only evidence gives
   362 deterministic terminal acceptances; 243 substantive/manual rows remain
-  proposed, so `phb:source:report` correctly refuses to propose Gate 2.
+  proposed, so `phb:source:report` correctly refuses to propose Gate 2. These
+  rows are an adjudication queue owned by data-pipeline, not 243 mandatory
+  main-gate manual decisions.
 - Independent data-pipeline and English-summary QA reviewed the remaining
   queues. The findings identify deterministic parser/normalization fixes,
   source-backed DB correction candidates, intentional DB expansions, explicit
   short-description canonical candidates, and the already accepted Gate 1
-  Baleful Polymorph decision. Main gate must still record terminal decisions
-  against the current fingerprints before Slice 5 handoff generation begins.
+  Baleful Polymorph decision. The next pass must reconcile these against the
+  pinned SRD corpus; main gate then reviews only residual exceptions before
+  Slice 5 handoff generation begins.
 - Data-repo commit `18faa9a` pins the deterministic full extraction,
   effective errata overlays, list evidence, DB comparison, 605 fingerprinted
   row decisions, and the proposed main-gate QA packet for this handoff.
@@ -291,3 +371,39 @@ before write-capable work begins.
   issues, errata output, pilot summon evidence, comparison inputs, and every
   row-review evidence artifact. Data-repo commit `f26626c` records the hardened
   artifacts and resets all affected decisions against their new fingerprints.
+- Architecture review found that the first full run promoted the PDF.js text
+  layer from independent baseline to primary parser and did not consume MinerU
+  blocks at all. Gate 2 is reopened at the full-extraction boundary. The 605-row
+  comparison, its 243-row queue, and subsequent SRD terminal candidates were
+  provisional until the replacement full MinerU run regenerated their evidence
+  fingerprints.
+- The replacement full run uses pinned MinerU 3.4 over all 126 in-scope pages
+  and records 4,493 ordered blocks, including all 59 table blocks. Its
+  block-bounded PDF.js projection records token recall `0.970167` and precision
+  `0.977233`; entity extraction reproduces 605 descriptions, 1,216 printed
+  list rows, 1,235 occurrences, seven detached named tables, and seven excluded
+  description image blocks with zero parser or set-reconciliation issue.
+- All 59 MinerU table artifacts are fingerprinted and page-linked into affected
+  spell review evidence. The regenerated 605-row comparison retains 65 exact,
+  297 formatting-only, 163 substantive, and 80 manual categories. Three-way
+  adjudication applied 69 newly current terminal candidates, leaving 530
+  accepted decisions and 75 residual exceptions. Gate 2 remains open only for
+  those 75 exception decisions.
+- Data-repo commit `5fa62a2` records the complete MinerU extraction, regenerated
+  comparison, table-linked row evidence, and current adjudication matrix.
+  Commit `bbdc949` applies the 69 new terminal candidates while preserving all
+  168 current SRD-backed decisions across future adjudication reruns.
+- Main-gate follow-up removed two silent layout heuristics. The full run now
+  records 126 accepted outside-bbox PDF.js item decisions and two accepted
+  MinerU/source order overrides. Every decision fingerprints the source item,
+  eligible MinerU blocks, and selected block or anchor; proposed or stale rows
+  block extraction, and the layout-review manifest is recursively re-hashed by
+  comparison and report verification.
+- A second follow-up records three explicit illustration-caption exclusions
+  that were formerly suppressed only by image distance. Layout status is now a
+  closed runtime enum, and both generation and recursive report verification
+  reject unknown values rather than treating them as terminal.
+- Data-repo commits `95c9ecd` through `58d1b59` record the reviewed layout
+  evidence, correct three initially mis-grouped list runs, regenerate the
+  605-row comparison without semantic drift, and restore 168 SRD-backed
+  terminal decisions with 75 residual exceptions.

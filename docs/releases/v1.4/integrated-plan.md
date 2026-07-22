@@ -19,8 +19,11 @@ accepted merely because it exists.
 ```text
 pinned PHB PDF + pinned official errata
   -> representative extraction/compare pilot
-  -> complete PHB extraction + errata-effective English source
-  -> English source QA acceptance
+  -> full MinerU structured extraction
+  -> block-bounded PDF.js text-fidelity projection and verification
+  -> errata-effective English source
+  -> pinned official SRD 3.5 adjudication
+  -> English source QA exception review and acceptance
   -> Chinese translation + independent proofreading
   -> accepted-only DB/content activation
   -> API/frontend/search acceptance
@@ -61,11 +64,19 @@ pilot rows have reviewed outcomes.
 Owner: `data-pipeline`; approver: `main-gate`.
 
 - Extract the full in-scope PHB corpus and relevant errata decisions.
+- Treat MinerU as the primary structured extractor and PDF.js as an independent
+  exact-character/coordinate baseline projected only inside MinerU blocks.
+  Neither engine replaces the pinned PDF as source authority, and PDF.js-only
+  rows cannot close this gate.
 - Reconcile PDF descriptions, class-list occurrences, and current PHB DB rows.
+- Pin and parse the official SRD 3.5 spell corpus as an independent
+  adjudication source while keeping PHB+errata as display authority.
 - Classify each comparison as `exact-match`, `formatting-only`,
   `substantive-mismatch`, `missing-in-db`, `extra-in-db`, or `manual-review`.
-- Resolve every `manual-review` row before closing the gate; preserve the
-  decision and reviewer evidence in the data repo.
+- Let data-pipeline resolve deterministic three-way agreement, reviewed
+  Product Identity aliases, and errata-backed agreement. Route only residual
+  source conflicts to main-gate, then preserve every decision and its current
+  evidence fingerprint in the data repo.
 
 Exit: complete set accounting, zero unexplained misses, accepted effective
 English rows, and no translation work started early.
@@ -104,6 +115,16 @@ explicit operator handoff for any later remote DB activation.
 - Existing DB English is comparison input, not translation authority.
 - Errata is a versioned correction layer over the pinned PDF, not a silent text
   replacement or a second free-standing corpus.
+- MinerU supplies the primary full-corpus reading order, field, body, and table
+  structure. PDF.js may restore exact source characters only inside those
+  blocks and supplies independent recall/coordinate evidence; it cannot define
+  spell segmentation, reorder content, or override structured tables.
+- Official SRD 3.5 is a hash-pinned independent adjudication source, not the
+  displayed PHB corpus. It may prove mechanics agreement but cannot replace PHB
+  page/layout evidence or silently rename Product Identity spells.
+- Main gate approves the SRD adjudication policy and residual exceptions; the
+  data-pipeline owner is responsible for deterministic row resolution and the
+  resulting review bundle.
 - Short descriptions are extracted as list-owner/level/page occurrences first.
   A spell-level candidate is accepted only after duplicate occurrences are
   reconciled.

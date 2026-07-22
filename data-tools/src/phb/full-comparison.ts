@@ -3,8 +3,14 @@ import { createHash } from "node:crypto";
 import type { PilotErrataOverlayRow } from "./pilot-errata";
 import type {
   FullDetachedTableEvidence,
+  FullMineruTableEvidence,
   FullSpellEntity,
 } from "./full-extraction";
+import type {
+  FullMineruLayoutEvidenceReference,
+  FullMineruLayoutReview,
+} from "./full-mineru";
+import { fullMineruLayoutDecisionFingerprint } from "./full-mineru";
 import {
   compareSpell,
   type DbSpell,
@@ -14,19 +20,25 @@ import {
   type PilotDbComparisonRow,
 } from "./pilot-comparison";
 
+export type FullSourceEvidenceReference = {
+  rowId: string;
+  kind: "detached-table" | "mineru-table" | "mineru-layout";
+  sha256: string;
+};
+
 export type FullDbComparisonRow = PilotDbComparisonRow & {
   setMembership: "both" | "source-only" | "db-only";
-  sourceEvidence: Array<{
-    rowId: string;
-    kind: "detached-table";
-    sha256: string;
-  }>;
+  sourceEvidence: FullSourceEvidenceReference[];
 };
 
 export function compareFullCorpus(input: {
   spells: FullSpellEntity[];
   overlays: PilotErrataOverlayRow[];
-  classListOccurrences: PilotClassListOccurrenceForComparison[];
+  classListOccurrences: Array<
+    PilotClassListOccurrenceForComparison & {
+      mineruLayoutEvidence?: FullMineruLayoutEvidenceReference[];
+    }
+  >;
   dbSpells: DbSpell[];
   detachedTables?: FullDetachedTableEvidence[];
   summonMonsterTable?: PilotComparisonSpell["summonTable"];
@@ -57,13 +69,30 @@ export function compareFullCorpus(input: {
       });
     }
     const source = sourceRows[0]!;
-    const sourceEvidence = relatedDetachedTableEvidence(
+    const detachedEvidence = relatedDetachedTableEvidence(
       source,
       input.detachedTables ?? [],
     );
+    const sourceEvidence: FullSourceEvidenceReference[] = [
+      ...detachedEvidence.map(toDetachedTableReference),
+      ...source.mineruTableEvidence.map((evidence) => ({
+        rowId: evidence.rowId,
+        kind: "mineru-table" as const,
+        sha256: evidence.evidenceSha256,
+      })),
+      ...source.mineruLayoutEvidence.map(toLayoutEvidenceReference),
+      ...occurrences.flatMap((occurrence) =>
+        (occurrence.mineruLayoutEvidence ?? []).map(toLayoutEvidenceReference),
+      ),
+    ];
+    const uniqueSourceEvidence = Array.from(
+      new Map(
+        sourceEvidence.map((evidence) => [evidence.rowId, evidence]),
+      ).values(),
+    ).sort((left, right) => left.rowId.localeCompare(right.rowId, "en-US"));
     const sourceReviewFlags = [
       ...source.reviewFlags,
-      ...(sourceEvidence.some(
+      ...(detachedEvidence.some(
         (evidence) =>
           normalizeName(evidence.printedName) === "summon nature's ally",
       )
@@ -82,7 +111,7 @@ export function compareFullCorpus(input: {
           ...sourceReviewFlags,
           "parser-issue:duplicate-source-spell",
         ],
-        sourceEvidence,
+        sourceEvidence: uniqueSourceEvidence,
       });
     }
     const comparisonSpell = toComparisonSpell(
@@ -105,7 +134,7 @@ export function compareFullCorpus(input: {
     return {
       ...compared,
       setMembership: dbRows.length > 0 ? "both" : "source-only",
-      sourceEvidence: sourceEvidence.map(toSourceEvidenceReference),
+      sourceEvidence: uniqueSourceEvidence,
     };
   });
 }
@@ -139,10 +168,18 @@ export function validateFullComparisonBalance(input: {
 
 export function validateFullComparisonSourceEvidence(
   rows: FullDbComparisonRow[],
-  tables: FullDetachedTableEvidence[],
+  detachedTables: FullDetachedTableEvidence[],
+  mineruTables: FullMineruTableEvidence[] = [],
+  layoutReviews: FullMineruLayoutReview[] = [],
 ) {
   const errors: string[] = [];
-  const tablesById = new Map(tables.map((table) => [table.rowId, table]));
+  const detachedById = new Map(
+    detachedTables.map((table) => [table.rowId, table]),
+  );
+  const mineruById = new Map(mineruTables.map((table) => [table.rowId, table]));
+  const layoutById = new Map(
+    layoutReviews.map((review) => [review.rowId, review]),
+  );
   for (const row of rows) {
     const seen = new Set<string>();
     for (const evidence of row.sourceEvidence) {
@@ -151,14 +188,28 @@ export function validateFullComparisonSourceEvidence(
         continue;
       }
       seen.add(evidence.rowId);
-      const table = tablesById.get(evidence.rowId);
-      if (!table) {
-        errors.push(`${row.caseId} source evidence is missing: ${evidence.rowId}`);
+      const expected =
+        evidence.kind === "detached-table"
+          ? detachedById.has(evidence.rowId)
+            ? detachedTableSha256(detachedById.get(evidence.rowId)!)
+            : null
+          : evidence.kind === "mineru-table"
+            ? (mineruById.get(evidence.rowId)?.evidenceSha256 ?? null)
+            : layoutById.get(evidence.rowId)?.status === "accepted"
+              ? fullMineruLayoutDecisionFingerprint(
+                  layoutById.get(evidence.rowId)!,
+                )
+              : null;
+      if (expected === null) {
+        errors.push(
+          `${row.caseId} source evidence is missing: ${evidence.rowId}`,
+        );
         continue;
       }
-      const expected = tableSha256(table);
       if (evidence.sha256 !== expected) {
-        errors.push(`${row.caseId} source evidence is stale: ${evidence.rowId}`);
+        errors.push(
+          `${row.caseId} source evidence is stale: ${evidence.rowId}`,
+        );
       }
     }
   }
@@ -191,7 +242,7 @@ function setOnlyRow(input: {
   occurrences: PilotClassListOccurrenceForComparison[];
   source?: FullSpellEntity;
   reviewFlags?: string[];
-  sourceEvidence?: FullDetachedTableEvidence[];
+  sourceEvidence?: FullSourceEvidenceReference[];
 }): FullDbComparisonRow {
   const sourcePages = input.source
     ? input.source.sourcePages.flatMap((page) =>
@@ -204,7 +255,7 @@ function setOnlyRow(input: {
     printedName: input.printedName,
     category: input.category,
     setMembership: input.membership,
-    sourceEvidence: (input.sourceEvidence ?? []).map(toSourceEvidenceReference),
+    sourceEvidence: input.sourceEvidence ?? [],
     sourcePages,
     dbSpellIds: input.dbRows.map((row) => row.id),
     components: [
@@ -242,15 +293,27 @@ function relatedDetachedTableEvidence(
   });
 }
 
-function toSourceEvidenceReference(table: FullDetachedTableEvidence) {
+function toDetachedTableReference(
+  table: FullDetachedTableEvidence,
+): FullSourceEvidenceReference {
   return {
     rowId: table.rowId,
     kind: "detached-table" as const,
-    sha256: tableSha256(table),
+    sha256: detachedTableSha256(table),
   };
 }
 
-function tableSha256(table: FullDetachedTableEvidence) {
+function toLayoutEvidenceReference(
+  evidence: FullMineruLayoutEvidenceReference,
+): FullSourceEvidenceReference {
+  return {
+    rowId: evidence.rowId,
+    kind: "mineru-layout",
+    sha256: evidence.evidenceFingerprintSha256,
+  };
+}
+
+function detachedTableSha256(table: FullDetachedTableEvidence) {
   return createHash("sha256").update(JSON.stringify(table)).digest("hex");
 }
 

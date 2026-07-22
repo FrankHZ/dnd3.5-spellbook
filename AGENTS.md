@@ -302,11 +302,20 @@ which accepts only clean, committed, non-stale, accepted source/pilot manifests
 and an accepted end-to-end review.
 The default full extraction must continue to hard-gate the independently
 derived 605-spell description/list sets, 1,216 printed rows, 1,235 expanded
-occurrences, zero parser/set issues, and the pinned detached-table/caption
-layout counts. Full comparison may auto-accept only exact and formatting-only
+occurrences, zero parser/set issues, 59 MinerU table blocks, seven detached
+named tables, and seven excluded description image blocks. MinerU owns block
+order, spell segmentation, and table structure. PDF.js exact-character items
+inside strict MinerU bboxes may project directly; every outside-bbox item and
+MinerU/source order conflict requires a current, fingerprint-bound accepted
+layout decision targeting an enumerated MinerU block or anchor. Image-adjacent
+caption exclusions are explicit layout decisions, never distance-only drops.
+Only `proposed`, `accepted`, and `rejected` are valid review statuses; unknown
+values must fail extraction and recursive verification. Full comparison may auto-accept
+only exact and formatting-only
 rows after preserving combined target/effect/area labels and table layout
 boundaries; token-multiset equality is not formatting evidence. Unparsed shared
-tables remain manual and must be included in the row evidence chain.
+tables remain manual, and every MinerU/detached table reference must be included
+in the affected row evidence chain.
 Substantive or manual rows remain fingerprint-bound review work. The full
 report must recursively re-hash description/list issues, errata output, pilot
 summon evidence, comparison inputs, and row-review evidence, and must fail

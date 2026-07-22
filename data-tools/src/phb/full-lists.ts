@@ -1,11 +1,16 @@
 import {
   isSpellHeadingAt,
-  reconstructReadingLines,
   uniqueSourcePages,
   type PilotSourcePage,
   type ReadingLine,
 } from "./pilot-entities";
 import type { FullPageRow } from "./full-extraction";
+import {
+  layoutEvidenceForSourcePages,
+  reconstructMineruReadingLines,
+  type FullMineruLayoutEvidenceReference,
+  type FullMineruLayoutReview,
+} from "./full-mineru";
 
 const CLASS_OWNERS = new Map([
   ["BARD", "Bard"],
@@ -75,6 +80,7 @@ export type FullListPrintedRow = {
   footnotes: string[];
   sourceStart: FullListSourceStart;
   sourcePages: PilotSourcePage[];
+  mineruLayoutEvidence: FullMineruLayoutEvidenceReference[];
   reviewFlags: string[];
 };
 
@@ -93,6 +99,7 @@ export type FullListOccurrence = {
   rawText: string;
   sourceStart: FullListSourceStart;
   sourcePages: PilotSourcePage[];
+  mineruLayoutEvidence: FullMineruLayoutEvidenceReference[];
   reviewFlags: string[];
 };
 
@@ -103,7 +110,8 @@ export type FullListParserIssueKind =
   | "invalid-domain-row"
   | "domain-heading-mismatch"
   | "missing-summary"
-  | "duplicate-row-id";
+  | "duplicate-row-id"
+  | "mineru-projection-failed";
 
 export type FullListParserIssue = {
   schemaVersion: 1;
@@ -162,6 +170,7 @@ type MutablePrintedRow = {
 
 export function extractFullSpellLists(
   pages: FullPageRow[],
+  layoutReviews: FullMineruLayoutReview[] = [],
 ): FullListExtraction {
   const printedRows: FullListPrintedRow[] = [];
   const occurrences: FullListOccurrence[] = [];
@@ -247,6 +256,10 @@ export function extractFullSpellLists(
       footnotes: [...activeRow.footnotes],
       sourceStart: sourceStart(first),
       sourcePages,
+      mineruLayoutEvidence: layoutEvidenceForSourcePages(
+        sourcePages,
+        layoutReviews,
+      ),
       reviewFlags: flags,
     };
     if (rowIds.has(rowId)) {
@@ -279,6 +292,7 @@ export function extractFullSpellLists(
           rawText: row.rawText,
           sourceStart: row.sourceStart,
           sourcePages: row.sourcePages,
+          mineruLayoutEvidence: row.mineruLayoutEvidence,
           reviewFlags: occurrenceFlags,
         });
       }
@@ -306,8 +320,29 @@ export function extractFullSpellLists(
   );
 
   for (const page of sortedPages) {
+    const projection = reconstructMineruReadingLines(page, layoutReviews);
+    for (const projectionIssue of projection.issues) {
+      issueSequence += 1;
+      issues.push({
+        schemaVersion: 1,
+        issueId: `list-issue:${String(issueSequence).padStart(4, "0")}:mineru-projection-failed`,
+        kind: "mineru-projection-failed",
+        message: projectionIssue.message,
+        ownerKind: null,
+        owner: null,
+        level: null,
+        rawText: `MinerU block ${projectionIssue.blockIndex}`,
+        sourceStart: {
+          sourceId: page.sourceId,
+          sourcePageIndex: page.sourcePageIndex,
+          printedPageNumber: page.printedPageNumber,
+          x: 0,
+          y: 0,
+        },
+      });
+    }
     if (!page.rangeKinds.includes("class-list")) {
-      const firstLine = reconstructReadingLines(page)[0];
+      const firstLine = projection.lines[0];
       if (firstLine) {
         addIssue(
           "non-class-list-page",
@@ -319,7 +354,7 @@ export function extractFullSpellLists(
       continue;
     }
 
-    const pageLines = reconstructReadingLines(page);
+    const pageLines = projection.lines;
     const firstDescriptionHeading = pageLines.findIndex((_, index) =>
       isSpellHeadingAt(pageLines, index),
     );
