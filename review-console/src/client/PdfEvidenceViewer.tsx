@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import type {
   MineruLayoutReviewDetail,
   PhbReviewItemDetail,
@@ -12,6 +12,12 @@ import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { AlertTriangle, Layers3 } from "lucide-react";
 
 import type { ReviewApi } from "./api";
+import {
+  INITIAL_PDF_RENDER_STATE,
+  isPdfPageReady,
+  pdfPageKey,
+  pdfRenderStateReducer,
+} from "./pdf-render-state";
 import type { ReviewDraft } from "./review-state";
 
 GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
@@ -45,8 +51,18 @@ export function PdfEvidenceViewer({
   const [pageSize, setPageSize] = useState({ width: 0, height: 0 });
   const [containerWidth, setContainerWidth] = useState(720);
   const [overlays, setOverlays] = useState(DEFAULT_OVERLAYS);
+  const [renderState, dispatchRender] = useReducer(
+    pdfRenderStateReducer,
+    INITIAL_PDF_RENDER_STATE,
+  );
+  const renderRequestIdRef = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const requestedPageKey = pdfPageKey(
+    detail.item.sourceId,
+    sourcePageIndex,
+  );
+  const pageReady = isPdfPageReady(renderState, requestedPageKey);
 
   useEffect(() => {
     const element = containerRef.current;
@@ -82,13 +98,19 @@ export function PdfEvidenceViewer({
   }, [api, detail.item.sourceId, hasSourcePage]);
 
   useEffect(() => {
+    const requestId = ++renderRequestIdRef.current;
+    dispatchRender({
+      type: "request",
+      requestId,
+      pageKey: requestedPageKey,
+    });
     if (!document || sourcePageIndex === null || !canvasRef.current) return;
     let cancelled = false;
     let renderTask: { cancel(): void; promise: Promise<unknown> } | null = null;
     setRenderError(null);
     void document
       .getPage(sourcePageIndex + 1)
-      .then((page) => {
+      .then(async (page) => {
         if (cancelled || !canvasRef.current) return;
         const base = page.getViewport({ scale: 1 });
         const cssScale = Math.min(containerWidth / base.width, 1.7);
@@ -105,7 +127,14 @@ export function PdfEvidenceViewer({
         canvas.style.height = `${cssHeight}px`;
         setPageSize({ width: cssWidth, height: cssHeight });
         renderTask = page.render({ canvas, canvasContext: context, viewport });
-        return renderTask.promise;
+        await renderTask.promise;
+        if (!cancelled && requestedPageKey) {
+          dispatchRender({
+            type: "complete",
+            requestId,
+            pageKey: requestedPageKey,
+          });
+        }
       })
       .catch((error: unknown) => {
         if (!cancelled && (error as { name?: string }).name !== "RenderingCancelledException") {
@@ -116,7 +145,7 @@ export function PdfEvidenceViewer({
       cancelled = true;
       renderTask?.cancel();
     };
-  }, [containerWidth, document, sourcePageIndex]);
+  }, [containerWidth, document, requestedPageKey, sourcePageIndex]);
 
   const pageEvidence =
     detail.queueId === "mineru-layout" ? detail.page : null;
@@ -187,10 +216,10 @@ export function PdfEvidenceViewer({
           <div
             className="pdf-page"
             style={{ width: pageSize.width || undefined, height: pageSize.height || undefined }}
-            aria-busy={!document || pageSize.width === 0}
+            aria-busy={!pageReady}
           >
             <canvas ref={canvasRef} aria-label="Rendered PHB source page" />
-            {pageEvidence && pageSize.width > 0 ? (
+            {pageEvidence && pageSize.width > 0 && pageReady ? (
               <div className="page-overlays" aria-hidden="true">
                 {overlays.mineru
                   ? pageEvidence.mineruBlocks.map((block) =>

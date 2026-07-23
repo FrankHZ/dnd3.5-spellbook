@@ -404,7 +404,8 @@ Slice 3 implementation result:
   queue unloads cached list/detail state, and every save continues to state the
   required canonical rerun.
 - `npm run verify` passed, including `typecheck:review-console`,
-  `test:review-console` (3 files, 12 tests), and
+  `test:review-console`; the current focused suite now covers five files and
+  21 tests after navigation-guard and PDF page-transition regressions, plus
   `build:review-console`. The read-only real-data `smoke:local` also passed
   with 131 layout rows and 75 English residuals.
 - Desktop `1440 x 900` and narrow `700 x 900` browser smoke covered both

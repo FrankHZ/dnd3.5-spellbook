@@ -2,7 +2,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -35,6 +34,7 @@ import {
   ReviewApiError,
   type ReviewApi,
 } from "./api";
+import { createNavigationGuard } from "./navigation-guard";
 import { PdfEvidenceViewer } from "./PdfEvidenceViewer";
 import {
   adjacentItemId,
@@ -83,7 +83,7 @@ export function ReviewConsoleApp() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [discardPromptOpen, setDiscardPromptOpen] = useState(false);
-  const pendingNavigationRef = useRef<(() => void) | null>(null);
+  const navigationGuard = useMemo(() => createNavigationGuard(), []);
   const draftDirty = Boolean(
     detail && draft && isReviewDraftDirty(detail, draft),
   );
@@ -99,24 +99,17 @@ export function ReviewConsoleApp() {
   }, [draftDirty]);
 
   const guardNavigation = (navigate: () => void) => {
-    if (!draftDirty) {
-      navigate();
-      return;
-    }
-    pendingNavigationRef.current = navigate;
-    setDiscardPromptOpen(true);
+    setDiscardPromptOpen(navigationGuard.request(draftDirty, navigate));
   };
 
   const cancelDiscard = () => {
-    pendingNavigationRef.current = null;
+    navigationGuard.cancel();
     setDiscardPromptOpen(false);
   };
 
   const confirmDiscard = () => {
-    const navigate = pendingNavigationRef.current;
-    pendingNavigationRef.current = null;
     setDiscardPromptOpen(false);
-    navigate?.();
+    navigationGuard.confirm();
   };
 
   const loadSummaries = useCallback(async () => {

@@ -54,8 +54,9 @@ command refreshes the corresponding manifest.
 - Layout forms expose only server-returned eligible blocks or page anchors.
   English forms expose the server-returned allowed actions and joined
   PHB/SRD/DB evidence.
-- Submission stays disabled until the visible decision, reviewer, note, and
-  required target fields are present. The API still revalidates every value.
+- Submission stays disabled until the visible decision, note, and required
+  target fields are present. The client supplies a stable human provenance
+  marker, and the API still revalidates every value.
 - A stale decision loads the API's current evidence while preserving draft
   form state. An unavailable English queue unloads list/detail state rather
   than leaving cached residual evidence visible.
