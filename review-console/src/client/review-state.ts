@@ -26,6 +26,34 @@ export type ReviewDraft = {
 
 export const HUMAN_DECISION_SOURCE = "review-console:human";
 
+export type ReviewLocation = {
+  queueId: PhbReviewDecisionRequest["queueId"];
+  itemId: string | null;
+};
+
+export function reviewLocationFromSearch(search: string): ReviewLocation {
+  const params = new URLSearchParams(search);
+  const queue = params.get("queue");
+  const item = params.get("item")?.trim();
+  return {
+    queueId:
+      queue === "english-residual" ? "english-residual" : "mineru-layout",
+    itemId: item || null,
+  };
+}
+
+export function reviewLocationSearch(
+  search: string,
+  { queueId, itemId }: ReviewLocation,
+) {
+  const params = new URLSearchParams(search);
+  params.set("queue", queueId);
+  if (itemId) params.set("item", itemId);
+  else params.delete("item");
+  const value = params.toString();
+  return value ? `?${value}` : "";
+}
+
 export function decisionSourceLabel(reviewer: string | null) {
   if (!reviewer) return "Pending";
   return reviewer.startsWith("data-tools:") ? "Automated" : "Human";

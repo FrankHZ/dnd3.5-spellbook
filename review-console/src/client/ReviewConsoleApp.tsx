@@ -45,6 +45,8 @@ import {
   filterQueueItems,
   missingDraftFields,
   reconcileStaleDecision,
+  reviewLocationFromSearch,
+  reviewLocationSearch,
   stableSelection,
   type QueueFilters,
   type ReviewDraft,
@@ -57,14 +59,20 @@ const QUEUE_LABELS: Record<PhbReviewQueueId, string> = {
 
 export function ReviewConsoleApp() {
   const api = useMemo(() => createReviewApi(readReviewToken()), []);
+  const initialLocation = useMemo(
+    () => reviewLocationFromSearch(window.location.search),
+    [],
+  );
   const [summaries, setSummaries] = useState<PhbReviewQueueSummary[] | null>(
     null,
   );
   const [queueId, setQueueId] =
-    useState<PhbReviewQueueId>("mineru-layout");
+    useState<PhbReviewQueueId>(initialLocation.queueId);
   const [queue, setQueue] = useState<PhbReviewQueue | null>(null);
   const [filters, setFilters] = useState<QueueFilters>(EMPTY_FILTERS);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(
+    initialLocation.itemId,
+  );
   const [detail, setDetail] = useState<PhbReviewItemDetail | null>(null);
   const [draft, setDraft] = useState<ReviewDraft | null>(null);
   const [queueLoading, setQueueLoading] = useState(true);
@@ -133,8 +141,22 @@ export function ReviewConsoleApp() {
   );
 
   useEffect(() => {
+    if (!queue) return;
     setSelectedId((current) => stableSelection(filteredItems, current));
-  }, [filteredItems]);
+  }, [filteredItems, queue]);
+
+  useEffect(() => {
+    if (!queue || !selectedId) return;
+    const search = reviewLocationSearch(window.location.search, {
+      queueId,
+      itemId: selectedId,
+    });
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${search}${window.location.hash}`,
+    );
+  }, [queue, queueId, selectedId]);
 
   useEffect(() => {
     if (!selectedId) {

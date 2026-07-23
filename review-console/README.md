@@ -10,6 +10,8 @@ independent MinerU/PDF.js/target overlays, joined PHB/SRD/DB evidence, and an
 explicit decision form. The browser owns only display, navigation, filters,
 draft form values, and stale-response recovery; the API remains authoritative
 for candidates, eligible targets, fingerprints, validation, and writes.
+The active queue and stable item id are reflected in the URL so a local review
+position can be refreshed or shared without depending on queue ordinals.
 
 From this directory, run `npm run dev` for the Vite-backed local shell, or run
 `npm run build` followed by `npm run start` for a production-like local smoke.
@@ -29,7 +31,7 @@ a URL, or console output.
 
 Saving a layout decision unloads the English queue until the canonical full
 chain is current again. A stale decision response refreshes the displayed
-evidence while preserving unsaved reviewer, note, decision, and target fields.
+evidence while preserving unsaved note, decision, and target fields.
 Every save remains a decision-file edit; it is not Gate 2 acceptance.
 
 Validate with:

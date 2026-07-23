@@ -12,6 +12,8 @@ import {
   filterQueueItems,
   missingDraftFields,
   reconcileStaleDecision,
+  reviewLocationFromSearch,
+  reviewLocationSearch,
   stableSelection,
 } from "./review-state";
 
@@ -114,6 +116,30 @@ describe("review console client state", () => {
     expect(adjacentItemId(items, "one", -1)).toBe("one");
     expect(adjacentItemId(items, "two", 1)).toBe("three");
     expect(adjacentItemId(items, "three", 1)).toBe("three");
+  });
+
+  it("round-trips a stable queue and item location through the URL", () => {
+    expect(
+      reviewLocationFromSearch(
+        "?queue=english-residual&item=spell%3Aanimal-growth",
+      ),
+    ).toEqual({
+      queueId: "english-residual",
+      itemId: "spell:animal-growth",
+    });
+    expect(
+      reviewLocationSearch("?debug=1", {
+        queueId: "mineru-layout",
+        itemId: "layout:57",
+      }),
+    ).toBe("?debug=1&queue=mineru-layout&item=layout%3A57");
+  });
+
+  it("falls back to the layout queue for invalid URL state", () => {
+    expect(reviewLocationFromSearch("?queue=unknown&item=%20")).toEqual({
+      queueId: "mineru-layout",
+      itemId: null,
+    });
   });
 
   it("requires an explicit decision, note, and eligible target", () => {
