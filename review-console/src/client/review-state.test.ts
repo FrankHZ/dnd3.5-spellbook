@@ -7,6 +7,7 @@ import type {
 import {
   adjacentItemId,
   createReviewDraft,
+  decisionSourceLabel,
   decisionRequest,
   filterQueueItems,
   missingDraftFields,
@@ -115,9 +116,9 @@ describe("review console client state", () => {
     expect(adjacentItemId(items, "three", 1)).toBe("three");
   });
 
-  it("requires an explicit decision, reviewer, note, and eligible target", () => {
+  it("requires an explicit decision, note, and eligible target", () => {
     const current = detail();
-    const draft = createReviewDraft(current, "reviewer-id");
+    const draft = createReviewDraft(current);
     expect(missingDraftFields(current, draft)).toEqual([
       "decision",
       "decision note",
@@ -133,9 +134,17 @@ describe("review console client state", () => {
     };
     expect(decisionRequest(current, complete)).toMatchObject({
       status: "accepted",
-      reviewer: "reviewer-id",
+      reviewer: "review-console:human",
       selection: { targetBlockIndex: 4 },
     });
+  });
+
+  it("reduces reviewer metadata to human or automated provenance", () => {
+    expect(decisionSourceLabel(null)).toBe("Pending");
+    expect(decisionSourceLabel("data-tools:auto")).toBe("Automated");
+    expect(decisionSourceLabel("data-tools:srd-adjudication")).toBe("Automated");
+    expect(decisionSourceLabel("review-console:human")).toBe("Human");
+    expect(decisionSourceLabel("legacy-reviewer-id")).toBe("Human");
   });
 
   it("does not silently preselect a target for a proposed row", () => {
@@ -145,7 +154,7 @@ describe("review console client state", () => {
   it("loads current stale evidence without discarding draft fields", () => {
     const original = detail();
     const draft = {
-      ...createReviewDraft(original, "reviewer-id"),
+      ...createReviewDraft(original),
       status: "accepted" as const,
       decisionNote: "Keep this unsaved note.",
       targetBlockIndex: 4,

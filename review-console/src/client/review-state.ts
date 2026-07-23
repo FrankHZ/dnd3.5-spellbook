@@ -19,11 +19,17 @@ export const EMPTY_FILTERS: QueueFilters = {
 
 export type ReviewDraft = {
   status: PhbReviewDecisionStatus | null;
-  reviewer: string;
   decisionNote: string;
   targetBlockIndex: number | null;
   anchorBlockIndex: number | null;
 };
+
+export const HUMAN_DECISION_SOURCE = "review-console:human";
+
+export function decisionSourceLabel(reviewer: string | null) {
+  if (!reviewer) return "Pending";
+  return reviewer.startsWith("data-tools:") ? "Automated" : "Human";
+}
 
 export function filterQueueItems(
   items: readonly PhbReviewListItem[],
@@ -60,14 +66,12 @@ export function adjacentItemId(
 
 export function createReviewDraft(
   detail: PhbReviewItemDetail,
-  fallbackReviewer = "",
 ): ReviewDraft {
   const terminalStatus =
     detail.item.status === "proposed" ? null : detail.item.status;
   const isExistingDecision = terminalStatus !== null;
   return {
     status: terminalStatus,
-    reviewer: detail.item.reviewer ?? fallbackReviewer,
     decisionNote: detail.item.decisionNote ?? "",
     targetBlockIndex:
       detail.queueId === "mineru-layout" &&
@@ -90,7 +94,6 @@ export function missingDraftFields(
 ) {
   const missing: string[] = [];
   if (!draft.status) missing.push("decision");
-  if (!draft.reviewer.trim()) missing.push("reviewer");
   if (!draft.decisionNote.trim()) missing.push("decision note");
   if (
     detail.queueId === "mineru-layout" &&
@@ -119,7 +122,7 @@ export function decisionRequest(
     itemId: detail.item.itemId,
     reviewFingerprintSha256: detail.item.reviewFingerprintSha256,
     status: draft.status,
-    reviewer: draft.reviewer.trim(),
+    reviewer: HUMAN_DECISION_SOURCE,
     decisionNote: draft.decisionNote.trim(),
   };
   if (

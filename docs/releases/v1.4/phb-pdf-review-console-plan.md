@@ -76,7 +76,8 @@ local source files and write-capable data operations to the wrong runtime.
 
 The current committed data snapshot has two bounded review surfaces:
 
-- 131 accepted MinerU layout decisions: 126 outside-bbox projections, two
+- 131 accepted MinerU layout decisions: 126 strict-bbox exceptions where
+  PDF.js text items require explicit projection into a MinerU block, two
   source-order overrides, and three illustration-caption exclusions. The
   console must support these rows for inspection and future regenerated
   proposed decisions; it must not assume the current count is permanent.

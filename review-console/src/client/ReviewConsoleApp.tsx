@@ -38,6 +38,7 @@ import { PdfEvidenceViewer } from "./PdfEvidenceViewer";
 import {
   adjacentItemId,
   createReviewDraft,
+  decisionSourceLabel,
   decisionRequest,
   EMPTY_FILTERS,
   facetValues,
@@ -71,9 +72,6 @@ export function ReviewConsoleApp() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [reviewer, setReviewer] = useState(() =>
-    sessionStorage.getItem("phb-reviewer") ?? "",
-  );
 
   const loadSummaries = useCallback(async () => {
     try {
@@ -152,7 +150,7 @@ export function ReviewConsoleApp() {
       .then((next) => {
         if (!active) return;
         setDetail(next);
-        setDraft(createReviewDraft(next, reviewer));
+        setDraft(createReviewDraft(next));
         setNotice(null);
       })
       .catch((caught: unknown) => {
@@ -167,7 +165,7 @@ export function ReviewConsoleApp() {
     return () => {
       active = false;
     };
-  }, [api, queueId, reviewer, selectedId]);
+  }, [api, queueId, selectedId]);
 
   const selectQueue = (next: PhbReviewQueueId) => {
     if (next === queueId) return;
@@ -192,8 +190,6 @@ export function ReviewConsoleApp() {
     setError(null);
     setNotice(null);
     try {
-      sessionStorage.setItem("phb-reviewer", request.reviewer);
-      setReviewer(request.reviewer);
       const result = await api.submitDecision(request);
       const current = await api.getItem(queueId, request.itemId);
       setQueue((value) =>
@@ -207,7 +203,7 @@ export function ReviewConsoleApp() {
           : value,
       );
       setDetail(current);
-      setDraft(createReviewDraft(current, request.reviewer));
+      setDraft(createReviewDraft(current));
       setNotice(
         result.canonicalRerunRequired
           ? `Decision saved. Canonical acceptance pending: ${result.canonicalRerunRequired.from}.`
@@ -830,14 +826,14 @@ function DecisionForm({
         />
       ) : null}
 
-      <label className="form-field">
-        <span>Reviewer</span>
-        <input
-          value={draft.reviewer}
-          autoComplete="off"
-          onChange={(event) => onChange({ ...draft, reviewer: event.target.value })}
-        />
-      </label>
+      <div className="form-field decision-source">
+        <span>Decision source</span>
+        <strong>
+          {detail.item.status === "proposed"
+            ? "Human"
+            : decisionSourceLabel(detail.item.reviewer)}
+        </strong>
+      </div>
       <label className="form-field">
         <span>Decision note</span>
         <textarea
