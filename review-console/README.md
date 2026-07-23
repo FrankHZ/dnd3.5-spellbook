@@ -12,6 +12,9 @@ draft form values, and stale-response recovery; the API remains authoritative
 for candidates, eligible targets, fingerprints, validation, and writes.
 The active queue and stable item id are reflected in the URL so a local review
 position can be refreshed or shared without depending on queue ordinals.
+The loaded PDF document is reused while navigating within a source. Queue,
+item, and selection-changing filter navigation warns before discarding an
+unsaved decision draft, and browser unload receives the same protection.
 
 From this directory, run `npm run dev` for the Vite-backed local shell, or run
 `npm run build` followed by `npm run start` for a production-like local smoke.

@@ -38,6 +38,7 @@ export function PdfEvidenceViewer({
   draft: ReviewDraft;
 }) {
   const sourcePageIndex = detail.item.sourcePageIndex;
+  const hasSourcePage = sourcePageIndex !== null;
   const [document, setDocument] = useState<PDFDocumentProxy | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [renderError, setRenderError] = useState<string | null>(null);
@@ -61,7 +62,7 @@ export function PdfEvidenceViewer({
     let cancelled = false;
     setDocument(null);
     setLoadError(null);
-    if (sourcePageIndex === null) return;
+    if (!hasSourcePage) return;
     const task = getDocument({
       url: api.pdfUrl(detail.item.sourceId),
       httpHeaders: { "x-phb-review-token": api.token },
@@ -78,7 +79,7 @@ export function PdfEvidenceViewer({
       cancelled = true;
       void task.destroy();
     };
-  }, [api, detail.item.sourceId, sourcePageIndex]);
+  }, [api, detail.item.sourceId, hasSourcePage]);
 
   useEffect(() => {
     if (!document || sourcePageIndex === null || !canvasRef.current) return;

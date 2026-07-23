@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -43,6 +44,7 @@ import {
   EMPTY_FILTERS,
   facetValues,
   filterQueueItems,
+  isReviewDraftDirty,
   missingDraftFields,
   reconcileStaleDecision,
   reviewLocationFromSearch,
@@ -80,6 +82,42 @@ export function ReviewConsoleApp() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [discardPromptOpen, setDiscardPromptOpen] = useState(false);
+  const pendingNavigationRef = useRef<(() => void) | null>(null);
+  const draftDirty = Boolean(
+    detail && draft && isReviewDraftDirty(detail, draft),
+  );
+
+  useEffect(() => {
+    if (!draftDirty) return;
+    const warnBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warnBeforeUnload);
+    return () => window.removeEventListener("beforeunload", warnBeforeUnload);
+  }, [draftDirty]);
+
+  const guardNavigation = (navigate: () => void) => {
+    if (!draftDirty) {
+      navigate();
+      return;
+    }
+    pendingNavigationRef.current = navigate;
+    setDiscardPromptOpen(true);
+  };
+
+  const cancelDiscard = () => {
+    pendingNavigationRef.current = null;
+    setDiscardPromptOpen(false);
+  };
+
+  const confirmDiscard = () => {
+    const navigate = pendingNavigationRef.current;
+    pendingNavigationRef.current = null;
+    setDiscardPromptOpen(false);
+    navigate?.();
+  };
 
   const loadSummaries = useCallback(async () => {
     try {
@@ -191,17 +229,36 @@ export function ReviewConsoleApp() {
 
   const selectQueue = (next: PhbReviewQueueId) => {
     if (next === queueId) return;
-    setQueueId(next);
-    setQueue(null);
-    setFilters(EMPTY_FILTERS);
-    setSelectedId(null);
-    setDetail(null);
-    setDraft(null);
-    setNotice(null);
+    guardNavigation(() => {
+      setQueueId(next);
+      setQueue(null);
+      setFilters(EMPTY_FILTERS);
+      setSelectedId(null);
+      setDetail(null);
+      setDraft(null);
+      setNotice(null);
+    });
+  };
+
+  const selectItem = (next: string) => {
+    if (next === selectedId) return;
+    guardNavigation(() => setSelectedId(next));
   };
 
   const selectAdjacent = (offset: -1 | 1) => {
-    setSelectedId(adjacentItemId(filteredItems, selectedId, offset));
+    const next = adjacentItemId(filteredItems, selectedId, offset);
+    if (!next || next === selectedId) return;
+    guardNavigation(() => setSelectedId(next));
+  };
+
+  const changeFilters = (next: QueueFilters) => {
+    const nextItems = filterQueueItems(queue?.items ?? [], next);
+    const nextSelection = stableSelection(nextItems, selectedId);
+    if (nextSelection === selectedId) {
+      setFilters(next);
+      return;
+    }
+    guardNavigation(() => setFilters(next));
   };
 
   const saveDecision = async () => {
@@ -311,8 +368,8 @@ export function ReviewConsoleApp() {
           selectedId={selectedId}
           loading={queueLoading}
           onQueueChange={selectQueue}
-          onFiltersChange={setFilters}
-          onSelect={setSelectedId}
+          onFiltersChange={changeFilters}
+          onSelect={selectItem}
         />
 
         <div className="review-main">
@@ -339,12 +396,13 @@ export function ReviewConsoleApp() {
             <WorkspaceState loading label="Loading review queues" />
           ) : !currentSummary.availability.available ? (
             <UnavailableQueue summary={currentSummary} onRefresh={refresh} />
-          ) : detailLoading || (selectedId && !detail) ? (
-            <WorkspaceState loading label="Loading evidence" />
           ) : !detail || !draft ? (
             <WorkspaceState
+              loading={detailLoading}
               label={
-                filteredItems.length === 0
+                detailLoading
+                  ? "Loading evidence"
+                  : filteredItems.length === 0
                   ? "No rows match the active filters."
                   : "Select a review row."
               }
@@ -355,6 +413,7 @@ export function ReviewConsoleApp() {
                 item={detail.item}
                 items={filteredItems}
                 selectedId={selectedId}
+                draftDirty={draftDirty}
                 onPrevious={() => selectAdjacent(-1)}
                 onNext={() => selectAdjacent(1)}
               />
@@ -372,6 +431,9 @@ export function ReviewConsoleApp() {
           )}
         </div>
       </main>
+      {discardPromptOpen ? (
+        <DiscardDraftDialog onCancel={cancelDiscard} onDiscard={confirmDiscard} />
+      ) : null}
     </div>
   );
 }
@@ -522,12 +584,14 @@ function ReviewToolbar({
   item,
   items,
   selectedId,
+  draftDirty,
   onPrevious,
   onNext,
 }: {
   item: PhbReviewListItem;
   items: PhbReviewListItem[];
   selectedId: string | null;
+  draftDirty: boolean;
   onPrevious(): void;
   onNext(): void;
 }) {
@@ -536,6 +600,7 @@ function ReviewToolbar({
     <div className="review-toolbar">
       <div className="review-title">
         <span className={`status-label ${item.status}`}>{item.status}</span>
+        {draftDirty ? <span className="unsaved-label">Unsaved</span> : null}
         <div>
           <h2>{item.label || item.itemId}</h2>
           <span>{humanize(item.kind)}</span>
@@ -1043,6 +1108,44 @@ function UnavailableQueue({
       <button type="button" onClick={() => void onRefresh()}>
         <RefreshCw aria-hidden="true" /> Refresh
       </button>
+    </div>
+  );
+}
+
+function DiscardDraftDialog({
+  onCancel,
+  onDiscard,
+}: {
+  onCancel(): void;
+  onDiscard(): void;
+}) {
+  return (
+    <div className="dialog-backdrop">
+      <section
+        className="discard-dialog"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="discard-dialog-title"
+        aria-describedby="discard-dialog-description"
+      >
+        <h2 id="discard-dialog-title">Discard unsaved changes?</h2>
+        <p id="discard-dialog-description">
+          This decision draft has not been saved. Leaving this record will remove it.
+        </p>
+        <div className="dialog-actions">
+          <button
+            type="button"
+            className="dialog-cancel"
+            autoFocus
+            onClick={onCancel}
+          >
+            Keep editing
+          </button>
+          <button type="button" className="dialog-discard" onClick={onDiscard}>
+            Discard draft
+          </button>
+        </div>
+      </section>
     </div>
   );
 }

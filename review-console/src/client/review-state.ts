@@ -116,6 +116,19 @@ export function createReviewDraft(
   };
 }
 
+export function isReviewDraftDirty(
+  detail: PhbReviewItemDetail,
+  draft: ReviewDraft,
+) {
+  const baseline = createReviewDraft(detail);
+  return (
+    draft.status !== baseline.status ||
+    draft.decisionNote !== baseline.decisionNote ||
+    draft.targetBlockIndex !== baseline.targetBlockIndex ||
+    draft.anchorBlockIndex !== baseline.anchorBlockIndex
+  );
+}
+
 export function missingDraftFields(
   detail: PhbReviewItemDetail,
   draft: ReviewDraft,

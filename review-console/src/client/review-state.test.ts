@@ -10,6 +10,7 @@ import {
   decisionSourceLabel,
   decisionRequest,
   filterQueueItems,
+  isReviewDraftDirty,
   missingDraftFields,
   reconcileStaleDecision,
   reviewLocationFromSearch,
@@ -175,6 +176,25 @@ describe("review console client state", () => {
 
   it("does not silently preselect a target for a proposed row", () => {
     expect(createReviewDraft(detail()).targetBlockIndex).toBeNull();
+  });
+
+  it("detects decision, note, and target changes as an unsaved draft", () => {
+    const current = detail();
+    const draft = createReviewDraft(current);
+    expect(isReviewDraftDirty(current, draft)).toBe(false);
+    expect(
+      isReviewDraftDirty(current, {
+        ...draft,
+        decisionNote: "Unsaved evidence note.",
+      }),
+    ).toBe(true);
+    expect(
+      isReviewDraftDirty(current, {
+        ...draft,
+        status: "accepted",
+        targetBlockIndex: 4,
+      }),
+    ).toBe(true);
   });
 
   it("loads current stale evidence without discarding draft fields", () => {
