@@ -141,10 +141,10 @@ The first release supports exactly two queue ids:
    upstream layout decision or artifact makes that chain stale.
 
    The current 75-row snapshot is not valid review input after the authority
-   decision, but the as-built #108 service does not yet detect that policy
-   change: the UI and decision endpoint remain technically writable. Operators
-   must not use this queue until data-pipeline invalidates it and the canonical
-   chain regenerates current rows.
+   decision. The service requires the code-owned `official-srd-default-v1`
+   authority reference and now rejects that snapshot for list, detail, and
+   decision requests. The canonical chain must regenerate current rows before
+   review resumes.
 
 Both queues expose a stable item id, status, kind/category, printed name/page,
 current evidence fingerprint, evidence references, allowed actions, and a

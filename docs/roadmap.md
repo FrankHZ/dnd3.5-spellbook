@@ -269,11 +269,10 @@ Recommended next sequence:
 
 3. **Harden MinerU recall before further English decisions**
 
-   First make the superseded 75-row queue fail closed against the new authority
-   revision; the current #108 console remains technically writable and must not
-   be used in the meantime. Then audit omissions, segmentation, fields, and
-   tables against the pinned PHB and independent PDF.js inventory. MinerU
-   changes alter PHB evidence and downstream fingerprints.
+   The `official-srd-default-v1` authority gate now makes the superseded 75-row
+   queue fail closed. Audit omissions, segmentation, fields, and tables against
+   the pinned PHB and independent PDF.js inventory. MinerU changes alter PHB
+   evidence and downstream fingerprints.
 
 4. **Rebuild field-level effective English rows**
 

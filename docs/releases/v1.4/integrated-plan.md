@@ -82,11 +82,11 @@ Owner: `data-pipeline`; approver: `main-gate`.
   must never choose a source at runtime.
 - Before reviewing residual exceptions through a browser, accept the
   localhost-only review service/API and bounded React consumer in
-  [phb-pdf-review-console-plan.md](./phb-pdf-review-console-plan.md). The current
-  #108 console is still technically writable because the service does not yet
-  encode the new authority revision; operators must not use the 75-row snapshot.
-  Data-pipeline must first make that snapshot fail closed, then audit MinerU
-  recall and rebuild the full extraction/comparison/adjudication chain. Console
+  [phb-pdf-review-console-plan.md](./phb-pdf-review-console-plan.md). The
+  `official-srd-default-v1` authority gate now makes the pre-authority 75-row
+  snapshot unavailable for list, detail, and decision requests. Audit MinerU
+  recall next, then rebuild the full extraction/comparison/adjudication chain.
+  Console
   saves are decision-file edits, not Gate 2 acceptance. Any layout save makes
   the English residual queue unavailable until the canonical full rerun starts
   at `phb:source:extract` and completes compare, SRD adjudication, and SRD
