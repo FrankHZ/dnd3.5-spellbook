@@ -38,7 +38,7 @@ v1.4 owns four implementation tracks with hard stage gates:
 
 4. **Accepted content activation and consumer verification**
 
-   Apply only accepted English corrections and accepted Chinese overlays
+   Apply only accepted effective English rows and accepted Chinese overlays
    through the existing rules/content workflows. Preserve current Chinese CHM
    fallback for uncovered rows, rebuild search content, and prove the existing
    frontend consumes reviewed PHB body and short-description data without a UI
@@ -53,13 +53,13 @@ ledger.
 
 Reference evidence and adopted rules text are separate concerns:
 
-| Surface                                                    | Default adopted value                       | PHB+errata responsibility                                                                                         |
-| ---------------------------------------------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Rules body and mechanics-bearing fields                    | Official SRD 3.5 text                       | Immutable reference/evidence; use PHB+errata when SRD lacks the content or a reviewed field exception requires it |
-| Spell identity and name                                    | SRD identity when present                   | Preserve Product Identity names, explicit PHB/SRD aliases, and PHB-only identities                                |
-| PHB-only content and class-list short descriptions         | PHB+accepted errata                         | Authoritative source because the SRD does not supply an equivalent row                                            |
-| Page provenance, reading order, and table/layout structure | PHB+accepted errata through MinerU evidence | Always authoritative; SRD and DB cannot replace document structure                                                |
-| Existing DB prose                                          | Never adopted by default                    | Comparison input only; extension notes do not enter the rules body                                                |
+| Surface                                                    | Default adopted value                                                                     | PHB+errata responsibility                                                                                         |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Rules body and mechanics-bearing fields                    | Official SRD 3.5 text                                                                     | Immutable reference/evidence; use PHB+errata when SRD lacks the content or a reviewed field exception requires it |
+| Spell identity and effective name                          | SRD identity/name by default; PHB printed name for Product Identity or PHB-only overrides | Record the explicit PHB/SRD mapping and retain the non-effective counterpart as an alias                          |
+| PHB-only content and class-list short descriptions         | PHB+accepted errata                                                                       | Authoritative source because the SRD does not supply an equivalent row                                            |
+| Page provenance, reading order, and table/layout structure | PHB+accepted errata through MinerU evidence                                               | Always authoritative; SRD and DB cannot replace document structure                                                |
+| Existing DB prose                                          | Never adopted by default                                                                  | Comparison input only; extension notes do not enter the rules body                                                |
 
 The implementation must retain pinned PHB, errata, and SRD hashes. Errata must
 not silently overwrite reference text: preserve the base extraction, errata

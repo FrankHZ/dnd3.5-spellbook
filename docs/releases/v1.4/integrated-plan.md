@@ -82,9 +82,11 @@ Owner: `data-pipeline`; approver: `main-gate`.
   must never choose a source at runtime.
 - Before reviewing residual exceptions through a browser, accept the
   localhost-only review service/API and bounded React consumer in
-  [phb-pdf-review-console-plan.md](./phb-pdf-review-console-plan.md). Pause bulk
-  decisions on the current 75-row snapshot until MinerU recall is audited and
-  the full extraction/comparison/adjudication chain is rebuilt. Console
+  [phb-pdf-review-console-plan.md](./phb-pdf-review-console-plan.md). The current
+  #108 console is still technically writable because the service does not yet
+  encode the new authority revision; operators must not use the 75-row snapshot.
+  Data-pipeline must first make that snapshot fail closed, then audit MinerU
+  recall and rebuild the full extraction/comparison/adjudication chain. Console
   saves are decision-file edits, not Gate 2 acceptance. Any layout save makes
   the English residual queue unavailable until the canonical full rerun starts
   at `phb:source:extract` and completes compare, SRD adjudication, and SRD
@@ -114,9 +116,10 @@ counts as release-complete.
 
 Owner: `backend-db`; approver: `main-gate`.
 
-- Dry-run and apply accepted English corrections and accepted Chinese overlays
-  through maintained workflows.
-- Regenerate content/search artifacts and record parent/data/source hashes.
+- Dry-run and apply accepted effective English rows and accepted Chinese
+  overlays through maintained workflows.
+- Regenerate content/search artifacts and record parent/data commits, all
+  pinned PHB/errata/SRD identities, and effective-row artifact provenance.
 - Prove accepted PHB reviewed overlays are preferred per spell while existing
   Chinese CHM rows remain fallback outside accepted coverage.
 - Verify existing frontend detail and short-description consumers need no new

@@ -69,6 +69,10 @@ correction layer before any translation begins.
   default. PHB+errata remains authoritative when SRD content is missing, for
   Product Identity names and aliases, PHB-only content and class-list short
   descriptions, and all page/table/layout structure.
+- Effective names use the SRD name by default. A Product Identity or PHB-only
+  spell uses the PHB printed name as its effective name and retains the SRD
+  counterpart, when present, as an explicit alias; ordinary mapped rows retain
+  the PHB counterpart as alias provenance.
 - Existing DB prose is comparison input only. DB-only extension notes do not
   enter the effective body; preserving useful commentary as a separately
   modeled annotation is outside v1.4.
@@ -208,6 +212,9 @@ drops, and reviewed outcomes for every pilot row.
   stale or partial source packages.
 - Match PHB and SRD spell identities by normalized exact name or a reviewed,
   explicit Product Identity alias. Do not introduce fuzzy reuse.
+- Resolve effective names deterministically: use the SRD name for ordinary
+  mapped rows, but override with the PHB printed name for Product Identity and
+  PHB-only rows. Preserve the non-effective counterpart as an alias.
 - Resolve the three-way matrix per field. Adopt SRD text for body and
   mechanics-bearing fields by default; use PHB+errata for SRD omissions,
   Product Identity names, PHB-only content, class-list short descriptions, and
@@ -219,9 +226,12 @@ drops, and reviewed outcomes for every pilot row.
   proposals with current evidence fingerprints. Main gate approves the
   adjudication policy and reviews only residual exceptions; it is not the
   clerical reviewer for every substantive/manual comparison row.
-- Do not bulk-review the current 75 residual rows. First harden MinerU recall,
-  rerun full extraction, comparison, SRD adjudication, and terminal-candidate
-  apply, then resolve deterministic three-way drift in batch. Review only the
+- Do not bulk-review the current 75 residual rows. The current service remains
+  technically writable, so this is an operator prohibition until data-pipeline
+  adds the authority revision to queue freshness/fingerprints and makes the old
+  queue fail closed. Then harden MinerU recall, rerun full extraction,
+  comparison, SRD adjudication, and terminal-candidate apply, and resolve
+  deterministic three-way drift in batch. Review only the
   regenerated genuine exceptions through the accepted localhost console or an
   equivalent fingerprint-safe data-tools command. The console must reuse
   the canonical candidate/validation logic and cannot turn a saved decision

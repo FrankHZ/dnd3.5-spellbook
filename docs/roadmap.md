@@ -269,10 +269,11 @@ Recommended next sequence:
 
 3. **Harden MinerU recall before further English decisions**
 
-   Audit omissions, segmentation, fields, and tables against the pinned PHB and
-   independent PDF.js inventory. MinerU changes alter PHB evidence and
-   downstream fingerprints, so the current 75 residual rows are paused rather
-   than bulk-accepted.
+   First make the superseded 75-row queue fail closed against the new authority
+   revision; the current #108 console remains technically writable and must not
+   be used in the meantime. Then audit omissions, segmentation, fields, and
+   tables against the pinned PHB and independent PDF.js inventory. MinerU
+   changes alter PHB evidence and downstream fingerprints.
 
 4. **Rebuild field-level effective English rows**
 
@@ -291,8 +292,9 @@ Recommended next sequence:
 
 6. **Activate only accepted v1.4 content**
 
-   Apply accepted English corrections and Chinese reviewed overlays through the
-   maintained DB/content workflow, rebuild search, preserve CHM/English summary
+   Apply accepted effective English rows and Chinese reviewed overlays through
+   the maintained DB/content workflow, record all pinned source identities plus
+   effective-row provenance, rebuild search, preserve CHM/English summary
    fallback, and verify existing frontend consumers without a UI redesign.
 
 7. **Preserve frozen and publication boundaries**

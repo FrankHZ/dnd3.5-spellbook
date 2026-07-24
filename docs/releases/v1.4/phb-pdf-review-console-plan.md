@@ -139,9 +139,11 @@ The first release supports exactly two queue ids:
    artifacts are mutually current. The service must fail closed when any
    upstream layout decision or artifact makes that chain stale.
 
-   The current 75-row snapshot is not active review input after the authority
-   decision. Keep this queue unavailable for bulk decisions until MinerU recall,
-   full extraction, comparison, adjudication, and apply have regenerated it.
+   The current 75-row snapshot is not valid review input after the authority
+   decision, but the as-built #108 service does not yet detect that policy
+   change: the UI and decision endpoint remain technically writable. Operators
+   must not use this queue until data-pipeline invalidates it and the canonical
+   chain regenerates current rows.
 
 Both queues expose a stable item id, status, kind/category, printed name/page,
 current evidence fingerprint, evidence references, allowed actions, and a
@@ -317,6 +319,10 @@ viewport smoke using one MinerU layout row and one English residual row.
 
 Owners: `data-pipeline` for rerun evidence; `main-gate` for acceptance.
 
+- First add an authority-policy revision or equivalent canonical input to the
+  service freshness/fingerprint chain. The existing 75-row snapshot must return
+  unavailable and reject direct decision writes before MinerU or residual
+  review resumes; add a regression test for this transition.
 - Preserve the current layout and 75-row residual snapshots as regression
   evidence. Do not require the regenerated queue to retain the same count.
 - Complete the MinerU recall audit and revised field-level authority pipeline
@@ -361,6 +367,9 @@ main-gate review, and the standard v1.4 data/portable checks.
   It stays disabled, including direct API access and cached UI rows, until a
   canonical rerun beginning at full `phb:source:extract` regenerates and
   validates extraction, comparison, adjudication, and apply artifacts.
+- An authority-policy revision also makes the prior English queue unavailable;
+  direct list/detail/decision requests must fail closed before operators begin
+  the MinerU recall audit or regenerated review.
 - Saving any decision clearly leaves final canonical acceptance pending;
   after an English residual save, `phb:source:compare` must refresh the stale
   row-review manifest before `phb:source:report` may succeed. This residual-only

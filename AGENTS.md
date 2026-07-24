@@ -334,8 +334,11 @@ Data-pipeline must resolve mixed cases per field into one provenance-bearing
 effective row; server, web, search, and translation consumers must not choose a
 source at runtime. DB-only extension notes do not enter the body. The current
 75 residual rows predate this authority decision and must not be bulk-accepted.
-Audit MinerU recall first, then rerun full extraction, comparison, SRD
-adjudication, and apply before regenerating the genuine exception queue.
+The #108 service does not yet enforce that pause and remains writable; operators
+must not submit those rows. Data-pipeline must first add the authority revision
+to queue freshness/fingerprints and make the old queue fail closed. Then audit
+MinerU recall and rerun full extraction, comparison, SRD adjudication, and apply
+before regenerating the genuine exception queue.
 
 ## Validation Commands
 

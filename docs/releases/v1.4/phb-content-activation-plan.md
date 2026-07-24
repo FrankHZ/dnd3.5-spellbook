@@ -125,7 +125,8 @@ adding runtime source selection, a UI redesign, or automatic DB deployment.
 - Reviewed PHB Chinese overlays win only for covered spell/field data; existing
   CHM and English-summary fallback remains intact elsewhere.
 - Content regeneration, FTS rebuild, parity, integrity, and metadata checks
-  pass and record both source hashes.
+  pass and record all pinned PHB/errata/SRD identities plus effective-row
+  artifact provenance.
 - API DTOs and existing frontend consumers display accepted PHB Chinese body
   and short description without a new UI setting or broad component rewrite.
 - No app-state DB changes and no automatic production DB activation occur.
