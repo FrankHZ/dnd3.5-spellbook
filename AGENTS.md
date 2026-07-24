@@ -326,6 +326,17 @@ summon evidence, comparison inputs, and row-review evidence, and must fail
 until every current row is terminal; a successful extraction or comparison
 does not close Gate 2.
 
+For the current v1.4 authority contract, keep PHB+accepted errata immutable as
+reference/evidence while adopting official SRD 3.5 rules text by default.
+PHB+errata still owns missing-SRD content, Product Identity names and aliases,
+PHB-only content and class-list summaries, and page/table/layout structure.
+Data-pipeline must resolve mixed cases per field into one provenance-bearing
+effective row; server, web, search, and translation consumers must not choose a
+source at runtime. DB-only extension notes do not enter the body. The current
+75 residual rows predate this authority decision and must not be bulk-accepted.
+Audit MinerU recall first, then rerun full extraction, comparison, SRD
+adjudication, and apply before regenerating the genuine exception queue.
+
 ## Validation Commands
 
 Run the smallest relevant local check first. Do not default to full portable CI

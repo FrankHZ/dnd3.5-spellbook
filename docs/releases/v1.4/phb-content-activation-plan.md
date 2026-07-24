@@ -11,10 +11,10 @@ Status: planned; blocked on integrated Gates 2 and 3.
 
 ## Purpose
 
-Apply only accepted PHB English corrections and accepted Chinese reviewed
+Apply only accepted field-resolved English rows and accepted Chinese reviewed
 overlays to the generated content artifact, preserve provenance and fallback,
 rebuild search, and prove the current API/frontend consumes the result without
-adding a UI redesign or automatic DB deployment.
+adding runtime source selection, a UI redesign, or automatic DB deployment.
 
 ## Ownership
 
@@ -32,7 +32,8 @@ adding a UI redesign or automatic DB deployment.
 ## Agent Context
 
 - Main gate outcome: a reproducible local content DB containing only accepted
-  PHB corrections/overlays with correct per-spell fallback and search behavior.
+  effective English/Chinese overlays with correct per-spell fallback and search
+  behavior.
 - Required reading: `AGENTS.md`, `.agents/roles/backend-db.md`, this plan,
   [integrated-plan.md](./integrated-plan.md), both accepted upstream handoffs,
   and `docs/operations/db-content-workflow.md`.
@@ -49,18 +50,19 @@ adding a UI redesign or automatic DB deployment.
 
 ## Accepted Data Semantics
 
-- Accepted substantive English corrections use the maintained structured rules
-  patch -> rules manifest -> content generate/import path. Exact or
-  formatting-only comparisons do not create needless English mutations.
+- Accepted effective English rows use the maintained structured rules patch ->
+  rules manifest -> content generate/import path. Each row is already resolved
+  per field by data-pipeline; activation must not choose PHB, SRD, or DB text.
 - Accepted English PHB short descriptions use the maintained normalized
   summary import shape with `lang=en`, `variant=phb35-reviewed`, and
   source/decision provenance.
 - Accepted Chinese spell names/bodies and summaries use the provenance-bearing
   `lang=zh`, `variant=phb35-reviewed` overlay.
-- Server resolution prefers the accepted PHB reviewed overlay per covered
-  spell, then falls back to the currently requested/default Chinese CHM row.
-  It must not make an incomplete PHB overlay hide valid CHM content for another
-  spell.
+- Server resolution prefers the accepted reviewed overlay per covered spell,
+  then falls back to the currently requested/default Chinese CHM row. This is
+  coverage fallback between complete variants, not authority inference within
+  an English row. An incomplete overlay must not hide valid CHM content for
+  another spell.
 - English reviewed PHB summaries are preferred per covered spell over the
   existing IMarvin summary, with current fallback preserved elsewhere.
 - The frontend continues to request normal English/Chinese content. v1.4 does
@@ -77,9 +79,9 @@ adding a UI redesign or automatic DB deployment.
 - Decide whether existing content tables are sufficient; add only the minimum
   migration/index/provenance fields needed for deterministic import and
   fallback.
-- Record PHB PDF hash, errata hash, data repo commit, accepted artifact hashes,
-  parent repo commit, and import/generator version in content build metadata or
-  linked import state.
+- Record PHB PDF, errata, and SRD hashes; effective-row artifact and data-repo
+  commits; parent repo commit; and import/generator version in content build
+  metadata or linked import state.
 
 ### Slice 2: Dry-Run And Local Apply
 
@@ -118,7 +120,8 @@ adding a UI redesign or automatic DB deployment.
 
 - Import rejects unaccepted, stale-source, unproofread, malformed, or
   provenance-incomplete rows.
-- English corrections and summaries use maintained patch/import boundaries.
+- Effective English rows and summaries use maintained patch/import boundaries;
+  import rejects unresolved field authority or DB-only body extensions.
 - Reviewed PHB Chinese overlays win only for covered spell/field data; existing
   CHM and English-summary fallback remains intact elsewhere.
 - Content regeneration, FTS rebuild, parity, integrity, and metadata checks

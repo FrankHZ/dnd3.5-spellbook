@@ -224,6 +224,13 @@ SRD adjudication, and terminal-candidate apply artifacts exist. Start it with:
 npm run -w phb-review-console dev
 ```
 
+The 75 English residual rows visible in the pre-authority snapshot are paused,
+not an active bulk-review queue. Before recording further English decisions,
+data-pipeline must complete the MinerU recall audit and rerun full extraction,
+comparison, SRD adjudication, and apply under the v1.4 authority matrix. Use the
+console for regenerated genuine exceptions only; do not preserve the old count
+as an acceptance invariant.
+
 The launcher builds the public `data-tools/phb-review` package entry, binds one
 server to `127.0.0.1`, injects its process-local API token into the served HTML,
 and exposes only allowlisted queues/items/source ids. The API writes only:

@@ -4,9 +4,9 @@ Status: planned.
 
 v1.4 is a source-first translation and proofreading pilot limited to the
 _Player's Handbook v.3.5_ (PHB 3.5). It replaces "translate the current English
-database" with a gated workflow that first proves the English source against a
-pinned PHB PDF and the official PHB errata, then translates only accepted
-source rows.
+database" with a gated workflow that preserves a pinned PHB+errata reference,
+adopts official SRD rules text by default, resolves exceptions per field, and
+then translates only accepted effective rows.
 
 ## Release Boundary
 
@@ -17,8 +17,8 @@ v1.4 owns four implementation tracks with hard stage gates:
    Pin the exact PHB 3.5 PDF and official errata artifacts by SHA-256. Extract
    spell bodies, stat-block fields, description pages, and class spell-list
    short-description occurrences. Apply reviewed errata as a separate,
-   auditable correction layer and compare the effective English source with
-   the current DB.
+   auditable evidence layer, compare PHB+errata/SRD/DB, and emit one accepted
+   effective English row per spell.
 
 2. **Local PDF evidence review**
 
@@ -49,19 +49,25 @@ The cross-role ordering is canonical in
 translation, and activation are sequential gates; it is not an implementation
 ledger.
 
-## Source Authority
+## Authority Matrix
 
-For v1.4 PHB content, use this precedence:
+Reference evidence and adopted rules text are separate concerns:
 
-1. the pinned PHB 3.5 PDF base source;
-2. accepted, applicable entries from the pinned official PHB errata artifact;
-3. explicit manual decisions for unresolved extraction or source conflicts;
-4. the current DB only as comparison input and fallback, never as the
-   untranslated source by assumption.
+| Surface                                                    | Default adopted value                       | PHB+errata responsibility                                                                                         |
+| ---------------------------------------------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Rules body and mechanics-bearing fields                    | Official SRD 3.5 text                       | Immutable reference/evidence; use PHB+errata when SRD lacks the content or a reviewed field exception requires it |
+| Spell identity and name                                    | SRD identity when present                   | Preserve Product Identity names, explicit PHB/SRD aliases, and PHB-only identities                                |
+| PHB-only content and class-list short descriptions         | PHB+accepted errata                         | Authoritative source because the SRD does not supply an equivalent row                                            |
+| Page provenance, reading order, and table/layout structure | PHB+accepted errata through MinerU evidence | Always authoritative; SRD and DB cannot replace document structure                                                |
+| Existing DB prose                                          | Never adopted by default                    | Comparison input only; extension notes do not enter the rules body                                                |
 
-The implementation must record both source hashes. Errata must not silently
-overwrite extracted text: retain the base extraction, the errata decision, and
-the resulting effective-source hash.
+The implementation must retain pinned PHB, errata, and SRD hashes. Errata must
+not silently overwrite reference text: preserve the base extraction, errata
+decision, and resulting evidence hash. Data-pipeline resolves mixed cases per
+field and emits exactly one provenance-bearing effective row. Server and web
+runtimes consume that row; they must not choose between PHB, SRD, or DB text.
+DB-only explanatory additions stay out of the body. Material worth preserving
+may become a separately modeled annotation in a later release.
 
 ## Data Boundary
 
@@ -98,16 +104,18 @@ the resulting effective-source hash.
    covers page breaks, multi-column extraction, wrapped/long fields, class-list
    tables, duplicate summary occurrences, and ordinary controls.
 2. Prove the extraction, errata, comparison, and report pipeline on the pilot.
-3. Run full PHB English source QA. Every extracted PHB row and every current
-   PHB DB spell must receive an explained status; unresolved manual review
-   blocks the English gate.
-4. Accept the localhost review service/API and React consumer, then review the
-   current layout decisions. If layout changes, rerun from full source
-   extraction before the regenerated English residual queue may reopen; review
-   those residuals, rerun source comparison to refresh the row-review manifest,
-   and only then complete the canonical Gate 2 report.
-5. Translate and proofread only the accepted effective English corpus.
-6. Apply accepted rows, rebuild derived content/search artifacts, verify API
+3. Accept the localhost review service/API and React consumer as evidence
+   tooling; do not bulk-accept the current 75-row residual snapshot.
+4. Audit and harden MinerU recall first. Any extraction change invalidates PHB
+   evidence and downstream fingerprints.
+5. Rerun full extraction, comparison, SRD adjudication, and terminal-candidate
+   apply under the authority matrix. Produce one effective row per spell,
+   resolve deterministic three-way drift in batch, and send only genuine
+   field-level exceptions to human review. Extend the console only if a new
+   exception type requires additional evidence display.
+6. Refresh comparison after final residual decisions and complete the Gate 2
+   report. Translate and proofread only the accepted effective English corpus.
+7. Apply accepted rows, rebuild derived content/search artifacts, verify API
    fallback and frontend consumption, then run release acceptance.
 
 ## Non-Goals
@@ -141,6 +149,9 @@ v1.4 may freeze only when:
   provenance;
 - the English comparison has terminal, explained outcomes for the complete
   extracted and current-DB PHB sets with no unexplained missing rows;
+- every accepted spell has one field-resolved effective English row whose
+  provenance records the SRD default and any PHB+errata exception; no runtime
+  source-selection fallback remains;
 - every in-scope errata entry is classified as applicable,
   already-incorporated, out-of-scope, or manually resolved;
 - the localhost-only review console proves current-fingerprint validation,
