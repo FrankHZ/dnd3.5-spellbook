@@ -215,6 +215,16 @@ against a committed, accepted end-to-end review; accepting the page-extraction
 review alone does not authorize it. The accepted Gate 1 permits the full run,
 but does not accept full-corpus English rows or any DB mutation.
 
+Use `phb:mineru:recall` to compare one candidate MinerU content-list page
+against the pinned source PDF's independent PDF.js inventory. Candidate
+content lists remain ignored under `data/artifacts/mineru/phb35/`; generated
+source-free metrics belong under `data-tools/out/phb/`; reviewed candidate
+hashes and decisions belong under `data/phb35/review/`. The command's declared
+backend and method are descriptive, so they cannot authorize a runtime switch.
+Before a replacement full run, pin an actual runtime manifest and accept a
+representative page set covering class lists, descriptions, tables, and
+image-adjacent layouts.
+
 #### Local PHB Review Console
 
 Use the private console only after the current full extraction, comparison,
