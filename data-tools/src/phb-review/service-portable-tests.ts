@@ -27,6 +27,10 @@ import {
 import { buildProposedFullRowReviews } from "../phb/full-row-review";
 import { compareTokenMultisets } from "../phb/pilot-extraction";
 import { PHB_SRD_ADJUDICATION_RELATIVE_PATH } from "../phb/srd-adjudication";
+import {
+  currentPhbAuthorityPolicyReference,
+  PHB_SRD_ADJUDICATION_MANIFEST_RELATIVE_PATH,
+} from "../phb/source-authority";
 import { PhbReviewError } from "./errors";
 import { createPhbReviewService } from "./service";
 import type { PhbCanonicalRerunRequired, PhbReviewQueueId } from "./types";
@@ -50,6 +54,47 @@ async function main() {
       queues.find((row) => row.queueId === "english-residual")!.total,
       1,
     );
+
+    const authorityManifestPath = inside(
+      root,
+      PHB_SRD_ADJUDICATION_MANIFEST_RELATIVE_PATH,
+    );
+    const authorityManifest = JSON.parse(
+      fs.readFileSync(authorityManifestPath, "utf8"),
+    ) as { inputs: { authorityPolicy?: unknown } };
+    delete authorityManifest.inputs.authorityPolicy;
+    fs.writeFileSync(
+      authorityManifestPath,
+      `${JSON.stringify(authorityManifest)}\n`,
+      "utf8",
+    );
+    const blocked = service
+      .listQueues()
+      .find((row) => row.queueId === "english-residual")!;
+    assert.equal(blocked.availability.available, false);
+    assert.match(
+      blocked.availability.message ?? "",
+      /authority policy is stale/u,
+    );
+    assert.throws(
+      () => service.getQueue("english-residual"),
+      (error: unknown) =>
+        error instanceof PhbReviewError && error.code === "stale-queue",
+    );
+    await assert.rejects(
+      service.submitDecision({
+        queueId: "english-residual",
+        itemId: "spell:test",
+        reviewFingerprintSha256: "a".repeat(64),
+        status: "accepted",
+        reviewer: "portable-reviewer",
+        decisionNote: "A stale authority policy must reject writes.",
+      }),
+      (error: unknown) =>
+        error instanceof PhbReviewError && error.code === "stale-queue",
+    );
+    writeAuthorityManifest(root);
+    assert.equal(service.getQueue("english-residual").items.length, 1);
 
     const first = service.getQueue("mineru-layout").items[0]!;
     const originalLayoutOrder = service
@@ -367,6 +412,7 @@ function createFixture(root: string) {
   writeJsonl(inside(root, PHB_FULL_DB_COMPARISON_RELATIVE_PATH), [comparison]);
   writeJsonl(inside(root, PHB_FULL_ROW_REVIEW_RELATIVE_PATH), reviews);
   writeJsonl(inside(root, PHB_SRD_ADJUDICATION_RELATIVE_PATH), adjudications);
+  writeAuthorityManifest(root);
   writeJsonl(inside(root, PHB_FULL_ENTITIES_RELATIVE_PATH), spells);
   writeJsonl(
     inside(root, PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH),
@@ -378,6 +424,21 @@ function createFixture(root: string) {
   refreshSyntheticFreshness(root);
   refreshSyntheticRowReviewManifest(root);
   return { layoutRows };
+}
+
+function writeAuthorityManifest(root: string) {
+  const filePath = inside(root, PHB_SRD_ADJUDICATION_MANIFEST_RELATIVE_PATH);
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(
+    filePath,
+    `${JSON.stringify({
+      schemaVersion: 1,
+      inputs: {
+        authorityPolicy: currentPhbAuthorityPolicyReference(),
+      },
+    })}\n`,
+    "utf8",
+  );
 }
 
 function page(sourcePageIndex: number, text: string): FullMineruPageRow {

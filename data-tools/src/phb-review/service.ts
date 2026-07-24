@@ -45,6 +45,10 @@ import {
   type SrdAdjudicationRow,
 } from "../phb/srd-adjudication";
 import {
+  currentPhbAuthorityPolicyReference,
+  verifyPhbEnglishReviewAuthorityPolicy,
+} from "../phb/source-authority";
+import {
   readAndVerifyPhbSourceManifest,
   resolveInside,
 } from "../phb/source-manifest";
@@ -308,6 +312,7 @@ export function createPhbReviewService(
 
   function englishAvailability(): PhbReviewQueueAvailability {
     try {
+      verifyPhbEnglishReviewAuthorityPolicy(dataRoot);
       verifyEnglishQueue(dataRoot);
       return { available: true };
     } catch (error) {
@@ -561,7 +566,11 @@ function englishListItem(
     printedPageNumber:
       sourcePage?.printedPageNumber ?? comparison.sourcePages[0] ?? null,
     evidenceFingerprintSha256: review.evidenceFingerprintSha256,
-    reviewFingerprintSha256: reviewFingerprint({ review, adjudication }),
+    reviewFingerprintSha256: reviewFingerprint({
+      authorityPolicy: currentPhbAuthorityPolicyReference(),
+      review,
+      adjudication,
+    }),
     reviewer: review.reviewer,
     decisionNote: review.decisionNote,
     allowedActions: ["accepted", "rejected"],

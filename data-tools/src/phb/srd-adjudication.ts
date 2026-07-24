@@ -20,6 +20,7 @@ import {
   type SrdSpellEntity,
 } from "./srd-extraction";
 import { readAndVerifySrdSourceManifest } from "./srd-source";
+import { PHB_SRD_ADJUDICATION_MANIFEST_RELATIVE_PATH } from "./source-authority";
 import {
   committedFileCommit,
   resolveInside,
@@ -30,8 +31,7 @@ export const PHB_SRD_ALIASES_RELATIVE_PATH =
   "phb35/review/srd-name-aliases.jsonl";
 export const PHB_SRD_ADJUDICATION_RELATIVE_PATH =
   "phb35/review/srd-adjudication.jsonl";
-export const PHB_SRD_ADJUDICATION_MANIFEST_RELATIVE_PATH =
-  "phb35/review/srd-adjudication-manifest.json";
+export { PHB_SRD_ADJUDICATION_MANIFEST_RELATIVE_PATH };
 
 export type SrdNameAlias = {
   schemaVersion: 1;

@@ -9,9 +9,10 @@
 
 Status: in progress. Slices 1-3, the data-tools review service, localhost
 API/workspace shell, and bounded React consumer, are implemented and main-gate
-accepted in PRs #107 and #108. Slice 4 remains, but bulk English review is
-paused until the MinerU recall audit and revised source-authority pipeline
-regenerate the residual queue.
+accepted in PRs #107 and #108. Slice 4's authority safety gate is implemented:
+the pre-authority English queue now fails closed. The MinerU recall audit,
+effective-row pipeline, regenerated residual review, and Gate 2 acceptance
+remain.
 
 ## Purpose
 
@@ -140,10 +141,10 @@ The first release supports exactly two queue ids:
    upstream layout decision or artifact makes that chain stale.
 
    The current 75-row snapshot is not valid review input after the authority
-   decision, but the as-built #108 service does not yet detect that policy
-   change: the UI and decision endpoint remain technically writable. Operators
-   must not use this queue until data-pipeline invalidates it and the canonical
-   chain regenerates current rows.
+   decision. The service requires the code-owned `official-srd-default-v1`
+   authority reference and now rejects that snapshot for list, detail, and
+   decision requests. The canonical chain must regenerate current rows before
+   review resumes.
 
 Both queues expose a stable item id, status, kind/category, printed name/page,
 current evidence fingerprint, evidence references, allowed actions, and a
@@ -319,10 +320,11 @@ viewport smoke using one MinerU layout row and one English residual row.
 
 Owners: `data-pipeline` for rerun evidence; `main-gate` for acceptance.
 
-- First add an authority-policy revision or equivalent canonical input to the
-  service freshness/fingerprint chain. The existing 75-row snapshot must return
-  unavailable and reject direct decision writes before MinerU or residual
-  review resumes; add a regression test for this transition.
+- The authority-policy safety gate is implemented. The service requires the
+  code-owned `official-srd-default-v1` policy reference in its freshness chain,
+  includes that reference in English review fingerprints, and returns the old
+  75-row snapshot as unavailable for list, detail, and decision requests. The
+  legacy adjudicator intentionally cannot mint that revision.
 - Preserve the current layout and 75-row residual snapshots as regression
   evidence. Do not require the regenerated queue to retain the same count.
 - Complete the MinerU recall audit and revised field-level authority pipeline

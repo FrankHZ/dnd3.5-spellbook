@@ -175,7 +175,11 @@ review queues to the private localhost console:
 The service rebuilds candidates before every write, checks both evidence and
 review-state fingerprints, including current SRD adjudication evidence for
 English residuals, validates the complete queue, serializes writes in the
-process, and atomically replaces only the selected nested-data JSONL. Queue
+process, and atomically replaces only the selected nested-data JSONL. The
+English queue also requires the code-owned `official-srd-default-v1` authority
+policy reference in the adjudication manifest and includes that policy in each
+review fingerprint. Pre-authority snapshots therefore fail closed; the legacy
+adjudicator cannot make them reviewable by merely rerunning itself. Queue
 summaries and decision responses derive `canonicalRerunRequired` from current
 manifests, so reloads and no-op submissions retain pending rerun state. A layout
 save invalidates the English chain and requires a rerun beginning at
@@ -191,8 +195,9 @@ npm run check:data-tools-review
 npm run -w phb-review-console smoke:local
 ```
 
-The local smoke is read-only and checks the real queues, joined detail, runtime
-token handoff, and verified PDF byte-range route without submitting a decision.
+The local smoke is read-only and checks runtime token handoff, layout detail,
+the verified PDF byte-range route, and either current English detail or the
+expected structured `stale-queue` response while authority-locked.
 
 Inspect the local rules DB:
 
