@@ -261,39 +261,43 @@ Recommended next sequence:
    `main`, and the exact accepted commit before creating the release tag. This
    does not relax or reorder v1.4 source gates.
 
-2. **Completed: replace the provisional PDF.js inventory with full MinerU extraction**
+2. **Completed: deliver the localhost-only PHB PDF review console**
 
-   Pinned MinerU 3.4 now covers all 126 in-scope pages and preserves 4,493
-   ordered blocks, including 59 table blocks. Strict-inside PDF.js items project
-   directly; 126 outside-bbox items, three image-caption exclusions, and two
-   source-order conflicts now require accepted fingerprint-bound MinerU layout
-   decisions. Unknown review statuses fail closed. All extraction counts
-   reconcile, and affected evidence fingerprints have been regenerated.
+   PRs #107 and #108 added the private data-tools review service, loopback-only
+   API, and React evidence consumer. The console remains review tooling; its
+   successful 131-layout/75-residual smoke does not accept Gate 2 content.
 
-3. **Build the localhost-only PHB PDF review console**
+3. **Harden MinerU recall before further English decisions**
 
-   Add the private `review-console/` workspace after the data-tools review
-   service and fingerprint-safe write contract are accepted. Support only the
-   current MinerU layout decisions and 75 English residual exceptions; bind to
-   `127.0.0.1`, expose no arbitrary paths or production DB, and keep canonical
-   PHB reruns as the acceptance authority.
+   First make the superseded 75-row queue fail closed against the new authority
+   revision; the current #108 console remains technically writable and must not
+   be used in the meantime. Then audit omissions, segmentation, fields, and
+   tables against the pinned PHB and independent PDF.js inventory. MinerU
+   changes alter PHB evidence and downstream fingerprints.
 
-4. **Review 75 residual exceptions and close English Gate 2**
+4. **Rebuild field-level effective English rows**
 
-   The regenerated comparison has passed through the pinned official SRD 3.5
-   corpus and explicit Product Identity aliases, and all 69 new terminal
-   candidates are applied. Send only the remaining 75 source conflicts to main
-   gate and produce accepted effective English rows with zero unexplained
-   misses. Only after main gate accepts Gate 2 may the i18n translation and
-   proofreading track begin.
+   Rerun full extraction, comparison, SRD adjudication, and apply. Official SRD
+   text is adopted by default; PHB+errata remains immutable evidence and owns
+   missing-SRD, Product Identity, PHB-only, page, and table/layout fields.
+   Data-pipeline emits one effective row per spell and excludes DB-only
+   extensions from the body.
 
-5. **Activate only accepted v1.4 content**
+5. **Review only regenerated genuine exceptions and close Gate 2**
 
-   Apply accepted English corrections and Chinese reviewed overlays through the
-   maintained DB/content workflow, rebuild search, preserve CHM/English summary
+   Resolve deterministic three-way drift in the pipeline. Send only true
+   field-level exceptions to human review, extending the console only when a
+   new evidence type cannot be displayed. Translation remains blocked until
+   the rebuilt effective-row report is accepted.
+
+6. **Activate only accepted v1.4 content**
+
+   Apply accepted effective English rows and Chinese reviewed overlays through
+   the maintained DB/content workflow, record all pinned source identities plus
+   effective-row provenance, rebuild search, preserve CHM/English summary
    fallback, and verify existing frontend consumers without a UI redesign.
 
-6. **Preserve frozen and publication boundaries**
+7. **Preserve frozen and publication boundaries**
 
    Use the v1.3 freeze for current UI/platform behavior and older freezes for
    their owned areas. Do not expand v1.4 to DMG, Spell Compendium, PHB II, or

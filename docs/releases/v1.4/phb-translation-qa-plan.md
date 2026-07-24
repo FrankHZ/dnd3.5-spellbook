@@ -44,13 +44,14 @@ source-safe QA workflow.
 
 ## Translation Boundary
 
-- Eligible input is only the Gate 2 accepted effective English source.
+- Eligible input is only the Gate 2 accepted, field-resolved effective English
+  row. Translation does not reopen PHB/SRD/DB authority decisions.
 - Chinese scope is spell name, description body, and reconciled spell-level
   short description. English stat-block fields are extracted and compared for
   source QA, but broad localized mechanics-field redesign is not added to v1.4.
 - Every translation row retains spell identity, PHB page, effective English
-  hash, source/errata manifest hashes, translator, reviewer, QA status, and
-  final Chinese hash.
+  hash, PHB/errata/SRD manifest hashes, field-source provenance, translator,
+  reviewer, QA status, and final Chinese hash.
 - Translation generation and proofreading are separate states. A generated row
   cannot self-promote to accepted.
 - Large corpus reading/review must use bounded context packets and summarized

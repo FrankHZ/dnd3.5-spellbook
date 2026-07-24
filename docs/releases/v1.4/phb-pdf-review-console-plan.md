@@ -7,10 +7,11 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: in progress. Slices 1-2, the data-tools review service and localhost
-API/workspace shell, are implemented and main-gate accepted. Slice 3's bounded
-React consumer is implemented and locally validated, pending main-gate review.
-The Gate 2 review handoff in Slice 4 remains.
+Status: in progress. Slices 1-3, the data-tools review service, localhost
+API/workspace shell, and bounded React consumer, are implemented and main-gate
+accepted in PRs #107 and #108. Slice 4 remains, but bulk English review is
+paused until the MinerU recall audit and revised source-authority pipeline
+regenerate the residual queue.
 
 ## Purpose
 
@@ -81,13 +82,16 @@ The current committed data snapshot has two bounded review surfaces:
   source-order overrides, and three illustration-caption exclusions. The
   console must support these rows for inspection and future regenerated
   proposed decisions; it must not assume the current count is permanent.
-- 75 English Gate 2 residual exceptions after deterministic SRD adjudication.
-  These are the only active row decisions the first console release should
-  help close.
+- 75 English Gate 2 residual exceptions after the previous deterministic SRD
+  adjudication. This is now a superseded snapshot: retain it for regression
+  evidence, but do not bulk-accept it before the authority and extraction rerun.
 
 ## Architecture And Authority
 
-- The pinned PHB PDF plus accepted errata remains display/source authority.
+- The pinned PHB PDF plus accepted errata remains immutable reference/evidence
+  and owns page/table/layout structure. Official SRD 3.5 supplies adopted rules
+  text by default; data-tools resolves PHB-only, Product Identity, missing-SRD,
+  and other field exceptions into one effective row.
 - MinerU remains the primary full-corpus structure, reading-order, field, body,
   and table extractor. PDF.js remains an independent exact-character and
   coordinate baseline projected only inside MinerU boundaries unless a current
@@ -134,6 +138,12 @@ The first release supports exactly two queue ids:
    extraction, comparison, SRD adjudication, and terminal-candidate apply
    artifacts are mutually current. The service must fail closed when any
    upstream layout decision or artifact makes that chain stale.
+
+   The current 75-row snapshot is not valid review input after the authority
+   decision, but the as-built #108 service does not yet detect that policy
+   change: the UI and decision endpoint remain technically writable. Operators
+   must not use this queue until data-pipeline invalidates it and the canonical
+   chain regenerates current rows.
 
 Both queues expose a stable item id, status, kind/category, printed name/page,
 current evidence fingerprint, evidence references, allowed actions, and a
@@ -309,8 +319,14 @@ viewport smoke using one MinerU layout row and one English residual row.
 
 Owners: `data-pipeline` for rerun evidence; `main-gate` for acceptance.
 
-- Run both current queues through the console, preserving the current 131-row
-  layout inventory and presenting exactly the current 75 residual exceptions.
+- First add an authority-policy revision or equivalent canonical input to the
+  service freshness/fingerprint chain. The existing 75-row snapshot must return
+  unavailable and reject direct decision writes before MinerU or residual
+  review resumes; add a regression test for this transition.
+- Preserve the current layout and 75-row residual snapshots as regression
+  evidence. Do not require the regenerated queue to retain the same count.
+- Complete the MinerU recall audit and revised field-level authority pipeline
+  before using the English queue for decisions.
 - After any layout decision, restart the canonical full chain at
   `phb:source:extract`, then run compare, SRD adjudication, and SRD apply before
   reopening English review. After the regenerated residual decisions are
@@ -320,6 +336,9 @@ Owners: `data-pipeline` for rerun evidence; `main-gate` for acceptance.
 - Confirm zero stale/proposed residual decisions before producing the English
   handoff. Keep the console local and source-bearing outputs in the nested data
   repo.
+- Extend the frontend only when a regenerated genuine exception introduces an
+  evidence type the accepted console cannot display. Do not change the UI merely
+  because deterministic authority rules changed server-side.
 
 Validation: current data acceptance, source-free aggregate report, Gate 2
 main-gate review, and the standard v1.4 data/portable checks.
@@ -348,6 +367,9 @@ main-gate review, and the standard v1.4 data/portable checks.
   It stays disabled, including direct API access and cached UI rows, until a
   canonical rerun beginning at full `phb:source:extract` regenerates and
   validates extraction, comparison, adjudication, and apply artifacts.
+- An authority-policy revision also makes the prior English queue unavailable;
+  direct list/detail/decision requests must fail closed before operators begin
+  the MinerU recall audit or regenerated review.
 - Saving any decision clearly leaves final canonical acceptance pending;
   after an English residual save, `phb:source:compare` must refresh the stale
   row-review manifest before `phb:source:report` may succeed. This residual-only
@@ -412,6 +434,8 @@ Slice 3 implementation result:
   queues, PDF rendering, target overlays, three-way component evidence,
   filters/reset, required disabled form state, overflow, and clipped controls
   with no browser console errors. No decision was submitted during smoke.
+- PR #108 merged the accepted React consumer. Its 75-row smoke records the
+  pre-authority snapshot and is not authorization for bulk residual decisions.
 
 Add the merged frontend PR and Slice 4 Gate 2 validation evidence here after
 main-gate acceptance instead of copying logs or source rows into the public

@@ -7,12 +7,12 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: in progress; Gate 0 and the complete Gate 1 representative pilot are
-accepted. The full MinerU structured run, block-bounded PDF.js text-fidelity
-projection, regenerated comparison, and official SRD 3.5 adjudication are
-complete. Gate 2 is now blocked on the accepted localhost PDF review-console
-prerequisite, review of 75 residual exceptions, and the resulting English
-handoff; downstream translation/activation gates remain blocked.
+Status: in progress; Gate 0, the complete Gate 1 representative pilot, and the
+localhost review-console prerequisite are accepted. Gate 2 is reopened at the
+MinerU recall and authority-policy boundary. The current 75 residual exceptions
+are a superseded snapshot and must not be bulk-accepted before hardened
+extraction, comparison, and SRD adjudication regenerate their evidence;
+downstream translation/activation gates remain blocked.
 
 ## Purpose
 
@@ -31,8 +31,8 @@ correction layer before any translation begins.
   `docs/operations/db-content-workflow.md`, and
   `docs/operations/public-repo-notes.md`.
 - Upstream dependency: pinned local PHB 3.5 PDF, official errata bytes, and a
-  complete hash-pinned official SRD 3.5 spell corpus used only for independent
-  adjudication.
+  complete hash-pinned official SRD 3.5 spell corpus used as the default adopted
+  rules-text source.
 - Downstream plans:
   [phb-pdf-review-console-plan.md](./phb-pdf-review-console-plan.md), then
   [phb-translation-qa-plan.md](./phb-translation-qa-plan.md) and
@@ -63,19 +63,26 @@ correction layer before any translation begins.
 - Existing English DB text is not a verified PHB source and must be compared,
   not assumed authoritative.
 - Existing `spells-full` and CHM workflows are useful comparison/tooling
-  references but are not PHB source authority.
-- The effective PHB PDF plus official errata remains the display authority.
-  SRD 3.5 is an independent adjudication source, not a replacement display
-  corpus: Product Identity omissions and renamed proper-name spells must be
-  handled through explicit aliases, and PHB page/layout evidence remains PHB
-  only.
+  references but are not adopted rules-text authority.
+- The pinned PHB PDF plus accepted errata is immutable reference/evidence.
+  Official SRD 3.5 supplies adopted rules body and mechanics-bearing fields by
+  default. PHB+errata remains authoritative when SRD content is missing, for
+  Product Identity names and aliases, PHB-only content and class-list short
+  descriptions, and all page/table/layout structure.
+- Effective names use the SRD name by default. A Product Identity or PHB-only
+  spell uses the PHB printed name as its effective name and retains the SRD
+  counterpart, when present, as an explicit alias; ordinary mapped rows retain
+  the PHB counterpart as alias provenance.
+- Existing DB prose is comparison input only. DB-only extension notes do not
+  enter the effective body; preserving useful commentary as a separately
+  modeled annotation is outside v1.4.
 - The existing IMarvin SRD short-description index is incomplete and may be
   used as discovery input only. It cannot satisfy the SRD source lock or
   mechanics adjudication contract.
-- Extraction engines are evidence producers, not source authority. MinerU is
-  the primary structured extractor for reading order, fields, body blocks, and
-  tables. PDF.js is an independently derived exact-character and coordinate
-  baseline. Items inside strict MinerU bboxes may project directly; an
+- Extraction engines produce PHB evidence; they do not select adopted rules
+  text. MinerU is the primary structured extractor for reading order, fields,
+  body blocks, and tables. PDF.js is an independently derived exact-character
+  and coordinate baseline. Items inside strict MinerU bboxes may project directly; an
   outside-bbox item or MinerU/source order conflict requires a current,
   fingerprint-bound accepted decision over enumerated MinerU blocks. PDF.js
   must not define spell segmentation or silently resolve a layout conflict.
@@ -109,6 +116,8 @@ follow existing data-repo conventions, but the schemas must preserve:
   explicit PHB-to-SRD alias provenance;
 - three-way PHB+errata/SRD/DB component disposition and the deterministic rule
   that produced it;
+- one field-resolved effective English row with per-field source provenance and
+  no unresolved runtime fallback;
 - review status, reviewer/decision note, and terminal accepted/rejected state.
 
 No public aggregate report may contain the raw or normalized source text.
@@ -151,6 +160,11 @@ downstream acceptance artifacts.
   MinerU/source order conflict, and use the raw MinerU text for recall/drift
   comparison. Never replace MinerU reading order or table structure with a
   PDF.js-only parse.
+- Before further English residual review, audit MinerU recall against the
+  independent PDF.js inventory and pinned PHB pages. Treat every unexplained
+  omission, segmentation drift, field drop, or table loss as upstream evidence
+  work. Any accepted fix invalidates all affected downstream fingerprints and
+  requires a full extraction rerun.
 
 Validation: schema tests plus redacted/minimal fixtures that cover every
 supported layout failure mode.
@@ -193,23 +207,33 @@ drops, and reviewed outcomes for every pilot row.
   `extra-in-db`, or `manual-review`.
 - Reconcile duplicate short-description occurrences before producing a
   spell-level candidate; disagreement requires a decision, not first-row wins.
-- Pin and parse the complete official SRD 3.5 spell corpus as an independent
-  adjudication source. Preserve source file/hash provenance and reject stale or
-  partial source packages.
+- Pin and parse the complete official SRD 3.5 spell corpus as the default
+  adopted rules-text source. Preserve source file/hash provenance and reject
+  stale or partial source packages.
 - Match PHB and SRD spell identities by normalized exact name or a reviewed,
   explicit Product Identity alias. Do not introduce fuzzy reuse.
-- Classify each proposed PHB/DB row through a deterministic three-way matrix:
-  PHB+errata and SRD agreement may establish a source-backed DB correction;
-  registered Product Identity renames establish alias-backed agreement; SRD
-  agreement with an applicable erratum establishes errata-backed agreement;
-  SRD absence or unsupported PHB-only layout evidence preserves the existing
-  PHB review requirement; genuine three-way drift remains an exception.
+- Resolve effective names deterministically: use the SRD name for ordinary
+  mapped rows, but override with the PHB printed name for Product Identity and
+  PHB-only rows. Preserve the non-effective counterpart as an alias.
+- Resolve the three-way matrix per field. Adopt SRD text for body and
+  mechanics-bearing fields by default; use PHB+errata for SRD omissions,
+  Product Identity names, PHB-only content, class-list short descriptions, and
+  page/table/layout structure. Exclude DB-only extensions from the body.
+- Emit exactly one effective English row per spell with per-field source and
+  decision provenance. Frontend, backend, search, and translation consumers
+  receive this row and do not choose between PHB, SRD, or DB at runtime.
 - The data-pipeline owner resolves deterministic rows and produces terminal
   proposals with current evidence fingerprints. Main gate approves the
   adjudication policy and reviews only residual exceptions; it is not the
   clerical reviewer for every substantive/manual comparison row.
-- Review those residual exceptions through the accepted localhost console or
-  an equivalent fingerprint-safe data-tools command. The console must reuse
+- Do not bulk-review the current 75 residual rows. The current service remains
+  technically writable, so this is an operator prohibition until data-pipeline
+  adds the authority revision to queue freshness/fingerprints and makes the old
+  queue fail closed. Then harden MinerU recall, rerun full extraction,
+  comparison, SRD adjudication, and terminal-candidate apply, and resolve
+  deterministic three-way drift in batch. Review only the
+  regenerated genuine exceptions through the accepted localhost console or an
+  equivalent fingerprint-safe data-tools command. The console must reuse
   the canonical candidate/validation logic and cannot turn a saved decision
   into Gate 2 acceptance without the normal rerun. A layout decision requires
   a full rerun beginning at `phb:source:extract`; the English residual queue
@@ -223,13 +247,16 @@ Validation: the MinerU input/output/runtime chain and PDF.js baseline are both
 current; every engine difference is deterministic or explicitly reviewed; PHB,
 SRD, and DB set totals balance under explicit alias/absence accounting;
 category and adjudication totals balance; changing either extraction evidence,
-any SRD source byte, parsed row, alias, or three-way evidence resets the
-affected decision; there are zero unexplained misses/extras and no unresolved
-exception remains at handoff.
+any SRD source byte, parsed row, alias, authority rule, effective-row field, or
+three-way evidence resets the affected decision; there are zero unexplained
+misses/extras, every spell has one effective row, and no unresolved exception
+remains at handoff.
 
 ### Slice 5: English Acceptance Handoff
 
 - Produce accepted effective English rows for downstream translation.
+- Prove every effective row is complete and field-resolved before handoff; no
+  downstream runtime source-selection rule is permitted.
 - Produce structured patch candidates only for accepted substantive DB
   corrections; formatting-only differences do not mutate canonical data by
   default.
@@ -282,6 +309,10 @@ script manifest, tests, and this plan are updated together.
 - Every deterministic three-way result records its adjudication rule and
   fingerprint-bound evidence; only genuine exceptions require main-gate row
   review.
+- Every accepted spell has exactly one effective English row with per-field
+  provenance. Official SRD text is the default for rules text; PHB+errata
+  exceptions match the authority matrix, and DB-only extensions are absent
+  from the body.
 - Any console-recorded decision survives its required canonical rerun with the
   same current fingerprint; stale or invalid decisions fail closed before the
   English report is proposed.
@@ -291,6 +322,9 @@ script manifest, tests, and this plan are updated together.
 - After the final English residual decision, `phb:source:compare` refreshes the
   stale row-review manifest before `phb:source:report`; report cannot consume
   the decision JSONL directly while that manifest is stale.
+- MinerU recall or authority-matrix changes reopen Gate 2 at full
+  `phb:source:extract`; the current 75-row residual snapshot is not accepted
+  review input until the full downstream chain is regenerated.
 - The English handoff is accepted before any translation branch consumes it.
 - Public fixtures/reports contain no PHB or translated corpus text.
 - Focused tests, `npm run typecheck:data-tools`, portable tests, and local-data
@@ -409,8 +443,8 @@ archive host is the publisher.
   spell review evidence. The regenerated 605-row comparison retains 65 exact,
   297 formatting-only, 163 substantive, and 80 manual categories. Three-way
   adjudication applied 69 newly current terminal candidates, leaving 530
-  accepted decisions and 75 residual exceptions. Gate 2 remains open only for
-  those 75 exception decisions.
+  accepted decisions and 75 residual exceptions. At that snapshot, Gate 2
+  remained open for those exception decisions.
 - Data-repo commit `5fa62a2` records the complete MinerU extraction, regenerated
   comparison, table-linked row evidence, and current adjudication matrix.
   Commit `bbdc949` applies the 69 new terminal candidates while preserving all
@@ -429,3 +463,8 @@ archive host is the publisher.
   evidence, correct three initially mis-grouped list runs, regenerate the
   605-row comparison without semantic drift, and restore 168 SRD-backed
   terminal decisions with 75 residual exceptions.
+- The later authority decision makes official SRD rules text the default
+  adopted content while retaining PHB+errata as immutable evidence and the
+  source for defined exceptions. Together with the pending MinerU recall audit,
+  this reopens Gate 2 and supersedes the 75-row queue as active bulk-review
+  input until a full rerun regenerates it.

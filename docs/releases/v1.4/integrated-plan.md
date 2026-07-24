@@ -19,12 +19,12 @@ artifact is accepted merely because it exists.
 ```text
 pinned PHB PDF + pinned official errata
   -> representative extraction/compare pilot
-  -> full MinerU structured extraction
+  -> full MinerU recall audit + hardened structured extraction
   -> block-bounded PDF.js text-fidelity projection and verification
-  -> errata-effective English source
-  -> pinned official SRD 3.5 adjudication
   -> localhost PDF review service/API/consumer acceptance
-  -> English source QA exception review and acceptance
+  -> pinned official SRD 3.5 default-text adjudication
+  -> field-level effective English rows
+  -> deterministic drift resolution + genuine exception review
   -> Chinese translation + independent proofreading
   -> accepted-only DB/content activation
   -> API/frontend/search acceptance
@@ -67,20 +67,26 @@ Owner: `data-pipeline`; approver: `main-gate`.
 - Extract the full in-scope PHB corpus and relevant errata decisions.
 - Treat MinerU as the primary structured extractor and PDF.js as an independent
   exact-character/coordinate baseline projected only inside MinerU blocks.
-  Neither engine replaces the pinned PDF as source authority, and PDF.js-only
-  rows cannot close this gate.
+  Neither engine replaces the pinned PDF as immutable reference/evidence or
+  chooses adopted rules text, and PDF.js-only rows cannot close this gate.
 - Reconcile PDF descriptions, class-list occurrences, and current PHB DB rows.
-- Pin and parse the official SRD 3.5 spell corpus as an independent
-  adjudication source while keeping PHB+errata as display authority.
+- Pin and parse the official SRD 3.5 spell corpus as the default adopted source
+  for rules body and mechanics-bearing fields. Keep PHB+errata immutable as
+  reference/evidence and authoritative for SRD omissions, Product Identity
+  names, PHB-only content, page provenance, and table/layout structure.
 - Classify each comparison as `exact-match`, `formatting-only`,
   `substantive-mismatch`, `missing-in-db`, `extra-in-db`, or `manual-review`.
-- Let data-pipeline resolve deterministic three-way agreement, reviewed
-  Product Identity aliases, and errata-backed agreement. Route only residual
-  source conflicts to main-gate, then preserve every decision and its current
-  evidence fingerprint in the data repo.
-- Before reviewing the residual exceptions through a browser, accept the
+- Let data-pipeline resolve every PHB+errata/SRD/DB difference per field and
+  emit one provenance-bearing effective row. DB-only extension notes do not
+  enter the body. Route only genuine exceptions to main-gate; server and web
+  must never choose a source at runtime.
+- Before reviewing residual exceptions through a browser, accept the
   localhost-only review service/API and bounded React consumer in
-  [phb-pdf-review-console-plan.md](./phb-pdf-review-console-plan.md). Console
+  [phb-pdf-review-console-plan.md](./phb-pdf-review-console-plan.md). The current
+  #108 console is still technically writable because the service does not yet
+  encode the new authority revision; operators must not use the 75-row snapshot.
+  Data-pipeline must first make that snapshot fail closed, then audit MinerU
+  recall and rebuild the full extraction/comparison/adjudication chain. Console
   saves are decision-file edits, not Gate 2 acceptance. Any layout save makes
   the English residual queue unavailable until the canonical full rerun starts
   at `phb:source:extract` and completes compare, SRD adjudication, and SRD
@@ -110,9 +116,10 @@ counts as release-complete.
 
 Owner: `backend-db`; approver: `main-gate`.
 
-- Dry-run and apply accepted English corrections and accepted Chinese overlays
-  through maintained workflows.
-- Regenerate content/search artifacts and record parent/data/source hashes.
+- Dry-run and apply accepted effective English rows and accepted Chinese
+  overlays through maintained workflows.
+- Regenerate content/search artifacts and record parent/data commits, all
+  pinned PHB/errata/SRD identities, and effective-row artifact provenance.
 - Prove accepted PHB reviewed overlays are preferred per spell while existing
   Chinese CHM rows remain fallback outside accepted coverage.
 - Verify existing frontend detail and short-description consumers need no new
@@ -130,9 +137,12 @@ explicit operator handoff for any later remote DB activation.
   structure. PDF.js may restore exact source characters only inside those
   blocks and supplies independent recall/coordinate evidence; it cannot define
   spell segmentation, reorder content, or override structured tables.
-- Official SRD 3.5 is a hash-pinned independent adjudication source, not the
-  displayed PHB corpus. It may prove mechanics agreement but cannot replace PHB
-  page/layout evidence or silently rename Product Identity spells.
+- Official SRD 3.5 supplies the default adopted rules text. It cannot replace
+  PHB page/layout evidence, PHB-only content, or Product Identity names.
+- Data-pipeline owns field-level authority decisions and emits one effective
+  row per spell. DB-only additions are excluded from the body; any future
+  preservation belongs in a separately modeled annotation. Runtime consumers
+  do not infer or select content authority.
 - Main gate approves the SRD adjudication policy and residual exceptions; the
   data-pipeline owner is responsible for deterministic row resolution and the
   resulting review bundle.
@@ -150,6 +160,16 @@ explicit operator handoff for any later remote DB activation.
 - Full PHB English acceptance precedes all corpus translation. A successful
   ten-spell pilot does not authorize early translation.
 - Production content activation is not part of automatic CD.
+
+## Gate Reopen Conditions
+
+Gate 2 evidence and all affected fingerprints must be regenerated when MinerU
+recall, block order, spell segmentation, field extraction, table handling,
+PDF.js projection, errata application, SRD bytes/parsing, identity aliases, or
+the authority/effective-row rules change. A MinerU recall change reopens the
+full chain at `phb:source:extract`; comparison or adjudication-only reruns are
+not sufficient. Translation and activation remain blocked until the rebuilt
+effective rows and genuine exception queue are accepted.
 
 ## Conflict Routing
 
