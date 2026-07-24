@@ -31,9 +31,12 @@ async function main() {
       (queue) => queue.queueId === "english-residual",
     );
     assert.ok(layout && layout.total > 0);
-    assert.ok(english && english.availability.available && english.total > 0);
+    assert.ok(english);
 
-    for (const queue of [layout, english]) {
+    for (const queue of [
+      layout,
+      ...(english.availability.available ? [english] : []),
+    ]) {
       const response = await fetch(`${baseUrl}/api/queues/${queue.queueId}`, {
         headers,
       });
@@ -50,6 +53,23 @@ async function main() {
       assert.doesNotMatch(await detail.text(), /[A-Z]:\\/u);
     }
 
+    if (!english.availability.available) {
+      assert.equal(english.total, 0);
+      assert.equal(english.availability.code, "stale-queue");
+      const response = await fetch(`${baseUrl}/api/queues/english-residual`, {
+        headers,
+      });
+      assert.equal(response.status, 409);
+      const body = (await response.json()) as {
+        error: {
+          code: string;
+          details: { availability: PhbReviewQueueSummary["availability"] };
+        };
+      };
+      assert.equal(body.error.code, "stale-queue");
+      assert.equal(body.error.details.availability.available, false);
+    }
+
     const pdf = await fetch(`${baseUrl}/api/sources/phb35-core/pdf`, {
       headers: { ...headers, Range: "bytes=0-7" },
     });
@@ -62,7 +82,11 @@ async function main() {
     );
 
     process.stdout.write(
-      `PHB review console local smoke passed: ${layout.total} layout, ${english.total} English residual.\n`,
+      `PHB review console local smoke passed: ${layout.total} layout, ${
+        english.availability.available
+          ? `${english.total} English residual`
+          : "English residual authority-locked"
+      }.\n`,
     );
   } finally {
     await new Promise<void>((resolve, reject) =>

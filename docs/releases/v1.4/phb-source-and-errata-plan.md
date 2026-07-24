@@ -10,8 +10,9 @@
 Status: in progress; Gate 0, the complete Gate 1 representative pilot, and the
 localhost review-console prerequisite are accepted. Gate 2 is reopened at the
 MinerU recall and authority-policy boundary. The current 75 residual exceptions
-are a superseded snapshot and must not be bulk-accepted before hardened
-extraction, comparison, and SRD adjudication regenerate their evidence;
+are now fail-closed behind the `official-srd-default-v1` authority revision and
+cannot be read or edited through the review service. Hardened extraction,
+field-resolved comparison, and SRD adjudication must regenerate their evidence;
 downstream translation/activation gates remain blocked.
 
 ## Purpose
@@ -226,11 +227,12 @@ drops, and reviewed outcomes for every pilot row.
   proposals with current evidence fingerprints. Main gate approves the
   adjudication policy and reviews only residual exceptions; it is not the
   clerical reviewer for every substantive/manual comparison row.
-- Do not bulk-review the current 75 residual rows. The current service remains
-  technically writable, so this is an operator prohibition until data-pipeline
-  adds the authority revision to queue freshness/fingerprints and makes the old
-  queue fail closed. Then harden MinerU recall, rerun full extraction,
-  comparison, SRD adjudication, and terminal-candidate apply, and resolve
+- Do not bulk-review the current 75 residual rows. The service now requires the
+  `official-srd-default-v1` authority revision in queue freshness/fingerprints,
+  so the superseded queue fails closed and direct decision writes are rejected.
+  The legacy adjudicator intentionally cannot mint the new revision. Next,
+  harden MinerU recall, rerun full extraction, comparison, revised SRD
+  adjudication, and terminal-candidate apply, and resolve
   deterministic three-way drift in batch. Review only the
   regenerated genuine exceptions through the accepted localhost console or an
   equivalent fingerprint-safe data-tools command. The console must reuse

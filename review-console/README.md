@@ -37,6 +37,8 @@ a URL, or console output.
 Saving a layout decision unloads the English queue until the canonical full
 chain is current again. A stale decision response refreshes the displayed
 evidence while preserving unsaved note, decision, and target fields.
+The English queue also requires the current code-owned source-authority policy
+reference; pre-authority snapshots are unavailable and reject decision writes.
 Every save remains a decision-file edit; it is not Gate 2 acceptance.
 
 Validate with:
@@ -49,5 +51,7 @@ npm run build
 
 With the nested data repo and pinned PHB source available, run the read-only
 real-data API/PDF acceptance smoke with `npm run smoke:local`. It starts an
-ephemeral loopback server, checks both current queues and one detail from each,
-verifies a PDF byte range, and closes without submitting a decision.
+ephemeral loopback server, checks layout detail and a verified PDF byte range,
+then checks either current English detail or the expected structured
+`stale-queue` response while the authority gate is closed. It never submits a
+decision.

@@ -225,14 +225,13 @@ npm run -w phb-review-console dev
 ```
 
 The 75 English residual rows visible in the pre-authority snapshot are paused,
-not an active bulk-review queue. The current #108 service does not yet encode
-the authority revision, so the UI remains visible and `/api/decisions` remains
-writable against those superseded fingerprints. Do not submit decisions. The
-first data-pipeline prerequisite is to invalidate the old queue and make direct
-reads/writes fail closed. Then complete the MinerU recall audit and rerun full
-extraction, comparison, SRD adjudication, and apply under the v1.4 authority
-matrix. Use the console for regenerated genuine exceptions only; do not
-preserve the old count as an acceptance invariant.
+not an active bulk-review queue. The service requires the code-owned
+`official-srd-default-v1` authority reference, so that snapshot now returns
+unavailable and rejects direct reads and writes. The legacy adjudicator cannot
+mint the new revision. Complete the MinerU recall audit and revised effective
+English pipeline before rerunning extraction, comparison, SRD adjudication, and
+apply under the v1.4 authority matrix. Use the console for regenerated genuine
+exceptions only; do not preserve the old count as an acceptance invariant.
 
 The launcher builds the public `data-tools/phb-review` package entry, binds one
 server to `127.0.0.1`, injects its process-local API token into the served HTML,
