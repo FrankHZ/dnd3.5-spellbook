@@ -830,7 +830,7 @@ function collectFullPageMappings(
   }).sort((left, right) => left.sourcePageIndex - right.sourcePageIndex);
 }
 
-function isContentBlock(block: FullMineruBlock) {
+export function isContentBlock(block: FullMineruBlock | StableMineruBlock) {
   return (
     block.type === "text" ||
     block.type === "table" ||
@@ -1223,8 +1223,8 @@ function horizontalOverlap(
   return Math.max(0, Math.min(left[2], right[2]) - Math.max(left[0], right[0]));
 }
 
-function normalizedItemCenter(
-  page: FullMineruPageRow,
+export function normalizedItemCenter(
+  page: { pdfjs: { width: number; height: number } },
   item: PhbTextPageRow["pdfjs"]["items"][number],
 ) {
   return {
@@ -1235,7 +1235,7 @@ function normalizedItemCenter(
   };
 }
 
-function pointInside(
+export function pointInside(
   point: { x: number; y: number },
   bbox: [number, number, number, number],
   tolerance: number,
@@ -1272,7 +1272,13 @@ function bboxDistance(
   };
 }
 
-function isKnownPageFurniture(page: FullMineruPageRow, text: string) {
+export function isKnownPageFurniture(
+  page: {
+    printedPageNumber: number | null;
+    rangeKinds: PhbFullRangeKind[];
+  },
+  text: string,
+) {
   const normalized = text.trim();
   return (
     normalized === String(page.printedPageNumber) ||

@@ -65,6 +65,13 @@
       "requiresSqlite": false,
       "writeCapable": false
     },
+    "phb:mineru:recall": {
+      "module": "phb",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": false,
+      "writeCapable": false
+    },
     "phb:source:compare": {
       "module": "phb",
       "lifecycle": "maintained-local",

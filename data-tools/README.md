@@ -79,6 +79,29 @@ entity-level acceptance. The tested local runtime is pinned by
 `data/phb35/source/mineru-runtime.json`, including the required
 `pdftext==0.6.3` and `six==1.17.0` compatibility pins.
 
+Before replacing the accepted full-run runtime, audit candidate MinerU output
+against the independently pinned PDF.js text layer one page at a time:
+
+```bash
+npm run -w data-tools phb:mineru:recall -- \
+  --label vlm-printed-182 \
+  --source-id phb35-core \
+  --source-page-index 182 \
+  --candidate-page-index 0 \
+  --content-list artifacts/mineru/phb35/recall-pilot/printed-182-vlm-gpu/phb35-core.full/vlm/phb35-core.full_content_list.json \
+  --backend vlm-engine \
+  --method auto
+```
+
+The command verifies the current source and full-input manifests, reads one
+candidate content-list page, and writes a source-free report under
+`data-tools/out/phb/`. It reports strict MinerU-bbox coverage, normalized item
+coverage, and dehyphenated token recall/precision without emitting PDF text.
+The `backend` and `method` arguments describe the candidate; they are not a
+runtime provenance gate. A full-run replacement still requires a committed
+runtime manifest generated from the actual environment plus representative
+description, table, and image-adjacent page acceptance.
+
 `phb:pilot:verify` is the acceptance gate, not another report command. By
 default it requires a committed, non-stale, `accepted` end-to-end review with
 entity extraction, errata overlay, DB comparison, and row-review artifacts.
