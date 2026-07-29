@@ -3,15 +3,21 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { repoRoot } from "../shared/env";
-import { readPhbFullExtractionManifest } from "./full-manifest";
+import {
+  readPhbFullExtractionManifest,
+  type PhbFullExtractionManifest,
+  type PhbFullRangeKind,
+} from "./full-manifest";
 import {
   PHB_FULL_MINERU_INPUT_MANIFEST_RELATIVE_PATH,
+  assertCanonicalFullPageMappings,
   isContentBlock,
   isKnownPageFurniture,
   normalizedItemCenter,
+  parseFullMineruInputManifest,
   pointInside,
+  type FullMineruInputManifest,
 } from "./full-mineru";
-import type { PhbFullRangeKind } from "./full-manifest";
 import { inspectPdfTextLayer, type PhbPdfSourcePage } from "./pdf-baseline";
 import {
   blockText,
@@ -58,8 +64,15 @@ export type MineruRecallReport = MineruRecallAudit & {
   provenance: {
     sourceId: string;
     sourceArtifactSha256: string;
+    inputManifest: {
+      relativePath: string;
+      bytes: number;
+      sha256: string;
+    };
     subsetArtifactSha256: string;
     subsetPageIndex: number;
+    sourcePageFingerprintSha256: string;
+    subsetPageFingerprintSha256: string;
   };
   candidate: {
     label: string;
@@ -127,13 +140,6 @@ export async function runMineruPageRecall(input: {
     );
   }
 
-  const mapping = readFullInputPageMapping({
-    dataRoot: input.dataRoot,
-    sourceId: input.sourceId,
-    sourcePageIndex: input.sourcePageIndex,
-    sourceManifestSha256: source.manifestSha256,
-    sourceArtifactSha256: sourceArtifact.sha256,
-  });
   const { sourcePages } = await inspectPdfTextLayer(
     sourceArtifact.path,
     new Set([input.sourcePageIndex]),
@@ -144,6 +150,14 @@ export async function runMineruPageRecall(input: {
       `PDF.js page not found: ${input.sourceId}[${input.sourcePageIndex}]`,
     );
   }
+  const mapping = await readFullInputPageMapping({
+    dataRoot: input.dataRoot,
+    sourceId: input.sourceId,
+    sourcePageIndex: input.sourcePageIndex,
+    sourceManifestSha256: source.manifestSha256,
+    sourceArtifactSha256: sourceArtifact.sha256,
+    sourcePage: page,
+  });
   const audit = auditMineruPageRecall({
     page,
     printedPageNumber: mapping.printedPageNumber,
@@ -155,8 +169,11 @@ export async function runMineruPageRecall(input: {
     provenance: {
       sourceId: input.sourceId,
       sourceArtifactSha256: sourceArtifact.sha256,
+      inputManifest: mapping.inputManifest,
       subsetArtifactSha256: mapping.subsetArtifactSha256,
       subsetPageIndex: mapping.subsetPageIndex,
+      sourcePageFingerprintSha256: mapping.sourcePageFingerprintSha256,
+      subsetPageFingerprintSha256: mapping.subsetPageFingerprintSha256,
     },
     candidate: {
       label: input.label,
@@ -292,58 +309,79 @@ function joinPdfItemsForRecall(items: string[]) {
   );
 }
 
-function readFullInputPageMapping(input: {
+async function readFullInputPageMapping(input: {
   dataRoot: string;
   sourceId: string;
   sourcePageIndex: number;
   sourceManifestSha256: string;
   sourceArtifactSha256: string;
+  sourcePage: PhbPdfSourcePage;
 }) {
-  const { filePath: fullManifestPath } = readPhbFullExtractionManifest(
+  const { filePath: fullManifestPath, manifest: fullManifest } =
+    readPhbFullExtractionManifest(input.dataRoot);
+  const inputManifestPath = path.join(
     input.dataRoot,
+    PHB_FULL_MINERU_INPUT_MANIFEST_RELATIVE_PATH,
   );
-  const manifest = readJson(
-    path.join(input.dataRoot, PHB_FULL_MINERU_INPUT_MANIFEST_RELATIVE_PATH),
-    "PHB full MinerU input manifest",
-  ) as {
-    sourceManifest?: { sha256?: string };
-    fullManifest?: { sha256?: string };
-    artifacts?: Array<{
-      sourceId?: string;
-      sourceSha256?: string;
-      relativePath?: string;
-      bytes?: number;
-      sha256?: string;
-      pages?: Array<{
-        subsetPageIndex?: number;
-        sourcePageIndex?: number;
-        printedPageNumber?: number | null;
-        rangeKinds?: unknown;
-      }>;
-    }>;
-  };
+  const manifest = parseFullMineruInputManifest(
+    readJson(inputManifestPath, "PHB full MinerU input manifest"),
+  );
+  return verifyMineruRecallInputProvenance({
+    dataRoot: input.dataRoot,
+    inputManifestPath,
+    manifest,
+    sourceId: input.sourceId,
+    sourcePageIndex: input.sourcePageIndex,
+    sourceManifestSha256: input.sourceManifestSha256,
+    sourceArtifactSha256: input.sourceArtifactSha256,
+    fullManifestPath,
+    fullManifest,
+    sourcePage: input.sourcePage,
+  });
+}
+
+export async function verifyMineruRecallInputProvenance(input: {
+  dataRoot: string;
+  inputManifestPath: string;
+  manifest: FullMineruInputManifest;
+  sourceId: string;
+  sourcePageIndex: number;
+  sourceManifestSha256: string;
+  sourceArtifactSha256: string;
+  fullManifestPath: string;
+  fullManifest: PhbFullExtractionManifest;
+  sourcePage: PhbPdfSourcePage;
+}) {
+  const manifest = input.manifest;
   if (manifest.sourceManifest?.sha256 !== input.sourceManifestSha256) {
     throw new Error(
       "Full MinerU input does not pin the current source manifest",
     );
   }
-  if (manifest.fullManifest?.sha256 !== sha256File(fullManifestPath)) {
+  if (manifest.fullManifest.sha256 !== sha256File(input.fullManifestPath)) {
     throw new Error(
       "Full MinerU input does not pin the current full extraction manifest",
     );
   }
-  const artifact = manifest.artifacts?.find(
+  const artifact = manifest.artifacts.find(
     (candidate) => candidate.sourceId === input.sourceId,
   );
-  if (
-    !artifact ||
-    artifact.sourceSha256 !== input.sourceArtifactSha256 ||
-    typeof artifact.relativePath !== "string" ||
-    !Number.isInteger(artifact.bytes) ||
-    typeof artifact.sha256 !== "string"
-  ) {
+  if (!artifact || artifact.sourceSha256 !== input.sourceArtifactSha256) {
     throw new Error(`Full MinerU input source changed: ${input.sourceId}`);
   }
+  const sourceConfig = input.fullManifest.sources.find(
+    (candidate) => candidate.sourceId === input.sourceId,
+  );
+  if (!sourceConfig) {
+    throw new Error(
+      `Full extraction manifest has no source: ${input.sourceId}`,
+    );
+  }
+  assertCanonicalFullPageMappings(
+    artifact.pages,
+    sourceConfig.ranges,
+    input.sourceId,
+  );
   const subsetPath = resolveAbsoluteInside(
     input.dataRoot,
     artifact.relativePath,
@@ -355,30 +393,71 @@ function readFullInputPageMapping(input: {
   ) {
     throw new Error(`Full MinerU input bytes changed: ${input.sourceId}`);
   }
-  const mapping = artifact.pages?.find(
+  const mapping = artifact.pages.find(
     (page) => page.sourcePageIndex === input.sourcePageIndex,
   );
-  if (
-    !mapping ||
-    !Number.isInteger(mapping.subsetPageIndex) ||
-    (mapping.printedPageNumber !== null &&
-      !Number.isInteger(mapping.printedPageNumber)) ||
-    !Array.isArray(mapping.rangeKinds) ||
-    !mapping.rangeKinds.every(
-      (kind) =>
-        kind === "class-list" || kind === "description" || kind === "errata",
-    )
-  ) {
+  if (!mapping) {
     throw new Error(
       `Full MinerU page mapping not found: ${input.sourceId}[${input.sourcePageIndex}]`,
     );
   }
+  const { baseline: subsetBaseline, sourcePages: subsetPages } =
+    await inspectPdfTextLayer(subsetPath, new Set([mapping.subsetPageIndex]));
+  if (subsetBaseline.pageCount !== artifact.pages.length) {
+    throw new Error(
+      `Full MinerU subset page count changed: ${artifact.pages.length} -> ${subsetBaseline.pageCount}`,
+    );
+  }
+  const subsetPage = subsetPages[0];
+  const sourcePageFingerprintSha256 = recallPageFingerprint(input.sourcePage);
+  const subsetPageFingerprintSha256 = subsetPage
+    ? recallPageFingerprint(subsetPage)
+    : "missing";
+  if (
+    !subsetPage ||
+    subsetPage.zeroBasedPageIndex !== mapping.subsetPageIndex ||
+    subsetPageFingerprintSha256 !== sourcePageFingerprintSha256
+  ) {
+    throw new Error(
+      `Full MinerU subset page mapping changed: ${input.sourceId}[${input.sourcePageIndex}] ` +
+        `(expected ${sourcePageFingerprintSha256}, found ${subsetPageFingerprintSha256})`,
+    );
+  }
   return {
+    inputManifest: {
+      relativePath: path
+        .relative(input.dataRoot, input.inputManifestPath)
+        .replace(/\\/gu, "/"),
+      bytes: fs.statSync(input.inputManifestPath).size,
+      sha256: sha256File(input.inputManifestPath),
+    },
     subsetArtifactSha256: artifact.sha256,
-    subsetPageIndex: mapping.subsetPageIndex as number,
+    subsetPageIndex: mapping.subsetPageIndex,
+    sourcePageFingerprintSha256,
+    subsetPageFingerprintSha256,
     printedPageNumber: mapping.printedPageNumber ?? null,
-    rangeKinds: mapping.rangeKinds as PhbFullRangeKind[],
+    rangeKinds: mapping.rangeKinds,
   };
+}
+
+export function recallPageFingerprint(page: PhbPdfSourcePage) {
+  return crypto
+    .createHash("sha256")
+    .update(
+      JSON.stringify({
+        width: page.width,
+        height: page.height,
+        items: page.items.map((item) => ({
+          text: item.text,
+          x: item.x,
+          y: item.y,
+          width: item.width,
+          height: item.height,
+          hasEol: item.hasEol,
+        })),
+      }),
+    )
+    .digest("hex");
 }
 
 function writeJson(filePath: string, value: unknown) {

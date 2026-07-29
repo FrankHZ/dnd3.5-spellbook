@@ -93,10 +93,13 @@ npm run -w data-tools phb:mineru:recall -- \
   --method auto
 ```
 
-The command verifies the current source and full-input manifests, reads one
-candidate content-list page, and writes a source-free report under
-`data-tools/out/phb/`. It reports strict MinerU-bbox coverage, normalized item
-coverage, and dehyphenated token recall/precision without emitting PDF text.
+The command verifies the current source and full-input manifests, requires the
+page mapping to match the current full-extraction ranges, checks the actual
+subset PDF page count and source-page fingerprint, then reads one candidate
+content-list page. Its source-free report under `data-tools/out/phb/` pins the
+full-input manifest identity and reports strict MinerU-bbox coverage,
+normalized item coverage, and dehyphenated token recall/precision without
+emitting PDF text.
 The `backend` and `method` arguments describe the candidate; they are not a
 runtime provenance gate. A full-run replacement still requires a committed
 runtime manifest generated from the actual environment plus representative
