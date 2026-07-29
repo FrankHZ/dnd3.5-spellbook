@@ -9,6 +9,7 @@ import {
 } from "./errata-inventory";
 import { inspectPdfTextLayer } from "./pdf-baseline";
 import { runFullExtraction } from "./full-extraction";
+import { runMineruPageRecall } from "./mineru-recall";
 import {
   PHB_FULL_MANIFEST_RELATIVE_PATH,
   readPhbFullExtractionManifest,
@@ -500,6 +501,32 @@ function applySrdAdjudication() {
   console.log(JSON.stringify(result, null, 2));
 }
 
+async function auditMineruRecall() {
+  const { report, reportPath } = await runMineruPageRecall({
+    dataRoot: localDataDir(),
+    label: requiredOption("--label"),
+    sourceId: requiredOption("--source-id"),
+    sourcePageIndex: integerOption("--source-page-index"),
+    candidatePageIndex: integerOption("--candidate-page-index"),
+    candidatePath: requiredOption("--content-list"),
+    backend: requiredOption("--backend"),
+    method: requiredOption("--method"),
+  });
+  console.log("PHB MinerU page recall audited");
+  console.log(`Report: ${reportPath}`);
+  console.log(
+    JSON.stringify(
+      {
+        candidate: report.candidate,
+        counts: report.counts,
+        tokenComparison: report.tokenComparison,
+      },
+      null,
+      2,
+    ),
+  );
+}
+
 function readOptionalPilot(dataRoot: string, sourceManifestSha256: string) {
   try {
     const { filePath, manifest } = readPhbPilotManifest(dataRoot);
@@ -566,13 +593,28 @@ function writeJson(filePath: string, value: unknown) {
 
 function usage(): never {
   throw new Error(
-    "Usage: phb:source:verify | phb:pilot:verify [-- --stage page-extraction|end-to-end --review <data-relative-path>] | phb:source:extract | phb:source:extract -- --pilot --prepare-only | phb:source:extract -- --pilot --mineru-output <data-relative-path> | phb:source:extract -- --full --prepare-only | phb:source:extract -- --full --mineru-output <data-relative-path> | phb:source:compare [-- --pilot] | phb:source:report [-- --pilot] | phb:srd:verify | phb:srd:extract | phb:srd:adjudicate | phb:srd:apply",
+    "Usage: phb:source:verify | phb:pilot:verify [-- --stage page-extraction|end-to-end --review <data-relative-path>] | phb:source:extract | phb:source:extract -- --pilot --prepare-only | phb:source:extract -- --pilot --mineru-output <data-relative-path> | phb:source:extract -- --full --prepare-only | phb:source:extract -- --full --mineru-output <data-relative-path> | phb:source:compare [-- --pilot] | phb:source:report [-- --pilot] | phb:mineru:recall -- --label <label> --source-id <id> --source-page-index <index> --candidate-page-index <index> --content-list <data-relative-path> --backend <backend> --method <method> | phb:srd:verify | phb:srd:extract | phb:srd:adjudicate | phb:srd:apply",
   );
 }
 
 function optionValue(name: string) {
   const index = process.argv.indexOf(name);
   return index >= 0 ? process.argv[index + 1] : undefined;
+}
+
+function requiredOption(name: string) {
+  const value = optionValue(name);
+  if (!value) throw new Error(`${name} is required`);
+  return value;
+}
+
+function integerOption(name: string) {
+  const value = requiredOption(name);
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 0) {
+    throw new Error(`${name} must be a non-negative integer`);
+  }
+  return parsed;
 }
 
 function pilotReviewStage(value: string | undefined): PhbPilotReviewStage {
@@ -605,6 +647,10 @@ async function main() {
   }
   if (command === "srd:apply") {
     applySrdAdjudication();
+    return;
+  }
+  if (command === "mineru:recall") {
+    await auditMineruRecall();
     return;
   }
   if (command === "compare" && process.argv.includes("--pilot")) {

@@ -168,7 +168,7 @@ export type FullMineruLayoutReview =
   | FullMineruImageAdjacentReview
   | FullMineruOrderReview;
 
-type FullMineruInputManifest = {
+export type FullMineruInputManifest = {
   schemaVersion: 1;
   sourceManifest: { relativePath: string; sha256: string };
   fullManifest: { relativePath: string; sha256: string };
@@ -263,7 +263,7 @@ export async function importMineruFull(input: {
     PHB_FULL_MINERU_INPUT_MANIFEST_RELATIVE_PATH,
   );
   const runtimePath = resolveInside(dataRoot, PHB_MINERU_RUNTIME_RELATIVE_PATH);
-  const inputManifest = parseInputManifest(
+  const inputManifest = parseFullMineruInputManifest(
     readJson(inputManifestPath, "PHB full MinerU input manifest"),
   );
   const runtime = parseRuntimeManifest(
@@ -291,6 +291,19 @@ export async function importMineruFull(input: {
     if (!source || source.sha256 !== artifact.sourceSha256) {
       throw new Error(`Full MinerU input source changed: ${artifact.sourceId}`);
     }
+    const sourceConfig = input.fullManifest.sources.find(
+      (candidate) => candidate.sourceId === artifact.sourceId,
+    );
+    if (!sourceConfig) {
+      throw new Error(
+        `Full extraction manifest has no source: ${artifact.sourceId}`,
+      );
+    }
+    assertCanonicalFullPageMappings(
+      artifact.pages,
+      sourceConfig.ranges,
+      artifact.sourceId,
+    );
     const subsetPath = resolveInside(dataRoot, artifact.relativePath);
     verifyFileIdentity(subsetPath, artifact.bytes, artifact.sha256);
     const stem = `${safeId(artifact.sourceId)}.full`;
@@ -793,7 +806,7 @@ export function parseFullMineruPageRows(text: string): FullMineruPageRow[] {
   return rows;
 }
 
-function collectFullPageMappings(
+export function collectFullPageMappings(
   ranges: PhbFullExtractionManifest["sources"][number]["ranges"],
 ) {
   const pages = new Map<
@@ -830,7 +843,38 @@ function collectFullPageMappings(
   }).sort((left, right) => left.sourcePageIndex - right.sourcePageIndex);
 }
 
-function isContentBlock(block: FullMineruBlock) {
+export function assertCanonicalFullPageMappings(
+  actual: FullMineruPageMapping[],
+  ranges: PhbFullExtractionManifest["sources"][number]["ranges"],
+  sourceId: string,
+) {
+  const expected = collectFullPageMappings(ranges).map(
+    (page, subsetPageIndex) => ({ subsetPageIndex, ...page }),
+  );
+  if (
+    actual.length !== expected.length ||
+    actual.some((page, index) => {
+      const canonical = expected[index];
+      return (
+        canonical === undefined ||
+        page.subsetPageIndex !== canonical.subsetPageIndex ||
+        page.sourcePageIndex !== canonical.sourcePageIndex ||
+        page.printedPageNumber !== canonical.printedPageNumber ||
+        page.rangeKinds.length !== canonical.rangeKinds.length ||
+        page.rangeKinds.some(
+          (kind, kindIndex) => kind !== canonical.rangeKinds[kindIndex],
+        )
+      );
+    })
+  ) {
+    throw new Error(
+      `Full MinerU input page mappings are not canonical: ${sourceId}`,
+    );
+  }
+  return expected;
+}
+
+export function isContentBlock(block: FullMineruBlock | StableMineruBlock) {
   return (
     block.type === "text" ||
     block.type === "table" ||
@@ -1223,8 +1267,8 @@ function horizontalOverlap(
   return Math.max(0, Math.min(left[2], right[2]) - Math.max(left[0], right[0]));
 }
 
-function normalizedItemCenter(
-  page: FullMineruPageRow,
+export function normalizedItemCenter(
+  page: { pdfjs: { width: number; height: number } },
   item: PhbTextPageRow["pdfjs"]["items"][number],
 ) {
   return {
@@ -1235,7 +1279,7 @@ function normalizedItemCenter(
   };
 }
 
-function pointInside(
+export function pointInside(
   point: { x: number; y: number },
   bbox: [number, number, number, number],
   tolerance: number,
@@ -1272,7 +1316,13 @@ function bboxDistance(
   };
 }
 
-function isKnownPageFurniture(page: FullMineruPageRow, text: string) {
+export function isKnownPageFurniture(
+  page: {
+    printedPageNumber: number | null;
+    rangeKinds: PhbFullRangeKind[];
+  },
+  text: string,
+) {
   const normalized = text.trim();
   return (
     normalized === String(page.printedPageNumber) ||
@@ -1284,7 +1334,9 @@ function isKnownPageFurniture(page: FullMineruPageRow, text: string) {
   );
 }
 
-function parseInputManifest(value: unknown): FullMineruInputManifest {
+export function parseFullMineruInputManifest(
+  value: unknown,
+): FullMineruInputManifest {
   if (!isRecord(value) || value.schemaVersion !== 1) {
     throw new Error("PHB full MinerU input manifest is invalid");
   }
@@ -1293,11 +1345,87 @@ function parseInputManifest(value: unknown): FullMineruInputManifest {
   if (!Array.isArray(value.artifacts) || value.artifacts.length === 0) {
     throw new Error("PHB full MinerU input artifacts are invalid");
   }
+  const artifacts = value.artifacts.map(parseInputArtifact);
+  const sourceIds = artifacts.map((artifact) => artifact.sourceId);
+  if (new Set(sourceIds).size !== sourceIds.length) {
+    throw new Error("PHB full MinerU input source ids are duplicated");
+  }
   return {
     schemaVersion: 1,
     sourceManifest,
     fullManifest,
-    artifacts: value.artifacts as FullMineruInputArtifact[],
+    artifacts,
+  };
+}
+
+function parseInputArtifact(
+  value: unknown,
+  artifactIndex: number,
+): FullMineruInputArtifact {
+  const prefix = `PHB full MinerU input artifacts[${artifactIndex}]`;
+  if (
+    !isRecord(value) ||
+    typeof value.sourceId !== "string" ||
+    value.sourceId.trim().length === 0 ||
+    typeof value.sourceSha256 !== "string" ||
+    !/^[a-f0-9]{64}$/u.test(value.sourceSha256) ||
+    typeof value.relativePath !== "string" ||
+    value.relativePath.trim().length === 0 ||
+    !Number.isInteger(value.bytes) ||
+    (value.bytes as number) <= 0 ||
+    typeof value.sha256 !== "string" ||
+    !/^[a-f0-9]{64}$/u.test(value.sha256) ||
+    !Array.isArray(value.pages) ||
+    value.pages.length === 0
+  ) {
+    throw new Error(`${prefix} is invalid`);
+  }
+  const pages = value.pages.map((page, pageIndex) =>
+    parseInputPageMapping(page, pageIndex, prefix),
+  );
+  const sourcePageIndexes = pages.map((page) => page.sourcePageIndex);
+  if (new Set(sourcePageIndexes).size !== sourcePageIndexes.length) {
+    throw new Error(`${prefix} contains duplicate source pages`);
+  }
+  return {
+    sourceId: value.sourceId,
+    sourceSha256: value.sourceSha256,
+    relativePath: value.relativePath,
+    bytes: value.bytes as number,
+    sha256: value.sha256,
+    pages,
+  };
+}
+
+function parseInputPageMapping(
+  value: unknown,
+  pageIndex: number,
+  artifactPrefix: string,
+): FullMineruPageMapping {
+  const prefix = `${artifactPrefix}.pages[${pageIndex}]`;
+  if (
+    !isRecord(value) ||
+    !Number.isInteger(value.subsetPageIndex) ||
+    (value.subsetPageIndex as number) < 0 ||
+    value.subsetPageIndex !== pageIndex ||
+    !Number.isInteger(value.sourcePageIndex) ||
+    (value.sourcePageIndex as number) < 0 ||
+    !Number.isInteger(value.printedPageNumber) ||
+    !Array.isArray(value.rangeKinds) ||
+    value.rangeKinds.length === 0 ||
+    !value.rangeKinds.every(
+      (kind) =>
+        kind === "class-list" || kind === "description" || kind === "errata",
+    ) ||
+    new Set(value.rangeKinds).size !== value.rangeKinds.length
+  ) {
+    throw new Error(`${prefix} is invalid or non-contiguous`);
+  }
+  return {
+    subsetPageIndex: value.subsetPageIndex as number,
+    sourcePageIndex: value.sourcePageIndex as number,
+    printedPageNumber: value.printedPageNumber as number,
+    rangeKinds: value.rangeKinds as PhbFullRangeKind[],
   };
 }
 

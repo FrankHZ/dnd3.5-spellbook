@@ -470,3 +470,15 @@ archive host is the publisher.
   source for defined exceptions. Together with the pending MinerU recall audit,
   this reopens Gate 2 and supersedes the 75-row queue as active bulk-review
   input until a full rerun regenerates it.
+- The first bounded recall pilot compares three MinerU 3.4 candidates on PHB
+  source page index 182 (viewer page 183, printed page 182). The accepted
+  pipeline configuration and GPU hybrid candidate both miss the same eight
+  strict-bbox PDF.js items. The pure VLM candidate covers all 251 content items
+  and reaches `1.0` dehyphenated token recall and precision. The source-free
+  harness report contains only counts and text hashes; the nested data repo
+  records the exact candidate hashes in
+  `phb35/review/mineru-recall-pilot.json`.
+- That one-page result is proposed evidence, not a runtime switch or Gate 2
+  acceptance. Before rerunning the full corpus, the data pipeline must generate
+  runtime provenance from the actual command and environment, then repeat the
+  VLM audit over representative description, table, and image-adjacent pages.
