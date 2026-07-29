@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
-import { parseMineruPageRunManifest } from "./mineru-page-run";
+import {
+  buildMineruVlmArguments,
+  parseMineruPageRunManifest,
+  resolveMineruProcessTimeouts,
+  runMineruVlmProcess,
+} from "./mineru-page-run";
 import { assertRunManifestMatchesRecall } from "./mineru-recall";
 
 const SHA = "a".repeat(64);
@@ -34,6 +42,10 @@ const valid = {
       torch: "2.0.0",
       transformers: "5.0.0",
     },
+    pythonExecutable: {
+      relativePath: "artifacts/mineru/phb35/.venv/Scripts/python.exe",
+      sha256: SHA,
+    },
     model: {
       repository: "opendatalab/MinerU",
       revision: "revision",
@@ -51,6 +63,7 @@ const valid = {
     environment: {
       MINERU_TOOLS_CONFIG_JSON: "artifacts/mineru/phb35/mineru.json",
       MINERU_LOG_LEVEL: "INFO",
+      MINERU_TASK_RESULT_TIMEOUT_SECONDS: "900",
     },
     options: {
       formula: false,
@@ -58,6 +71,7 @@ const valid = {
       imageAnalysis: false,
       startPageIndex: 38,
       endPageIndex: 38,
+      processTimeoutSeconds: 1200,
     },
   },
   output: {
@@ -73,12 +87,94 @@ const valid = {
 } as const;
 
 assert.equal(parseMineruPageRunManifest(valid).label, "printed-219-vlm");
+assert.deepEqual(
+  buildMineruVlmArguments({
+    inputPath: "input.pdf",
+    outputPath: "output",
+    startPageIndex: 0,
+    endPageIndex: 122,
+  }).slice(-4),
+  ["-s", "0", "-e", "122"],
+);
+assert.deepEqual(resolveMineruProcessTimeouts(60), {
+  taskResultTimeoutSeconds: 60,
+  processTimeoutSeconds: 360,
+});
+assert.throws(() => resolveMineruProcessTimeouts(0), /positive integer/u);
+assert.throws(
+  () => resolveMineruProcessTimeouts(Number.MAX_SAFE_INTEGER),
+  /positive integer/u,
+);
+const timeoutRoot = fs.mkdtempSync(path.join(os.tmpdir(), "mineru-timeout-"));
+let observedTimeout: number | undefined;
+try {
+  assert.throws(
+    () =>
+      runMineruVlmProcess(
+        {
+          dataRoot: timeoutRoot,
+          vlm: {
+            executableRelativePath: "mineru.exe",
+            executablePath: "mineru.exe",
+            pythonExecutableRelativePath: "python.exe",
+            pythonExecutablePath: "python.exe",
+            configRelativePath: "mineru.json",
+            configPath: "mineru.json",
+            runtime: valid.runtime,
+          },
+          inputRelativePath: "input.pdf",
+          inputPath: "input.pdf",
+          outputRootRelativePath: "output",
+          outputRoot: timeoutRoot,
+          startPageIndex: 0,
+          endPageIndex: 0,
+          taskResultTimeoutSeconds: 1,
+        },
+        ((
+          _command: string,
+          _arguments: readonly string[],
+          options: { timeout?: number },
+        ) => {
+          observedTimeout = options.timeout;
+          return {
+            error: Object.assign(new Error("timed out"), {
+              code: "ETIMEDOUT",
+            }),
+            status: null,
+            signal: "SIGTERM",
+            output: [null, "", ""],
+            pid: 1,
+            stdout: "",
+            stderr: "",
+          } as never;
+        }) as never,
+      ),
+    /exceeded parent timeout 301s/u,
+  );
+  assert.equal(observedTimeout, 301_000);
+} finally {
+  fs.rmSync(timeoutRoot, { recursive: true, force: true });
+}
 
 assert.throws(
   () =>
     parseMineruPageRunManifest({
       ...valid,
       status: "accepted",
+    }),
+  /manifest is invalid/u,
+);
+assert.throws(
+  () =>
+    parseMineruPageRunManifest({
+      ...valid,
+      invocation: {
+        ...valid.invocation,
+        options: {
+          ...valid.invocation.options,
+          processTimeoutSeconds: 1199,
+        },
+      },
     }),
   /manifest is invalid/u,
 );
@@ -145,6 +241,21 @@ assert.throws(
       output: {
         ...valid.output,
         candidatePageIndex: 219,
+      },
+    }),
+  /manifest is invalid/u,
+);
+
+assert.throws(
+  () =>
+    parseMineruPageRunManifest({
+      ...valid,
+      invocation: {
+        ...valid.invocation,
+        environment: {
+          ...valid.invocation.environment,
+          MINERU_TASK_RESULT_TIMEOUT_SECONDS: "0",
+        },
       },
     }),
   /manifest is invalid/u,

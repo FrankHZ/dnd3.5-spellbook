@@ -332,9 +332,21 @@ input, logs, and output hashes are bound in an ignored run manifest. Pass that
 manifest to `phb:mineru:recall`; legacy label-only candidates are descriptive
 and cannot authorize a runtime change. The representative class-list,
 description, table, and image-adjacent pilot rejects a candidate-wide VLM
-switch: keep pipeline output as structured layout and treat VLM only as a
-recall witness until a fail-closed dual-engine disagreement contract is
-implemented. Never silently choose or merge backend text, bboxes, or tables.
+switch. For the full witness, use one unbounded
+`phb:mineru:run-batch`, generate the fingerprint-bound queue with
+`phb:mineru:dual:build`, and require
+`phb:mineru:dual:verify -- --require-terminal` before full comparison. Keep
+pipeline output as structured layout and treat VLM only as a recall witness.
+The batch and dual manifests must pin current inputs, exact page mapping,
+runtime/model/config, outputs, layout evidence, and review rows. Never silently
+choose, merge, or import VLM text, bboxes, or tables.
+The batch manifest records the actual transient staging command separately from
+the final atomic publication path, pins both MinerU and Python executable
+hashes, and gives the runtime probe and parent process finite timeouts. Dual
+item review may auto-accept exact text inside non-image structural blocks, but
+image-overlap text always requires explicit projection or caption exclusion.
+If table review exposes a pipeline defect, fix and regenerate the pipeline; do
+not use a terminal dual-review status to waive the defect.
 
 For the current v1.4 authority contract, keep PHB+accepted errata immutable as
 reference/evidence while adopting official SRD 3.5 rules text by default.

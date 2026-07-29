@@ -7,6 +7,7 @@ import {
   PHB_FULL_MINERU_INPUT_MANIFEST_RELATIVE_PATH,
   assertCanonicalFullPageMappings,
   parseFullMineruInputManifest,
+  type FullMineruInputArtifact,
 } from "./full-mineru";
 import { readPhbFullExtractionManifest } from "./full-manifest";
 import { readJson, resolveAbsoluteInside, safeId } from "./pilot-extraction";
@@ -16,6 +17,10 @@ const SHA256_PATTERN = /^[a-f0-9]{64}$/u;
 const DEFAULT_EXECUTABLE = "artifacts/mineru/phb35/.venv/Scripts/mineru.exe";
 const DEFAULT_CONFIG = "artifacts/mineru/phb35/mineru.json";
 const DEFAULT_OUTPUT_ROOT = "artifacts/mineru/phb35/recall-pilot";
+export const DEFAULT_MINERU_PAGE_TASK_TIMEOUT_SECONDS = 900;
+export const MINERU_PROCESS_TIMEOUT_GRACE_SECONDS = 300;
+const MINERU_RUNTIME_PROBE_TIMEOUT_MS = 60_000;
+const MAX_NODE_TIMEOUT_SECONDS = Math.floor(2_147_483_647 / 1000);
 
 type RuntimeProbe = {
   mineruVersion: string;
@@ -23,6 +28,31 @@ type RuntimeProbe = {
   dependencies: Record<string, string>;
   cudaAvailable: boolean;
   device: string;
+};
+
+export type MineruFullInputSource = {
+  sourceManifestRelativePath: string;
+  sourceManifestSha256: string;
+  fullManifestRelativePath: string;
+  fullManifestSha256: string;
+  inputManifestRelativePath: string;
+  inputManifestSha256: string;
+  sourceArtifact: {
+    id: string;
+    sha256: string;
+  };
+  inputArtifact: FullMineruInputArtifact;
+  subsetPath: string;
+};
+
+export type MineruVlmRuntime = {
+  executableRelativePath: string;
+  executablePath: string;
+  pythonExecutableRelativePath: string;
+  pythonExecutablePath: string;
+  configRelativePath: string;
+  configPath: string;
+  runtime: MineruPageRunManifest["runtime"];
 };
 
 export type MineruPageRunManifest = {
@@ -50,6 +80,10 @@ export type MineruPageRunManifest = {
     method: "auto";
     device: string;
     dependencies: Record<string, string>;
+    pythonExecutable?: {
+      relativePath: string;
+      sha256: string;
+    };
     model: {
       repository: string;
       revision: string;
@@ -67,6 +101,7 @@ export type MineruPageRunManifest = {
     environment: {
       MINERU_TOOLS_CONFIG_JSON: string;
       MINERU_LOG_LEVEL: string;
+      MINERU_TASK_RESULT_TIMEOUT_SECONDS?: string;
     };
     options: {
       formula: false;
@@ -74,6 +109,7 @@ export type MineruPageRunManifest = {
       imageAnalysis: false;
       startPageIndex: number;
       endPageIndex: number;
+      processTimeoutSeconds?: number;
     };
   };
   output: {
@@ -108,52 +144,8 @@ export function runMineruPage(input: {
     throw new Error("MinerU page-run source page index must be non-negative");
   }
 
-  const source = readAndVerifyPhbSourceManifest(dataRoot);
-  const sourceArtifact = source.artifacts.find(
-    (artifact) => artifact.id === input.sourceId,
-  );
-  if (!sourceArtifact) {
-    throw new Error(`Unknown PHB source id: ${input.sourceId}`);
-  }
-  const inputManifestPath = path.join(
-    dataRoot,
-    PHB_FULL_MINERU_INPUT_MANIFEST_RELATIVE_PATH,
-  );
-  const inputManifest = parseFullMineruInputManifest(
-    readJson(inputManifestPath, "PHB full MinerU input manifest"),
-  );
-  if (inputManifest.sourceManifest.sha256 !== source.manifestSha256) {
-    throw new Error(
-      "Full MinerU input does not pin the current source manifest",
-    );
-  }
-  const { filePath: fullManifestPath, manifest: fullManifest } =
-    readPhbFullExtractionManifest(dataRoot);
-  if (inputManifest.fullManifest.sha256 !== sha256File(fullManifestPath)) {
-    throw new Error(
-      "Full MinerU input does not pin the current full extraction manifest",
-    );
-  }
-  const inputArtifact = inputManifest.artifacts.find(
-    (artifact) => artifact.sourceId === input.sourceId,
-  );
-  if (!inputArtifact || inputArtifact.sourceSha256 !== sourceArtifact.sha256) {
-    throw new Error(`Full MinerU input source changed: ${input.sourceId}`);
-  }
-  const sourceConfig = fullManifest.sources.find(
-    (candidate) => candidate.sourceId === input.sourceId,
-  );
-  if (!sourceConfig) {
-    throw new Error(
-      `Full extraction manifest has no source: ${input.sourceId}`,
-    );
-  }
-  assertCanonicalFullPageMappings(
-    inputArtifact.pages,
-    sourceConfig.ranges,
-    input.sourceId,
-  );
-  const mapping = inputArtifact.pages.find(
+  const fullInput = readMineruFullInputSource(dataRoot, input.sourceId);
+  const mapping = fullInput.inputArtifact.pages.find(
     (page) => page.sourcePageIndex === input.sourcePageIndex,
   );
   if (!mapping) {
@@ -161,41 +153,11 @@ export function runMineruPage(input: {
       `Full MinerU page mapping not found: ${input.sourceId}[${input.sourcePageIndex}]`,
     );
   }
-  const subsetPath = resolveAbsoluteInside(
+  const vlm = resolveMineruVlmRuntime({
     dataRoot,
-    inputArtifact.relativePath,
-  );
-  verifyFile(inputArtifact.relativePath, subsetPath, {
-    bytes: inputArtifact.bytes,
-    sha256: inputArtifact.sha256,
+    ...(input.executablePath ? { executablePath: input.executablePath } : {}),
+    ...(input.configPath ? { configPath: input.configPath } : {}),
   });
-
-  const executableRelativePath = normalizeRelativePath(
-    input.executablePath ?? DEFAULT_EXECUTABLE,
-  );
-  const executablePath = resolveAbsoluteInside(
-    dataRoot,
-    executableRelativePath,
-  );
-  if (!fs.existsSync(executablePath)) {
-    throw new Error(`MinerU executable not found: ${executableRelativePath}`);
-  }
-  const configRelativePath = normalizeRelativePath(
-    input.configPath ?? DEFAULT_CONFIG,
-  );
-  const configPath = resolveAbsoluteInside(dataRoot, configRelativePath);
-  if (!fs.existsSync(configPath)) {
-    throw new Error(`MinerU config not found: ${configRelativePath}`);
-  }
-  const config = parseMineruConfig(readJson(configPath, "MinerU config"));
-  if (!fs.existsSync(config.modelsDirVlm)) {
-    throw new Error("MinerU configured VLM model directory does not exist");
-  }
-  const model = modelIdentity(config.modelsDirVlm);
-  const probe = probeRuntime(executablePath);
-  if (!probe.cudaAvailable) {
-    throw new Error("MinerU VLM page-run requires an available CUDA device");
-  }
 
   const outputRootRelativePath = normalizeRelativePath(
     input.outputRoot ?? DEFAULT_OUTPUT_ROOT,
@@ -209,46 +171,20 @@ export function runMineruPage(input: {
   }
   fs.mkdirSync(runRoot, { recursive: true });
 
-  const argumentsForManifest = buildMineruArguments({
-    inputPath: inputArtifact.relativePath,
-    outputPath: runRootRelativePath,
-    pageIndex: mapping.subsetPageIndex,
+  const processResult = runMineruVlmProcess({
+    dataRoot,
+    vlm,
+    inputRelativePath: fullInput.inputArtifact.relativePath,
+    inputPath: fullInput.subsetPath,
+    outputRootRelativePath: runRootRelativePath,
+    outputRoot: runRoot,
+    startPageIndex: mapping.subsetPageIndex,
+    endPageIndex: mapping.subsetPageIndex,
+    taskResultTimeoutSeconds: DEFAULT_MINERU_PAGE_TASK_TIMEOUT_SECONDS,
   });
-  const argumentsForProcess = buildMineruArguments({
-    inputPath: subsetPath,
-    outputPath: runRoot,
-    pageIndex: mapping.subsetPageIndex,
-  });
-  const environment = {
-    ...process.env,
-    MINERU_TOOLS_CONFIG_JSON: configPath,
-    MINERU_LOG_LEVEL: "INFO",
-  };
-  const result = spawnSync(executablePath, argumentsForProcess, {
-    cwd: repoRoot(),
-    encoding: "utf8",
-    env: environment,
-    maxBuffer: 64 * 1024 * 1024,
-  });
-  const stdoutPath = path.join(runRoot, "mineru.stdout.log");
-  const stderrPath = path.join(runRoot, "mineru.stderr.log");
-  fs.writeFileSync(stdoutPath, result.stdout ?? "", "utf8");
-  fs.writeFileSync(stderrPath, result.stderr ?? "", "utf8");
-  if (result.error) throw result.error;
-  if (result.status !== 0) {
-    throw new Error(
-      `MinerU page-run failed with exit code ${String(result.status)}; see ${normalizeRelativePath(
-        path.relative(dataRoot, stderrPath),
-      )}`,
-    );
-  }
-
-  const documentStem = path.parse(subsetPath).name;
-  const contentListPath = path.join(
+  const contentListPath = mineruVlmContentListPath(
+    fullInput.subsetPath,
     runRoot,
-    documentStem,
-    "vlm",
-    `${documentStem}_content_list.json`,
   );
   if (!fs.existsSync(contentListPath)) {
     throw new Error(
@@ -265,41 +201,34 @@ export function runMineruPage(input: {
     label,
     source: {
       id: input.sourceId,
-      artifactSha256: sourceArtifact.sha256,
+      artifactSha256: fullInput.sourceArtifact.sha256,
       sourcePageIndex: input.sourcePageIndex,
       printedPageNumber: mapping.printedPageNumber ?? null,
     },
     input: {
       manifestRelativePath: normalizeRelativePath(
-        path.relative(dataRoot, inputManifestPath),
+        fullInput.inputManifestRelativePath,
       ),
-      manifestSha256: sha256File(inputManifestPath),
-      subsetRelativePath: normalizeRelativePath(inputArtifact.relativePath),
-      subsetSha256: inputArtifact.sha256,
+      manifestSha256: fullInput.inputManifestSha256,
+      subsetRelativePath: normalizeRelativePath(
+        fullInput.inputArtifact.relativePath,
+      ),
+      subsetSha256: fullInput.inputArtifact.sha256,
       subsetPageIndex: mapping.subsetPageIndex,
     },
     runtime: {
-      engine: "MinerU",
-      version: probe.mineruVersion,
-      pythonVersion: probe.pythonVersion,
-      backend: "vlm-engine",
-      method: "auto",
-      device: probe.device,
-      dependencies: probe.dependencies,
-      model,
-      config: {
-        relativePath: configRelativePath,
-        sha256: sha256File(configPath),
-        modelSource: config.modelSource,
-      },
+      ...vlm.runtime,
     },
     invocation: {
-      executableRelativePath,
-      executableSha256: sha256File(executablePath),
-      arguments: argumentsForManifest,
+      executableRelativePath: vlm.executableRelativePath,
+      executableSha256: sha256File(vlm.executablePath),
+      arguments: processResult.argumentsForManifest,
       environment: {
-        MINERU_TOOLS_CONFIG_JSON: configRelativePath,
+        MINERU_TOOLS_CONFIG_JSON: vlm.configRelativePath,
         MINERU_LOG_LEVEL: "INFO",
+        MINERU_TASK_RESULT_TIMEOUT_SECONDS: String(
+          processResult.taskResultTimeoutSeconds,
+        ),
       },
       options: {
         formula: false,
@@ -307,6 +236,7 @@ export function runMineruPage(input: {
         imageAnalysis: false,
         startPageIndex: mapping.subsetPageIndex,
         endPageIndex: mapping.subsetPageIndex,
+        processTimeoutSeconds: processResult.processTimeoutSeconds,
       },
     },
     output: {
@@ -317,13 +247,13 @@ export function runMineruPage(input: {
       contentListBytes: fs.statSync(contentListPath).size,
       candidatePageIndex: 0,
       stdoutRelativePath: normalizeRelativePath(
-        path.relative(dataRoot, stdoutPath),
+        path.relative(dataRoot, processResult.stdoutPath),
       ),
-      stdoutSha256: sha256File(stdoutPath),
+      stdoutSha256: sha256File(processResult.stdoutPath),
       stderrRelativePath: normalizeRelativePath(
-        path.relative(dataRoot, stderrPath),
+        path.relative(dataRoot, processResult.stderrPath),
       ),
-      stderrSha256: sha256File(stderrPath),
+      stderrSha256: sha256File(processResult.stderrPath),
     },
   };
   const manifestPath = path.join(runRoot, "run-manifest.json");
@@ -346,6 +276,10 @@ export function parseMineruPageRunManifest(
   const runtime = isRecord(value.runtime) ? value.runtime : null;
   const model = runtime && isRecord(runtime.model) ? runtime.model : null;
   const config = runtime && isRecord(runtime.config) ? runtime.config : null;
+  const pythonExecutable =
+    runtime && isRecord(runtime.pythonExecutable)
+      ? runtime.pythonExecutable
+      : null;
   const invocation = isRecord(value.invocation) ? value.invocation : null;
   const options =
     invocation && isRecord(invocation.options) ? invocation.options : null;
@@ -377,6 +311,12 @@ export function parseMineruPageRunManifest(
     runtime.method !== "auto" ||
     typeof runtime.device !== "string" ||
     !isStringRecord(runtime.dependencies) ||
+    !(
+      runtime.pythonExecutable === undefined ||
+      (pythonExecutable &&
+        isRelativePath(pythonExecutable.relativePath) &&
+        isSha256(pythonExecutable.sha256))
+    ) ||
     !model ||
     typeof model.repository !== "string" ||
     typeof model.revision !== "string" ||
@@ -392,12 +332,28 @@ export function parseMineruPageRunManifest(
     !isRecord(invocation.environment) ||
     typeof invocation.environment.MINERU_TOOLS_CONFIG_JSON !== "string" ||
     invocation.environment.MINERU_LOG_LEVEL !== "INFO" ||
+    !(
+      invocation.environment.MINERU_TASK_RESULT_TIMEOUT_SECONDS === undefined ||
+      isPositiveIntegerString(
+        invocation.environment.MINERU_TASK_RESULT_TIMEOUT_SECONDS,
+      )
+    ) ||
     !options ||
     options.formula !== false ||
     options.table !== true ||
     options.imageAnalysis !== false ||
     !isNonNegativeInteger(options.startPageIndex) ||
     options.endPageIndex !== options.startPageIndex ||
+    !(
+      options.processTimeoutSeconds === undefined ||
+      isPositiveSafeInteger(options.processTimeoutSeconds)
+    ) ||
+    !(
+      invocation.environment.MINERU_TASK_RESULT_TIMEOUT_SECONDS === undefined ||
+      options.processTimeoutSeconds ===
+        Number(invocation.environment.MINERU_TASK_RESULT_TIMEOUT_SECONDS) +
+          MINERU_PROCESS_TIMEOUT_GRACE_SECONDS
+    ) ||
     options.startPageIndex !== input.subsetPageIndex ||
     invocation.environment.MINERU_TOOLS_CONFIG_JSON !== config.relativePath ||
     !output ||
@@ -441,6 +397,16 @@ export function readAndVerifyMineruPageRunManifest(
     resolveAbsoluteInside(dataRoot, manifest.invocation.executableRelativePath),
     { sha256: manifest.invocation.executableSha256 },
   );
+  if (manifest.runtime.pythonExecutable) {
+    verifyFile(
+      manifest.runtime.pythonExecutable.relativePath,
+      resolveAbsoluteInside(
+        dataRoot,
+        manifest.runtime.pythonExecutable.relativePath,
+      ),
+      { sha256: manifest.runtime.pythonExecutable.sha256 },
+    );
+  }
   verifyFile(
     manifest.output.stdoutRelativePath,
     resolveAbsoluteInside(dataRoot, manifest.output.stdoutRelativePath),
@@ -458,10 +424,258 @@ export function readAndVerifyMineruPageRunManifest(
   };
 }
 
-function buildMineruArguments(input: {
+export function readMineruFullInputSource(
+  dataRootInput: string,
+  sourceId: string,
+): MineruFullInputSource {
+  const dataRoot = path.resolve(dataRootInput);
+  const source = readAndVerifyPhbSourceManifest(dataRoot);
+  const sourceArtifact = source.artifacts.find(
+    (artifact) => artifact.id === sourceId,
+  );
+  if (!sourceArtifact) throw new Error(`Unknown PHB source id: ${sourceId}`);
+  const inputManifestPath = path.join(
+    dataRoot,
+    PHB_FULL_MINERU_INPUT_MANIFEST_RELATIVE_PATH,
+  );
+  const inputManifest = parseFullMineruInputManifest(
+    readJson(inputManifestPath, "PHB full MinerU input manifest"),
+  );
+  if (inputManifest.sourceManifest.sha256 !== source.manifestSha256) {
+    throw new Error(
+      "Full MinerU input does not pin the current source manifest",
+    );
+  }
+  const { filePath: fullManifestPath, manifest: fullManifest } =
+    readPhbFullExtractionManifest(dataRoot);
+  const fullManifestSha256 = sha256File(fullManifestPath);
+  if (inputManifest.fullManifest.sha256 !== fullManifestSha256) {
+    throw new Error(
+      "Full MinerU input does not pin the current full extraction manifest",
+    );
+  }
+  const inputArtifact = inputManifest.artifacts.find(
+    (artifact) => artifact.sourceId === sourceId,
+  );
+  if (!inputArtifact || inputArtifact.sourceSha256 !== sourceArtifact.sha256) {
+    throw new Error(`Full MinerU input source changed: ${sourceId}`);
+  }
+  const sourceConfig = fullManifest.sources.find(
+    (candidate) => candidate.sourceId === sourceId,
+  );
+  if (!sourceConfig) {
+    throw new Error(`Full extraction manifest has no source: ${sourceId}`);
+  }
+  assertCanonicalFullPageMappings(
+    inputArtifact.pages,
+    sourceConfig.ranges,
+    sourceId,
+  );
+  const subsetPath = resolveAbsoluteInside(
+    dataRoot,
+    inputArtifact.relativePath,
+  );
+  verifyFile(inputArtifact.relativePath, subsetPath, {
+    bytes: inputArtifact.bytes,
+    sha256: inputArtifact.sha256,
+  });
+  return {
+    sourceManifestRelativePath: normalizeRelativePath(
+      path.relative(dataRoot, source.manifestPath),
+    ),
+    sourceManifestSha256: source.manifestSha256,
+    fullManifestRelativePath: normalizeRelativePath(
+      path.relative(dataRoot, fullManifestPath),
+    ),
+    fullManifestSha256,
+    inputManifestRelativePath: normalizeRelativePath(
+      path.relative(dataRoot, inputManifestPath),
+    ),
+    inputManifestSha256: sha256File(inputManifestPath),
+    sourceArtifact: { id: sourceArtifact.id, sha256: sourceArtifact.sha256 },
+    inputArtifact,
+    subsetPath,
+  };
+}
+
+export function resolveMineruVlmRuntime(input: {
+  dataRoot: string;
+  executablePath?: string;
+  configPath?: string;
+}): MineruVlmRuntime {
+  const dataRoot = path.resolve(input.dataRoot);
+  const executableRelativePath = normalizeRelativePath(
+    input.executablePath ?? DEFAULT_EXECUTABLE,
+  );
+  const executablePath = resolveAbsoluteInside(
+    dataRoot,
+    executableRelativePath,
+  );
+  if (!fs.existsSync(executablePath)) {
+    throw new Error(`MinerU executable not found: ${executableRelativePath}`);
+  }
+  const configRelativePath = normalizeRelativePath(
+    input.configPath ?? DEFAULT_CONFIG,
+  );
+  const configPath = resolveAbsoluteInside(dataRoot, configRelativePath);
+  if (!fs.existsSync(configPath)) {
+    throw new Error(`MinerU config not found: ${configRelativePath}`);
+  }
+  const config = parseMineruConfig(readJson(configPath, "MinerU config"));
+  if (!fs.existsSync(config.modelsDirVlm)) {
+    throw new Error("MinerU configured VLM model directory does not exist");
+  }
+  const pythonExecutablePath = path.join(
+    path.dirname(executablePath),
+    "python.exe",
+  );
+  if (!fs.existsSync(pythonExecutablePath)) {
+    throw new Error(
+      `MinerU Python executable not found: ${pythonExecutablePath}`,
+    );
+  }
+  const pythonExecutableRelativePath = normalizeRelativePath(
+    path.relative(dataRoot, pythonExecutablePath),
+  );
+  const probe = probeRuntime(pythonExecutablePath);
+  if (!probe.cudaAvailable) {
+    throw new Error("MinerU VLM run requires an available CUDA device");
+  }
+  return {
+    executableRelativePath,
+    executablePath,
+    pythonExecutableRelativePath,
+    pythonExecutablePath,
+    configRelativePath,
+    configPath,
+    runtime: {
+      engine: "MinerU",
+      version: probe.mineruVersion,
+      pythonVersion: probe.pythonVersion,
+      backend: "vlm-engine",
+      method: "auto",
+      device: probe.device,
+      dependencies: probe.dependencies,
+      pythonExecutable: {
+        relativePath: pythonExecutableRelativePath,
+        sha256: sha256File(pythonExecutablePath),
+      },
+      model: modelIdentity(config.modelsDirVlm),
+      config: {
+        relativePath: configRelativePath,
+        sha256: sha256File(configPath),
+        modelSource: config.modelSource,
+      },
+    },
+  };
+}
+
+export function runMineruVlmProcess(
+  input: {
+    dataRoot: string;
+    vlm: MineruVlmRuntime;
+    inputRelativePath: string;
+    inputPath: string;
+    outputRootRelativePath: string;
+    outputRoot: string;
+    startPageIndex: number;
+    endPageIndex: number;
+    taskResultTimeoutSeconds?: number;
+  },
+  spawnProcess: typeof spawnSync = spawnSync,
+) {
+  const argumentsForManifest = buildMineruVlmArguments({
+    inputPath: input.inputRelativePath,
+    outputPath: input.outputRootRelativePath,
+    startPageIndex: input.startPageIndex,
+    endPageIndex: input.endPageIndex,
+  });
+  const argumentsForProcess = buildMineruVlmArguments({
+    inputPath: input.inputPath,
+    outputPath: input.outputRoot,
+    startPageIndex: input.startPageIndex,
+    endPageIndex: input.endPageIndex,
+  });
+  const { taskResultTimeoutSeconds, processTimeoutSeconds } =
+    resolveMineruProcessTimeouts(input.taskResultTimeoutSeconds);
+  const result = spawnProcess(input.vlm.executablePath, argumentsForProcess, {
+    cwd: repoRoot(),
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      MINERU_TOOLS_CONFIG_JSON: input.vlm.configPath,
+      MINERU_LOG_LEVEL: "INFO",
+      MINERU_TASK_RESULT_TIMEOUT_SECONDS: String(taskResultTimeoutSeconds),
+    },
+    maxBuffer: 64 * 1024 * 1024,
+    timeout: processTimeoutSeconds * 1000,
+    killSignal: "SIGTERM",
+  });
+  const stdoutPath = path.join(input.outputRoot, "mineru.stdout.log");
+  const stderrPath = path.join(input.outputRoot, "mineru.stderr.log");
+  fs.writeFileSync(stdoutPath, result.stdout ?? "", "utf8");
+  fs.writeFileSync(stderrPath, result.stderr ?? "", "utf8");
+  if (result.error) {
+    if ("code" in result.error && result.error.code === "ETIMEDOUT") {
+      throw new Error(
+        `MinerU VLM run exceeded parent timeout ${processTimeoutSeconds}s; see ${normalizeRelativePath(
+          path.relative(input.dataRoot, stderrPath),
+        )}`,
+      );
+    }
+    throw result.error;
+  }
+  if (result.status !== 0) {
+    throw new Error(
+      `MinerU VLM run failed with exit code ${String(result.status)}; see ${normalizeRelativePath(
+        path.relative(input.dataRoot, stderrPath),
+      )}`,
+    );
+  }
+  return {
+    argumentsForManifest,
+    stdoutPath,
+    stderrPath,
+    taskResultTimeoutSeconds,
+    processTimeoutSeconds,
+  };
+}
+
+export function resolveMineruProcessTimeouts(
+  taskResultTimeoutSeconds = DEFAULT_MINERU_PAGE_TASK_TIMEOUT_SECONDS,
+) {
+  if (
+    !isPositiveSafeInteger(taskResultTimeoutSeconds) ||
+    taskResultTimeoutSeconds >
+      MAX_NODE_TIMEOUT_SECONDS - MINERU_PROCESS_TIMEOUT_GRACE_SECONDS
+  ) {
+    throw new Error("MinerU task-result timeout must be a positive integer");
+  }
+  return {
+    taskResultTimeoutSeconds,
+    processTimeoutSeconds:
+      taskResultTimeoutSeconds + MINERU_PROCESS_TIMEOUT_GRACE_SECONDS,
+  };
+}
+
+export function mineruVlmContentListPath(
+  inputPath: string,
+  outputRoot: string,
+) {
+  const documentStem = path.parse(inputPath).name;
+  return path.join(
+    outputRoot,
+    documentStem,
+    "vlm",
+    `${documentStem}_content_list.json`,
+  );
+}
+
+export function buildMineruVlmArguments(input: {
   inputPath: string;
   outputPath: string;
-  pageIndex: number;
+  startPageIndex: number;
+  endPageIndex: number;
 }) {
   return [
     "-p",
@@ -479,17 +693,13 @@ function buildMineruArguments(input: {
     "--image-analysis",
     "false",
     "-s",
-    String(input.pageIndex),
+    String(input.startPageIndex),
     "-e",
-    String(input.pageIndex),
+    String(input.endPageIndex),
   ];
 }
 
-function probeRuntime(executablePath: string): RuntimeProbe {
-  const pythonPath = path.join(path.dirname(executablePath), "python.exe");
-  if (!fs.existsSync(pythonPath)) {
-    throw new Error(`MinerU Python executable not found: ${pythonPath}`);
-  }
+function probeRuntime(pythonPath: string): RuntimeProbe {
   const script = [
     "import importlib.metadata as m",
     "import json, platform, torch",
@@ -512,8 +722,17 @@ function probeRuntime(executablePath: string): RuntimeProbe {
   const result = spawnSync(pythonPath, ["-X", "utf8", "-c", script], {
     encoding: "utf8",
     maxBuffer: 1024 * 1024,
+    timeout: MINERU_RUNTIME_PROBE_TIMEOUT_MS,
+    killSignal: "SIGTERM",
   });
-  if (result.error) throw result.error;
+  if (result.error) {
+    if ("code" in result.error && result.error.code === "ETIMEDOUT") {
+      throw new Error(
+        `MinerU runtime probe exceeded ${MINERU_RUNTIME_PROBE_TIMEOUT_MS / 1000}s`,
+      );
+    }
+    throw result.error;
+  }
   if (result.status !== 0) {
     throw new Error(
       `MinerU runtime probe failed with exit code ${String(result.status)}: ${
@@ -622,6 +841,19 @@ function isStringRecord(value: unknown): value is Record<string, string> {
     isRecord(value) &&
     Object.values(value).every((item) => typeof item === "string")
   );
+}
+
+function isPositiveIntegerString(value: unknown) {
+  return (
+    typeof value === "string" &&
+    /^\d+$/u.test(value) &&
+    Number.isSafeInteger(Number(value)) &&
+    Number(value) >= 1
+  );
+}
+
+function isPositiveSafeInteger(value: unknown): value is number {
+  return Number.isSafeInteger(value) && Number(value) >= 1;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

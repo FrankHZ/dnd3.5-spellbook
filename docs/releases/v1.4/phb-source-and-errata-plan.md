@@ -8,12 +8,13 @@
 > boundaries, or cross-plan conflicts change.
 
 Status: in progress; Gate 0, the complete Gate 1 representative pilot, and the
-localhost review-console prerequisite are accepted. Gate 2 is reopened at the
-dual-engine recall and authority-policy boundary. The current 75 residual exceptions
-are now fail-closed behind the `official-srd-default-v1` authority revision and
-cannot be read or edited through the review service. Hardened extraction,
-field-resolved comparison, and SRD adjudication must regenerate their evidence;
-downstream translation/activation gates remain blocked.
+localhost review-console prerequisite are accepted. The full-source dual-engine
+recall boundary is implemented and locally terminal in nested-data commit
+`e223818`; Gate 2 remains reopened at the authority-policy boundary. The
+superseded residual exceptions are fail-closed behind the
+`official-srd-default-v1` authority revision and cannot be read or edited
+through the review service. Field-resolved SRD adjudication must regenerate its
+evidence; downstream translation/activation gates remain blocked.
 
 ## Purpose
 
@@ -166,6 +167,12 @@ downstream acceptance artifacts.
   omission, segmentation drift, field drop, or table loss as upstream evidence
   work. Any accepted fix invalidates all affected downstream fingerprints and
   requires a full extraction rerun.
+- Run one provenance-bound VLM witness over the complete canonical PHB core
+  subset. Keep pipeline output as the sole structured extraction input; compare
+  both engines against the same PDF.js item inventory and emit page-grouped,
+  fingerprint-bound item/table disagreements. Require current terminal dual
+  review before full comparison, and recursively pin that review manifest into
+  Gate 2. Do not merge or import VLM blocks automatically.
 
 Validation: schema tests plus redacted/minimal fixtures that cover every
 supported layout failure mode.
@@ -282,6 +289,9 @@ npm run -w data-tools phb:source:compare -- --pilot
 npm run -w data-tools phb:source:extract -- --full --prepare-only
 npm run -w data-tools phb:source:extract -- --full --mineru-output <data-relative-output>
 npm run -w data-tools phb:source:extract
+npm run -w data-tools phb:mineru:run-batch -- --label <label> --source-id phb35-core
+npm run -w data-tools phb:mineru:dual:build -- --batch-manifest <data-relative-run-manifest>
+npm run -w data-tools phb:mineru:dual:verify -- --require-terminal
 npm run -w data-tools phb:source:compare
 npm run -w data-tools phb:srd:verify
 npm run -w data-tools phb:srd:extract
@@ -498,9 +508,34 @@ archive host is the publisher.
   VLM reports `4x5` where the source is `3x5`.
 - The reviewed evidence is recorded in nested-data
   `phb35/review/mineru-recall-representative-pilot.json`. It completes the
-  requested representative coverage but does not authorize a full run or VLM
-  runtime replacement. The next data-pipeline slice must define and test a
-  fail-closed dual-engine contract: pipeline remains the structured layout
-  source, VLM is only a recall witness, and every pipeline/VLM/PDF.js
-  disagreement emits fingerprint-bound evidence rather than silently selecting
-  or merging output.
+  requested representative coverage but does not authorize a VLM runtime
+  replacement. It motivates the implemented fail-closed dual-engine contract:
+  pipeline remains the structured layout source, VLM is only a recall witness,
+  and every pipeline/VLM/PDF.js disagreement emits fingerprint-bound evidence
+  rather than silently selecting or merging output.
+- The full witness runs MinerU `3.4.4` once over all 123 canonical PHB core
+  subset pages with model revision
+  `bff20d4ae2bf202df9f45284b4d43681555a97ed`. Batch manifest
+  `188819774f40f5cc85381a2339b6f6bb076775fa5c9068d727d07d929a1b4d37`
+  pins source/input mapping, MinerU and Python executable hashes, config,
+  runtime packages, actual staging arguments, four-hour task timeout, final
+  publication path, logs, and the complete content-list hash.
+- Image-overlap handling adds twelve explicit PDF.js-to-MinerU projections and
+  two explicit caption exclusions. The full extraction now has 145 terminal
+  layout decisions: 138 projections, five image exclusions, and two order
+  overrides. It restores the omitted Helping Hand paragraph and the missing
+  Symbol of Sleep token while preserving 605 spells, 1,216 printed list rows,
+  1,235 occurrences, 59 MinerU tables, seven detached tables, seven excluded
+  image blocks, and zero extraction/set issues.
+- The current dual queue contains 115 item-recall rows and 28 table-structure
+  rows across the 123 core pages. Source review retains pipeline structure for
+  every table disagreement; all 143 rows are fingerprint-current and terminal.
+  A fresh full run produced zero row additions, removals, or evidence-payload
+  changes relative to the reviewed candidate run before batch provenance was
+  refreshed.
+- Nested-data commit `e223818` records the layout fixes, terminal full-source
+  dual review, and refreshed comparison chain. Full comparison balances
+  605/605 source and DB rows with 65 exact, 298 formatting-only, 162
+  substantive, and 80 manual rows. `phb:source:report` remains fail-closed
+  because SRD adjudication still pins the previous comparison, which is the
+  intended next authority-policy boundary rather than unfinished recall work.

@@ -129,6 +129,58 @@ page showed severe bbox regression and one table row-count drift while the
 pipeline drifted on a different table. Do not select or merge backend output
 silently; pipeline/VLM/PDF.js disagreement requires fingerprint-bound evidence.
 
+Run the full-source VLM witness and build the maintained disagreement queue:
+
+```bash
+npm run -w data-tools phb:mineru:run-batch -- \
+  --label phb35-core-vlm-344 \
+  --source-id phb35-core
+npm run -w data-tools phb:mineru:dual:build -- \
+  --batch-manifest artifacts/mineru/phb35/recall-full/phb35-core-vlm-344/run-manifest.json
+npm run -w data-tools phb:mineru:dual:verify
+npm run -w data-tools phb:mineru:dual:verify -- --require-terminal
+```
+
+The batch runner loads MinerU once for one contiguous canonical source range.
+It writes to a sibling staging directory, verifies complete page accounting,
+then atomically publishes an ignored run directory. Its manifest pins the
+current source/full-input manifests, subset PDF, exact source/subset/candidate
+page mapping, executable, runtime packages, config, CUDA device, model
+revision, invocation, logs, and content list. Verification re-hashes the
+artifacts and re-probes the current runtime rather than trusting the saved
+version strings. Full batches explicitly raise and pin MinerU's task-result
+timeout from its one-hour default to four hours; override it only with
+`--task-timeout-seconds`. The manifest records the actual transient staging
+command and final atomic publication path separately, pins the MinerU and
+Python executable hashes, checks both before runtime probing, and gives the
+parent process a five-minute grace period beyond MinerU's internal timeout.
+The probe itself has a finite timeout. A failed run keeps its ignored staging
+directory and `run-failure.json` for diagnosis but never publishes the final
+label.
+
+The dual build compares both engines against the current PDF.js item inventory.
+It writes source-bearing, page-grouped item and table disagreements to
+`data/phb35/review/full-mineru-dual-engine-review.jsonl`, with a recursively
+pinned manifest beside it, and emits only hashes/counts to
+`data-tools/out/phb/`. Pipeline remains the structured authority and VLM remains
+a recall witness; no VLM block, text, bbox, or table is imported automatically.
+An item row is automatically terminal only when pipeline already covers every
+item, exact text is retained inside a non-image structural block, or every
+pipeline bbox miss has current accepted layout evidence. Text overlapping an
+image must become an explicit projection or caption-exclusion row before it can
+be terminal. Table structure/content disagreements and unexplained pipeline
+misses remain fingerprint-bound `proposed` decisions. A reviewed table
+disagreement may be accepted only after source comparison confirms pipeline
+completeness; a real pipeline gap must be fixed and regenerated instead of
+being waived with a terminal status. Rerunning with changed evidence resets
+those decisions.
+
+The ordinary dual verifier permits proposed rows so evidence can be reviewed,
+but rejects stale or malformed artifacts. `--require-terminal` is the
+fail-closed Gate 2 boundary. Full comparison requires that terminal check and
+pins the dual-review manifest into its own provenance chain; report and review
+service verification recursively re-run it.
+
 `phb:pilot:verify` is the acceptance gate, not another report command. By
 default it requires a committed, non-stale, `accepted` end-to-end review with
 entity extraction, errata overlay, DB comparison, and row-review artifacts.
@@ -170,6 +222,7 @@ After the accepted end-to-end pilot passes, run the full source workflow:
 npm run -w data-tools phb:source:extract -- --full --prepare-only
 npm run -w data-tools phb:source:extract -- --full --mineru-output artifacts/mineru/phb35/full-output
 npm run -w data-tools phb:source:extract
+npm run -w data-tools phb:mineru:dual:verify -- --require-terminal
 npm run -w data-tools phb:source:compare
 npm run -w data-tools phb:srd:verify
 npm run -w data-tools phb:srd:extract

@@ -65,6 +65,20 @@
       "requiresSqlite": false,
       "writeCapable": false
     },
+    "phb:mineru:dual:build": {
+      "module": "phb",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": false,
+      "writeCapable": true
+    },
+    "phb:mineru:dual:verify": {
+      "module": "phb",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": false,
+      "writeCapable": false
+    },
     "phb:mineru:recall": {
       "module": "phb",
       "lifecycle": "maintained-local",
@@ -73,6 +87,13 @@
       "writeCapable": false
     },
     "phb:mineru:run-page": {
+      "module": "phb",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": false,
+      "writeCapable": true
+    },
+    "phb:mineru:run-batch": {
       "module": "phb",
       "lifecycle": "maintained-local",
       "requiresLocalData": true,

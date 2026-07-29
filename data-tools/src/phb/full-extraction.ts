@@ -834,8 +834,8 @@ function writeFullMineruLayoutReview(
     (review) => review.kind === "image-adjacent-exclusion",
   );
   if (
-    outside.length !== 126 ||
-    imageAdjacent.length !== 3 ||
+    outside.length !== 138 ||
+    imageAdjacent.length !== 5 ||
     order.length !== 2
   ) {
     throw new Error(

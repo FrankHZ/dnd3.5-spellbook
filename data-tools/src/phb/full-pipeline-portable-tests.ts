@@ -20,6 +20,7 @@ import {
   PHB_FULL_LAYOUT_REVIEW_MANIFEST_RELATIVE_PATH,
   PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH,
 } from "./full-mineru";
+import { PHB_MINERU_DUAL_REVIEW_MANIFEST_RELATIVE_PATH } from "./mineru-dual-review";
 import {
   assertEmptyJsonl,
   PHB_FULL_DB_COMPARISON_MANIFEST_RELATIVE_PATH,
@@ -29,6 +30,7 @@ import {
   PHB_FULL_ROW_REVIEW_MANIFEST_RELATIVE_PATH,
   PHB_FULL_ROW_REVIEW_RELATIVE_PATH,
   verifyFullComparisonArtifacts,
+  verifyFullComparisonManifestArtifacts,
   verifyFullMineruLayoutReviewArtifacts,
   verifyFullMineruLayoutReviewChain,
   verifyFullRowReviewArtifacts,
@@ -54,6 +56,7 @@ try {
     PHB_FULL_DETACHED_TABLES_RELATIVE_PATH,
     PHB_FULL_MINERU_TABLES_RELATIVE_PATH,
     PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH,
+    PHB_MINERU_DUAL_REVIEW_MANIFEST_RELATIVE_PATH,
     PHB_FULL_ISSUES_RELATIVE_PATH,
   ];
   inputs.forEach((relativePath) => write(relativePath, ""));
@@ -103,22 +106,46 @@ try {
     output: artifact(PHB_FULL_DB_COMPARISON_RELATIVE_PATH),
     errataManifest: artifact(PHB_FULL_ERRATA_MANIFEST_RELATIVE_PATH),
     pilotSummonTable: artifact("phb35/extracted/pilot/entities.jsonl"),
+    mineruDualReviewManifest: artifact(
+      PHB_MINERU_DUAL_REVIEW_MANIFEST_RELATIVE_PATH,
+    ),
   };
-  verifyFullComparisonArtifacts(dataRoot, comparisonManifest);
+  let terminalRequired: boolean | undefined;
+  assert.throws(
+    () =>
+      verifyFullComparisonArtifacts(
+        dataRoot,
+        comparisonManifest,
+        (_dataRoot, requireTerminal) => {
+          terminalRequired = requireTerminal;
+          throw new Error("fixture dual review is still proposed");
+        },
+      ),
+    /still proposed/u,
+  );
+  assert.equal(terminalRequired, true);
+  verifyFullComparisonManifestArtifacts(dataRoot, comparisonManifest);
 
   write(PHB_FULL_ERRATA_OVERLAYS_RELATIVE_PATH, "changed\n");
   assert.throws(
-    () => verifyFullComparisonArtifacts(dataRoot, comparisonManifest),
+    () => verifyFullComparisonManifestArtifacts(dataRoot, comparisonManifest),
     /errata manifest -> overlays/u,
   );
   write(PHB_FULL_ERRATA_OVERLAYS_RELATIVE_PATH, "");
 
   write("phb35/extracted/pilot/entities.jsonl", "changed\n");
   assert.throws(
-    () => verifyFullComparisonArtifacts(dataRoot, comparisonManifest),
+    () => verifyFullComparisonManifestArtifacts(dataRoot, comparisonManifest),
     /pilot summon table/u,
   );
   write("phb35/extracted/pilot/entities.jsonl", "");
+
+  write(PHB_MINERU_DUAL_REVIEW_MANIFEST_RELATIVE_PATH, "changed\n");
+  assert.throws(
+    () => verifyFullComparisonManifestArtifacts(dataRoot, comparisonManifest),
+    /MinerU dual-engine review/u,
+  );
+  write(PHB_MINERU_DUAL_REVIEW_MANIFEST_RELATIVE_PATH, "");
 
   const rowReviewManifest = {
     evidence: {

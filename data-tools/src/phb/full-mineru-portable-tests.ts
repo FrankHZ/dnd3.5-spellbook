@@ -105,6 +105,47 @@ assert.equal(
   0,
 );
 
+const imageOverlapBody = page(
+  [item("Body text crossing an illustration", 40, 660)],
+  [
+    block(0, "text", [50, 90, 300, 140], "Previous body text"),
+    block(1, "image", [50, 140, 400, 300], null),
+  ],
+);
+const imageOverlapProjection = buildFullMineruLayoutReviewCandidates([
+  imageOverlapBody,
+]);
+assert.equal(imageOverlapProjection.length, 1);
+assert.equal(
+  imageOverlapProjection[0]?.candidateAlgorithmVersion,
+  "mineru-image-overlap-projection-v1",
+);
+assert.equal(imageOverlapProjection[0]?.kind, "outside-bbox-projection");
+assert.deepEqual(
+  reconstructMineruReadingLines(
+    imageOverlapBody,
+    acceptCandidates([imageOverlapBody]),
+  ).lines.map((line) => line.text),
+  ["Body text crossing an illustration"],
+);
+
+const imageOverlapCaption = page(
+  [item("Illustration caption", 40, 500)],
+  [
+    block(0, "text", [50, 90, 300, 140], "Distant body text"),
+    block(1, "image", [50, 140, 400, 400], null),
+  ],
+);
+const imageOverlapExclusion = buildFullMineruLayoutReviewCandidates([
+  imageOverlapCaption,
+]);
+assert.equal(imageOverlapExclusion.length, 1);
+assert.equal(
+  imageOverlapExclusion[0]?.candidateAlgorithmVersion,
+  "mineru-image-overlap-exclusion-v1",
+);
+assert.equal(imageOverlapExclusion[0]?.kind, "image-adjacent-exclusion");
+
 const invalidStatus = acceptedExclusion.map((review) => ({
   ...review,
   status: "accpeted",
@@ -112,6 +153,14 @@ const invalidStatus = acceptedExclusion.map((review) => ({
 assert.match(
   validateFullMineruLayoutReviews([excludedImage], invalidStatus).join("\n"),
   /status is invalid/u,
+);
+const alteredPayload = structuredClone(acceptedExclusion);
+if (alteredPayload[0]?.kind === "image-adjacent-exclusion") {
+  alteredPayload[0].pdfItem.text = "Changed caption";
+}
+assert.match(
+  validateFullMineruLayoutReviews([excludedImage], alteredPayload).join("\n"),
+  /payload does not match its evidence fingerprint/u,
 );
 
 console.log("PHB full MinerU portable tests passed");

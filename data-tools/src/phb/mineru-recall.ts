@@ -414,7 +414,7 @@ function recallMiss(text: string, itemIndex: number): MineruRecallMiss {
   };
 }
 
-function normalizeRecallText(value: string) {
+export function normalizeRecallText(value: string) {
   return value
     .normalize("NFKC")
     .toLocaleLowerCase("en-US")

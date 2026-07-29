@@ -116,7 +116,8 @@ type FullMineruLayoutReviewBase = {
 
 export type FullMineruOutsideBboxReview = FullMineruLayoutReviewBase & {
   kind: "outside-bbox-projection";
-  candidateAlgorithmVersion: "mineru-bbox-candidates-v1";
+  candidateAlgorithmVersion:
+    "mineru-bbox-candidates-v1" | "mineru-image-overlap-projection-v1";
   targetBlockIndex: number;
   pdfItem: {
     itemIndex: number;
@@ -138,7 +139,8 @@ export type FullMineruOutsideBboxReview = FullMineruLayoutReviewBase & {
 
 export type FullMineruImageAdjacentReview = FullMineruLayoutReviewBase & {
   kind: "image-adjacent-exclusion";
-  candidateAlgorithmVersion: "mineru-image-adjacent-v1";
+  candidateAlgorithmVersion:
+    "mineru-image-adjacent-v1" | "mineru-image-overlap-exclusion-v1";
   pdfItem: FullMineruOutsideBboxReview["pdfItem"];
   eligibleImageBlocks: Array<{
     blockIndex: number;
@@ -494,11 +496,11 @@ export function reconstructMineruReadingLines(
     buildFullMineruLayoutReviewCandidates([page]),
   );
   const contentBlocks = orderedContentBlocks(page.mineru.blocks, pageReviews);
-  const excludedBlocks = page.mineru.blocks.filter(
+  const excludedStructuralBlocks = page.mineru.blocks.filter(
     (
       block,
     ): block is FullMineruBlock & { bbox: [number, number, number, number] } =>
-      !isContentBlock(block) && block.bbox !== null,
+      !isContentBlock(block) && block.type !== "image" && block.bbox !== null,
   );
   const assignments = new Map<number, number[]>(
     contentBlocks.map((block) => [block.blockIndex, []]),
@@ -523,7 +525,11 @@ export function reconstructMineruReadingLines(
       assignments.get(containing.blockIndex)!.push(index);
       return;
     }
-    if (excludedBlocks.some((block) => pointInside(point, block.bbox, 0))) {
+    if (
+      excludedStructuralBlocks.some((block) =>
+        pointInside(point, block.bbox, 0),
+      )
+    ) {
       return;
     }
     const acceptedImageExclusion = pageReviews.find(
@@ -717,6 +723,12 @@ export function validateFullMineruLayoutReviews(
       candidate.evidenceFingerprintSha256 !== review.evidenceFingerprintSha256
     ) {
       errors.push(`${prefix}.evidenceFingerprintSha256 is stale`);
+    }
+    if (
+      review.evidenceFingerprintSha256 !==
+      fullMineruLayoutReviewEvidenceFingerprint(review)
+    ) {
+      errors.push(`${prefix} payload does not match its evidence fingerprint`);
     }
     if (!new Set(["proposed", "accepted", "rejected"]).has(review.status)) {
       errors.push(`${prefix}.status is invalid`);
@@ -919,12 +931,20 @@ function orderedContentBlocks(
 function imageAdjacentCandidates(
   page: FullMineruPageRow,
 ): FullMineruImageAdjacentReview[] {
-  const positionedBlocks = page.mineru.blocks.filter(
+  const contentBlocks = page.mineru.blocks.filter(
     (
       block,
     ): block is FullMineruBlock & {
       bbox: [number, number, number, number];
-    } => block.bbox !== null,
+    } => isContentBlock(block) && block.bbox !== null,
+  );
+  const structuralBlocks = page.mineru.blocks.filter(
+    (
+      block,
+    ): block is FullMineruBlock & {
+      bbox: [number, number, number, number];
+    } =>
+      !isContentBlock(block) && block.type !== "image" && block.bbox !== null,
   );
   return page.pdfjs.items.flatMap((item, itemIndex) => {
     if (
@@ -934,22 +954,38 @@ function imageAdjacentCandidates(
       return [];
     }
     const point = normalizedItemCenter(page, item);
-    if (positionedBlocks.some((block) => pointInside(point, block.bbox, 0))) {
+    if (
+      contentBlocks.some((block) => pointInside(point, block.bbox, 0)) ||
+      structuralBlocks.some((block) => pointInside(point, block.bbox, 0))
+    ) {
       return [];
     }
     const eligibleImageBlocks = adjacentImageBlocks(page, point);
     if (eligibleImageBlocks.length === 0) return [];
+    const overlapsImage = eligibleImageBlocks.some(
+      (block) =>
+        block.distance.horizontal === 0 && block.distance.vertical === 0,
+    );
+    if (
+      overlapsImage &&
+      projectionBlockCandidates(point, contentBlocks, 150).length > 0
+    ) {
+      return [];
+    }
     const pdfItem = layoutPdfItem(item, itemIndex, point);
+    const candidateAlgorithmVersion = overlapsImage
+      ? ("mineru-image-overlap-exclusion-v1" as const)
+      : ("mineru-image-adjacent-v1" as const);
     const evidence = layoutEvidenceBase(page, {
       kind: "image-adjacent-exclusion",
-      candidateAlgorithmVersion: "mineru-image-adjacent-v1",
+      candidateAlgorithmVersion,
       pdfItem,
       eligibleImageBlocks,
     });
     return [
       {
         schemaVersion: 1,
-        rowId: `mineru-layout:${safeId(page.sourceId)}:${page.sourcePageIndex}:image-adjacent:${itemIndex}`,
+        rowId: `mineru-layout:${safeId(page.sourceId)}:${page.sourcePageIndex}:${overlapsImage ? "image-overlap" : "image-adjacent"}:${itemIndex}`,
         sourceId: page.sourceId,
         sourceArtifactSha256: page.sourceArtifactSha256,
         sourcePageIndex: page.sourcePageIndex,
@@ -957,7 +993,7 @@ function imageAdjacentCandidates(
         contentListSha256: page.mineru.contentListSha256,
         textLayerSha256: page.pdfjs.textLayerSha256,
         kind: "image-adjacent-exclusion" as const,
-        candidateAlgorithmVersion: "mineru-image-adjacent-v1" as const,
+        candidateAlgorithmVersion,
         pdfItem,
         eligibleImageBlocks,
         evidenceFingerprintSha256: hashStableJson(evidence),
@@ -979,12 +1015,13 @@ function outsideBboxCandidates(
       bbox: [number, number, number, number];
     } => isContentBlock(block) && block.bbox !== null,
   );
-  const excludedBlocks = page.mineru.blocks.filter(
+  const excludedStructuralBlocks = page.mineru.blocks.filter(
     (
       block,
     ): block is FullMineruBlock & {
       bbox: [number, number, number, number];
-    } => !isContentBlock(block) && block.bbox !== null,
+    } =>
+      !isContentBlock(block) && block.type !== "image" && block.bbox !== null,
   );
   return page.pdfjs.items.flatMap((item, itemIndex) => {
     if (
@@ -996,20 +1033,34 @@ function outsideBboxCandidates(
     const point = normalizedItemCenter(page, item);
     if (
       contentBlocks.some((block) => pointInside(point, block.bbox, 0)) ||
-      excludedBlocks.some((block) => pointInside(point, block.bbox, 0))
+      excludedStructuralBlocks.some((block) =>
+        pointInside(point, block.bbox, 0),
+      )
     ) {
       return [];
     }
-    if (adjacentImageBlocks(page, point).length > 0) {
+    const eligibleImageBlocks = adjacentImageBlocks(page, point);
+    const overlapsImage = eligibleImageBlocks.some(
+      (block) =>
+        block.distance.horizontal === 0 && block.distance.vertical === 0,
+    );
+    if (eligibleImageBlocks.length > 0 && !overlapsImage) {
       return [];
     }
-    const eligibleBlocks = projectionBlockCandidates(point, contentBlocks);
+    const eligibleBlocks = projectionBlockCandidates(
+      point,
+      contentBlocks,
+      overlapsImage ? 150 : 65,
+    );
     if (eligibleBlocks.length === 0) return [];
     const pdfItem = layoutPdfItem(item, itemIndex, point);
     const targetBlockIndex = eligibleBlocks[0]!.blockIndex;
+    const candidateAlgorithmVersion = overlapsImage
+      ? ("mineru-image-overlap-projection-v1" as const)
+      : ("mineru-bbox-candidates-v1" as const);
     const evidence = layoutEvidenceBase(page, {
       kind: "outside-bbox-projection",
-      candidateAlgorithmVersion: "mineru-bbox-candidates-v1",
+      candidateAlgorithmVersion,
       pdfItem,
       eligibleBlocks,
     });
@@ -1024,7 +1075,7 @@ function outsideBboxCandidates(
         contentListSha256: page.mineru.contentListSha256,
         textLayerSha256: page.pdfjs.textLayerSha256,
         kind: "outside-bbox-projection" as const,
-        candidateAlgorithmVersion: "mineru-bbox-candidates-v1" as const,
+        candidateAlgorithmVersion,
         targetBlockIndex,
         pdfItem,
         eligibleBlocks,
@@ -1107,6 +1158,7 @@ function contentOrderCandidates(
 function projectionBlockCandidates(
   point: { x: number; y: number },
   blocks: Array<FullMineruBlock & { bbox: [number, number, number, number] }>,
+  maxVerticalDistance = 65,
 ) {
   return blocks
     .map((block) => ({
@@ -1117,7 +1169,8 @@ function projectionBlockCandidates(
       distance: bboxDistance(point, block.bbox),
     }))
     .filter(
-      ({ distance }) => distance.horizontal <= 12 && distance.vertical <= 65,
+      ({ distance }) =>
+        distance.horizontal <= 12 && distance.vertical <= maxVerticalDistance,
     )
     .sort(
       (left, right) =>
@@ -1194,6 +1247,22 @@ function hashStableJson(value: unknown) {
     .createHash("sha256")
     .update(JSON.stringify(stableValue(value)))
     .digest("hex");
+}
+
+function fullMineruLayoutReviewEvidenceFingerprint(
+  review: FullMineruLayoutReview,
+) {
+  const evidence: Record<string, unknown> = { ...review };
+  delete evidence.schemaVersion;
+  delete evidence.rowId;
+  delete evidence.evidenceFingerprintSha256;
+  delete evidence.status;
+  delete evidence.reviewer;
+  delete evidence.decisionNote;
+  if (review.kind === "outside-bbox-projection") {
+    delete evidence.targetBlockIndex;
+  }
+  return hashStableJson(evidence);
 }
 
 export function fullMineruLayoutDecisionFingerprint(

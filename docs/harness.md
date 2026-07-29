@@ -243,6 +243,9 @@ The accepted pilot authorizes, but does not accept, the full local-data run:
 npm run -w data-tools phb:source:extract -- --full --prepare-only
 npm run -w data-tools phb:source:extract -- --full --mineru-output <data-relative-output>
 npm run -w data-tools phb:source:extract
+npm run -w data-tools phb:mineru:run-batch -- --label <label> --source-id phb35-core
+npm run -w data-tools phb:mineru:dual:build -- --batch-manifest <data-relative-run-manifest>
+npm run -w data-tools phb:mineru:dual:verify -- --require-terminal
 npm run -w data-tools phb:source:compare
 npm run -w data-tools phb:srd:verify
 npm run -w data-tools phb:srd:extract
@@ -271,6 +274,19 @@ qualify as formatting-only evidence. Exact and formatting-only rows are
 deterministically accepted only after those layout gates; substantive and
 manual rows require fingerprint-bound terminal decisions. SRD adjudication may
 resolve deterministic three-way cases only from committed, current evidence.
+The full-source VLM run is a separate recall witness, never replacement
+extraction input. Its single-process batch manifest pins the current source,
+full-input PDF, exact page mapping, runtime/model/config, invocation, logs, and
+complete content list. Its provenance distinguishes the actual staging command
+from the atomic publication path, verifies MinerU/Python/config hashes before
+probing, and applies finite probe, internal-task, and parent-process timeouts.
+The dual-engine queue groups item disagreements by page and records table
+structure/content drift. Exact non-image structural text may close an item
+disagreement, but image-overlap text and table drift remain fingerprint-bound
+review work. A table review that finds a pipeline gap requires pipeline repair
+and regeneration, not a terminal waiver. Full comparison requires the terminal
+dual verifier and pins its manifest, while ordinary dual verification allows
+proposed rows for review but still rejects stale evidence.
 The report recursively re-hashes description/list issues, errata output, the
 pilot summon table, comparison artifacts, MinerU table and layout-review
 artifacts, SRD-backed
