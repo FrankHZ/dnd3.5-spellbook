@@ -215,18 +215,30 @@ against a committed, accepted end-to-end review; accepting the page-extraction
 review alone does not authorize it. The accepted Gate 1 permits the full run,
 but does not accept full-corpus English rows or any DB mutation.
 
-Use `phb:mineru:recall` to compare one candidate MinerU content-list page
-against the pinned source PDF's independent PDF.js inventory. The command
-re-derives canonical page mappings from the current full manifest, verifies the
-actual subset PDF page count and source-page fingerprint, and pins the
-full-input manifest identity in its report. Candidate content lists remain
-ignored under `data/artifacts/mineru/phb35/`; generated source-free metrics
-belong under `data-tools/out/phb/`; reviewed candidate hashes and decisions
-belong under `data/phb35/review/`. The command's declared backend and method
-are descriptive, so they cannot authorize a runtime switch. Before a
-replacement full run, pin an actual runtime manifest and accept a
-representative page set covering class lists, descriptions, tables, and
-image-adjacent layouts.
+Use `phb:mineru:run-page` to resolve one current full-input page and run the
+configured local VLM backend. Its ignored `run-manifest.json` binds the actual
+executable, command arguments, config, package versions, CUDA device, model
+revision, logs, input, and output hashes. It refuses to overwrite an existing
+run label. Then use `phb:mineru:recall` with `--run-manifest` to compare that
+candidate against the pinned source PDF's independent PDF.js inventory. Recall
+re-derives canonical page mappings, verifies the subset page count and
+source-page fingerprint, checks the run/candidate correspondence, and reports
+source-free bbox coverage, normalized item coverage, token accounting, block
+types, and table dimensions/hashes.
+
+Candidate content lists and run manifests remain ignored under
+`data/artifacts/mineru/phb35/`; generated source-free metrics belong under
+`data-tools/out/phb/`; reviewed candidate hashes and decisions belong under
+`data/phb35/review/`. Legacy candidates without a run manifest remain
+descriptive and cannot authorize a runtime switch.
+
+The representative v1.4 class-list, description, table, and image-adjacent
+pilot does not authorize a VLM runtime replacement. VLM improves recall on
+some pages, but the table-dense control has much worse strict-bbox coverage and
+each backend introduces a different table row-count drift. Keep the pipeline
+as the structured-layout source while evaluating a fail-closed VLM recall
+sidecar. Never choose or merge candidate text, bboxes, or tables silently;
+every pipeline/VLM/PDF.js disagreement must become fingerprint-bound evidence.
 
 #### Local PHB Review Console
 

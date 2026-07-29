@@ -72,6 +72,13 @@
       "requiresSqlite": false,
       "writeCapable": false
     },
+    "phb:mineru:run-page": {
+      "module": "phb",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": false,
+      "writeCapable": true
+    },
     "phb:source:compare": {
       "module": "phb",
       "lifecycle": "maintained-local",

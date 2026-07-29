@@ -270,8 +270,12 @@ Recommended next sequence:
 3. **Harden MinerU recall before further English decisions**
 
    The `official-srd-default-v1` authority gate now makes the superseded 75-row
-   queue fail closed. Audit omissions, segmentation, fields, and tables against
-   the pinned PHB and independent PDF.js inventory. MinerU changes alter PHB
+   queue fail closed. The representative pipeline/VLM pilot is complete and
+   rejects a candidate-wide runtime switch: VLM improves recall on some pages
+   but regresses table-page bboxes and drifts on a different table than the
+   pipeline. Next, define a fail-closed dual-engine contract with pipeline as
+   structured layout, VLM as recall witness, and fingerprint-bound evidence for
+   every disagreement before rerunning the pinned PHB. MinerU changes alter PHB
    evidence and downstream fingerprints.
 
 4. **Rebuild field-level effective English rows**

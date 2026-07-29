@@ -2,6 +2,8 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
+import { load } from "cheerio";
+
 import { repoRoot } from "../shared/env";
 import {
   readPhbFullExtractionManifest,
@@ -29,6 +31,10 @@ import {
   type StableMineruBlock,
   toStableMineruBlock,
 } from "./pilot-extraction";
+import {
+  readAndVerifyMineruPageRunManifest,
+  type MineruPageRunManifest,
+} from "./mineru-page-run";
 import { readAndVerifyPhbSourceManifest, sha256File } from "./source-manifest";
 
 export type MineruRecallAudit = {
@@ -50,8 +56,19 @@ export type MineruRecallAudit = {
     normalizedTextMissItems: number;
   };
   tokenComparison: ReturnType<typeof compareTokenMultisets>;
+  structure: MineruStructureSummary;
   strictBboxMisses: MineruRecallMiss[];
   normalizedTextMisses: MineruRecallMiss[];
+};
+
+export type MineruStructureSummary = {
+  blockTypeCounts: Record<string, number>;
+  tables: Array<{
+    blockIndex: number;
+    rows: number;
+    maxColumns: number;
+    htmlSha256: string;
+  }>;
 };
 
 type MineruRecallMiss = {
@@ -82,6 +99,10 @@ export type MineruRecallReport = MineruRecallAudit & {
     bytes: number;
     sha256: string;
     pageIndex: number;
+    runManifest: {
+      relativePath: string;
+      sha256: string;
+    } | null;
   };
 };
 
@@ -94,7 +115,11 @@ export async function runMineruPageRecall(input: {
   candidatePath: string;
   backend: string;
   method: string;
+  runManifestPath?: string;
 }) {
+  const run = input.runManifestPath
+    ? readAndVerifyMineruPageRunManifest(input.dataRoot, input.runManifestPath)
+    : null;
   const source = readAndVerifyPhbSourceManifest(input.dataRoot);
   const sourceArtifact = source.artifacts.find(
     (artifact) => artifact.id === input.sourceId,
@@ -158,6 +183,15 @@ export async function runMineruPageRecall(input: {
     sourceArtifactSha256: sourceArtifact.sha256,
     sourcePage: page,
   });
+  if (run) {
+    assertRunManifestMatchesRecall(run.manifest, input, {
+      sourceArtifactSha256: sourceArtifact.sha256,
+      inputManifest: mapping.inputManifest,
+      subsetArtifactSha256: mapping.subsetArtifactSha256,
+      subsetPageIndex: mapping.subsetPageIndex,
+      printedPageNumber: mapping.printedPageNumber,
+    });
+  }
   const audit = auditMineruPageRecall({
     page,
     printedPageNumber: mapping.printedPageNumber,
@@ -185,6 +219,14 @@ export async function runMineruPageRecall(input: {
       bytes: fs.statSync(candidatePath).size,
       sha256: sha256File(candidatePath),
       pageIndex: input.candidatePageIndex,
+      runManifest: run
+        ? {
+            relativePath: path
+              .relative(input.dataRoot, run.manifestPath)
+              .replace(/\\/gu, "/"),
+            sha256: run.manifestSha256,
+          }
+        : null,
     },
   };
   const reportPath = path.join(
@@ -196,6 +238,57 @@ export async function runMineruPageRecall(input: {
   );
   writeJson(reportPath, report);
   return { report, reportPath };
+}
+
+export function assertRunManifestMatchesRecall(
+  manifest: MineruPageRunManifest,
+  input: {
+    label: string;
+    sourceId: string;
+    sourcePageIndex: number;
+    candidatePageIndex: number;
+    candidatePath: string;
+    backend: string;
+    method: string;
+    dataRoot: string;
+  },
+  current: {
+    sourceArtifactSha256: string;
+    inputManifest: {
+      relativePath: string;
+      sha256: string;
+    };
+    subsetArtifactSha256: string;
+    subsetPageIndex: number;
+    printedPageNumber: number | null;
+  },
+) {
+  const candidatePath = resolveAbsoluteInside(
+    input.dataRoot,
+    input.candidatePath,
+  );
+  const expectedCandidatePath = resolveAbsoluteInside(
+    input.dataRoot,
+    manifest.output.contentListRelativePath,
+  );
+  if (
+    manifest.label !== input.label ||
+    manifest.source.id !== input.sourceId ||
+    manifest.source.sourcePageIndex !== input.sourcePageIndex ||
+    manifest.source.artifactSha256 !== current.sourceArtifactSha256 ||
+    manifest.source.printedPageNumber !== current.printedPageNumber ||
+    manifest.input.manifestRelativePath !==
+      current.inputManifest.relativePath ||
+    manifest.input.manifestSha256 !== current.inputManifest.sha256 ||
+    manifest.input.subsetSha256 !== current.subsetArtifactSha256 ||
+    manifest.input.subsetPageIndex !== current.subsetPageIndex ||
+    manifest.output.candidatePageIndex !== input.candidatePageIndex ||
+    path.resolve(candidatePath) !== path.resolve(expectedCandidatePath) ||
+    manifest.runtime.backend !== input.backend ||
+    manifest.runtime.method !== input.method
+  ) {
+    throw new Error("MinerU page-run manifest does not match recall arguments");
+  }
 }
 
 export function auditMineruPageRecall(input: {
@@ -275,8 +368,41 @@ export function auditMineruPageRecall(input: {
       normalizedTextMissItems: normalizedTextMisses.length,
     },
     tokenComparison: compareTokenMultisets(pdfText, mineruText),
+    structure: summarizeMineruStructure(input.blocks),
     strictBboxMisses,
     normalizedTextMisses,
+  };
+}
+
+export function summarizeMineruStructure(
+  blocks: StableMineruBlock[],
+): MineruStructureSummary {
+  const blockTypeCounts: Record<string, number> = {};
+  const tables: MineruStructureSummary["tables"] = [];
+  for (const [blockIndex, block] of blocks.entries()) {
+    blockTypeCounts[block.type] = (blockTypeCounts[block.type] ?? 0) + 1;
+    if (block.type !== "table" || block.tableHtml === null) continue;
+    const $ = load(block.tableHtml);
+    const rowColumnCounts = $("tr")
+      .toArray()
+      .map((row) => $(row).find("th, td").length);
+    tables.push({
+      blockIndex,
+      rows: rowColumnCounts.length,
+      maxColumns: Math.max(0, ...rowColumnCounts),
+      htmlSha256: crypto
+        .createHash("sha256")
+        .update(block.tableHtml)
+        .digest("hex"),
+    });
+  }
+  return {
+    blockTypeCounts: Object.fromEntries(
+      Object.entries(blockTypeCounts).sort(([left], [right]) =>
+        left.localeCompare(right),
+      ),
+    ),
+    tables,
   };
 }
 

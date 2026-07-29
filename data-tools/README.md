@@ -79,18 +79,35 @@ entity-level acceptance. The tested local runtime is pinned by
 `data/phb35/source/mineru-runtime.json`, including the required
 `pdftext==0.6.3` and `six==1.17.0` compatibility pins.
 
-Before replacing the accepted full-run runtime, audit candidate MinerU output
-against the independently pinned PDF.js text layer one page at a time:
+Generate a provenance-bound one-page VLM candidate from the current full-input
+manifest:
+
+```bash
+npm run -w data-tools phb:mineru:run-page -- \
+  --label printed-219-vlm \
+  --source-id phb35-core \
+  --source-page-index 219
+```
+
+The command resolves the canonical subset-page mapping, invokes the configured
+local MinerU venv, and writes ignored output plus `run-manifest.json` under
+`data/artifacts/mineru/phb35/recall-pilot/<label>/`. The success manifest binds
+the actual executable, arguments, config, package versions, CUDA device, model
+revision, logs, input, and content-list hashes. Existing output directories are
+not overwritten.
+
+Audit that output against the independently pinned PDF.js text layer:
 
 ```bash
 npm run -w data-tools phb:mineru:recall -- \
-  --label vlm-printed-182 \
+  --label printed-219-vlm \
   --source-id phb35-core \
-  --source-page-index 182 \
+  --source-page-index 219 \
   --candidate-page-index 0 \
-  --content-list artifacts/mineru/phb35/recall-pilot/printed-182-vlm-gpu/phb35-core.full/vlm/phb35-core.full_content_list.json \
+  --content-list artifacts/mineru/phb35/recall-pilot/printed-219-vlm/phb35-core.full/vlm/phb35-core.full_content_list.json \
   --backend vlm-engine \
-  --method auto
+  --method auto \
+  --run-manifest artifacts/mineru/phb35/recall-pilot/printed-219-vlm/run-manifest.json
 ```
 
 The command verifies the current source and full-input manifests, requires the
@@ -98,12 +115,19 @@ page mapping to match the current full-extraction ranges, checks the actual
 subset PDF page count and source-page fingerprint, then reads one candidate
 content-list page. Its source-free report under `data-tools/out/phb/` pins the
 full-input manifest identity and reports strict MinerU-bbox coverage,
-normalized item coverage, and dehyphenated token recall/precision without
-emitting PDF text.
-The `backend` and `method` arguments describe the candidate; they are not a
-runtime provenance gate. A full-run replacement still requires a committed
-runtime manifest generated from the actual environment plus representative
-description, table, and image-adjacent page acceptance.
+normalized item coverage, dehyphenated token recall/precision, block-type
+counts, and table dimensions/hashes without emitting PDF text. When
+`--run-manifest` is present, the candidate path, hash, backend, method, source
+page, and label must match the generated run evidence. Legacy candidates
+without a run manifest remain descriptive only and cannot authorize a runtime
+switch.
+
+The representative v1.4 pilot retains the current pipeline for structured
+layout and treats VLM only as a candidate recall witness. VLM recovered omitted
+content on the class-list and ordinary-description controls, but a table-dense
+page showed severe bbox regression and one table row-count drift while the
+pipeline drifted on a different table. Do not select or merge backend output
+silently; pipeline/VLM/PDF.js disagreement requires fingerprint-bound evidence.
 
 `phb:pilot:verify` is the acceptance gate, not another report command. By
 default it requires a committed, non-stale, `accepted` end-to-end review with

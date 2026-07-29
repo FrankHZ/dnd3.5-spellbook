@@ -326,6 +326,16 @@ summon evidence, comparison inputs, and row-review evidence, and must fail
 until every current row is terminal; a successful extraction or comparison
 does not close Gate 2.
 
+Use `phb:mineru:run-page` for new MinerU recall candidates so the actual
+executable, command, config, package versions, CUDA device, model revision,
+input, logs, and output hashes are bound in an ignored run manifest. Pass that
+manifest to `phb:mineru:recall`; legacy label-only candidates are descriptive
+and cannot authorize a runtime change. The representative class-list,
+description, table, and image-adjacent pilot rejects a candidate-wide VLM
+switch: keep pipeline output as structured layout and treat VLM only as a
+recall witness until a fail-closed dual-engine disagreement contract is
+implemented. Never silently choose or merge backend text, bboxes, or tables.
+
 For the current v1.4 authority contract, keep PHB+accepted errata immutable as
 reference/evidence while adopting official SRD 3.5 rules text by default.
 PHB+errata still owns missing-SRD content, Product Identity names and aliases,

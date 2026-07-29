@@ -9,7 +9,7 @@
 
 Status: in progress; Gate 0, the complete Gate 1 representative pilot, and the
 localhost review-console prerequisite are accepted. Gate 2 is reopened at the
-MinerU recall and authority-policy boundary. The current 75 residual exceptions
+dual-engine recall and authority-policy boundary. The current 75 residual exceptions
 are now fail-closed behind the `official-srd-default-v1` authority revision and
 cannot be read or edited through the review service. Hardened extraction,
 field-resolved comparison, and SRD adjudication must regenerate their evidence;
@@ -482,3 +482,25 @@ archive host is the publisher.
   acceptance. Before rerunning the full corpus, the data pipeline must generate
   runtime provenance from the actual command and environment, then repeat the
   VLM audit over representative description, table, and image-adjacent pages.
+- The representative recall follow-up runs provenance-bound VLM candidates on
+  source page indexes 206, 219, and 265, covering ordinary descriptions and
+  stat blocks, four dense tables, a separate table/image page, outside-bbox
+  layout, and both accepted image-adjacent caption exclusions. The generated
+  page-run manifests bind MinerU `3.4.0`, Python `3.12.13`, the RTX 3080 Ti,
+  package versions, config hash, exact model revision, command arguments, logs,
+  input mapping, and content-list hash.
+- VLM reduces page 206 from four normalized-text misses to the one already
+  accepted caption exclusion; page 265 leaves only its accepted caption
+  exclusion under both candidates. On table-dense page 219, VLM reaches exact
+  `1.0` token recall/precision but regresses strict-bbox misses from `3` to
+  `74`. Source review also finds one row-count drift in each backend on
+  different tables: pipeline reports `6x2` where the source is `5x2`, while
+  VLM reports `4x5` where the source is `3x5`.
+- The reviewed evidence is recorded in nested-data
+  `phb35/review/mineru-recall-representative-pilot.json`. It completes the
+  requested representative coverage but does not authorize a full run or VLM
+  runtime replacement. The next data-pipeline slice must define and test a
+  fail-closed dual-engine contract: pipeline remains the structured layout
+  source, VLM is only a recall witness, and every pipeline/VLM/PDF.js
+  disagreement emits fingerprint-bound evidence rather than silently selecting
+  or merging output.

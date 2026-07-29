@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 
 import type { PhbPdfSourcePage } from "./pdf-baseline";
-import { auditMineruPageRecall } from "./mineru-recall";
+import {
+  auditMineruPageRecall,
+  summarizeMineruStructure,
+} from "./mineru-recall";
 import type { StableMineruBlock } from "./pilot-extraction";
 
 const page: PhbPdfSourcePage = {
@@ -46,6 +49,18 @@ const complete = auditMineruPageRecall({
 assert.equal(complete.counts.strictBboxMissItems, 0);
 assert.equal(complete.counts.normalizedTextMissItems, 0);
 assert.equal(complete.tokenComparison.tokenRecall, 1);
+
+const structure = summarizeMineruStructure([
+  tableBlock(
+    "<table><tr><th>A</th><th>B</th></tr><tr><td>C</td><td>D</td></tr></table>",
+  ),
+  block("body", [0, 0, 10, 10]),
+]);
+assert.deepEqual(structure.blockTypeCounts, { table: 1, text: 1 });
+assert.equal(structure.tables.length, 1);
+assert.equal(structure.tables[0]?.rows, 2);
+assert.equal(structure.tables[0]?.maxColumns, 2);
+assert.match(structure.tables[0]?.htmlSha256 ?? "", /^[a-f0-9]{64}$/u);
 
 const dehyphenated = auditMineruPageRecall({
   page: {
@@ -97,5 +112,20 @@ function block(
     footnotes: [],
     assetPath: null,
     textOrigin: "text-layer",
+  };
+}
+
+function tableBlock(tableHtml: string): StableMineruBlock {
+  return {
+    type: "table",
+    bbox: [0, 0, 10, 10],
+    text: null,
+    textLevel: null,
+    tableHtml,
+    listItems: [],
+    captions: [],
+    footnotes: [],
+    assetPath: null,
+    textOrigin: "ocr-risk",
   };
 }
