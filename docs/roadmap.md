@@ -267,17 +267,24 @@ Recommended next sequence:
    API, and React evidence consumer. The console remains review tooling; its
    successful 131-layout/75-residual smoke does not accept Gate 2 content.
 
-3. **Harden MinerU recall before further English decisions**
+3. **Completed: harden MinerU recall before further English decisions**
 
-   The `official-srd-default-v1` authority gate now makes the superseded 75-row
-   queue fail closed. Audit omissions, segmentation, fields, and tables against
-   the pinned PHB and independent PDF.js inventory. MinerU changes alter PHB
+   The `official-srd-default-v1` authority gate now makes the superseded
+   pre-authority queue fail closed. The representative pipeline/VLM pilot
+   rejects a candidate-wide runtime switch: VLM improves recall on some pages
+   but regresses table-page bboxes and drifts on a different table than the
+   pipeline. The full-source dual-engine contract is implemented and rerun
+   with pipeline as structured layout, VLM as recall witness,
+   fingerprint-bound disagreement evidence, terminal image-overlap layout
+   decisions, deterministic model-file identity, and the actual invocation
+   recorded separately from its portable form. MinerU changes alter PHB
    evidence and downstream fingerprints.
 
 4. **Rebuild field-level effective English rows**
 
-   Rerun full extraction, comparison, SRD adjudication, and apply. Official SRD
-   text is adopted by default; PHB+errata remains immutable evidence and owns
+   Continue from the refreshed full extraction/comparison and terminal recall
+   witness: rerun revised SRD adjudication and apply. Official SRD text is
+   adopted by default; PHB+errata remains immutable evidence and owns
    missing-SRD, Product Identity, PHB-only, page, and table/layout fields.
    Data-pipeline emits one effective row per spell and excludes DB-only
    extensions from the body.

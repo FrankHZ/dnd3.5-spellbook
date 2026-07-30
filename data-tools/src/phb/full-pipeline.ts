@@ -39,6 +39,8 @@ import {
   PHB_FULL_MINERU_INPUT_MANIFEST_RELATIVE_PATH,
   type FullMineruLayoutReview,
 } from "./full-mineru";
+import { verifyCurrentMineruDualReview } from "./mineru-dual-run";
+import { PHB_MINERU_DUAL_REVIEW_MANIFEST_RELATIVE_PATH } from "./mineru-dual-review";
 import {
   buildProposedFullRowReviews,
   mergeFullRowReviews,
@@ -88,6 +90,7 @@ const ERRATA_INVENTORY = "phb35/review/errata-inventory.jsonl";
 export function runFullComparison() {
   const dataRoot = localDataDir();
   verifyFullExtractionChain(dataRoot);
+  const dualReview = verifyCurrentMineruDualReview(dataRoot, true);
   const spells = readJsonl<FullSpellEntity>(
     resolveInside(dataRoot, PHB_FULL_ENTITIES_RELATIVE_PATH),
   );
@@ -234,6 +237,10 @@ export function runFullComparison() {
     pilotSummonTable: artifact(
       PILOT_ENTITIES,
       resolveInside(dataRoot, PILOT_ENTITIES),
+    ),
+    mineruDualReviewManifest: artifact(
+      PHB_MINERU_DUAL_REVIEW_MANIFEST_RELATIVE_PATH,
+      dualReview.manifestPath,
     ),
     databases: dbIdentities,
     output: artifact(PHB_FULL_DB_COMPARISON_RELATIVE_PATH, comparisonsPath),
@@ -788,12 +795,26 @@ export function verifyFullRowReviewArtifacts(dataRoot: string) {
 export function verifyFullComparisonArtifacts(
   dataRoot: string,
   comparisonManifest: Record<string, unknown>,
+  dualReviewVerifier: typeof verifyCurrentMineruDualReview = verifyCurrentMineruDualReview,
+) {
+  dualReviewVerifier(dataRoot, true);
+  verifyFullComparisonManifestArtifacts(dataRoot, comparisonManifest);
+}
+
+export function verifyFullComparisonManifestArtifacts(
+  dataRoot: string,
+  comparisonManifest: Record<string, unknown>,
 ) {
   verifyFullErrataChain(dataRoot);
   for (const [field, relativePath, label] of [
     ["output", PHB_FULL_DB_COMPARISON_RELATIVE_PATH, "comparisons"],
     ["errataManifest", PHB_FULL_ERRATA_MANIFEST_RELATIVE_PATH, "errata"],
     ["pilotSummonTable", PILOT_ENTITIES, "pilot summon table"],
+    [
+      "mineruDualReviewManifest",
+      PHB_MINERU_DUAL_REVIEW_MANIFEST_RELATIVE_PATH,
+      "MinerU dual-engine review",
+    ],
   ] as const) {
     expectArtifact(
       comparisonManifest[field],

@@ -8,12 +8,13 @@
 > boundaries, or cross-plan conflicts change.
 
 Status: in progress; Gate 0, the complete Gate 1 representative pilot, and the
-localhost review-console prerequisite are accepted. Gate 2 is reopened at the
-MinerU recall and authority-policy boundary. The current 75 residual exceptions
-are now fail-closed behind the `official-srd-default-v1` authority revision and
-cannot be read or edited through the review service. Hardened extraction,
-field-resolved comparison, and SRD adjudication must regenerate their evidence;
-downstream translation/activation gates remain blocked.
+localhost review-console prerequisite are accepted. The full-source dual-engine
+recall boundary is implemented and locally terminal in nested-data commit
+`dda575a`; Gate 2 remains reopened at the authority-policy boundary. The
+superseded residual exceptions are fail-closed behind the
+`official-srd-default-v1` authority revision and cannot be read or edited
+through the review service. Field-resolved SRD adjudication must regenerate its
+evidence; downstream translation/activation gates remain blocked.
 
 ## Purpose
 
@@ -166,6 +167,12 @@ downstream acceptance artifacts.
   omission, segmentation drift, field drop, or table loss as upstream evidence
   work. Any accepted fix invalidates all affected downstream fingerprints and
   requires a full extraction rerun.
+- Run one provenance-bound VLM witness over the complete canonical PHB core
+  subset. Keep pipeline output as the sole structured extraction input; compare
+  both engines against the same PDF.js item inventory and emit page-grouped,
+  fingerprint-bound item/table disagreements. Require current terminal dual
+  review before full comparison, and recursively pin that review manifest into
+  Gate 2. Do not merge or import VLM blocks automatically.
 
 Validation: schema tests plus redacted/minimal fixtures that cover every
 supported layout failure mode.
@@ -227,20 +234,20 @@ drops, and reviewed outcomes for every pilot row.
   proposals with current evidence fingerprints. Main gate approves the
   adjudication policy and reviews only residual exceptions; it is not the
   clerical reviewer for every substantive/manual comparison row.
-- Do not bulk-review the current 75 residual rows. The service now requires the
-  `official-srd-default-v1` authority revision in queue freshness/fingerprints,
-  so the superseded queue fails closed and direct decision writes are rejected.
-  The legacy adjudicator intentionally cannot mint the new revision. Next,
-  harden MinerU recall, rerun full extraction, comparison, revised SRD
-  adjudication, and terminal-candidate apply, and resolve
-  deterministic three-way drift in batch. Review only the
+- Do not bulk-review residual rows from the legacy authority revision. The
+  service now requires the `official-srd-default-v1` authority revision in
+  queue freshness/fingerprints, so the superseded queue fails closed and
+  direct decision writes are rejected. The legacy adjudicator intentionally
+  cannot mint the new revision. MinerU recall and the refreshed comparison are
+  now terminal; next rerun revised SRD adjudication and terminal-candidate
+  apply, and resolve deterministic three-way drift in batch. Review only the
   regenerated genuine exceptions through the accepted localhost console or an
-  equivalent fingerprint-safe data-tools command. The console must reuse
-  the canonical candidate/validation logic and cannot turn a saved decision
-  into Gate 2 acceptance without the normal rerun. A layout decision requires
-  a full rerun beginning at `phb:source:extract`; the English residual queue
-  must remain unavailable until extraction, comparison, SRD adjudication, and
-  SRD apply are mutually current again. An English residual save makes the
+  equivalent fingerprint-safe data-tools command. The console must reuse the
+  canonical candidate/validation logic and cannot turn a saved decision into
+  Gate 2 acceptance without the normal rerun. A layout decision requires a
+  full rerun beginning at `phb:source:extract`; the English residual queue must
+  remain unavailable until extraction, comparison, SRD adjudication, and SRD
+  apply are mutually current again. An English residual save makes the
   row-review manifest stale; after residual-only review, rerun
   `phb:source:compare` before `phb:source:report`.
 - Preserve every terminal decision and residual exception in the data repo.
@@ -282,6 +289,9 @@ npm run -w data-tools phb:source:compare -- --pilot
 npm run -w data-tools phb:source:extract -- --full --prepare-only
 npm run -w data-tools phb:source:extract -- --full --mineru-output <data-relative-output>
 npm run -w data-tools phb:source:extract
+npm run -w data-tools phb:mineru:run-batch -- --label <label> --source-id phb35-core
+npm run -w data-tools phb:mineru:dual:build -- --batch-manifest <data-relative-run-manifest>
+npm run -w data-tools phb:mineru:dual:verify -- --require-terminal
 npm run -w data-tools phb:source:compare
 npm run -w data-tools phb:srd:verify
 npm run -w data-tools phb:srd:extract
@@ -325,7 +335,7 @@ script manifest, tests, and this plan are updated together.
   stale row-review manifest before `phb:source:report`; report cannot consume
   the decision JSONL directly while that manifest is stale.
 - MinerU recall or authority-matrix changes reopen Gate 2 at full
-  `phb:source:extract`; the current 75-row residual snapshot is not accepted
+  `phb:source:extract`; a legacy-authority residual snapshot is not accepted
   review input until the full downstream chain is regenerated.
 - The English handoff is accepted before any translation branch consumes it.
 - Public fixtures/reports contain no PHB or translated corpus text.
@@ -482,3 +492,51 @@ archive host is the publisher.
   acceptance. Before rerunning the full corpus, the data pipeline must generate
   runtime provenance from the actual command and environment, then repeat the
   VLM audit over representative description, table, and image-adjacent pages.
+- The representative recall follow-up runs provenance-bound VLM candidates on
+  source page indexes 206, 219, and 265, covering ordinary descriptions and
+  stat blocks, four dense tables, a separate table/image page, outside-bbox
+  layout, and both accepted image-adjacent caption exclusions. The generated
+  page-run manifests bind MinerU `3.4.0`, Python `3.12.13`, the RTX 3080 Ti,
+  package versions, config hash, exact model revision, command arguments, logs,
+  input mapping, and content-list hash.
+- VLM reduces page 206 from four normalized-text misses to the one already
+  accepted caption exclusion; page 265 leaves only its accepted caption
+  exclusion under both candidates. On table-dense page 219, VLM reaches exact
+  `1.0` token recall/precision but regresses strict-bbox misses from `3` to
+  `74`. Source review also finds one row-count drift in each backend on
+  different tables: pipeline reports `6x2` where the source is `5x2`, while
+  VLM reports `4x5` where the source is `3x5`.
+- The reviewed evidence is recorded in nested-data
+  `phb35/review/mineru-recall-representative-pilot.json`. It completes the
+  requested representative coverage but does not authorize a VLM runtime
+  replacement. It motivates the implemented fail-closed dual-engine contract:
+  pipeline remains the structured layout source, VLM is only a recall witness,
+  and every pipeline/VLM/PDF.js disagreement emits fingerprint-bound evidence
+  rather than silently selecting or merging output.
+- The full witness runs MinerU `3.4.4` once over all 123 canonical PHB core
+  subset pages with model revision
+  `bff20d4ae2bf202df9f45284b4d43681555a97ed`. Batch manifest
+  `b7bc06bdebd6df5945fc225ddc064044b8451f7cba01669ea8d0f54bee317a2d`
+  pins source/input mapping, MinerU and Python executable hashes, config,
+  runtime packages, 13 model files totaling 2,328,028,720 bytes, actual
+  argv/cwd/environment, portable invocation forms, four-hour task timeout,
+  final publication path, logs, and the complete content-list hash.
+- The full extraction now has 238 terminal layout decisions: 230 projections,
+  six image exclusions, and two order overrides. Every PDF.js item whose full
+  bbox overlaps an image requires an explicit accepted projection or caption
+  exclusion, including items whose center also lies in a MinerU content block.
+  It preserves 605 spells, 1,216 printed list rows, 1,235 occurrences, 59
+  MinerU tables, seven detached tables, seven excluded image blocks, and zero
+  extraction/set issues.
+- The current dual queue contains 115 item-recall rows and 28 table-structure
+  rows across the 123 core pages. Source review retains pipeline structure for
+  every table disagreement; all 143 rows are fingerprint-current and terminal.
+  The refreshed witness content list is byte-identical to the reviewed run and
+  produced zero row additions, removals, or table evidence-payload changes
+  before batch and layout provenance were refreshed.
+- Nested-data commit `dda575a` records the layout fixes, terminal full-source
+  dual review, and refreshed comparison chain. Full comparison balances
+  605/605 source and DB rows with 65 exact, 297 formatting-only, 163
+  substantive, and 80 manual rows. `phb:source:report` remains fail-closed
+  because SRD adjudication still pins the previous comparison, which is the
+  intended next authority-policy boundary rather than unfinished recall work.

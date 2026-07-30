@@ -9,7 +9,14 @@ import {
 } from "./errata-inventory";
 import { inspectPdfTextLayer } from "./pdf-baseline";
 import { runFullExtraction } from "./full-extraction";
+import {
+  runMineruDualReview,
+  verifyCurrentMineruDualReview,
+  verifyMineruDualReview,
+} from "./mineru-dual-run";
 import { runMineruPageRecall } from "./mineru-recall";
+import { runMineruPage } from "./mineru-page-run";
+import { runMineruBatch } from "./mineru-batch-run";
 import {
   PHB_FULL_MANIFEST_RELATIVE_PATH,
   readPhbFullExtractionManifest,
@@ -502,6 +509,7 @@ function applySrdAdjudication() {
 }
 
 async function auditMineruRecall() {
+  const runManifestPath = optionValue("--run-manifest");
   const { report, reportPath } = await runMineruPageRecall({
     dataRoot: localDataDir(),
     label: requiredOption("--label"),
@@ -511,6 +519,7 @@ async function auditMineruRecall() {
     candidatePath: requiredOption("--content-list"),
     backend: requiredOption("--backend"),
     method: requiredOption("--method"),
+    ...(runManifestPath ? { runManifestPath } : {}),
   });
   console.log("PHB MinerU page recall audited");
   console.log(`Report: ${reportPath}`);
@@ -525,6 +534,96 @@ async function auditMineruRecall() {
       2,
     ),
   );
+}
+
+function executeMineruPageRun() {
+  const executablePath = optionValue("--executable");
+  const configPath = optionValue("--config");
+  const outputRoot = optionValue("--output-root");
+  const { manifest, manifestPath } = runMineruPage({
+    dataRoot: localDataDir(),
+    label: requiredOption("--label"),
+    sourceId: requiredOption("--source-id"),
+    sourcePageIndex: integerOption("--source-page-index"),
+    ...(executablePath ? { executablePath } : {}),
+    ...(configPath ? { configPath } : {}),
+    ...(outputRoot ? { outputRoot } : {}),
+  });
+  console.log("PHB MinerU page run completed");
+  console.log(`Manifest: ${manifestPath}`);
+  console.log(
+    JSON.stringify(
+      {
+        label: manifest.label,
+        source: manifest.source,
+        runtime: manifest.runtime,
+        output: manifest.output,
+      },
+      null,
+      2,
+    ),
+  );
+}
+
+function executeMineruBatchRun() {
+  const executablePath = optionValue("--executable");
+  const configPath = optionValue("--config");
+  const outputRoot = optionValue("--output-root");
+  const sourcePageStart = optionalIntegerOption("--source-page-start");
+  const sourcePageEnd = optionalIntegerOption("--source-page-end");
+  const taskTimeoutSeconds = optionalIntegerOption("--task-timeout-seconds");
+  const { manifest, manifestPath } = runMineruBatch({
+    dataRoot: localDataDir(),
+    label: requiredOption("--label"),
+    sourceId: requiredOption("--source-id"),
+    ...(sourcePageStart === undefined ? {} : { sourcePageStart }),
+    ...(sourcePageEnd === undefined ? {} : { sourcePageEnd }),
+    ...(taskTimeoutSeconds === undefined ? {} : { taskTimeoutSeconds }),
+    ...(executablePath ? { executablePath } : {}),
+    ...(configPath ? { configPath } : {}),
+    ...(outputRoot ? { outputRoot } : {}),
+  });
+  console.log("PHB MinerU batch run completed");
+  console.log(`Manifest: ${manifestPath}`);
+  console.log(
+    JSON.stringify(
+      {
+        label: manifest.label,
+        source: manifest.source,
+        selection: manifest.selection,
+        runtime: manifest.runtime,
+      },
+      null,
+      2,
+    ),
+  );
+}
+
+function buildMineruDualReview() {
+  const result = runMineruDualReview({
+    dataRoot: localDataDir(),
+    batchManifestPath: requiredOption("--batch-manifest"),
+  });
+  console.log("PHB MinerU dual-engine review generated");
+  console.log(`Manifest: ${result.manifestPath}`);
+  console.log(`Report: ${result.reportPath}`);
+  console.log(JSON.stringify(result.manifest.counts, null, 2));
+}
+
+function verifyMineruDualReviewCommand() {
+  const dataRoot = localDataDir();
+  const requireTerminal = process.argv.includes("--require-terminal");
+  const batchManifestPath = optionValue("--batch-manifest");
+  const result = batchManifestPath
+    ? verifyMineruDualReview({
+        dataRoot,
+        batchManifestPath,
+        requireTerminal,
+      })
+    : verifyCurrentMineruDualReview(dataRoot, requireTerminal);
+  console.log("PHB MinerU dual-engine review verified");
+  console.log(`Manifest: ${result.manifestPath}`);
+  console.log(JSON.stringify(result.manifest.counts, null, 2));
 }
 
 function readOptionalPilot(dataRoot: string, sourceManifestSha256: string) {
@@ -593,7 +692,7 @@ function writeJson(filePath: string, value: unknown) {
 
 function usage(): never {
   throw new Error(
-    "Usage: phb:source:verify | phb:pilot:verify [-- --stage page-extraction|end-to-end --review <data-relative-path>] | phb:source:extract | phb:source:extract -- --pilot --prepare-only | phb:source:extract -- --pilot --mineru-output <data-relative-path> | phb:source:extract -- --full --prepare-only | phb:source:extract -- --full --mineru-output <data-relative-path> | phb:source:compare [-- --pilot] | phb:source:report [-- --pilot] | phb:mineru:recall -- --label <label> --source-id <id> --source-page-index <index> --candidate-page-index <index> --content-list <data-relative-path> --backend <backend> --method <method> | phb:srd:verify | phb:srd:extract | phb:srd:adjudicate | phb:srd:apply",
+    "Usage: phb:source:verify | phb:pilot:verify [-- --stage page-extraction|end-to-end --review <data-relative-path>] | phb:source:extract | phb:source:extract -- --pilot --prepare-only | phb:source:extract -- --pilot --mineru-output <data-relative-path> | phb:source:extract -- --full --prepare-only | phb:source:extract -- --full --mineru-output <data-relative-path> | phb:source:compare [-- --pilot] | phb:source:report [-- --pilot] | phb:mineru:run-page -- --label <label> --source-id <id> --source-page-index <index> [--executable <data-relative-path> --config <data-relative-path> --output-root <data-relative-path>] | phb:mineru:run-batch -- --label <label> --source-id <id> [--source-page-start <index> --source-page-end <index> --task-timeout-seconds <seconds>] | phb:mineru:recall -- --label <label> --source-id <id> --source-page-index <index> --candidate-page-index <index> --content-list <data-relative-path> --backend <backend> --method <method> [--run-manifest <data-relative-path>] | phb:mineru:dual:build -- --batch-manifest <data-relative-path> | phb:mineru:dual:verify [-- --batch-manifest <data-relative-path> --require-terminal] | phb:srd:verify | phb:srd:extract | phb:srd:adjudicate | phb:srd:apply",
   );
 }
 
@@ -610,6 +709,16 @@ function requiredOption(name: string) {
 
 function integerOption(name: string) {
   const value = requiredOption(name);
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 0) {
+    throw new Error(`${name} must be a non-negative integer`);
+  }
+  return parsed;
+}
+
+function optionalIntegerOption(name: string) {
+  const value = optionValue(name);
+  if (value === undefined) return undefined;
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed < 0) {
     throw new Error(`${name} must be a non-negative integer`);
@@ -651,6 +760,22 @@ async function main() {
   }
   if (command === "mineru:recall") {
     await auditMineruRecall();
+    return;
+  }
+  if (command === "mineru:run-page") {
+    executeMineruPageRun();
+    return;
+  }
+  if (command === "mineru:run-batch") {
+    executeMineruBatchRun();
+    return;
+  }
+  if (command === "mineru:dual:build") {
+    buildMineruDualReview();
+    return;
+  }
+  if (command === "mineru:dual:verify") {
+    verifyMineruDualReviewCommand();
     return;
   }
   if (command === "compare" && process.argv.includes("--pilot")) {

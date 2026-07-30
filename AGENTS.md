@@ -326,20 +326,46 @@ summon evidence, comparison inputs, and row-review evidence, and must fail
 until every current row is terminal; a successful extraction or comparison
 does not close Gate 2.
 
+Use `phb:mineru:run-page` for new MinerU recall candidates so the actual
+executable, argv, cwd, environment, config, package versions, CUDA device,
+model revision, sorted per-file model-tree hashes, input, logs, and output
+hashes are bound in an ignored run manifest. Record and verify portable argv
+and environment forms separately from the executed absolute invocation. Pass
+that manifest to `phb:mineru:recall`; legacy label-only candidates are
+descriptive and cannot authorize a runtime change. The representative class-list,
+description, table, and image-adjacent pilot rejects a candidate-wide VLM
+switch. For the full witness, use one unbounded
+`phb:mineru:run-batch`, generate the fingerprint-bound queue with
+`phb:mineru:dual:build`, and require
+`phb:mineru:dual:verify -- --require-terminal` before full comparison. Keep
+pipeline output as structured layout and treat VLM only as a recall witness.
+The batch and dual manifests must pin current inputs, exact page mapping,
+runtime/model/config, outputs, layout evidence, and review rows. Never silently
+choose, merge, or import VLM text, bboxes, or tables.
+The batch manifest records the actual transient staging command separately from
+the final atomic publication path, pins MinerU, Python, config, and every model
+file by hash, and gives the runtime probe and parent process finite timeouts.
+Dual item review may auto-accept exact text inside non-image structural blocks, but
+image-overlap text always requires an explicit accepted projection or caption
+exclusion. Terminal dual verification also requires the recursively verified
+layout queue to be terminal; structural-text matches cannot waive that gate.
+If table review exposes a pipeline defect, fix and regenerate the pipeline; do
+not use a terminal dual-review status to waive the defect.
+
 For the current v1.4 authority contract, keep PHB+accepted errata immutable as
 reference/evidence while adopting official SRD 3.5 rules text by default.
 PHB+errata still owns missing-SRD content, Product Identity names and aliases,
 PHB-only content and class-list summaries, and page/table/layout structure.
 Data-pipeline must resolve mixed cases per field into one provenance-bearing
 effective row; server, web, search, and translation consumers must not choose a
-source at runtime. DB-only extension notes do not enter the body. The current
-75 residual rows predate this authority decision and must not be bulk-accepted.
+source at runtime. DB-only extension notes do not enter the body. Residual rows
+from the legacy authority revision must not be bulk-accepted.
 The service now requires the code-owned `official-srd-default-v1` authority
 revision in queue freshness/fingerprints, so the old queue fails closed for
 list, detail, and decision requests; the legacy adjudicator cannot mint that
-revision. Next, audit MinerU recall and rerun full extraction, comparison,
-revised SRD adjudication, and apply before regenerating the genuine exception
-queue.
+revision. MinerU recall and the full-source dual witness are complete; next
+rerun revised SRD adjudication and apply against the refreshed comparison
+before regenerating the genuine exception queue.
 
 ## Validation Commands
 
