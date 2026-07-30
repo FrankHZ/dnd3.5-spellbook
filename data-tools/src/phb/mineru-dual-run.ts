@@ -151,6 +151,9 @@ export function verifyMineruDualReview(input: {
   const context = loadDualContext({
     dataRoot: input.dataRoot ?? localDataDir(),
     batchManifestPath: input.batchManifestPath,
+    ...(input.requireTerminal === undefined
+      ? {}
+      : { requireTerminal: input.requireTerminal }),
     ...(input.batchReader ? { batchReader: input.batchReader } : {}),
   });
   if (!fs.existsSync(context.reviewPath)) {
@@ -210,6 +213,7 @@ export function verifyCurrentMineruDualReview(
 function loadDualContext(input: {
   dataRoot: string;
   batchManifestPath: string;
+  requireTerminal?: boolean;
   batchReader?: MineruBatchReader;
 }) {
   const dataRoot = path.resolve(input.dataRoot);
@@ -286,7 +290,11 @@ function loadDualContext(input: {
     layoutReviewPath,
     "PHB full MinerU layout review",
   );
-  const layoutErrors = validateFullMineruLayoutReviews(allPages, layoutReviews);
+  const layoutErrors = validateFullMineruLayoutReviews(
+    allPages,
+    layoutReviews,
+    input.requireTerminal ? { requireTerminal: true } : {},
+  );
   if (layoutErrors.length > 0) {
     throw new Error(
       `PHB full MinerU layout review is invalid:\n${layoutErrors.join("\n")}`,

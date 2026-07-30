@@ -8,6 +8,7 @@ import {
   PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH,
   buildFullMineruLayoutReviewCandidates,
   type FullMineruBlock,
+  type FullMineruLayoutReview,
   type FullMineruPageRow,
 } from "./full-mineru";
 import {
@@ -154,26 +155,28 @@ try {
     rangeKinds: page.rangeKinds,
   };
   const batchManifestSha256 = sha256File(resolve(batchManifestPath));
-  const candidates = buildMineruDualReviewRows({
-    sourceId: "phb35-core",
-    sourceArtifactSha256: SHA,
-    pipelineContentListSha256: page.mineru.contentListSha256,
-    vlmBatchManifestSha256: batchManifestSha256,
-    pages: [
-      {
-        page,
-        pipelineAudit: auditMineruPageRecall({
-          ...auditInput,
-          blocks: page.mineru.blocks,
-        }),
-        vlmAudit: auditMineruPageRecall({
-          ...auditInput,
-          blocks: vlmRawBlocks.map((block) => toStableMineruBlock(block)),
-        }),
-        layoutReviews,
-      },
-    ],
-  });
+  const makeCandidates = (currentLayoutReviews: FullMineruLayoutReview[]) =>
+    buildMineruDualReviewRows({
+      sourceId: "phb35-core",
+      sourceArtifactSha256: SHA,
+      pipelineContentListSha256: page.mineru.contentListSha256,
+      vlmBatchManifestSha256: batchManifestSha256,
+      pages: [
+        {
+          page,
+          pipelineAudit: auditMineruPageRecall({
+            ...auditInput,
+            blocks: page.mineru.blocks,
+          }),
+          vlmAudit: auditMineruPageRecall({
+            ...auditInput,
+            blocks: vlmRawBlocks.map((block) => toStableMineruBlock(block)),
+          }),
+          layoutReviews: currentLayoutReviews,
+        },
+      ],
+    });
+  const candidates = makeCandidates(layoutReviews);
   assert.equal(candidates.length, 1);
   assert.equal(candidates[0]?.status, "proposed");
   writeJsonl(PHB_MINERU_DUAL_REVIEW_RELATIVE_PATH, candidates);
@@ -224,6 +227,33 @@ try {
     proposed: 0,
     accepted: 1,
   });
+  assert.throws(
+    () =>
+      verifyMineruDualReview({
+        dataRoot,
+        batchManifestPath,
+        batchReader,
+        requireTerminal: true,
+      }),
+    /layout review is invalid.*still proposed/su,
+  );
+  const acceptedLayoutReviews = layoutReviews.map((row) => ({
+    ...row,
+    status: "accepted" as const,
+    reviewer: "portable-test",
+    decisionNote: "Source review confirms the pipeline projection.",
+  }));
+  writeJsonl(PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH, acceptedLayoutReviews);
+  const terminalCandidates = makeCandidates(acceptedLayoutReviews);
+  assert.equal(terminalCandidates[0]?.status, "accepted");
+  writeJsonl(PHB_MINERU_DUAL_REVIEW_RELATIVE_PATH, terminalCandidates);
+  writeDualManifest({
+    batchManifestPath,
+    pagesPath,
+    pipelineContentListPath,
+    proposed: 0,
+    accepted: 1,
+  });
   assert.doesNotThrow(() =>
     verifyMineruDualReview({
       dataRoot,
@@ -245,7 +275,7 @@ try {
   );
   writeJsonl(pagesPath, [page]);
 
-  const staleLayoutReviews = structuredClone(layoutReviews);
+  const staleLayoutReviews = structuredClone(acceptedLayoutReviews);
   if (staleLayoutReviews[0]?.kind === "outside-bbox-projection") {
     staleLayoutReviews[0].pdfItem.text = "Changed layout evidence";
   }
@@ -259,7 +289,7 @@ try {
       }),
     /layout review is invalid/u,
   );
-  writeJsonl(PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH, layoutReviews);
+  writeJsonl(PHB_FULL_LAYOUT_REVIEW_RELATIVE_PATH, acceptedLayoutReviews);
 
   writeJson(vlmContentListPath, []);
   assert.throws(

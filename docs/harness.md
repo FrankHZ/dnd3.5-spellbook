@@ -258,15 +258,16 @@ Full extraction requires imported MinerU output and is gated on 605 description
 entities, 1,216 printed list rows, 1,235 expanded occurrences, 605 independent
 list names, zero parser/set issues, 59 MinerU table blocks, seven detached named
 tables, and seven excluded description image blocks. MinerU defines block order
-and table structure. Strict-inside PDF.js items may project directly; every
-outside-bbox item or source-order conflict must have a current accepted row in
-the full MinerU layout review, with the PDF.js item, eligible MinerU blocks,
-chosen target or anchor, source hashes, and decision fingerprint. Text near an
-image requires a reviewed caption-exclusion row instead of a distance-only
-drop. Status is a closed `proposed` / `accepted` / `rejected` enum; extraction
-and recursive verification both reject unknown values. The plain extraction command reparses imported rows
-and cannot silently fall back to PDF.js-only extraction. Comparison must balance
-605 source and 605 PHB DB rows with zero source-only or DB-only names and records
+and table structure. Strict-inside PDF.js items may project directly only when
+they do not also overlap an image; every outside-bbox item, image-overlap
+projection or caption exclusion, and source-order conflict must have a current
+accepted row in the full MinerU layout review, with the PDF.js item, eligible
+MinerU blocks, chosen target or anchor, source hashes, and decision fingerprint.
+Status is a closed `proposed` / `accepted` / `rejected` enum; extraction and
+recursive verification both reject unknown values, and a rejected item action
+cannot authorize silent omission. The plain extraction command reparses imported
+rows and cannot silently fall back to PDF.js-only extraction. Comparison must
+balance 605 source and 605 PHB DB rows with zero source-only or DB-only names and records
 current rules/content DB hashes. Table artifacts are fingerprinted in both the
 recursive manifest and affected row evidence. Combined target/effect/area fields
 and unparsed shared summon tables are manual, and unordered body tokens never
@@ -278,15 +279,18 @@ The full-source VLM run is a separate recall witness, never replacement
 extraction input. Its single-process batch manifest pins the current source,
 full-input PDF, exact page mapping, runtime/model/config, invocation, logs, and
 complete content list. Its provenance distinguishes the actual staging command
-from the atomic publication path, verifies MinerU/Python/config hashes before
-probing, and applies finite probe, internal-task, and parent-process timeouts.
+from the atomic publication path, records actual argv/cwd/environment separately
+from portable forms, verifies MinerU/Python/config plus the sorted per-file
+model-tree hashes before probing, and applies finite probe, internal-task, and
+parent-process timeouts.
 The dual-engine queue groups item disagreements by page and records table
 structure/content drift. Exact non-image structural text may close an item
 disagreement, but image-overlap text and table drift remain fingerprint-bound
 review work. A table review that finds a pipeline gap requires pipeline repair
 and regeneration, not a terminal waiver. Full comparison requires the terminal
-dual verifier and pins its manifest, while ordinary dual verification allows
-proposed rows for review but still rejects stale evidence.
+dual verifier and pins its manifest. That verifier also requires the recursively
+verified layout queue to be terminal; ordinary dual verification allows proposed
+rows for review but still rejects stale evidence.
 The report recursively re-hashes description/list issues, errata output, the
 pilot summon table, comparison artifacts, MinerU table and layout-review
 artifacts, SRD-backed

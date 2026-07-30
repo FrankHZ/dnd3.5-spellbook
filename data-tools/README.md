@@ -69,13 +69,14 @@ counts and hashes.
 MinerU is the primary structured extractor for blocks, reading order, fields,
 lists, and tables. Every imported page also stores an independently derived
 PDF.js exact-character and coordinate baseline. Items inside strict MinerU
-bboxes may repair glyphs directly. An outside-bbox item, image-adjacent caption
-exclusion, or MinerU/source order conflict requires a current accepted row in
+bboxes may repair glyphs directly only when they do not also overlap an image.
+An outside-bbox item, any image-overlap projection or caption exclusion, or
+MinerU/source order conflict requires a current accepted row in
 `data/phb35/review/full-mineru-layout-review.jsonl`; each row fingerprints the
 PDF.js item, all eligible MinerU blocks, the selected block or anchor, and the
-source inputs. PDF.js never defines spell segmentation, reading order, or table structure. MinerU table
-text is marked `ocr-risk`, and unresolved projection or layout drift blocks
-entity-level acceptance. The tested local runtime is pinned by
+source inputs. PDF.js never defines spell segmentation, reading order, or table
+structure. MinerU table text is marked `ocr-risk`, and unresolved projection or
+layout drift blocks entity-level acceptance. The tested local runtime is pinned by
 `data/phb35/source/mineru-runtime.json`, including the required
 `pdftext==0.6.3` and `six==1.17.0` compatibility pins.
 
@@ -92,9 +93,11 @@ npm run -w data-tools phb:mineru:run-page -- \
 The command resolves the canonical subset-page mapping, invokes the configured
 local MinerU venv, and writes ignored output plus `run-manifest.json` under
 `data/artifacts/mineru/phb35/recall-pilot/<label>/`. The success manifest binds
-the actual executable, arguments, config, package versions, CUDA device, model
-revision, logs, input, and content-list hashes. Existing output directories are
-not overwritten.
+the actual executable, argv, cwd, environment, config, package versions, CUDA
+device, model revision, deterministic per-file model-tree hashes, logs, input,
+and content-list hashes. It records portable argv and environment forms
+separately; they never replace the executed command. Existing output
+directories are not overwritten.
 
 Audit that output against the independently pinned PDF.js text layer:
 
@@ -146,9 +149,11 @@ It writes to a sibling staging directory, verifies complete page accounting,
 then atomically publishes an ignored run directory. Its manifest pins the
 current source/full-input manifests, subset PDF, exact source/subset/candidate
 page mapping, executable, runtime packages, config, CUDA device, model
-revision, invocation, logs, and content list. Verification re-hashes the
-artifacts and re-probes the current runtime rather than trusting the saved
-version strings. Full batches explicitly raise and pin MinerU's task-result
+revision plus the sorted per-file model-tree manifest, actual invocation
+argv/cwd/environment, portable invocation forms, logs, and content list.
+Verification re-hashes executable/config/Python/model artifacts and re-probes
+the current runtime rather than trusting the saved version strings. Full
+batches explicitly raise and pin MinerU's task-result
 timeout from its one-hour default to four hours; override it only with
 `--task-timeout-seconds`. The manifest records the actual transient staging
 command and final atomic publication path separately, pins the MinerU and
@@ -176,10 +181,12 @@ being waived with a terminal status. Rerunning with changed evidence resets
 those decisions.
 
 The ordinary dual verifier permits proposed rows so evidence can be reviewed,
-but rejects stale or malformed artifacts. `--require-terminal` is the
-fail-closed Gate 2 boundary. Full comparison requires that terminal check and
-pins the dual-review manifest into its own provenance chain; report and review
-service verification recursively re-run it.
+but rejects stale or malformed artifacts. `--require-terminal` requires both
+the dual queue and its recursively verified layout queue to be terminal; a
+structural-text match cannot waive a proposed image-overlap decision. This is
+the fail-closed Gate 2 boundary. Full comparison requires that terminal check
+and pins the dual-review manifest into its own provenance chain; report and
+review service verification recursively re-run it.
 
 `phb:pilot:verify` is the acceptance gate, not another report command. By
 default it requires a committed, non-stale, `accepted` end-to-end review with

@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 
-import type { FullMineruLayoutReview, FullMineruPageRow } from "./full-mineru";
+import {
+  buildFullMineruLayoutReviewCandidates,
+  type FullMineruLayoutReview,
+  type FullMineruPageRow,
+} from "./full-mineru";
 import {
   MINERU_DUAL_REVIEWER,
   buildMineruDualReviewRows,
@@ -137,6 +141,46 @@ const mismatchedStructuralHeader = build({
 });
 assert.equal(mismatchedStructuralHeader[0]?.status, "proposed");
 
+const structuralImagePage: FullMineruPageRow = {
+  ...structuralHeaderPage,
+  mineru: {
+    ...structuralHeaderPage.mineru,
+    blocks: [
+      ...structuralHeaderPage.mineru.blocks,
+      {
+        ...structuralHeaderPage.mineru.blocks[0]!,
+        blockIndex: 1,
+        type: "image",
+        text: null,
+        bbox: [180, 300, 350, 600],
+      },
+    ],
+  },
+};
+const proposedStructuralImageLayout = buildFullMineruLayoutReviewCandidates([
+  structuralImagePage,
+]);
+assert.equal(proposedStructuralImageLayout.length, 2);
+const blockedStructuralImage = build({
+  page: structuralImagePage,
+  pipeline: audit({ bboxMisses: [1] }),
+  vlm: audit({}),
+  layoutReviews: proposedStructuralImageLayout,
+});
+assert.equal(blockedStructuralImage[0]?.status, "proposed");
+const acceptedStructuralImage = build({
+  page: structuralImagePage,
+  pipeline: audit({ bboxMisses: [1] }),
+  vlm: audit({}),
+  layoutReviews: proposedStructuralImageLayout.map((review) => ({
+    ...review,
+    status: "accepted" as const,
+    reviewer: "portable-test",
+    decisionNote: "Confirmed illustration text exclusion.",
+  })),
+});
+assert.equal(acceptedStructuralImage[0]?.status, "accepted");
+
 const tableDrift = build({
   pipeline: audit({ tables: [[5, 2]] }),
   vlm: audit({ tables: [[6, 2]] }),
@@ -187,6 +231,18 @@ assert.match(
     invalidStatus as unknown as MineruDualReview[],
   ).join("\n"),
   /status is invalid/u,
+);
+const invalidTerminalMetadata = structuredClone(reviewed) as unknown as Array<
+  Record<string, unknown>
+>;
+invalidTerminalMetadata[0]!.reviewer = 1;
+invalidTerminalMetadata[0]!.decisionNote = true;
+assert.match(
+  validateMineruDualReviews(
+    blocked,
+    invalidTerminalMetadata as unknown as MineruDualReview[],
+  ).join("\n"),
+  /terminal decision requires reviewer and note/u,
 );
 
 console.log("PHB MinerU dual-engine portable tests passed");

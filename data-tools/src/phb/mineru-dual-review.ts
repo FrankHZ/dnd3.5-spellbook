@@ -157,7 +157,8 @@ export function validateMineruDualReviews(
     }
     if (
       review.status !== "proposed" &&
-      (!review.reviewer || !review.decisionNote)
+      (!isNonEmptyString(review.reviewer) ||
+        !isNonEmptyString(review.decisionNote))
     ) {
       errors.push(`${prefix} terminal decision requires reviewer and note`);
     }
@@ -209,12 +210,12 @@ function buildPageReviewRows(input: {
       candidateAlgorithmVersion: "mineru-dual-item-recall-v1" as const,
       items,
     };
-    const automatic = items.every(
-      (item) =>
-        item.pipeline.strictBboxCovered ||
-        (item.pipeline.structuralBboxCovered &&
-          item.pipeline.structuralTextMatched) ||
-        item.layoutEvidence?.status === "accepted",
+    const automatic = items.every((item) =>
+      item.layoutEvidence !== null
+        ? item.layoutEvidence.status === "accepted"
+        : item.pipeline.strictBboxCovered ||
+          (item.pipeline.structuralBboxCovered &&
+            item.pipeline.structuralTextMatched),
     );
     rows.push({
       ...evidence,
@@ -374,4 +375,8 @@ function reviewEvidenceFingerprint(row: MineruDualReview) {
 
 function sha256(value: string) {
   return crypto.createHash("sha256").update(value).digest("hex");
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
 }

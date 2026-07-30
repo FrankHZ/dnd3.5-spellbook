@@ -217,8 +217,10 @@ but does not accept full-corpus English rows or any DB mutation.
 
 Use `phb:mineru:run-page` to resolve one current full-input page and run the
 configured local VLM backend. Its ignored `run-manifest.json` binds the actual
-executable, command arguments, config, package versions, CUDA device, model
-revision, logs, input, and output hashes. It refuses to overwrite an existing
+executable, argv, cwd, environment, config, package versions, CUDA device,
+model revision, sorted per-file model-tree hashes, logs, input, and output
+hashes. Portable argv/environment forms are recorded separately and verified
+against the actual absolute invocation. It refuses to overwrite an existing
 run label. Then use `phb:mineru:recall` with `--run-manifest` to compare that
 candidate against the pinned source PDF's independent PDF.js inventory. Recall
 re-derives canonical page mappings, verifies the subset page count and
@@ -235,10 +237,15 @@ descriptive and cannot authorize a runtime switch.
 The representative v1.4 class-list, description, table, and image-adjacent
 pilot does not authorize a VLM runtime replacement. VLM improves recall on
 some pages, but the table-dense control has much worse strict-bbox coverage and
-each backend introduces a different table row-count drift. Keep the pipeline
-as the structured-layout source while evaluating a fail-closed VLM recall
-sidecar. Never choose or merge candidate text, bboxes, or tables silently;
-every pipeline/VLM/PDF.js disagreement must become fingerprint-bound evidence.
+each backend introduces a different table row-count drift. The full-source
+dual-engine workflow is now the accepted recall contract: pipeline remains the
+structured-layout source, VLM is only a recall witness, and every
+pipeline/VLM/PDF.js disagreement becomes fingerprint-bound evidence. Text that
+overlaps an image always requires an explicit accepted projection or caption
+exclusion, even when it is also inside a content or structural bbox.
+`phb:mineru:dual:verify -- --require-terminal` requires both the layout and
+dual queues to be terminal. Never choose or merge candidate text, bboxes, or
+tables silently.
 
 #### Local PHB Review Console
 
@@ -249,13 +256,14 @@ SRD adjudication, and terminal-candidate apply artifacts exist. Start it with:
 npm run -w phb-review-console dev
 ```
 
-The 75 English residual rows visible in the pre-authority snapshot are paused,
+English residual rows produced under the legacy authority revision are paused,
 not an active bulk-review queue. The service requires the code-owned
 `official-srd-default-v1` authority reference, so that snapshot now returns
 unavailable and rejects direct reads and writes. The legacy adjudicator cannot
-mint the new revision. Complete the MinerU recall audit and revised effective
-English pipeline before rerunning extraction, comparison, SRD adjudication, and
-apply under the v1.4 authority matrix. Use the console for regenerated genuine
+mint the new revision. The full MinerU recall audit and fail-closed dual
+contract are complete. Continue the revised effective English pipeline by
+rerunning revised SRD adjudication and apply against the refreshed comparison
+under the v1.4 authority matrix. Use the console for regenerated genuine
 exceptions only; do not preserve the old count as an acceptance invariant.
 
 The launcher builds the public `data-tools/phb-review` package entry, binds one

@@ -1,9 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { repoRoot } from "../shared/env";
 import type { FullMineruPageMapping } from "./full-mineru";
 import {
   buildMineruVlmArguments,
+  isMineruModelFileManifest,
   MINERU_PROCESS_TIMEOUT_GRACE_SECONDS,
   mineruVlmContentListPath,
   readMineruFullInputSource,
@@ -184,13 +186,14 @@ export function runMineruBatch(input: {
       runtime: vlm.runtime,
       invocation: {
         executableRelativePath: vlm.executableRelativePath,
+        executablePath: vlm.executablePath,
         executableSha256: sha256File(vlm.executablePath),
-        arguments: processResult.argumentsForManifest,
-        environment: {
-          MINERU_TOOLS_CONFIG_JSON: vlm.configRelativePath,
-          MINERU_LOG_LEVEL: "INFO",
-          MINERU_TASK_RESULT_TIMEOUT_SECONDS: String(taskTimeoutSeconds),
-        },
+        cwd: processResult.cwd,
+        dataRoot,
+        arguments: processResult.arguments,
+        portableArguments: processResult.portableArguments,
+        environment: processResult.environment,
+        portableEnvironment: processResult.portableEnvironment,
         options: {
           formula: false,
           table: true,
@@ -296,7 +299,7 @@ export function parseMineruBatchRunManifest(
   if (
     invocation.options.startPageIndex !== selection.startSubsetPageIndex ||
     invocation.options.endPageIndex !== selection.endSubsetPageIndex ||
-    invocation.environment.MINERU_TOOLS_CONFIG_JSON !==
+    invocation.portableEnvironment.MINERU_TOOLS_CONFIG_JSON !==
       (value.runtime as MineruPageRunManifest["runtime"]).config.relativePath ||
     !isPositiveIntegerString(
       invocation.environment.MINERU_TASK_RESULT_TIMEOUT_SECONDS,
@@ -325,6 +328,12 @@ export function readAndVerifyMineruBatchRunManifest(
   );
   const current = readMineruFullInputSource(dataRoot, manifest.source.id);
   if (
+    path.resolve(manifest.invocation.dataRoot) !== dataRoot ||
+    path.resolve(manifest.invocation.cwd) !== path.resolve(repoRoot())
+  ) {
+    throw new Error("MinerU batch execution paths changed since completion");
+  }
+  if (
     manifest.source.artifactSha256 !== current.sourceArtifact.sha256 ||
     manifest.input.sourceManifestRelativePath !==
       current.sourceManifestRelativePath ||
@@ -348,7 +357,7 @@ export function readAndVerifyMineruBatchRunManifest(
   verifyMineruBatchRuntime(dataRoot, manifest);
   if (
     !sameStrings(
-      manifest.invocation.arguments,
+      manifest.invocation.portableArguments,
       buildMineruVlmArguments({
         inputPath: current.inputArtifact.relativePath,
         outputPath: manifest.output.stagingRunRootRelativePath,
@@ -579,6 +588,8 @@ function isBatchRuntime(
     model &&
     typeof model.repository === "string" &&
     typeof model.revision === "string" &&
+    isRelativePath(model.relativePath) &&
+    isMineruModelFileManifest(model.fileManifest) &&
     config &&
     isRelativePath(config.relativePath) &&
     isSha256(config.sha256) &&
@@ -595,14 +606,29 @@ function isBatchInvocation(
   return !!(
     invocation &&
     isRelativePath(invocation.executableRelativePath) &&
+    typeof invocation.executablePath === "string" &&
+    path.isAbsolute(invocation.executablePath) &&
     isSha256(invocation.executableSha256) &&
+    typeof invocation.cwd === "string" &&
+    path.isAbsolute(invocation.cwd) &&
+    typeof invocation.dataRoot === "string" &&
+    path.isAbsolute(invocation.dataRoot) &&
     Array.isArray(invocation.arguments) &&
     invocation.arguments.every((item) => typeof item === "string") &&
+    Array.isArray(invocation.portableArguments) &&
+    invocation.portableArguments.every((item) => typeof item === "string") &&
     isRecord(invocation.environment) &&
     typeof invocation.environment.MINERU_TOOLS_CONFIG_JSON === "string" &&
     invocation.environment.MINERU_LOG_LEVEL === "INFO" &&
     isPositiveIntegerString(
       invocation.environment.MINERU_TASK_RESULT_TIMEOUT_SECONDS,
+    ) &&
+    isRecord(invocation.portableEnvironment) &&
+    typeof invocation.portableEnvironment.MINERU_TOOLS_CONFIG_JSON ===
+      "string" &&
+    invocation.portableEnvironment.MINERU_LOG_LEVEL === "INFO" &&
+    isPositiveIntegerString(
+      invocation.portableEnvironment.MINERU_TASK_RESULT_TIMEOUT_SECONDS,
     ) &&
     options &&
     options.formula === false &&
@@ -679,18 +705,47 @@ function assertBatchInvocationProvenance(manifest: MineruBatchRunManifest) {
     path.posix.dirname(manifest.invocation.executableRelativePath),
     "python.exe",
   );
+  const expectedPortableArguments = buildMineruVlmArguments({
+    inputPath: manifest.input.subsetRelativePath,
+    outputPath: manifest.output.stagingRunRootRelativePath,
+    startPageIndex: manifest.selection.startSubsetPageIndex,
+    endPageIndex: manifest.selection.endSubsetPageIndex,
+  });
+  const expectedArguments = buildMineruVlmArguments({
+    inputPath: resolveAbsoluteInside(
+      manifest.invocation.dataRoot,
+      manifest.input.subsetRelativePath,
+    ),
+    outputPath: resolveAbsoluteInside(
+      manifest.invocation.dataRoot,
+      manifest.output.stagingRunRootRelativePath,
+    ),
+    startPageIndex: manifest.selection.startSubsetPageIndex,
+    endPageIndex: manifest.selection.endSubsetPageIndex,
+  });
   if (
     manifest.runtime.pythonExecutable?.relativePath !== expectedPythonPath ||
-    manifest.invocation.environment.MINERU_TOOLS_CONFIG_JSON !==
+    path.resolve(manifest.invocation.executablePath) !==
+      resolveAbsoluteInside(
+        manifest.invocation.dataRoot,
+        manifest.invocation.executableRelativePath,
+      ) ||
+    manifest.invocation.portableEnvironment.MINERU_TOOLS_CONFIG_JSON !==
       manifest.runtime.config.relativePath ||
+    path.resolve(manifest.invocation.environment.MINERU_TOOLS_CONFIG_JSON) !==
+      resolveAbsoluteInside(
+        manifest.invocation.dataRoot,
+        manifest.runtime.config.relativePath,
+      ) ||
+    manifest.invocation.environment.MINERU_LOG_LEVEL !==
+      manifest.invocation.portableEnvironment.MINERU_LOG_LEVEL ||
+    manifest.invocation.environment.MINERU_TASK_RESULT_TIMEOUT_SECONDS !==
+      manifest.invocation.portableEnvironment
+        .MINERU_TASK_RESULT_TIMEOUT_SECONDS ||
+    !sameStrings(manifest.invocation.arguments, expectedArguments) ||
     !sameStrings(
-      manifest.invocation.arguments,
-      buildMineruVlmArguments({
-        inputPath: manifest.input.subsetRelativePath,
-        outputPath: manifest.output.stagingRunRootRelativePath,
-        startPageIndex: manifest.selection.startSubsetPageIndex,
-        endPageIndex: manifest.selection.endSubsetPageIndex,
-      }),
+      manifest.invocation.portableArguments,
+      expectedPortableArguments,
     )
   ) {
     throw new Error(

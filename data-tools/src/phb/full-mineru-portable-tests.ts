@@ -108,7 +108,12 @@ assert.equal(
 const imageOverlapBody = page(
   [item("Body text crossing an illustration", 40, 660)],
   [
-    block(0, "text", [50, 90, 300, 140], "Previous body text"),
+    block(
+      0,
+      "text",
+      [50, 90, 300, 140],
+      "Previous body text Body text crossing an illustration",
+    ),
     block(1, "image", [50, 140, 400, 300], null),
   ],
 );
@@ -118,7 +123,7 @@ const imageOverlapProjection = buildFullMineruLayoutReviewCandidates([
 assert.equal(imageOverlapProjection.length, 1);
 assert.equal(
   imageOverlapProjection[0]?.candidateAlgorithmVersion,
-  "mineru-image-overlap-projection-v1",
+  "mineru-image-overlap-projection-v2",
 );
 assert.equal(imageOverlapProjection[0]?.kind, "outside-bbox-projection");
 assert.deepEqual(
@@ -127,6 +132,142 @@ assert.deepEqual(
     acceptCandidates([imageOverlapBody]),
   ).lines.map((line) => line.text),
   ["Body text crossing an illustration"],
+);
+
+const imageOverlapInsideContent = page(
+  [item("Content and image overlap", 40, 660)],
+  [
+    block(0, "text", [50, 130, 400, 210], "Content and image overlap"),
+    block(1, "image", [50, 140, 400, 300], null),
+  ],
+);
+const insideContentCandidates = buildFullMineruLayoutReviewCandidates([
+  imageOverlapInsideContent,
+]);
+assert.equal(insideContentCandidates.length, 1);
+assert.equal(insideContentCandidates[0]?.kind, "outside-bbox-projection");
+assert.equal(
+  insideContentCandidates[0]?.candidateAlgorithmVersion,
+  "mineru-image-overlap-projection-v2",
+);
+const insideContentProposed = reconstructMineruReadingLines(
+  imageOverlapInsideContent,
+);
+assert.equal(insideContentProposed.lines.length, 0);
+assert.equal(insideContentProposed.issues.length, 1);
+assert.deepEqual(
+  reconstructMineruReadingLines(
+    imageOverlapInsideContent,
+    acceptCandidates([imageOverlapInsideContent]),
+  ).lines.map((line) => line.text),
+  ["Content and image overlap"],
+);
+
+const imageEdgeOverlapInsideContent = page(
+  [{ ...item("Wide content edge overlap", 40, 660), width: 200 }],
+  [
+    block(0, "text", [150, 130, 450, 210], "Wide content edge overlap"),
+    block(1, "image", [50, 140, 100, 300], null),
+  ],
+);
+const edgeOverlapCandidates = buildFullMineruLayoutReviewCandidates([
+  imageEdgeOverlapInsideContent,
+]);
+assert.equal(edgeOverlapCandidates.length, 1);
+assert.equal(edgeOverlapCandidates[0]?.kind, "outside-bbox-projection");
+assert.equal(
+  reconstructMineruReadingLines(imageEdgeOverlapInsideContent).lines.length,
+  0,
+);
+assert.deepEqual(
+  reconstructMineruReadingLines(
+    imageEdgeOverlapInsideContent,
+    acceptCandidates([imageEdgeOverlapInsideContent]),
+  ).lines.map((line) => line.text),
+  ["Wide content edge overlap"],
+);
+
+const imageCaptionEdgeOverlap = page(
+  [{ ...item("Illustration caption near body", 40, 660), width: 200 }],
+  [
+    block(0, "text", [150, 130, 450, 210], "Different nearby body text"),
+    block(1, "image", [50, 140, 100, 300], null),
+    block(2, "footer", [60, 190, 360, 230], "Illustration caption near body"),
+  ],
+);
+const captionEdgeCandidates = buildFullMineruLayoutReviewCandidates([
+  imageCaptionEdgeOverlap,
+]);
+assert.equal(captionEdgeCandidates.length, 1);
+assert.equal(captionEdgeCandidates[0]?.kind, "image-adjacent-exclusion");
+
+const blankColumnContinuation = page(
+  [item("continued prose", 400, 730)],
+  [
+    block(0, "text", [50, 700, 300, 900], "Previous column prose"),
+    block(1, "text", [650, 60, 800, 100], ""),
+    block(2, "image", [600, 0, 900, 200], null),
+  ],
+);
+const blankColumnCandidates = buildFullMineruLayoutReviewCandidates([
+  blankColumnContinuation,
+]);
+assert.equal(blankColumnCandidates.length, 1);
+assert.equal(blankColumnCandidates[0]?.kind, "outside-bbox-projection");
+assert.equal(
+  blankColumnCandidates[0]?.kind === "outside-bbox-projection"
+    ? blankColumnCandidates[0].targetBlockIndex
+    : null,
+  0,
+);
+
+const imageOverlapInsideStructural = page(
+  [item("Illustration callout", 40, 660)],
+  [
+    block(0, "discarded", [50, 130, 400, 210], "Illustration callout"),
+    block(1, "image", [50, 140, 400, 300], null),
+  ],
+);
+const insideStructuralCandidates = buildFullMineruLayoutReviewCandidates([
+  imageOverlapInsideStructural,
+]);
+assert.equal(insideStructuralCandidates.length, 1);
+assert.equal(insideStructuralCandidates[0]?.kind, "image-adjacent-exclusion");
+assert.equal(
+  insideStructuralCandidates[0]?.candidateAlgorithmVersion,
+  "mineru-image-overlap-exclusion-v2",
+);
+assert.equal(
+  reconstructMineruReadingLines(imageOverlapInsideStructural).issues.length,
+  1,
+);
+assert.equal(
+  reconstructMineruReadingLines(
+    imageOverlapInsideStructural,
+    acceptCandidates([imageOverlapInsideStructural]),
+  ).issues.length,
+  0,
+);
+const rejectedStructuralImage = acceptCandidates([
+  imageOverlapInsideStructural,
+]).map((review) => ({
+  ...review,
+  status: "rejected" as const,
+}));
+assert.equal(
+  reconstructMineruReadingLines(
+    imageOverlapInsideStructural,
+    rejectedStructuralImage,
+  ).issues.length,
+  1,
+);
+assert.match(
+  validateFullMineruLayoutReviews(
+    [imageOverlapInsideStructural],
+    rejectedStructuralImage,
+    { requireTerminal: true },
+  ).join("\n"),
+  /has no accepted item layout action/u,
 );
 
 const imageOverlapCaption = page(
@@ -142,7 +283,7 @@ const imageOverlapExclusion = buildFullMineruLayoutReviewCandidates([
 assert.equal(imageOverlapExclusion.length, 1);
 assert.equal(
   imageOverlapExclusion[0]?.candidateAlgorithmVersion,
-  "mineru-image-overlap-exclusion-v1",
+  "mineru-image-overlap-exclusion-v2",
 );
 assert.equal(imageOverlapExclusion[0]?.kind, "image-adjacent-exclusion");
 
@@ -153,6 +294,17 @@ const invalidStatus = acceptedExclusion.map((review) => ({
 assert.match(
   validateFullMineruLayoutReviews([excludedImage], invalidStatus).join("\n"),
   /status is invalid/u,
+);
+const invalidReviewer = structuredClone(acceptedExclusion) as unknown as Array<
+  Record<string, unknown>
+>;
+invalidReviewer[0]!.reviewer = 1;
+assert.match(
+  validateFullMineruLayoutReviews(
+    [excludedImage],
+    invalidReviewer as unknown as FullMineruLayoutReview[],
+  ).join("\n"),
+  /terminal decision requires reviewer and note/u,
 );
 const alteredPayload = structuredClone(acceptedExclusion);
 if (alteredPayload[0]?.kind === "image-adjacent-exclusion") {

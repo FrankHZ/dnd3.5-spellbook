@@ -105,7 +105,8 @@ may become a separately modeled annotation in a later release.
    tables, duplicate summary occurrences, and ordinary controls.
 2. Prove the extraction, errata, comparison, and report pipeline on the pilot.
 3. Accept the localhost review service/API and React consumer as evidence
-   tooling; do not bulk-accept the current 75-row residual snapshot.
+   tooling; do not bulk-accept a residual snapshot from the legacy authority
+   revision.
 4. Audit and harden MinerU recall first. Any extraction change invalidates PHB
    evidence and downstream fingerprints.
 5. Rerun full extraction, comparison, SRD adjudication, and terminal-candidate

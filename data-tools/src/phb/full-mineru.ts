@@ -117,7 +117,9 @@ type FullMineruLayoutReviewBase = {
 export type FullMineruOutsideBboxReview = FullMineruLayoutReviewBase & {
   kind: "outside-bbox-projection";
   candidateAlgorithmVersion:
-    "mineru-bbox-candidates-v1" | "mineru-image-overlap-projection-v1";
+    | "mineru-bbox-candidates-v1"
+    | "mineru-image-overlap-projection-v1"
+    | "mineru-image-overlap-projection-v2";
   targetBlockIndex: number;
   pdfItem: {
     itemIndex: number;
@@ -140,7 +142,9 @@ export type FullMineruOutsideBboxReview = FullMineruLayoutReviewBase & {
 export type FullMineruImageAdjacentReview = FullMineruLayoutReviewBase & {
   kind: "image-adjacent-exclusion";
   candidateAlgorithmVersion:
-    "mineru-image-adjacent-v1" | "mineru-image-overlap-exclusion-v1";
+    | "mineru-image-adjacent-v1"
+    | "mineru-image-overlap-exclusion-v1"
+    | "mineru-image-overlap-exclusion-v2";
   pdfItem: FullMineruOutsideBboxReview["pdfItem"];
   eligibleImageBlocks: Array<{
     blockIndex: number;
@@ -514,6 +518,26 @@ export function reconstructMineruReadingLines(
       return;
     }
     const point = normalizedItemCenter(page, item);
+    const itemReview = pageReviews.find(
+      (
+        review,
+      ): review is
+        FullMineruOutsideBboxReview | FullMineruImageAdjacentReview =>
+        (review.kind === "outside-bbox-projection" ||
+          review.kind === "image-adjacent-exclusion") &&
+        review.pdfItem.itemIndex === index,
+    );
+    if (itemReview) {
+      if (
+        itemReview.status === "accepted" &&
+        itemReview.kind === "outside-bbox-projection" &&
+        assignments.has(itemReview.targetBlockIndex)
+      ) {
+        assignments.get(itemReview.targetBlockIndex)!.push(index);
+      }
+      if (itemReview.status !== "accepted") unassigned.push(index);
+      return;
+    }
     const containing = contentBlocks
       .filter((block) => pointInside(point, block.bbox, 0))
       .sort(
@@ -532,26 +556,7 @@ export function reconstructMineruReadingLines(
     ) {
       return;
     }
-    const acceptedImageExclusion = pageReviews.find(
-      (review): review is FullMineruImageAdjacentReview =>
-        review.kind === "image-adjacent-exclusion" &&
-        review.status === "accepted" &&
-        review.pdfItem.itemIndex === index,
-    );
-    if (acceptedImageExclusion) {
-      return;
-    }
-    const accepted = pageReviews.find(
-      (review): review is FullMineruOutsideBboxReview =>
-        review.kind === "outside-bbox-projection" &&
-        review.status === "accepted" &&
-        review.pdfItem.itemIndex === index,
-    );
-    if (accepted && assignments.has(accepted.targetBlockIndex)) {
-      assignments.get(accepted.targetBlockIndex)!.push(index);
-    } else {
-      unassigned.push(index);
-    }
+    unassigned.push(index);
   });
 
   for (const block of contentBlocks) {
@@ -595,7 +600,10 @@ export function reconstructMineruReadingLines(
     );
   }
   for (const review of pageReviews.filter(
-    (candidate) => candidate.status === "proposed",
+    (candidate) =>
+      candidate.status === "proposed" ||
+      (candidate.status === "rejected" &&
+        candidate.kind !== "content-order-conflict"),
   )) {
     issues.push({
       evidenceId: review.rowId,
@@ -617,10 +625,10 @@ export function reconstructMineruReadingLines(
             : "image",
       message:
         review.kind === "content-order-conflict"
-          ? `MinerU content-order conflict remains proposed before block ${review.anchorBlockIndex}`
+          ? `MinerU content-order conflict remains unaccepted before block ${review.anchorBlockIndex}`
           : review.kind === "outside-bbox-projection"
-            ? `PDF.js item ${review.pdfItem.itemIndex} remains outside the accepted MinerU block boundary`
-            : `PDF.js item ${review.pdfItem.itemIndex} remains adjacent to an image without an accepted exclusion`,
+            ? `PDF.js item ${review.pdfItem.itemIndex} has no accepted MinerU block projection`
+            : `PDF.js item ${review.pdfItem.itemIndex} remains adjacent to or overlapping an image without an accepted exclusion`,
     });
   }
   if (unassigned.length > 0) {
@@ -704,6 +712,7 @@ export function mergeFullMineruLayoutReviews(
 export function validateFullMineruLayoutReviews(
   pages: FullMineruPageRow[],
   reviews: FullMineruLayoutReview[],
+  options: { requireTerminal?: boolean } = {},
 ) {
   const errors: string[] = [];
   const candidates = buildFullMineruLayoutReviewCandidates(pages);
@@ -735,9 +744,21 @@ export function validateFullMineruLayoutReviews(
     }
     if (
       review.status !== "proposed" &&
-      (!review.reviewer || !review.decisionNote)
+      (!isNonEmptyString(review.reviewer) ||
+        !isNonEmptyString(review.decisionNote))
     ) {
       errors.push(`${prefix} terminal decision requires reviewer and note`);
+    }
+    if (options.requireTerminal && review.status === "proposed") {
+      errors.push(`${prefix} is still proposed`);
+    }
+    if (
+      options.requireTerminal &&
+      review.status === "rejected" &&
+      (review.kind === "outside-bbox-projection" ||
+        review.kind === "image-adjacent-exclusion")
+    ) {
+      errors.push(`${prefix} has no accepted item layout action`);
     }
     const page = pages.find(
       (value) =>
@@ -954,27 +975,40 @@ function imageAdjacentCandidates(
       return [];
     }
     const point = normalizedItemCenter(page, item);
+    const itemBbox = normalizedItemBbox(page, item);
+    const eligibleImageBlocks = adjacentImageBlocks(page, point, itemBbox);
+    if (eligibleImageBlocks.length === 0) return [];
+    const overlapsImage = eligibleImageBlocks.some((block) =>
+      bboxesOverlap(itemBbox, block.blockBbox),
+    );
+    const eligibleProjectionBlocks = projectionBlockCandidates(
+      point,
+      contentBlocks,
+      150,
+    );
+    const structuralEvidence = hasStructuralEvidence(
+      item.text,
+      point,
+      structuralBlocks,
+    );
     if (
-      contentBlocks.some((block) => pointInside(point, block.bbox, 0)) ||
-      structuralBlocks.some((block) => pointInside(point, block.bbox, 0))
+      (!overlapsImage &&
+        contentBlocks.some((block) => pointInside(point, block.bbox, 0))) ||
+      (!overlapsImage &&
+        structuralBlocks.some((block) => pointInside(point, block.bbox, 0)))
     ) {
       return [];
     }
-    const eligibleImageBlocks = adjacentImageBlocks(page, point);
-    if (eligibleImageBlocks.length === 0) return [];
-    const overlapsImage = eligibleImageBlocks.some(
-      (block) =>
-        block.distance.horizontal === 0 && block.distance.vertical === 0,
-    );
     if (
       overlapsImage &&
-      projectionBlockCandidates(point, contentBlocks, 150).length > 0
+      eligibleProjectionBlocks.length > 0 &&
+      !structuralEvidence
     ) {
       return [];
     }
     const pdfItem = layoutPdfItem(item, itemIndex, point);
     const candidateAlgorithmVersion = overlapsImage
-      ? ("mineru-image-overlap-exclusion-v1" as const)
+      ? ("mineru-image-overlap-exclusion-v2" as const)
       : ("mineru-image-adjacent-v1" as const);
     const evidence = layoutEvidenceBase(page, {
       kind: "image-adjacent-exclusion",
@@ -1031,32 +1065,68 @@ function outsideBboxCandidates(
       return [];
     }
     const point = normalizedItemCenter(page, item);
+    const itemBbox = normalizedItemBbox(page, item);
+    const eligibleImageBlocks = adjacentImageBlocks(page, point, itemBbox);
+    const overlapsImage = eligibleImageBlocks.some((block) =>
+      bboxesOverlap(itemBbox, block.blockBbox),
+    );
+    const structuralEvidence = hasStructuralEvidence(
+      item.text,
+      point,
+      excludedStructuralBlocks,
+    );
     if (
-      contentBlocks.some((block) => pointInside(point, block.bbox, 0)) ||
-      excludedStructuralBlocks.some((block) =>
-        pointInside(point, block.bbox, 0),
-      )
+      (!overlapsImage &&
+        contentBlocks.some((block) => pointInside(point, block.bbox, 0))) ||
+      (!overlapsImage &&
+        excludedStructuralBlocks.some((block) =>
+          pointInside(point, block.bbox, 0),
+        ))
     ) {
       return [];
     }
-    const eligibleImageBlocks = adjacentImageBlocks(page, point);
-    const overlapsImage = eligibleImageBlocks.some(
-      (block) =>
-        block.distance.horizontal === 0 && block.distance.vertical === 0,
-    );
     if (eligibleImageBlocks.length > 0 && !overlapsImage) {
       return [];
     }
+    if (overlapsImage && structuralEvidence) return [];
     const eligibleBlocks = projectionBlockCandidates(
       point,
       contentBlocks,
       overlapsImage ? 150 : 65,
     );
     if (eligibleBlocks.length === 0) return [];
+    let targetBlockIndex = eligibleBlocks[0]!.blockIndex;
+    if (
+      eligibleBlocks[0]!.mineruText.trim().length === 0 &&
+      eligibleBlocks[0]!.blockBbox[1] < 100
+    ) {
+      const preceding = contentBlocks
+        .filter(
+          (block) =>
+            block.blockIndex < targetBlockIndex &&
+            blockText(block).trim().length > 0,
+        )
+        .sort((left, right) => right.blockIndex - left.blockIndex)[0];
+      if (preceding) {
+        targetBlockIndex = preceding.blockIndex;
+        if (
+          !eligibleBlocks.some(
+            (candidate) => candidate.blockIndex === preceding.blockIndex,
+          )
+        ) {
+          eligibleBlocks.push({
+            blockIndex: preceding.blockIndex,
+            blockType: preceding.type,
+            blockBbox: preceding.bbox,
+            mineruText: blockText(preceding),
+            distance: bboxDistance(point, preceding.bbox),
+          });
+        }
+      }
+    }
     const pdfItem = layoutPdfItem(item, itemIndex, point);
-    const targetBlockIndex = eligibleBlocks[0]!.blockIndex;
     const candidateAlgorithmVersion = overlapsImage
-      ? ("mineru-image-overlap-projection-v1" as const)
+      ? ("mineru-image-overlap-projection-v2" as const)
       : ("mineru-bbox-candidates-v1" as const);
     const evidence = layoutEvidenceBase(page, {
       kind: "outside-bbox-projection",
@@ -1180,9 +1250,37 @@ function projectionBlockCandidates(
     );
 }
 
+function hasStructuralEvidence(
+  itemText: string,
+  point: { x: number; y: number },
+  blocks: Array<FullMineruBlock & { bbox: [number, number, number, number] }>,
+) {
+  if (blocks.some((block) => pointInside(point, block.bbox, 0))) {
+    return true;
+  }
+  const normalized = normalizeLayoutText(itemText);
+  if (normalized.length < 12) return false;
+  return blocks.some((block) => {
+    const blockTextValue = normalizeLayoutText(blockText(block));
+    return blockTextValue.includes(normalized);
+  });
+}
+
+function normalizeLayoutText(value: string) {
+  return value
+    .normalize("NFKC")
+    .toLocaleLowerCase("en-US")
+    .replace(/[\u2018\u2019]/gu, "'")
+    .replace(/[\u2013\u2014\u2212]/gu, "-")
+    .replace(/[^\p{L}\p{N}+'/-]+/gu, " ")
+    .replace(/\s+/gu, " ")
+    .trim();
+}
+
 function adjacentImageBlocks(
   page: FullMineruPageRow,
   point: { x: number; y: number },
+  itemBbox: [number, number, number, number],
 ) {
   return page.mineru.blocks
     .filter(
@@ -1201,7 +1299,8 @@ function adjacentImageBlocks(
     }))
     .filter(
       (block) =>
-        block.distance.horizontal <= 30 && block.distance.vertical <= 100,
+        bboxesOverlap(itemBbox, block.blockBbox) ||
+        (block.distance.horizontal <= 30 && block.distance.vertical <= 100),
     )
     .sort(
       (left, right) =>
@@ -1346,6 +1445,33 @@ export function normalizedItemCenter(
       ((page.pdfjs.height - (item.y + item.height / 2)) / page.pdfjs.height) *
       1000,
   };
+}
+
+export function normalizedItemBbox(
+  page: { pdfjs: { width: number; height: number } },
+  item: PhbTextPageRow["pdfjs"]["items"][number],
+): [number, number, number, number] {
+  const x1 = (item.x / page.pdfjs.width) * 1000;
+  const x2 = ((item.x + item.width) / page.pdfjs.width) * 1000;
+  const y1 =
+    ((page.pdfjs.height - (item.y + item.height)) / page.pdfjs.height) * 1000;
+  const y2 = ((page.pdfjs.height - item.y) / page.pdfjs.height) * 1000;
+  return [
+    Math.min(x1, x2),
+    Math.min(y1, y2),
+    Math.max(x1, x2),
+    Math.max(y1, y2),
+  ];
+}
+
+function bboxesOverlap(
+  left: [number, number, number, number],
+  right: [number, number, number, number],
+) {
+  return (
+    Math.min(left[2], right[2]) > Math.max(left[0], right[0]) &&
+    Math.min(left[3], right[3]) > Math.max(left[1], right[1])
+  );
 }
 
 export function pointInside(
@@ -1535,6 +1661,10 @@ function writeJsonl(filePath: string, rows: unknown[]) {
       : "",
     "utf8",
   );
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -10,7 +10,7 @@
 Status: in progress; Gate 0, the complete Gate 1 representative pilot, and the
 localhost review-console prerequisite are accepted. The full-source dual-engine
 recall boundary is implemented and locally terminal in nested-data commit
-`e223818`; Gate 2 remains reopened at the authority-policy boundary. The
+`dda575a`; Gate 2 remains reopened at the authority-policy boundary. The
 superseded residual exceptions are fail-closed behind the
 `official-srd-default-v1` authority revision and cannot be read or edited
 through the review service. Field-resolved SRD adjudication must regenerate its
@@ -234,20 +234,20 @@ drops, and reviewed outcomes for every pilot row.
   proposals with current evidence fingerprints. Main gate approves the
   adjudication policy and reviews only residual exceptions; it is not the
   clerical reviewer for every substantive/manual comparison row.
-- Do not bulk-review the current 75 residual rows. The service now requires the
-  `official-srd-default-v1` authority revision in queue freshness/fingerprints,
-  so the superseded queue fails closed and direct decision writes are rejected.
-  The legacy adjudicator intentionally cannot mint the new revision. Next,
-  harden MinerU recall, rerun full extraction, comparison, revised SRD
-  adjudication, and terminal-candidate apply, and resolve
-  deterministic three-way drift in batch. Review only the
+- Do not bulk-review residual rows from the legacy authority revision. The
+  service now requires the `official-srd-default-v1` authority revision in
+  queue freshness/fingerprints, so the superseded queue fails closed and
+  direct decision writes are rejected. The legacy adjudicator intentionally
+  cannot mint the new revision. MinerU recall and the refreshed comparison are
+  now terminal; next rerun revised SRD adjudication and terminal-candidate
+  apply, and resolve deterministic three-way drift in batch. Review only the
   regenerated genuine exceptions through the accepted localhost console or an
-  equivalent fingerprint-safe data-tools command. The console must reuse
-  the canonical candidate/validation logic and cannot turn a saved decision
-  into Gate 2 acceptance without the normal rerun. A layout decision requires
-  a full rerun beginning at `phb:source:extract`; the English residual queue
-  must remain unavailable until extraction, comparison, SRD adjudication, and
-  SRD apply are mutually current again. An English residual save makes the
+  equivalent fingerprint-safe data-tools command. The console must reuse the
+  canonical candidate/validation logic and cannot turn a saved decision into
+  Gate 2 acceptance without the normal rerun. A layout decision requires a
+  full rerun beginning at `phb:source:extract`; the English residual queue must
+  remain unavailable until extraction, comparison, SRD adjudication, and SRD
+  apply are mutually current again. An English residual save makes the
   row-review manifest stale; after residual-only review, rerun
   `phb:source:compare` before `phb:source:report`.
 - Preserve every terminal decision and residual exception in the data repo.
@@ -335,7 +335,7 @@ script manifest, tests, and this plan are updated together.
   stale row-review manifest before `phb:source:report`; report cannot consume
   the decision JSONL directly while that manifest is stale.
 - MinerU recall or authority-matrix changes reopen Gate 2 at full
-  `phb:source:extract`; the current 75-row residual snapshot is not accepted
+  `phb:source:extract`; a legacy-authority residual snapshot is not accepted
   review input until the full downstream chain is regenerated.
 - The English handoff is accepted before any translation branch consumes it.
 - Public fixtures/reports contain no PHB or translated corpus text.
@@ -516,26 +516,27 @@ archive host is the publisher.
 - The full witness runs MinerU `3.4.4` once over all 123 canonical PHB core
   subset pages with model revision
   `bff20d4ae2bf202df9f45284b4d43681555a97ed`. Batch manifest
-  `188819774f40f5cc85381a2339b6f6bb076775fa5c9068d727d07d929a1b4d37`
+  `b7bc06bdebd6df5945fc225ddc064044b8451f7cba01669ea8d0f54bee317a2d`
   pins source/input mapping, MinerU and Python executable hashes, config,
-  runtime packages, actual staging arguments, four-hour task timeout, final
-  publication path, logs, and the complete content-list hash.
-- Image-overlap handling adds twelve explicit PDF.js-to-MinerU projections and
-  two explicit caption exclusions. The full extraction now has 145 terminal
-  layout decisions: 138 projections, five image exclusions, and two order
-  overrides. It restores the omitted Helping Hand paragraph and the missing
-  Symbol of Sleep token while preserving 605 spells, 1,216 printed list rows,
-  1,235 occurrences, 59 MinerU tables, seven detached tables, seven excluded
-  image blocks, and zero extraction/set issues.
+  runtime packages, 13 model files totaling 2,328,028,720 bytes, actual
+  argv/cwd/environment, portable invocation forms, four-hour task timeout,
+  final publication path, logs, and the complete content-list hash.
+- The full extraction now has 238 terminal layout decisions: 230 projections,
+  six image exclusions, and two order overrides. Every PDF.js item whose full
+  bbox overlaps an image requires an explicit accepted projection or caption
+  exclusion, including items whose center also lies in a MinerU content block.
+  It preserves 605 spells, 1,216 printed list rows, 1,235 occurrences, 59
+  MinerU tables, seven detached tables, seven excluded image blocks, and zero
+  extraction/set issues.
 - The current dual queue contains 115 item-recall rows and 28 table-structure
   rows across the 123 core pages. Source review retains pipeline structure for
   every table disagreement; all 143 rows are fingerprint-current and terminal.
-  A fresh full run produced zero row additions, removals, or evidence-payload
-  changes relative to the reviewed candidate run before batch provenance was
-  refreshed.
-- Nested-data commit `e223818` records the layout fixes, terminal full-source
+  The refreshed witness content list is byte-identical to the reviewed run and
+  produced zero row additions, removals, or table evidence-payload changes
+  before batch and layout provenance were refreshed.
+- Nested-data commit `dda575a` records the layout fixes, terminal full-source
   dual review, and refreshed comparison chain. Full comparison balances
-  605/605 source and DB rows with 65 exact, 298 formatting-only, 162
+  605/605 source and DB rows with 65 exact, 297 formatting-only, 163
   substantive, and 80 manual rows. `phb:source:report` remains fail-closed
   because SRD adjudication still pins the previous comparison, which is the
   intended next authority-policy boundary rather than unfinished recall work.
