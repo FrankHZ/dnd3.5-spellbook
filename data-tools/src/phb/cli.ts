@@ -56,6 +56,7 @@ import { runSrdExtraction } from "./srd-extraction";
 import {
   applySrdTerminalCandidates,
   runSrdAdjudication,
+  verifySrdAdjudicationArtifacts,
 } from "./srd-adjudication";
 import { readAndVerifySrdSourceManifest } from "./srd-source";
 
@@ -502,6 +503,11 @@ function adjudicateSrdSource() {
   console.log(JSON.stringify(result.manifest.counts, null, 2));
 }
 
+function verifySrdEffectiveEnglish() {
+  verifySrdAdjudicationArtifacts(localDataDir());
+  console.log("PHB SRD effective English artifacts verified");
+}
+
 function applySrdAdjudication() {
   const result = applySrdTerminalCandidates(localDataDir());
   console.log("PHB SRD terminal candidates applied to row review");
@@ -752,6 +758,10 @@ async function main() {
   }
   if (command === "srd:adjudicate") {
     adjudicateSrdSource();
+    return;
+  }
+  if (command === "srd:effective:verify") {
+    verifySrdEffectiveEnglish();
     return;
   }
   if (command === "srd:apply") {

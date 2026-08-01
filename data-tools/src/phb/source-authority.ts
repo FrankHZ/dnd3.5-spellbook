@@ -21,11 +21,20 @@ export const PHB_EFFECTIVE_ENGLISH_AUTHORITY_POLICY = {
       "page-table-layout-structure",
     ],
   },
+  fieldResolution: {
+    mechanics: "grouped-srd-first-with-phb-omission-fallback",
+    shortDescriptions: "all-phb-class-list-occurrences",
+    pageTableLayout: "phb-evidence-only",
+  },
+  unresolvedSourceEvidence: ["uncertain:shared-summon-table-unparsed"],
+  effectiveRowSchema: 1,
   existingDatabaseRole: "comparison-only",
 } as const;
 
 export const PHB_SRD_ADJUDICATION_MANIFEST_RELATIVE_PATH =
   "phb35/review/srd-adjudication-manifest.json";
+export const PHB_EFFECTIVE_ENGLISH_RELATIVE_PATH =
+  "phb35/extracted/effective/english-spells.jsonl";
 
 export type PhbAuthorityPolicyReference = {
   revision: string;

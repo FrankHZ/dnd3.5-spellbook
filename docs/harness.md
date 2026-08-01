@@ -250,7 +250,9 @@ npm run -w data-tools phb:source:compare
 npm run -w data-tools phb:srd:verify
 npm run -w data-tools phb:srd:extract
 npm run -w data-tools phb:srd:adjudicate
+npm run -w data-tools phb:srd:effective:verify
 npm run -w data-tools phb:srd:apply
+npm run -w data-tools phb:srd:effective:verify
 npm run -w data-tools phb:source:report
 ```
 
@@ -273,8 +275,12 @@ recursive manifest and affected row evidence. Combined target/effect/area fields
 and unparsed shared summon tables are manual, and unordered body tokens never
 qualify as formatting-only evidence. Exact and formatting-only rows are
 deterministically accepted only after those layout gates; substantive and
-manual rows require fingerprint-bound terminal decisions. SRD adjudication may
-resolve deterministic three-way cases only from committed, current evidence.
+manual rows require fingerprint-bound terminal decisions. SRD adjudication
+emits one field-resolved effective row per spell and may resolve deterministic
+authority cases only from committed, current evidence. The effective verifier
+binds the code-owned policy, PHB/SRD/errata/list inputs, adjudication output, and
+effective output. Apply refuses uncommitted generated authority artifacts;
+after apply, comparison and adjudication are regenerated before report.
 The full-source VLM run is a separate recall witness, never replacement
 extraction input. Its single-process batch manifest pins the current source,
 full-input PDF, exact page mapping, runtime/model/config, invocation, logs, and

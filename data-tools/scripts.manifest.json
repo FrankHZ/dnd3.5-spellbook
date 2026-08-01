@@ -142,6 +142,13 @@
       "requiresSqlite": false,
       "writeCapable": true
     },
+    "phb:srd:effective:verify": {
+      "module": "phb",
+      "lifecycle": "local-acceptance",
+      "requiresLocalData": true,
+      "requiresSqlite": false,
+      "writeCapable": false
+    },
     "phb:srd:apply": {
       "module": "phb",
       "lifecycle": "maintained-local",

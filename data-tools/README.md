@@ -234,7 +234,9 @@ npm run -w data-tools phb:source:compare
 npm run -w data-tools phb:srd:verify
 npm run -w data-tools phb:srd:extract
 npm run -w data-tools phb:srd:adjudicate
+npm run -w data-tools phb:srd:effective:verify
 npm run -w data-tools phb:srd:apply
+npm run -w data-tools phb:srd:effective:verify
 npm run -w data-tools phb:source:report
 ```
 
@@ -251,8 +253,8 @@ printed list rows, 1,235 expanded occurrences, and no parser or set-
 reconciliation issue. The source-specific layout contract also pins 59 MinerU
 table blocks, seven detached named tables, and seven excluded description image
 blocks. Every table artifact and its page-linked spell references enter the
-row-review evidence chain. The accepted full corpus currently has 126 reviewed
-outside-bbox item projections, three reviewed image-caption exclusions, and two
+row-review evidence chain. The accepted full corpus currently has 230 reviewed
+outside-bbox item projections, six reviewed image-caption exclusions, and two
 reviewed order overrides. Proposed, stale, or invalid-status layout rows block
 extraction, and their manifest is recursively verified by the full report.
 Combined `Target` / `Effect` / `Area` labels remain
@@ -270,9 +272,20 @@ default report command recursively re-hashes extraction issues, errata output,
 the pilot summon table, comparison inputs, and review evidence, then refuses
 to create `full-english-review.json` until every current row decision is
 terminal. A successful extraction or comparison does not close Gate 2.
-The SRD commands verify and parse the pinned official 3.5 corpus, generate a
-three-way PHB+errata/SRD/DB adjudication queue, and apply only committed,
-fingerprint-current terminal candidates to row review. Residual exceptions
+The SRD commands verify and parse the pinned official 3.5 corpus, then generate
+exactly one field-resolved row per PHB spell at
+`data/phb35/extracted/effective/english-spells.jsonl`. Rules text and mechanics
+default to official SRD; Product Identity names, SRD omissions, class-list
+summary occurrences, and page/table/layout provenance come from PHB+accepted
+errata. Existing DB text remains comparison input and is never copied into the
+effective body. `phb:srd:effective:verify` recursively checks the policy,
+inputs, both outputs, row counts, and effective-row fingerprints.
+
+Before `phb:srd:apply`, commit the generated effective rows, adjudication rows,
+and adjudication manifest in the nested data repo. Apply refuses dirty or
+uncommitted authority evidence, rewrites every deterministic row under the
+current revision, reruns comparison/adjudication, and leaves genuine exceptions
+proposed. Commit the refreshed row-review files after apply. Residual exceptions
 remain explicit main-gate work.
 
 The maintained `data-tools/phb-review` package subpath exposes exactly two

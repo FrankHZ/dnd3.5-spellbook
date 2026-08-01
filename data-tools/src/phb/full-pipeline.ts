@@ -64,6 +64,10 @@ import {
   validateComparisonDatabaseIdentities,
 } from "./pilot-comparison";
 import { resolveInside, sha256File } from "./source-manifest";
+import {
+  currentPhbAuthorityPolicyReference,
+  PHB_EFFECTIVE_ENGLISH_RELATIVE_PATH,
+} from "./source-authority";
 
 export const PHB_FULL_ERRATA_OVERLAYS_RELATIVE_PATH =
   "phb35/extracted/full/errata-overlays.jsonl";
@@ -83,7 +87,6 @@ export const PHB_FULL_ENGLISH_REVIEW_RELATIVE_PATH =
 const SRD_ADJUDICATION_RELATIVE_PATH = "phb35/review/srd-adjudication.jsonl";
 const SRD_ADJUDICATION_MANIFEST_RELATIVE_PATH =
   "phb35/review/srd-adjudication-manifest.json";
-
 const PILOT_ENTITIES = "phb35/extracted/pilot/entities.jsonl";
 const ERRATA_INVENTORY = "phb35/review/errata-inventory.jsonl";
 
@@ -853,7 +856,6 @@ export function verifySrdBackedReviews(
   const backed = reviews.filter(
     (row) => row.reviewer === "data-tools:srd-adjudication",
   );
-  if (backed.length === 0) return null;
   const manifestPath = resolveInside(
     dataRoot,
     SRD_ADJUDICATION_MANIFEST_RELATIVE_PATH,
@@ -863,11 +865,28 @@ export function verifySrdBackedReviews(
     SRD_ADJUDICATION_RELATIVE_PATH,
   );
   const manifest = readObject(manifestPath);
+  if (manifest.schemaVersion !== 2) {
+    throw new Error("PHB SRD adjudication manifest schema is stale");
+  }
   const inputs = record(manifest.inputs, "SRD adjudication inputs");
+  const authorityPolicy = record(
+    inputs.authorityPolicy,
+    "SRD adjudication authority policy",
+  );
+  const expectedPolicy = currentPhbAuthorityPolicyReference();
+  if (
+    authorityPolicy.revision !== expectedPolicy.revision ||
+    authorityPolicy.sha256 !== expectedPolicy.sha256
+  ) {
+    throw new Error("PHB SRD adjudication authority policy is stale");
+  }
   for (const [field, label] of [
     ["extractionManifest", "extraction manifest"],
     ["comparisons", "comparisons"],
     ["aliases", "aliases"],
+    ["phbSpells", "PHB spells"],
+    ["errata", "errata overlays"],
+    ["listOccurrences", "list occurrences"],
   ] as const) {
     const value = record(inputs[field], `SRD adjudication ${label}`);
     if (typeof value.relativePath !== "string") {
@@ -879,7 +898,17 @@ export function verifySrdBackedReviews(
       `SRD adjudication -> ${label}`,
     );
   }
-  expectArtifact(manifest.output, adjudicationPath, "SRD adjudication -> rows");
+  const outputs = record(manifest.outputs, "SRD adjudication outputs");
+  expectArtifact(
+    outputs.adjudication,
+    adjudicationPath,
+    "SRD adjudication -> rows",
+  );
+  expectArtifact(
+    outputs.effectiveEnglish,
+    resolveInside(dataRoot, PHB_EFFECTIVE_ENGLISH_RELATIVE_PATH),
+    "SRD adjudication -> effective English",
+  );
   const currentReviewEvidence = hashStableJson(
     reviews.map((row) => ({
       caseId: row.caseId,
@@ -896,9 +925,39 @@ export function verifySrdBackedReviews(
       caseId: string;
       status: string;
       rule: string;
+      effectiveRowFingerprintSha256: string;
       evidenceFingerprintSha256: string;
     }>(adjudicationPath).map((row) => [row.caseId, row]),
   );
+  const effectiveRows = readJsonl<{
+    caseId: string;
+    authorityPolicy: { revision: string; sha256: string };
+    evidenceFingerprintSha256: string;
+  }>(resolveInside(dataRoot, PHB_EFFECTIVE_ENGLISH_RELATIVE_PATH));
+  if (
+    effectiveRows.length === 0 ||
+    effectiveRows.length !== adjudications.size ||
+    effectiveRows.some(
+      (row) =>
+        row.authorityPolicy?.revision !== expectedPolicy.revision ||
+        row.authorityPolicy.sha256 !== expectedPolicy.sha256,
+    )
+  ) {
+    throw new Error("PHB effective English set is incomplete or stale");
+  }
+  const effectiveByCase = new Map(
+    effectiveRows.map((row) => [row.caseId, row]),
+  );
+  for (const [caseId, adjudication] of adjudications) {
+    const effective = effectiveByCase.get(caseId);
+    if (
+      !effective ||
+      adjudication.effectiveRowFingerprintSha256 !==
+        effective.evidenceFingerprintSha256
+    ) {
+      throw new Error(`PHB effective English evidence is stale: ${caseId}`);
+    }
+  }
   for (const review of backed) {
     const row = adjudications.get(review.caseId);
     if (!row || row.status !== "terminal-candidate") {

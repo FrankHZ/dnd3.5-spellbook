@@ -280,21 +280,23 @@ Recommended next sequence:
    recorded separately from its portable form. MinerU changes alter PHB
    evidence and downstream fingerprints.
 
-4. **Rebuild field-level effective English rows**
+4. **Completed: rebuild field-level effective English rows**
 
-   Continue from the refreshed full extraction/comparison and terminal recall
-   witness: rerun revised SRD adjudication and apply. Official SRD text is
-   adopted by default; PHB+errata remains immutable evidence and owns
-   missing-SRD, Product Identity, PHB-only, page, and table/layout fields.
-   Data-pipeline emits one effective row per spell and excludes DB-only
-   extensions from the body.
+   Nested-data commits `eb9500c` through `262b37e` record 605 field-resolved
+   rows under `official-srd-default-v1`, bind every row to the policy hash, and
+   apply 596 deterministic decisions.
+   Official SRD owns rules text by default; PHB+errata supplies 28 Product
+   Identity names, seven missing SRD mechanics components, all 1,235 class-list
+   summary occurrences, and page/table/layout provenance. DB-only extensions
+   never enter the effective body.
 
 5. **Review only regenerated genuine exceptions and close Gate 2**
 
-   Resolve deterministic three-way drift in the pipeline. Send only true
-   field-level exceptions to human review, extending the console only when a
-   new evidence type cannot be displayed. Translation remains blocked until
-   the rebuilt effective-row report is accepted.
+   Review the nine remaining Summon Nature's Ally rows whose shared PHB table
+   is still explicitly unparsed. The review console exposes exactly these nine
+   current-fingerprint exceptions; source report correctly remains blocked.
+   Translation remains blocked until the rebuilt effective-row report is
+   accepted.
 
 6. **Activate only accepted v1.4 content**
 

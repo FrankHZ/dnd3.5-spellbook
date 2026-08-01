@@ -7,14 +7,12 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: in progress; Gate 0, the complete Gate 1 representative pilot, and the
-localhost review-console prerequisite are accepted. The full-source dual-engine
-recall boundary is implemented and locally terminal in nested-data commit
-`dda575a`; Gate 2 remains reopened at the authority-policy boundary. The
-superseded residual exceptions are fail-closed behind the
-`official-srd-default-v1` authority revision and cannot be read or edited
-through the review service. Field-resolved SRD adjudication must regenerate its
-evidence; downstream translation/activation gates remain blocked.
+Status: in progress; Gate 0, the complete Gate 1 representative pilot, the
+localhost review-console prerequisite, and field-resolved SRD authority apply
+are accepted. Nested-data commits `eb9500c` through `262b37e` record 605 current
+policy-bound effective rows and 596 deterministic accepted decisions. Gate 2 remains open
+only for nine fingerprint-current Summon Nature's Ally shared-table exceptions;
+downstream translation/activation gates remain blocked.
 
 ## Purpose
 
@@ -540,3 +538,23 @@ archive host is the publisher.
   substantive, and 80 manual rows. `phb:source:report` remains fail-closed
   because SRD adjudication still pins the previous comparison, which is the
   intended next authority-policy boundary rather than unfinished recall work.
+- Nested-data commit `eb9500c` replaces the legacy 243-row corroboration queue
+  with 605 field-resolved effective English rows under
+  `official-srd-default-v1`. The generated corpus selects SRD for 5,810
+  name/body/mechanics values, retains 28 PHB Product Identity names, fills seven
+  missing SRD mechanics components from PHB+accepted errata, preserves all
+  1,235 PHB class-list summary occurrences, and excludes DB-only prose.
+- Nested-data commit `6f65568` applies 596 deterministic authority decisions.
+  Nine Summon Nature's Ally rows remain proposed solely because their shared
+  PHB table is still explicitly unparsed. The effective verifier passes, the
+  review-console local smoke reports 238 terminal layout rows and nine current
+  English residuals, and `phb:source:report` fails only on those nine proposed
+  decisions as required.
+- Nested-data commits `9c8556e` and `1fc512e` harden that output by embedding
+  the code-owned authority revision and SHA in every effective row, recursively
+  checking each adjudication-to-effective fingerprint link, and refreshing all
+  accepted decision notes under the policy-bound evidence.
+- Nested-data commits `ae16368` and `262b37e` add every comparison-level
+  source-evidence reference to the effective table provenance, so the nine
+  shared-table exceptions directly fingerprint their detached table artifact
+  rather than relying only on the outer adjudication row.
