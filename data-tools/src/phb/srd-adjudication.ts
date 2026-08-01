@@ -2,25 +2,38 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
+import {
+  buildEffectiveEnglishRow,
+  PHB_EFFECTIVE_ENGLISH_RELATIVE_PATH,
+  type EffectiveEnglishRow,
+} from "./effective-english";
 import type { FullDbComparisonRow } from "./full-comparison";
 import {
+  PHB_FULL_ENTITIES_RELATIVE_PATH,
+  PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH,
+  type FullSpellEntity,
+} from "./full-extraction";
+import type { FullListOccurrence } from "./full-lists";
+import {
   PHB_FULL_DB_COMPARISON_RELATIVE_PATH,
+  PHB_FULL_ERRATA_OVERLAYS_RELATIVE_PATH,
   PHB_FULL_ROW_REVIEW_RELATIVE_PATH,
   runFullComparison,
 } from "./full-pipeline";
 import type { FullRowReview } from "./full-row-review";
-import { compareComponent } from "./pilot-comparison";
+import type { PilotErrataOverlayRow } from "./pilot-errata";
 import {
   normalizeName,
   PHB_SRD_EXTRACTION_MANIFEST_RELATIVE_PATH,
   PHB_SRD_ISSUES_RELATIVE_PATH,
   PHB_SRD_SPELLS_RELATIVE_PATH,
-  PHB_SRD_SUMMARIES_RELATIVE_PATH,
-  type SrdShortDescription,
   type SrdSpellEntity,
 } from "./srd-extraction";
 import { readAndVerifySrdSourceManifest } from "./srd-source";
-import { PHB_SRD_ADJUDICATION_MANIFEST_RELATIVE_PATH } from "./source-authority";
+import {
+  currentPhbAuthorityPolicyReference,
+  PHB_SRD_ADJUDICATION_MANIFEST_RELATIVE_PATH,
+} from "./source-authority";
 import {
   committedFileCommit,
   resolveInside,
@@ -45,36 +58,31 @@ export type SrdNameAlias = {
 
 export type SrdComponentDisposition =
   | "alias-backed"
-  | "corroborated"
-  | "phb-srd-agree-db-drift"
-  | "srd-db-agree-phb-drift"
-  | "srd-variant-ambiguous"
-  | "srd-missing-component"
+  | "srd-authoritative"
+  | "phb-authoritative"
+  | "phb-fallback"
   | "srd-missing-spell"
-  | "three-way-drift"
-  | "unsupported-page";
+  | "unresolved";
 
 export type SrdAdjudicationRow = {
-  schemaVersion: 1;
+  schemaVersion: 2;
   caseId: string;
   printedName: string;
   srdPrintedName: string | null;
   aliasId: string | null;
   comparisonCategory: FullDbComparisonRow["category"];
   status: "terminal-candidate" | "exception";
-  rule:
-    | "source-backed-db-correction"
-    | "srd-corroborated-phb"
-    | "canonical-summary-supported"
-    | "residual-exception";
+  rule: "field-resolved-effective-row" | "residual-exception";
   componentEvidence: Array<{
     component: string;
     originalCategory:
       "exact-match" | "formatting-only" | "substantive-mismatch";
     disposition: SrdComponentDisposition;
+    effectiveAuthority: EffectiveEnglishRow["bodyText"]["authority"];
     srdValues: string[];
   }>;
   unresolvedReasons: string[];
+  effectiveRowFingerprintSha256: string;
   evidenceRowIds: string[];
   evidenceFingerprintSha256: string;
 };
@@ -98,17 +106,29 @@ export function runSrdAdjudication(dataRoot: string) {
     dataRoot,
     PHB_FULL_ROW_REVIEW_RELATIVE_PATH,
   );
-  const spellsPath = resolveInside(dataRoot, PHB_SRD_SPELLS_RELATIVE_PATH);
-  const summariesPath = resolveInside(
+  const phbSpellsPath = resolveInside(
     dataRoot,
-    PHB_SRD_SUMMARIES_RELATIVE_PATH,
+    PHB_FULL_ENTITIES_RELATIVE_PATH,
   );
+  const errataPath = resolveInside(
+    dataRoot,
+    PHB_FULL_ERRATA_OVERLAYS_RELATIVE_PATH,
+  );
+  const listOccurrencesPath = resolveInside(
+    dataRoot,
+    PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH,
+  );
+  const spellsPath = resolveInside(dataRoot, PHB_SRD_SPELLS_RELATIVE_PATH);
   const issuesPath = resolveInside(dataRoot, PHB_SRD_ISSUES_RELATIVE_PATH);
   const aliasesPath = resolveInside(dataRoot, PHB_SRD_ALIASES_RELATIVE_PATH);
   const comparisons = readJsonl<FullDbComparisonRow>(comparisonsPath);
   const reviews = readJsonl<FullRowReview>(reviewsPath);
+  const phbSpells = readJsonl<FullSpellEntity>(phbSpellsPath);
+  const errata = readJsonl<PilotErrataOverlayRow & { rowId: string }>(
+    errataPath,
+  );
+  const listOccurrences = readJsonl<FullListOccurrence>(listOccurrencesPath);
   const spells = readJsonl<SrdSpellEntity>(spellsPath);
-  const summaries = readJsonl<SrdShortDescription>(summariesPath);
   const aliases = readJsonl<SrdNameAlias>(aliasesPath);
   const issues = readJsonl<unknown>(issuesPath);
   if (issues.length > 0) {
@@ -132,23 +152,62 @@ export function runSrdAdjudication(dataRoot: string) {
   const aliasesByPhb = new Map(
     aliases.map((alias) => [normalizeName(alias.phbName), alias]),
   );
-  const summariesByName = groupByName(summaries);
-  const selected = comparisons.flatMap((comparison) => {
-    const review = reviewByCase.get(comparison.caseId);
-    return review && isSrdAdjudicationInput(review)
-      ? [{ comparison, review }]
-      : [];
+  const phbByCase = uniqueBy(phbSpells, (row) => row.rowId, "PHB spell");
+  const errataByCase = uniqueBy(errata, (row) => row.caseId, "errata overlay");
+  const occurrencesByName = groupOccurrencesByName(listOccurrences);
+  if (
+    comparisons.length !== 605 ||
+    reviews.length !== 605 ||
+    phbSpells.length !== 605 ||
+    spells.length !== 605
+  ) {
+    throw new Error(
+      `PHB effective English set is incomplete: comparison=${comparisons.length}, review=${reviews.length}, PHB=${phbSpells.length}, SRD=${spells.length}`,
+    );
+  }
+  const effectiveRows = comparisons.map((comparison) => {
+    const phb = phbByCase.get(comparison.caseId);
+    const overlay = errataByCase.get(comparison.caseId);
+    const alias =
+      aliasesByPhb.get(normalizeName(comparison.printedName)) ?? null;
+    const srdName = alias?.srdName ?? comparison.printedName;
+    const srd = spellByName.get(normalizeName(srdName)) ?? null;
+    if (!phb || !overlay) {
+      throw new Error(
+        `PHB effective English evidence is incomplete: ${comparison.caseId}`,
+      );
+    }
+    return buildEffectiveEnglishRow({
+      phb,
+      errata: overlay,
+      srd,
+      alias,
+      shortDescriptions:
+        occurrencesByName.get(normalizeName(comparison.printedName)) ?? [],
+      sourceEvidence: comparison.sourceEvidence,
+      sourceEvidenceReasons: comparison.reviewFlags
+        .filter((flag) => flag.startsWith("uncertain:shared-summon-table"))
+        .map((flag) => `source-evidence:${flag}`),
+    });
   });
-  const rows = selected.map(({ comparison, review }) =>
-    adjudicateComparison({
-      comparison,
-      review,
-      aliases,
-      alias: aliasesByPhb.get(normalizeName(comparison.printedName)) ?? null,
-      spellByName,
-      summariesByName,
-    }),
+  const effectivePath = resolveInside(
+    dataRoot,
+    PHB_EFFECTIVE_ENGLISH_RELATIVE_PATH,
   );
+  writeJsonl(effectivePath, effectiveRows);
+  const effectiveByCase = new Map(
+    effectiveRows.map((row) => [row.caseId, row]),
+  );
+  const rows = comparisons.map((comparison) => {
+    const review = reviewByCase.get(comparison.caseId);
+    const effective = effectiveByCase.get(comparison.caseId);
+    if (!review || !effective) {
+      throw new Error(
+        `PHB adjudication evidence is incomplete: ${comparison.caseId}`,
+      );
+    }
+    return adjudicateComparison({ comparison, review, effective });
+  });
 
   const outputPath = resolveInside(
     dataRoot,
@@ -161,12 +220,34 @@ export function runSrdAdjudication(dataRoot: string) {
   );
   const counts = {
     inputReviewRows: rows.length,
-    inputProposedRows: selected.filter(
-      ({ review }) => review.status === "proposed",
+    inputProposedRows: reviews.filter((review) => review.status === "proposed")
+      .length,
+    inputPriorTerminalRows: reviews.filter(
+      (review) => review.reviewer === "data-tools:srd-adjudication",
     ).length,
-    inputPriorTerminalRows: selected.filter(
-      ({ review }) => review.reviewer === "data-tools:srd-adjudication",
+    effectiveRows: effectiveRows.length,
+    effectiveResolved: effectiveRows.filter(
+      (row) => row.resolutionStatus === "resolved",
     ).length,
+    effectiveExceptions: effectiveRows.filter(
+      (row) => row.resolutionStatus === "exception",
+    ).length,
+    authoritySelections: countBy(
+      effectiveRows.flatMap((row) => [
+        row.effectiveName.authority,
+        row.school.authority,
+        row.bodyText.authority,
+        ...Object.values(row.fields).map((field) => field.authority),
+      ]),
+    ),
+    authorityRules: countBy(
+      effectiveRows.flatMap((row) => [
+        row.effectiveName.rule,
+        row.school.rule,
+        row.bodyText.rule,
+        ...Object.values(row.fields).map((field) => field.rule),
+      ]),
+    ),
     terminalCandidates: rows.filter(
       (row) => row.status === "terminal-candidate",
     ).length,
@@ -184,8 +265,9 @@ export function runSrdAdjudication(dataRoot: string) {
     ),
   };
   const manifest = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     inputs: {
+      authorityPolicy: currentPhbAuthorityPolicyReference(),
       extractionManifest: artifact(
         PHB_SRD_EXTRACTION_MANIFEST_RELATIVE_PATH,
         extractionManifestPath,
@@ -203,8 +285,20 @@ export function runSrdAdjudication(dataRoot: string) {
         })),
       ),
       aliases: artifact(PHB_SRD_ALIASES_RELATIVE_PATH, aliasesPath),
+      phbSpells: artifact(PHB_FULL_ENTITIES_RELATIVE_PATH, phbSpellsPath),
+      errata: artifact(PHB_FULL_ERRATA_OVERLAYS_RELATIVE_PATH, errataPath),
+      listOccurrences: artifact(
+        PHB_FULL_LIST_OCCURRENCES_RELATIVE_PATH,
+        listOccurrencesPath,
+      ),
     },
-    output: artifact(PHB_SRD_ADJUDICATION_RELATIVE_PATH, outputPath),
+    outputs: {
+      adjudication: artifact(PHB_SRD_ADJUDICATION_RELATIVE_PATH, outputPath),
+      effectiveEnglish: artifact(
+        PHB_EFFECTIVE_ENGLISH_RELATIVE_PATH,
+        effectivePath,
+      ),
+    },
     counts,
   };
   writeJson(manifestPath, manifest);
@@ -220,36 +314,70 @@ export function applySrdTerminalCandidates(dataRoot: string) {
     dataRoot,
     PHB_SRD_ADJUDICATION_RELATIVE_PATH,
   );
+  const effectivePath = resolveInside(
+    dataRoot,
+    PHB_EFFECTIVE_ENGLISH_RELATIVE_PATH,
+  );
   verifyAdjudicationManifest(dataRoot, manifestPath);
   committedFileCommit(dataRoot, manifestPath);
   committedFileCommit(dataRoot, adjudicationPath);
+  committedFileCommit(dataRoot, effectivePath);
   const adjudications = readJsonl<SrdAdjudicationRow>(adjudicationPath);
   const accepted = new Map(
     adjudications
       .filter((row) => row.status === "terminal-candidate")
       .map((row) => [row.caseId, row]),
   );
+  const exceptions = new Set(
+    adjudications
+      .filter((row) => row.status === "exception")
+      .map((row) => row.caseId),
+  );
   const reviewsPath = resolveInside(
     dataRoot,
     PHB_FULL_ROW_REVIEW_RELATIVE_PATH,
   );
   let applied = 0;
+  let reset = 0;
   const reviews = readJsonl<FullRowReview>(reviewsPath).map((review) => {
     const adjudication = accepted.get(review.caseId);
-    if (!adjudication || review.status !== "proposed") return review;
-    applied += 1;
-    return {
-      ...review,
-      status: "accepted" as const,
-      reviewer: "data-tools:srd-adjudication",
-      decisionNote: `Accepted by SRD adjudication ${adjudication.evidenceFingerprintSha256}: ${adjudication.rule}.`,
-    };
+    if (adjudication) {
+      const decisionNote = `Accepted by SRD adjudication ${adjudication.evidenceFingerprintSha256}: ${adjudication.rule}.`;
+      if (
+        review.status !== "accepted" ||
+        review.reviewer !== "data-tools:srd-adjudication" ||
+        review.decisionNote !== decisionNote
+      ) {
+        applied += 1;
+      }
+      return {
+        ...review,
+        status: "accepted" as const,
+        reviewer: "data-tools:srd-adjudication",
+        decisionNote,
+      };
+    }
+    if (
+      exceptions.has(review.caseId) &&
+      (review.reviewer === "data-tools:auto" ||
+        review.reviewer === "data-tools:srd-adjudication")
+    ) {
+      reset += 1;
+      return {
+        ...review,
+        status: "proposed" as const,
+        reviewer: null,
+        decisionNote: null,
+      };
+    }
+    return review;
   });
   writeJsonl(reviewsPath, reviews);
   runFullComparison();
   runSrdAdjudication(dataRoot);
   return {
     accepted: applied,
+    reset,
     remaining: reviews.filter((row) => row.status === "proposed").length,
   };
 }
@@ -260,13 +388,6 @@ export function verifySrdAdjudicationArtifacts(dataRoot: string) {
     PHB_SRD_ADJUDICATION_MANIFEST_RELATIVE_PATH,
   );
   verifyAdjudicationManifest(dataRoot, manifestPath);
-}
-
-export function isSrdAdjudicationInput(review: FullRowReview) {
-  return (
-    review.status === "proposed" ||
-    review.reviewer === "data-tools:srd-adjudication"
-  );
 }
 
 export function validateSrdAliases(input: {
@@ -321,243 +442,138 @@ export function validateSrdAliases(input: {
 export function adjudicateComparison(input: {
   comparison: FullDbComparisonRow;
   review: FullRowReview;
-  aliases: SrdNameAlias[];
-  alias: SrdNameAlias | null;
-  spellByName: Map<string, SrdSpellEntity>;
-  summariesByName: Map<string, SrdShortDescription[]>;
+  effective: EffectiveEnglishRow;
 }): SrdAdjudicationRow {
-  const srdName = input.alias?.srdName ?? input.comparison.printedName;
-  const spell = input.spellByName.get(normalizeName(srdName));
-  const summaries = input.summariesByName.get(normalizeName(srdName)) ?? [];
   const componentEvidence = input.comparison.components.map((component) => {
-    if (component.component === "name") {
-      return {
-        component: component.component,
-        originalCategory: component.category,
-        disposition: (input.alias
-          ? "alias-backed"
-          : "corroborated") as SrdComponentDisposition,
-        srdValues: spell ? [spell.printedName] : [],
-      };
-    }
-    if (component.component === "page") {
-      return {
-        component: component.component,
-        originalCategory: component.category,
-        disposition: "unsupported-page" as const,
-        srdValues: [],
-      };
-    }
-    const srdValues = component.component.startsWith("shortDescription:")
-      ? Array.from(new Set(summaries.map((row) => row.summaryText))).sort()
-      : spell
-        ? srdComponentValues(component.component, spell)
-        : [];
+    const selection = selectionForComponent(
+      component.component,
+      input.effective,
+    );
     return {
       component: component.component,
       originalCategory: component.category,
-      disposition: componentDisposition({
-        component: component.component,
-        sourceValue: component.sourceValue,
-        dbValue: component.dbValue,
-        srdValues,
-        aliases: input.aliases,
-        spellMissing: !spell,
-      }),
-      srdValues,
+      disposition: selection.disposition,
+      effectiveAuthority: selection.authority,
+      srdValues:
+        selection.authority === "official-srd-3.5" ? selection.values : [],
     };
   });
-
-  const substantive = componentEvidence.filter(
-    (component) => component.originalCategory === "substantive-mismatch",
-  );
-  const hardFlags = input.comparison.reviewFlags.filter(isHardResidualFlag);
-  const unresolvedReasons = [
-    ...hardFlags.map((flag) => `review-flag:${flag}`),
-    ...substantive
-      .filter((component) => component.disposition !== "phb-srd-agree-db-drift")
-      .map((component) => `${component.component}:${component.disposition}`),
-  ];
-  const summaryCanonical =
-    input.comparison.reviewFlags.includes(
-      "short-description-wording-conflict",
-    ) &&
-    componentEvidence
-      .filter((component) =>
-        component.component.startsWith("shortDescription:"),
-      )
-      .some((component) => component.disposition === "corroborated");
-  const summaryOfficialVariant = componentEvidence
-    .filter((component) => component.component.startsWith("shortDescription:"))
-    .some((component) => component.disposition === "srd-variant-ambiguous");
-  if (summaryCanonical || summaryOfficialVariant) {
-    for (let index = unresolvedReasons.length - 1; index >= 0; index -= 1) {
-      if (unresolvedReasons[index]?.startsWith("shortDescription:")) {
-        unresolvedReasons.splice(index, 1);
-      }
-    }
-  }
+  const unresolvedReasons = [...input.effective.unresolvedReasons];
   const status =
     unresolvedReasons.length === 0 ? "terminal-candidate" : "exception";
-  const hasDbCorrection = substantive.some(
-    (component) => component.disposition === "phb-srd-agree-db-drift",
-  );
-  const rule =
-    status === "exception"
-      ? "residual-exception"
-      : summaryCanonical || summaryOfficialVariant
-        ? "canonical-summary-supported"
-        : hasDbCorrection
-          ? "source-backed-db-correction"
-          : "srd-corroborated-phb";
   const evidenceRowIds = Array.from(
     new Set([
       ...input.review.evidenceRowIds,
-      ...(spell ? [spell.rowId] : []),
-      ...summaries.map((row) => row.rowId),
-      ...(input.alias ? [input.alias.aliasId] : []),
+      ...input.effective.evidenceRowIds,
     ]),
   ).sort();
   const fingerprintInput = {
     comparison: input.comparison,
     reviewFingerprintSha256: input.review.evidenceFingerprintSha256,
-    spell,
-    summaries,
-    alias: input.alias,
+    effectiveRowFingerprintSha256: input.effective.evidenceFingerprintSha256,
     componentEvidence,
     unresolvedReasons,
   };
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     caseId: input.comparison.caseId,
     printedName: input.comparison.printedName,
-    srdPrintedName: spell?.printedName ?? null,
-    aliasId: input.alias?.aliasId ?? null,
+    srdPrintedName: input.effective.srdPrintedName,
+    aliasId:
+      input.effective.aliases.length > 0
+        ? (input.effective.aliases[0]!.evidenceRowIds.find((id) =>
+            id.startsWith("srd-alias:"),
+          ) ?? null)
+        : null,
     comparisonCategory: input.comparison.category,
     status,
-    rule,
+    rule:
+      status === "terminal-candidate"
+        ? "field-resolved-effective-row"
+        : "residual-exception",
     componentEvidence,
     unresolvedReasons,
+    effectiveRowFingerprintSha256: input.effective.evidenceFingerprintSha256,
     evidenceRowIds,
     evidenceFingerprintSha256: hashJson(fingerprintInput),
   };
 }
 
-function componentDisposition(input: {
-  component: string;
-  sourceValue: string;
-  dbValue: string;
-  srdValues: string[];
-  aliases: SrdNameAlias[];
-  spellMissing: boolean;
-}): SrdComponentDisposition {
-  if (input.srdValues.length === 0) {
-    return input.spellMissing ? "srd-missing-spell" : "srd-missing-component";
+function selectionForComponent(
+  component: string,
+  row: EffectiveEnglishRow,
+): {
+  disposition: SrdComponentDisposition;
+  authority: EffectiveEnglishRow["bodyText"]["authority"];
+  values: string[];
+} {
+  if (component === "name") {
+    return selection(
+      row.effectiveName,
+      row.aliases.length > 0 ? "alias-backed" : undefined,
+    );
   }
-  const source = canonicalizeAliases(input.sourceValue, input.aliases);
-  const db = canonicalizeAliases(input.dbValue, input.aliases);
-  const matches = input.srdValues.map((value) => {
-    const srd = canonicalizeAliases(value, input.aliases);
-    return {
-      source:
-        compareComponent(input.component, source, srd).category !==
-        "substantive-mismatch",
-      db:
-        compareComponent(input.component, srd, db).category !==
-        "substantive-mismatch",
-    };
-  });
-  if (matches.some((match) => match.source && match.db)) return "corroborated";
   if (
-    matches.some((match) => match.source) &&
-    matches.some((match) => match.db)
+    component === "page" ||
+    component === "summonTable" ||
+    component.startsWith("shortDescription:")
   ) {
-    return "srd-variant-ambiguous";
+    return {
+      disposition: "phb-authoritative",
+      authority: "phb-3.5-plus-accepted-errata",
+      values: [],
+    };
   }
-  if (matches.some((match) => match.source)) return "phb-srd-agree-db-drift";
-  if (matches.some((match) => match.db)) return "srd-db-agree-phb-drift";
-  return "three-way-drift";
-}
-
-function srdComponentValues(component: string, spell: SrdSpellEntity) {
-  if (component === "school") return [spell.school];
-  if (component === "body") return [spell.bodyText];
+  if (component === "school") return selection(row.school);
+  if (component === "body") return selection(row.bodyText);
   if (component === "targetEffectArea") {
-    const value = srdTargetEffectArea(spell.fields);
-    return value ? [value] : [];
-  }
-  if (component === "level") {
-    return spell.fields.level ? [normalizeLevel(spell.fields.level)] : [];
-  }
-  const fieldNames: Record<string, string> = {
-    components: "components",
-    castingTime: "castingTime",
-    range: "range",
-    duration: "duration",
-    savingThrow: "savingThrow",
-    spellResistance: "spellResistance",
-  };
-  const field = fieldNames[component];
-  return field && spell.fields[field] ? [spell.fields[field]!] : [];
-}
-
-function srdTargetEffectArea(fields: Record<string, string>) {
-  const values: Array<readonly [string, string | undefined]> = [
-    ["Target", fields.targets ?? fields.target],
-    ["Effect", fields.effect],
-    ["Area", fields.area],
-    ["Target or Area", fields.targetorarea],
-    ["Target, Effect, or Area", fields.targeteffectorarea],
-    ["Target/Effect", fields.targeteffect],
-    ["Area or Target", fields.areaortarget],
-  ];
-  return values
-    .filter((entry): entry is readonly [string, string] => Boolean(entry[1]))
-    .map(([label, value]) => `${label}: ${value}`)
-    .join(" / ");
-}
-
-function normalizeLevel(value: string) {
-  const aliases: Record<string, string> = {
-    brd: "bard",
-    clr: "cleric",
-    drd: "druid",
-    pal: "paladin",
-    rgr: "ranger",
-    "sor/wiz": "sor/wiz",
-    wiz: "wizard",
-  };
-  return value
-    .split(/,\s*/u)
-    .map((part) => {
-      const match = /^(.*?)\s+(\d+)$/u.exec(part.trim());
-      if (!match?.[1] || !match[2]) return part.toLocaleLowerCase("en-US");
-      return `${aliases[match[1].toLocaleLowerCase("en-US")] ?? match[1].toLocaleLowerCase("en-US")} ${match[2]}`;
-    })
-    .sort()
-    .join(",");
-}
-
-function canonicalizeAliases(value: string, aliases: SrdNameAlias[]) {
-  let result = value.normalize("NFKC").replace(/[‘’]/gu, "'");
-  for (const alias of aliases) {
-    const canonical = alias.srdName.replace(/[‘’]/gu, "'");
-    for (const name of [alias.phbName, alias.srdName]) {
-      result = result.replace(
-        new RegExp(escapeRegExp(name.replace(/[‘’]/gu, "'")), "giu"),
-        canonical,
-      );
+    const targetFields = [
+      "target",
+      "targetOrArea",
+      "targetEffectOrArea",
+      "targetEffect",
+      "areaOrTarget",
+      "effect",
+      "area",
+    ].flatMap((name) => (row.fields[name] ? [row.fields[name]!] : []));
+    if (targetFields.length === 0) {
+      return {
+        disposition: "unresolved",
+        authority: "phb-3.5-plus-accepted-errata",
+        values: [],
+      };
     }
+    return selection(
+      targetFields[0]!,
+      undefined,
+      targetFields.map((field) => field.value),
+    );
   }
-  return result;
+  const field = row.fields[component];
+  if (field) return selection(field);
+  return {
+    disposition: row.srdPrintedName ? "unresolved" : "srd-missing-spell",
+    authority: "phb-3.5-plus-accepted-errata",
+    values: [],
+  };
 }
 
-function isHardResidualFlag(value: string) {
-  return (
-    value === "inventory-review-required" ||
-    value.startsWith("parser-issue:") ||
-    value.startsWith("uncertain:shared-summon-table")
-  );
+function selection(
+  value: EffectiveEnglishRow["bodyText"],
+  override?: SrdComponentDisposition,
+  values: string[] = [value.value],
+) {
+  return {
+    disposition:
+      override ??
+      (value.authority === "official-srd-3.5"
+        ? ("srd-authoritative" as const)
+        : value.rule === "srd-omission"
+          ? ("phb-fallback" as const)
+          : ("phb-authoritative" as const)),
+    authority: value.authority,
+    values,
+  };
 }
 
 function verifyExtractionManifest(
@@ -590,21 +606,51 @@ function verifyExtractionManifest(
 
 function verifyAdjudicationManifest(dataRoot: string, manifestPath: string) {
   const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8")) as {
+    schemaVersion: number;
     inputs: {
+      authorityPolicy: { revision: string; sha256: string };
       extractionManifest: { relativePath: string; sha256: string };
       comparisons: { relativePath: string; sha256: string };
       aliases: { relativePath: string; sha256: string };
+      phbSpells: { relativePath: string; sha256: string };
+      errata: { relativePath: string; sha256: string };
+      listOccurrences: { relativePath: string; sha256: string };
       rowReviewEvidenceSha256: string;
     };
-    output: { relativePath: string; sha256: string };
+    outputs: {
+      adjudication: { relativePath: string; sha256: string };
+      effectiveEnglish: { relativePath: string; sha256: string };
+    };
   };
+  if (manifest.schemaVersion !== 2) {
+    throw new Error("PHB SRD adjudication manifest schema is stale");
+  }
+  const expectedPolicy = currentPhbAuthorityPolicyReference();
+  if (
+    manifest.inputs.authorityPolicy?.revision !== expectedPolicy.revision ||
+    manifest.inputs.authorityPolicy.sha256 !== expectedPolicy.sha256
+  ) {
+    throw new Error("PHB SRD adjudication authority policy is stale");
+  }
   for (const artifactValue of [
     manifest.inputs.extractionManifest,
     manifest.inputs.comparisons,
     manifest.inputs.aliases,
-    manifest.output,
+    manifest.inputs.phbSpells,
+    manifest.inputs.errata,
+    manifest.inputs.listOccurrences,
+    manifest.outputs.adjudication,
+    manifest.outputs.effectiveEnglish,
   ]) {
+    if (!artifactValue?.relativePath || !artifactValue.sha256) {
+      throw new Error("PHB SRD adjudication manifest is incomplete");
+    }
     const filePath = resolveInside(dataRoot, artifactValue.relativePath);
+    if (!fs.existsSync(filePath)) {
+      throw new Error(
+        `PHB SRD adjudication artifact is missing: ${artifactValue.relativePath}`,
+      );
+    }
     if (sha256File(filePath) !== artifactValue.sha256) {
       throw new Error(
         `PHB SRD adjudication artifact is stale: ${artifactValue.relativePath}`,
@@ -625,13 +671,57 @@ function verifyAdjudicationManifest(dataRoot: string, manifestPath: string) {
   if (currentReviewEvidence !== manifest.inputs.rowReviewEvidenceSha256) {
     throw new Error("PHB SRD adjudication row review evidence is stale");
   }
+  const effectiveRows = readJsonl<EffectiveEnglishRow>(
+    resolveInside(dataRoot, PHB_EFFECTIVE_ENGLISH_RELATIVE_PATH),
+  );
+  const adjudications = readJsonl<SrdAdjudicationRow>(
+    resolveInside(dataRoot, PHB_SRD_ADJUDICATION_RELATIVE_PATH),
+  );
+  if (
+    effectiveRows.length === 0 ||
+    effectiveRows.length !== adjudications.length
+  ) {
+    throw new Error(
+      `PHB effective English outputs are incomplete: effective=${effectiveRows.length}, adjudication=${adjudications.length}`,
+    );
+  }
+  const effectiveByCase = uniqueBy(
+    effectiveRows,
+    (row) => row.caseId,
+    "effective English row",
+  );
+  for (const adjudication of adjudications) {
+    const effective = effectiveByCase.get(adjudication.caseId);
+    if (
+      adjudication.schemaVersion !== 2 ||
+      !effective ||
+      effective.authorityPolicy.revision !== expectedPolicy.revision ||
+      effective.authorityPolicy.sha256 !== expectedPolicy.sha256 ||
+      adjudication.effectiveRowFingerprintSha256 !==
+        effective.evidenceFingerprintSha256
+    ) {
+      throw new Error(
+        `PHB SRD adjudication effective row is stale: ${adjudication.caseId}`,
+      );
+    }
+  }
 }
 
-function groupByName(rows: SrdShortDescription[]) {
-  const result = new Map<string, SrdShortDescription[]>();
+function groupOccurrencesByName(rows: FullListOccurrence[]) {
+  const result = new Map<string, FullListOccurrence[]>();
   for (const row of rows) {
     const key = normalizeName(row.printedName);
     result.set(key, [...(result.get(key) ?? []), row]);
+  }
+  return result;
+}
+
+function uniqueBy<T>(rows: T[], key: (row: T) => string, label: string) {
+  const result = new Map<string, T>();
+  for (const row of rows) {
+    const value = key(row);
+    if (result.has(value)) throw new Error(`${label} is duplicated: ${value}`);
+    result.set(value, row);
   }
   return result;
 }
@@ -692,8 +782,4 @@ function stableValue(value: unknown): unknown {
       .sort(([left], [right]) => left.localeCompare(right, "en-US"))
       .map(([key, nested]) => [key, stableValue(nested)]),
   );
-}
-
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }

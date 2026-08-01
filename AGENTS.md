@@ -363,9 +363,13 @@ from the legacy authority revision must not be bulk-accepted.
 The service now requires the code-owned `official-srd-default-v1` authority
 revision in queue freshness/fingerprints, so the old queue fails closed for
 list, detail, and decision requests; the legacy adjudicator cannot mint that
-revision. MinerU recall and the full-source dual witness are complete; next
-rerun revised SRD adjudication and apply against the refreshed comparison
-before regenerating the genuine exception queue.
+revision. `phb:srd:adjudicate` writes one field-resolved row per spell to
+`data/phb35/extracted/effective/english-spells.jsonl` and records the policy in
+the recursively verified adjudication manifest. Run
+`phb:srd:effective:verify`, commit the generated effective/adjudication
+artifacts in the nested data repo, and only then run `phb:srd:apply`; apply
+rejects dirty or uncommitted authority evidence. Commit its regenerated review
+state separately. Genuine exceptions remain fingerprint-bound console work.
 
 ## Validation Commands
 

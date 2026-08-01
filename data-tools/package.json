@@ -24,6 +24,7 @@
     "phb:source:verify": "tsx src/phb/cli.ts verify",
     "phb:srd:extract": "tsx src/phb/cli.ts srd:extract",
     "phb:srd:adjudicate": "tsx src/phb/cli.ts srd:adjudicate",
+    "phb:srd:effective:verify": "tsx src/phb/cli.ts srd:effective:verify",
     "phb:srd:apply": "tsx src/phb/cli.ts srd:apply",
     "phb:srd:verify": "tsx src/phb/cli.ts srd:verify",
     "content:search:rebuild": "tsx src/db/content-search.ts",
