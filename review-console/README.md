@@ -3,6 +3,11 @@
 Private localhost-only shell for the PHB Gate 2 review service. It is not part
 of the public web app or production server.
 
+The PDF extraction/review track is suspended. The active
+[v1.4 dice-text plan](../docs/releases/v1.4/README.md) does not require this
+console or its queues. Keep the implementation and portable checks; the
+commands below are a reference for explicitly resumed PHB work.
+
 The React consumer presents the current MinerU layout and English residual
 queues as a dense review workspace. Queue/status/kind/category filters and
 stable previous/next navigation sit beside an actual PDF.js-rendered PHB page,

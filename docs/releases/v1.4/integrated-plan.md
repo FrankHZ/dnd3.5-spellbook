@@ -1,193 +1,114 @@
 # v1.4 Integrated Plan
 
-> Plan maintenance rule: this document owns early sequencing and cross-plan
-> conflict decisions, not implementation progress. Implementation branches
-> update their child plan and affected topic docs. Update this file only when
-> release scope, delivery sequence, ownership, or cross-plan decisions change.
+> Plan maintenance rule: this document owns sequencing and cross-plan decisions,
+> not implementation progress. Update only for scope, sequence, ownership, or
+> cross-plan decisions; implementation branches update their child plans.
 
-Status: planned.
+Status: replanned for dice database text replacement; implementation pending.
 
-## Purpose
+## Outcome And Sequence
 
-Coordinate the hard gates between PHB source extraction, errata review, local
-PDF evidence review, English acceptance, Chinese translation/proofreading, and
-accepted content activation. No downstream agent may infer that an upstream
-artifact is accepted merely because it exists.
-
-## Canonical Sequence
+Replace CHM Chinese spell text with matched, accepted dice database text. Use
+English for substantive discrepancy QA without requiring complete PDF extraction,
+universal human review, or corpus retranslation.
 
 ```text
-pinned PHB PDF + pinned official errata
-  -> representative extraction/compare pilot
-  -> full MinerU recall audit + hardened structured extraction
-  -> block-bounded PDF.js text-fidelity projection and verification
-  -> localhost PDF review service/API/consumer acceptance
-  -> pinned official SRD 3.5 default-text adjudication
-  -> field-level effective English rows
-  -> deterministic drift resolution + genuine exception review
-  -> Chinese translation + independent proofreading
-  -> accepted-only DB/content activation
-  -> API/frontend/search acceptance
-  -> freeze
+source inventory + target coverage
+  -> representative parse/match/diff pilot
+  -> full comparison + English-assisted discrepancy QA
+  -> accepted replacements + explicit fallback set
+  -> disposable content build + search + consumer checks
+  -> release acceptance and separate operator activation handoff
 ```
 
-## Stage Gates
+D1-D4 below are the active sequence. Old PHB Gate 0-4 is suspended, not completed.
 
-### Gate 0: Source Lock
+## D1: Intake And Identity
 
-Owner: `data-pipeline`; approver: `main-gate`.
+Owner: data-pipeline; approver: main-gate.
 
-- Record file identity, edition/printing evidence, byte size, SHA-256, and local
-  data-repo location for the PHB PDF and official errata artifact.
-- Record the official discovery URL and retrieval date as metadata, while the
-  local bytes and hash remain the reproducibility boundary.
-- Define errata relevance and double-application handling for a PDF that may
-  already include some corrections.
+- Inventory `data/spells-dice-db-by-mo/` without moving or rewriting raw input.
+  Record known credit/version and unknown metadata, then commit the intended
+  snapshot in nested data before accepting a handoff.
+- Match to existing IDs with publication/edition evidence and reviewed aliases.
+  Name similarity alone cannot resolve reprints or homonyms.
+- Pilot ordinary records, duplicate names, absent/ambiguous English names,
+  tables, malformed boundaries, and unmatched records before a full run.
+- Account for raw records, unique targets, duplicate candidates, unsupported/new
+  entries, and existing targets without candidates separately.
 
-Exit: both inputs are pinned and independently hash-verifiable.
+Exit: accepted parse/mapping policy and complete coverage/difference inventory.
+See [dice-source-intake-plan.md](./dice-source-intake-plan.md).
 
-### Gate 1: Representative Pilot
+## D2: Discrepancy QA
 
-Owner: `data-pipeline`; approver: `main-gate`.
+Owner: i18n-translation; approver: main-gate.
 
-- Approve a manifest of about ten PHB spells/cases before broad extraction.
-- Cover normal single-page text, cross-page text, column transitions, wrapped
-  or long stat-block fields, class-list tables, repeated summary occurrences,
-  and at least one errata-relevant case when available.
-- Demonstrate deterministic extraction, provenance, comparison categories,
-  and report redaction.
+- Exact and narrowly defined formatting-only records may be accepted by
+  deterministic checks in batches, without a human click per record.
+- Agents resolve substantive differences using aligned English evidence and
+  record source, field, outcome, and reason. The existing English DB is useful
+  evidence, not an assertion of infallibility.
+- Missing/conflicting English or edition mismatch leaves an explicit unapplied
+  exception with CHM fallback unless targeted evidence resolves it.
+- Human review is limited to unresolved identity/edition/semantic questions.
+  Uncertainty in one row must not block independent accepted replacements.
+- Keep proposed/accepted/rejected review states. Deferral is an unapplied
+  disposition, not accepted content. Input or target changes require
+  re-evaluation of affected decisions using existing provenance mechanisms.
 
-Exit: the pilot reruns byte-for-byte where outputs are deterministic, and all
-pilot rows have reviewed outcomes.
+Exit: accepted replacements and explicit fallback reasons, with main-gate
+acceptance of coverage by publication and remaining exceptions.
+See [dice-text-qa-plan.md](./dice-text-qa-plan.md).
 
-### Gate 2: Full English Source QA
+## D3: Content Build And Compatibility
 
-Owner: `data-pipeline`; approver: `main-gate`.
+Owner: backend-db, supported by data-pipeline.
 
-- Extract the full in-scope PHB corpus and relevant errata decisions.
-- Treat MinerU as the primary structured extractor and PDF.js as an independent
-  exact-character/coordinate baseline projected only inside MinerU blocks.
-  Neither engine replaces the pinned PDF as immutable reference/evidence or
-  chooses adopted rules text, and PDF.js-only rows cannot close this gate.
-- Reconcile PDF descriptions, class-list occurrences, and current PHB DB rows.
-- Pin and parse the official SRD 3.5 spell corpus as the default adopted source
-  for rules body and mechanics-bearing fields. Keep PHB+errata immutable as
-  reference/evidence and authoritative for SRD omissions, Product Identity
-  names, PHB-only content, page provenance, and table/layout structure.
-- Classify each comparison as `exact-match`, `formatting-only`,
-  `substantive-mismatch`, `missing-in-db`, `extra-in-db`, or `manual-review`.
-- Let data-pipeline resolve every PHB+errata/SRD/DB difference per field and
-  emit one provenance-bearing effective row. DB-only extension notes do not
-  enter the body. Route only genuine exceptions to main-gate; server and web
-  must never choose a source at runtime.
-- Before reviewing residual exceptions through a browser, accept the
-  localhost-only review service/API and bounded React consumer in
-  [phb-pdf-review-console-plan.md](./phb-pdf-review-console-plan.md). The
-  `official-srd-default-v1` authority gate now makes the pre-authority 75-row
-  snapshot unavailable for list, detail, and decision requests. Audit MinerU
-  recall next, then rebuild the full extraction/comparison/adjudication chain.
-  Console
-  saves are decision-file edits, not Gate 2 acceptance. Any layout save makes
-  the English residual queue unavailable until the canonical full rerun starts
-  at `phb:source:extract` and completes compare, SRD adjudication, and SRD
-  apply. Review only the regenerated residual queue, then run the report after
-  every current residual decision is terminal. Because each residual save
-  stales the row-review manifest, rerun `phb:source:compare` after the final
-  residual decision and before `phb:source:report`.
+- Consume one resolved Chinese result per target/field. Source/quality decisions
+  occur during data preparation, not in API/web/search at runtime.
+- Reuse overlay/import/build mechanisms and current language/variant request
+  compatibility. Legacy variant labels must not misrepresent source provenance.
+- Preserve English, structured rules, IDs, publication metadata, and summaries.
+  Corrections to them require a separate scope decision and accepted patch.
+- Do not use CHM-wide deletes for selective replacement. Dry-run on disposable
+  DBs and prove fallback preservation, transactions, idempotency, and restoration
+  of the previous content artifact.
 
-Exit: complete set accounting, zero unexplained misses, accepted effective
-English rows, and no translation work started early.
+Exit: accepted local build and parity; rebuild Search after all text imports.
+See [dice-content-activation-plan.md](./dice-content-activation-plan.md).
 
-### Gate 3: Chinese Translation And Proofreading
+## D4: Release Acceptance
 
-Owner: `i18n-translation`; approver: `main-gate`.
+Owner: main-gate, supported by backend-db, frontend-design, and librarian.
 
-- Translate only Gate 2 accepted effective-source rows.
-- Keep translation and proofreading decisions separate and attributable.
-- Resolve terminology, omission, placeholder, punctuation, number/dice, HTML,
-  and source-alignment checks.
-- Produce accepted name/body/summary rows plus a zero-unexplained-gap report.
+- Verify accepted/fallback/missing-Chinese/duplicate-name/table cases in API
+  and EN/ZH UI: Browse, Detail, Search, spellbooks, and prepared spells.
+- Report replacement and fallback totals by book/reason. Detailed text/QA
+  evidence stays local; public reports contain only source-free aggregates.
+- Run relevant focused checks and remote portable CI. Freeze and operator
+  activation are later explicit actions, outside this planning session.
 
-Exit: every eligible in-scope name, body, and available summary is accepted
-after proofreading; no rejected attempt, manual-review row, or unreviewed row
-counts as release-complete.
+## Architecture And Authority
 
-### Gate 4: Activation And Consumer Acceptance
+| Surface | Authority / allowed use | Forbidden substitution |
+| --- | --- | --- |
+| Chinese candidates | Supplied dice records after mapping and QA | Accepting raw records by default |
+| Current Chinese | Comparison and coverage fallback | Deleting uncovered CHM rows |
+| English | Edition-aligned discrepancy evidence | Mandatory PHB/SRD pipeline or blanket English rewrite |
+| Identity / rules | Existing IDs, book relations, normalized mechanics | Creating entities or changing rules from name guesses |
+| Accepted text | Resolved data-preparation output | Runtime source-quality arbitration |
+| Source / decisions | Nested data repo and existing provenance | Corpus or runtime DBs in parent Git |
 
-Owner: `backend-db`; approver: `main-gate`.
+Data-pipeline owns matching, i18n-translation owns semantic QA, backend-db owns
+import/read compatibility, and main-gate resolves cross-domain conflicts.
+New entities, broad English source acquisition, structured mechanics changes,
+or a new review platform require a scope decision before implementation.
 
-- Dry-run and apply accepted effective English rows and accepted Chinese
-  overlays through maintained workflows.
-- Regenerate content/search artifacts and record parent/data commits, all
-  pinned PHB/errata/SRD identities, and effective-row artifact provenance.
-- Prove accepted PHB reviewed overlays are preferred per spell while existing
-  Chinese CHM rows remain fallback outside accepted coverage.
-- Verify existing frontend detail and short-description consumers need no new
-  user-facing variant setting or broader UI work.
+## Suspended Track Boundary
 
-Exit: local artifact parity, regression checks, frontend/API smoke, and an
-explicit operator handoff for any later remote DB activation.
-
-## Cross-Plan Decisions
-
-- Existing DB English is comparison input, not translation authority.
-- Errata is a versioned correction layer over the pinned PDF, not a silent text
-  replacement or a second free-standing corpus.
-- MinerU supplies the primary full-corpus reading order, field, body, and table
-  structure. PDF.js may restore exact source characters only inside those
-  blocks and supplies independent recall/coordinate evidence; it cannot define
-  spell segmentation, reorder content, or override structured tables.
-- Official SRD 3.5 supplies the default adopted rules text. It cannot replace
-  PHB page/layout evidence, PHB-only content, or Product Identity names.
-- Data-pipeline owns field-level authority decisions and emits one effective
-  row per spell. DB-only additions are excluded from the body; any future
-  preservation belongs in a separately modeled annotation. Runtime consumers
-  do not infer or select content authority.
-- Main gate approves the SRD adjudication policy and residual exceptions; the
-  data-pipeline owner is responsible for deterministic row resolution and the
-  resulting review bundle.
-- The PDF review console consumes data-tools candidates and validators through
-  a narrow local API. It binds only to loopback, exposes only allowlisted
-  source/queue ids, writes only decision JSONL in the nested data repo, and is
-  never deployed or connected to production DB state.
-- Short descriptions are extracted as list-owner/level/page occurrences first.
-  A spell-level candidate is accepted only after duplicate occurrences are
-  reconciled.
-- The parent repo never receives source-bearing or translated corpus rows.
-- The `phb35-reviewed` provenance variant is an internal accepted overlay, not
-  a new frontend setting. Backend read logic prefers it per covered PHB spell
-  and preserves the requested/current CHM fallback for other rows.
-- Full PHB English acceptance precedes all corpus translation. A successful
-  ten-spell pilot does not authorize early translation.
-- Production content activation is not part of automatic CD.
-
-## Gate Reopen Conditions
-
-Gate 2 evidence and all affected fingerprints must be regenerated when MinerU
-recall, block order, spell segmentation, field extraction, table handling,
-PDF.js projection, errata application, SRD bytes/parsing, identity aliases, or
-the authority/effective-row rules change. A MinerU recall change reopens the
-full chain at `phb:source:extract`; comparison or adjudication-only reruns are
-not sufficient. Translation and activation remain blocked until the rebuilt
-effective rows and genuine exception queue are accepted.
-
-## Conflict Routing
-
-- Source identity, extraction, matching, or set-accounting conflict:
-  `data-pipeline` -> `main-gate`.
-- Review candidate, fingerprint, local API, or decision-write conflict:
-  `data-pipeline` -> `main-gate`; bounded review UI behavior:
-  `frontend-design` -> `main-gate`.
-- Terminology, translation, or proofreading conflict: `i18n-translation` ->
-  `main-gate`.
-- Schema, variant, fallback, API, or apply conflict: `backend-db` ->
-  `main-gate`.
-- Scope expansion to another publication or UI redesign: reject from v1.4 and
-  park in the owning plan or `docs/stable-backlog.md`.
-
-## Freeze Gate
-
-The librarian may prepare a v1.4 freeze only after all five gates are accepted,
-the public reports are confirmed source-free, the required durable workflow
-docs and reusable skill are updated, and production activation state is stated
-without implication or guesswork.
+Pause PHB extraction, MinerU recall, layout decisions, SRD effective-row work,
+PHB translation, and the review-console acceptance queue. Preserve code, tests,
+artifacts, and unmerged PR #113. Do not rerun old commands, bulk-accept residuals,
+or make that PR a hidden dependency. Disposition/resumption conditions are in
+[README.md](./README.md#suspended-pdf-work).

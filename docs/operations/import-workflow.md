@@ -183,7 +183,30 @@ Deferred source-label review rows classify unmapped sources such as
 periodicals, web articles, licensed d20 settings, conversion material, and
 parser artifacts. They are scope-review data, not rules DB patch operations.
 
-### PHB 3.5 Source And Errata
+### Dice Database Text Replacement (Planned)
+
+The active [v1.4 plan](../releases/v1.4/README.md) uses supplied TXT input at
+`data/spells-dice-db-by-mo/`. Intake, publication-aware matching, targeted
+English QA, and safe accepted replacement are planned; no maintained dice
+import command exists yet. The current commands below still describe the
+implemented CHM workflow, not permission to import the new package.
+
+Follow [dice-content-activation-plan.md](../releases/v1.4/dice-content-activation-plan.md)
+before defining its command/variant contract. `import-zh-chm.ts` deletes all
+Chinese spell text before writing CHM rows. It cannot safely perform selective
+replacement or run after a new overlay import without an explicit integration
+change. Preserve uncovered CHM, current English and summaries, source provenance,
+and existing language/variant requests. Implementation must update this entry
+with the tested import order before a write-capable handoff.
+
+### PHB 3.5 Source And Errata (Suspended)
+
+This section preserves commands for the paused PDF workflow. It is not the
+active release sequence and must not be run as a dice-text prerequisite.
+The [paused source plan](../releases/v1.4/phb-source-and-errata-plan.md) owns
+resumption safeguards and the unmerged PR #113 findings. The commands describe
+merged code; they do not imply that #113's effective-row verifier is available
+or accepted on main.
 
 - ignored source PDFs: `data/artifacts/pdf/phb3.5/`
 - ignored deterministic MinerU inputs and raw outputs:
@@ -261,10 +284,11 @@ not an active bulk-review queue. The service requires the code-owned
 `official-srd-default-v1` authority reference, so that snapshot now returns
 unavailable and rejects direct reads and writes. The legacy adjudicator cannot
 mint the new revision. The full MinerU recall audit and fail-closed dual
-contract are complete. Continue the revised effective English pipeline by
-rerunning revised SRD adjudication and apply against the refreshed comparison
-under the v1.4 authority matrix. Use the console for regenerated genuine
-exceptions only; do not preserve the old count as an acceptance invariant.
+contract are implemented. Further effective-English work is suspended.
+On explicit resumption, resolve the PR #113 provenance findings, revalidate
+current inputs, and update this command boundary from the accepted implementation
+before generating a new residual queue. Old queue counts are not acceptance
+invariants.
 
 The launcher builds the public `data-tools/phb-review` package entry, binds one
 server to `127.0.0.1`, injects its process-local API token into the served HTML,

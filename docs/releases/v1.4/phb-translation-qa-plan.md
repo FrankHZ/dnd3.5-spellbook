@@ -7,7 +7,14 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: planned; blocked on integrated Gate 2 English source acceptance.
+Status: suspended; outside the revised v1.4 acceptance sequence.
+
+The active release now follows [README.md](./README.md) and the `dice-*`
+plans. This document preserves the paused PHB design and evidence; its old
+Gate references and imperatives apply only after an explicit resumption
+scope decision. They are not prerequisites for dice-text intake or QA.
+
+State recorded before suspension: planned; blocked on integrated Gate 2 English source acceptance.
 
 ## Purpose
 

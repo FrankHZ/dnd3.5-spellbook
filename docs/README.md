@@ -7,8 +7,8 @@ decide what to do next after a pause.
 
 ## Current Entry Points
 
-- [roadmap.md](./roadmap.md): official current work order, recently completed
-  slices, and promoted stable-track sequence.
+- [roadmap.md](./roadmap.md): official current work order and promoted stable-track
+  sequence.
 - [features.md](./features.md): current user-facing feature map.
 - [harness.md](./harness.md): validation and harness strategy.
 - [design.md](./design.md): durable UI design direction.
@@ -22,15 +22,14 @@ execution rules and role boundaries.
 
 ## Release Status
 
-v1.4 planning is active for a PHB 3.5 source-first translation and proofreading
-pilot:
+v1.4 planning is active for dice database Chinese text replacement with
+English-assisted discrepancy QA; PDF extraction and review are suspended:
 
 - [releases/v1.4/README.md](./releases/v1.4/README.md)
 - [releases/v1.4/integrated-plan.md](./releases/v1.4/integrated-plan.md)
-- [releases/v1.4/phb-source-and-errata-plan.md](./releases/v1.4/phb-source-and-errata-plan.md)
-- [releases/v1.4/phb-pdf-review-console-plan.md](./releases/v1.4/phb-pdf-review-console-plan.md)
-- [releases/v1.4/phb-translation-qa-plan.md](./releases/v1.4/phb-translation-qa-plan.md)
-- [releases/v1.4/phb-content-activation-plan.md](./releases/v1.4/phb-content-activation-plan.md)
+- [releases/v1.4/dice-source-intake-plan.md](./releases/v1.4/dice-source-intake-plan.md)
+- [releases/v1.4/dice-text-qa-plan.md](./releases/v1.4/dice-text-qa-plan.md)
+- [releases/v1.4/dice-content-activation-plan.md](./releases/v1.4/dice-content-activation-plan.md)
 
 The latest frozen formal release is v1.3:
 
@@ -220,18 +219,16 @@ handoff records.
 
 - [releases/README.md](./releases/README.md): release planning roles and
   maintenance rules.
-- [releases/v1.4/README.md](./releases/v1.4/README.md): active PHB 3.5
-  source-first translation and proofreading release boundary.
+- [releases/v1.4/README.md](./releases/v1.4/README.md): active dice database
+  text replacement boundary, ownership, and suspended PDF plan map.
 - [releases/v1.4/integrated-plan.md](./releases/v1.4/integrated-plan.md):
-  cross-role source, English QA, translation, activation, and freeze gates.
-- [releases/v1.4/phb-source-and-errata-plan.md](./releases/v1.4/phb-source-and-errata-plan.md):
-  planned pinned-PDF extraction, errata overlay, comparison, and English QA.
-- [releases/v1.4/phb-pdf-review-console-plan.md](./releases/v1.4/phb-pdf-review-console-plan.md):
-  planned localhost-only PDF review console and fingerprint-safe decision flow.
-- [releases/v1.4/phb-translation-qa-plan.md](./releases/v1.4/phb-translation-qa-plan.md):
-  planned Chinese translation, proofreading, QA, and reusable skill workflow.
-- [releases/v1.4/phb-content-activation-plan.md](./releases/v1.4/phb-content-activation-plan.md):
-  planned accepted-only content apply, fallback, search, and consumer check.
+  cross-role intake, discrepancy QA, safe activation, and acceptance gates.
+- [releases/v1.4/dice-source-intake-plan.md](./releases/v1.4/dice-source-intake-plan.md):
+  planned TXT source inventory, identity mapping, and comparison.
+- [releases/v1.4/dice-text-qa-plan.md](./releases/v1.4/dice-text-qa-plan.md):
+  planned English-assisted discrepancy QA and fallback decisions.
+- [releases/v1.4/dice-content-activation-plan.md](./releases/v1.4/dice-content-activation-plan.md):
+  planned safe replacement, fallback, search, and consumer acceptance.
 - [releases/v1.3/FREEZE.md](./releases/v1.3/FREEZE.md): latest frozen formal
   release snapshot for the sitewide UX/style and secure Actions deployment
   release.

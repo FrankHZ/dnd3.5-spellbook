@@ -13,20 +13,19 @@ acceptance can be described.
 
 ## Current Track
 
-v1.4 planning is active:
+v1.4 is replanned for dice database Chinese text replacement:
 
-- `docs/releases/v1.4/README.md`
-- `docs/releases/v1.4/integrated-plan.md`
-- `docs/releases/v1.4/phb-source-and-errata-plan.md`
-- `docs/releases/v1.4/phb-pdf-review-console-plan.md`
-- `docs/releases/v1.4/phb-translation-qa-plan.md`
-- `docs/releases/v1.4/phb-content-activation-plan.md`
+- [Release boundary](./releases/v1.4/README.md)
+- [Integrated sequence](./releases/v1.4/integrated-plan.md)
+- [Source intake and matching](./releases/v1.4/dice-source-intake-plan.md)
+- [English-assisted discrepancy QA](./releases/v1.4/dice-text-qa-plan.md)
+- [Safe activation and consumer acceptance](./releases/v1.4/dice-content-activation-plan.md)
 
-The release is deliberately limited to PHB 3.5. It pins the PHB PDF and
-official errata, accepts the effective English source before translation,
-uses a localhost-only PDF review console for the bounded Gate 2 queues,
-translates/proofreads the accepted Chinese corpus, and activates only accepted
-rows. Source/translation bytes remain in the nested local data repo.
+Use the supplied `data/spells-dice-db-by-mo/` package across existing supported
+publications. Match and QA replacements, retaining CHM/English fallback for
+uncovered or unresolved content. PDF extraction, its human review queues, and
+full PHB retranslation are suspended. Existing code/tests/data are retained;
+no old PHB gate blocks the new release. Implementation has not started.
 
 v1.3 is the latest frozen formal release:
 
@@ -89,148 +88,11 @@ releases while scoping later work.
 Older frozen snapshots remain historical comparison points, not active
 baselines.
 
-## Recently Completed
+## Completed Work References
 
-The v1.4 PHB representative Gate 1 pilot is accepted with:
-
-- PR #100 merging summary comparison, multi-page errata extraction, current
-  inventory/DB identity verification, and fingerprint-bound review decisions.
-- ten reviewed outcomes covering 112 comparison components: two exact, four
-  formatting-only, two substantive mismatches, and two explicit manual
-  decisions with zero unresolved rows.
-- nested data commit `c4a1e79` recording the accepted clean provenance chain;
-  the default `phb:pilot:verify` passes and authorizes full-PHB extraction only.
-
-The v1.3 sitewide UX/style and platform release is frozen with:
-
-- `docs/releases/v1.3/FREEZE.md` as the canonical as-built snapshot.
-- PR #95 and Actions run `29669906495` accepting the OIDC-backed temporary
-  runner `/32` deployment path, strict SSH identity, exact-commit deploy,
-  metadata, and firewall restoration.
-- PR #96 applying the modern rulebook-inspired interface vocabulary across all
-  scoped routes without changing accepted product contracts.
-- English/Chinese desktop/mobile browser acceptance and merged-main portable
-  CI run `29704940782` passing.
-- root release metadata advanced to `v1.3.0`; production metadata activation
-  remains the explicit post-freeze merge operation before tagging.
-
-The v1.2.2 internal quality-maintenance release is frozen with:
-
-- `docs/releases/v1.2.2/FREEZE.md` as the canonical as-built snapshot.
-- seven canonical roles, seven thin Codex adapters, and maintained
-  role/adapter correspondence checks accepted in PR #79.
-- five read-only role audits, centralized main-gate triage, and 27 final
-  dispositions recorded through PRs #80 and #81.
-- ten bounded fix batches merged in PRs #82 through #91: 25 findings fixed,
-  one P2 deferred, one unsupported path closed, and no open P0/P1.
-- portable, root, deployment, server, web, data, import, i18n, build/runtime,
-  local-data, and English/Chinese desktop/mobile smoke acceptance passing.
-- `DP-AUD-007` preserved in `docs/stable-backlog.md` and the temporary QA
-  evidence pack removed.
-- production deployment explicitly excluded from this internal freeze.
-
-The v1.2 release is frozen with:
-
-- `docs/releases/v1.2/FREEZE.md` as the as-built snapshot.
-- full-spell source inventory and parsed-source QA without an unsafe broad
-  import.
-- 34 evidence-backed corpus correction operations and a durable DB/content
-  handoff workflow.
-- explicit mechanics display coverage, Chinese normalized mechanics display,
-  and authoritative raw fallback.
-- accepted publication metadata plus `/publications` as the scope-management
-  surface.
-- production backend `e244a02` and content DB build provenance matching parent
-  `2d98ed4`, data `fbdcc780`, 5,097 spells, and 3,560 issues.
-
-The v1.2 Mechanics Localization track is accepted with:
-
-- explicit normalized mechanics display coverage independent from parser review
-  status.
-- deterministic English normalized display for complete facets while partial,
-  review, unsupported, and legacy rows preserve authoritative raw text.
-- maintained Chinese mechanics vocabulary and portable i18n audit coverage.
-- frontend Spell Detail consumption with complete-only normalized display and
-  tested raw fallback.
-- focused web, i18n, build, and root verification passing before merge in #72.
-
-The v1.2 Publications track is accepted with:
-
-- `/publications` as the primary publication/rulebook scope management page.
-- Settings no longer acting as the rulebook-scope management surface.
-- accepted publication metadata powering robust page grouping.
-- publication row sorting by accepted date or abbreviation within stable
-  category/family groups.
-- local publication metadata refresh showing 151 `RulebookContent` rows, 111
-  accepted publication rows, and 111 publication-date rows.
-
-The v1.2 Full-Spell Source Review track is accepted with:
-
-- `docs/releases/v1.2/full-spell-source-review-report.md` as the committed
-  source/parse QA record.
-- repeatable `spells-full:inspect -- source-package` inventory for local
-  `data/spells-full/v6.01/`.
-- parsed JSON QA identifying `120` high-confidence body/table-name rows in the
-  historical v6.00 parsed source.
-- `spells-full:inspect -- corpus-inventory` producing `0` ready patch rows, so
-  no DB/content import handoff was made by the review track.
-
-The v1.1 release is frozen with:
-
-- `docs/releases/v1.1/FREEZE.md` as the as-built snapshot.
-- production hardening for the Cloudflare Workers frontend plus
-  Lightsail/Nginx/Express API topology.
-- full source-backed spell corpus import through maintained data tooling.
-- rulebook-backed corpus patch flow with structured `insertRulebook` and
-  `insertSpell` validation.
-- focused frontend content acceptance for Settings rulebook tabs, rulebook
-  scope links, About/Credits, and representative v1.1 content.
-- backend deploy to commit `9cf77e4d6dda7b2700be5a63968e3de000691545`.
-- remote DB activation with `5097` `SpellContent` rows and `151`
-  `RulebookContent` rows.
-- production smoke for status, CORS, route loads, operator DB status, and
-  representative `Fiery Assault` / `Spider Poison` content queries.
-
-The v1.0 release is frozen with:
-
-- `docs/releases/v1.0/FREEZE.md` as the as-built snapshot.
-- Cloudflare Workers Static Assets frontend delivery at
-  `https://www.d20spellcodex.com`.
-- backend API domain at `https://api.d20spellcodex.com`.
-- backend-only origin server responsibility for Express/API,
-  SQLite/content DBs, DB update scripts, and Nginx API reverse proxying.
-- About / Status reporting frontend build metadata, API origin, backend
-  version metadata, public content DB status, and source credits.
-- final frontend Workers production build
-  `d72db3fd-b5cd-4f98-999b-e74a1907c218` on commit `96c84b7`.
-- backend deploy workflow run `28906821504` on commit `96c84b7`.
-- production smoke checks for representative SPA routes, API status, CORS,
-  private DB provenance, and About frontend metadata.
-- release-ready documentation consistency across root README, docs index,
-  roadmap, AGENTS.md, feature docs, module docs, operations docs, and release
-  docs.
-
-The v3.10 final pre-release closeout is frozen as the last MVP-stage snapshot:
-
-- `docs/mvp/v3.10/FREEZE.md` records the as-built snapshot.
-- v3.10 closed filter i18n completeness and UI/UX cohesion for the MVP line.
-- v1.0 formal release planning became the next active track after v3.10.
-
-Older MVP-stage records stay under `docs/mvp/` and should not be repeated here:
-
-- `docs/mvp/v3.9/FREEZE.md`: normalized mechanics contracts and frontend
-  consumers.
-- `docs/mvp/v3.8/FREEZE.md`: normalized filter consumers and server module
-  boundary cleanup.
-- `docs/mvp/v3.7/FREEZE.md`: status APIs, production-safe server hardening,
-  deployment helpers, and dependency maintenance.
-- `docs/mvp/v3.6/FREEZE.md`: DB status, display settings, docs structure, and
-  normalized rules review.
-- `docs/mvp/v3.5/FREEZE.md`: split DB roles, content-backed reads, taxonomy
-  filters, and portable CI.
-- `docs/mvp/v3.4/FREEZE.md`: short-description import, i18n convention cleanup,
-  and design refresh.
-- v3.3 and older: data-tooling foundation and historical MVP setup records.
+Use the frozen release records above for shipped acceptance and `git log` for
+implementation history. Paused PHB work is preserved in the v1.4 `phb-*` child
+plans, not in the active work queue.
 
 ## Current Data Pointers
 
@@ -252,63 +114,28 @@ freeze docs instead of copying them into this roadmap.
 
 ## Next Work
 
-Recommended next sequence:
-
-1. **Close v1.3 production metadata activation independently**
-
-   Deploy merged `main` through the accepted Cloudflare frontend and GitHub
-   Actions backend paths. Verify About / Status reports `v1.3.0`, logical ref
-   `main`, and the exact accepted commit before creating the release tag. This
-   does not relax or reorder v1.4 source gates.
-
-2. **Completed: deliver the localhost-only PHB PDF review console**
-
-   PRs #107 and #108 added the private data-tools review service, loopback-only
-   API, and React evidence consumer. The console remains review tooling; its
-   successful 131-layout/75-residual smoke does not accept Gate 2 content.
-
-3. **Completed: harden MinerU recall before further English decisions**
-
-   The `official-srd-default-v1` authority gate now makes the superseded
-   pre-authority queue fail closed. The representative pipeline/VLM pilot
-   rejects a candidate-wide runtime switch: VLM improves recall on some pages
-   but regresses table-page bboxes and drifts on a different table than the
-   pipeline. The full-source dual-engine contract is implemented and rerun
-   with pipeline as structured layout, VLM as recall witness,
-   fingerprint-bound disagreement evidence, terminal image-overlap layout
-   decisions, deterministic model-file identity, and the actual invocation
-   recorded separately from its portable form. MinerU changes alter PHB
-   evidence and downstream fingerprints.
-
-4. **Rebuild field-level effective English rows**
-
-   Continue from the refreshed full extraction/comparison and terminal recall
-   witness: rerun revised SRD adjudication and apply. Official SRD text is
-   adopted by default; PHB+errata remains immutable evidence and owns
-   missing-SRD, Product Identity, PHB-only, page, and table/layout fields.
-   Data-pipeline emits one effective row per spell and excludes DB-only
-   extensions from the body.
-
-5. **Review only regenerated genuine exceptions and close Gate 2**
-
-   Resolve deterministic three-way drift in the pipeline. Send only true
-   field-level exceptions to human review, extending the console only when a
-   new evidence type cannot be displayed. Translation remains blocked until
-   the rebuilt effective-row report is accepted.
-
-6. **Activate only accepted v1.4 content**
-
-   Apply accepted effective English rows and Chinese reviewed overlays through
-   the maintained DB/content workflow, record all pinned source identities plus
-   effective-row provenance, rebuild search, preserve CHM/English summary
-   fallback, and verify existing frontend consumers without a UI redesign.
-
-7. **Preserve frozen and publication boundaries**
-
-   Use the v1.3 freeze for current UI/platform behavior and older freezes for
-   their owned areas. Do not expand v1.4 to DMG, Spell Compendium, PHB II, or
-   another publication, and do not pull `DP-AUD-007` into active work unless
-   the dormant CHM preprocessing workflow is intentionally reactivated.
+1. **Accept the revised v1.4 planning boundary.** This session changes only
+   plans and documentation. PR #113 remains open on the suspended PDF/SRD
+   track with unresolved provenance findings; it is not a merge prerequisite.
+   See the release README for its recommended close-unmerged disposition.
+2. **Inventory and commit the intended dice source snapshot in nested data.**
+   The supplied TXT directory is currently untracked; the nested repo remains
+   on the old PHB branch. Preserve both and choose the intake data branch/base
+   explicitly before implementation. Confirm publication/edition mappings and
+   source credits without inferring unique coverage from header counts.
+3. **Build a bounded TXT parse/match/comparison pilot, then the full inventory.**
+   Reuse existing header/matching helpers; match existing IDs by book and name.
+   Account for duplicate, new/unsupported, malformed, and missing candidates.
+4. **Resolve substantive differences using aligned English.** Batch clean
+   cases, use agent QA for semantic differences, and send only unresolved
+   conflicts to the user. Record fallback instead of blocking all replacements.
+5. **Implement safe accepted-text activation.** Preserve uncovered CHM, current
+   English/mechanics/summaries, and existing variant requests; dry-run on a
+   disposable artifact, rebuild Search, and verify API/EN/ZH consumers.
+6. **Accept coverage and prepare the operator handoff.** Freeze and production
+   activation require later evidence and authorization. The existing v1.3
+   metadata activation/tag verification remains a separate operator follow-up,
+   not a prerequisite to source inventory or a claim of deployed v1.4.
 
 ## Official Release Sequence
 
@@ -348,13 +175,11 @@ The expected post-v1.1 release order is:
    restored and proved the secure GitHub Actions backend deploy path before
    freeze.
 
-5. **v1.4 PHB 3.5 Source-First Translation And Proofreading (Planned)**
+5. **v1.4 Dice Database Chinese Text Replacement (Planned)**
 
-   Pin the PHB 3.5 PDF and official errata, prove extraction/comparison on a
-   representative pilot, use the localhost-only PDF console for bounded review
-   queues, accept the complete English source, then translate and proofread PHB
-   names, bodies, and short descriptions. Activate only accepted rows and
-   preserve existing frontend fallback without a redesign.
+   Replace matched CHM Chinese text from the supplied TXT corpus, resolve
+   substantive differences against English, retain explicit fallback, and
+   validate accepted import/search/consumer behavior. PDF extraction is paused.
 
 ## Later Stable Track
 
