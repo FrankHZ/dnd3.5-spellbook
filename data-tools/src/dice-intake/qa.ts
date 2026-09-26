@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { isAbsolute, join, relative, resolve } from "node:path";
 import Database from "better-sqlite3";
 import { parseDiceFile, type DiceRecord, type ParsedFile } from "./parse";
 import { reconcile, type Candidate, type PublicationMap, type Rulebook } from "./reconcile";
@@ -58,6 +58,36 @@ export type FullBodyAudit = { sourceKey: string; targetId: number; effectiveText
   reviewer: string; reason: string; englishEvidence: string[] };
 type SourceInventory = { file: string; bytes: number; encoding: string; lineCount: number;
   preamble: string; recordCount: number; unparsedSpans: ParsedFile["unparsedSpans"] };
+type QaTarget = { rulebookId: number; zhName: string | null; zhBody: string | null };
+
+export function candidateRulebook(candidate: Candidate): number | null {
+  if (candidate.targetId !== null) return candidate.rulebookId;
+  return candidate.publicationRulebookIds.length === 1
+    && !candidate.problems.includes("unmapped-publication-label")
+    ? candidate.publicationRulebookIds[0]! : null;
+}
+
+// Call only after validating the complete source inventory and regenerated candidates.
+// Review/correction/audit inputs are deliberately NOT filtered: foreign rows must fail.
+export function selectRulebookScope(rulebookId: number, candidates: Candidate[],
+  targets: Map<number, QaTarget>, inventory: SourceInventory[]): {
+    candidates: Candidate[]; targets: Map<number, QaTarget>; inventory: SourceInventory[];
+  } {
+  assert(Number.isSafeInteger(rulebookId) && rulebookId > 0, "invalid rulebook ID");
+  const selected = candidates.filter((row) => candidateRulebook(row) === rulebookId);
+  const selectedTargets = new Map([...targets].filter(([, row]) => row.rulebookId === rulebookId));
+  assert(selected.length > 0 || selectedTargets.size > 0, "empty or unknown rulebook scope");
+  const selectedKeys = new Set(selected.map((row) => row.sourceKey));
+  const scopedInventory = inventory.map((file) => ({ ...file,
+    unparsedSpans: file.unparsedSpans.filter((span) => {
+      const enclosing = candidates.filter((row) => row.file === file.file
+        && row.startLine <= span.startLine && span.startLine <= row.endLine);
+      assert(enclosing.length === 1, `unowned or ambiguous boundary ${file.file}:${span.startLine}`);
+      return selectedKeys.has(enclosing[0]!.sourceKey);
+    }),
+  }));
+  return { candidates: selected, targets: selectedTargets, inventory: scopedInventory };
+}
 
 function rows<T>(path: string): T[] {
   return readFileSync(path, "utf8").trim().split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line) as T);
@@ -321,6 +351,29 @@ function arg(name: string): string {
   return resolve(process.argv[index + 1]!);
 }
 
+export function writeQaOutputs(dataRoot: string, reportDir: string,
+  result: ReturnType<typeof validateReviews>, checkIncomplete: boolean, rulebookId?: number): void {
+  if (rulebookId !== undefined) {
+    const within = (parent: string, child: string): boolean => {
+      const path = relative(resolve(parent), resolve(child));
+      return path === "" || (!path.startsWith("..") && !isAbsolute(path));
+    };
+    assert(!within(dataRoot, reportDir)
+      || within(join(dataRoot, "dice-qa", "books", String(rulebookId)), reportDir),
+    "scoped reports inside data must stay in this rulebook directory");
+  }
+  mkdirSync(reportDir, { recursive: true });
+  writeFileSync(join(reportDir, "coverage.json"), JSON.stringify(result.summary, (_key, value) =>
+    value && typeof value === "object" && !Array.isArray(value)
+      ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)) : value, 2) + "\n");
+  if (!checkIncomplete) {
+    const outputDir = rulebookId === undefined ? join(dataRoot, "dice-qa") : reportDir;
+    mkdirSync(outputDir, { recursive: true });
+    writeFileSync(join(outputDir, "accepted.jsonl"), jsonl(result.accepted));
+    writeFileSync(join(outputDir, "fallback.jsonl"), jsonl(result.fallback));
+  }
+}
+
 export function loadEnglishRecords(db: Database.Database): Map<number, EnglishRecord> {
   const english = new Map<number, EnglishRecord>((db.prepare(`SELECT s.id, s.name, s.rulebook_id AS rulebookId,
     b.dnd_edition_id AS editionId, CAST(s.description AS BLOB) AS description,
@@ -373,14 +426,23 @@ function main(): void {
   const dataRoot = arg("data-root");
   const rulesPath = arg("rules-db");
   const contentPath = arg("content-db");
-  const reviewsPath = arg("reviews");
   const checkIncomplete = process.argv.includes("--check-incomplete");
-  const correctionAt = process.argv.indexOf("--corrections");
-  if (correctionAt >= 0) assert(Boolean(process.argv[correctionAt + 1]), "missing --corrections path");
-  const corrections = correctionAt < 0 ? [] : rows<Correction>(resolve(process.argv[correctionAt + 1]!));
-  const duplicatesAt = process.argv.indexOf("--duplicates");
-  if (duplicatesAt >= 0) assert(Boolean(process.argv[duplicatesAt + 1]), "missing --duplicates path");
-  const duplicates = duplicatesAt < 0 ? [] : rows<DuplicateResolution>(resolve(process.argv[duplicatesAt + 1]!));
+  const rulebookAt = process.argv.indexOf("--rulebook-id");
+  const rulebookId = rulebookAt < 0 ? undefined : Number(process.argv[rulebookAt + 1]);
+  assert(rulebookId === undefined || (Number.isSafeInteger(rulebookId) && rulebookId > 0),
+    "--rulebook-id requires a positive integer");
+  const bookDir = rulebookId === undefined ? undefined
+    : join(dataRoot, "dice-qa", "books", String(rulebookId));
+  const input = <T>(name: string, file: string, required = false): T[] => {
+    if (process.argv.includes(`--${name}`)) return rows<T>(arg(name));
+    const path = bookDir && join(bookDir, file);
+    if (path && existsSync(path)) return rows<T>(path);
+    assert(!required, `missing --${name}${path ? ` or ${path}` : ""}`);
+    return [];
+  };
+  const reviews = input<Review>("reviews", "decisions.jsonl", true);
+  const corrections = input<Correction>("corrections", "corrections.jsonl");
+  const duplicates = input<DuplicateResolution>("duplicates", "duplicate-resolutions.jsonl");
   const reportDir = arg("report-dir");
   const mappingRevision = execFileSync("git", ["-C", dataRoot, "log", "-1", "--format=%H", "--",
     "dice-intake/publication-map.json"], { encoding: "utf8" }).trim();
@@ -389,12 +451,8 @@ function main(): void {
     "spells-dice-db-by-mo", "dice-intake/publication-map.json"], { encoding: "utf8" }).trim(),
   "source or publication map is dirty");
   const candidates = rows<Candidate>(join(dataRoot, "dice-intake", "candidates.jsonl"));
-  const reviews = rows<Review>(reviewsPath);
-  const fullBodyAt = process.argv.indexOf("--full-body-audit");
-  if (fullBodyAt >= 0) assert(Boolean(process.argv[fullBodyAt + 1]), "missing --full-body-audit path");
-  assert(checkIncomplete || fullBodyAt >= 0, "formal QA requires --full-body-audit");
-  const fullBodyAudits = fullBodyAt < 0 ? [] : rows<FullBodyAudit>(resolve(process.argv[fullBodyAt + 1]!));
-  const boundaries = rows<BoundaryDecision>(arg("boundaries"));
+  const fullBodyAudits = input<FullBodyAudit>("full-body-audit", "full-body-audit.jsonl", !checkIncomplete);
+  const boundaries = input<BoundaryDecision>("boundaries", "boundary-decisions.jsonl", bookDir === undefined);
   const inventory = rows<SourceInventory>(join(dataRoot, "dice-intake", "source-inventory.jsonl"));
   const sourceRevision = execFileSync("git", ["-C", dataRoot, "log", "-1", "--format=%H", "--",
     "spells-dice-db-by-mo"], { encoding: "utf8" }).trim();
@@ -416,7 +474,6 @@ function main(): void {
     assert(source && source.rawBody === candidate.rawBody && source.header === candidate.rawHeader,
       `stale source candidate ${candidate.sourceKey}`);
   }
-  validateBoundaries(candidates, reviews, inventory, boundaries, sourceRevision, mappingRevision);
   const db = new Database(rulesPath, { readonly: true, fileMustExist: true });
   db.pragma("query_only = ON");
   const english = loadEnglishRecords(db);
@@ -447,16 +504,19 @@ function main(): void {
     assert(JSON.stringify(regenerated[index]) === JSON.stringify(candidates[index]),
       `stale intake candidate ${candidates[index]?.sourceKey}`);
   }
-  const result = validateReviews(candidates, reviews, mappingRevision, english, targets, corrections,
+  if (rulebookId !== undefined) assert(books.some((book) => book.id === rulebookId), "unknown rulebook ID");
+  const scope = rulebookId === undefined ? { candidates, targets, inventory }
+    : selectRulebookScope(rulebookId, candidates, targets, inventory);
+  validateBoundaries(scope.candidates, reviews, scope.inventory, boundaries, sourceRevision, mappingRevision);
+  const result = validateReviews(scope.candidates, reviews, mappingRevision, english, scope.targets, corrections,
     checkIncomplete, duplicates);
   result.summary.pendingFullBodyAudits = validateFullBodyAudits(reviews, fullBodyAudits, checkIncomplete);
-  mkdirSync(reportDir, { recursive: true });
-  writeFileSync(join(reportDir, "coverage.json"), JSON.stringify(result.summary, null, 2) + "\n");
-  if (!checkIncomplete) {
-    mkdirSync(join(dataRoot, "dice-qa"), { recursive: true });
-    writeFileSync(join(dataRoot, "dice-qa", "accepted.jsonl"), jsonl(result.accepted));
-    writeFileSync(join(dataRoot, "dice-qa", "fallback.jsonl"), jsonl(result.fallback));
-  }
+  result.summary.scope = rulebookId === undefined ? { kind: "global" } : { kind: "rulebook", rulebookId };
+  result.summary.validation = checkIncomplete ? "incomplete-check" : "validated-proposal";
+  result.summary.sourceRevision = sourceRevision;
+  result.summary.mappingRevision = mappingRevision;
+  result.summary.sourceCoverage = { files: sourceFiles.length, candidateOccurrences: candidates.length };
+  writeQaOutputs(dataRoot, reportDir, result, checkIncomplete, rulebookId);
   const { candidateOccurrences, matchedTargets, existingTargets, acceptedTargets,
     pendingFields, pendingFullBodyAudits, decisions } =
     result.summary;

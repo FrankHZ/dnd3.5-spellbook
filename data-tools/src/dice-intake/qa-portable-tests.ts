@@ -1,9 +1,13 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import Database from "better-sqlite3";
-import { loadEnglishRecords, validateBoundaries, validateFullBodyAudits, validateReviews, validateSourceCoverage, type Correction, type DuplicateResolution, type EnglishMechanics,
+import { candidateRulebook, loadEnglishRecords, selectRulebookScope, validateBoundaries, validateFullBodyAudits, validateReviews, validateSourceCoverage, writeQaOutputs, type Correction, type DuplicateResolution, type EnglishMechanics,
   type Review } from "./qa";
 import { parseDiceFile } from "./parse";
-import { compareBody, type Candidate } from "./reconcile";
+import { compareBody, reconcile, type Candidate } from "./reconcile";
 
 const sourceKey = "source-revision:test.txt:1:1";
 const candidate = {
@@ -56,7 +60,7 @@ const review: Review = {
   },
 };
 const fixtureDb = new Database(":memory:");
-fixtureDb.exec(`CREATE TABLE dnd_rulebook (id INTEGER, dnd_edition_id INTEGER);
+fixtureDb.exec(`CREATE TABLE dnd_rulebook (id INTEGER, dnd_edition_id INTEGER, name TEXT);
   CREATE TABLE dnd_spellschool (id INTEGER, name TEXT);
   CREATE TABLE dnd_spellsubschool (id INTEGER, name TEXT);
   CREATE TABLE dnd_spelldescriptor (id INTEGER, name TEXT);
@@ -69,13 +73,14 @@ fixtureDb.exec(`CREATE TABLE dnd_rulebook (id INTEGER, dnd_edition_id INTEGER);
     xp_component INTEGER, meta_breath_component INTEGER, true_name_component INTEGER,
     corrupt_component INTEGER, extra_components TEXT, casting_time TEXT, range TEXT, target TEXT,
     effect TEXT, area TEXT, duration TEXT, saving_throw TEXT, spell_resistance TEXT);
-  INSERT INTO dnd_rulebook VALUES (10, 5);
+  INSERT INTO dnd_rulebook VALUES (10, 5, 'Test');
   INSERT INTO dnd_spellschool VALUES (1, 'Evocation');
   INSERT INTO dnd_spelldescriptor VALUES (1, 'Fire');
   INSERT INTO dnd_spell_descriptors VALUES (1, 1);
   INSERT INTO dnd_spell VALUES (1, 'Fire', 10, 1, NULL, 'Deals 2d6 fire damage. Round | Fire |',
     1, 1, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);`);
 const loadedEnglish = loadEnglishRecords(fixtureDb);
+const rulesFixtureBytes = fixtureDb.serialize();
 const dbBoundReview: Review = { ...review, input: { ...review.input,
   englishMechanics: loadedEnglish.get(1)!.mechanics } };
 validateReviews([candidate], [dbBoundReview], "map-revision", loadedEnglish, targets);
@@ -177,4 +182,165 @@ assert.throws(() => validateReviews([candidate], [], "map-revision", english, ta
 assert.equal(compareBody("甲\n|轮|火|", "甲\n|轮|"), "substantive");
 assert.equal(compareBody("应受到2d6点伤害", "应受到1d6点伤害"), "substantive");
 assert.equal(compareBody("可以攻击", "不可以攻击"), "substantive");
+
+// Ownership uses the matched target even when publication labels mention another book.
+assert.equal(candidateRulebook({ ...candidate, publicationRulebookIds: [20] }), 10);
+assert.equal(candidateRulebook({ ...candidate, targetId: null, rulebookId: null }), 10);
+assert.equal(candidateRulebook({ ...candidate, targetId: null, publicationRulebookIds: [10, 20] }), null);
+assert.equal(candidateRulebook({ ...candidate, targetId: null, publicationRulebookIds: [] }), null);
+assert.equal(candidateRulebook({ ...candidate, targetId: null,
+  problems: ["unmapped-publication-label"] }), null);
+const scoped = selectRulebookScope(10, duplicateCandidates, targets, []);
+assert.equal(scoped.candidates.length, 2);
+assert.equal(scoped.targets.size, 2); // Includes the target without any candidate.
+assert.throws(() => validateReviews(scoped.candidates, [review], "map-revision", english,
+  scoped.targets, [], false, [resolution]), /review count/);
+assert.throws(() => selectRulebookScope(99, duplicateCandidates, targets, []), /empty or unknown/);
+const scopedBoundaryInventory: Parameters<typeof selectRulebookScope>[3] = [{ ...sourceInventory[0]!, unparsedSpans: [
+  { startLine: 3, endLine: 3, disposition: "review-required-unparsed-boundary", rawText: "test" },
+] }];
+const scopedBoundary = selectRulebookScope(10, [candidate], targets, scopedBoundaryInventory);
+validateBoundaries(scopedBoundary.candidates, [boundaryReview], scopedBoundary.inventory,
+  [boundary], "source-revision", "map-revision");
+assert.throws(() => validateBoundaries(scopedBoundary.candidates, [boundaryReview], scopedBoundary.inventory,
+  [], "source-revision", "map-revision"), /count mismatch/);
+
+// Exercise the real CLI: global source validation precedes book-only semantic validation.
+const fixtureRoot = mkdtempSync(join(tmpdir(), "dice-book-qa-"));
+try {
+  const dataRoot = join(fixtureRoot, "data");
+  const intakeDir = join(dataRoot, "dice-intake");
+  const sourceDir = join(dataRoot, "spells-dice-db-by-mo");
+  const bookDir = join(dataRoot, "dice-qa", "books", "10");
+  const reportDir = join(bookDir, "out");
+  for (const dir of [intakeDir, sourceDir, bookDir, join(dataRoot, "chm-mapping")]) mkdirSync(dir, { recursive: true });
+  const saveRows = (path: string, values: unknown[]) =>
+    writeFileSync(path, values.map((value) => JSON.stringify(value)).join("\n") + "\n");
+  const otherBytes = Buffer.from(sourceBytes.toString("utf8").replace("（Test）", "（Other）"));
+  writeFileSync(join(sourceDir, "test.txt"), sourceBytes);
+  writeFileSync(join(sourceDir, "other.txt"), otherBytes);
+  const mappings = [
+    { file: "Test.txt", rulebookIds: [10], editionIds: [5], status: "resolved", basis: "synthetic" },
+    { file: "Other.txt", rulebookIds: [20], editionIds: [5], status: "resolved", basis: "synthetic" },
+  ];
+  writeFileSync(join(intakeDir, "publication-map.json"), JSON.stringify(mappings));
+  writeFileSync(join(dataRoot, "chm-mapping", "enName-aliases-global.json"), "{}");
+  const git = (...args: string[]) => execFileSync("git", ["-C", dataRoot, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
+  git("init"); git("add", ".");
+  git("-c", "user.name=Portable Test", "-c", "user.email=test@example.invalid", "commit", "-m", "fixture");
+  const revision = git("rev-parse", "HEAD");
+  const rulesPath = join(fixtureRoot, "rules.sqlite");
+  const contentPath = join(fixtureRoot, "content.sqlite");
+  writeFileSync(rulesPath, rulesFixtureBytes);
+  const rulesDb = new Database(rulesPath);
+  rulesDb.exec(`INSERT INTO dnd_rulebook VALUES (20, 5, 'Other');
+    INSERT INTO dnd_spell SELECT 2, 'Uncovered', 10, school_id, sub_school_id, description,
+    verbal_component, somatic_component, material_component, arcane_focus_component, divine_focus_component,
+    xp_component, meta_breath_component, true_name_component, corrupt_component, extra_components,
+    casting_time, range, target, effect, area, duration, saving_throw, spell_resistance FROM dnd_spell WHERE id = 1;
+    INSERT INTO dnd_spell SELECT 3, 'Fire', 20, school_id, sub_school_id, description,
+    verbal_component, somatic_component, material_component, arcane_focus_component, divine_focus_component,
+    xp_component, meta_breath_component, true_name_component, corrupt_component, extra_components,
+    casting_time, range, target, effect, area, duration, saving_throw, spell_resistance FROM dnd_spell WHERE id = 1;`);
+  const fixtureEnglish = loadEnglishRecords(rulesDb);
+  rulesDb.close();
+  const contentDb = new Database(contentPath);
+  contentDb.exec("CREATE TABLE I18nSpellText (spellId INTEGER, name TEXT, descriptionText TEXT, lang TEXT, variant TEXT)");
+  contentDb.close();
+  const parsedFiles = [parseDiceFile("other.txt", otherBytes), parseDiceFile("test.txt", sourceBytes)];
+  const allCandidates = reconcile(parsedFiles.flatMap((file) => file.records), mappings,
+    [{ id: 10, editionId: 5, name: "Test" }, { id: 20, editionId: 5, name: "Other" }],
+    [...fixtureEnglish].map(([id, en]) => ({ id, rulebookId: en.rulebookId, enName: en.name, zhName: null, zhBody: null })), revision).candidates;
+  const allInventory = parsedFiles.map((file) => ({ file: file.file,
+    bytes: file.file === "test.txt" ? sourceBytes.length : otherBytes.length,
+    encoding: file.encoding, lineCount: file.lineCount, preamble: file.preamble,
+    recordCount: file.records.length, unparsedSpans: file.unparsedSpans }));
+  saveRows(join(intakeDir, "candidates.jsonl"), allCandidates);
+  saveRows(join(intakeDir, "source-inventory.jsonl"), allInventory);
+  const allReviews: Review[] = allCandidates.map((row) => {
+    const en = fixtureEnglish.get(row.targetId!)!;
+    const decision = (field: "name" | "descriptionHtml") => ({ status: "deferred" as const,
+      classification: (field === "name" ? row.nameClassification : row.bodyClassification)!,
+      reason: "Needs publication evidence", reviewer: row.rulebookId === 10 ? "test" : "queue:unreviewed", englishEvidence: [] });
+    return { sourceKey: row.sourceKey, targetId: row.targetId, rulebookId: row.rulebookId, mappingRevision: revision,
+      input: { zhName: row.zhName, bodyText: row.bodyText, bodyHtml: row.bodyHtml,
+        baselineName: null, baselineBody: null, englishName: en.name,
+        englishDescription: en.description, englishMechanics: en.mechanics },
+      fields: { name: decision("name"), descriptionHtml: decision("descriptionHtml") } };
+  });
+  const bookReviews = allReviews.filter((row) => row.rulebookId === 10);
+  const proposed = bookReviews[0]!;
+  proposed.fields.descriptionHtml = { ...proposed.fields.descriptionHtml, status: "accepted",
+    replacementText: proposed.input.bodyHtml, englishEvidence: [proposed.input.englishDescription!] };
+  const bookAudits = [{ sourceKey: proposed.sourceKey, targetId: proposed.targetId!,
+    effectiveText: proposed.input.bodyHtml, reviewer: "test", reason: "Synthetic full-body review",
+    englishEvidence: [proposed.input.englishDescription!] }];
+  const reviewsPath = join(bookDir, "decisions.jsonl");
+  saveRows(reviewsPath, bookReviews);
+  const auditsPath = join(bookDir, "full-body-audit.jsonl");
+  saveRows(auditsPath, bookAudits);
+  saveRows(join(dataRoot, "dice-qa", "decisions.jsonl"), allReviews);
+  const globalAccepted = join(dataRoot, "dice-qa", "accepted.jsonl");
+  const globalFallback = join(dataRoot, "dice-qa", "fallback.jsonl");
+  writeFileSync(globalAccepted, "global accepted sentinel");
+  writeFileSync(globalFallback, "global fallback sentinel");
+  const args = ["--import", "tsx", join(__dirname, "qa.ts"),
+    "--data-root", dataRoot, "--rules-db", rulesPath, "--content-db", contentPath,
+    "--rulebook-id", "10", "--report-dir", reportDir];
+  const run = (...extra: string[]) => execFileSync(process.execPath, [...args, ...extra], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  run();
+  const coveragePath = join(reportDir, "coverage.json");
+  const coverageBytes = readFileSync(coveragePath, "utf8");
+  const coverage = JSON.parse(coverageBytes);
+  assert.equal(coverage.candidateOccurrences, 1);
+  assert.equal(coverage.existingTargets, 2);
+  assert.equal(coverage.pendingFields, 0);
+  assert.equal(coverage.validation, "validated-proposal");
+  assert.deepEqual(coverage.scope, { kind: "rulebook", rulebookId: 10 });
+  assert.deepEqual(coverage.sourceCoverage, { files: 2, candidateOccurrences: 2 });
+  assert.equal(readFileSync(join(reportDir, "fallback.jsonl"), "utf8").trim().split("\n").length, 3);
+  assert.equal(JSON.parse(readFileSync(join(reportDir, "accepted.jsonl"), "utf8")).descriptionHtml,
+    proposed.input.bodyHtml);
+  run(); assert.equal(readFileSync(coveragePath, "utf8"), coverageBytes);
+  assert(!coverageBytes.includes("火术") && !coverageBytes.includes("Deals 2d6"));
+  saveRows(reviewsPath, []);
+  assert.throws(run, /review count/);
+  saveRows(reviewsPath, [allReviews.find((row) => row.rulebookId === 20)!]);
+  assert.throws(run, /unknown review source key/);
+  saveRows(reviewsPath, [{ ...bookReviews[0]!, input: { ...bookReviews[0]!.input, englishDescription: "stale" } }]);
+  assert.throws(run, /stale englishDescription/);
+  saveRows(reviewsPath, [{ ...bookReviews[0]!, fields: { ...bookReviews[0]!.fields,
+    name: { ...bookReviews[0]!.fields.name, reviewer: "queue:unreviewed" } } }]);
+  assert.throws(run, /unreviewed/);
+  run("--check-incomplete");
+  assert.equal(JSON.parse(readFileSync(coveragePath, "utf8")).pendingFields, 1);
+  saveRows(reviewsPath, bookReviews);
+  saveRows(auditsPath, []);
+  assert.throws(run, /lack full-body audit/);
+  run("--check-incomplete");
+  assert.equal(JSON.parse(readFileSync(coveragePath, "utf8")).pendingFullBodyAudits, 1);
+  const foreignKey = allReviews.find((row) => row.rulebookId === 20)!.sourceKey;
+  saveRows(auditsPath, [...bookAudits, { ...bookAudits[0], sourceKey: foreignKey }]);
+  assert.throws(run, /unknown or repeated full-body audit/);
+  saveRows(auditsPath, bookAudits);
+  saveRows(join(bookDir, "corrections.jsonl"), [{ ...correction, sourceKey: foreignKey }]);
+  assert.throws(run, /unused correction record/);
+  saveRows(join(bookDir, "corrections.jsonl"), []);
+  saveRows(join(bookDir, "duplicate-resolutions.jsonl"), [{ ...resolution, targetId: 3 }]);
+  assert.throws(run, /invalid duplicate resolution/);
+  saveRows(join(bookDir, "duplicate-resolutions.jsonl"), []);
+  saveRows(join(bookDir, "boundary-decisions.jsonl"), [{ ...boundary, sourceKey: foreignKey }]);
+  assert.throws(run, /boundary decision count mismatch/);
+  saveRows(join(bookDir, "boundary-decisions.jsonl"), []);
+  saveRows(join(intakeDir, "candidates.jsonl"), allCandidates.filter((row) => row.rulebookId === 10));
+  assert.throws(run, /missing entire candidate file or occurrence other.txt/);
+  saveRows(join(intakeDir, "source-inventory.jsonl"), allInventory.filter((row) => row.file === "test.txt"));
+  assert.throws(run, /source inventory file coverage mismatch/);
+  assert.throws(() => writeQaOutputs(dataRoot, join(dataRoot, "dice-qa"), result, false, 10), /this rulebook directory/);
+  assert.throws(() => writeQaOutputs(dataRoot, join(dataRoot, "dice-qa", "books", "20"), result, false, 10), /this rulebook directory/);
+  assert.equal(readFileSync(globalAccepted, "utf8"), "global accepted sentinel");
+  assert.equal(readFileSync(globalFallback, "utf8"), "global fallback sentinel");
+} finally {
+  rmSync(fixtureRoot, { recursive: true, force: true });
+}
 console.log("dice QA portable tests passed");
