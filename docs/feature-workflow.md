@@ -6,8 +6,11 @@
    outcome, scope/non-goals, acceptance, dependencies, and unresolved decisions.
    Link relevant technical docs rather than maintaining a second plan in Markdown.
 2. Create one independent task linked to the issue, with the workspace/base,
-   write boundaries, and coordinating task's report destination. The issue owns
-   scope; the task owns execution. Small fixes within that scope stay in the task.
+   write boundaries, and coordinating task's report destination. Include the
+   model/effort recommendation and reason using
+   [model selection](../AGENTS.md#model-and-reasoning-selection), distinguishing
+   it from the actual launch settings. The issue owns scope; the task owns
+   execution. Small fixes within that scope stay in the task.
 3. Read the affected code/tests and only the technical references needed. Reuse
    existing mechanisms, implement the authorized scope, and run targeted checks.
    Optional bounded delegation supplies an outcome, write boundary, and required
