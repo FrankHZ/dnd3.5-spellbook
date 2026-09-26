@@ -7,25 +7,41 @@ export type Target = { id: number; rulebookId: number; enName: string; zhName: s
 export type Disposition = "exact" | "formatting-only" | "substantive" | "missing-current-Chinese" | "ambiguous-unmatched" | "malformed-incomplete" | "out-of-scope";
 export type Candidate = {
   sourceKey: string; file: string; ordinal: number; startLine: number; endLine: number; rawHeader: string;
+  suspectedBoundaryLines: number[];
   targetId: number | null; rulebookId: number | null; editionId: number | null;
   publicationRulebookIds: number[]; publicationEditionIds: number[]; publicationBasis: string[]; sourceBookLabels: string[];
   field: "descriptionHtml"; zhName: string | null; enName: string | null;
   rawBody: string; bodyText: string; bodyHtml: string;
   baselineName: string | null; baselineBody: string | null; baselineKind: "I18nSpellText:zh:chm";
+  nameClassification: Disposition | null; bodyClassification: Disposition | null;
   nameHintTargetIds: number[]; aliasHintTargetIds: number[];
   classification: Disposition; problems: string[]; duplicateDecision: "single" | "review-required" | "not-applicable";
 };
 
 const key = (value: string) => normalizeEnName(value).toLocaleLowerCase("en").replace(/\s+/g, " ");
-const plain = (value: string) => value.replace(/\r\n?/g, "\n").trim();
-const compact = (value: string) => plain(value).replace(/[ \t\n]+/g, "");
+const lineBreaks = (value: string) => value.replace(/\r\n?/g, "\n");
+const edgeFormatting = (value: string) => lineBreaks(value).replace(/[ \t]+$/gm, "").replace(/^\n+|\n+$/g, "");
 const TABLE = /\t| {2,}|[│┌┐└┘┬┴┼]|\|.*\||(?:^|\n)表\s*\d/m;
 
 export function compareBody(candidate: string, baseline: string | null): Disposition {
   if (!baseline) return "missing-current-Chinese";
-  if (plain(candidate) === plain(baseline)) return "exact";
-  if (!TABLE.test(candidate) && !TABLE.test(baseline) && compact(candidate) === compact(baseline)) return "formatting-only";
+  if (lineBreaks(candidate) === lineBreaks(baseline)) return "exact";
+  if (!TABLE.test(candidate) && !TABLE.test(baseline) && edgeFormatting(candidate) === edgeFormatting(baseline)) return "formatting-only";
   return "substantive";
+}
+
+function compareName(candidate: string | null, baseline: string | null): Disposition {
+  if (!candidate || !baseline) return "missing-current-Chinese";
+  if (candidate === baseline) return "exact";
+  if (candidate.trim() === baseline.trim()) return "formatting-only";
+  return "substantive";
+}
+
+function combineFields(name: Disposition, body: Disposition): Disposition {
+  if (name === "missing-current-Chinese" || body === "missing-current-Chinese") return "missing-current-Chinese";
+  if (name === "substantive" || body === "substantive") return "substantive";
+  if (name === "formatting-only" || body === "formatting-only") return "formatting-only";
+  return "exact";
 }
 
 export function reconcile(
@@ -83,9 +99,12 @@ export function reconcile(
     }
     const target = [...matched.values()][0]!;
     const book = bookById.get(target.rulebookId);
+    const nameClassification = compareName(record.zhName, target.zhName);
+    const bodyClassification = compareBody(record.bodyText, target.zhBody);
     candidates.push(make(record, sourceKey, target.id, target.rulebookId, book?.editionId ?? null,
       target.zhName, target.zhBody,
-      record.problems.length ? "malformed-incomplete" : compareBody(record.bodyText, target.zhBody), problems, publication));
+      record.problems.length ? "malformed-incomplete" : combineFields(nameClassification, bodyClassification), problems, publication,
+      nameClassification, bodyClassification));
   }
   const aliasesByKey = new Map(Object.entries(aliases).map(([from, to]) => [key(from), to]));
   for (const candidate of candidates) {
@@ -126,14 +145,16 @@ export function reconcile(
 
 function make(record: DiceRecord, sourceKey: string, targetId: number | null, rulebookId: number | null,
   editionId: number | null, baselineName: string | null, baselineBody: string | null,
-  classification: Disposition, problems: string[], publication: { rulebookIds: number[]; editionIds: number[]; basis: string[] }): Candidate {
+  classification: Disposition, problems: string[], publication: { rulebookIds: number[]; editionIds: number[]; basis: string[] },
+  nameClassification: Disposition | null = null, bodyClassification: Disposition | null = null): Candidate {
   return { sourceKey, file: record.file, ordinal: record.ordinal, startLine: record.startLine,
-    rawHeader: record.header,
+    rawHeader: record.header, suspectedBoundaryLines: record.suspectedBoundaryLines,
     endLine: record.endLine, targetId, rulebookId, editionId, field: "descriptionHtml",
     publicationRulebookIds: publication.rulebookIds, publicationEditionIds: publication.editionIds,
     publicationBasis: publication.basis, sourceBookLabels: record.bookLabels,
     zhName: record.zhName, enName: record.enName, rawBody: record.rawBody, bodyText: record.bodyText,
     bodyHtml: record.bodyHtml, baselineName, baselineBody, baselineKind: "I18nSpellText:zh:chm",
+    nameClassification, bodyClassification,
     nameHintTargetIds: [], aliasHintTargetIds: [], classification, problems,
     duplicateDecision: "not-applicable" };
 }

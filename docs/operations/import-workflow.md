@@ -271,7 +271,9 @@ target inventories, candidate records, and representative pilot cases under
 `data/dice-intake/`; commit those in the nested data repo for the QA handoff.
 The source-free aggregate is `data-tools/out/dice-intake/coverage.json`.
 Every candidate keeps its source revision and line locator, raw body, escaped
-`<pre>` rendering, publication mapping, CHM comparison, and parser problems.
+`<pre>` rendering, publication mapping, field-level CHM comparison, and parser
+problems. Header-shaped lines without a convincing spell signature remain in
+the surrounding raw text and appear as located `unparsedSpans` for review.
 Only exact English names within resolved publications attach to target IDs;
 Chinese names and retained CHM English aliases are review hints. Duplicate
 targets remain review-required, and unsupported or ambiguous publications keep

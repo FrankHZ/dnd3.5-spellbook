@@ -67,7 +67,8 @@ function main(): void {
   mkdirSync(privateDir, { recursive: true }); mkdirSync(reportDir, { recursive: true });
   const inventory = files.map(({ bytes, parsed }) => ({
     file: parsed.file, bytes, encoding: parsed.encoding, lineCount: parsed.lineCount,
-    preamble: parsed.preamble, credit: null, version: null, metadataStatus: "unknown-unless-evidenced-in-preamble",
+    preamble: parsed.preamble, unparsedSpans: parsed.unparsedSpans,
+    credit: null, version: null, metadataStatus: "unknown-unless-evidenced-in-preamble",
     recordCount: parsed.records.length,
     disposition: parsed.records.length ? "records-in-candidates" : "no-parsed-records-preamble-preserved",
     publication: mappings.find((row) => row.file === parsed.file),
@@ -86,6 +87,7 @@ function main(): void {
     ["table-or-layout", (row) => /\n[^\n]*\|[^\n]*\n|\t/.test(row.rawBody)],
     ["alternate-field-label", (row) => /(?:法术抗性|影响区域|范围)\s*[:：]/.test(row.rawBody)],
     ["header-like-body", (row) => /[（(][A-Za-z][^）)]{1,80}[）)][（(][^）)]{1,30}[）)]/.test(row.rawBody)],
+    ["suspected-unparsed-boundary", (row) => row.problems.includes("suspected-unparsed-boundary")],
   ];
   const pilot = pilotCases.map(([pilotCase, predicate]) => ({ pilotCase, candidate: candidates.find(predicate) ?? null }));
   writeFileSync(join(privateDir, "pilot.jsonl"), jsonl(pilot), "utf8");
@@ -94,6 +96,7 @@ function main(): void {
     encodings: count(files.map((row) => row.parsed.encoding)),
     publicationStatus: count(mappings.map((row) => row.status)),
     rawRecords: candidates.length,
+    sourceOccurrencesIncludingUnparsedSpans: candidates.length + files.reduce((sum, row) => sum + row.parsed.unparsedSpans.length, 0),
     sourceDispositions: { exact: 0, "formatting-only": 0, substantive: 0, "missing-current-Chinese": 0,
       "ambiguous-unmatched": 0, "malformed-incomplete": 0, "out-of-scope": 0,
       ...count(candidates.map((row) => row.classification)) },
@@ -109,6 +112,7 @@ function main(): void {
     targetsWithoutCandidates: targetDispositions.filter((row) => row.sourceKeys.length === 0).length,
     currentFallback: count(targetDispositions.map((row) => row.currentFallback)),
     filesWithoutRecords: files.filter((row) => row.parsed.records.length === 0).length,
+    suspectedUnparsedSpans: files.reduce((sum, row) => sum + row.parsed.unparsedSpans.length, 0),
     pilotCases: Object.fromEntries(pilot.map((row) => [row.pilotCase, row.candidate !== null])),
   };
   writeFileSync(join(reportDir, "coverage.json"), JSON.stringify(report, null, 2) + "\n", "utf8");
