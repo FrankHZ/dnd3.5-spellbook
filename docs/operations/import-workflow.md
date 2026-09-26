@@ -279,6 +279,112 @@ Chinese names and retained CHM English aliases are review hints. Duplicate
 targets remain review-required, and unsupported or ambiguous publications keep
 their explicit dispositions. No candidate is accepted by this command.
 
+After field-level English-assisted review, keep detailed decisions in private
+`data/dice-qa/books/<rulebook-id>/`. Each book issue owns its semantic review and
+acceptance; merging QA tooling accepts no corpus text. The existing global
+command remains available for an explicitly authorized complete-corpus handoff:
+
+```powershell
+npm run -w data-tools dice:qa -- --data-root <absolute-data-repo> --rules-db <absolute-rules-clean.sqlite> --content-db <absolute-content.sqlite> --reviews <absolute-review-jsonl> --boundaries <absolute-boundary-jsonl> --full-body-audit <absolute-audit-jsonl> --report-dir out/dice-qa
+```
+
+The QA command reads both SQLite databases read-only, enumerates every raw TXT
+independently of the candidate ledger, and checks parsed records and unparsed
+spans against the source inventory. It then checks every candidate against its
+committed TXT bytes, map revision, target publication, current CHM name/body,
+and material English name/body and spell mechanics, including components,
+school, subschool, and descriptors. Accepted fields require
+a reviewer, reason, aligned English excerpt, and the exact reviewed candidate
+text. A corrected candidate must be separately reviewed before acceptance.
+Formal QA also requires a full-body audit record for every accepted body,
+bound to the effective replacement and aligned English evidence. The report
+counts accepted bodies still lacking that audit during `--check-incomplete`.
+`--boundaries` covers every located unparsed span with a source-bound decision;
+its enclosing candidate's body decision must agree with that disposition.
+Pass `--corrections <absolute-corrections-jsonl>` when accepting such a correction;
+the correction records bind source text, CHM baseline, corrected text, reviewer,
+reason, and an aligned English excerpt.
+Pass `--duplicates <absolute-resolutions-jsonl>` for targets with multiple
+candidate occurrences. Each resolution names every source occurrence and the
+single selected source, or explicitly selects none; other occurrences cannot
+produce accepted fields.
+The command writes `data/dice-qa/accepted.jsonl` and `fallback.jsonl`; its
+`out/dice-qa/coverage.json` report contains counts by book and field but no
+source text. A deferred or rejected field retains its current CHM or English
+fallback, including when the other field was accepted. This validation does not
+import or activate any spell text.
+During review, `--check-incomplete` validates the entire current decision file
+and writes only the source-free coverage report, including a pending-field count.
+Without that flag, pending review rows fail before accepted/fallback files are
+written.
+
+### Rulebook QA proposals
+
+Select one book with `--rulebook-id <id>`. For example, run Complete Mage (58)
+with all-source inputs and book-local reviews:
+
+```powershell
+npm run -w data-tools dice:qa -- --data-root <absolute-data-repo> --rules-db <absolute-rules-clean.sqlite> --content-db <absolute-content.sqlite> --rulebook-id 58 --report-dir <absolute-data-repo>/dice-qa/books/58/out
+```
+
+The flag defaults review inputs to the following files under
+`data/dice-qa/books/58/`, using the same schemas as global QA:
+
+- `decisions.jsonl` is required and must cover every owned candidate occurrence.
+- `full-body-audit.jsonl` is required for formal validation, including an empty
+  file when no body is proposed for acceptance.
+- `corrections.jsonl`, `duplicate-resolutions.jsonl`, and `boundary-decisions.jsonl` may be omitted
+  only when no corresponding records are needed. Missing required duplicate
+  resolutions or unparsed-boundary decisions still fail validation.
+
+Existing explicit `--reviews`, `--corrections`, `--duplicates`, `--boundaries`,
+and `--full-body-audit` paths override those defaults, for example to validate
+read-only checkpoint inputs in a tool-owned temporary directory. Use
+`--report-dir <absolute-code-worktree>/data-tools/out/dice-qa/books/58` for such
+checks. Do not write another task's book directory.
+
+Ownership follows the matched target's rulebook, keeping all duplicate
+occurrences together. An unmatched candidate belongs to a book only when it
+has exactly one mapped publication and no unmapped publication label; its
+existing null target/rulebook identity stays unchanged in the review schema.
+Multi-publication and unmapped unmatched inputs require separate unresolved-scope
+review. Every existing target in the selected book is included in coverage,
+including targets without candidates and their CHM/English fallback.
+
+The command still independently enumerates **all** TXT files and checks the
+complete source inventory and regenerated candidate ledger before selecting
+the book. Only semantic review coverage and boundary dispositions are scoped.
+Missing source/candidate files fail even when they concern another book.
+Foreign-book review, correction, duplicate, boundary, or audit rows fail;
+another book's pending reviews are not loaded. A missing book decision file,
+missing owned row, or empty/unknown scope cannot become an accepted empty result.
+
+With `--check-incomplete`, the command writes only `coverage.json` and allows
+existing `queue:` reviewer markers and missing full-body audits to remain
+pending. Evidence-based `deferred` decisions are distinct from those queue
+markers. Formal mode rejects pending work and writes `accepted.jsonl` and
+`fallback.jsonl` **in the scoped report directory**, never to the global QA
+directory. Report directories inside the data repo must belong to the selected
+book. Before creating directories or writing files, the command resolves actual
+filesystem destinations and existing ancestors, including junctions/symlinks.
+Aliases into global QA or another book fail; the selected book/QA directory
+itself must not redirect the permitted boundary. Normal external report
+directories and new directories within the selected book remain supported.
+All three files are proposals until main-gate accepts the corresponding
+book issue/PR and exact private revision; a validator's `accepted` field status
+does not itself grant source acceptance or activation authority.
+
+`coverage.json` is the source-free artifact for the book's public PR. It records
+the rulebook scope, validation mode, source/map Git revisions, complete-source
+counts, book/field dispositions, and pending counts with stable key ordering
+and no timestamps or corpus text. Include the private checkpoint revision,
+tool revision, and exact command in that PR. Re-run the command with those
+inputs and compare the regenerated report byte-for-byte to verify it. A
+failed or incomplete run does not approve older accepted/fallback exports;
+only a successful formal run's `validated-proposal` report is eligible for
+main-gate review. Keep source-bearing outputs in private data or ignored
+`data-tools/out/`, never in the public PR.
+
 [Activation issue #121](https://github.com/FrankHZ/dnd3.5-spellbook/issues/121)
 owns the accepted-input, variant/request compatibility, and tested import-order
 requirements. Do not feed TXT into the HTML parser or use the CHM importer for
