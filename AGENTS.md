@@ -148,38 +148,37 @@ using repo skills such as `branch-naming` or `commit-message`, read
 `.agents/skills/<skill>/SKILL.md` relative to the active worktree root. Do not
 probe a user-level `.agents` path first.
 
-## Agent Role Routing
+## Issue, Task, And Main-Gate Delivery
 
-Canonical role contracts live in `.agents/roles/`. Project-scoped Codex files
-under `.codex/agents/` are thin adapters, not a separate source of role
-semantics.
+Main-gate is the current coordinating task's responsibility, not a fixed agent
+role or model profile. Repository role files and adapters are being retired;
+they do not require role-based delegation or override this delivery contract.
 
-| Role               | Durable responsibility                                                          |
-| ------------------ | ------------------------------------------------------------------------------- |
-| `main-gate`        | direction, context packets, cross-domain decisions, triage, and merge readiness |
-| `librarian`        | plans, docs navigation, roadmap coherence, and freeze sweeps                    |
-| `data-pipeline`    | source, patch, import, fixture, and corpus workflows                            |
-| `backend-db`       | contracts, API runtime behavior, Prisma, and database boundaries                |
-| `i18n-translation` | locale conventions, translation workflow, QA, and fallback semantics            |
-| `frontend-design`  | frontend state, interaction, layout, and browser acceptance                     |
-| `platform`         | CI, builds, packaging, dependencies, deployment, and environments               |
-
-The project adapters pin `main-gate` to Sol `xhigh` and the other canonical
-roles to Sol `high`. Bounded child delegation should use the Terra-backed
-`explorer` profile for read-only investigation or `worker` for narrowly scoped
-implementation. Do not use a canonical Sol role as a generic child merely to
-inherit its tools or context; select it only when the delegated task needs that
-domain ownership. Set `agent_type` explicitly when spawning `explorer` or
-`worker`; task names and prompt wording do not select an execution profile. Do
-not add a project `default` override.
-
-Read `.agents/roles/README.md` for role selection and handoff boundaries. Every
-delegated task must name one primary role and provide a concrete context packet
-with the outcome, owning plan or topic doc, required reading, expected edit
-surface, non-goals, validation, handoff owner, and whether bounded child
-delegation is allowed. Role profiles do not replace feature or release plans.
-Recursive agent fan-out is disabled by default. No role may expand release
-scope or merge its own PR.
+- Main-gate opens a GitHub issue for each feature, defining its outcome, scope,
+  acceptance criteria, dependencies, and relevant technical references, then
+  creates one independent task for that issue.
+- The task owns implementation through targeted validation, commit, branch
+  push, and a PR linked to its issue. A preparation note or local completion
+  message is not the final handoff for implementation work. Only an explicitly
+  analysis-only assignment may finish without a PR.
+- Before dispatch, main-gate supplies its task identity as the report
+  destination. When ready, the independent task sends main-gate the issue and
+  PR URLs, a concise change summary, checks and results, and any unresolved
+  risks or scope deviations. It must not merge its own PR or declare the issue
+  accepted on its own.
+- Main-gate reviews the actual diff, issue acceptance criteria, CI results,
+  relevant behavior, and source/authority/fallback boundaries. Return findings
+  to the owning task for fixes and re-review; do not stop at collecting reports.
+- Main-gate reports the consolidated acceptance result to the user and owns
+  merge/issue-closeout coordination. Merge remotely when authorized and checks
+  pass; do not turn every internal implementation step into a user approval.
+- Keep live work state, blockers, dependencies, PRs, and acceptance evidence in
+  GitHub issues/PRs. Git owns checkout state and history. Repository docs retain
+  durable usage and technical boundaries, not duplicate task/status ledgers.
+- Read the issue and only the technical references needed for its change.
+  Prefer removing unnecessary reading requirements before shortening retained
+  guidance. Use bounded subagents only when independent work benefits the task;
+  no fixed role/model choreography is required.
 
 ## Working Rules
 
