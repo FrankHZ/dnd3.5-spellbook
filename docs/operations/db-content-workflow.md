@@ -13,7 +13,7 @@ This workflow covers:
 - local rules-clean patching as a build input
 - local content DB regeneration and provenance checks
 - portable fixture manifest coverage for maintained local JSONL inputs
-- optional remote content DB activation after merge or explicit gate approval
+- optional remote content DB activation after merge and explicit operator authorization
 
 It does not cover:
 
@@ -48,28 +48,28 @@ docs. It should not own local DB files or source-bearing data.
 For setup details, environment variables, and Prisma reset commands, use
 [data-setup.md](./data-setup.md).
 
-## Active Release Planning
+## Accepted Input Boundary
 
-The [v1.4 dice-text activation plan](../releases/v1.4/dice-content-activation-plan.md)
-owns the planned Chinese text replacement. Its accepted input, variant/request
-compatibility, and safe import order must be implemented and tested before
-using this handoff to activate dice text. Existing PHB artifacts and unmerged
-PR #113 are paused work, not implicit accepted import inputs. Current runtime
-and CHM commands remain unchanged by the documentation-only replanning.
+A proposed source package is not accepted import data. Dice replacement scope
+and acceptance live in [the activation issue](https://github.com/FrankHZ/dnd3.5-spellbook/issues/121).
+Its accepted input, variant/request compatibility and safe import order must be
+implemented and tested before a write-capable handoff. Existing PHB artifacts
+and unmerged PR #113 are paused work, not implicit accepted inputs.
 
 ## Standard Handoff Flow
 
 1. Refresh context.
    - Confirm parent repo branch/status.
    - Confirm nested `data/` branch/status.
-   - Read the active release or handoff plan.
+   - Read the owning feature issue and its accepted data handoff.
    - Run the smallest relevant portable/data-tool validation before writing DB
      files.
 
 2. Apply accepted rules patches only after handoff acceptance.
    - Validate and dry-run the exact pending file.
    - Apply to a temporary copy before touching the local rules DB.
-   - Apply to `rules-clean.sqlite` only after main gate acceptance.
+   - Apply to operator-owned `rules-clean.sqlite` only with explicit DB-write
+     authorization, accepted input and the required validation.
    - Move accepted patch files from `pending/` to `applied/` in the nested
      `data/` repo.
    - Rewrite and verify the rules manifest.
@@ -95,7 +95,7 @@ and CHM commands remain unchanged by the documentation-only replanning.
    - Map real local data to synthetic public-safe fixtures.
    - Run the portable harness after fixture manifest or fixture changes.
 
-5. Activate remotely only after merge or explicit gate approval.
+5. Activate remotely only after merge and explicit operator authorization.
    - Regenerate from the merged parent commit and intended data repo commit.
    - Use [deployment.md](./deployment.md) for upload and `~/update-db.sh`.
    - Compare remote `/api/status/db` provenance with local content metadata.
@@ -112,7 +112,7 @@ and CHM commands remain unchanged by the documentation-only replanning.
 - Remote upload, backend deploy, and operator activation:
   [deployment.md](./deployment.md)
 - Portable DB fixture layout: [../../server/db/README.md](../../server/db/README.md)
-- Data-tool command inventory: [../../data-tools/README.md](../../data-tools/README.md)
+- Data-tool command inventory: [../../data-tools/package.json](../../data-tools/package.json)
 
 ## Cache And Runtime Notes
 
@@ -122,10 +122,3 @@ remote DB files, restart the API process before using cached endpoints such as
 
 Use `/api/status/db` for DB provenance and active read-source checks. In
 production, detailed DB status is operator-facing and token-protected.
-
-## Release Notes
-
-`docs/releases/v1.2/db-workflow-review-plan.md` records the v1.2 acceptance
-evidence that hardened this workflow. After v1.2 freeze, use this operations
-document as the current workflow entry point and treat the release plan as a
-historical acceptance record.

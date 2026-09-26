@@ -819,6 +819,31 @@ Treat these as follow-up operations work:
 - stricter SSH lockdown
 - automatic security update policy
 
+## Release Metadata Verification
+
+For a release-version change, root `package.json` is the canonical version.
+Update its matching `package-lock.json` entry and any explicit expected-version
+assertion in `scripts/release-metadata.test.mjs` together. Do not bump workspace
+versions unless those packages are released independently.
+
+```bash
+node scripts/release-metadata.mjs --label
+npm run test:release-metadata
+```
+
+Confirm the owning issue's acceptance scope is complete and its required PRs
+are merged with passing checks. Before declaring a production release accepted
+or tagging it, verify frontend
+and backend label, ref and commit against the intended merged code. An HTTP 200
+from `/about` alone is insufficient. Record the exact checks and any unresolved
+activation separately in the owning issue or PR; a merge is not deployment
+proof. Production operations still require explicit authorization.
+
+Use the owning issue's acceptance scope to select additional checks. Do not run
+local source/data acceptance for a documentation-only release task, or make
+portable CI depend on ignored local data. Preserve truthful as-built evidence
+in PRs or GitHub release notes; do not create parallel roadmap/freeze ledgers.
+
 ## Related Files
 
 - `docs/deployment-scripts/deploy-backend.sh`

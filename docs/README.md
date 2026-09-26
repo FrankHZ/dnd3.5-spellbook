@@ -1,322 +1,46 @@
-# Documentation Index
-
-This directory contains the durable project documentation for the repository.
-
-Use this file to choose the right source of truth. Use `docs/roadmap.md` to
-decide what to do next after a pause.
-
-## Current Entry Points
-
-- [roadmap.md](./roadmap.md): official current work order and promoted stable-track
-  sequence.
-- [features.md](./features.md): current user-facing feature map.
-- [harness.md](./harness.md): validation and harness strategy.
-- [design.md](./design.md): durable UI design direction.
-- [i18n.md](./i18n.md): frontend copy and locale workflow.
-- [modules/README.md](./modules/README.md): high-level module ownership.
-- [operations/README.md](./operations/README.md): deployment, data setup, and
-  remote operations map.
-
-Agents should also read the repository-root [AGENTS.md](../AGENTS.md) for
-execution rules and role boundaries.
-
-## Release Status
-
-v1.4 planning is active for dice database Chinese text replacement with
-English-assisted discrepancy QA; PDF extraction and review are suspended:
-
-- [releases/v1.4/README.md](./releases/v1.4/README.md)
-- [releases/v1.4/integrated-plan.md](./releases/v1.4/integrated-plan.md)
-- [releases/v1.4/dice-source-intake-plan.md](./releases/v1.4/dice-source-intake-plan.md)
-- [releases/v1.4/dice-text-qa-plan.md](./releases/v1.4/dice-text-qa-plan.md)
-- [releases/v1.4/dice-content-activation-plan.md](./releases/v1.4/dice-content-activation-plan.md)
-
-The latest frozen formal release is v1.3:
-
-- [releases/v1.3/FREEZE.md](./releases/v1.3/FREEZE.md)
-- [releases/v1.3/README.md](./releases/v1.3/README.md)
-- [releases/v1.3/sitewide-ux-redesign-plan.md](./releases/v1.3/sitewide-ux-redesign-plan.md)
-- [releases/v1.3/platform-deploy-prerequisite-plan.md](./releases/v1.3/platform-deploy-prerequisite-plan.md)
-
-The previous frozen formal release is v1.2.2, an internal quality-maintenance
-release:
-
-- [releases/v1.2.2/FREEZE.md](./releases/v1.2.2/FREEZE.md)
-- [releases/v1.2.2/README.md](./releases/v1.2.2/README.md)
-- [releases/v1.2.2/agent-workflow-hardening-plan.md](./releases/v1.2.2/agent-workflow-hardening-plan.md)
-- [releases/v1.2.2/code-and-test-qa-plan.md](./releases/v1.2.2/code-and-test-qa-plan.md)
-
-The previous frozen formal release and latest frozen production/public release
-is v1.2.1:
-
-- [releases/v1.2.1/FREEZE.md](./releases/v1.2.1/FREEZE.md)
-- [releases/v1.2.1/README.md](./releases/v1.2.1/README.md)
-- [releases/v1.2.1/full-text-search-plan.md](./releases/v1.2.1/full-text-search-plan.md)
-
-The older frozen formal public release is v1.2:
-
-- [releases/v1.2/FREEZE.md](./releases/v1.2/FREEZE.md)
-- [releases/v1.2/README.md](./releases/v1.2/README.md)
-- [releases/v1.2/full-spell-source-review-plan.md](./releases/v1.2/full-spell-source-review-plan.md)
-- [releases/v1.2/full-corpus-correction-plan.md](./releases/v1.2/full-corpus-correction-plan.md)
-- [releases/v1.2/db-workflow-review-plan.md](./releases/v1.2/db-workflow-review-plan.md)
-- [releases/v1.2/mechanics-localization-plan.md](./releases/v1.2/mechanics-localization-plan.md)
-- [releases/v1.2/publications-page-plan.md](./releases/v1.2/publications-page-plan.md)
-
-The older frozen formal public release is v1.1:
-
-- [releases/v1.1/FREEZE.md](./releases/v1.1/FREEZE.md)
-- [releases/v1.1/README.md](./releases/v1.1/README.md)
-- [releases/v1.1/production-hardening-plan.md](./releases/v1.1/production-hardening-plan.md)
-- [releases/v1.1/full-spell-corpus-plan.md](./releases/v1.1/full-spell-corpus-plan.md)
-- [releases/v1.1/frontend-content-pass-plan.md](./releases/v1.1/frontend-content-pass-plan.md)
-
-The older frozen formal public release is v1.0:
-
-- [releases/v1.0/FREEZE.md](./releases/v1.0/FREEZE.md)
-- [releases/v1.0/README.md](./releases/v1.0/README.md)
-- [releases/v1.0/domain-and-deployment-plan.md](./releases/v1.0/domain-and-deployment-plan.md)
-- [releases/v1.0/about-and-status-plan.md](./releases/v1.0/about-and-status-plan.md)
-- [releases/v1.0/release-ready-doc-sweep-plan.md](./releases/v1.0/release-ready-doc-sweep-plan.md)
-
-The latest frozen planning record is v3.10:
-
-- [mvp/v3.10/FREEZE.md](./mvp/v3.10/FREEZE.md)
-- [mvp/v3.10/README.md](./mvp/v3.10/README.md)
-- [mvp/v3.10/filter-i18n-plan.md](./mvp/v3.10/filter-i18n-plan.md)
-- [mvp/v3.10/ui-ux-cohesion-plan.md](./mvp/v3.10/ui-ux-cohesion-plan.md)
-
-The previous frozen planning record is v3.9:
-
-- [mvp/v3.9/FREEZE.md](./mvp/v3.9/FREEZE.md)
-- [mvp/v3.9/README.md](./mvp/v3.9/README.md)
-- [mvp/v3.9/normalized-mechanics-contract-plan.md](./mvp/v3.9/normalized-mechanics-contract-plan.md)
-- [mvp/v3.9/frontend-normalized-mechanics-consumer-plan.md](./mvp/v3.9/frontend-normalized-mechanics-consumer-plan.md)
-
-Use [roadmap.md](./roadmap.md) for current ordering after a pause.
-
-## Latest Frozen Snapshot
-
-The latest frozen formal release snapshot is **v1.3**:
-
-- [releases/v1.3/FREEZE.md](./releases/v1.3/FREEZE.md)
-- [releases/v1.3/README.md](./releases/v1.3/README.md)
-
-The previous frozen formal release snapshot is **v1.2.2**:
-
-- [releases/v1.2.2/FREEZE.md](./releases/v1.2.2/FREEZE.md)
-- [releases/v1.2.2/README.md](./releases/v1.2.2/README.md)
-
-The previous frozen formal release and latest frozen production/public release
-snapshot is **v1.2.1**:
-
-- [releases/v1.2.1/FREEZE.md](./releases/v1.2.1/FREEZE.md)
-- [releases/v1.2.1/README.md](./releases/v1.2.1/README.md)
-
-The older frozen public release snapshot is **v1.2**:
-
-- [releases/v1.2/FREEZE.md](./releases/v1.2/FREEZE.md)
-- [releases/v1.2/README.md](./releases/v1.2/README.md)
-
-The older frozen public release snapshot is **v1.1**:
-
-- [releases/v1.1/FREEZE.md](./releases/v1.1/FREEZE.md)
-- [releases/v1.1/README.md](./releases/v1.1/README.md)
-
-The older frozen public release snapshot is **v1.0**:
-
-- [releases/v1.0/FREEZE.md](./releases/v1.0/FREEZE.md)
-- [releases/v1.0/README.md](./releases/v1.0/README.md)
-
-The latest frozen pre-release stage snapshot is **v3.10**:
-
-- [mvp/v3.10/FREEZE.md](./mvp/v3.10/FREEZE.md)
-- [mvp/v3.10/README.md](./mvp/v3.10/README.md)
-
-The v3.10 `FREEZE.md` records the as-built pre-release handoff state.
-Supporting v3.10 plan docs describe rationale and implementation history; they
-are not newer than the freeze snapshot.
-
-The previous frozen stage snapshot is **v3.9**:
-
-- [mvp/v3.9/FREEZE.md](./mvp/v3.9/FREEZE.md)
-- [mvp/v3.9/README.md](./mvp/v3.9/README.md)
-
-The older frozen stage snapshot before that is **v3.8**:
-
-- [mvp/v3.8/FREEZE.md](./mvp/v3.8/FREEZE.md)
-- [mvp/v3.8/README.md](./mvp/v3.8/README.md)
-
-Use older `FREEZE.md` files as historical comparison points, not active
-baselines.
-
-## Doc Areas
-
-### Durable Topic Docs
-
-- [features.md](./features.md): feature map.
-- [feature-workflow.md](./feature-workflow.md): feature intake and plan-first
-  workflow.
-- [frontend-map.md](./frontend-map.md): frontend route and feature entry map.
-- [design.md](./design.md): UI direction.
-- [i18n.md](./i18n.md): i18n workflow.
-- [harness.md](./harness.md): validation strategy.
-- [stable-backlog.md](./stable-backlog.md): unpromoted stable-track candidate
-  pool and promotion rules.
-- [credits/](./credits/): source credit notes used by About / Status.
-- [public-repo-notes.md](./operations/public-repo-notes.md): public repo exclusions and
-  publication cautions.
-- [releases/README.md](./releases/README.md): formal release planning.
-
-### Operations And Data
-
-- [operations/README.md](./operations/README.md): operations map.
-- [deployment.md](./operations/deployment.md): deployment workflow.
-- [db-content-workflow.md](./operations/db-content-workflow.md): DB/content
-  handoff entry point, content artifact regeneration, fixture coverage, and
-  optional remote activation routing.
-- [data-setup.md](./operations/data-setup.md): database roles, local DB setup, and
-  fixtures.
-- [import-workflow.md](./operations/import-workflow.md): maintained app-owned import
-  workflow.
-- [rules-db-notes.md](./operations/rules-db-notes.md): rules DB inspection and patch notes.
-- [repo-conventions.md](./operations/repo-conventions.md): local wrappers and source of
-  truth conventions.
-
-### Module Docs
-
-- [modules/README.md](./modules/README.md)
-- [modules/server.md](./modules/server.md)
-- [modules/web.md](./modules/web.md)
-- [modules/contracts.md](./modules/contracts.md)
-- [modules/data-tools.md](./modules/data-tools.md)
-- [modules/review-console.md](./modules/review-console.md)
-- [modules/delivery.md](./modules/delivery.md)
-
-### Versioned MVP Docs
-
-- [mvp/README.md](./mvp/README.md): versioned-doc roles and maintenance rules.
-- [mvp/v3.10/FREEZE.md](./mvp/v3.10/FREEZE.md): latest frozen pre-release
-  snapshot.
-- [mvp/v3.10/README.md](./mvp/v3.10/README.md): frozen final pre-release
-  planning record.
-- [mvp/v3.9/FREEZE.md](./mvp/v3.9/FREEZE.md): previous frozen release
-  snapshot.
-- [mvp/v3.9/README.md](./mvp/v3.9/README.md): frozen normalized
-  mechanics/query fullstack planning record.
-- [mvp/v3.8/FREEZE.md](./mvp/v3.8/FREEZE.md): previous frozen release snapshot.
-- [mvp/v3.7/FREEZE.md](./mvp/v3.7/FREEZE.md): previous frozen snapshot.
-- [mvp/v3.6/FREEZE.md](./mvp/v3.6/FREEZE.md): older frozen snapshot.
-- [mvp/v3.5/FREEZE.md](./mvp/v3.5/FREEZE.md): older frozen snapshot.
-- [mvp/v3.4/FREEZE.md](./mvp/v3.4/FREEZE.md): older frozen snapshot.
-- [mvp/v3.3/FREEZE.md](./mvp/v3.3/FREEZE.md): data-tooling foundation
-  snapshot.
-
-Older version folders remain under `docs/mvp/` as historical planning and
-handoff records.
-
-### Release Plans
-
-- [releases/README.md](./releases/README.md): release planning roles and
-  maintenance rules.
-- [releases/v1.4/README.md](./releases/v1.4/README.md): active dice database
-  text replacement boundary, ownership, and suspended PDF plan map.
-- [releases/v1.4/integrated-plan.md](./releases/v1.4/integrated-plan.md):
-  cross-role intake, discrepancy QA, safe activation, and acceptance gates.
-- [releases/v1.4/dice-source-intake-plan.md](./releases/v1.4/dice-source-intake-plan.md):
-  planned TXT source inventory, identity mapping, and comparison.
-- [releases/v1.4/dice-text-qa-plan.md](./releases/v1.4/dice-text-qa-plan.md):
-  planned English-assisted discrepancy QA and fallback decisions.
-- [releases/v1.4/dice-content-activation-plan.md](./releases/v1.4/dice-content-activation-plan.md):
-  planned safe replacement, fallback, search, and consumer acceptance.
-- [releases/v1.3/FREEZE.md](./releases/v1.3/FREEZE.md): latest frozen formal
-  release snapshot for the sitewide UX/style and secure Actions deployment
-  release.
-- [releases/v1.3/README.md](./releases/v1.3/README.md): frozen release boundary
-  and accepted track map.
-- [releases/v1.3/sitewide-ux-redesign-plan.md](./releases/v1.3/sitewide-ux-redesign-plan.md):
-  accepted frontend-design cohesion record.
-- [releases/v1.3/platform-deploy-prerequisite-plan.md](./releases/v1.3/platform-deploy-prerequisite-plan.md):
-  accepted secure Actions deployment prerequisite record.
-- [releases/v1.2.2/FREEZE.md](./releases/v1.2.2/FREEZE.md): previous frozen
-  formal release snapshot for the internal quality-maintenance release.
-- [releases/v1.2.2/README.md](./releases/v1.2.2/README.md): frozen internal
-  quality-maintenance release boundary and accepted pass map.
-- [releases/v1.2.2/agent-workflow-hardening-plan.md](./releases/v1.2.2/agent-workflow-hardening-plan.md):
-  accepted canonical role contracts, thin tool adapters, and correspondence
-  checks.
-- [releases/v1.2.2/code-and-test-qa-plan.md](./releases/v1.2.2/code-and-test-qa-plan.md):
-  accepted read-only audits, main-gate triage, bounded fixes, and regression
-  record.
-- [releases/v1.2.1/FREEZE.md](./releases/v1.2.1/FREEZE.md): previous frozen
-  formal release and latest frozen production/public release snapshot.
-- [releases/v1.2.1/README.md](./releases/v1.2.1/README.md): frozen focused
-  content-backed full-text spell search release record.
-- [releases/v1.2.1/full-text-search-plan.md](./releases/v1.2.1/full-text-search-plan.md):
-  accepted Search full-text mode, content DB FTS index, and frontend consumer
-  record.
-- [releases/v1.2/FREEZE.md](./releases/v1.2/FREEZE.md): older frozen formal
-  public release snapshot.
-- [releases/v1.2/README.md](./releases/v1.2/README.md): frozen full-spell
-  source review, mechanics localization, and Publications page release plan.
-- [releases/v1.2/full-spell-source-review-plan.md](./releases/v1.2/full-spell-source-review-plan.md):
-  accepted full-spell source inventory and parse QA record.
-- [releases/v1.2/full-corpus-correction-plan.md](./releases/v1.2/full-corpus-correction-plan.md):
-  accepted post-review correction apply record for full-corpus rows.
-- [releases/v1.2/db-workflow-review-plan.md](./releases/v1.2/db-workflow-review-plan.md):
-  accepted DB/content update and fixture-manifest hardening record.
-- [releases/v1.2/mechanics-localization-plan.md](./releases/v1.2/mechanics-localization-plan.md):
-  accepted mechanics translation, QA workflow, and frontend consumer record.
-- [releases/v1.2/publications-page-plan.md](./releases/v1.2/publications-page-plan.md):
-  accepted Publications page and minimum metadata record.
-- [releases/v1.1/FREEZE.md](./releases/v1.1/FREEZE.md): older frozen formal
-  public release snapshot.
-- [releases/v1.1/README.md](./releases/v1.1/README.md): frozen production
-  hardening and full spell corpus release plan.
-- [releases/v1.1/production-hardening-plan.md](./releases/v1.1/production-hardening-plan.md):
-  frozen CF/AWS security acceptance plan.
-- [releases/v1.1/full-spell-corpus-plan.md](./releases/v1.1/full-spell-corpus-plan.md):
-  frozen full spell corpus import and content DB activation plan.
-- [releases/v1.1/frontend-content-pass-plan.md](./releases/v1.1/frontend-content-pass-plan.md):
-  frozen focused frontend content acceptance plan.
-- [releases/v1.0/FREEZE.md](./releases/v1.0/FREEZE.md): older frozen formal
-  public release snapshot.
-- [releases/v1.0/README.md](./releases/v1.0/README.md): frozen first formal
-  public release planning record.
-
-### Templates
-
-- [templates/feature-plan.md](./templates/feature-plan.md)
-- [templates/version-plan.md](./templates/version-plan.md)
-- [templates/acceptance-checklist.md](./templates/acceptance-checklist.md)
-- [templates/freeze-snapshot.md](./templates/freeze-snapshot.md)
-
-## Workspace References
-
-- [../server/README.md](../server/README.md)
-- [../web/README.md](../web/README.md)
-- [../contracts/README.md](../contracts/README.md)
-- [../data-tools/README.md](../data-tools/README.md)
-- [../review-console/README.md](../review-console/README.md)
-
-## Precedence Rule
-
-When documents overlap:
-
-1. Prefer the newest focused topic doc for current behavior or workflow.
-2. Prefer active development docs for in-flight future scope.
-3. Use frozen `FREEZE.md` files as stage snapshots, not as automatic current
-   baselines.
-4. Prefer focused operational docs such as `deployment.md` for runtime workflow
-   over incidental mentions in README files.
-5. Treat plan documents as intended scope, not final shipped behavior.
-
-## Maintenance Rule
-
-- Keep current canonical statements in one place.
-- Avoid repeating long feature descriptions across multiple README files.
-- Use workspace READMEs for workspace-specific commands.
-- Use root `AGENTS.md` for agent-facing execution guidance.
-- When adding or moving workspaces, commands, active plans, or source-of-truth
-  docs, update root `README.md`, this index, `AGENTS.md`, and the relevant
-  workspace README together.
+# Documentation
+
+Choose the relevant topic for the task; this is a lookup index, not a required
+reading sequence. [GitHub issues](https://github.com/FrankHZ/dnd3.5-spellbook/issues)
+own future scope, acceptance, dependencies and pending decisions. PRs/checks
+record implementation evidence, and Git records checked-out state and history.
+These documents describe durable current behavior and operating constraints.
+
+## Product And Implementation
+
+- [Features](features.md): current user-facing behavior and entry points.
+- [Feature workflow](feature-workflow.md): issue, task and PR delivery.
+- [Frontend map](frontend-map.md): routes and feature code.
+- [Design](design.md): UI principles and inventory.
+- [i18n](i18n.md): locale editing and content-language boundaries.
+- [Harness](harness.md): choose validation for the affected behavior.
+- Module boundaries, when needed: [server](modules/server.md),
+  [web](modules/web.md), [contracts](modules/contracts.md),
+  [data-tools](modules/data-tools.md), [delivery](modules/delivery.md).
+
+## Setup And Operations
+
+- Workspace setup: [server](../server/README.md), [web](../web/README.md),
+  [contracts](../contracts/README.md), [data-tools](../data-tools/README.md).
+- [Data setup](operations/data-setup.md): local DB roles and fixtures.
+- [DB content workflow](operations/db-content-workflow.md): accepted data,
+  content artifact and operator handoff boundaries.
+- [Import workflow](operations/import-workflow.md): implemented import order.
+- [Rules DB notes](operations/rules-db-notes.md): patch and source semantics.
+- [Deployment](operations/deployment.md), [remote bootstrap](operations/bootstrap-remote.md)
+  and [tracked deployment scripts](deployment-scripts/).
+- [Public repository boundaries](operations/public-repo-notes.md) and
+  [source credits](credits/).
+
+## Task-Specific References
+
+The [private review console](../review-console/README.md) and its
+[module boundary](modules/review-console.md) concern the suspended PHB workflow.
+Its [resumption safeguards](releases/v1.4/phb-source-and-errata-plan.md#paused-workflow-execution-safeguards)
+remain applicable to an explicitly authorized resumption; they are not a dice
+intake or normal startup prerequisite.
+
+Existing files under `releases/` and `mvp/` are historical plans and acceptance
+evidence, not current work queues or automatic authority over current topic
+docs. Do not update frozen history to track later work. Keep commands and
+technical contracts in their owning topic; do not copy issue status into docs.

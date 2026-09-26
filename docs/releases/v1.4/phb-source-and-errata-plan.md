@@ -1,18 +1,11 @@
 # v1.4 PHB Source And Errata Plan
 
-> Plan maintenance rule: integrated plans are for early sequencing and
-> cross-plan conflict review, not implementation ledgers. Implementation
-> branches should update this owning topic plan, affected operational docs, and
-> `docs/roadmap.md` only when active ordering changes. Do not update
-> `integrated-plan.md` unless version scope, delivery sequence, ownership
-> boundaries, or cross-plan conflicts change.
-
-Status: suspended; outside the revised v1.4 acceptance sequence.
-
-The active release now follows [README.md](./README.md) and the `dice-*`
-plans. This document preserves the paused PHB design and evidence; its old
-Gate references and imperatives apply only after an explicit resumption
-scope decision. They are not prerequisites for dice-text intake or QA.
+This is a suspended historical design/evidence record, not a live work tracker.
+Old ownership, required-reading and plan-maintenance instructions below are
+historical context, not current execution requirements. Resume only through a
+new scoped GitHub issue; preserve the source-authority, fingerprint, privacy
+and DB safety constraints. Suspension neither accepts old residual decisions
+nor authorizes reruns, and PR #113 remains unmerged work.
 
 State recorded before suspension: in progress; Gate 0, the complete Gate 1 representative pilot, and the
 localhost review-console prerequisite are accepted. The full-source dual-engine
@@ -52,7 +45,7 @@ correction layer before any translation begins.
 - Main gate outcome: accepted effective English PHB source rows with complete
   set accounting and page/errata provenance.
 - Relevant references: `AGENTS.md`, this plan,
-  [integrated-plan.md](./integrated-plan.md), `data-tools/README.md`, and
+  [historical PHB integrated plan](https://github.com/FrankHZ/dnd3.5-spellbook/blob/b406588181f97cdcd7f5810fce59d7923b1d8369/docs/releases/v1.4/integrated-plan.md), `data-tools/README.md`, and
   `docs/operations/db-content-workflow.md`.
 - Expected edit surface: `data-tools/src/phb/` or the closest accepted module,
   script manifest/package commands, portable fixtures/tests, this plan, and
@@ -349,17 +342,6 @@ script manifest, tests, and this plan are updated together.
 - Public fixtures/reports contain no PHB or translated corpus text.
 - Focused tests, `npm run typecheck:data-tools`, portable tests, and local-data
   acceptance pass.
-
-## Doc Updates
-
-- Update `data-tools/README.md` and `docs/operations/import-workflow.md` when
-  command/data boundaries become durable.
-- Update `docs/operations/public-repo-notes.md` if a new ignored local subtree
-  or report rule is introduced.
-- Update `docs/harness.md` for durable source-hash, redaction, or corpus QA
-  gates.
-- Update `docs/roadmap.md` only if v1.4 ordering changes.
-- Update `integrated-plan.md` only for cross-plan scope/order decisions.
 
 ## Open Questions
 
