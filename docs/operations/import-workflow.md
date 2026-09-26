@@ -279,6 +279,38 @@ Chinese names and retained CHM English aliases are review hints. Duplicate
 targets remain review-required, and unsupported or ambiguous publications keep
 their explicit dispositions. No candidate is accepted by this command.
 
+After field-level English-assisted review, keep the detailed decisions in the
+private `data/dice-qa/` directory. Validate the complete decision set and
+derive accepted fields plus explicit fallback fields with:
+
+```powershell
+npm run -w data-tools dice:qa -- --data-root <absolute-data-repo> --rules-db <absolute-rules-clean.sqlite> --content-db <absolute-content.sqlite> --reviews <absolute-review-jsonl> --boundaries <absolute-boundary-jsonl> --report-dir out/dice-qa
+```
+
+The QA command reads both SQLite databases read-only and checks every source
+occurrence against its committed TXT bytes, map revision, target publication,
+current CHM name/body, and material English name/body. Accepted fields require
+a reviewer, reason, aligned English excerpt, and the exact reviewed candidate
+text. A corrected candidate must be separately reviewed before acceptance.
+`--boundaries` covers every located unparsed span with a source-bound decision;
+its enclosing candidate's body decision must agree with that disposition.
+Pass `--corrections <absolute-corrections-jsonl>` when accepting such a correction;
+the correction records bind source text, CHM baseline, corrected text, reviewer,
+reason, and an aligned English excerpt.
+Pass `--duplicates <absolute-resolutions-jsonl>` for targets with multiple
+candidate occurrences. Each resolution names every source occurrence and the
+single selected source, or explicitly selects none; other occurrences cannot
+produce accepted fields.
+The command writes `data/dice-qa/accepted.jsonl` and `fallback.jsonl`; its
+`out/dice-qa/coverage.json` report contains counts by book and field but no
+source text. A deferred or rejected field retains its current CHM or English
+fallback, including when the other field was accepted. This validation does not
+import or activate any spell text.
+During review, `--check-incomplete` validates the entire current decision file
+and writes only the source-free coverage report, including a pending-field count.
+Without that flag, pending review rows fail before accepted/fallback files are
+written.
+
 [Activation issue #121](https://github.com/FrankHZ/dnd3.5-spellbook/issues/121)
 owns the accepted-input, variant/request compatibility, and tested import-order
 requirements. Do not feed TXT into the HTML parser or use the CHM importer for

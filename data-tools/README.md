@@ -34,7 +34,7 @@ the merge gate.
 - [Short descriptions](../docs/operations/import-workflow.md#short-descriptions)
 - [DB handoff and artifact provenance](../docs/operations/db-content-workflow.md)
 
-The read-only dice TXT intake is described at the
+The read-only dice TXT intake and field-level QA validation are described at the
 [replacement boundary](../docs/operations/import-workflow.md#dice-text-boundary).
 PHB PDF extraction/review is suspended and is
 not a prerequisite for these operations. Only an explicit resumption scope
