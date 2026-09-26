@@ -1,10 +1,10 @@
 {
-  "acceptedTargets": 56,
+  "acceptedTargets": 49,
   "byBook": {
     "75": {
       "descriptionHtml:English": 5,
-      "descriptionHtml:accepted": 54,
-      "descriptionHtml:existing-Chinese": 8,
+      "descriptionHtml:accepted": 32,
+      "descriptionHtml:existing-Chinese": 30,
       "name:English": 3,
       "name:accepted": 39,
       "name:existing-Chinese": 25
@@ -18,8 +18,8 @@
     "substantive": 42
   },
   "decisions": {
-    "descriptionHtml:accepted": 54,
-    "descriptionHtml:deferred": 3,
+    "descriptionHtml:accepted": 32,
+    "descriptionHtml:deferred": 25,
     "descriptionHtml:excluded": 8,
     "name:accepted": 39,
     "name:excluded": 25,
