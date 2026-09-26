@@ -2,185 +2,58 @@
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/FrankHZ/dnd3.5-spellbook)
 
-A monorepo for a Dungeons & Dragons 3.5 spellbook application with:
-
-- a React frontend
-- an Express API
-- shared TypeScript contracts
-- data import and inspection tooling
-- bilingual English / Chinese spell support
-
-The project is optimized for practical tabletop use: fast lookup, clean spell detail pages, favorites, spellbooks, and prepared spell management.
-
-## Public Repo Status
-
-This repository is an unofficial fan project.
-
-It is not affiliated with, endorsed by, or sponsored by Wizards of the Coast.
-
-To reduce redistribution risk, data-bearing local artifacts are intentionally
-excluded from the public repository, especially runtime databases under
-`server/db/local/` and parser/source data under `data/`.
-
-## Status
-
-The latest frozen formal release is **v1.3**, covering the sitewide UX/style
-redesign and secure Actions backend deployment prerequisite. Root release
-metadata is **v1.3.0**; production metadata activation follows the freeze merge.
-**v1.4** planning is active for replacing CHM Chinese spell text with supplied
-dice database text and English-assisted discrepancy QA. PDF extraction is paused.
-**v1.2.2** is the previous frozen internal maintenance
-release, and **v3.10** is the latest frozen pre-release stage snapshot.
-
-Start here:
-
-- [docs/README.md](./docs/README.md): documentation map and precedence rules.
-- [docs/roadmap.md](./docs/roadmap.md): current work order.
-- [docs/features.md](./docs/features.md): current feature map.
-- [docs/releases/v1.4/README.md](./docs/releases/v1.4/README.md): active dice
-  database text replacement plan and suspended PDF-work boundary.
-- [docs/releases/v1.3/FREEZE.md](./docs/releases/v1.3/FREEZE.md): latest frozen
-  formal release snapshot.
-- [docs/releases/v1.3/README.md](./docs/releases/v1.3/README.md): frozen
-  sitewide UX/style release and independent platform prerequisite.
-- [docs/releases/v1.2.2/FREEZE.md](./docs/releases/v1.2.2/FREEZE.md): previous
-  frozen internal quality-maintenance release snapshot.
-- [docs/releases/v1.2.2/README.md](./docs/releases/v1.2.2/README.md): accepted
-  agent-workflow hardening and code/test QA release record.
-- [docs/releases/v1.2.1/FREEZE.md](./docs/releases/v1.2.1/FREEZE.md): previous
-  frozen formal release and latest production/public release snapshot.
-- [docs/releases/v1.2.1/README.md](./docs/releases/v1.2.1/README.md): frozen
-  content-backed full-text search release record.
-- [docs/releases/v1.2/FREEZE.md](./docs/releases/v1.2/FREEZE.md): older
-  frozen public release snapshot.
-- [docs/releases/v1.2/README.md](./docs/releases/v1.2/README.md): frozen v1.2
-  release planning record.
-- [docs/releases/v1.1/FREEZE.md](./docs/releases/v1.1/FREEZE.md): older
-  frozen public release snapshot.
-- [docs/releases/v1.1/README.md](./docs/releases/v1.1/README.md): frozen v1.1
-  release planning record.
-- [docs/releases/v1.0/FREEZE.md](./docs/releases/v1.0/FREEZE.md): previous
-  public release snapshot.
-- [docs/releases/v1.0/README.md](./docs/releases/v1.0/README.md): frozen v1.0
-  release planning record.
-- [docs/mvp/v3.10/FREEZE.md](./docs/mvp/v3.10/FREEZE.md): latest frozen
-  pre-release stage snapshot.
+A bilingual English / Chinese Dungeons & Dragons 3.5 spellbook for browsing,
+search, spell details, favorites, spellbooks, and prepared spell tracking.
+The monorepo contains a React frontend, Express API, shared TypeScript contracts,
+and local data tooling.
 
 ## Quick Start
 
-Install workspace dependencies from the repo root:
+Install dependencies and build shared contracts from the repository root:
 
 ```bash
 npm install
-```
-
-Build shared contracts:
-
-```bash
 npm run build:contracts
 ```
 
-Run the API in one terminal:
+Configure the local databases using [data setup](docs/operations/data-setup.md)
+and [server configuration](server/README.md#configuration). Runtime databases
+and source data are intentionally absent from a fresh clone.
+
+Run the API and frontend in separate terminals:
 
 ```bash
 npm run -w server dev
-```
-
-Run the frontend in another terminal:
-
-```bash
 npm run -w web dev
 ```
 
-The main workspace commands and constraints are documented in:
+## Working In The Repository
 
-- [server/README.md](./server/README.md)
-- [web/README.md](./web/README.md)
-- [contracts/README.md](./contracts/README.md)
-- [data-tools/README.md](./data-tools/README.md)
-- [review-console/README.md](./review-console/README.md)
+- [GitHub issues](https://github.com/FrankHZ/dnd3.5-spellbook/issues) own feature
+  scope, acceptance, dependencies and unresolved decisions. PRs and checks own
+  implementation evidence; Git records actual files and history.
+- [Documentation](docs/README.md) links current behavior and operations by task.
+- Workspace setup and usage: [server](server/README.md), [web](web/README.md),
+  [contracts](contracts/README.md), [data-tools](data-tools/README.md).
+- The [review console](review-console/README.md) is a private localhost workspace
+  for the suspended PHB workflow, not required for normal app development.
+- [Deployment](docs/operations/deployment.md) covers the tracked deployment
+  scripts. Backend deploys and database activation are operator actions;
+  database deployment is not automatic CD.
 
-## Operational Helpers
+## Scope And Data
 
-The current deployment workflow is documented in:
+The app does not provide full character sheets, automatic spell-slot legality,
+multi-edition support, or a general rules engine.
 
-- [docs/operations/README.md](./docs/operations/README.md)
-- [docs/operations/deployment.md](./docs/operations/deployment.md)
-- [docs/operations/db-content-workflow.md](./docs/operations/db-content-workflow.md)
-- [docs/operations/data-setup.md](./docs/operations/data-setup.md)
-- [data-tools/README.md](./data-tools/README.md)
+This is an unofficial fan project, unaffiliated with Wizards of the Coast.
+Source inputs and maintained decisions belong in the ignored nested `data/`
+repo; runtime SQLite files under `server/db/local/` are also excluded. Generated
+local reports live under `data-tools/out/`. Do not publish those artifacts as
+portable source data. See [public repository boundaries](docs/operations/public-repo-notes.md).
 
-Tracked shell scripts under `docs/deployment-scripts/` are the canonical deployment scripts.
-
-The GitHub Actions deploy workflow is a manual backend/API wrapper around the
-tracked backend deploy script. Cloudflare Workers Builds owns normal frontend
-deployment. Database deployment remains manual and operator-owned.
-
-Ignored root-level `.bat` files may exist as local machine-specific convenience wrappers, but they are not part of the canonical deployment contract.
-
-For local database setup and data origins, use [docs/operations/data-setup.md](./docs/operations/data-setup.md).
-
-## Repo Layout
-
-```text
-.
-|- server/      Backend API, Prisma schemas, content DB import scripts, tests
-|- web/         Frontend app, routes, UI, i18n assets
-|- contracts/   Shared DTOs and TypeScript types
-|- data-tools/  Data inspection, parser, and rules DB tooling
-|  `- out/      Generated parser output and data-tool reports
-|- review-console/  Private localhost PHB evidence-review API and UI shell
-|- data/        Nested local repo for upstream/source inputs and rules patches
-|- docs/        Durable docs, operations docs, module docs, and version history
-```
-
-## What The App Covers
-
-- Spell browsing and search
-- Spell detail pages
-- Favorites
-- Spellbook collections
-- Prepared spell tracking
-- English / Chinese UI and content support
-
-## Intentional Non-Goals
-
-To keep the scope stable, the project currently does not aim to provide:
-
-- full character sheets
-- automatic spell-slot legality enforcement
-- multi-edition support
-- a full rules engine beyond spell-centric workflows
-
-## Documentation Model
-
-This repo keeps documentation intentionally lightweight:
-
-- The root `README.md` is a short human-friendly entry point.
-- [docs/README.md](./docs/README.md) is the canonical documentation map.
-- [docs/roadmap.md](./docs/roadmap.md) is the current active work ordering.
-- [docs/design.md](./docs/design.md) is the current UI design inventory and
-  principle note.
-- Each workspace `README.md` gives short operational guidance.
-- `docs/` contains versioned and canonical project documents.
-
-When documents conflict, prefer the newest focused topic doc called out by
-[docs/README.md](./docs/README.md). Frozen stage docs are snapshots, not
-automatic baselines for later work.
-
-## Data Notes
-
-- Spell data ultimately comes from local imported sources and app databases that
-  are not fully committed as portable source data.
-- Chinese content is derived from player-created source material processed by local tooling.
-- If you reuse project data or publish derivatives, review the licensing status of the underlying data sources first.
-
-## License Status
-
-The repository now includes an MIT `LICENSE` for the code in this repo.
-
-That license applies to the code you are publishing here. It does not automatically grant rights to third-party game content, imported databases, or other external source material.
-
-## Author
+The [MIT license](LICENSE) covers repository code, not third-party game content,
+imported databases or external source material. Review the underlying source
+rights before redistributing data or derivatives.
 
 Maintained by `FrankHZ`.

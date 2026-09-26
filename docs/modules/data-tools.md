@@ -77,11 +77,6 @@ does not read or write `server/db/local/`.
 Local acceptance commands may depend on the nested `data/` repo and local DBs,
 but they should remain explicit and outside root `npm run verify` or CI.
 
-The planned [dice-source intake](../releases/v1.4/dice-source-intake-plan.md)
-reuses text matching and content handoff mechanisms where suitable; it does not
-change module ownership or add a runtime source selector. Its TXT adapter is
-not yet implemented.
-
 The suspended PHB workflow keeps source-bearing rows and review decisions in the nested
 data repo. Public parent-repo reports are aggregates only. The full run uses
 MinerU for structure, order, fields, bodies, and tables; exact PDF.js text may

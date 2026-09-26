@@ -185,13 +185,13 @@ parser artifacts. They are scope-review data, not rules DB patch operations.
 
 ### Dice Database Text Replacement (Planned)
 
-The active [v1.4 plan](../releases/v1.4/README.md) uses supplied TXT input at
+The active [dice intake issue](https://github.com/FrankHZ/dnd3.5-spellbook/issues/119) uses supplied TXT input at
 `data/spells-dice-db-by-mo/`. Intake, publication-aware matching, targeted
 English QA, and safe accepted replacement are planned; no maintained dice
 import command exists yet. The current commands below still describe the
 implemented CHM workflow, not permission to import the new package.
 
-Follow [dice-content-activation-plan.md](../releases/v1.4/dice-content-activation-plan.md)
+Follow [dice activation issue](https://github.com/FrankHZ/dnd3.5-spellbook/issues/121)
 before defining its command/variant contract. `import-zh-chm.ts` deletes all
 Chinese spell text before writing CHM rows. It cannot safely perform selective
 replacement or run after a new overlay import without an explicit integration

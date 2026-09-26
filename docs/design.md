@@ -407,7 +407,7 @@ Do:
 
 Avoid:
 
-- Adding design scope to `docs/roadmap.md` before it is real planned work.
+- Treating unaccepted design ideas as feature scope without an owning GitHub issue.
 - Copying a generic external design system into the repo.
 - Introducing decorative fantasy chrome around core workflows.
 - Replacing dense tool screens with landing-page layouts.

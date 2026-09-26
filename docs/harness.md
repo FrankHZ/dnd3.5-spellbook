@@ -184,12 +184,12 @@ npm run -w phb-review-console smoke:local
 ```
 
 The PHB source gate below is retained for the suspended PDF work. It is an
-explicit local-data harness, not a prerequisite for the revised
-[v1.4 dice-text release](./releases/v1.4/README.md). Keep existing portable
-regressions; new local extraction/review runs require explicit resumption.
-Dice-text implementation will add focused parser/matcher/QA/import tests and
-source-free fixture coverage through the existing harness, as its child plans
-specify. No new harness command is introduced by this planning change.
+explicit local-data harness, not a prerequisite for unrelated content intake.
+Keep existing portable regressions; new local extraction/review runs require
+explicit resumption under the
+[paused safeguards](./releases/v1.4/phb-source-and-errata-plan.md#paused-workflow-execution-safeguards).
+Feature issues select the relevant parser, matcher, QA and import checks;
+new fixtures must remain source-free.
 
 Paused PHB command reference:
 

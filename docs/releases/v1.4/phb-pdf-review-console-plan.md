@@ -1,18 +1,11 @@
 # v1.4 PHB PDF Review Console Plan
 
-> Plan maintenance rule: integrated plans are for early sequencing and
-> cross-plan conflict review, not implementation ledgers. Implementation
-> branches should update this owning topic plan, affected operational docs, and
-> `docs/roadmap.md` only when active ordering changes. Do not update
-> `integrated-plan.md` unless version scope, delivery sequence, ownership
-> boundaries, or cross-plan conflicts change.
-
-Status: suspended; outside the revised v1.4 acceptance sequence.
-
-The active release now follows [README.md](./README.md) and the `dice-*`
-plans. This document preserves the paused PHB design and evidence; its old
-Gate references and imperatives apply only after an explicit resumption
-scope decision. They are not prerequisites for dice-text intake or QA.
+This is a suspended historical design/evidence record, not a live work tracker.
+Old ownership, required-reading and plan-maintenance instructions below are
+historical context, not current execution requirements. Resume only through a
+new scoped GitHub issue; preserve the source-authority, fingerprint, privacy
+and DB safety constraints. Suspension neither accepts old residual decisions
+nor authorizes reruns, and PR #113 remains unmerged work.
 
 State recorded before suspension: in progress. Slices 1-3, the data-tools review service, localhost
 API/workspace shell, and bounded React consumer, are implemented and main-gate
@@ -46,7 +39,7 @@ not be added to the deployed `web` or production `server` workspaces.
 - Upstream plan:
   [phb-source-and-errata-plan.md](./phb-source-and-errata-plan.md).
 - Downstream gate: residual English decisions and the Gate 2 handoff in
-  [integrated-plan.md](./integrated-plan.md).
+  [historical PHB integrated plan](https://github.com/FrankHZ/dnd3.5-spellbook/blob/b406588181f97cdcd7f5810fce59d7923b1d8369/docs/releases/v1.4/integrated-plan.md).
 
 ## Task Context
 
@@ -54,7 +47,7 @@ not be added to the deployed `web` or production `server` workspaces.
   current MinerU layout and English residual decisions without bypassing the
   canonical PHB pipeline.
 - Relevant references: `AGENTS.md`, this plan,
-  [integrated-plan.md](./integrated-plan.md),
+  [historical PHB integrated plan](https://github.com/FrankHZ/dnd3.5-spellbook/blob/b406588181f97cdcd7f5810fce59d7923b1d8369/docs/releases/v1.4/integrated-plan.md),
   [phb-source-and-errata-plan.md](./phb-source-and-errata-plan.md),
   `data-tools/README.md`, and `docs/operations/import-workflow.md`.
 - Expected edit surface: new `review-console/` workspace, the root workspace
@@ -387,21 +380,6 @@ main-gate review, and the standard v1.4 data/portable checks.
 - Portable CI passes without local source files. Focused data service, API,
   frontend, typecheck, and build checks pass, followed by real local smoke and
   Gate 2 data acceptance.
-
-## Doc Updates
-
-- Implementation adds `review-console/README.md` with start, build, local-data,
-  security, and validation commands.
-- Update the root workspace map, `docs/modules/README.md`, and a focused module
-  doc when the workspace exists; do not describe an unimplemented workspace as
-  current truth before then.
-- Update `data-tools/README.md` and `docs/operations/import-workflow.md` when
-  the service, queue files, commands, and post-decision rerun become durable.
-- Update `docs/roadmap.md` only when review-console acceptance changes the next
-  Gate 2 work order.
-- Do not update [integrated-plan.md](./integrated-plan.md) for ordinary
-  implementation progress. This plan PR updates it once because the new
-  prerequisite changes v1.4 sequence and cross-role ownership.
 
 ## Open Questions
 

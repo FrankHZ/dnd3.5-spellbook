@@ -34,9 +34,9 @@ that every `package.json` script is classified there.
 
 ## Commands
 
-Active v1.4 planning is owned by
-[dice-source-intake-plan.md](../docs/releases/v1.4/dice-source-intake-plan.md)
-and [dice-text-qa-plan.md](../docs/releases/v1.4/dice-text-qa-plan.md).
+Dice implementation scope is owned by
+[dice intake issue](https://github.com/FrankHZ/dnd3.5-spellbook/issues/119)
+and [dice QA issue](https://github.com/FrankHZ/dnd3.5-spellbook/issues/120).
 The supplied `data/spells-dice-db-by-mo/` TXT package is proposed input.
 A TXT adapter and accepted replacement workflow are planned, not implemented;
 do not feed these files directly to the HTML parser or CHM importer.

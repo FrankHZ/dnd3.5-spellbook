@@ -1,18 +1,11 @@
 # v1.4 PHB Translation And QA Plan
 
-> Plan maintenance rule: integrated plans are for early sequencing and
-> cross-plan conflict review, not implementation ledgers. Implementation
-> branches should update this owning topic plan, affected operational docs, and
-> `docs/roadmap.md` only when active ordering changes. Do not update
-> `integrated-plan.md` unless version scope, delivery sequence, ownership
-> boundaries, or cross-plan conflicts change.
-
-Status: suspended; outside the revised v1.4 acceptance sequence.
-
-The active release now follows [README.md](./README.md) and the `dice-*`
-plans. This document preserves the paused PHB design and evidence; its old
-Gate references and imperatives apply only after an explicit resumption
-scope decision. They are not prerequisites for dice-text intake or QA.
+This is a suspended historical design/evidence record, not a live work tracker.
+Old ownership, required-reading and plan-maintenance instructions below are
+historical context, not current execution requirements. Resume only through a
+new scoped GitHub issue; preserve the source-authority, fingerprint, privacy
+and DB safety constraints. Suspension neither accepts old residual decisions
+nor authorizes reruns, and PR #113 remains unmerged work.
 
 State recorded before suspension: planned; blocked on integrated Gate 2 English source acceptance.
 
@@ -38,7 +31,7 @@ source-safe QA workflow.
 - Main gate outcome: accepted Chinese PHB rows with complete translation and
   proofreading decisions, not a raw machine-translation dump.
 - Relevant references: `AGENTS.md`, this plan,
-  [integrated-plan.md](./integrated-plan.md), accepted English QA report, and
+  [historical PHB integrated plan](https://github.com/FrankHZ/dnd3.5-spellbook/blob/b406588181f97cdcd7f5810fce59d7923b1d8369/docs/releases/v1.4/integrated-plan.md), accepted English QA report, and
   `docs/i18n.md`.
 - Expected edit surface: translation-oriented data-tool schemas/QA, a reusable
   repo-local skill, redacted fixtures/tests, this plan, and i18n/harness docs.
@@ -139,15 +132,6 @@ npm run -w data-tools phb:translation:accepted
   report contain no PHB or translated corpus text.
 - i18n checks, focused data-tool tests, typecheck, portable tests, and
   local-data acceptance pass.
-
-## Doc Updates
-
-- Update `docs/i18n.md` with the durable corpus translation/review workflow.
-- Update `data-tools/README.md` and `docs/harness.md` for maintained commands
-  and acceptance gates.
-- Update `docs/operations/public-repo-notes.md` only if local data boundaries
-  change.
-- Update `docs/roadmap.md` only if release ordering changes.
 
 ## Open Questions
 

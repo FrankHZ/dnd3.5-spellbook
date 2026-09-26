@@ -1,18 +1,11 @@
 # v1.4 PHB Content Activation Plan
 
-> Plan maintenance rule: integrated plans are for early sequencing and
-> cross-plan conflict review, not implementation ledgers. Implementation
-> branches should update this owning topic plan, affected operational docs, and
-> `docs/roadmap.md` only when active ordering changes. Do not update
-> `integrated-plan.md` unless version scope, delivery sequence, ownership
-> boundaries, or cross-plan conflicts change.
-
-Status: suspended; outside the revised v1.4 acceptance sequence.
-
-The active release now follows [README.md](./README.md) and the `dice-*`
-plans. This document preserves the paused PHB design and evidence; its old
-Gate references and imperatives apply only after an explicit resumption
-scope decision. They are not prerequisites for dice-text intake or QA.
+This is a suspended historical design/evidence record, not a live work tracker.
+Old ownership, required-reading and plan-maintenance instructions below are
+historical context, not current execution requirements. Resume only through a
+new scoped GitHub issue; preserve the source-authority, fingerprint, privacy
+and DB safety constraints. Suspension neither accepts old residual decisions
+nor authorizes reruns, and PR #113 remains unmerged work.
 
 State recorded before suspension: planned; blocked on integrated Gates 2 and 3.
 
@@ -42,7 +35,7 @@ adding runtime source selection, a UI redesign, or automatic DB deployment.
   effective English/Chinese overlays with correct per-spell fallback and search
   behavior.
 - Relevant references: `AGENTS.md`, this plan,
-  [integrated-plan.md](./integrated-plan.md), both accepted upstream handoffs,
+  [historical PHB integrated plan](https://github.com/FrankHZ/dnd3.5-spellbook/blob/b406588181f97cdcd7f5810fce59d7923b1d8369/docs/releases/v1.4/integrated-plan.md), both accepted upstream handoffs,
   and `docs/operations/db-content-workflow.md`.
 - Expected edit surface: accepted patch/import schemas, content migrations and
   fixtures when required, server/contracts read behavior and tests, data-tool
@@ -139,19 +132,6 @@ adding runtime source selection, a UI redesign, or automatic DB deployment.
 - No app-state DB changes and no automatic production DB activation occur.
 - Focused contracts/server/data/web tests, `npm run verify`, and relevant local
   data acceptance pass.
-
-## Doc Updates
-
-- Update `docs/operations/db-content-workflow.md` and
-  `docs/operations/import-workflow.md` with the accepted PHB handoff/apply
-  commands.
-- Update `server/README.md`, module docs, and contracts docs only if runtime
-  ownership or DTO behavior changes.
-- Update `docs/features.md` after accepted reviewed PHB content becomes
-  user-visible.
-- Update `docs/harness.md` for accepted-only/fallback regression gates.
-- Update `docs/roadmap.md` only when release ordering or activation state
-  changes.
 
 ## Open Questions
 
