@@ -31,6 +31,36 @@ usage, and safety boundaries, not parallel plans or live status ledgers.
 For scope changes and review, use [feature-workflow](docs/feature-workflow.md).
 Do not require temporary Markdown plans or a plan-only commit before execution.
 
+## Model And Reasoning Selection
+
+Before dispatch, assess ambiguity, cross-module coupling, consequence of errors,
+and the available checks. Choose the lightest capable model; do not default all
+tasks to Astra/high or copy the coordinator's settings without assessment.
+An explicit user choice takes precedence. Starting points, not fixed role pins:
+
+- Luna with low/medium effort: mechanical edits, bounded lookup, or extraction
+  with clear criteria and inexpensive verification.
+- Sol with medium effort: ordinary implementation, focused fixes, and review
+  with established contracts and meaningful tests.
+- Astra with medium/high effort: ambiguous architecture, difficult cross-module
+  diagnosis, or source/authority conflicts requiring substantial judgment.
+
+Select reasoning effort separately from model capability. Use high/xhigh or
+above for a concrete reasoning need, not merely a task label or large file count.
+Raise effort or model capability when investigation or failed acceptance shows
+a reasoning limitation; a tool outage, environment failure, or missing input
+alone is not such evidence.
+
+Put the recommended model, effort, and a brief reason in the task prompt. Check
+host availability and tool rules before applying overrides; use them only when
+authorized and supported. Otherwise distinguish the recommendation from the
+inherited setting. Prompt text alone does not change the running model. Do not
+add role adapters, global defaults, or a model registry to enforce this guidance.
+
+These are task-specific starting points; consult the current
+[OpenAI model-selection guidance](https://developers.openai.com/api/docs/guides/model-selection)
+when reassessing them.
+
 ## Working Rules
 
 - Prefer the smallest maintainable change and existing helpers over parallel
