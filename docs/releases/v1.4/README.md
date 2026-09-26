@@ -32,15 +32,14 @@ implementation acceptance. No corpus text belongs in the public parent repo.
 
 - [integrated-plan.md](./integrated-plan.md): main-gate scope, authority,
   sequence, and cross-domain decisions.
-- [dice-source-intake-plan.md](./dice-source-intake-plan.md): data-pipeline
-  source inventory, parsing, identity mapping, and difference accounting.
-- [dice-text-qa-plan.md](./dice-text-qa-plan.md): i18n-translation
-  English-assisted discrepancy QA and accepted Chinese text decisions.
+- [dice-source-intake-plan.md](./dice-source-intake-plan.md): source inventory,
+  parsing, identity mapping, and difference accounting.
+- [dice-text-qa-plan.md](./dice-text-qa-plan.md): English-assisted discrepancy QA
+  and accepted Chinese text decisions.
 - [dice-content-activation-plan.md](./dice-content-activation-plan.md):
-  backend-db accepted import, request compatibility, search, and consumer checks,
-  with data-pipeline and bounded frontend support.
+  accepted import, request compatibility, search, and consumer checks.
 
-Librarian owns navigation and release docs; main-gate accepts each handoff.
+Issue-linked tasks own execution; the coordinating task reviews acceptance.
 A plan is not proof of implementation or accepted content.
 
 ## Release Acceptance

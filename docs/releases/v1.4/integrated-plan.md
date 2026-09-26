@@ -25,7 +25,7 @@ D1-D4 below are the active sequence. Old PHB Gate 0-4 is suspended, not complete
 
 ## D1: Intake And Identity
 
-Owner: data-pipeline; approver: main-gate.
+Execution: intake task; acceptance: coordinating task.
 
 - Inventory `data/spells-dice-db-by-mo/` without moving or rewriting raw input.
   Record known credit/version and unknown metadata, then commit the intended
@@ -42,7 +42,7 @@ See [dice-source-intake-plan.md](./dice-source-intake-plan.md).
 
 ## D2: Discrepancy QA
 
-Owner: i18n-translation; approver: main-gate.
+Execution: discrepancy QA task; acceptance: coordinating task.
 
 - Exact and narrowly defined formatting-only records may be accepted by
   deterministic checks in batches, without a human click per record.
@@ -63,7 +63,7 @@ See [dice-text-qa-plan.md](./dice-text-qa-plan.md).
 
 ## D3: Content Build And Compatibility
 
-Owner: backend-db, supported by data-pipeline.
+Execution: content activation task, consuming accepted prepared data.
 
 - Consume one resolved Chinese result per target/field. Source/quality decisions
   occur during data preparation, not in API/web/search at runtime.
@@ -80,7 +80,7 @@ See [dice-content-activation-plan.md](./dice-content-activation-plan.md).
 
 ## D4: Release Acceptance
 
-Owner: main-gate, supported by backend-db, frontend-design, and librarian.
+Acceptance: coordinating task, using import, API, and browser evidence.
 
 - Verify accepted/fallback/missing-Chinese/duplicate-name/table cases in API
   and EN/ZH UI: Browse, Detail, Search, spellbooks, and prepared spells.
@@ -100,8 +100,8 @@ Owner: main-gate, supported by backend-db, frontend-design, and librarian.
 | Accepted text | Resolved data-preparation output | Runtime source-quality arbitration |
 | Source / decisions | Nested data repo and existing provenance | Corpus or runtime DBs in parent Git |
 
-Data-pipeline owns matching, i18n-translation owns semantic QA, backend-db owns
-import/read compatibility, and main-gate resolves cross-domain conflicts.
+The intake, QA, and activation tasks own their respective issue scopes;
+the coordinating task resolves cross-domain conflicts.
 New entities, broad English source acquisition, structured mechanics changes,
 or a new review platform require a scope decision before implementation.
 

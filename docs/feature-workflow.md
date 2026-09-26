@@ -1,178 +1,65 @@
 # Feature Workflow
 
-This document defines the lightweight intake path for new feature work.
+## Issue → Task → PR
 
-The goal is to help agents reuse the existing app shape, choose the right
-harness layer, and avoid creating parallel code paths while implementing a
-single request.
+1. The coordinating task opens a GitHub issue for a concrete feature. State the
+   outcome, scope/non-goals, acceptance, dependencies, and unresolved decisions.
+   Link relevant technical docs rather than maintaining a second plan in Markdown.
+2. Create one independent task linked to the issue, with the workspace/base,
+   write boundaries, and coordinating task's report destination. The issue owns
+   scope; the task owns execution. Small fixes within that scope stay in the task.
+3. Read the affected code/tests and only the technical references needed. Reuse
+   existing mechanisms, implement the authorized scope, and run targeted checks.
+   Optional bounded delegation supplies an outcome, write boundary, and required
+   evidence; the task owner remains responsible for integration.
+4. Commit, push the feature branch, and open a PR linked to the issue. Describe
+   the final behavior, relevant checks/results, and remaining risks. Update topic
+   docs only for changed durable behavior, commands, or safety boundaries.
+5. Send the issue/PR URLs and evidence to the coordinating task (main-gate).
+   Main-gate reviews the actual diff, issue criteria, CI, and material technical
+   boundaries, returns findings to the task, and re-reviews fixes. It reports
+   acceptance and coordinates authorized remote merge/issue closeout. The
+   implementing task must not merge its own PR or self-accept its issue.
 
-## Default Flow
+An explicitly analysis-only task may deliver findings without a PR. Otherwise,
+a preparation note or local implementation is not the final deliverable. Report
+a genuine blocker with its evidence and needed decision instead of stopping
+silently. Routine implementation choices do not require additional approval.
 
-1. Find the closest current feature in `docs/features.md`.
-2. Copy `docs/templates/feature-plan.md` into `docs/tmp-feature-plan.md` if the
-   change has more than one obvious edit and the scope is already clear.
-3. Fill only the sections that reduce risk for the current task.
-4. Implement against existing entry points and helpers.
-5. Update the nearest tests or add the smallest useful harness.
-6. Move useful non-blocking follow-up candidates into the owning durable feature
-   or topic doc before deleting the temporary plan. Keep true blockers in the
-   active checklist instead.
-7. Delete `docs/tmp-feature-plan.md` before commit, unless the user asks to
-   preserve it as a dated handoff note.
-8. Update durable docs only for changed behavior, workflow, or project rules.
+## Scope Decisions
 
-Small one-file fixes do not need a temporary plan. Use judgment.
+Resolve unclear product semantics, new authority/fallback behavior, or production
+activation before the affected work. Record the decision in the issue and keep
+independent authorized work moving. No mandatory temporary plan, separate plan
+commit, fixed agent role, or model profile is required.
 
-## Plan-First Flow
+Keep blockers and dependencies in the issue. Record out-of-scope follow-ups in
+GitHub; create a separate issue when there is a concrete feature to pursue.
+Do not maintain duplicate roadmap, backlog, or task-progress Markdown files.
+Historical release snapshots do not automatically define current scope.
 
-Use a durable plan commit before implementation when the request is ambiguous,
-structural, or workflow-changing.
+## Architecture Correspondence
 
-Examples:
+For changes involving an authoritative source, module, schema, ordering rule,
+or fallback, identify the material boundary in the issue/PR:
 
-- the user is still clarifying feature semantics
-- the change affects workspace boundaries
-- the change affects agent workflow or documentation precedence
-- data import behavior could create a new source of truth
-- the implementation needs an agreed acceptance contract before code is safe
+- the authoritative input/component and its derived consumers;
+- permitted fallback/repair behavior and forbidden substitutions;
+- changes that would require a scope decision.
 
-Place durable plans under the active development docs indicated by
-`docs/roadmap.md`, then add them to `docs/README.md` when they become a
-canonical planning surface.
+During review, compare the actual imports, calls, manifests, and runtime wiring
+with the accepted issue and relevant technical docs, including their state
+before the branch changed them. Output parity and passing tests alone cannot
+prove that authority was preserved. Use focused failure evidence when material:
+missing authority fails, stale evidence is rejected, or forbidden fallback is
+unreachable. Documentation edited in the implementation PR cannot retroactively
+authorize a different source of truth or weaker safety boundary.
 
-The sequence is:
+## Verification
 
-1. Write the concrete plan.
-2. Commit the plan only.
-3. Implement the deliverable in a follow-up commit.
-4. Update durable docs if shipped behavior differs from the plan.
-
-## Architecture Correspondence Gate
-
-Use this gate when a plan or durable topic doc assigns authority to a source,
-engine, module, schema, ordering rule, or fallback boundary. Output parity,
-stable counts, and passing tests do not by themselves prove that the assigned
-architecture was preserved.
-
-Before implementation, record only the boundaries material to the change:
-
-- the authoritative input or component
-- the derived or consuming surfaces
-- allowed fallback and repair behavior
-- forbidden substitutions, reorderings, or parallel sources of truth
-- the condition that requires a scope decision instead of implementation
-
-During main-gate review:
-
-1. Compare the executable path with the accepted plan and durable topic docs,
-   including their state before the implementation branch changed them.
-2. Trace the authority through the actual imports, calls, manifests, and runtime
-   wiring. Do not infer compliance from names, summaries, counts, or generated
-   artifacts alone.
-3. Require counterfactual evidence for material boundaries. Examples include a
-   missing authority causing failure, stale evidence being rejected, ordering
-   changes affecting fingerprints, or a forbidden fallback being impossible.
-4. Treat an implementation that changes authority, fallback, ownership, or
-   source-of-truth semantics as a scope change. Return to a plan-first decision
-   before accepting the implementation.
-
-An implementation PR may update documentation to describe shipped behavior,
-but those edits do not retroactively authorize an unapproved architecture
-change. A documentation-only clarification may accompany the implementation
-only when it preserves the previously accepted boundary.
-
-## Agent Assignment Workflow
-
-Use this when work is split across the main gate, specialist branches,
-librarian branches, freeze sweeps, or bounded subagents.
-
-The main gate owns the assignment boundary before work is delegated. It should
-name:
-
-- the user-visible outcome
-- the owning plan, feature doc, or topic doc
-- required reading and nearby code/tests
-- the expected edit surface
-- explicit non-goals and follow-up parking place
-- validation commands or acceptance evidence
-- the branch or role that owns final review and handoff
-
-Specialist branches should execute inside that packet. They may update the
-owning feature/topic/version plan and affected topic docs when behavior,
-workflow, commands, schemas, deployment, or i18n facts change. They should not
-chase navigation, roadmap order, release acceptance evidence, freeze snapshots,
-or unrelated module-doc cleanup unless the assignment itself changes scope,
-ownership, sequencing, or release state.
-
-Librarian and freeze-sweep branches own cross-doc coherence after accepted
-implementation: navigation, roadmap state, stale review wording, acceptance
-evidence, freeze snapshots, and promotion or cleanup of follow-up candidates.
-
-Workflow-improvement PRs should improve these assignment rules, templates, or
-checklists. Use completed plans as examples only; do not reopen their shipped
-content unless the workflow change reveals a current source-of-truth conflict.
-
-## Intake Rules
-
-- State the user-visible outcome before choosing files.
-- List reuse targets before adding new modules.
-- Mark explicit non-goals when the request could balloon.
-- Record architecture and authority boundaries when the change depends on a
-  particular source, engine, module, ordering rule, or fallback policy.
-- Treat contract changes as cross-workspace work: update `contracts`, then
-  validate `server` and `web`.
-- Treat UI copy changes as i18n work and follow `docs/i18n.md`.
-- Treat data import, parser, rules DB inspection, and future rules DB patch
-  work as data tooling. Follow
-  `docs/mvp/v3.3/data-tools-workspace-plan.md` rather than adding new tooling
-  under `server/src`.
-- Keep feature behavior in `docs/features.md` or a focused feature plan.
-  Reserve `docs/modules/` for durable module ownership, validation boundaries,
-  and cross-module data flow.
-- Keep specialist feature documentation narrow. A feature branch should usually
-  read and update only `AGENTS.md`, the closest `docs/features.md` entry, the
-  owning topic doc or focused plan when behavior/workflow changes, and nearby
-  code/tests.
-- Leave docs navigation, roadmap ordering, module-doc sweeps, integrated-plan
-  reconciliation, acceptance evidence, and `FREEZE.md` updates to librarian or
-  freeze-sweep branches unless the feature itself changes scope, ownership,
-  sequencing, or release state.
-- Current freeze sweeps are also responsible for routine post-merge closeout
-  wording such as clearing stale PR review status, moving roadmap next work, and
-  preserving non-blocking follow-up candidates as deferred work. Do not create a
-  separate pre-freeze branch for those chores unless the cleanup changes scope,
-  ownership, sequencing, or shipped behavior.
-
-## Follow-Up Candidate Lifecycle
-
-Use follow-up candidates for useful work discovered during a branch that should
-not block the current acceptance gate.
-
-- Keep branch-local candidates in the owning feature doc, topic doc, or version
-  child plan.
-- Keep each candidate short, concrete, and explicit about why it is outside the
-  current acceptance gate.
-- Move real blockers back into the active checklist or acceptance criteria.
-- Move valuable but unprioritized stable-track candidates into
-  `docs/stable-backlog.md`.
-- Promote candidates to `docs/roadmap.md` only during freeze, roadmap, or
-  docs-governance sweeps when direction, priority, scope, and acceptance are
-  clear.
-- Remove completed, duplicated, or invalidated candidates during the next
-  closeout sweep instead of carrying them forward indefinitely.
-
-## Temporary Plan Lifecycle
-
-`docs/tmp-feature-plan.md` is intentionally ignored by git.
-
-Use it as a working checklist during implementation. At the end of the task:
-
-- delete it when it only contains execution notes
-- move durable decisions into `docs/features.md`, `docs/harness.md`, or another
-  focused doc
-- move broad module-boundary changes into `docs/modules/` during acceptance
-  review, not as routine churn for every feature branch
-- archive it only when the user explicitly wants a retained handoff record
-
-Temporary plans should never become the canonical description of shipped
-behavior.
+Choose checks by changed behavior: docs need link/command/diff checks; copy needs
+i18n sync/check; frontend behavior needs relevant tests/build and browser smoke;
+shared DTOs need contracts built before consumers; data changes need the affected
+harness. Local corpus checks are conditional and do not grant DB write permission.
+See [harness.md](./harness.md) for the relevant test boundary. Full remote CI
+remains the merge gate; no full local suite is required for editorial changes.

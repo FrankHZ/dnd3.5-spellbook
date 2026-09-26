@@ -34,9 +34,9 @@ not be added to the deployed `web` or production `server` workspaces.
 ## Ownership
 
 - Owning version: v1.4.
-- Owning domain: `data-pipeline` for candidate assembly, validation, local API,
+- Data/API scope: candidate assembly, validation, local API,
   fingerprint checks, and nested-data writes.
-- Frontend consumer: `frontend-design` for the bounded React review surface
+- Frontend scope: the bounded React review surface
   after the data/API contract is accepted.
 - Primary implementation branch: `codex/data-phb-review-console`.
 - Frontend implementation branch: `codex/design-phb-review-console`, based on
@@ -48,13 +48,12 @@ not be added to the deployed `web` or production `server` workspaces.
 - Downstream gate: residual English decisions and the Gate 2 handoff in
   [integrated-plan.md](./integrated-plan.md).
 
-## Agent Context
+## Task Context
 
 - Main-gate outcome: a locally runnable review console that can safely record
   current MinerU layout and English residual decisions without bypassing the
   canonical PHB pipeline.
-- Required reading: `AGENTS.md`, `.agents/roles/data-pipeline.md`,
-  `.agents/roles/frontend-design.md`, this plan,
+- Relevant references: `AGENTS.md`, this plan,
   [integrated-plan.md](./integrated-plan.md),
   [phb-source-and-errata-plan.md](./phb-source-and-errata-plan.md),
   `data-tools/README.md`, and `docs/operations/import-workflow.md`.
@@ -261,7 +260,7 @@ is valid only when no layout or other upstream evidence changed.
 
 ### Slice 1: Data-Tools Review Service
 
-Owner: `data-pipeline`.
+Execution: the assigned task owns the data/API slice.
 
 - Extract a narrow reusable service over the existing MinerU layout and full
   row review builders, fingerprints, merges, and validators.
@@ -288,7 +287,7 @@ the manifest without discarding the current terminal decision.
 
 ### Slice 2: Local API And Workspace Shell
 
-Owner: `data-pipeline`.
+Execution: the assigned task owns the data/API slice.
 
 - Add the private `review-console/` workspace, local Node launcher, shared DTO
   boundary, allowlisted read/write routes, PDF range route, and session token.
@@ -308,7 +307,8 @@ resolves without pre-existing generated output.
 
 ### Slice 3: React Review Consumer
 
-Owner: `frontend-design`, after Slice 2's API contract is accepted.
+Execution: the assigned task owns the UI slice after Slice 2's API contract
+is accepted.
 
 - Implement queue filters/navigation, PDF rendering and overlays, joined
   PHB/SRD/DB evidence, layout target selection, and explicit decision forms.
@@ -325,7 +325,8 @@ viewport smoke using one MinerU layout row and one English residual row.
 
 ### Slice 4: End-To-End Gate 2 Handoff
 
-Owners: `data-pipeline` for rerun evidence; `main-gate` for acceptance.
+The assigned task supplies rerun evidence; the coordinating task reviews
+acceptance.
 
 - The authority-policy safety gate is implemented. The service requires the
   code-owned `official-srd-default-v1` policy reference in its freshness chain,
