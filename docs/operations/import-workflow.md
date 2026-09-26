@@ -284,14 +284,20 @@ private `data/dice-qa/` directory. Validate the complete decision set and
 derive accepted fields plus explicit fallback fields with:
 
 ```powershell
-npm run -w data-tools dice:qa -- --data-root <absolute-data-repo> --rules-db <absolute-rules-clean.sqlite> --content-db <absolute-content.sqlite> --reviews <absolute-review-jsonl> --boundaries <absolute-boundary-jsonl> --report-dir out/dice-qa
+npm run -w data-tools dice:qa -- --data-root <absolute-data-repo> --rules-db <absolute-rules-clean.sqlite> --content-db <absolute-content.sqlite> --reviews <absolute-review-jsonl> --boundaries <absolute-boundary-jsonl> --full-body-audit <absolute-audit-jsonl> --report-dir out/dice-qa
 ```
 
-The QA command reads both SQLite databases read-only and checks every source
-occurrence against its committed TXT bytes, map revision, target publication,
-current CHM name/body, and material English name/body. Accepted fields require
+The QA command reads both SQLite databases read-only, enumerates every raw TXT
+independently of the candidate ledger, and checks parsed records and unparsed
+spans against the source inventory. It then checks every candidate against its
+committed TXT bytes, map revision, target publication, current CHM name/body,
+and material English name/body and spell mechanics, including components,
+school, subschool, and descriptors. Accepted fields require
 a reviewer, reason, aligned English excerpt, and the exact reviewed candidate
 text. A corrected candidate must be separately reviewed before acceptance.
+Formal QA also requires a full-body audit record for every accepted body,
+bound to the effective replacement and aligned English evidence. The report
+counts accepted bodies still lacking that audit during `--check-incomplete`.
 `--boundaries` covers every located unparsed span with a source-bound decision;
 its enclosing candidate's body decision must agree with that disposition.
 Pass `--corrections <absolute-corrections-jsonl>` when accepting such a correction;

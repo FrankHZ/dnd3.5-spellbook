@@ -1,12 +1,18 @@
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import Database from "better-sqlite3";
-import { parseDiceFile, type DiceRecord } from "./parse";
+import { parseDiceFile, type DiceRecord, type ParsedFile } from "./parse";
 import { reconcile, type Candidate, type PublicationMap, type Rulebook } from "./reconcile";
 
 export type Field = "name" | "descriptionHtml";
 export type EnglishMechanics = {
+  school: string; subschool: string | null; descriptors: string[];
+  components: {
+    verbal: number; somatic: number; material: number; arcaneFocus: number;
+    divineFocus: number; xp: number; metaBreath: number; trueName: number;
+    corrupt: number; extra: string | null;
+  };
   castingTime: string | null; range: string | null; target: string | null;
   effect: string | null; area: string | null; duration: string | null;
   savingThrow: string | null; spellResistance: string | null;
@@ -48,7 +54,10 @@ export type DuplicateResolution = { targetId: number; sourceKeys: string[];
 export type BoundaryDecision = { sourceKey: string; file: string; line: number;
   sourceRevision: string; mappingRevision: string; targetId: number | null;
   status: "deferred" | "excluded"; reason: string; reviewer: string };
-type SourceInventory = { file: string; unparsedSpans: Array<{ startLine: number }> };
+export type FullBodyAudit = { sourceKey: string; targetId: number; effectiveText: string;
+  reviewer: string; reason: string; englishEvidence: string[] };
+type SourceInventory = { file: string; bytes: number; encoding: string; lineCount: number;
+  preamble: string; recordCount: number; unparsedSpans: ParsedFile["unparsedSpans"] };
 
 function rows<T>(path: string): T[] {
   return readFileSync(path, "utf8").trim().split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line) as T);
@@ -58,8 +67,30 @@ function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
 }
 
+export function validateSourceCoverage(files: Array<{ bytes: number; parsed: ParsedFile }>,
+  inventory: SourceInventory[], candidates: Candidate[]): void {
+  const byFile = new Map(inventory.map((row) => [row.file, row]));
+  assert(byFile.size === inventory.length && files.length === inventory.length,
+    "source inventory file coverage mismatch");
+  const candidateCounts = new Map<string, number>();
+  for (const candidate of candidates) candidateCounts.set(candidate.file,
+    (candidateCounts.get(candidate.file) ?? 0) + 1);
+  assert([...candidateCounts.keys()].every((file) => byFile.has(file)),
+    "candidate references a file outside source inventory");
+  for (const { bytes, parsed } of files) {
+    const row = byFile.get(parsed.file);
+    assert(row && row.bytes === bytes && row.encoding === parsed.encoding
+      && row.lineCount === parsed.lineCount && row.preamble === parsed.preamble
+      && row.recordCount === parsed.records.length
+      && JSON.stringify(row.unparsedSpans) === JSON.stringify(parsed.unparsedSpans),
+    `stale source inventory ${parsed.file}`);
+    assert((candidateCounts.get(parsed.file) ?? 0) === parsed.records.length,
+      `missing entire candidate file or occurrence ${parsed.file}`);
+  }
+}
+
 export function validateBoundaries(candidates: Candidate[], reviews: Review[],
-  inventory: SourceInventory[],
+  inventory: Array<{ file: string; unparsedSpans: Array<{ startLine: number }> }>,
   boundaries: BoundaryDecision[], sourceRevision: string, mappingRevision: string): void {
   const spans = new Set(inventory.flatMap((item) => item.unparsedSpans.map((span) =>
     `${item.file}:${span.startLine}`)));
@@ -80,6 +111,31 @@ export function validateBoundaries(candidates: Candidate[], reviews: Review[],
     assert(byReview.get(boundary.sourceKey)?.fields.descriptionHtml.status === boundary.status,
       `boundary disposition disagrees with review ${locator}`);
   }
+}
+
+export function validateFullBodyAudits(reviews: Review[], audits: FullBodyAudit[],
+  allowPending = false): number {
+  const accepted = new Map(reviews.filter((row) => row.fields.descriptionHtml.status === "accepted")
+    .map((row) => [row.sourceKey, row]));
+  const seen = new Set<string>();
+  for (const audit of audits) {
+    const review = accepted.get(audit.sourceKey);
+    assert(review && !seen.has(audit.sourceKey) && review.targetId === audit.targetId,
+      `unknown or repeated full-body audit ${audit.sourceKey}`);
+    seen.add(audit.sourceKey);
+    assert(audit.effectiveText === review.fields.descriptionHtml.replacementText,
+      `stale full-body audited text ${audit.sourceKey}`);
+    assert(Boolean(audit.reviewer.trim()) && Boolean(audit.reason.trim())
+      && Array.isArray(audit.englishEvidence) && audit.englishEvidence.length > 0,
+    `incomplete full-body audit ${audit.sourceKey}`);
+    for (const excerpt of audit.englishEvidence) {
+      assert(Boolean(excerpt.trim()) && Boolean(review.input.englishDescription?.includes(excerpt)),
+        `unaligned full-body English evidence ${audit.sourceKey}`);
+    }
+  }
+  const pending = accepted.size - seen.size;
+  assert(allowPending || pending === 0, `${pending} accepted bodies lack full-body audit`);
+  return pending;
 }
 
 export function validateReviews(candidates: Candidate[], reviews: Review[], mappingRevision: string,
@@ -265,6 +321,54 @@ function arg(name: string): string {
   return resolve(process.argv[index + 1]!);
 }
 
+export function loadEnglishRecords(db: Database.Database): Map<number, EnglishRecord> {
+  const english = new Map<number, EnglishRecord>((db.prepare(`SELECT s.id, s.name, s.rulebook_id AS rulebookId,
+    b.dnd_edition_id AS editionId, CAST(s.description AS BLOB) AS description,
+    school.name AS school, subschool.name AS subschool,
+    s.verbal_component AS verbal, s.somatic_component AS somatic,
+    s.material_component AS material, s.arcane_focus_component AS arcaneFocus,
+    s.divine_focus_component AS divineFocus, s.xp_component AS xp,
+    s.meta_breath_component AS metaBreath, s.true_name_component AS trueName,
+    s.corrupt_component AS corrupt, s.extra_components AS extra,
+    s.casting_time AS castingTime, s.range, s.target, s.effect, s.area, s.duration,
+    s.saving_throw AS savingThrow, s.spell_resistance AS spellResistance
+    FROM dnd_spell s JOIN dnd_rulebook b ON b.id = s.rulebook_id
+    JOIN dnd_spellschool school ON school.id = s.school_id
+    LEFT JOIN dnd_spellsubschool subschool ON subschool.id = s.sub_school_id`)
+    .all() as Array<{ id: number; name: string; rulebookId: number; editionId: number;
+      school: string; subschool: string | null; verbal: number; somatic: number;
+      material: number; arcaneFocus: number; divineFocus: number; xp: number;
+      metaBreath: number; trueName: number; corrupt: number; extra: string | null;
+      description: Buffer; castingTime: string | null; range: string | null; target: string | null;
+      effect: string | null; area: string | null; duration: string | null;
+      savingThrow: string | null; spellResistance: string | null }>).map((row) =>
+    [row.id, { name: row.name, rulebookId: row.rulebookId, editionId: row.editionId,
+      description: row.description.toString("utf8"), mechanics: {
+        school: row.school, subschool: row.subschool, descriptors: [],
+        components: { verbal: row.verbal, somatic: row.somatic, material: row.material,
+          arcaneFocus: row.arcaneFocus, divineFocus: row.divineFocus, xp: row.xp,
+          metaBreath: row.metaBreath, trueName: row.trueName, corrupt: row.corrupt,
+          extra: row.extra },
+        castingTime: row.castingTime, range: row.range, target: row.target, effect: row.effect,
+        area: row.area, duration: row.duration, savingThrow: row.savingThrow,
+        spellResistance: row.spellResistance, classLevels: [], domainLevels: [],
+      } }] as [number, EnglishRecord]));
+  for (const row of db.prepare(`SELECT sd.spell_id AS spellId, d.name FROM dnd_spell_descriptors sd
+    JOIN dnd_spelldescriptor d ON d.id = sd.spelldescriptor_id ORDER BY sd.spell_id, d.name`)
+    .all() as Array<{ spellId: number; name: string }>) {
+    english.get(row.spellId)?.mechanics.descriptors.push(row.name);
+  }
+  for (const row of db.prepare("SELECT spell_id AS spellId, character_class_id AS classId, level, extra FROM dnd_spellclasslevel ORDER BY id")
+    .all() as Array<{ spellId: number; classId: number; level: number; extra: string }>) {
+    english.get(row.spellId)?.mechanics.classLevels.push([row.classId, row.level, row.extra]);
+  }
+  for (const row of db.prepare("SELECT spell_id AS spellId, domain_id AS domainId, level, extra FROM dnd_spelldomainlevel ORDER BY id")
+    .all() as Array<{ spellId: number; domainId: number; level: number; extra: string }>) {
+    english.get(row.spellId)?.mechanics.domainLevels.push([row.domainId, row.level, row.extra]);
+  }
+  return english;
+}
+
 function main(): void {
   const dataRoot = arg("data-root");
   const rulesPath = arg("rules-db");
@@ -286,15 +390,24 @@ function main(): void {
   "source or publication map is dirty");
   const candidates = rows<Candidate>(join(dataRoot, "dice-intake", "candidates.jsonl"));
   const reviews = rows<Review>(reviewsPath);
+  const fullBodyAt = process.argv.indexOf("--full-body-audit");
+  if (fullBodyAt >= 0) assert(Boolean(process.argv[fullBodyAt + 1]), "missing --full-body-audit path");
+  assert(checkIncomplete || fullBodyAt >= 0, "formal QA requires --full-body-audit");
+  const fullBodyAudits = fullBodyAt < 0 ? [] : rows<FullBodyAudit>(resolve(process.argv[fullBodyAt + 1]!));
   const boundaries = rows<BoundaryDecision>(arg("boundaries"));
   const inventory = rows<SourceInventory>(join(dataRoot, "dice-intake", "source-inventory.jsonl"));
   const sourceRevision = execFileSync("git", ["-C", dataRoot, "log", "-1", "--format=%H", "--",
     "spells-dice-db-by-mo"], { encoding: "utf8" }).trim();
-  const parsed = new Map<string, ReturnType<typeof parseDiceFile>["records"][number]>();
+  const inputDir = join(dataRoot, "spells-dice-db-by-mo");
+  const sourceFiles = readdirSync(inputDir).filter((name) => name.endsWith(".txt")).sort()
+    .map((name) => { const bytes = readFileSync(join(inputDir, name));
+      return { bytes: bytes.length, parsed: parseDiceFile(name, bytes) }; });
+  validateSourceCoverage(sourceFiles, inventory, candidates);
+  const parsed = new Map<string, DiceRecord>();
   const records: DiceRecord[] = [];
-  for (const file of new Set(candidates.map((row) => row.file))) {
-    for (const row of parseDiceFile(file, readFileSync(join(dataRoot, "spells-dice-db-by-mo", file))).records) {
-      parsed.set(`${sourceRevision}:${file}:${row.startLine}:${row.ordinal}`, row);
+  for (const { parsed: file } of sourceFiles) {
+    for (const row of file.records) {
+      parsed.set(`${sourceRevision}:${file.file}:${row.startLine}:${row.ordinal}`, row);
       records.push(row);
     }
   }
@@ -306,29 +419,7 @@ function main(): void {
   validateBoundaries(candidates, reviews, inventory, boundaries, sourceRevision, mappingRevision);
   const db = new Database(rulesPath, { readonly: true, fileMustExist: true });
   db.pragma("query_only = ON");
-  const english = new Map<number, EnglishRecord>((db.prepare(`SELECT s.id, s.name, s.rulebook_id AS rulebookId,
-    b.dnd_edition_id AS editionId, CAST(s.description AS BLOB) AS description,
-    s.casting_time AS castingTime, s.range, s.target, s.effect, s.area, s.duration,
-    s.saving_throw AS savingThrow, s.spell_resistance AS spellResistance
-    FROM dnd_spell s JOIN dnd_rulebook b ON b.id = s.rulebook_id`)
-    .all() as Array<{ id: number; name: string; rulebookId: number; editionId: number;
-      description: Buffer; castingTime: string | null; range: string | null; target: string | null;
-      effect: string | null; area: string | null; duration: string | null;
-      savingThrow: string | null; spellResistance: string | null }>).map((row) =>
-    [row.id, { name: row.name, rulebookId: row.rulebookId, editionId: row.editionId,
-      description: row.description.toString("utf8"), mechanics: {
-        castingTime: row.castingTime, range: row.range, target: row.target, effect: row.effect,
-        area: row.area, duration: row.duration, savingThrow: row.savingThrow,
-        spellResistance: row.spellResistance, classLevels: [], domainLevels: [],
-      } }] as [number, EnglishRecord]));
-  for (const row of db.prepare("SELECT spell_id AS spellId, character_class_id AS classId, level, extra FROM dnd_spellclasslevel ORDER BY id")
-    .all() as Array<{ spellId: number; classId: number; level: number; extra: string }>) {
-    english.get(row.spellId)?.mechanics.classLevels.push([row.classId, row.level, row.extra]);
-  }
-  for (const row of db.prepare("SELECT spell_id AS spellId, domain_id AS domainId, level, extra FROM dnd_spelldomainlevel ORDER BY id")
-    .all() as Array<{ spellId: number; domainId: number; level: number; extra: string }>) {
-    english.get(row.spellId)?.mechanics.domainLevels.push([row.domainId, row.level, row.extra]);
-  }
+  const english = loadEnglishRecords(db);
   db.close();
   const content = new Database(contentPath, { readonly: true, fileMustExist: true });
   content.pragma("query_only = ON");
@@ -358,6 +449,7 @@ function main(): void {
   }
   const result = validateReviews(candidates, reviews, mappingRevision, english, targets, corrections,
     checkIncomplete, duplicates);
+  result.summary.pendingFullBodyAudits = validateFullBodyAudits(reviews, fullBodyAudits, checkIncomplete);
   mkdirSync(reportDir, { recursive: true });
   writeFileSync(join(reportDir, "coverage.json"), JSON.stringify(result.summary, null, 2) + "\n");
   if (!checkIncomplete) {
@@ -365,10 +457,11 @@ function main(): void {
     writeFileSync(join(dataRoot, "dice-qa", "accepted.jsonl"), jsonl(result.accepted));
     writeFileSync(join(dataRoot, "dice-qa", "fallback.jsonl"), jsonl(result.fallback));
   }
-  const { candidateOccurrences, matchedTargets, existingTargets, acceptedTargets, pendingFields, decisions } =
+  const { candidateOccurrences, matchedTargets, existingTargets, acceptedTargets,
+    pendingFields, pendingFullBodyAudits, decisions } =
     result.summary;
   console.log(JSON.stringify({ candidateOccurrences, matchedTargets, existingTargets,
-    acceptedTargets, pendingFields, decisions }));
+    acceptedTargets, pendingFields, pendingFullBodyAudits, decisions }));
 }
 
 if (process.argv[1]?.replace(/\\/g, "/").endsWith("/dice-intake/qa.ts")) main();

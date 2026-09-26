@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
-import { validateBoundaries, validateReviews, type Correction, type DuplicateResolution, type EnglishMechanics,
+import Database from "better-sqlite3";
+import { loadEnglishRecords, validateBoundaries, validateFullBodyAudits, validateReviews, validateSourceCoverage, type Correction, type DuplicateResolution, type EnglishMechanics,
   type Review } from "./qa";
+import { parseDiceFile } from "./parse";
 import { compareBody, type Candidate } from "./reconcile";
 
 const sourceKey = "source-revision:test.txt:1:1";
@@ -17,7 +19,21 @@ const candidate = {
   bodyClassification: "substantive", classification: "substantive",
   nameHintTargetIds: [], aliasHintTargetIds: [], problems: [], duplicateDecision: "single",
 } satisfies Candidate;
-const mechanics: EnglishMechanics = { castingTime: null, range: null, target: null,
+const sourceBytes = Buffer.from("火术（Fire）（Test）\n变化系\n等级：法师1\n正文。", "utf8");
+const sourceFiles = ["test.txt", "other.txt"].map((file) => ({ bytes: sourceBytes.length,
+  parsed: parseDiceFile(file, sourceBytes) }));
+const sourceInventory = sourceFiles.map(({ bytes, parsed }) => ({ file: parsed.file, bytes,
+  encoding: parsed.encoding, lineCount: parsed.lineCount, preamble: parsed.preamble,
+  recordCount: parsed.records.length, unparsedSpans: parsed.unparsedSpans }));
+assert.equal(sourceFiles[0]!.parsed.records.length, 1);
+validateSourceCoverage(sourceFiles, sourceInventory, [candidate,
+  { ...candidate, file: "other.txt", sourceKey: "source-revision:other.txt:1:1" }]);
+assert.throws(() => validateSourceCoverage(sourceFiles, sourceInventory.slice(0, 1), [candidate]),
+  /source inventory file coverage mismatch/);
+const mechanics: EnglishMechanics = { school: "Evocation", subschool: null,
+  descriptors: ["Fire"], components: { verbal: 1, somatic: 1, material: 0,
+    arcaneFocus: 0, divineFocus: 0, xp: 0, metaBreath: 0, trueName: 0,
+    corrupt: 0, extra: null }, castingTime: null, range: null, target: null,
   effect: null, area: null, duration: null, savingThrow: null, spellResistance: null,
   classLevels: [], domainLevels: [] };
 const english = new Map([[1, { name: "Fire", description: "Deals 2d6 fire damage. Round | Fire |",
@@ -39,6 +55,34 @@ const review: Review = {
       replacementText: candidate.bodyHtml },
   },
 };
+const fixtureDb = new Database(":memory:");
+fixtureDb.exec(`CREATE TABLE dnd_rulebook (id INTEGER, dnd_edition_id INTEGER);
+  CREATE TABLE dnd_spellschool (id INTEGER, name TEXT);
+  CREATE TABLE dnd_spellsubschool (id INTEGER, name TEXT);
+  CREATE TABLE dnd_spelldescriptor (id INTEGER, name TEXT);
+  CREATE TABLE dnd_spell_descriptors (spell_id INTEGER, spelldescriptor_id INTEGER);
+  CREATE TABLE dnd_spellclasslevel (id INTEGER, spell_id INTEGER, character_class_id INTEGER, level INTEGER, extra TEXT);
+  CREATE TABLE dnd_spelldomainlevel (id INTEGER, spell_id INTEGER, domain_id INTEGER, level INTEGER, extra TEXT);
+  CREATE TABLE dnd_spell (id INTEGER, name TEXT, rulebook_id INTEGER, school_id INTEGER,
+    sub_school_id INTEGER, description TEXT, verbal_component INTEGER, somatic_component INTEGER,
+    material_component INTEGER, arcane_focus_component INTEGER, divine_focus_component INTEGER,
+    xp_component INTEGER, meta_breath_component INTEGER, true_name_component INTEGER,
+    corrupt_component INTEGER, extra_components TEXT, casting_time TEXT, range TEXT, target TEXT,
+    effect TEXT, area TEXT, duration TEXT, saving_throw TEXT, spell_resistance TEXT);
+  INSERT INTO dnd_rulebook VALUES (10, 5);
+  INSERT INTO dnd_spellschool VALUES (1, 'Evocation');
+  INSERT INTO dnd_spelldescriptor VALUES (1, 'Fire');
+  INSERT INTO dnd_spell_descriptors VALUES (1, 1);
+  INSERT INTO dnd_spell VALUES (1, 'Fire', 10, 1, NULL, 'Deals 2d6 fire damage. Round | Fire |',
+    1, 1, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);`);
+const loadedEnglish = loadEnglishRecords(fixtureDb);
+const dbBoundReview: Review = { ...review, input: { ...review.input,
+  englishMechanics: loadedEnglish.get(1)!.mechanics } };
+validateReviews([candidate], [dbBoundReview], "map-revision", loadedEnglish, targets);
+fixtureDb.prepare("UPDATE dnd_spell SET verbal_component = 0 WHERE id = 1").run();
+assert.throws(() => validateReviews([candidate], [dbBoundReview], "map-revision",
+  loadEnglishRecords(fixtureDb), targets), /stale englishMechanics/);
+fixtureDb.close();
 const boundaryReview: Review = { ...review, fields: { ...review.fields,
   descriptionHtml: { status: "deferred", classification: "substantive", reviewer: "test",
     reason: "Unparsed header in source body", englishEvidence: [] } } };
@@ -54,6 +98,20 @@ assert.throws(() => validateBoundaries([candidate], [boundaryReview], inventory,
 const check = (value: Review, rows: Candidate[] = [candidate]) =>
   validateReviews(rows, [value], "map-revision", english, targets);
 const result = check(review);
+const audit = { sourceKey, targetId: 1, effectiveText: candidate.bodyHtml,
+  reviewer: "test-full-body", reason: "Checked damage, table, and complete effect against English",
+  englishEvidence: ["Deals 2d6 fire damage"] };
+assert.equal(validateFullBodyAudits([review], [audit]), 0);
+assert.equal(validateFullBodyAudits([review], [], true), 1);
+assert.throws(() => validateFullBodyAudits([review], []), /lack full-body audit/);
+assert.throws(() => validateFullBodyAudits([review], [{ ...audit, effectiveText: "stale" }]),
+  /stale full-body audited text/);
+assert.throws(() => validateFullBodyAudits([review], [{ ...audit, englishEvidence: ["unrelated"] }]),
+  /unaligned full-body English evidence/);
+// A missing entire file's candidate/review pair passes review cardinality alone.
+assert.equal(result.summary.reviewedOccurrences, 1);
+assert.throws(() => validateSourceCoverage(sourceFiles, sourceInventory, [candidate]),
+  /missing entire candidate file or occurrence other.txt/);
 assert.equal(result.accepted.length, 1);
 assert.equal(result.accepted[0]!.descriptionHtml, candidate.bodyHtml);
 assert.equal(result.fallback.length, 3);
@@ -74,6 +132,10 @@ assert.throws(() => check({ ...review, input: { ...review.input, englishDescript
   /stale englishDescription/);
 assert.throws(() => check({ ...review, input: { ...review.input, englishMechanics: {
   ...mechanics, duration: "old duration" } } }), /stale englishMechanics/);
+assert.throws(() => check({ ...review, input: { ...review.input, englishMechanics: {
+  ...mechanics, components: { ...mechanics.components, verbal: 0 } } } }), /stale englishMechanics/);
+assert.throws(() => check({ ...review, input: { ...review.input, englishMechanics: {
+  ...mechanics, descriptors: [] } } }), /stale englishMechanics/);
 assert.throws(() => check({ ...review, fields: { ...review.fields, descriptionHtml: {
   ...review.fields.descriptionHtml, englishEvidence: ["unrelated source"] } } }), /unaligned/);
 assert.throws(() => check({ ...review, fields: { ...review.fields, descriptionHtml: {
