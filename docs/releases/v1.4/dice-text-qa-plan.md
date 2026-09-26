@@ -8,14 +8,14 @@ Status: planned; depends on the accepted D1 intake/matching handoff.
 
 ## Purpose And Ownership
 
-I18n-translation accepts Chinese replacement text using comparison and targeted
+The QA task accepts Chinese replacement text using comparison and targeted
 English QA. It does not translate the entire English corpus or require users
 to approve every record. Main-gate accepts coverage and unresolved exceptions
 before [dice-content-activation-plan.md](./dice-content-activation-plan.md).
 
-## Agent Context
+## Task Context
 
-- Read `AGENTS.md`, `.agents/roles/i18n-translation.md`, this plan,
+- Relevant references: `AGENTS.md`, this plan,
   [dice-source-intake-plan.md](./dice-source-intake-plan.md), the integrated
   authority table, `docs/i18n.md`, and accepted source/mapping evidence.
 - Future edit surface: bounded QA helpers and synthetic tests in data-tools,

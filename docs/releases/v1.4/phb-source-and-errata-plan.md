@@ -33,7 +33,7 @@ correction layer before any translation begins.
 ## Ownership
 
 - Owning version: v1.4.
-- Owning domain: `data-pipeline`.
+- Technical area: source preparation and validation.
 - Primary source/pilot branch: `codex/data-phb-source-qa`.
 - Full-extraction and comparison branch: `codex/data-phb-full-extraction`.
 - Related docs: `data-tools/README.md`, `docs/operations/import-workflow.md`,
@@ -47,11 +47,11 @@ correction layer before any translation begins.
   [phb-translation-qa-plan.md](./phb-translation-qa-plan.md) and
   [phb-content-activation-plan.md](./phb-content-activation-plan.md).
 
-## Agent Context
+## Task Context
 
 - Main gate outcome: accepted effective English PHB source rows with complete
   set accounting and page/errata provenance.
-- Required reading: `AGENTS.md`, `.agents/roles/data-pipeline.md`, this plan,
+- Relevant references: `AGENTS.md`, this plan,
   [integrated-plan.md](./integrated-plan.md), `data-tools/README.md`, and
   `docs/operations/db-content-workflow.md`.
 - Expected edit surface: `data-tools/src/phb/` or the closest accepted module,
@@ -65,7 +65,7 @@ correction layer before any translation begins.
 - Non-goals: no translation, content DB write, non-PHB publication, or public
   source text.
 - Handoff owner: `main-gate`; the review-console slices may begin against the
-  current queues, then `i18n-translation` begins only after Gate 2 closes.
+  current queues, then translation begins only after Gate 2 closes.
 
 ## Current Facts
 
@@ -237,7 +237,7 @@ drops, and reviewed outcomes for every pilot row.
 - Emit exactly one effective English row per spell with per-field source and
   decision provenance. Frontend, backend, search, and translation consumers
   receive this row and do not choose between PHB, SRD, or DB at runtime.
-- The data-pipeline owner resolves deterministic rows and produces terminal
+- The assigned source task resolves deterministic rows and produces terminal
   proposals with current evidence fingerprints. Main gate approves the
   adjudication policy and reviews only residual exceptions; it is not the
   clerical reviewer for every substantive/manual comparison row.

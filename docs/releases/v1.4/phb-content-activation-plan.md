@@ -26,7 +26,7 @@ adding runtime source selection, a UI redesign, or automatic DB deployment.
 ## Ownership
 
 - Owning version: v1.4.
-- Owning domain: `backend-db`.
+- Technical area: content import and API compatibility.
 - Primary implementation branch: a focused `codex/db-phb-content-activation`
   branch created after accepted handoff artifacts exist.
 - Upstream plans: [phb-source-and-errata-plan.md](./phb-source-and-errata-plan.md)
@@ -36,18 +36,18 @@ adding runtime source selection, a UI redesign, or automatic DB deployment.
   `docs/modules/server.md`, and `docs/modules/contracts.md`.
 - Downstream consumer: existing web spell detail/card/summary and Search paths.
 
-## Agent Context
+## Task Context
 
 - Main gate outcome: a reproducible local content DB containing only accepted
   effective English/Chinese overlays with correct per-spell fallback and search
   behavior.
-- Required reading: `AGENTS.md`, `.agents/roles/backend-db.md`, this plan,
+- Relevant references: `AGENTS.md`, this plan,
   [integrated-plan.md](./integrated-plan.md), both accepted upstream handoffs,
   and `docs/operations/db-content-workflow.md`.
 - Expected edit surface: accepted patch/import schemas, content migrations and
   fixtures when required, server/contracts read behavior and tests, data-tool
   apply/parity commands, and affected operations docs. A bounded web consumer
-  compatibility change requires a named `frontend-design` handoff.
+  compatibility change requires explicit frontend consumer validation.
 - Validation: dry-run/apply parity, provenance, DB integrity, search rebuild,
   server/contracts/web tests, and representative English/Chinese smoke.
 - Non-goals: no translation decisions, source extraction, non-PHB activation,
@@ -59,7 +59,7 @@ adding runtime source selection, a UI redesign, or automatic DB deployment.
 
 - Accepted effective English rows use the maintained structured rules patch ->
   rules manifest -> content generate/import path. Each row is already resolved
-  per field by data-pipeline; activation must not choose PHB, SRD, or DB text.
+  per field during data preparation; activation must not choose PHB, SRD, or DB text.
 - Accepted English PHB short descriptions use the maintained normalized
   summary import shape with `lang=en`, `variant=phb35-reviewed`, and
   source/decision provenance.

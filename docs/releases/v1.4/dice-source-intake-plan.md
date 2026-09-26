@@ -8,13 +8,13 @@ Status: planned; read-only discovery completed, no parser/import acceptance.
 
 ## Purpose And Ownership
 
-Data-pipeline turns the supplied TXT package into reproducible, mapped Chinese
+The intake task turns the supplied TXT package into reproducible, mapped Chinese
 replacement candidates and a complete comparison inventory. Main-gate accepts
 the handoff to [dice-text-qa-plan.md](./dice-text-qa-plan.md).
 
-## Agent Context
+## Task Context
 
-- Read `AGENTS.md`, `.agents/roles/data-pipeline.md`, this plan, the integrated
+- Relevant references: `AGENTS.md`, this plan, the integrated
   authority table, `data-tools/README.md`, and
   `docs/operations/db-content-workflow.md` / `import-workflow.md`.
 - Expected future edits: a bounded text-source adapter under data-tools,

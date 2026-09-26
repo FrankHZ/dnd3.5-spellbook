@@ -1,399 +1,107 @@
 # Agent Guide
 
-This is the agent-facing execution guide for this repository.
+## Issue And Task Ownership
 
-Keep it compact. Human-facing overview material belongs in `README.md`; the
-canonical documentation map belongs in `docs/README.md`; current work ordering
-belongs in `docs/roadmap.md`.
+GitHub issues own feature intent, scope, acceptance, dependencies, and unresolved
+choices. Git owns checkout state and history; PRs/checks own proposed changes,
+validation evidence, and merge state. Repository docs describe durable behavior,
+usage, and safety boundaries, not parallel plans or live status ledgers.
 
-## Project Shape
+- The coordinating task opens an issue for a concrete feature, then one
+  independent task linked to it. Do not create a new task for every small fix.
+- Task prompts identify the issue, workspace/base, write boundaries, and the
+  coordinating task's report destination. Read the issue, relevant code/tests,
+  and only the technical references needed for the change.
+- The task completes authorized implementation, targeted validation, commit,
+  push, and a linked PR. Only an explicitly analysis-only assignment may finish
+  with a preparation report instead. Report genuine blockers rather than
+  silently stopping or overwriting another task's work.
+- Send the coordinating task the issue/PR URLs, change summary, checks and
+  results, and unresolved risks. Do not merge your own PR or declare your issue
+  accepted. Address review findings and return for re-review.
+- Main-gate describes that coordinating responsibility, not an agent profile.
+  It reviews the actual diff, issue criteria, CI, and relevant behavior and
+  authority boundaries; reports acceptance to the user; and coordinates remote
+  merge/issue closeout when authorized. Routine internal steps do not need
+  separate user approval; genuine scope and production decisions remain explicit.
+- Optional bounded delegation specifies the outcome, edit/write boundary, and
+  evidence needed. The task owner integrates the result. There are no required
+  agent roles, model tiers, or role handoffs.
 
-- `server/`: Express API, Prisma clients, SQLite runtime access, API tests.
-- `web/`: React Router frontend, UI components, browser state, i18n runtime.
-- `contracts/`: shared TypeScript DTOs used by both `server` and `web`.
-- `data-tools/`: parser, import, inspection, rules patch, short-description,
-  and data harness tooling.
-- `review-console/`: private localhost PHB evidence-review API and React shell.
-- `docs/`: durable project docs, operational docs, and MVP history.
-- `data/`: ignored nested local data repo for source inputs, maintained patch
-  data, normalized import JSONL, and review decisions.
-- `server/db/`: tracked DB migrations, seed entry points, portable fixtures,
-  and ignored local runtime SQLite databases under `server/db/local/`.
-- `data-tools/out/`: generated reports, parser output, review queues, and other
-  rebuildable intermediates.
-
-## Start Here
-
-Use these docs for orientation instead of expanding this file:
-
-- `docs/README.md`: canonical documentation map and historical/current doc
-  ownership.
-- `docs/roadmap.md`: current work ordering after a pause; v1.4 planning is
-  active.
-- `docs/releases/v1.4/README.md`: active dice database Chinese text replacement
-  boundary and suspended PHB work disposition.
-- `docs/releases/v1.4/integrated-plan.md`: intake, English-assisted discrepancy
-  QA, accepted replacement, and consumer acceptance sequence.
-- `docs/releases/v1.4/dice-source-intake-plan.md`: data-pipeline-owned source
-  inventory, TXT parsing, identity mapping, and difference accounting.
-- `docs/releases/v1.4/dice-text-qa-plan.md`: i18n-owned discrepancy QA and
-  accepted replacement/fallback decisions.
-- `docs/releases/v1.4/dice-content-activation-plan.md`: backend-db-owned safe
-  import, variant compatibility, search, and consumer acceptance.
-- `docs/releases/v1.4/phb-source-and-errata-plan.md`: suspended PDF work and
-  resumption safeguards; the other `phb-*` plans are paused reference.
-- `docs/releases/v1.3/FREEZE.md`: latest frozen formal release snapshot for
-  the sitewide UX/style and secure Actions deployment release.
-- `docs/releases/v1.3/README.md`: frozen v1.3 release boundary and accepted
-  track map.
-- `docs/releases/v1.3/sitewide-ux-redesign-plan.md`: accepted frontend-design
-  cohesion record.
-- `docs/releases/v1.3/platform-deploy-prerequisite-plan.md`: accepted secure
-  Actions deployment prerequisite record.
-- `docs/releases/v1.2.2/FREEZE.md`: previous frozen formal release snapshot for
-  the internal quality-maintenance release.
-- `docs/releases/v1.2.2/README.md`: frozen internal quality-maintenance release
-  boundary and accepted pass map.
-- `docs/releases/v1.2.2/agent-workflow-hardening-plan.md`: accepted canonical
-  role, thin adapter, context-packet, and correspondence-check record.
-- `docs/releases/v1.2.2/code-and-test-qa-plan.md`: accepted read-only audit,
-  main-gate triage, bounded fixes, and regression record.
-- `docs/releases/v1.2.1/FREEZE.md`: previous frozen formal release and latest
-  frozen production/public release snapshot.
-- `docs/releases/v1.2.1/README.md`: frozen content-backed full-text spell
-  search release record.
-- `docs/releases/v1.2.1/full-text-search-plan.md`: accepted full-text Search
-  contract, FTS index, backend/data, and frontend consumer record.
-- `docs/releases/v1.2/FREEZE.md`: older frozen formal public release
-  snapshot.
-- `docs/releases/v1.2/README.md`: frozen full-spell source review, mechanics
-  localization, and Publications page release planning record.
-- `docs/releases/v1.2/full-spell-source-review-plan.md`: accepted full-spell
-  source inventory and parse QA record.
-- `docs/releases/v1.2/full-corpus-correction-plan.md`: post-review correction
-  apply record for accepted full-corpus rows and release activation.
-- `docs/releases/v1.2/db-workflow-review-plan.md`: v1.2 DB/content workflow
-  hardening acceptance record.
-- `docs/releases/v1.2/mechanics-localization-plan.md`: accepted mechanics
-  translation, QA workflow, and frontend consumer record.
-- `docs/releases/v1.2/publications-page-plan.md`: accepted Publications page
-  and minimum metadata record.
-- `docs/releases/v1.1/FREEZE.md`: older frozen formal public release
-  snapshot.
-- `docs/releases/v1.1/README.md`: frozen production hardening and full spell
-  corpus release plan.
-- `docs/releases/v1.1/production-hardening-plan.md`: frozen CF/AWS security
-  acceptance plan.
-- `docs/releases/v1.1/full-spell-corpus-plan.md`: frozen full spell corpus
-  import and content DB activation plan.
-- `docs/releases/v1.1/frontend-content-pass-plan.md`: frozen focused frontend
-  content acceptance plan.
-- `docs/releases/v1.0/FREEZE.md`: older frozen formal public release
-  snapshot.
-- `docs/releases/v1.0/README.md`: frozen formal public release planning
-  record.
-- `docs/releases/v1.0/domain-and-deployment-plan.md`: frozen deployment
-  topology planning context.
-- `docs/releases/v1.0/about-and-status-plan.md`: frozen About/Status planning
-  context.
-- `docs/releases/v1.0/release-ready-doc-sweep-plan.md`: frozen release docs
-  quality-gate planning context.
-- `docs/mvp/v3.10/FREEZE.md`: latest frozen pre-release stage snapshot.
-- `docs/features.md`: current user-facing feature map.
-- `docs/feature-workflow.md`: feature intake and implementation loop.
-- `docs/modules/README.md`: high-level module ownership and validation
-  boundaries.
-- `docs/harness.md`: validation and harness strategy.
-- `docs/design.md`: durable UI design direction.
-- `docs/i18n.md`: frontend copy, language fallback, and locale workflow.
-- `docs/operations/README.md`: deployment, data setup, and remote operations
-  map.
-- `docs/operations/db-content-workflow.md`: durable DB/content handoff entry
-  point after v1.2 workflow hardening.
-
-For workspace command references, use:
-
-- `server/README.md`
-- `web/README.md`
-- `contracts/README.md`
-- `data-tools/README.md`
-- `review-console/README.md`
-
-Version folders under `docs/mvp/` are stage records and active plan spaces. A
-`FREEZE.md` records a shipped stage; it is not automatically the baseline for
-later development. Treat plan documents as intended scope, not as proof of
-shipped behavior.
-
-Formal post-MVP release planning belongs under `docs/releases/`. Keep
-`docs/mvp/` for MVP-stage history and final MVP closeout records.
-
-## Repo-Local Skills
-
-Use the repo-local `$branch-naming` skill before creating, renaming, or
-assigning Codex work branches.
-
-Use the repo-local `$commit-message` skill before committing.
-
-Use the repo-local `$freeze-snapshot` skill before creating or updating a
-version `FREEZE.md`, recording release acceptance evidence, or moving the
-latest frozen snapshot in navigation docs.
-
-Use the repo-local `$version-plan-doc` skill before creating or broadly updating
-version or release planning docs under `docs/mvp/v*/` or `docs/releases/`,
-especially when deciding whether an implementation branch should update
-`integrated-plan.md`.
-
-Repo-local skills live under `.agents/skills/` in the current worktree. When
-using repo skills such as `branch-naming` or `commit-message`, read
-`.agents/skills/<skill>/SKILL.md` relative to the active worktree root. Do not
-probe a user-level `.agents` path first.
-
-## Issue, Task, And Main-Gate Delivery
-
-Main-gate is the current coordinating task's responsibility, not a fixed agent
-role or model profile. Repository role files and adapters are being retired;
-they do not require role-based delegation or override this delivery contract.
-
-- Main-gate opens a GitHub issue for each feature, defining its outcome, scope,
-  acceptance criteria, dependencies, and relevant technical references, then
-  creates one independent task for that issue.
-- The task owns implementation through targeted validation, commit, branch
-  push, and a PR linked to its issue. A preparation note or local completion
-  message is not the final handoff for implementation work. Only an explicitly
-  analysis-only assignment may finish without a PR.
-- Before dispatch, main-gate supplies its task identity as the report
-  destination. When ready, the independent task sends main-gate the issue and
-  PR URLs, a concise change summary, checks and results, and any unresolved
-  risks or scope deviations. It must not merge its own PR or declare the issue
-  accepted on its own.
-- Main-gate reviews the actual diff, issue acceptance criteria, CI results,
-  relevant behavior, and source/authority/fallback boundaries. Return findings
-  to the owning task for fixes and re-review; do not stop at collecting reports.
-- Main-gate reports the consolidated acceptance result to the user and owns
-  merge/issue-closeout coordination. Merge remotely when authorized and checks
-  pass; do not turn every internal implementation step into a user approval.
-- Keep live work state, blockers, dependencies, PRs, and acceptance evidence in
-  GitHub issues/PRs. Git owns checkout state and history. Repository docs retain
-  durable usage and technical boundaries, not duplicate task/status ledgers.
-- Read the issue and only the technical references needed for its change.
-  Prefer removing unnecessary reading requirements before shortening retained
-  guidance. Use bounded subagents only when independent work benefits the task;
-  no fixed role/model choreography is required.
+For scope changes and review, use [feature-workflow](docs/feature-workflow.md).
+Do not require temporary Markdown plans or a plan-only commit before execution.
 
 ## Working Rules
 
-- Prefer existing patterns over new frameworks or broad rewrites.
-- Keep changes scoped to the requested behavior.
-- Keep specialist feature branches on a small documentation contract: read
-  `AGENTS.md`, the closest `docs/features.md` entry, the owning topic doc when
-  behavior or workflow changes, and nearby code/tests. Do not make specialist
-  branches chase docs navigation, roadmap ordering, module docs, integrated
-  plans, or freeze snapshots unless the branch changes scope, ownership,
-  sequencing, or release state. Route questions caused by a missing or
-  conflicting context packet back to the main gate.
-- Treat `main` as remote-managed. Work on feature branches, push the branch,
-  open a PR, and let remote CI protect merges. Do not locally merge and push
-  `main` unless the user explicitly asks for a direct main update.
-- When editing from a sibling worktree, use absolute paths with patch tools or
-  otherwise prove the edit target is inside the intended worktree before
-  applying changes.
-- Do not commit local data, database files, generated logs, or personal wrapper
-  scripts to the parent repo. The nested `data/` repo may version local source
-  data separately.
-- Do not treat root-level `.bat` files as canonical. Tracked deployment scripts
-  live under `docs/deployment-scripts/`; the GitHub deploy workflow should stay
-  a thin wrapper around those scripts.
-- Keep root `.env` local and ignored. Use `.env.example` for non-secret helper
-  keys, and let deployment helpers read real SSH aliases from local `.env`
-  instead of hardcoding them in tracked docs or scripts.
-- If shared DTOs change, rebuild `contracts` before validating `server` or
-  `web`.
-- If behavior differs from documentation, update the newest topic-specific
-  canonical doc rather than editing old MVP history.
-- At main-gate review, run the architecture correspondence gate in
-  `docs/feature-workflow.md`. Documentation edits in an implementation PR do
-  not silently redefine accepted authority, fallback, ownership, ordering, or
-  source-of-truth boundaries; those changes require a plan-first scope decision.
-- Treat version `integrated-plan.md` files as sequencing and conflict-review
-  docs, not implementation ledgers. Ordinary implementation branches should
-  update their owning child plan, affected topic docs, and `docs/roadmap.md`
-  only when active work ordering changes.
-- Keep follow-up candidates local to the owning feature/topic/version plan or
-  `docs/stable-backlog.md`; promote them into `docs/roadmap.md` only during a
-  freeze, roadmap, or docs-governance sweep when scope and acceptance are clear.
+- Prefer the smallest maintainable change and existing helpers over parallel
+  mechanisms. Preserve unrelated and concurrent changes.
+- Treat `main` as remote-managed: use a feature branch, push, open a PR, and let
+  remote CI protect merges. Do not locally merge and push `main` unless asked.
+- Before creating a branch or committing, read the corresponding repo-local
+  [branch-naming](.agents/skills/branch-naming/SKILL.md) or
+  [commit-message](.agents/skills/commit-message/SKILL.md) skill in this worktree.
+- When editing a sibling worktree, use absolute paths and verify the target.
+- Update the affected current topic doc when behavior or commands change.
+  Check incoming links when moving/removing a document or command. Historical
+  release records are evidence, not default startup reading or current scope.
 
-## Feature Change Workflow
+## Data And Production Boundaries
 
-For ordinary feature requests:
+- Source text, maintained patches/indexes, normalized import JSONL, and review
+  decisions belong in the nested `data/` repo. Public code may contain schemas,
+  validators, synthetic/redacted fixtures, and source-free reports. Never commit
+  local DBs, raw sources, credentials, logs, or personal wrapper scripts here.
+- `server/db/local/` contains operator-owned, ignored SQLite files. Do not
+  replace, move, or write them without explicit authorization for a write-capable
+  workflow. Content import must not mutate app-state. Keep root `.env` local;
+  use `.env.example` for non-secret helper keys.
+- Preserve accepted source authority, provenance, fingerprints, import order,
+  and fallback. Passing counts/tests or PR documentation edits do not authorize
+  changing those boundaries. For data/DB work, consult
+  [db-content-workflow](docs/operations/db-content-workflow.md).
+- Dice TXT is candidate input, not accepted content. Preserve existing IDs,
+  canonical English, mechanics, summaries, and CHM/English fallback. Use aligned
+  English for substantive Chinese discrepancy QA. Selective replacement must
+  prove safe ordering: the existing CHM importer deletes all Chinese spell text.
+- PHB PDF/MinerU/SRD extraction and translation remain suspended pending an
+  explicit resumption decision. Preserve implementation, tests, and data; do not
+  rerun queues or treat old residuals/PR #113 as accepted evidence. Suspension
+  neither bypasses fingerprints nor makes PHB acceptance a dice prerequisite.
+- Publication metadata comes from `data/rulebook-publications/publications.jsonl`,
+  not rules-clean date fields or UI heuristics. Only accepted rows publish
+  year/date/URL/image details. Preserve source URLs/ISBN evidence; rebuilding the
+  maintained file with `--force` must be intentional.
+- Production writes, deployment, and credential rotation require explicit
+  authorization. Canonical deployment helpers live in `docs/deployment-scripts/`;
+  root `.bat` files are personal wrappers. Use
+  [deployment](docs/operations/deployment.md) for operational safeguards.
 
-1. Locate the feature in `docs/features.md`.
-2. Read the existing feature entry point and nearby tests before editing.
-3. For non-trivial changes with clear scope, copy
-   `docs/templates/feature-plan.md` to `docs/tmp-feature-plan.md` and use it as
-   a working checklist.
-4. For ambiguous, structural, or workflow-changing requests, write a durable
-   concrete plan under the active development docs indicated by
-   `docs/roadmap.md`, commit that plan first, and only then implement the
-   deliverable. Do not add new active scope to frozen version folders.
-5. Reuse current API helpers, storage helpers, UI wrappers, and feature folders
-   instead of creating parallel structures.
-6. Add or update the closest harness layer.
-7. Delete `docs/tmp-feature-plan.md` before commit unless the user explicitly
-   wants it archived.
-8. Run the smallest relevant validation command before handoff.
-9. Update durable docs when behavior, workflow, workspace shape, validation
-   commands, or agent guidance changed.
+## Validation And Conditional References
 
-When adding, moving, or retiring a workspace, tool command, active plan, or
-source-of-truth document, check the navigation surface together: root
-`README.md`, `docs/README.md`, `AGENTS.md`, and the relevant workspace
-`README.md`.
+Run the smallest checks that prove the changed behavior; record results in the
+PR. Full remote `ci:portable` remains the merge gate. Use it locally only for
+merge-readiness spot checks or CI debugging, not every editorial change.
 
-Use the plan-first path especially when the user corrects product semantics,
-the change affects workspace boundaries or agent workflow, data import behavior
-could create parallel sources of truth, or a feature request needs confirmation
-before implementation details are safe.
+- Docs: changed links, command existence, authority preservation, and diff checks.
+- Shared DTOs: build `contracts` before validating `server` or `web` consumers.
+- UI copy: `npm run i18n:sync` and `npm run i18n:check`; see [i18n](docs/i18n.md).
+- Frontend behavior/layout: affected tests/build plus browser smoke.
+- Data/parser/import changes: affected portable harness; use local-data acceptance
+  only when the task needs local sources and respects the write boundary.
 
-## Data And Environment
+Use the affected workspace README for setup and commands: `server/`, `web/`,
+`contracts/`, `data-tools/`, or `review-console/`. Package scripts are executable
+command truth. [features](docs/features.md) maps user-facing entry points;
+[harness](docs/harness.md) explains test boundaries. Neither is mandatory
+cover-to-cover reading.
 
-The app depends on local SQLite files configured by `server/.env`:
+Preserve these package boundaries when working in their areas:
 
-- `RULES_DATABASE_URL`
-- `CONTENT_DATABASE_URL`
-- `APP_STATE_DATABASE_URL`
-
-`APP_DATABASE_URL` is a transitional compatibility alias for the content DB
-only. These point at local files under `server/db/local/`. That local subtree is
-intentionally excluded from the public repo baseline. Do not replace it, move
-it, or assume a fresh clone has the same data.
-
-Data tools may inspect local SQLite files, but must not modify
-`server/db/local/` unless the user explicitly asked for a write-capable
-workflow.
-
-Content-bearing local patch data, maintained source indexes, normalized import
-JSONL, and durable review decisions belong in the nested `data/` repo. Keep
-schemas, validators, generators, generated queues, run reports, and
-redacted/minimal fixtures in the parent repo.
-
-Rulebook publication metadata belongs in
-`data/rulebook-publications/publications.jsonl`. Seed it with
-`npm run -w data-tools rulebooks:publications:seed`, then review and maintain it
-in the nested data repo. Do not treat rules-clean `year` / `published` fields or
-frontend grouping heuristics as the publication metadata source of truth.
-Generated content may keep review status for grouping QA, but only rows marked
-`accepted` should publish year/date/URL/image details to API-facing content.
-When enriching publication metadata from the web, record ISBNs and source URLs
-in data repo fields such as `isbn10`, `isbn13`, and `metadataSources`; do not
-overwrite the canonical seed file without an intentional `--force` rebuild.
-
-For any large-scale source reading or broad content QA over local data sources,
-spawn a subagent to inspect the corpus and return summarized findings instead
-of loading the source corpus into the main agent context.
-
-For active v1.4 work, use `docs/releases/v1.4/integrated-plan.md` and the
-three `dice-*` child plans. The supplied TXT package at
-`data/spells-dice-db-by-mo/` is proposed source input, not accepted data.
-Match existing spell/publication identities, use English for substantive
-Chinese discrepancy QA, and preserve current CHM/English fallback for missing
-or unresolved replacements. Do not silently rewrite canonical English,
-normalized mechanics, summaries, or IDs. Keep source/decisions in nested data
-and public reports source-free; runtime consumers do not adjudicate sources.
-The existing CHM importer deletes all Chinese spell text, so selective dice
-activation must prove safe import order and fallback preservation first.
-
-The PHB PDF/MinerU/SRD extraction and translation track is suspended, including
-its manual review queues and PR #113. Preserve implementation, tests, and data;
-do not rerun it or make its acceptance a dependency of the dice-text release.
-Resume only after an explicit scope decision, with the unchanged safeguards in
-`docs/releases/v1.4/phb-source-and-errata-plan.md` and the paused review-console
-plan. Suspension does not authorize bypassing fingerprints or accepting old
-residuals. This plan change does not authorize runtime DB or production writes.
-
-## Validation Commands
-
-Run the smallest relevant local check first. Do not default to full portable CI
-for every branch while iterating; remote PR CI is the merge gate.
-
-```bash
-npm run verify
-npm run ci:portable
-```
-
-`npm run ci:portable` is the clean-checkout CI subset used by GitHub Actions. It
-includes backend API tests against disposable fixtures. Run it locally for
-merge-readiness spot checks or CI/debugging, not as mandatory overhead for every
-small edit.
-
-Useful pieces:
-
-```bash
-npm run build:contracts
-npm run check:contracts
-npm run typecheck:data-tools
-npm run test:data-tools
-npm run test:server
-npm run test:web
-npm run typecheck:web
-npm run -w web build
-```
-
-Use local data acceptance only when the change touches local source data,
-rules DB manifests, parser output, or import behavior:
-
-```bash
-npm run -w data-tools acceptance:local
-```
-
-For frontend copy changes:
-
-```bash
-npm run i18n:sync
-npm run i18n:check
-```
-
-For frontend behavior or layout changes, combine targeted tests/builds with a
-manual browser smoke test of the affected pages.
-
-## Module Notes
-
-- Frontend routes and feature entry points are mapped in `docs/frontend-map.md`.
-- High-level module ownership lives in `docs/modules/`.
-- API calls should go through `web/app/api/`.
-- Local UI wrappers live in `web/app/components/ui/`.
-- Server API route registration starts in `server/src/app.ts`.
-- Server internal imports use `#server/*`; generated Prisma client imports use
-  `#prisma-rules-clean/*`, `#prisma-content/*`, or `#prisma-app-state/*`.
-  Do not add new server `~` aliases or TypeScript-only `paths` aliases.
-  Local TS execution must use the server npm scripts or
-  `NODE_OPTIONS=--conditions=source`; built runtime commands intentionally
-  omit that condition and resolve imports to `dist/`. Server tests use
-  `server/vitest.config.ts` source-condition resolution, not `NODE_OPTIONS`.
-- Spell backend behavior is split under `server/src/services/spells/`.
-- Runtime database clients are generated from the rules-clean, content, and
-  app-state Prisma schemas; regenerate clients when schemas change.
-- Data-tool code belongs under the owning `data-tools/src/` module:
-  `shared/`, `db/`, `rules/`, `rules-content/`, `rulebooks/`,
-  `short-desc/`, `phb/`, `phb-review/`, `zh-parser/`, or `harness/`.
-- The private review console imports Node review behavior only from
-  `data-tools/phb-review`; browser files may use its types but must not import
-  the runtime or deep paths under `data-tools/src/`.
-- Classify every `data-tools/package.json` script in
-  `data-tools/scripts.manifest.json`.
-- Maintained data-tool commands deserve focused helper tests. One-time or
-  dormant local scripts should not be wired into always-on validation unless
-  they are promoted into the maintained workflow.
-
-## Documentation Notes
-
-- `README.md` files are navigation and short operational entry points.
-- `docs/` files are durable project truth by topic.
-- `docs/features.md` is the user-facing feature map.
-- `docs/modules/` is the high-level module design surface.
-- `docs/mvp/` is stage history plus active plan space; frozen version folders
-  should not become the daily agent working surface.
-- `docs/releases/` is the formal post-MVP release planning surface.
-- New agent or harness guidance belongs in `AGENTS.md` or `docs/harness.md`,
-  not inside old MVP plan files.
-- Current work ordering after a pause belongs in `docs/roadmap.md`, while
-  detailed implementation plans stay in focused topic docs.
+- Server imports use `#server/*` and generated `#prisma-*/*` aliases. Use server
+  npm scripts/source conditions for local TS and built imports for production;
+  see `server/README.md`. Regenerate Prisma clients for schema changes.
+- Data tooling belongs in `data-tools/`, not API runtime code. Classify maintained
+  commands in `data-tools/scripts.manifest.json`; keep portable tests independent
+  of private corpus/local DBs.
+- Review-console Node code imports only `data-tools/phb-review`; browser code
+  may import its types, not runtime/deep `data-tools/src/` paths.

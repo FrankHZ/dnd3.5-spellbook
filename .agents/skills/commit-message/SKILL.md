@@ -1,44 +1,32 @@
 ---
 name: commit-message
-description: Generate git commit messages for this repo in the required fixed format. Use when the user asks for a commit message, asks to summarize staged or pending changes into a commit, or needs help choosing the correct commit type and scope for this repository.
+description: Generate the repository's fixed-format Git commit message from the intended changes.
 ---
 
 # Commit Message
 
-Generate a commit message that matches the repository's required format.
+Inspect the staged diff, or the requested change set if nothing is staged.
+Use the version from the user's context, owning issue, or its explicitly linked
+release scope; do not ask the user to repeat an already resolved version or
+traverse unrelated historical plans. If none resolves the version, identify
+that missing value rather than inventing it. Versions start with `v`.
 
-Use the version provided by the user or already present in the conversation context. If no version is available, ask for it instead of inventing one. The version should start with `v`, e.g, `v1.0`.
+Write in English. Choose one type and one scope matching the dominant intent:
 
-Inspect the staged diff first when available. If nothing is staged, inspect the requested change set or the working diff that the user is referring to.
+- Types: `feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `chore`, `build`, `ci`.
+- Scopes: `web`, `server`, `contracts`, `db`, `infra`, `scripts`, `i18n`, `deps`.
 
-Derive the commit message in this order:
+Use an imperative summary of at most 72 characters, without a trailing period;
+include one to three bullets and exactly one final `Refs:` line. Prefer the
+owning issue reference; include a technical doc only when useful. No plan doc
+is required. Leave `Refs:` empty if there is no reference.
 
-1. Identify the primary intent of the change.
-2. Choose exactly one type from: `feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `chore`, `build`, `ci`.
-3. Choose exactly one scope from: `web`, `server`, `contracts`, `db`, `infra`, `scripts`, `i18n`, `deps`.
-4. Write a short imperative summary no longer than 72 characters and do not end it with a period.
-5. Write one to three `- ` bullets describing the most important changes or effects.
-6. End with exactly one `Refs:` line. It will usually be a plan doc and a deliverable doc. Leave it blank after the colon when no reference is available.
+When asked for a message, return only this shape:
 
-Prefer the type and scope that match the dominant user-facing effect of the change, not every file touched. If multiple scopes are involved, choose the one that best represents the main purpose.
+```text
+[<version>]<type>(<scope>): <summary>
 
-Map common changes consistently:
+- <most important change or effect>
 
-- New behavior or new capability: `feat`
-- Bug fix or regression fix: `fix`
-- Internal restructuring without behavior change: `refactor`
-- Performance improvement: `perf`
-- Documentation-only change: `docs`
-- Test-only change: `test`
-- Maintenance, cleanup, or non-feature housekeeping: `chore`
-- Build tooling or dependency packaging changes: `build`
-- CI workflow or automation changes: `ci`
-
-Use this exact output shape and return only the commit message text:
-
-`[<version>]<type>(<scope>): <summary>`
-
-`- <bullet 1>`
-`- <bullet 2>`
-
-`Refs: <ticket-or-doc-or-empty>`
+Refs: <issue-or-doc-or-empty>
+```

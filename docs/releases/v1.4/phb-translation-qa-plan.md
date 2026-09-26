@@ -26,18 +26,18 @@ source-safe QA workflow.
 ## Ownership
 
 - Owning version: v1.4.
-- Owning domain: `i18n-translation`.
+- Technical area: translation and terminology QA.
 - Primary implementation branch: a focused `codex/i18n-phb-translation` branch
   created only after Gate 2 acceptance.
 - Upstream plan: [phb-source-and-errata-plan.md](./phb-source-and-errata-plan.md).
 - Downstream plan: [phb-content-activation-plan.md](./phb-content-activation-plan.md).
 - Related docs: `docs/i18n.md`, `data-tools/README.md`, and `docs/harness.md`.
 
-## Agent Context
+## Task Context
 
 - Main gate outcome: accepted Chinese PHB rows with complete translation and
   proofreading decisions, not a raw machine-translation dump.
-- Required reading: `AGENTS.md`, `.agents/roles/i18n-translation.md`, this plan,
+- Relevant references: `AGENTS.md`, this plan,
   [integrated-plan.md](./integrated-plan.md), accepted English QA report, and
   `docs/i18n.md`.
 - Expected edit surface: translation-oriented data-tool schemas/QA, a reusable
@@ -47,7 +47,7 @@ source-safe QA workflow.
   structural QA, rerun stability, redaction checks, and local-data acceptance.
 - Non-goals: no source redefinition, non-PHB translation, UI redesign, or DB
   activation.
-- Handoff owner: `main-gate`, then `backend-db` after Gate 3 acceptance.
+- Handoff owner: `main-gate`, then content activation after Gate 3 acceptance.
 
 ## Translation Boundary
 
@@ -62,7 +62,7 @@ source-safe QA workflow.
 - Translation generation and proofreading are separate states. A generated row
   cannot self-promote to accepted.
 - Large corpus reading/review must use bounded context packets and summarized
-  handoffs; do not load the complete source corpus into the main/librarian
+  handoffs; do not load the complete source corpus into the coordinating task
   context.
 
 ## Plan
@@ -105,7 +105,7 @@ English acceptance gate.
 ### Slice 4: Reusable Skill And Accepted Handoff
 
 - Add a repo-local `corpus-translation-qa` skill after the workflow is proven.
-  Keep it generic and stable: point to existing role/plan/operations entry
+  Keep it generic and stable: point to relevant issue/technical/operations entry
   points, define batching and handoff rules, and avoid embedding PHB text or a
   second copy of release-specific commands.
 - Produce accepted Chinese body/name and short-description handoff rows in the
@@ -152,7 +152,7 @@ npm run -w data-tools phb:translation:accepted
 ## Open Questions
 
 No scope question blocks assignment. Main gate must attach the accepted Gate 2
-artifact identities and batching limits to the specialist context packet.
+artifact identities and batching limits to the assigned task.
 
 ## Follow-Up Candidates
 

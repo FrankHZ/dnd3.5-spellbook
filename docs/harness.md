@@ -11,7 +11,6 @@ cheapest and most stable seams.
 
 The repository currently has:
 
-- canonical agent-role correspondence checks for project-scoped Codex agents
 - shared DTO compilation in `contracts`
 - runtime import smoke for the built `@dnd/contracts` package
 - runtime import smoke for the built server app and Prisma clients
@@ -26,7 +25,6 @@ The repository currently has:
 Useful commands:
 
 ```bash
-npm run agents:check
 npm run test:deployment-scripts
 npm run verify
 npm run ci:portable
@@ -48,7 +46,6 @@ real service or database.
 Or run the pieces individually:
 
 ```bash
-npm run test:agents
 npm run build:contracts
 npm run check:contracts
 npm run typecheck:data-tools
@@ -70,21 +67,6 @@ npm run -w web build
 ```
 
 ## Harness Guardrails
-
-### Agent Role Correspondence
-
-`npm run agents:check` derives canonical role names from `.agents/roles/*.md`
-and verifies that `.codex/agents/` contains one matching adapter that points to
-the exact canonical role and declares the same name inside its TOML.
-
-This is deliberately a repository correspondence check. It does not claim to
-validate the complete Codex TOML schema, model names, permissions, or tool
-availability. Adapter formats must still be checked against the installed
-Codex client or current official OpenAI documentation when they change.
-
-`npm run test:agents` exercises both the valid mapping and missing, orphaned,
-or misdirected adapter failures. Both the focused test and correspondence check
-run through `verify` and `ci:portable` so role drift blocks merge validation.
 
 ### Generated Test Output
 
@@ -443,13 +425,3 @@ Avoid starting with:
 - large end-to-end flows that fail for many unrelated reasons
 
 Those can come later if the project needs them.
-
-## Local Data Assumption
-
-Backend API tests currently depend on the local SQLite databases configured by
-`server/.env`. That is acceptable for this personal project, but it means these
-tests are not yet portable CI tests.
-
-If CI becomes a goal, first decide whether to provide a small fixture database,
-mock the repo layer, or split portable contract tests from local data smoke
-tests.

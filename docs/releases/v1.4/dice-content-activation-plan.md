@@ -8,14 +8,14 @@ Status: planned; no activation authorized by this documentation-only session.
 
 ## Purpose And Ownership
 
-Backend-db consumes accepted Chinese replacements while preserving uncovered
-CHM content, English behavior, stable spell IDs, and Search. Data-pipeline owns
-prepared data; frontend-design verifies existing consumers. Main-gate accepts
-local evidence, followed by a separately authorized operator activation.
+The activation task consumes accepted Chinese replacements while preserving
+uncovered CHM content, English behavior, stable spell IDs, and Search. It verifies
+prepared data and existing consumers. Main-gate accepts local evidence, followed
+by a separately authorized operator activation.
 
-## Agent Context
+## Task Context
 
-- Read `AGENTS.md`, `.agents/roles/backend-db.md`, this plan, accepted intake/QA
+- Relevant references: `AGENTS.md`, this plan, accepted intake/QA
   handoffs, `docs/operations/db-content-workflow.md`, `import-workflow.md`, and
   the language/detail/Search sections of `docs/features.md`.
 - Future edit surface: maintained import/projection logic, minimum necessary
@@ -24,7 +24,7 @@ local evidence, followed by a separately authorized operator activation.
 - Non-goals: source decisions, new rules/spells/books, app-state mutation,
   UI redesign, automatic remote DB writes, or activating unmerged PHB work.
 - Handoff: main-gate with dry-run, parity, provenance, rollback, and API/browser
-  evidence. No specialist may merge its own PR.
+  evidence. The implementing task must not merge its own PR.
 
 ## Existing Behavior And Concrete Risk
 
