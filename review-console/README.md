@@ -1,62 +1,57 @@
 # PHB Review Console
 
-Private localhost-only shell for the PHB Gate 2 review service. It is not part
-of the public web app or production server.
+Private localhost shell for PHB review. The PDF extraction/review track is
+suspended; these commands apply only to explicitly resumed work. Read the
+[resumption safeguards](../docs/releases/v1.4/phb-source-and-errata-plan.md#paused-workflow-execution-safeguards)
+before using real sources or queues. Dice work does not require this console;
+it is not part of the public app.
 
-The PDF extraction/review track is suspended. The active
-[dice activation feature](https://github.com/FrankHZ/dnd3.5-spellbook/issues/121) does not require this
-console or its queues. Keep the implementation and portable checks; the
-commands below are a reference for explicitly resumed PHB work.
+## Commands
 
-The React consumer presents the current MinerU layout and English residual
-queues as a dense review workspace. Queue/status/kind/category filters and
-stable previous/next navigation sit beside an actual PDF.js-rendered PHB page,
-independent MinerU/PDF.js/target overlays, joined PHB/SRD/DB evidence, and an
-explicit decision form. The browser owns only display, navigation, filters,
-draft form values, and stale-response recovery; the API remains authoritative
-for candidates, eligible targets, fingerprints, validation, and writes.
-The active queue and stable item id are reflected in the URL so a local review
-position can be refreshed or shared without depending on queue ordinals.
-The loaded PDF document is reused while navigating within a source. Queue,
-item, and selection-changing filter navigation warns before discarding an
-unsaved decision draft, and browser unload receives the same protection.
-During a page transition, old canvas pixels and overlays stay covered until
-the current render request completes; stale render completions are ignored.
+Install dependencies from the repository root. From this directory, use the
+commands defined in [package.json](./package.json):
 
-From this directory, run `npm run dev` for the Vite-backed local shell, or run
-`npm run build` followed by `npm run start` for a production-like local smoke.
-Set `PHB_REVIEW_PORT` to a numeric port when the default `4174` is unavailable.
-The launcher always binds the literal `127.0.0.1` address.
+| Task | Command |
+| --- | --- |
+| Develop with Vite | `npm run dev` |
+| Build the browser shell | `npm run build` |
+| Preview after building | `npm run start` |
+| Typecheck | `npm run typecheck` |
+| Run tests | `npm run test` |
+| Explicit read-only real-data smoke | `npm run smoke:local` |
 
-The Node API imports only `data-tools/phb-review`. The data-tools build runs
-before launch, typecheck, and tests so its public Node package entry exists in
-a clean workspace. Source PDFs are selected only through verified source ids;
-the API never accepts or returns a filesystem path.
+Launch, typecheck, and test scripts build the `data-tools/phb-review` public
+entry before consuming it. The real-data smoke requires the nested data repo
+and pinned PHB sources; it checks token handoff, layout detail, PDF byte ranges,
+and either current English detail or the expected `stale-queue` response. It
+never submits a decision. Documentation-only edits need link, command, and
+diff checks, not a source run.
 
-All API requests require the per-process `x-phb-review-token`; mutating calls
-also require an exact same-origin `Origin` header. The API emits no CORS
-headers. The launcher injects the token into a `phb-review-token` HTML meta tag
-at runtime for the same-origin client. It is never written to the built files,
-a URL, or console output.
+## Runtime And Decision Boundary
 
-Saving a layout decision unloads the English queue until the canonical full
-chain is current again. A stale decision response refreshes the displayed
-evidence while preserving unsaved note, decision, and target fields.
-The English queue also requires the current code-owned source-authority policy
-reference; pre-authority snapshots are unavailable and reject decision writes.
-Every save remains a decision-file edit; it is not Gate 2 acceptance.
+The launcher binds literal `127.0.0.1`, default port `4174`; use a numeric
+`PHB_REVIEW_PORT` to override it. The Node API imports only `data-tools/phb-review`.
+Source PDFs are selected through verified source ids; requests and responses
+never accept or expose filesystem paths.
 
-Validate with:
+Every API request requires the process-local `x-phb-review-token`; mutations
+also require an exact same-origin `Origin`. There are no CORS headers. The
+launcher injects the token into a `phb-review-token` HTML meta tag at runtime,
+never into build output, URLs, or logs.
 
-```text
-npm run typecheck
-npm run test
-npm run build
-```
+The browser displays evidence and submits explicit decisions. It does not
+choose candidates, eligible targets, fingerprints, source authority, or terminal
+validity. The service rebuilds candidates, verifies evidence and review-state
+fingerprints, validates the queue, and atomically writes only the selected
+nested-data decision file (`full-mineru-layout-review.jsonl` or
+`full-row-review.jsonl`). Stale responses preserve drafts and refresh evidence;
+they do not overwrite newer decisions.
 
-With the nested data repo and pinned PHB source available, run the read-only
-real-data API/PDF acceptance smoke with `npm run smoke:local`. It starts an
-ephemeral loopback server, checks layout detail and a verified PDF byte range,
-then checks either current English detail or the expected structured
-`stale-queue` response while the authority gate is closed. It never submits a
-decision.
+A layout save invalidates English review until the canonical chain reruns from
+`phb:source:extract`. For English-only decision batches, rerun
+`phb:source:compare` before `phb:source:report`. The English queue requires the
+code-owned `official-srd-default-v1` authority reference. Pre-authority queues
+fail closed; the legacy adjudicator cannot make them current by rerunning.
+Do not treat these command names as proof that suspended/unmerged authority
+work has been accepted. A console save is a decision-file edit, never Gate 2
+acceptance or permission to write runtime DBs.

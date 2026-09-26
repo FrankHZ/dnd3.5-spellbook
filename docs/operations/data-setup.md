@@ -155,12 +155,9 @@ preserved independently.
 
 ## Current Local DB Policy
 
-For the current local/release stage, the content DB is treated as a rebuildable
-local artifact.
-
-The practical rule is:
-
-- regenerate the content DB from scratch when rebuilding local app-owned content
+The content DB is a rebuildable local artifact. A full rebuild requires explicit
+write authorization and all accepted inputs; ordinary code or documentation
+work must preserve the operator's existing database.
 
 The app-state DB is a separate future user/app-state boundary. It may start
 empty locally, but it should not be collapsed into the content DB.
@@ -174,8 +171,7 @@ DB.
 
 ## Environment Variables
 
-The current local server environment points to these database files in
-[server/.env](../../server/.env):
+Configure these variables in the ignored, operator-supplied `server/.env`:
 
 - `RULES_DATABASE_URL`
 - `CONTENT_DATABASE_URL`
@@ -198,181 +194,58 @@ If your local checkout lives elsewhere, update the paths accordingly.
 
 ## Rules DB Preparation
 
-Rules DB preparation is owned by the `data-tools` workspace.
-
-Applied SQL patch assets live under `data/rules-patches/applied/legacy-sql/`.
-New SQL patch candidates should be authored under:
-
-```text
-data/rules-patches/pending/legacy-sql/
-```
-
-Use dry-run before mutating the configured rules DB:
-
-```bash
-npm run -w data-tools rules:sql:dry-run -- pending/legacy-sql/example.patch.sql
-npm run -w data-tools rules:sql:apply -- pending/legacy-sql/example.patch.sql
-npm run -w data-tools rules:index:rebuild -- --dry-run
-npm run -w data-tools rules:index:rebuild
-```
-
-The dry-run command copies the target DB to a temporary file and leaves
-`RULES_DATABASE_URL` unchanged.
-
-Applied structured spell JSONL patches live under
-`data/rules-patches/applied/spells/`. New structured spell patch candidates
-should be authored under:
-
-```text
-data/rules-patches/pending/spells/
-```
-
-Use validation and dry-run before applying:
-
-```bash
-npm run -w data-tools rules:spells:validate -- pending/spells/example.jsonl
-npm run -w data-tools rules:spells:apply -- --dry-run pending/spells/example.jsonl
-npm run -w data-tools rules:spells:apply -- pending/spells/example.jsonl
-```
-
-The structured spell apply command inserts rules DB base spell rows and related
-descriptor/class/domain level rows, then rebuilds derived spell index tables.
-It does not run from server startup.
-
-Patch files under `data/rules-patches/` may contain source text and belong to
-the nested local `data/` repo. Parent-repo code should own patch schemas,
-validators, generators, reports, and redacted/minimal fixtures.
-
-The optional `spells-full` source dump, when present locally, lives under:
-
-```text
-data/spells-full/
-```
-
-That directory is ignored by the parent repo. It may be versioned in the nested
-local `data/` repo. Use
-`docs/releases/v1.1/full-spell-corpus-plan.md` for the active full-corpus
-workflow. The older `docs/mvp/v3.3/spells-full-import-plan.md` records the
-initial known-miss workflow only.
-
-Current helper commands:
-
-```bash
-npm run -w data-tools spells-full:inspect -- known-misses
-npm run -w data-tools spells-full:generate -- known-misses --write-patch pending/spells/spells-full-known-misses.jsonl
-npm run -w data-tools spells-full:inspect -- corpus-inventory
-npm run -w data-tools spells-full:generate -- corpus-inventory --write-patch pending/spells/full-corpus-ready.generated.jsonl
-npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.generated.jsonl
-npm run -w data-tools spells-full:rulebooks
-```
-
-The `corpus-inventory` path produces rebuildable reports, ready-only patch
-JSONL, and row-level rejected/ambiguous review JSONL under `data/spells-full/`.
-It does not apply rules DB patches or rebuild the content DB. The
-`spells-full:rulebooks` command produces local source-label review JSONL under
-`data/spells-full/`, including a focused ambiguous source-label queue.
+The rules DB is an operator-provided locked baseline, not a Prisma-created
+or automatically replaced database. Source-bearing patches live only in the
+nested `data/` repo. Use [rules patch operations](./import-workflow.md#rules-patches)
+for validation, temporary-copy dry-runs, apply, pending-to-applied movement,
+and manifest verification. [Spells-full candidates](./import-workflow.md#spells-full-candidates)
+produce review inputs, not DB activation.
 
 ## Content DB Setup
 
-Run:
+Only when the task authorizes creating or updating the configured content DB:
 
 ```bash
 npm run -w server db:content:reset
 ```
 
-This runs Prisma migrations using the explicit content Prisma config:
+Despite its name, this script pre-creates a missing SQLite file and runs Prisma
+Migrate with `server/prisma-content/prisma.config.ts`; migrations live under
+`server/db/content/migrations/`. Inspect the configured target before running
+it. It is not a read-only check or permission to discard existing data.
 
-- `server/prisma-content/prisma.config.ts`
-- tracked migrations under `server/db/content/migrations/`
-
-It creates or updates the local content database referenced by
-`CONTENT_DATABASE_URL`. The reset script pre-creates the SQLite file before
-running Prisma Migrate because Prisma 7.8 can otherwise report a blank schema
-engine error when the target SQLite file does not exist on Windows.
-
-Populate the content DB through server import commands:
-
-- `npm run -w server db:content:import:zh-chm`
-- `npm run -w server db:content:import:zh-entities`
-- `npm run -w data-tools summaries:import`
-
-Compatibility aliases named `db:app:*` currently forward to the content commands
-where practical, but new docs and scripts should use the content names.
-
-Generate and import normalized spell-facing rules content:
+If an older migration checksum requires a destructive reset, use this only
+for an explicitly authorized rebuildable content DB, from `server/`:
 
 ```bash
-npm run -w data-tools rules:content:audit
-npm run -w data-tools rules:content:generate
-npm run -w data-tools rules:content:import -- --dry-run
-npm run -w data-tools rules:content:import
-npm run -w data-tools rules:content:review
+npx prisma migrate reset --force --config ./prisma-content/prisma.config.ts
 ```
 
-The audit and generate commands read `RULES_DATABASE_URL` and write rebuildable
-artifacts under `data-tools/out/rules-content/`. The import command writes only
-the generated normalized rules content tables in `CONTENT_DATABASE_URL`; it does
-not mutate the rules DB or app-state DB. Keep raw/source patch and review inputs
-in the nested `data/` repo, not the parent repo.
+Then repopulate all required content. Never use that command on app-state or
+other preserve-sensitive user data. The canonical population order and
+operation-specific safety rules are in [import workflow](./import-workflow.md):
+entity overlays, CHM text, normalized summaries, normalized rules content, then
+the derived search index. Prisma seed is not the content population path.
 
-The review command opens the content DB read-only after import and summarizes
-normalized taxonomy, component, and mechanic facet readiness for future filter
-contracts. It is a planning/review aid, not a deploy or DB mutation step.
-
-Each successful rules-content import writes one `RulesContentBuild` row with the
-generated artifact hash, rules manifest hash, locked rules DB hash, content
-migration-set hash, and parent/data repo commit ids. This is provenance for
-local and remote artifact comparison; it is not a replacement for committing
-source-bearing data.
-
-Inspect the current content DB artifact metadata with:
-
-```bash
-npm run -w data-tools rules:content:meta
-```
-
-This command is read-only. It writes a report under
-`data-tools/out/rules-content/` containing the content DB checksum, generated
-rules-content counts, and the latest `RulesContentBuild` row.
-
-When a server is running, inspect the runtime DB state with:
-
-```bash
-curl -fsS http://127.0.0.1:3000/api/status/db
-```
-
-Use that response to compare the active read source, sanitized DB role file
-names, `APP_DATABASE_URL` compatibility alias state, latest `RulesContentBuild`,
-and content table counts against the local `rules:content:meta` report.
-
-The server uses normalized content-backed spell reads by default once
-`CONTENT_DATABASE_URL` points at a verified content DB artifact.
-
-Use the legacy rules-backed read path only as an explicit rollback switch:
+The server uses normalized content-backed spell reads by default. The content
+schema and normalized tables must be populated before that path can serve data.
+`APP_DATABASE_URL` remains a compatibility alias for content only.
+Use the legacy read path only as an explicit rollback switch:
 
 ```dotenv
 SPELL_READ_SOURCE=rules
 ```
 
-Leaving `SPELL_READ_SOURCE` unset uses the normalized content-backed read path.
-That path requires the normalized rules content tables to be populated in
-`CONTENT_DATABASE_URL`.
-
-Before using the normalized content path against local or remote data, run:
-
-```bash
-npm run -w data-tools rules:content:parity
-npm run -w data-tools rules:content:meta
-```
-
-`rules:content:parity` proves the current local rules DB and content DB agree
-on key normalized spell counts and detail fields. `rules:content:meta` records
-the provenance needed to compare a manually uploaded remote content DB without
-committing data-bearing artifacts.
+Leaving it unset selects normalized content. Use the
+[parity and metadata checks](./import-workflow.md#normalized-content-and-search)
+to validate the artifact before runtime use. `/api/status/db` reports sanitized
+DB roles, active read source, compatibility-alias state, and build provenance;
+production access is operator-facing by default. It does not migrate or
+activate anything. Public UI should use `/api/status/app` instead.
 
 ## App-State DB Setup
 
-Run:
+Only for explicitly authorized app-state schema setup, preserving existing data:
 
 ```bash
 npm run -w server db:app-state:reset
@@ -399,15 +272,15 @@ npm run -w server db:generate
 
 ## Practical Local Setup Flow
 
-For a normal local setup:
+For a local setup with explicit DB creation/update authorization:
 
 1. Ensure `server/.env` points to valid local database paths.
 2. Ensure `server/db/local/rules-clean.sqlite` exists.
 3. Run `npm install` from the repo root.
 4. Run `npm run -w server db:generate`.
 5. Run `npm run -w server db:content:reset`.
-6. Run `npm run -w server db:app-state:reset` if server-side user/app-state
-   storage is needed locally.
+6. Ensure the app-state role has its schema, even while it has no user rows.
+   Use `db:app-state:reset` only for authorized setup; preserve existing user data.
 
 After the DB files and Prisma clients are ready, use
 [`db-content-workflow.md`](./db-content-workflow.md) as the handoff entry point
@@ -427,8 +300,6 @@ After that, the backend can use:
 - The content DB is the Prisma-managed local database for app-owned content.
 - The app-state DB is the Prisma-managed local database for future user-owned
   state.
-- For the current local workflow, content DB rebuilds are expected to start
-  from a fresh reset rather than incremental local preservation.
 - The current content population path uses import commands, not the Prisma
   seed command.
 - Deployment copies database files after they exist locally; deployment is not
@@ -454,7 +325,7 @@ After that, the backend can use:
 - [../../server/prisma-content/prisma.config.ts](../../server/prisma-content/prisma.config.ts)
 - [../../server/prisma-app-state/prisma.config.ts](../../server/prisma-app-state/prisma.config.ts)
 - [../../server/db/README.md](../../server/db/README.md)
-- [../../server/.env](../../server/.env)
+- Local runtime configuration: `server/.env` (ignored, operator supplied)
 - [db-content-workflow.md](./db-content-workflow.md)
 - [deployment.md](./deployment.md)
 - [operations/bootstrap-remote.md](./bootstrap-remote.md)

@@ -38,17 +38,7 @@ The repository includes an MIT `LICENSE` for the code in this repo.
 
 That license does not automatically apply to third-party game content, imported databases, translations, or other external source material.
 
-## Project Status
-
-The current public repository baseline is release-oriented but still
-operator-managed:
-
-- manual backend/API and database deployment
-- local data preparation
-- intentionally deferred stable-version hardening and rollback work
-
 ## Related Docs
 
 - [README.md](../README.md)
 - [data-setup.md](./data-setup.md)
-- [repo-conventions.md](./repo-conventions.md)
