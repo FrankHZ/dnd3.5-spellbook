@@ -430,6 +430,20 @@
       "requiresLocalData": true,
       "requiresSqlite": true,
       "writeCapable": false
+    },
+    "dice:intake": {
+      "module": "zh-parser",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
+    "dice:intake:test": {
+      "module": "zh-parser",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": false,
+      "writeCapable": false
     }
   }
 }

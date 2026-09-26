@@ -256,8 +256,29 @@ summary rows. Rebuild FTS after this and other content imports finish.
 ## Dice Text Boundary
 
 The TXT package at `data/spells-dice-db-by-mo/` is proposed input under
-[intake issue #119](https://github.com/FrankHZ/dnd3.5-spellbook/issues/119). No
-maintained dice adapter/import command exists.
+[intake issue #119](https://github.com/FrankHZ/dnd3.5-spellbook/issues/119).
+Commit the byte-preserved source snapshot and review the private
+`data/dice-intake/publication-map.json` against existing rulebooks before running
+the read-only inventory:
+
+```powershell
+npm run -w data-tools dice:intake -- --data-root <absolute-data-repo> --rules-db <absolute-rules-clean.sqlite> --content-db <absolute-content.sqlite> --report-dir out/dice-intake
+```
+
+The command reads both SQLite files with read-only/query-only connections. It
+requires clean, committed source and map inputs. It writes private source and
+target inventories, candidate records, and representative pilot cases under
+`data/dice-intake/`; commit those in the nested data repo for the QA handoff.
+The source-free aggregate is `data-tools/out/dice-intake/coverage.json`.
+Every candidate keeps its source revision and line locator, raw body, escaped
+`<pre>` rendering, publication mapping, field-level CHM comparison, and parser
+problems. Header-shaped lines without a convincing spell signature remain in
+the surrounding raw text and appear as located `unparsedSpans` for review.
+Only exact English names within resolved publications attach to target IDs;
+Chinese names and retained CHM English aliases are review hints. Duplicate
+targets remain review-required, and unsupported or ambiguous publications keep
+their explicit dispositions. No candidate is accepted by this command.
+
 [Activation issue #121](https://github.com/FrankHZ/dnd3.5-spellbook/issues/121)
 owns the accepted-input, variant/request compatibility, and tested import-order
 requirements. Do not feed TXT into the HTML parser or use the CHM importer for

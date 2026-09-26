@@ -34,9 +34,9 @@ the merge gate.
 - [Short descriptions](../docs/operations/import-workflow.md#short-descriptions)
 - [DB handoff and artifact provenance](../docs/operations/db-content-workflow.md)
 
-The dice TXT adapter is not implemented; see the
-[replacement boundary](../docs/operations/import-workflow.md#dice-text-boundary)
-before working with that input. PHB PDF extraction/review is suspended and is
+The read-only dice TXT intake is described at the
+[replacement boundary](../docs/operations/import-workflow.md#dice-text-boundary).
+PHB PDF extraction/review is suspended and is
 not a prerequisite for these operations. Only an explicit resumption scope
 should use the [PHB safeguards](../docs/releases/v1.4/phb-source-and-errata-plan.md#paused-workflow-execution-safeguards)
 and [private review console](../review-console/README.md).
