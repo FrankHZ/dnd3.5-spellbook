@@ -1,6 +1,6 @@
 # Server Module
 
-## Role
+## Responsibility
 
 `server/` owns the Express API, backend request validation, Prisma runtime
 clients, and the mapping from rules/content data into shared DTOs. It should
@@ -14,9 +14,12 @@ work belong in `data-tools/`.
 - Controllers translate HTTP concerns into service calls under
   `server/src/controllers/`.
 - Spell behavior is split under `server/src/services/spells/`:
-  - `*.service.ts` files own feature behavior.
+  - `spells.service*.ts` files own feature behavior.
   - `*.repo.rules.ts` reads legacy rules-side data.
-  - `*.repo.app.ts` reads app/content overlay data.
+  - `spells.repo.content.ts` reads localized names, text, and summary overlays.
+  - `spells.repo.normalized-content.ts` reads normalized runtime content.
+  - `spells.repo.read.ts` selects normalized content by default or the explicit
+    `SPELL_READ_SOURCE=rules` legacy path.
   - `*.mapper.ts` shapes records into contract DTOs.
 - Meta, class, domain, and rulebook APIs have narrower service modules under
   `server/src/services/`.
@@ -62,14 +65,14 @@ unless you explicitly pass the source condition.
 The current runtime reads three SQLite connection roles:
 
 - `RULES_DATABASE_URL`: legacy rules-side content input.
-- `CONTENT_DATABASE_URL`: app-owned content overlays such as i18n names,
-  descriptions, and summaries. `APP_DATABASE_URL` is a temporary compatibility
+- `CONTENT_DATABASE_URL`: generated normalized runtime content and overlays
+  such as i18n names, descriptions, and summaries. `APP_DATABASE_URL` is a compatibility
   fallback for this same content DB.
 - `APP_STATE_DATABASE_URL`: future user/app-state data such as server-owned
   users, notes, synced collections, or preferences.
 
-The first v3.5 split creates the physical schema/client boundary. Do not add
-server-owned user state to the content DB.
+Do not add server-owned user state to the content DB. Runtime SQLite files are
+operator-owned local inputs; inspecting this boundary does not authorize writes.
 
 Rulebook publication metadata is content-overlay data. The rules DB remains the
 source for base rulebook identity and edition membership, while
@@ -88,7 +91,7 @@ source data or full filesystem paths.
 Public UI surfaces should use the redacted content summary in
 `GET /api/status/app` instead of depending on `/api/status/db`.
 
-In the v1.0 split frontend/API topology, production browser access to the API
+In the split frontend/API topology, production browser access to the API
 is cross-origin. Keep `SPELLBOOK_CORS_ORIGINS` explicit for the accepted
 Cloudflare Workers frontend origins; do not make production CORS permissive.
 
@@ -101,6 +104,13 @@ listener starts, matching the existing content and app-state client boundary.
 Server responses should use DTOs exported from `@dnd/contracts`. If a response
 shape changes, update `contracts/` first, rebuild it, and then validate both
 server and web consumers.
+
+`ApiErrorResponse.code` carries optional stable machine-readable error codes.
+`GET /api/spells/search` defaults to `mode=name`. `mode=full` requires at least
+one whitespace-delimited term with three Unicode code points; shorter terms
+are ignored. It reuses the name-search filters but requires a compatible
+content FTS index. A legacy read source or missing/incompatible index returns
+`FULL_TEXT_SEARCH_UNAVAILABLE`, never a silent name-search fallback.
 
 `POST /api/spells/resolve` takes names and rulebook ids in its JSON body. Its
 `lang` and `variant` come from the standard spell query context and the selected
@@ -121,7 +131,7 @@ every selected component must be present. `castingTimeKeys`, `rangeKeys`, and
 `durationKeys`, plus `savingThrowKeys` and `spellResistanceKeys`, use `any`
 semantics within each family and `all` semantics across selected families.
 Extra component text, unaccepted mechanics facets, and separate Tome of Battle
-query params remain review-only until their owning plan promotes them.
+query params remain review-only until an explicit feature scope accepts them.
 Content-backed Spell Detail includes structured normalized facets under
 `casting.mechanics` for casting time, range, target, effect, area, duration,
 saving throw, and spell resistance. Each facet exposes `category`, `amount`,
@@ -147,21 +157,18 @@ make the frontend derive component or mechanics filters from raw spell fields.
 
 ## Validation
 
-Use:
+Run the affected API tests first (for example,
+`npm run -w server test -- --run tests/spells.search.test.ts` for search).
+`npm run test:server` runs the full API suite against disposable synthetic
+SQLite fixtures, without touching operator-owned runtime databases.
 
-```bash
-npm run build:contracts
-npm run check:contracts
-npm run -w server db:generate
-npm run build:server
-npm run -w server check:runtime
-npm run test:server
-```
-
-`npm run test:server` uses synthetic disposable SQLite fixtures, so it is safe
-for clean-checkout CI. Local content acceptance still belongs to data-tools
-commands when imported data or local DB fingerprints are the subject of the
-change.
+Rebuild and check contracts when shared exports change. Regenerate Prisma
+clients after schema changes. Build the server and check compiled imports when
+module resolution or runtime packaging changes; commands live in the
+[server README](../../server/README.md#setup-and-commands).
+Local data acceptance belongs to data-tools only when source data, import
+behavior, or DB fingerprints are affected. Documentation-only edits need link,
+command, and diff checks. Remote PR CI remains the merge gate.
 
 ## Related Docs
 
@@ -169,5 +176,3 @@ change.
 - [../operations/data-setup.md](../operations/data-setup.md)
 - [../operations/deployment.md](../operations/deployment.md)
 - [../../server/README.md](../../server/README.md)
-- [../mvp/v3.5/db-ownership-boundary-plan.md](../mvp/v3.5/db-ownership-boundary-plan.md)
-- [../mvp/v3.5/rules-content-normalization-plan.md](../mvp/v3.5/rules-content-normalization-plan.md)

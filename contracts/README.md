@@ -1,41 +1,22 @@
 # Contracts Workspace
 
-This workspace contains the shared TypeScript contracts used by both the frontend and backend.
+Shared TypeScript DTOs, types, and runtime-light exports consumed by `server`
+and `web`. Keep application behavior in the consuming workspaces.
 
-It is the common source for DTOs and exported types that define the application boundary between `server` and `web`.
+Install dependencies from the repository root. Source lives in `src/`; `dist/`
+is generated. [package.json](./package.json) owns the commands:
 
-## Key Directories
+| Task | Command |
+| --- | --- |
+| Build | `npm run build:contracts` |
+| Check runtime package import after building | `npm run check:contracts` |
+| Clean generated output | `npm run -w @dnd/contracts clean` |
 
-- `src/`: source DTOs, shared types, and exports
-- `dist/`: generated build output
+After DTO changes, rebuild contracts before validating the affected server and
+web consumers. The package is ESM; its current runtime-light exports must also
+remain consumable by the CommonJS server. For runtime export/module changes,
+build the server and run `npm run -w server check:runtime` as well.
+Documentation-only changes do not require a build.
 
-## Main Commands
-
-Build the contracts package:
-
-```bash
-npm run -w @dnd/contracts build
-```
-
-Clean generated output:
-
-```bash
-npm run -w @dnd/contracts clean
-```
-
-## Notes
-
-- If shared DTOs change, rebuild this workspace before validating dependent work in `server` or `web`.
-- Keep this package focused on shared contracts, not runtime app logic.
-- `ResolveSpellNamesRequest` contains body fields only; spell resolve language
-  and variant selection use the same `lang` / `variant` query context as other
-  spell endpoints.
-- `ApiErrorResponse.code` carries optional stable machine-readable error codes.
-- The package is ESM. The CommonJS server can consume current runtime-light
-  exports as long as `npm run check:contracts` and
-  `npm run -w server check:runtime` pass after a build.
-
-## Related Docs
-
-- [../README.md](../README.md)
-- [../docs/README.md](../docs/README.md)
+Endpoint semantics belong to the [server contracts](../docs/modules/server.md#contracts)
+and the exported types, not a second field inventory here.

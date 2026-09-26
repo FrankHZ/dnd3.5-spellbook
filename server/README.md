@@ -1,178 +1,58 @@
 # Server Workspace
 
-This workspace contains the backend API and database access layer.
+Express API, request validation, and Prisma runtime access. Data preparation
+and rules patching belong to `data-tools/`.
 
-It serves the spell data consumed by the frontend and also contains the Prisma schemas and scripts used to manage local application data. Parser, inspection, and rules DB patch tooling lives in the `data-tools` workspace.
+## Setup And Commands
 
-## Key Directories
+Install dependencies from the repository root. Configure the three DB roles in
+`server/.env` using [data setup](../docs/operations/data-setup.md), then generate
+clients with `npm run -w server db:generate`. Build shared contracts with
+`npm run build:contracts` on a fresh checkout or after contract changes.
 
-- `src/`: application source code
-- `tests/`: backend tests
-- `prisma-content/`: generated/imported content overlay schema and config
-- `prisma-app-state/`: future user/app-state schema and config
-- `prisma-rules-clean/`: rules-side schema and generated client setup
-- `db/`: tracked DB migrations, seed entry points, portable fixtures, and
-  ignored local runtime SQLite files under `db/local/`
-- `scripts/`: content DB import and maintenance scripts
+Run these commands from the repository root; [package.json](./package.json)
+owns the executable definitions.
 
-## Main Commands
+| Task | Command |
+| --- | --- |
+| Develop | `npm run -w server dev` |
+| Build | `npm run -w server build` |
+| Check compiled imports after building | `npm run -w server check:runtime` |
+| Run the built API | `npm run -w server start` |
+| Run API tests once | `npm run test:server` |
 
-Run the API in development:
+Tests use disposable synthetic DB fixtures. Documentation-only changes need
+link, command, and diff checks, not the API suite. For behavior changes, run the
+closest API tests first; see [validation](../docs/modules/server.md#validation).
 
-```bash
-npm run -w server dev
-```
+Use npm scripts for TS maintenance commands: they set the required Node
+`source` condition. Bare `tsx` does not provide it. Built runtime commands
+resolve imports to `dist/`; see [module imports](../docs/modules/server.md#module-imports).
+The build excludes local data import scripts so deployment does not depend on
+source-data files.
 
-Build the server:
+## Configuration And Files
 
-```bash
-npm run -w server build
-```
+- `src/app.ts`: route registration; `src/services/spells/`: spell behavior.
+- `tests/`: API tests; `prisma-*/`: role-specific schemas and clients.
+- `db/`: tracked migrations, seed entry points, and portable fixtures.
+- `db/local/`: ignored, operator-owned runtime databases; do not replace them
+  as part of setup or validation without explicit write authorization.
+- `scripts/`: content import and maintenance entry points.
 
-The production build compiles runtime source, Prisma generated clients, and
-server tests. Local data import scripts under `server/scripts/` are run with
-`tsx` by their dedicated npm commands and are intentionally outside the server
-build so deployment does not depend on local source-data files.
+Runtime requires `RULES_DATABASE_URL`, `CONTENT_DATABASE_URL`, and
+`APP_STATE_DATABASE_URL` before the HTTP listener starts. `APP_DATABASE_URL`
+is a compatibility alias for content only. The API defaults to normalized
+content reads; `SPELL_READ_SOURCE=rules` is the explicit legacy rollback path.
 
-Server imports use Node package imports defined in `server/package.json`:
-`#server/*` for application source and `#prisma-*/*` for generated Prisma
-client trees. Development and TS maintenance scripts run with
-`NODE_OPTIONS=--conditions=source` through the npm scripts in this file, while
-Vitest uses `server/vitest.config.ts` source-condition resolution. Both paths
-resolve those imports to current `.ts` source. The build does not run a
-post-build alias rewrite; built runtime commands resolve the same imports to
-`dist/`.
+`HOST` should normally be `127.0.0.1` in production behind Nginx; `PORT` defaults
+to `3000`. Production browser origins belong in `SPELLBOOK_CORS_ORIGINS`.
+Detailed `/api/status/db` access uses `SPELLBOOK_DB_STATUS_TOKEN` by default;
+`ENABLE_DB_STATUS_PUBLIC=true` is an intentional public-provenance opt-in.
+Public UI uses the redacted `/api/status/app` summary.
 
-Do not run `tsx scripts/*.ts` directly when the script imports server code.
-Use the matching npm script, or pass `NODE_OPTIONS=--conditions=source`.
+Read only the topic needed for the task:
 
-Smoke the compiled runtime import after a build:
-
-```bash
-npm run -w server check:runtime
-```
-
-This imports `dist/src/app.js` without starting the listener. It catches
-compiled module-format issues in the server app, package imports, contracts
-runtime consumption, or generated Prisma clients.
-
-Run the built server:
-
-```bash
-npm run -w server start
-```
-
-Run tests:
-
-```bash
-npm run -w server test
-```
-
-## Spell API Filters
-
-`GET /api/spells/search` and `GET /api/spells/by-level` accept normalized
-taxonomy filters as comma-separated id lists:
-
-- `schoolIds`
-- `subschoolIds`
-- `descriptorIds`
-
-`GET /api/spells/search` defaults to `mode=name`. `mode=full` requires at
-least one whitespace-delimited term with three Unicode code points and a
-compatible rebuilt content DB FTS index. Shorter terms are ignored so phrases
-such as `wall of fire` remain searchable.
-Full mode reuses the same rulebook, class/domain/level, taxonomy, component,
-and mechanics filters; legacy rules read source or a missing/incompatible index
-returns `FULL_TEXT_SEARCH_UNAVAILABLE` instead of falling back to name search.
-
-Use `GET /api/meta/filters` for the filter vocabulary. It returns stable
-id/key/slug/name values from accepted normalized content facets and overlays
-localized labels when `lang`/`variant` are provided.
-
-Generate Prisma clients:
-
-```bash
-npm run -w server db:generate
-```
-
-## Configuration
-
-The server runtime is driven primarily by environment variables and local SQLite paths.
-
-Local development currently uses:
-
-- `server/.env`
-
-The main database variables are:
-
-- `HOST`, normally `127.0.0.1` in production so Nginx remains the only public
-  entry point
-- `PORT`, normally `3000`
-- `RULES_DATABASE_URL`
-- `CONTENT_DATABASE_URL`
-- `APP_STATE_DATABASE_URL`
-- `SPELLBOOK_DB_STATUS_TOKEN` for production operator access to
-  `GET /api/status/db`
-- `ENABLE_DB_STATUS_PUBLIC=true` only when DB provenance is intentionally public
-- `SPELLBOOK_CORS_ORIGINS` as a comma-separated production browser allowlist
-  when trusted external origins need API access
-
-These point to:
-
-- the prepared local rules DB (`rules-clean.sqlite`)
-- the Prisma-managed local content DB (`content.sqlite`; `APP_DATABASE_URL`
-  may point to this same file as a temporary alias)
-- the future app-state DB (`app-state.sqlite`)
-
-`APP_DATABASE_URL` is still accepted as a temporary fallback for the content DB
-so older local and remote environments keep running during the split.
-
-The rules, content, and app-state database roles are required runtime
-configuration. Missing required configuration fails while the server imports
-its database clients, before the HTTP listener starts. The transitional
-`APP_DATABASE_URL` alias satisfies only the content role.
-
-The canonical data setup and database lifecycle doc is:
-
-- [../docs/operations/data-setup.md](../docs/operations/data-setup.md)
-
-The `server/db/local/` tree is intentionally local-only and is not part of the
-public repo baseline. Tracked migrations and portable fixtures live under
-`server/db/`. CHM/parser source data belongs to the parent workspace's root
-`data/` local repo, and parser output belongs to `data-tools/out/`.
-
-The canonical import pipeline doc is:
-
-- [../docs/operations/import-workflow.md](../docs/operations/import-workflow.md)
-
-Data tooling commands live in:
-
-- [../data-tools/README.md](../data-tools/README.md)
-
-Rules DB preparation, including legacy SQL patch dry-runs/applies and derived
-index rebuilds, belongs to `data-tools`; the server runtime does not apply rules
-DB migrations at startup.
-
-For deployed runtime configuration, including `/etc/default/spellbook-api`, use:
-
-- [../docs/operations/deployment.md](../docs/operations/deployment.md)
-
-## Notes
-
-- The server depends on `@dnd/contracts` for shared DTOs and type contracts.
-- Rebuild `contracts` before validating server changes that import shared
-  runtime values or DTOs.
-- Database setup and import workflows are project-specific; use the existing
-  `server` and `data-tools` scripts rather than inventing parallel flows.
-- Deployment and database update workflows are documented in [../docs/operations/deployment.md](../docs/operations/deployment.md).
-- For current feature behavior, start with [../docs/features.md](../docs/features.md).
-
-## Related Docs
-
-- [../README.md](../README.md)
-- [../docs/README.md](../docs/README.md)
-- [../docs/operations/deployment.md](../docs/operations/deployment.md)
-- [../docs/operations/data-setup.md](../docs/operations/data-setup.md)
-- [../docs/operations/import-workflow.md](../docs/operations/import-workflow.md)
-- [../data-tools/README.md](../data-tools/README.md)
-
+- [Server boundaries and API contracts](../docs/modules/server.md)
+- [Local import commands and mutation boundaries](../docs/operations/import-workflow.md)
+- [Deployment configuration and activation](../docs/operations/deployment.md)

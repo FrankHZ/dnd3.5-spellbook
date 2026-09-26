@@ -1,70 +1,155 @@
 # Import Workflow
 
-This document describes the current local data import workflow used to
-populate local data artifacts and Chinese app-owned data.
+Task-specific operations for local source preparation and content imports.
+Choose the relevant section; these are not a startup checklist. Executable
+commands live in [data-tools/package.json](../../data-tools/package.json) and
+[server/package.json](../../server/package.json).
 
-It covers:
+## Before A Write
 
-- preprocessing exported CHM HTML
-- parsing spell content into matched records
-- importing dictionary-style entity translations
-- importing CHM-derived spell text into the content DB
-- producing English rules-patch JSONL candidates from local `spells-full`
-  source data
-- producing reviewed English short-description handoff JSONL from local
-  IMarvinTPA source-index data
-- verifying and extracting the pinned PHB 3.5 plus errata source for v1.4
+- The task must explicitly authorize local DB writes. Source generation,
+  review, dry-run success, and an accepted PR do not authorize production
+  activation. Use [deployment](./deployment.md) for separately authorized
+  remote operations.
+- Configure DB roles and migrations using [data setup](./data-setup.md).
+  `APP_DATABASE_URL` is a compatibility alias for content only. Never use
+  content reset/import commands on app-state or substitute a fresh upstream
+  rules DB for the locked rules baseline.
+- Keep source, patch, review, and normalized JSONL in the nested `data/` repo;
+  keep generated reports in `data-tools/out/`. Neither local runtime DBs nor
+  source-bearing output belong in the public parent repo.
+- Inspect the exact inputs and target DB before mutation. Dry-run semantics
+  differ by command; the server's Chinese importers do not have a dry-run mode.
 
-For the DB/content handoff entry point, use
-[db-content-workflow.md](./db-content-workflow.md). For database creation and
-local DB roles, use [data-setup.md](./data-setup.md).
+For provenance, portable fixture coverage, and handoff checks, read the relevant
+part of [DB content workflow](./db-content-workflow.md).
 
-## Scope
+## CHM And Entity Translations
 
-This workflow is for the current local data pipeline.
+Use this retained source workflow only when CHM inputs or parser behavior need
+a rerun. It does not accept dice TXT files.
 
-At the moment:
+| Input/output | Location |
+| --- | --- |
+| Raw HTML, ignored static input | `data/chm-raw/` |
+| Cleaned HTML | `data/chm-clean/` |
+| Small parser input | `data/chm-test/` |
+| Book mappings and extra/global aliases | `data/chm-mapping/` |
+| Entity dictionaries | `data/i18n/` |
+| Parser output and mechanical QA | `data-tools/out/zh-parser/` |
 
-- the content DB is normally rebuilt from scratch
-- Prisma seed is not the active population path
-- the active population path is the import scripts in the `server` workspace
+Preprocess changed raw HTML with `npm run -w data-tools zh:preprocess`, then
+run `npm run -w data-tools zh:parse` and `npm run -w data-tools zh:qa`.
+For a small local input run use `npm run -w data-tools zh:parse:test`.
+`npm run -w data-tools zh:backcheck` reports missing Chinese coverage.
+Preprocessing assumes GB2312 and writes UTF-8. Both stages preserve relative
+paths and skip `.files` companion directories. A mapped top-level directory
+may supply a missing book label (for example, `九剑/` maps to Tome of Battle).
 
-## Main Scripts
+Review `stats.json`, `unmatched.json`, `candidates.json`, and `qa/summary.json`
+before import. `matched.json` is the CHM importer input. Mechanical `zh:qa`
+is not translation acceptance; long bold text alone is informational.
+Optional local alias/mapping JSON is not a portable-test prerequisite.
 
-The relevant workspace commands are:
+After review and explicit content-write authorization:
 
 ```bash
-npm run -w data-tools zh:preprocess
-npm run -w data-tools zh:parse
-npm run -w data-tools zh:parse:test
-npm run -w data-tools zh:backcheck
-npm run -w data-tools zh:qa
 npm run -w server db:content:import:zh-entities
 npm run -w server db:content:import:zh-chm
-npm run -w data-tools spells-full:inspect -- source-package
-npm run -w data-tools spells-full:inspect -- corpus-inventory
-npm run -w data-tools spells-full:generate -- corpus-inventory --write-patch pending/spells/full-corpus-ready.generated.jsonl
-npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.generated.jsonl
-npm run -w data-tools spells-full:rulebooks
-npm run -w data-tools rules:rulebooks:validate -- pending/rulebooks/full-corpus-rulebooks.generated.jsonl
-npm run -w data-tools rules:rulebooks:apply -- --dry-run pending/rulebooks/full-corpus-rulebooks.generated.jsonl
-npm run -w data-tools summaries:strict35-ready
-npm run -w data-tools phb:source:verify
-npm run -w data-tools phb:source:extract -- --pilot --prepare-only
 ```
 
-DB/content maintainer apply commands for an accepted full-corpus handoff are:
+The entity importer reads classes, domains, rulebooks, descriptors, schools,
+and subschools from `data/i18n/` (or `ZH_ENTITY_I18N_DIR`). It checks rules ids
+and warns on missing coverage or stale English names, then deletes/recreates
+`lang=zh, variant=default` rows in each imported entity table.
+
+The CHM importer reads matched spell ids, names, and sanitized descriptions,
+stores HTML plus plain text, and writes `lang=zh, variant=chm`. **It first
+deletes every `I18nSpellText` row with `lang=zh`, across all variants**, plus
+legacy `lang=zh-chm` rows. It cannot preserve another Chinese overlay by itself.
+Use canonical `db:content:*` names; `db:app:*` and server `tool:*` wrappers are
+compatibility aliases, not another import workflow.
+
+## Rules Patches
+
+Patch inputs must stay under `data/rules-patches/`. Use `pending/spells/`,
+`pending/rulebooks/`, or `pending/legacy-sql/` before apply, and the corresponding
+`applied/` directory after acceptance. Do not rerun already-applied patches to
+rebuild content; regenerate content from the accepted rules baseline instead.
+
+For structured patches, replace the example filename with the exact reviewed
+file. Apply required rulebooks before regenerating spell patches that refer to
+them. Validate and dry-run before the explicitly authorized write:
 
 ```bash
 npm run -w data-tools rules:manifest:verify
-npm run -w data-tools rules:rulebooks:validate -- pending/rulebooks/full-corpus-rulebooks.generated.jsonl
-npm run -w data-tools rules:rulebooks:apply -- --dry-run pending/rulebooks/full-corpus-rulebooks.generated.jsonl
-npm run -w data-tools rules:rulebooks:apply -- pending/rulebooks/full-corpus-rulebooks.generated.jsonl
-npm run -w data-tools rules:spells:validate -- pending/spells/full-corpus-ready.generated.jsonl
-npm run -w data-tools rules:spells:apply -- --dry-run pending/spells/full-corpus-ready.generated.jsonl
-npm run -w data-tools rules:spells:apply -- pending/spells/full-corpus-ready.generated.jsonl
-npm run -w data-tools rules:manifest:write
-npm run -w data-tools rules:manifest:verify
+npm run -w data-tools rules:rulebooks:validate -- pending/rulebooks/example.jsonl
+npm run -w data-tools rules:rulebooks:apply -- --dry-run pending/rulebooks/example.jsonl
+npm run -w data-tools rules:rulebooks:apply -- pending/rulebooks/example.jsonl
+npm run -w data-tools rules:spells:validate -- pending/spells/example.jsonl
+npm run -w data-tools rules:spells:apply -- --dry-run pending/spells/example.jsonl
+npm run -w data-tools rules:spells:apply -- pending/spells/example.jsonl
+```
+
+Validators read the rules DB; apply dry-runs operate on a temporary copy.
+`insertSpell` creates base and relationship rows and rebuilds derived indexes.
+`updateSpell` permits only `slug`, non-empty raw `extraComponents`, or paired
+non-empty `description`/`descriptionHtml` updates; unknown fields are rejected.
+Spell apply commits row changes and derived-index rebuilds in one transaction.
+`insertRulebook` adds a reviewed identity after validating its edition and fields.
+
+Move successfully applied files from pending to applied in the nested data
+repo, then run `npm run -w data-tools rules:manifest:write` followed by
+`npm run -w data-tools rules:manifest:verify`. The manifest binds the rules DB,
+patch files, counts, and structured patch presence. Rewriting it must not be
+used to hide unexplained drift.
+
+For a reviewed SQL patch use `npm run -w data-tools rules:sql:dry-run -- pending/legacy-sql/example.patch.sql`
+before `npm run -w data-tools rules:sql:apply -- pending/legacy-sql/example.patch.sql`.
+The dry run leaves the configured rules DB unchanged. Explicit derived-index
+maintenance uses `npm run -w data-tools rules:index:rebuild -- --dry-run`
+before `npm run -w data-tools rules:index:rebuild`.
+
+### Spells-Full Candidates
+
+The optional source package lives under `data/spells-full/` and stays private.
+Use `npm run -w data-tools spells-full:inspect -- source-package` to inventory
+v6.01 source files and compare their name index with `spells-parsed.json`.
+It does not open SQLite or parse v6.01 full text into structured spell bodies.
+
+For source appearances matched against the local rules DB, use:
+
+```bash
+npm run -w data-tools spells-full:inspect -- corpus-inventory
+npm run -w data-tools spells-full:generate -- corpus-inventory --write-patch pending/spells/full-corpus-ready.generated.jsonl
+npm run -w data-tools spells-full:rulebooks
+```
+
+Generation writes only ready rows as patch candidates. Rejected and ambiguous
+rows, and deferred/ambiguous source-label decisions, remain separate under
+`data/spells-full/`; reports go to `data-tools/out/spells-full/`. Source-label
+review is not a rulebook insertion. These commands never apply DB patches or
+activate content. The `short-desc-rules-gaps` generate target consumes reviewed
+summary gaps and emits candidates only after identity/mechanics checks pass.
+
+## Normalized Content And Search
+
+The canonical publication metadata is
+`data/rulebook-publications/publications.jsonl`, one row per rules rulebook.
+Initialize it only when needed with `npm run -w data-tools rulebooks:publications:seed`.
+Seeding is a review starting point and refuses overwrite without `--force`;
+retain manual ISBN/source enrichment in `isbn10`, `isbn13`, and `metadataSources`.
+Only accepted rows publish year/date/URL/image details. `publicationDisplayOrder`
+is a deterministic manual/fallback value, not publication chronology. Consumers
+use generated publication metadata rather than inferring groups from raw labels.
+`npm run -w data-tools rulebooks:labels:audit` compares current display labels
+read-only and writes a local report.
+
+For an authorized full content rebuild, prepare schema using data setup, then
+import reviewed entity translations, CHM text, and normalized summaries using
+their sections above/below. Finish with:
+
+```bash
 npm run -w data-tools rules:content:audit
 npm run -w data-tools rules:content:generate
 npm run -w data-tools rules:content:import -- --dry-run
@@ -75,502 +160,117 @@ npm run -w data-tools rules:content:parity
 npm run -w data-tools rules:content:meta
 ```
 
-The normal `rules:content:generate` command produces the only importable
-artifact. It requires the canonical publication metadata and records full
-source totals plus generation-time repository and input hashes. For bounded
-inspection, use `rules:content:generate -- --audit-only [--limit N]`; that mode
-writes a distinct limited artifact which `rules:content:import` rejects. Import
-re-hashes the current rules DB, canonical inputs, and tracked migrations before
-dry-run or mutation, while `RulesContentBuild` preserves generation provenance
-and records importer state separately.
+Audit/generate read the rules DB and write artifacts under
+`data-tools/out/rules-content/`. Full generation requires canonical publication
+coverage. `rules:content:generate -- --audit-only [--limit N]` writes a separate
+limited, non-importable artifact; `--limit` alone is invalid.
 
-The post-v1.1 full-corpus correction apply is complete locally. The accepted
-patch now lives at
-`data/rules-patches/applied/spells/full-corpus-v600-v601-corrections.jsonl`; its
-171-row review ledger remains
-`data/spells-full/full-corpus-v600-v601-review.generated.jsonl`. Do not rerun
-`rules:spells:apply` for that patch against the current local rules DB
-baseline: the reviewed updates are already present and the no-op guard rejects
-already-applied field updates. To verify the current baseline, use
-`rules:manifest:verify`, `rules:content:parity`, `rules:content:meta`, and
-focused content checks. If the local content DB must be rebuilt from the
-applied rules baseline, use the normal `rules:content:generate` and
-`rules:content:import` and `content:search:rebuild` sequence above without
-rerunning the rules patch. The
-durable DB/content handoff entry point is
-[`db-content-workflow.md`](./db-content-workflow.md); the v1.2 acceptance record
-lives in
-[`db-workflow-review-plan.md`](../releases/v1.2/db-workflow-review-plan.md).
+Import validates current rules DB, canonical-input, and migration hashes even
+in dry-run, and requires the current content schema. A live import replaces
+only generated normalized tables, not i18n overlays, rules, app-state, or source
+data. `RulesContentBuild` preserves generation-time parent/data repository
+state and hashes, with importer state recorded separately in `buildMetaJson`.
 
-After a structured spell JSONL patch is applied to the local locked rules DB,
-move it from `data/rules-patches/pending/spells/` to
-`data/rules-patches/applied/spells/` in the nested local `data/` repo before
-rewriting the rules manifest. That keeps the manifest's verified patch set
-aligned with the local `rules-clean.sqlite` baseline.
+Mechanics retain raw source strings. Only `displayCoverage=complete` exposes
+replacement-safe canonical English `normalizedText`; `partial` and `review`
+keep raw fallback, while `empty` has no display. Parser `reviewStatus` is not
+display coverage. `npm run -w data-tools rules:content:review` inventories these
+facets read-only; `detail_only` output must not be promoted into public filters.
 
-Rulebook additions use the same pending-to-applied convention under
-`data/rules-patches/pending/rulebooks/` and
-`data/rules-patches/applied/rulebooks/`. Apply reviewed `insertRulebook` rows
-before regenerating full-corpus spell JSONL that references those new
-abbreviations.
+Rebuild FTS after **all** text, summary, and normalized-content imports, and
+again after later relevant changes. Dry-run validates schema/readability and
+document counts; live rebuild replaces only derived `SpellSearchDocument` and
+`SpellSearchIndexState` rows. Parity/meta commands are read-only and report
+normalized consistency and artifact provenance. Restart an API after swapping
+DB files before using cached endpoints as evidence.
 
-The `server` workspace keeps compatibility wrappers for the `tool:*` commands,
-and transitional `db:app:*` aliases forward to the content DB import commands
-where practical. New workflow docs should use the `db:content:*` names.
+## Short Descriptions
 
-## Input And Output Locations
+The import boundary is
+`data/short-desc-normalized/summaries.generated.jsonl`. Maintained review
+inputs live under `data/short-desc-review/`; generated QA queues are not
+accepted source data.
 
-### Raw And Clean CHM HTML
+### Gather And Review Sources
 
-- raw CHM-exported HTML input: `data/chm-raw/`
-- cleaned intermediate HTML: `data/chm-clean/`
-- smaller test input set: `data/chm-test/`
+- `npm run -w data-tools zh:summaries:extract` reads class/domain overview pages
+  from ignored `data/chm-raw-full/` and the ToB overview from `data/chm-clean/`.
+  It writes matched/unmatched/conflict/alias reports under
+  `data-tools/out/zh-parser/summary/`, without changing source or SQLite.
+  Full-description parsing still uses `chm-clean`, not `chm-raw-full`.
+- `npm run -w data-tools en:summaries:candidates` writes local candidate JSON
+  under `data/imarvin/short-desc/`; ToB is excluded unless explicitly included.
+- `npm run -w data-tools en:summaries:probe` performs a rate-limited candidate
+  probe; `--offset`, `--limit`, and `--output-name` support bounded runs.
+- `npm run -w data-tools en:summaries:sources` fetches the source-book index and
+  writes canonical `data/imarvin/short-desc/source-index/` only for complete
+  crawls. Partial crawls require a distinct safe `--output-name`, cannot replace
+  canonical/protected inputs, and publish from sibling staging only on success.
+  Both fetch commands are rate-limited and do not write SQLite.
+- `npm run -w data-tools summaries:qa` reads existing Chinese reports, the
+  English source index, and validated decisions under `short-desc-review/qa/`.
+  It writes coverage/blocker/review queues without fetching sources or changing
+  DBs. Refresh the source index before relying on cross-language coverage.
 
-The CHM preprocess and parser commands scan nested directories and preserve
-relative paths. Word/CHM companion directories ending in `.files` are skipped.
-When spell headers omit explicit book labels, the parser may infer a label from
-the mapped top-level source directory, such as `九剑/` for Tome of Battle.
+### Normalize And Apply Reviewed Decisions
 
-### Mapping And Dictionary Inputs
+`npm run -w data-tools summaries:normalize` consumes Chinese conflict decisions
+and English source rows. It emits only accepted rows with local `spellId` and
+`rulebookId`; unresolved conflicts/gaps are reported as skipped.
 
-- CHM book label mapping: `data/chm-mapping/books-zh-chm-mapping.json`
-- extra alias support: `data/chm-mapping/enName-aliases-extra.json`
-- global alias support: `data/chm-mapping/enName-aliases-global.json`
-- entity translation JSON inputs:
-  - `data/i18n/classes-zh.json`
-  - `data/i18n/domains-zh.json`
-  - `data/i18n/rulebooks-zh.json`
-  - `data/i18n/descriptors-zh.json`
-  - `data/i18n/schools-zh.json`
-  - `data/i18n/subschools-zh.json`
+`npm run -w data-tools summaries:strict35-ready` consumes reviewed
+`qa/en-strict35-missing.decisions.jsonl`, marks already-covered rows, and writes
+not-yet-covered rows under `short-desc-normalized/pending/`. Review and merge
+accepted pending rows into the canonical JSONL; rerun to confirm pending output
+is empty. Pending output is never automatically imported.
 
-### Parser Outputs
+| Review operation | Candidate/report command | Apply command |
+| --- | --- | --- |
+| Explicit source-gap reuse | `summaries:source-gap-candidates` | `summaries:source-gap-apply` |
+| Same-name reuse | `summaries:reuse-candidates` | `summaries:reuse-apply` |
+| Final punctuation | `summaries:punctuation` | same command with `--write` |
+| Per-book coverage | `summaries:coverage-report` | none |
 
-The parser writes into `data-tools/out/zh-parser/`:
+Invoke these through `npm run -w data-tools <command>`. Apply commands report
+without mutation unless passed `-- --write`; then they update the normalized
+JSONL, not SQLite. Source-gap reuse requires explicit decisions and preserves
+`sourceKind: source-gap-reuse`; it is not fuzzy matching. Same-name reuse
+preserves `sourceKind: summary-reuse`, auto-accepts only exact-description
+matches, and otherwise requires review; decisions may override summary text
+when source/target numbers differ. ToB is excluded by default. Run punctuation
+after reuse passes so reused rows receive the same final punctuation handling.
+Coverage defaults to the official 3.5 working set; `-- --scope all` broadens it.
 
-- `matched.json`
-- `unmatched.json`
-- `candidates.json`
-- `stats.json`
-- `missing-zh.json` may also exist as a follow-up artifact from auxiliary checks
-- `qa/summary.json` and `qa/issues.json` from mechanical CHM source QA
-
-### English Spells-Full Source
-
-- optional v6.01 source package: `data/spells-full/v6.01/`
-- optional parsed source dump: `data/spells-full/spells-parsed.json`
-- rebuildable inventory reports: `data-tools/out/spells-full/`
-- reviewable structured patch JSONL: `data/rules-patches/pending/spells/`
-- reviewed rulebook patch JSONL:
-  `data/rules-patches/pending/rulebooks/` before apply and
-  `data/rules-patches/applied/rulebooks/` after apply
-- row-level rejected review JSONL:
-  `data/spells-full/full-corpus-rejected.generated.jsonl`
-- row-level ambiguous review JSONL:
-  `data/spells-full/full-corpus-ambiguous.generated.jsonl`
-- deferred source-label review JSONL:
-  `data/spells-full/source-rulebooks.generated.jsonl`
-- ambiguous source-label review JSONL:
-  `data/spells-full/source-rulebooks-ambiguous.generated.jsonl`
-
-The `spells-full` source dump is ignored by the parent repo and may be
-maintained only in the nested local `data/` repo. The data-pipeline command
-reads the configured rules DB read-only for matching and validation context.
-It does not apply rules DB patches or rebuild content DB artifacts.
-Confirmed non-import rows and unresolved row-level decisions are written as
-review artifacts under `data/spells-full/`, not mixed into the ready patch.
-Deferred source-label review rows classify unmapped sources such as
-periodicals, web articles, licensed d20 settings, conversion material, and
-parser artifacts. They are scope-review data, not rules DB patch operations.
-
-### Dice Database Text Replacement (Planned)
-
-The active [dice intake issue](https://github.com/FrankHZ/dnd3.5-spellbook/issues/119) uses supplied TXT input at
-`data/spells-dice-db-by-mo/`. Intake, publication-aware matching, targeted
-English QA, and safe accepted replacement are planned; no maintained dice
-import command exists yet. The current commands below still describe the
-implemented CHM workflow, not permission to import the new package.
-
-Follow [dice activation issue](https://github.com/FrankHZ/dnd3.5-spellbook/issues/121)
-before defining its command/variant contract. `import-zh-chm.ts` deletes all
-Chinese spell text before writing CHM rows. It cannot safely perform selective
-replacement or run after a new overlay import without an explicit integration
-change. Preserve uncovered CHM, current English and summaries, source provenance,
-and existing language/variant requests. Implementation must update this entry
-with the tested import order before a write-capable handoff.
-
-### PHB 3.5 Source And Errata (Suspended)
-
-This section preserves commands for the paused PDF workflow. It is not the
-active release sequence and must not be run as a dice-text prerequisite.
-The [paused source plan](../releases/v1.4/phb-source-and-errata-plan.md) owns
-resumption safeguards and the unmerged PR #113 findings. The commands describe
-merged code; they do not imply that #113's effective-row verifier is available
-or accepted on main.
-
-- ignored source PDFs: `data/artifacts/pdf/phb3.5/`
-- ignored deterministic MinerU inputs and raw outputs:
-  `data/artifacts/mineru/phb35/`
-- maintained source/runtime manifests: `data/phb35/source/`
-- maintained pilot selection and errata decisions: `data/phb35/review/`
-- maintained source-bearing pilot rows: `data/phb35/extracted/pilot/`
-- source-free command reports: `data-tools/out/phb/`
-
-Run `phb:source:verify` before extraction. Use `--prepare-only` to construct
-the exact pilot PDFs, run the pinned MinerU pipeline locally, and import an
-explicit data-relative output directory with `--mineru-output`. In the accepted
-Gate 1 pilot, PDF.js remains the raw text/coordinate baseline and MinerU
-contributes layout evidence. That pilot contract does not authorize the full
-run to replace MinerU structure: full-PHB extraction uses MinerU for reading
-order, spell segmentation, fields, bodies, and tables, with PDF.js exact text
-projected only inside MinerU blocks unless a current fingerprint-bound layout
-decision permits otherwise. Neither path writes SQLite. The pilot's entity
-extraction, errata overlays, and DB comparison run with
-`phb:source:compare -- --pilot`; this command reads both configured databases
-read-only and writes source-bearing entities, overlays, comparisons, and
-proposed row reviews under `data/phb35/`. This includes actual short-description
-comparisons for summary-only cases. Review all ten rows,
-rerun comparison to refresh their manifest without discarding decisions whose
-full evidence fingerprint is unchanged, then run
-`phb:source:report -- --pilot` to propose the end-to-end review. Full-PHB
-extraction requires `phb:pilot:verify` to pass
-against a committed, accepted end-to-end review; accepting the page-extraction
-review alone does not authorize it. The accepted Gate 1 permits the full run,
-but does not accept full-corpus English rows or any DB mutation.
-
-Use `phb:mineru:run-page` to resolve one current full-input page and run the
-configured local VLM backend. Its ignored `run-manifest.json` binds the actual
-executable, argv, cwd, environment, config, package versions, CUDA device,
-model revision, sorted per-file model-tree hashes, logs, input, and output
-hashes. Portable argv/environment forms are recorded separately and verified
-against the actual absolute invocation. It refuses to overwrite an existing
-run label. Then use `phb:mineru:recall` with `--run-manifest` to compare that
-candidate against the pinned source PDF's independent PDF.js inventory. Recall
-re-derives canonical page mappings, verifies the subset page count and
-source-page fingerprint, checks the run/candidate correspondence, and reports
-source-free bbox coverage, normalized item coverage, token accounting, block
-types, and table dimensions/hashes.
-
-Candidate content lists and run manifests remain ignored under
-`data/artifacts/mineru/phb35/`; generated source-free metrics belong under
-`data-tools/out/phb/`; reviewed candidate hashes and decisions belong under
-`data/phb35/review/`. Legacy candidates without a run manifest remain
-descriptive and cannot authorize a runtime switch.
-
-The representative v1.4 class-list, description, table, and image-adjacent
-pilot does not authorize a VLM runtime replacement. VLM improves recall on
-some pages, but the table-dense control has much worse strict-bbox coverage and
-each backend introduces a different table row-count drift. The full-source
-dual-engine workflow is now the accepted recall contract: pipeline remains the
-structured-layout source, VLM is only a recall witness, and every
-pipeline/VLM/PDF.js disagreement becomes fingerprint-bound evidence. Text that
-overlaps an image always requires an explicit accepted projection or caption
-exclusion, even when it is also inside a content or structural bbox.
-`phb:mineru:dual:verify -- --require-terminal` requires both the layout and
-dual queues to be terminal. Never choose or merge candidate text, bboxes, or
-tables silently.
-
-#### Local PHB Review Console
-
-Use the private console only after the current full extraction, comparison,
-SRD adjudication, and terminal-candidate apply artifacts exist. Start it with:
+### Import Accepted Summaries
 
 ```bash
-npm run -w phb-review-console dev
+npm run -w data-tools summaries:import -- --dry-run
+npm run -w data-tools summaries:import
 ```
 
-English residual rows produced under the legacy authority revision are paused,
-not an active bulk-review queue. The service requires the code-owned
-`official-srd-default-v1` authority reference, so that snapshot now returns
-unavailable and rejects direct reads and writes. The legacy adjudicator cannot
-mint the new revision. The full MinerU recall audit and fail-closed dual
-contract are implemented. Further effective-English work is suspended.
-On explicit resumption, resolve the PR #113 provenance findings, revalidate
-current inputs, and update this command boundary from the accepted implementation
-before generating a new residual queue. Old queue counts are not acceptance
-invariants.
-
-The launcher builds the public `data-tools/phb-review` package entry, binds one
-server to `127.0.0.1`, injects its process-local API token into the served HTML,
-and exposes only allowlisted queues/items/source ids. The API writes only:
-
-- `data/phb35/review/full-mineru-layout-review.jsonl`
-- `data/phb35/review/full-row-review.jsonl`
-
-The browser workspace provides queue/status/kind/category filters, stable row
-navigation, the actual PHB PDF page with independent MinerU/PDF.js/target
-overlays, joined PHB/SRD/DB evidence, and an explicit decision form. The
-client does not derive candidates, eligible targets, fingerprints, or terminal
-state. Do not bypass the disabled English queue or reuse cached residual rows
-after a layout decision.
-
-Each decision must include the currently displayed review fingerprint,
-terminal status, reviewer, and note. Layout placement rows also require an
-eligible target block or anchor. Stale tabs receive `409` with refreshed
-evidence and do not overwrite the newer decision.
-
-After any layout decision, discard cached English rows and restart the
-canonical chain at:
-
-```bash
-npm run -w data-tools phb:source:extract
-npm run -w data-tools phb:source:compare
-npm run -w data-tools phb:srd:adjudicate
-npm run -w data-tools phb:srd:apply
-```
-
-When only English residual decisions change, complete the bounded review batch,
-then refresh the row-review manifest before reporting:
-
-```bash
-npm run -w data-tools phb:source:compare
-npm run -w data-tools phb:source:report
-```
-
-`npm run -w phb-review-console smoke:local` is the explicit read-only real-data
-acceptance command for the service/API/PDF boundary. A console save is never
-itself Gate 2 acceptance.
-
-For source/parse QA, run:
-
-```bash
-npm run -w data-tools spells-full:inspect -- source-package
-```
-
-This v1.2 review command reads `data/spells-full/v6.01/`, parses the package
-source/name index from `Spells v6.01 - List.txt`, compares it with
-`data/spells-full/spells-parsed.json`, and writes a report under
-`data-tools/out/spells-full/`. It does not open SQLite, generate patch JSONL, or
-parse the v6.01 full text into structured spell-body rows. The committed v1.2
-review record is
-`docs/releases/v1.2/full-spell-source-review-report.md`.
-
-### English Short-Description Handoff
-
-- reviewed strict-3.5 decision input:
-  `data/short-desc-review/qa/en-strict35-missing.decisions.jsonl`
-- ready ledger:
-  `data/short-desc-review/qa/en-strict35-ready.generated.jsonl`
-- reviewed normalized rows not yet merged into the import boundary:
-  `data/short-desc-normalized/pending/en-strict35-ready.generated.jsonl`
-- rebuildable command report:
-  `data-tools/out/short-desc-qa/en-strict35-ready.summary.json`
-
-`summaries:strict35-ready` reads the reviewed decisions, local IMarvinTPA source
-index, current rules DB, and current normalized summary JSONL. It writes a
-ledger for rows that are now consumable, marks rows already covered by
-`summaries.generated.jsonl`, and writes only not-yet-covered normalized rows to
-`short-desc-normalized/pending/`. The pending file uses the same row shape as
-`summaries:import`, but it is not automatically imported; merge it into the
-canonical normalized summary JSONL only after DB/content review.
-
-## Recommended End-To-End Flow
-
-For a normal full rebuild:
-
-1. Ensure the rules DB exists and the content DB path is configured.
-2. Run `npm install` from the repo root if needed.
-3. Run `npm run -w server db:generate`.
-4. Run `npm run -w server db:content:reset`.
-5. Run `npm run -w data-tools zh:preprocess` if raw CHM HTML changed.
-6. Run `npm run -w data-tools zh:parse`.
-7. Run `npm run -w data-tools zh:qa`.
-8. Inspect `data-tools/out/zh-parser/stats.json`, `matched.json`, and `unmatched.json`.
-9. Run `npm run -w server db:content:import:zh-entities`.
-10. Run `npm run -w server db:content:import:zh-chm`.
-
-This order keeps the content DB aligned with the latest parser output and the latest entity translation JSON maintained in the nested data repo.
-
-For English full-corpus candidate generation, run the `spells-full` inventory
-and generation commands separately from the CHM content DB rebuild. That
-workflow produces JSONL for DB/content maintainers to review; it is not itself
-a content DB import.
-
-For reviewed English strict-3.5 short-description rows, run
-`summaries:strict35-ready` separately from both the CHM rebuild and the
-spells-full rules patch workflow. It produces pending normalized summary rows
-for DB/content maintainers to review before canonical import.
-
-When the reviewed pending strict-3.5 rows are accepted, merge them into
-`data/short-desc-normalized/summaries.generated.jsonl` in the nested local
-`data/` repo, rerun `summaries:strict35-ready`, and expect the pending output
-to drop to zero rows before running `summaries:import`.
-
-## Step Details
-
-### 1. Preprocess CHM HTML
-
-Command:
-
-```bash
-npm run -w data-tools zh:preprocess
-```
-
-Current script behavior:
-
-- input: `data/chm-raw/`
-- output: `data/chm-clean/`
-
-The preprocessing script:
-
-- reads exported `.htm` files
-- scans nested directories while skipping `.files` companion folders
-- assumes GB2312 input by default
-- removes CHM / Word-style wrapper noise
-- strips heavy attributes
-- writes stable UTF-8 cleaned HTML
-
-Use this when the raw CHM-exported source files change.
-
-### 2. Parse Cleaned CHM HTML
-
-Command:
-
-```bash
-npm run -w data-tools zh:parse
-```
-
-Current script behavior:
-
-- input: `data/chm-clean/`
-- output: `data-tools/out/zh-parser/`
-
-The parser:
-
-- scans cleaned HTML files
-- preserves relative source paths in parser output
-- segments spell entries
-- matches them against rules DB spell records by English name across books
-- applies CHM book-label mapping
-- sanitizes HTML descriptions
-- writes `matched.json`, `unmatched.json`, `candidates.json`, and `stats.json`
-
-For a smaller validation run, use:
-
-```bash
-npm run -w data-tools zh:parse:test
-```
-
-That uses the test input set under `data/chm-test/`.
-
-### 3. Review Parser Artifacts
-
-Before importing CHM spell text, inspect:
-
-- `data-tools/out/zh-parser/stats.json` for match quality and parser counts
-- `data-tools/out/zh-parser/unmatched.json` for unresolved entries
-- `data-tools/out/zh-parser/candidates.json` for follow-up alias or mapping work
-- `data-tools/out/zh-parser/qa/summary.json` for mechanical source/header drift
-
-The normal import path expects `data-tools/out/zh-parser/matched.json` to be the source of truth for CHM-derived spell records.
-`zh:qa` is a mechanical gate and report; long `<b>` text is informational and
-is intended to catch copied formatting inside body text, not to block imports by
-itself.
-
-### 4. Import Entity Translation JSON
-
-Command:
-
-```bash
-npm run -w server db:content:import:zh-entities
-```
-
-Current script behavior:
-
-- reads JSON files from `data/i18n/`, or from `ZH_ENTITY_I18N_DIR` when set
-- validates ids against the rules DB
-- warns about:
-  - ids missing from the rules DB
-  - rules DB coverage missing from the zh JSON
-  - stale English-name mismatches
-- wipes and recreates rows for `lang=zh` and `variant=default` for each imported entity table
-
-Imported tables include:
-
-- character classes
-- domains
-- rulebooks
-- spell schools
-- spell subschools
-- descriptors
-
-### 5. Import CHM-Derived Spell Text
-
-Command:
-
-```bash
-npm run -w server db:content:import:zh-chm
-```
-
-Current script behavior:
-
-- reads `data-tools/out/zh-parser/matched.json`
-- converts CHM HTML into plain text alongside stored HTML
-- recreates `I18nSpellText` rows from the matched parser output
-- writes records using:
-  - `lang=zh`
-  - `variant=chm`
-
-This is the current import step for CHM-derived spell names and descriptions.
-
-## Import Order Notes
-
-For the current local workflow, the normal order after resetting the content DB
-is:
-
-1. import entity translations
-2. import CHM spell text
-3. import normalized spell summaries
-4. generate and import normalized rules content
-5. dry-run and rebuild the derived full-text search index
-
-This keeps the content DB populated with both:
-
-- dictionary-style entity overlays (`zh`, `default`)
-- spell text overlays (`zh`, `chm`)
-- accepted short-summary rows
-- normalized rules-derived spell, taxonomy, component, mechanic, and list-entry
-  content
-- one rebuildable FTS5 document index generated from the final imported English,
-  Chinese, summary, body, alias, and mechanics text
-
-Run `content:search:rebuild` only after all content imports for the artifact are
-complete. Its `--dry-run` path validates the FTS migration, source table
-readability, and generated document counts without writing SQLite. The write
-path replaces only `SpellSearchDocument` and `SpellSearchIndexState`; it does
-not mutate source content tables or the rules DB. Re-run it after any later
-text, summary, or normalized-content import that should affect full-text
-results.
-
-If a local development content DB was created with an older migration checksum,
-`db:content:reset` may ask for a Prisma reset instead of applying migrations in
-place. The content DB is rebuildable, so a DB/content maintainer may run:
-
-```bash
-npx prisma migrate reset --force --config ./prisma-content/prisma.config.ts
-```
-
-Run that command from the `server/` workspace and then re-run all content import
-commands. Do not use it for the app-state DB or any preserve-sensitive future
-user data.
-
-## What This Workflow Does Not Do
-
-This workflow does not:
-
-- rebuild the rules DB
-- create new base spell rows that are missing from the rules DB
-- treat Prisma seed as the normal data population path
-- preserve content DB contents incrementally during a full rebuild
-
-## Related Files
-
-- [db-content-workflow.md](./db-content-workflow.md)
-- [data-setup.md](./data-setup.md)
-- [rules-db-notes.md](./rules-db-notes.md)
-- [../../data-tools/README.md](../../data-tools/README.md)
-- [../../data-tools/package.json](../../data-tools/package.json)
-- [../../server/scripts/import-zh-entities.ts](../../server/scripts/import-zh-entities.ts)
-- [../../server/scripts/import-zh-chm.ts](../../server/scripts/import-zh-chm.ts)
-- [../../data-tools/src/zh-parser/cli.ts](../../data-tools/src/zh-parser/cli.ts)
-- [../../data-tools/src/zh-parser/scripts/preprocess-chm-html.ts](../../data-tools/src/zh-parser/scripts/preprocess-chm-html.ts)
+Live import requires explicit content-write authorization. It reads only the
+canonical normalized JSONL and upserts `I18nSpellSummaryText` by
+`spellId + lang + variant`, without deleting full descriptions or existing
+summary rows. Rebuild FTS after this and other content imports finish.
+
+## Dice Text Boundary
+
+The TXT package at `data/spells-dice-db-by-mo/` is proposed input under
+[intake issue #119](https://github.com/FrankHZ/dnd3.5-spellbook/issues/119). No
+maintained dice adapter/import command exists.
+[Activation issue #121](https://github.com/FrankHZ/dnd3.5-spellbook/issues/121)
+owns the accepted-input, variant/request compatibility, and tested import-order
+requirements. Do not feed TXT into the HTML parser or use the CHM importer for
+selective replacement. Preserve uncovered CHM and English fallback, canonical
+English, mechanics, summaries, existing identities, and source provenance.
+Runtime consumers do not adjudicate competing sources.
+
+## Suspended PHB Work
+
+PDF/MinerU/SRD extraction, translation, and manual queues remain suspended;
+they are not dice prerequisites. Keep their implementation and tests. Only an
+explicit resumption scope should read the retained
+[PHB execution safeguards](../releases/v1.4/phb-source-and-errata-plan.md#paused-workflow-execution-safeguards)
+and [console operation boundary](../../review-console/README.md).
+Existing fingerprints, source-authority rules, and terminal gates remain
+required. Old residuals and unmerged PR #113 outputs are not accepted inputs.

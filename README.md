@@ -17,7 +17,7 @@ npm run build:contracts
 ```
 
 Configure the local databases using [data setup](docs/operations/data-setup.md)
-and [server configuration](server/README.md#configuration). Runtime databases
+and [server configuration](server/README.md#configuration-and-files). Runtime databases
 and source data are intentionally absent from a fresh clone.
 
 Run the API and frontend in separate terminals:
