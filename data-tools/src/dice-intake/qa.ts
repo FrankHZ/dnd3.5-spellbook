@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { isAbsolute, join, relative, resolve } from "node:path";
+import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";
+import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import Database from "better-sqlite3";
 import { parseDiceFile, type DiceRecord, type ParsedFile } from "./parse";
 import { reconcile, type Candidate, type PublicationMap, type Rulebook } from "./reconcile";
@@ -354,13 +354,37 @@ function arg(name: string): string {
 export function writeQaOutputs(dataRoot: string, reportDir: string,
   result: ReturnType<typeof validateReviews>, checkIncomplete: boolean, rulebookId?: number): void {
   if (rulebookId !== undefined) {
+    // Resolve existing ancestors too: report directories may not exist yet.
+    // lstat distinguishes a missing path from a dangling link, which must fail.
+    const destination = (path: string): string => {
+      path = resolve(path);
+      try {
+        lstatSync(path);
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT" || dirname(path) === path) throw error;
+        return join(destination(dirname(path)), basename(path));
+      }
+      return realpathSync(path);
+    };
     const within = (parent: string, child: string): boolean => {
       const path = relative(resolve(parent), resolve(child));
       return path === "" || (!path.startsWith("..") && !isAbsolute(path));
     };
+    const actualDataRoot = destination(dataRoot);
+    const actualBookDir = join(actualDataRoot, "dice-qa", "books", String(rulebookId));
+    // A redirected book/QA directory must not redefine the permitted boundary.
+    assert(relative(actualBookDir, destination(actualBookDir)) === "",
+      "scoped rulebook directory must not redirect through a filesystem alias");
     assert(!within(dataRoot, reportDir)
       || within(join(dataRoot, "dice-qa", "books", String(rulebookId)), reportDir),
     "scoped reports inside data must stay in this rulebook directory");
+    const outputs = [reportDir, join(reportDir, "coverage.json"),
+      ...(checkIncomplete ? [] : [join(reportDir, "accepted.jsonl"), join(reportDir, "fallback.jsonl")])];
+    for (const output of outputs) {
+      const actual = destination(output);
+      assert(!within(actualDataRoot, actual) || within(actualBookDir, actual),
+        "scoped output filesystem destination must stay outside data or in this rulebook directory");
+    }
   }
   mkdirSync(reportDir, { recursive: true });
   writeFileSync(join(reportDir, "coverage.json"), JSON.stringify(result.summary, (_key, value) =>

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import Database from "better-sqlite3";
@@ -340,6 +340,35 @@ try {
   assert.throws(() => writeQaOutputs(dataRoot, join(dataRoot, "dice-qa", "books", "20"), result, false, 10), /this rulebook directory/);
   assert.equal(readFileSync(globalAccepted, "utf8"), "global accepted sentinel");
   assert.equal(readFileSync(globalFallback, "utf8"), "global fallback sentinel");
+  const globalDir = join(dataRoot, "dice-qa");
+  const otherBookDir = join(globalDir, "books", "20");
+  mkdirSync(otherBookDir);
+  for (const [target, aliasName] of [[globalDir, "global-alias"], [otherBookDir, "other-book-alias"]] as const) {
+    const alias = join(fixtureRoot, aliasName);
+    symlinkSync(target, alias, process.platform === "win32" ? "junction" : "dir");
+    for (const file of ["coverage.json", "accepted.jsonl", "fallback.jsonl"]) {
+      writeFileSync(join(target, file), `${aliasName}:${file}:sentinel`);
+    }
+    for (const incomplete of [false, true]) {
+      assert.throws(() => writeQaOutputs(dataRoot, alias, result, incomplete, 10), /filesystem destination/);
+      assert.throws(() => writeQaOutputs(dataRoot, join(alias, "not-created", "out"), result, incomplete, 10), /filesystem destination/);
+    }
+    assert(!existsSync(join(target, "not-created")));
+    for (const file of ["coverage.json", "accepted.jsonl", "fallback.jsonl"]) {
+      assert.equal(readFileSync(join(target, file), "utf8"), `${aliasName}:${file}:sentinel`);
+    }
+  }
+  // The own-book directory itself cannot be redirected to the global directory.
+  symlinkSync(globalDir, join(globalDir, "books", "11"), process.platform === "win32" ? "junction" : "dir");
+  assert.throws(() => writeQaOutputs(dataRoot, join(globalDir, "books", "11"), result, false, 11), /must not redirect/);
+  const externalOutput = join(fixtureRoot, "ignored-out", "not-created", "book10");
+  writeQaOutputs(dataRoot, externalOutput, result, false, 10);
+  assert(existsSync(join(externalOutput, "coverage.json")));
+  const ownOutput = join(bookDir, "not-created", "out");
+  writeQaOutputs(dataRoot, ownOutput, result, false, 10);
+  assert(existsSync(join(ownOutput, "coverage.json")));
+  assert.equal(readFileSync(globalAccepted, "utf8"), "global-alias:accepted.jsonl:sentinel");
+  assert.equal(readFileSync(globalFallback, "utf8"), "global-alias:fallback.jsonl:sentinel");
 } finally {
   rmSync(fixtureRoot, { recursive: true, force: true });
 }

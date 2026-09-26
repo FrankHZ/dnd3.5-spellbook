@@ -365,7 +365,12 @@ pending. Evidence-based `deferred` decisions are distinct from those queue
 markers. Formal mode rejects pending work and writes `accepted.jsonl` and
 `fallback.jsonl` **in the scoped report directory**, never to the global QA
 directory. Report directories inside the data repo must belong to the selected
-book. All three files are proposals until main-gate accepts the corresponding
+book. Before creating directories or writing files, the command resolves actual
+filesystem destinations and existing ancestors, including junctions/symlinks.
+Aliases into global QA or another book fail; the selected book/QA directory
+itself must not redirect the permitted boundary. Normal external report
+directories and new directories within the selected book remain supported.
+All three files are proposals until main-gate accepts the corresponding
 book issue/PR and exact private revision; a validator's `accepted` field status
 does not itself grant source acceptance or activation authority.
 
