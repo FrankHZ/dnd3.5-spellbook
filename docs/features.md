@@ -376,6 +376,11 @@ Current behavior:
 - Chinese entity names and spell text are supplied by app-owned overlay data
 - English remains the fallback baseline
 
+Planned v1.4 work is documented in
+[the dice database replacement plan](./releases/v1.4/README.md): matched,
+accepted Chinese text will replace CHM coverage with English-assisted QA and
+explicit fallback. This is planned behavior; the current runtime is unchanged.
+
 Key code:
 
 - `web/app/i18n/init.ts`

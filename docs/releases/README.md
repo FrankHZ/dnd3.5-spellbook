@@ -5,23 +5,22 @@ This directory contains formal post-MVP release plans.
 Use `docs/mvp/` for MVP-stage history and the final MVP closeout. Use this
 directory for release lines after MVP scope is frozen.
 
-v1.4 planning is active for a PHB 3.5 source-first translation and proofreading
-pilot. v1.3 remains the latest frozen formal release.
+v1.4 planning is active for dice database Chinese text replacement with
+English-assisted discrepancy QA; PDF extraction and review are suspended.
+v1.3 remains the latest frozen formal release.
 
 ## Release Records
 
 - [v1.4/README.md](./v1.4/README.md): active release boundary, ownership, and
   acceptance gates.
-- [v1.4/integrated-plan.md](./v1.4/integrated-plan.md): cross-role source,
-  English QA, translation, activation, and freeze sequence.
-- [v1.4/phb-source-and-errata-plan.md](./v1.4/phb-source-and-errata-plan.md):
-  planned pinned-PDF extraction, errata overlay, comparison, and English QA.
-- [v1.4/phb-pdf-review-console-plan.md](./v1.4/phb-pdf-review-console-plan.md):
-  planned localhost-only PDF evidence review and fingerprint-safe data writes.
-- [v1.4/phb-translation-qa-plan.md](./v1.4/phb-translation-qa-plan.md): planned
-  Chinese translation, proofreading, QA, and reusable skill workflow.
-- [v1.4/phb-content-activation-plan.md](./v1.4/phb-content-activation-plan.md):
-  planned accepted-only content apply, fallback, search, and consumer check.
+- [v1.4/integrated-plan.md](./v1.4/integrated-plan.md): cross-role intake,
+  discrepancy QA, safe activation, and acceptance sequence.
+- [v1.4/dice-source-intake-plan.md](./v1.4/dice-source-intake-plan.md):
+  planned TXT source inventory, identity mapping, and comparison.
+- [v1.4/dice-text-qa-plan.md](./v1.4/dice-text-qa-plan.md): planned
+  English-assisted Chinese discrepancy QA and fallback decisions.
+- [v1.4/dice-content-activation-plan.md](./v1.4/dice-content-activation-plan.md):
+  planned safe replacement, fallback, search, and consumer acceptance.
 - [v1.3/FREEZE.md](./v1.3/FREEZE.md): latest frozen formal release snapshot.
 - [v1.3/README.md](./v1.3/README.md): frozen release boundary, ownership, and
   accepted track map.

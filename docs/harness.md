@@ -201,7 +201,15 @@ Use the explicit read-only local acceptance smoke when they are present:
 npm run -w phb-review-console smoke:local
 ```
 
-The v1.4 PHB source gate is an explicit local-data harness:
+The PHB source gate below is retained for the suspended PDF work. It is an
+explicit local-data harness, not a prerequisite for the revised
+[v1.4 dice-text release](./releases/v1.4/README.md). Keep existing portable
+regressions; new local extraction/review runs require explicit resumption.
+Dice-text implementation will add focused parser/matcher/QA/import tests and
+source-free fixture coverage through the existing harness, as its child plans
+specify. No new harness command is introduced by this planning change.
+
+Paused PHB command reference:
 
 ```bash
 npm run -w data-tools phb:source:verify

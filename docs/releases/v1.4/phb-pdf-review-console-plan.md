@@ -7,7 +7,14 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: in progress. Slices 1-3, the data-tools review service, localhost
+Status: suspended; outside the revised v1.4 acceptance sequence.
+
+The active release now follows [README.md](./README.md) and the `dice-*`
+plans. This document preserves the paused PHB design and evidence; its old
+Gate references and imperatives apply only after an explicit resumption
+scope decision. They are not prerequisites for dice-text intake or QA.
+
+State recorded before suspension: in progress. Slices 1-3, the data-tools review service, localhost
 API/workspace shell, and bounded React consumer, are implemented and main-gate
 accepted in PRs #107 and #108. Slice 4's authority safety gate is implemented:
 the pre-authority English queue now fails closed. The MinerU recall audit,

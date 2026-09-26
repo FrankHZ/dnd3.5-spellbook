@@ -32,7 +32,7 @@ as loose backlog items unless their scope changes again:
 - v1.2 full-spell source review, mechanics localization, and Publications page
 - v1.2.1 content-backed online full-text spell search
 - v1.3 sitewide UX / style redesign
-- v1.4 PHB 3.5 source-first translation and proofreading pilot
+- v1.4 dice database Chinese text replacement with English-assisted QA
 
 ## Current Deferred Areas
 
@@ -77,9 +77,11 @@ as loose backlog items unless their scope changes again:
   decision deferred from the v1.3 cohesion pass
 - search/index artifact generation for offline or static deployments; the
   promoted v1.2.1 scope covers only online content DB full-text search
-- translation/proofreading expansion beyond the v1.4 PHB 3.5 source-first
-  pilot; each additional publication needs its own pinned source, QA boundary,
-  and promotion decision
+- resume PHB PDF extraction, layout review, and source-first translation only
+  after an explicit scope/review-cost decision; retained plans and PR #113
+  disposition are linked from `docs/releases/v1.4/README.md`
+- full retranslation or source-first proofing for additional publications;
+  existing dice text replacement does not authorize those broader workflows
 - expansion work after the v1.1 full-corpus import and v1.2 full-spell review,
   mechanics localization, and Publications tracks are accepted
 

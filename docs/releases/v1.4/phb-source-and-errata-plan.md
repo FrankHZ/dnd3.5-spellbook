@@ -7,7 +7,14 @@
 > `integrated-plan.md` unless version scope, delivery sequence, ownership
 > boundaries, or cross-plan conflicts change.
 
-Status: in progress; Gate 0, the complete Gate 1 representative pilot, and the
+Status: suspended; outside the revised v1.4 acceptance sequence.
+
+The active release now follows [README.md](./README.md) and the `dice-*`
+plans. This document preserves the paused PHB design and evidence; its old
+Gate references and imperatives apply only after an explicit resumption
+scope decision. They are not prerequisites for dice-text intake or QA.
+
+State recorded before suspension: in progress; Gate 0, the complete Gate 1 representative pilot, and the
 localhost review-console prerequisite are accepted. The full-source dual-engine
 recall boundary is implemented and locally terminal in nested-data commit
 `dda575a`; Gate 2 remains reopened at the authority-policy boundary. The
@@ -239,8 +246,9 @@ drops, and reviewed outcomes for every pilot row.
   queue freshness/fingerprints, so the superseded queue fails closed and
   direct decision writes are rejected. The legacy adjudicator intentionally
   cannot mint the new revision. MinerU recall and the refreshed comparison are
-  now terminal; next rerun revised SRD adjudication and terminal-candidate
-  apply, and resolve deterministic three-way drift in batch. Review only the
+  recorded as terminal before suspension. On explicit resumption, revalidate
+  that evidence and resolve the PR #113 findings before adjudication/apply
+  and deterministic three-way drift review. Review only the
   regenerated genuine exceptions through the accepted localhost console or an
   equivalent fingerprint-safe data-tools command. The console must reuse the
   canonical candidate/validation logic and cannot turn a saved decision into
@@ -363,7 +371,7 @@ archive host is the publisher.
 ## Follow-Up Candidates
 
 - Generalize the proven extractor/review schemas to another rulebook only in a
-  later release; v1.4 remains PHB-only.
+  later source-first scope; this suspended track remains PHB-only.
 
 ## Completion Notes
 
@@ -540,3 +548,102 @@ archive host is the publisher.
   substantive, and 80 manual rows. `phb:source:report` remains fail-closed
   because SRD adjudication still pins the previous comparison, which is the
   intended next authority-policy boundary rather than unfinished recall work.
+
+## Paused PR Handoff
+
+PR #113 (`codex/data-phb-srd-authority`, head `2efa0d1`) is open and unmerged
+as observed on September 25, 2026. Its summary reports 605 effective rows,
+596 accepted decisions, and nine proposed shared-table exceptions; these are
+branch results, not current-main acceptance. Nested data is on that branch at
+`262b37e`. Preserve it separately from the new dice intake.
+
+The recorded review identifies two P1 issues: effective-row verification trusts
+stored fingerprints rather than independently checking changed row content,
+and manual decisions are not durably bound to changed adjudication/effective
+row evidence. A P2 finding concerns missing effective-verifier and commit/apply
+boundaries in the operations doc. Passing CI does not resolve these findings.
+Do not accept or reuse those outputs as validated authority. The recommended
+close-unmerged disposition is recorded in the release README; this planning
+session leaves PR state unchanged.
+
+## Paused Workflow Execution Safeguards
+
+These requirements moved from root agent guidance to keep active instructions
+focused. They remain applicable if the PDF work is explicitly resumed. Recheck
+all evidence against the then-current code and data; the retained records do
+not claim that unmerged PR work or old local acceptance remains current.
+
+For the suspended PHB workflow, distinguish the page-extraction pilot from the
+end-to-end Gate 1 pilot. A page review cannot authorize full-PHB extraction.
+Build the end-to-end evidence with `phb:source:compare -- --pilot`, resolve all
+ten case reviews, then use `phb:source:report -- --pilot` to propose the final
+review. The report command must fail while any case remains proposed.
+Each row decision must carry the generated evidence fingerprint; comparison
+content, category, evidence ids, or review flags changing must reset it to
+`proposed`. The verifier must also re-hash the current committed errata
+inventory and the currently configured rules/content SQLite files.
+The full-run boundary must require `npm run -w data-tools phb:pilot:verify`,
+which accepts only clean, committed, non-stale, accepted source/pilot manifests
+and an accepted end-to-end review.
+The default full extraction must continue to hard-gate the independently
+derived 605-spell description/list sets, 1,216 printed rows, 1,235 expanded
+occurrences, zero parser/set issues, 59 MinerU table blocks, seven detached
+named tables, and seven excluded description image blocks. MinerU owns block
+order, spell segmentation, and table structure. PDF.js exact-character items
+inside strict MinerU bboxes may project directly; every outside-bbox item and
+MinerU/source order conflict requires a current, fingerprint-bound accepted
+layout decision targeting an enumerated MinerU block or anchor. Image-adjacent
+caption exclusions are explicit layout decisions, never distance-only drops.
+Only `proposed`, `accepted`, and `rejected` are valid review statuses; unknown
+values must fail extraction and recursive verification. Full comparison may auto-accept
+only exact and formatting-only
+rows after preserving combined target/effect/area labels and table layout
+boundaries; token-multiset equality is not formatting evidence. Unparsed shared
+tables remain manual, and every MinerU/detached table reference must be included
+in the affected row evidence chain.
+Substantive or manual rows remain fingerprint-bound review work. The full
+report must recursively re-hash description/list issues, errata output, pilot
+summon evidence, comparison inputs, and row-review evidence, and must fail
+until every current row is terminal; a successful extraction or comparison
+does not close Gate 2.
+
+Use `phb:mineru:run-page` for new MinerU recall candidates so the actual
+executable, argv, cwd, environment, config, package versions, CUDA device,
+model revision, sorted per-file model-tree hashes, input, logs, and output
+hashes are bound in an ignored run manifest. Record and verify portable argv
+and environment forms separately from the executed absolute invocation. Pass
+that manifest to `phb:mineru:recall`; legacy label-only candidates are
+descriptive and cannot authorize a runtime change. The representative class-list,
+description, table, and image-adjacent pilot rejects a candidate-wide VLM
+switch. For the full witness, use one unbounded
+`phb:mineru:run-batch`, generate the fingerprint-bound queue with
+`phb:mineru:dual:build`, and require
+`phb:mineru:dual:verify -- --require-terminal` before full comparison. Keep
+pipeline output as structured layout and treat VLM only as a recall witness.
+The batch and dual manifests must pin current inputs, exact page mapping,
+runtime/model/config, outputs, layout evidence, and review rows. Never silently
+choose, merge, or import VLM text, bboxes, or tables.
+The batch manifest records the actual transient staging command separately from
+the final atomic publication path, pins MinerU, Python, config, and every model
+file by hash, and gives the runtime probe and parent process finite timeouts.
+Dual item review may auto-accept exact text inside non-image structural blocks, but
+image-overlap text always requires an explicit accepted projection or caption
+exclusion. Terminal dual verification also requires the recursively verified
+layout queue to be terminal; structural-text matches cannot waive that gate.
+If table review exposes a pipeline defect, fix and regenerate the pipeline; do
+not use a terminal dual-review status to waive the defect.
+
+For the suspended PHB authority contract, keep PHB+accepted errata immutable as
+reference/evidence while adopting official SRD 3.5 rules text by default.
+PHB+errata still owns missing-SRD content, Product Identity names and aliases,
+PHB-only content and class-list summaries, and page/table/layout structure.
+Data-pipeline must resolve mixed cases per field into one provenance-bearing
+effective row; server, web, search, and translation consumers must not choose a
+source at runtime. DB-only extension notes do not enter the body. Residual rows
+from the legacy authority revision must not be bulk-accepted.
+The service now requires the code-owned `official-srd-default-v1` authority
+revision in queue freshness/fingerprints, so the old queue fails closed for
+list, detail, and decision requests; the legacy adjudicator cannot mint that
+revision. On explicit resumption, revalidate the current extraction and
+comparison before rebuilding adjudication and the exception queue. Unmerged
+PR #113 is not an accepted implementation of those steps.

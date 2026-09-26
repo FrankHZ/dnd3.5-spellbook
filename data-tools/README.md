@@ -34,17 +34,19 @@ that every `package.json` script is classified there.
 
 ## Commands
 
-Current v3.4 planning for data-tooling work lives in:
+Active v1.4 planning is owned by
+[dice-source-intake-plan.md](../docs/releases/v1.4/dice-source-intake-plan.md)
+and [dice-text-qa-plan.md](../docs/releases/v1.4/dice-text-qa-plan.md).
+The supplied `data/spells-dice-db-by-mo/` TXT package is proposed input.
+A TXT adapter and accepted replacement workflow are planned, not implemented;
+do not feed these files directly to the HTML parser or CHM importer.
 
-- [../docs/mvp/v3.4/integrated-plan.md](../docs/mvp/v3.4/integrated-plan.md)
-- [../docs/mvp/v3.4/short-description-pipeline-plan.md](../docs/mvp/v3.4/short-description-pipeline-plan.md)
-- [../docs/mvp/v3.4/data-harness-hardening-plan.md](../docs/mvp/v3.4/data-harness-hardening-plan.md)
+The PHB commands below are retained for the suspended PDF track in
+[phb-source-and-errata-plan.md](../docs/releases/v1.4/phb-source-and-errata-plan.md).
+They are not current v1.4 prerequisites. Existing validation remains intact;
+only explicit resumption should start a new extraction/review run.
 
-Active PHB source work is owned by
-[../docs/releases/v1.4/phb-source-and-errata-plan.md](../docs/releases/v1.4/phb-source-and-errata-plan.md).
-
-Verify the pinned PHB 3.5 source and errata, then prepare or import the v1.4
-pilot:
+For that paused workflow, the source/pilot command reference is:
 
 ```bash
 npm run -w data-tools phb:source:verify

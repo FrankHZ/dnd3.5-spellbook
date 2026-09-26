@@ -48,6 +48,15 @@ docs. It should not own local DB files or source-bearing data.
 For setup details, environment variables, and Prisma reset commands, use
 [data-setup.md](./data-setup.md).
 
+## Active Release Planning
+
+The [v1.4 dice-text activation plan](../releases/v1.4/dice-content-activation-plan.md)
+owns the planned Chinese text replacement. Its accepted input, variant/request
+compatibility, and safe import order must be implemented and tested before
+using this handoff to activate dice text. Existing PHB artifacts and unmerged
+PR #113 are paused work, not implicit accepted import inputs. Current runtime
+and CHM commands remain unchanged by the documentation-only replanning.
+
 ## Standard Handoff Flow
 
 1. Refresh context.

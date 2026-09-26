@@ -1,178 +1,94 @@
 # v1.4 Release Plan
 
-Status: planned.
+Status: replanned; implementation and content activation have not started.
 
-v1.4 is a source-first translation and proofreading pilot limited to the
-_Player's Handbook v.3.5_ (PHB 3.5). It replaces "translate the current English
-database" with a gated workflow that preserves a pinned PHB+errata reference,
-adopts official SRD rules text by default, resolves exceptions per field, and
-then translates only accepted effective rows.
+v1.4 replaces CHM-derived Chinese spell text with the supplied community dice
+database text where matching and QA support it. English resolves substantive
+differences; the release does not retranslate the entire corpus. PDF extraction
+and manual layout review are suspended because their review cost is too high.
 
 ## Release Boundary
 
-v1.4 owns four implementation tracks with hard stage gates:
+- Cover the supplied package across publications already represented in the
+  application's supported corpus; the release is no longer PHB-only.
+- Replace matched Chinese names and description text, including stat-block
+  text within descriptions. Preserve paragraph and table meaning.
+- Keep current CHM text for missing, ambiguous, rejected, or deferred
+  replacements, and current English fallback where Chinese is absent.
+- Use existing English for discrepancy QA, checking publication and edition
+  alignment. Escalate only conflicts the available evidence cannot resolve.
+- Preserve spell IDs, book associations, structured mechanics, existing English,
+  and short-description sources. A change to those requires a separately
+  scoped correction; this release replaces Chinese text.
+- No automatic new spells/publications, PDF extraction, full retranslation,
+  review-console expansion, public UI redesign, or automatic DB deployment.
 
-1. **PHB source and errata QA**
+The package is at `data/spells-dice-db-by-mo/`, not under `data/artifacts/`.
+It is input awaiting intake, not accepted import data. Keep supplied bytes
+intact and commit the intended input snapshot in the nested data repo before
+implementation acceptance. No corpus text belongs in the public parent repo.
 
-   Pin the exact PHB 3.5 PDF and official errata artifacts by SHA-256. Extract
-   spell bodies, stat-block fields, description pages, and class spell-list
-   short-description occurrences. Apply reviewed errata as a separate,
-   auditable evidence layer, compare PHB+errata/SRD/DB, and emit one accepted
-   effective English row per spell.
+## Active Plans And Ownership
 
-2. **Local PDF evidence review**
+- [integrated-plan.md](./integrated-plan.md): main-gate scope, authority,
+  sequence, and cross-domain decisions.
+- [dice-source-intake-plan.md](./dice-source-intake-plan.md): data-pipeline
+  source inventory, parsing, identity mapping, and difference accounting.
+- [dice-text-qa-plan.md](./dice-text-qa-plan.md): i18n-translation
+  English-assisted discrepancy QA and accepted Chinese text decisions.
+- [dice-content-activation-plan.md](./dice-content-activation-plan.md):
+  backend-db accepted import, request compatibility, search, and consumer checks,
+  with data-pipeline and bounded frontend support.
 
-   Build a private localhost-only React/Vite review console over the existing
-   data-tools candidate, fingerprint, and validation logic. It supports only
-   the current MinerU layout and English residual queues, writes decisions only
-   to nested-data JSONL through a loopback Node API, and does not replace the
-   canonical Gate 2 rerun or acceptance commands. Layout writes invalidate and
-   disable the English queue until a full rerun beginning at source extraction
-   regenerates the dependent chain.
+Librarian owns navigation and release docs; main-gate accepts each handoff.
+A plan is not proof of implementation or accepted content.
 
-3. **PHB Chinese translation and proofreading**
+## Release Acceptance
 
-   Begin only after the full English source gate closes. Translate and review
-   accepted PHB spell names, bodies, and short descriptions with source-page
-   provenance, terminology checks, review queues, and terminal row decisions.
+1. Reproducible source snapshot, publication mapping, record boundaries, and
+   target set. Every source record and target has an explained disposition;
+   raw record counts are not unique spell counts.
+2. Exact and safe formatting-only cases pass deterministic checks in batches.
+   Substantive differences receive recorded English-assisted QA. Only unresolved
+   identity, edition, or semantic conflicts need user review.
+3. Every replacement is accepted and tied to its source and QA inputs.
+   Excluded/deferred rows have reasons and fallback coverage, and are not
+   counted as replacements. Main gate accepts aggregate coverage by book and
+   the remaining exceptions; a small accepted subset cannot silently stand in
+   for the agreed release coverage.
+4. Dry-run evidence proves accepted-only changes, stable IDs, no loss of
+   uncovered Chinese, unchanged English/mechanics/summaries, and repeatability.
+5. Chinese names/detail text and full-text Search consume accepted text.
+   Language/variant requests, collections, and prepared spells remain compatible.
+   Provenance truthfully distinguishes dice text from CHM.
+6. Focused data/import/API checks and EN/ZH browser smoke pass. Remote content
+   activation remains a separate operator handoff. This planning change neither
+   freezes nor deploys v1.4.
 
-4. **Accepted content activation and consumer verification**
+## Suspended PDF Work
 
-   Apply only accepted effective English rows and accepted Chinese overlays
-   through the existing rules/content workflows. Preserve current Chinese CHM
-   fallback for uncovered rows, rebuild search content, and prove the existing
-   frontend consumes reviewed PHB body and short-description data without a UI
-   redesign.
+Retain the existing implementation and these plans as paused reference:
 
-The cross-role ordering is canonical in
-[integrated-plan.md](./integrated-plan.md). It exists because source QA,
-translation, and activation are sequential gates; it is not an implementation
-ledger.
-
-## Authority Matrix
-
-Reference evidence and adopted rules text are separate concerns:
-
-| Surface                                                    | Default adopted value                                                                     | PHB+errata responsibility                                                                                         |
-| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Rules body and mechanics-bearing fields                    | Official SRD 3.5 text                                                                     | Immutable reference/evidence; use PHB+errata when SRD lacks the content or a reviewed field exception requires it |
-| Spell identity and effective name                          | SRD identity/name by default; PHB printed name for Product Identity or PHB-only overrides | Record the explicit PHB/SRD mapping and retain the non-effective counterpart as an alias                          |
-| PHB-only content and class-list short descriptions         | PHB+accepted errata                                                                       | Authoritative source because the SRD does not supply an equivalent row                                            |
-| Page provenance, reading order, and table/layout structure | PHB+accepted errata through MinerU evidence                                               | Always authoritative; SRD and DB cannot replace document structure                                                |
-| Existing DB prose                                          | Never adopted by default                                                                  | Comparison input only; extension notes do not enter the rules body                                                |
-
-The implementation must retain pinned PHB, errata, and SRD hashes. Errata must
-not silently overwrite reference text: preserve the base extraction, errata
-decision, and resulting evidence hash. Data-pipeline resolves mixed cases per
-field and emits exactly one provenance-bearing effective row. Server and web
-runtimes consume that row; they must not choose between PHB, SRD, or DB text.
-DB-only explanatory additions stay out of the body. Material worth preserving
-may become a separately modeled annotation in a later release.
-
-## Data Boundary
-
-- PHB/errata PDFs, extracted text, source-bearing JSONL, translations, review
-  queues, and accepted content rows live only in the nested local `data/` repo.
-- The public parent repo owns extraction/import code, schemas, QA rules,
-  minimal synthetic or redacted fixtures, and aggregate reports without spell
-  text.
-- Runtime SQLite files remain ignored under `server/db/local/`.
-- The PDF review console is local-only, accepts no arbitrary source path, and
-  never reads or writes production DB state.
-- Content DB activation remains an explicit operator step and is not added to
-  automatic CD.
-
-## Ownership
-
-- `data-pipeline`: pinned-source manifests, extraction, errata overlay,
-  comparison, the representative pilot, full English QA, reproducibility, and
-  the review-console service/API/write boundary.
-- `i18n-translation`: Chinese terminology, translation/proofreading queues,
-  row decisions, translation QA, and the reusable corpus-translation skill.
-- `backend-db`: accepted patch/overlay schemas, content DB apply, provenance,
-  fallback/read behavior, search rebuild, and API acceptance.
-- `frontend-design`: the bounded internal PDF review-console consumer, then
-  only a compatibility check for the public app if existing display code needs
-  adjustment; no public-app redesign or new visual system.
-- `librarian`: release plans, cross-doc coherence, and freeze sweep.
-- `main-gate`: approves the pilot manifest, closes each stage gate, resolves
-  cross-role decisions, and decides merge/freeze readiness.
-
-## Track Order
-
-1. Pin both source artifacts and approve an approximately ten-spell pilot that
-   covers page breaks, multi-column extraction, wrapped/long fields, class-list
-   tables, duplicate summary occurrences, and ordinary controls.
-2. Prove the extraction, errata, comparison, and report pipeline on the pilot.
-3. Accept the localhost review service/API and React consumer as evidence
-   tooling; do not bulk-accept a residual snapshot from the legacy authority
-   revision.
-4. Audit and harden MinerU recall first. Any extraction change invalidates PHB
-   evidence and downstream fingerprints.
-5. Rerun full extraction, comparison, SRD adjudication, and terminal-candidate
-   apply under the authority matrix. Produce one effective row per spell,
-   resolve deterministic three-way drift in batch, and send only genuine
-   field-level exceptions to human review. Extend the console only if a new
-   exception type requires additional evidence display.
-6. Refresh comparison after final residual decisions and complete the Gate 2
-   report. Translate and proofread only the accepted effective English corpus.
-7. Apply accepted rows, rebuild derived content/search artifacts, verify API
-   fallback and frontend consumption, then run release acceptance.
-
-## Non-Goals
-
-- Do not include DMG, Spell Compendium, PHB II, supplements, periodicals, or
-  other rulebooks.
-- Do not translate the existing DB corpus before English source acceptance.
-- Do not use the combined `spells-full` dump or CHM content as PHB authority.
-- Do not publish source text, PDF pages, or translations in the parent repo.
-- Do not redesign Spell Detail, cards, Browse, Search, or language settings.
-- Do not deploy the review console, add network access, accept arbitrary file
-  paths, or generalize it into a translation/generic annotation platform.
-- Do not add automatic production DB deployment.
-
-## Plans
-
-- [integrated-plan.md](./integrated-plan.md)
 - [phb-source-and-errata-plan.md](./phb-source-and-errata-plan.md)
 - [phb-pdf-review-console-plan.md](./phb-pdf-review-console-plan.md)
 - [phb-translation-qa-plan.md](./phb-translation-qa-plan.md)
 - [phb-content-activation-plan.md](./phb-content-activation-plan.md)
 
-## Release Acceptance
+Their old Gate 0-4 requirements apply only after explicit resumption. They
+neither block nor authorize dice-text work. Existing portable tests stay;
+suspension does not weaken old validation or permit residual bulk acceptance.
 
-v1.4 may freeze only when:
+[PR #113](https://github.com/FrankHZ/dnd3.5-spellbook/pull/113) belongs to the
+suspended track. At the September 25 planning review it is open at `2efa0d1`,
+with passing CI but two recorded P1 provenance findings and one P2 workflow-doc
+finding. It is neither a prerequisite nor accepted evidence for this release.
+Recommended disposition: close unmerged and preserve its branch/data for possible
+resumption. This documentation change does not close or merge it. Resumption
+requires a new scope decision and revalidation of the findings; old CI alone
+is insufficient. The detailed paused-source plan records that handoff.
 
-- the PHB PDF and official errata artifacts have fixed identity metadata and
-  SHA-256 hashes in the nested data repo;
-- every PHB spell description, relevant stat-block field, and class-list
-  short-description occurrence has traceable PDF page-index and printed-page
-  provenance;
-- the English comparison has terminal, explained outcomes for the complete
-  extracted and current-DB PHB sets with no unexplained missing rows;
-- every accepted spell has one field-resolved effective English row whose
-  provenance records the SRD default and any PHB+errata exception; no runtime
-  source-selection fallback remains;
-- every in-scope errata entry is classified as applicable,
-  already-incorporated, out-of-scope, or manually resolved;
-- the localhost-only review console proves current-fingerprint validation,
-  atomic nested-data decision writes, loopback/path/production isolation, and
-  both bounded queue experiences without becoming a deployed surface;
-- no Chinese work began from rows that lacked accepted English source state;
-- every in-scope Chinese name, body, and available short description is
-  accepted after proofreading; rejected attempts and manual-review rows do not
-  count as release-complete, and only accepted rows enter the content artifact;
-- extraction, review queues, translation QA, apply, and regression checks are
-  rerunnable from documented commands and a reusable repo-local skill;
-- aggregate coverage and decision reports contain no source or translated
-  spell text in the public repo;
-- API and frontend checks prove accepted PHB Chinese body/summary display,
-  English behavior, existing CHM fallback, and full-text search remain sound;
-- focused data, DB, server, web, i18n, and portable validation pass.
+## Maintenance
 
-## Handoff Rule
-
-Implementation branches update their owning child plan and affected durable
-topic docs. Update [integrated-plan.md](./integrated-plan.md) only when stage
-order, scope, ownership, or a cross-track decision changes. Do not turn this
-README or the integrated plan into a progress ledger.
+Implementation branches update their child plan and affected topic docs.
+Change the integrated plan only for scope, sequence, ownership, or cross-plan
+decisions. Shipped release metadata remains v1.3.0 until later acceptance.
