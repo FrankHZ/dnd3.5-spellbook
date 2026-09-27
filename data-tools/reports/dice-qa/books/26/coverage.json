@@ -1,0 +1,45 @@
+{
+  "acceptedTargets": 24,
+  "byBook": {
+    "26": {
+      "descriptionHtml:English": 5,
+      "descriptionHtml:accepted": 20,
+      "name:English": 1,
+      "name:accepted": 24
+    }
+  },
+  "candidateOccurrences": 25,
+  "classifications": {
+    "ambiguous-unmatched": 1,
+    "missing-current-Chinese": 24
+  },
+  "decisions": {
+    "descriptionHtml:accepted": 20,
+    "descriptionHtml:deferred": 4,
+    "descriptionHtml:excluded": 1,
+    "name:accepted": 24,
+    "name:excluded": 1
+  },
+  "existingTargets": 25,
+  "mappingRevision": "4cd593b44e73f591d46e2f35a90d882befc19702",
+  "matchedTargets": 24,
+  "pendingFields": 0,
+  "pendingFullBodyAudits": 0,
+  "reviewedOccurrences": 25,
+  "scope": {
+    "kind": "rulebook",
+    "rulebookId": 26
+  },
+  "sourceByPublication": {
+    "26": {
+      "ambiguous-unmatched": 1,
+      "missing-current-Chinese": 24
+    }
+  },
+  "sourceCoverage": {
+    "candidateOccurrences": 5606,
+    "files": 105
+  },
+  "sourceRevision": "9847e70236cd4bcd841347ed1b42b2f478826268",
+  "validation": "validated-proposal"
+}
