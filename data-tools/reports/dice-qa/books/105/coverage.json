@@ -1,9 +1,9 @@
 {
-  "acceptedTargets": 12,
+  "acceptedTargets": 14,
   "byBook": {
     "105": {
-      "descriptionHtml:accepted": 12,
-      "descriptionHtml:existing-Chinese": 7,
+      "descriptionHtml:accepted": 14,
+      "descriptionHtml:existing-Chinese": 5,
       "name:existing-Chinese": 19
     }
   },
@@ -12,8 +12,8 @@
     "substantive": 19
   },
   "decisions": {
-    "descriptionHtml:accepted": 12,
-    "descriptionHtml:deferred": 7,
+    "descriptionHtml:accepted": 14,
+    "descriptionHtml:deferred": 5,
     "name:excluded": 19
   },
   "existingTargets": 19,
