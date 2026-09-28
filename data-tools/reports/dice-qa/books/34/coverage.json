@@ -2,8 +2,8 @@
   "acceptedTargets": 41,
   "byBook": {
     "34": {
-      "descriptionHtml:English": 15,
-      "descriptionHtml:accepted": 30,
+      "descriptionHtml:English": 18,
+      "descriptionHtml:accepted": 27,
       "name:English": 4,
       "name:accepted": 41
     }
@@ -14,8 +14,8 @@
     "missing-current-Chinese": 41
   },
   "decisions": {
-    "descriptionHtml:accepted": 30,
-    "descriptionHtml:deferred": 11,
+    "descriptionHtml:accepted": 27,
+    "descriptionHtml:deferred": 14,
     "descriptionHtml:excluded": 4,
     "name:accepted": 41,
     "name:excluded": 4
