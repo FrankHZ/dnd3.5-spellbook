@@ -299,6 +299,11 @@ text. A corrected candidate must be separately reviewed before acceptance.
 Formal QA also requires a full-body audit record for every accepted body,
 bound to the effective replacement and aligned English evidence. The report
 counts accepted bodies still lacking that audit during `--check-incomplete`.
+These English excerpts are checked against the DB and do not verify an external
+PDF. For an explicitly authorized book review using PDF evidence, retain the
+private page fragments, visual findings and exact effective-field bindings, and
+run the independent [supplemental PDF verifier](../../data-tools/pdf-extract/README.md#supplemental-review-verification)
+in addition to the unchanged dice QA checks.
 `--boundaries` covers every located unparsed span with a source-bound decision;
 its enclosing candidate's body decision must agree with that disposition.
 Pass `--corrections <absolute-corrections-jsonl>` when accepting such a correction;

@@ -1,0 +1,1989 @@
+{
+  "issue": 257,
+  "rulebookId": 86,
+  "validation": "validated-scoped-pdf-review-proposal",
+  "privateDataCommit": "46e2cf35c39c410182de066d57be962773201fda",
+  "acceptedBaseline": "f598a4ff3e9285778d9ad150b5218f4b57e624fd",
+  "privateStartBaseline": "b4aa951db9eda98ca3598b5ec408abc408284654",
+  "originalDeferred": {
+    "targets": 46,
+    "results": {
+      "accepted": 37,
+      "deferred": 9
+    }
+  },
+  "acceptedBodySample": {
+    "originalAcceptedBodies": 664,
+    "riskIds": [
+      3533,
+      4171,
+      4226,
+      4227,
+      4267,
+      4293,
+      4318,
+      4336,
+      4432,
+      4636,
+      4753,
+      4764
+    ],
+    "riskSelection": [
+      {
+        "targetId": 3533,
+        "reason": "gaze negation/concealment and inherited stone rules"
+      },
+      {
+        "targetId": 4171,
+        "reason": "preserved shared component versus DB/version discrepancy"
+      },
+      {
+        "targetId": 4226,
+        "reason": "numeric thresholds and old-version annotation"
+      },
+      {
+        "targetId": 4227,
+        "reason": "five-row table and continued movement clause"
+      },
+      {
+        "targetId": 4267,
+        "reason": "four-row size table and construct semantics"
+      },
+      {
+        "targetId": 4293,
+        "reason": "multiple version annotations and attack/save rules"
+      },
+      {
+        "targetId": 4318,
+        "reason": "shared level and dismissibility version correction"
+      },
+      {
+        "targetId": 4336,
+        "reason": "inherited resurrection and component contradiction"
+      },
+      {
+        "targetId": 4432,
+        "reason": "restored explicit older-version annotation"
+      },
+      {
+        "targetId": 4636,
+        "reason": "greater/lesser inheritance and bounded monster reference"
+      },
+      {
+        "targetId": 4753,
+        "reason": "older-version spell header and chained numeric damage"
+      },
+      {
+        "targetId": 4764,
+        "reason": "28-deity table, ability names, and possible page continuation"
+      }
+    ],
+    "randomIds": [
+      3842,
+      4657,
+      4278,
+      3797,
+      3916,
+      4575,
+      4783,
+      4257,
+      4367,
+      3979,
+      4578,
+      3969
+    ],
+    "seed": 86,
+    "algorithm": "Python 3.13 random.Random(86).sample(sorted distinct original accepted target IDs excluding risk IDs, 12); retain draw order",
+    "results": {
+      "corrected": 7,
+      "retained": 17
+    }
+  },
+  "acceptedNames": {
+    "targetIds": [
+      3918,
+      3919,
+      4017,
+      4300,
+      4336,
+      4373
+    ],
+    "results": {
+      "retained": 6
+    }
+  },
+  "defectDrivenExpansion": {
+    "targetIds": [
+      3878,
+      3919,
+      3929,
+      4296,
+      4411,
+      4427,
+      4621,
+      4622
+    ],
+    "results": {
+      "corrected": 3,
+      "retained": 5
+    },
+    "headerRiskIds": [
+      3878,
+      4411,
+      4427,
+      4621,
+      4622
+    ],
+    "missingHeaderIds": [
+      3929
+    ],
+    "removalRiskIds": [
+      4296
+    ],
+    "isolatedReferenceIds": [
+      3919
+    ],
+    "headerScreenCounts": {
+      "originalAcceptedBodies": 664,
+      "priorBodyCorrections": 563,
+      "priorHeaderCorrections": 236,
+      "removedSavingThrowOrSRHeaders": 0,
+      "allRiskCandidates": 70,
+      "savingThrowOrSRCandidates": 55,
+      "castingOnlyCandidates": 15,
+      "newCompleteBodyReviews": 1,
+      "newCorrections": 1
+    },
+    "negativeHeaderVisualTriageIds": [
+      3950,
+      3951,
+      3954,
+      4420
+    ],
+    "contactTextTriageCandidates": 20
+  },
+  "supplementalVerification": {
+    "validation": "verified-supplemental-pdf-bindings",
+    "pages": 87,
+    "spans": 4772,
+    "fields": 84
+  },
+  "selectedPdfPages": {
+    "sc": [
+      1,
+      7,
+      8,
+      9,
+      10,
+      11,
+      14,
+      16,
+      17,
+      18,
+      20,
+      21,
+      23,
+      24,
+      27,
+      28,
+      31,
+      33,
+      41,
+      42,
+      44,
+      45,
+      47,
+      49,
+      55,
+      56,
+      59,
+      60,
+      66,
+      67,
+      69,
+      72,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      83,
+      94,
+      97,
+      100,
+      101,
+      105,
+      107,
+      108,
+      118,
+      119,
+      120,
+      123,
+      124,
+      128,
+      129,
+      130,
+      131,
+      142,
+      143,
+      152,
+      153,
+      158,
+      160,
+      163,
+      167,
+      168,
+      169,
+      171,
+      178,
+      180,
+      189,
+      190,
+      197,
+      203,
+      205,
+      210,
+      216,
+      217,
+      218,
+      223,
+      227,
+      228,
+      229,
+      230,
+      231,
+      236,
+      241,
+      243
+    ],
+    "errata": [
+      0
+    ]
+  },
+  "coverage": {
+    "acceptedTargets": 701,
+    "byBook": {
+      "86": {
+        "descriptionHtml:English": 10,
+        "descriptionHtml:accepted": 701,
+        "descriptionHtml:existing-Chinese": 291,
+        "name:English": 10,
+        "name:accepted": 6,
+        "name:existing-Chinese": 986
+      }
+    },
+    "candidateOccurrences": 724,
+    "classifications": {
+      "ambiguous-unmatched": 13,
+      "missing-current-Chinese": 1,
+      "substantive": 710
+    },
+    "decisions": {
+      "descriptionHtml:accepted": 701,
+      "descriptionHtml:deferred": 9,
+      "descriptionHtml:excluded": 13,
+      "descriptionHtml:rejected": 1,
+      "name:accepted": 6,
+      "name:excluded": 710,
+      "name:rejected": 8
+    },
+    "existingTargets": 1002,
+    "mappingRevision": "4cd593b44e73f591d46e2f35a90d882befc19702",
+    "matchedTargets": 711,
+    "pendingFields": 0,
+    "pendingFullBodyAudits": 0,
+    "reviewedOccurrences": 724,
+    "scope": {
+      "kind": "rulebook",
+      "rulebookId": 86
+    },
+    "sourceByPublication": {
+      "86": {
+        "ambiguous-unmatched": 13,
+        "missing-current-Chinese": 1,
+        "substantive": 710
+      }
+    },
+    "sourceCoverage": {
+      "candidateOccurrences": 5606,
+      "files": 105
+    },
+    "sourceRevision": "9847e70236cd4bcd841347ed1b42b2f478826268",
+    "validation": "validated-proposal"
+  },
+  "results": [
+    {
+      "targetId": 3532,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 28,
+          "printedPage": 29
+        }
+      ]
+    },
+    {
+      "targetId": 3533,
+      "field": "descriptionHtml",
+      "group": "risk",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 42,
+          "printedPage": 43
+        }
+      ]
+    },
+    {
+      "targetId": 3544,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "deferred",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 76,
+          "printedPage": 77
+        }
+      ],
+      "remainingQuestion": "darkness clauses conflict"
+    },
+    {
+      "targetId": 3774,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 41,
+          "printedPage": 42
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 42,
+          "printedPage": 43
+        }
+      ]
+    },
+    {
+      "targetId": 3792,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 105,
+          "printedPage": 106
+        }
+      ]
+    },
+    {
+      "targetId": 3796,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 128,
+          "printedPage": 129
+        }
+      ]
+    },
+    {
+      "targetId": 3797,
+      "field": "descriptionHtml",
+      "group": "random",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 163,
+          "printedPage": 164
+        }
+      ]
+    },
+    {
+      "targetId": 3820,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 8,
+          "printedPage": 9
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 9,
+          "printedPage": 10
+        }
+      ]
+    },
+    {
+      "targetId": 3822,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 7,
+          "printedPage": 8
+        }
+      ]
+    },
+    {
+      "targetId": 3828,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "deferred",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 10,
+          "printedPage": 11
+        }
+      ],
+      "remainingQuestion": "material quantity is unspecified"
+    },
+    {
+      "targetId": 3830,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 10,
+          "printedPage": 11
+        }
+      ]
+    },
+    {
+      "targetId": 3832,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 11,
+          "printedPage": 12
+        }
+      ]
+    },
+    {
+      "targetId": 3842,
+      "field": "descriptionHtml",
+      "group": "random",
+      "disposition": "corrected",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 14,
+          "printedPage": 15
+        }
+      ],
+      "defectTypes": [
+        "contact"
+      ]
+    },
+    {
+      "targetId": 3852,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 16,
+          "printedPage": 17
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 18,
+          "printedPage": 19
+        }
+      ]
+    },
+    {
+      "targetId": 3854,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "deferred",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 17,
+          "printedPage": 18
+        }
+      ],
+      "remainingQuestion": "fire absorption frequency and scaling are unspecified"
+    },
+    {
+      "targetId": 3861,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 169,
+          "printedPage": 170
+        }
+      ]
+    },
+    {
+      "targetId": 3865,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 20,
+          "printedPage": 21
+        }
+      ]
+    },
+    {
+      "targetId": 3870,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "deferred",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 21,
+          "printedPage": 22
+        }
+      ],
+      "remainingQuestion": "material quantity is unspecified"
+    },
+    {
+      "targetId": 3878,
+      "field": "descriptionHtml",
+      "group": "expansion",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 100,
+          "printedPage": 101
+        }
+      ]
+    },
+    {
+      "targetId": 3882,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 118,
+          "printedPage": 119
+        }
+      ]
+    },
+    {
+      "targetId": 3883,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 118,
+          "printedPage": 119
+        }
+      ]
+    },
+    {
+      "targetId": 3890,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 119,
+          "printedPage": 120
+        }
+      ]
+    },
+    {
+      "targetId": 3893,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 120,
+          "printedPage": 121
+        }
+      ]
+    },
+    {
+      "targetId": 3896,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 100,
+          "printedPage": 101
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 101,
+          "printedPage": 102
+        }
+      ]
+    },
+    {
+      "targetId": 3916,
+      "field": "descriptionHtml",
+      "group": "random",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 123,
+          "printedPage": 124
+        }
+      ]
+    },
+    {
+      "targetId": 3918,
+      "field": "name",
+      "group": "name",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 123,
+          "printedPage": 124
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 124,
+          "printedPage": 125
+        }
+      ]
+    },
+    {
+      "targetId": 3919,
+      "field": "descriptionHtml",
+      "group": "expansion",
+      "disposition": "corrected",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 124,
+          "printedPage": 125
+        }
+      ],
+      "defectTypes": [
+        "reference"
+      ]
+    },
+    {
+      "targetId": 3919,
+      "field": "name",
+      "group": "name",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 124,
+          "printedPage": 125
+        }
+      ]
+    },
+    {
+      "targetId": 3929,
+      "field": "descriptionHtml",
+      "group": "expansion",
+      "disposition": "corrected",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 23,
+          "printedPage": 24
+        }
+      ],
+      "defectTypes": [
+        "header"
+      ]
+    },
+    {
+      "targetId": 3931,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 23,
+          "printedPage": 24
+        }
+      ]
+    },
+    {
+      "targetId": 3933,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 24,
+          "printedPage": 25
+        }
+      ]
+    },
+    {
+      "targetId": 3937,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 83,
+          "printedPage": 84
+        }
+      ]
+    },
+    {
+      "targetId": 3953,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 27,
+          "printedPage": 28
+        }
+      ]
+    },
+    {
+      "targetId": 3969,
+      "field": "descriptionHtml",
+      "group": "random",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 31,
+          "printedPage": 32
+        }
+      ]
+    },
+    {
+      "targetId": 3979,
+      "field": "descriptionHtml",
+      "group": "random",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 33,
+          "printedPage": 34
+        }
+      ]
+    },
+    {
+      "targetId": 4017,
+      "field": "name",
+      "group": "name",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 44,
+          "printedPage": 45
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 45,
+          "printedPage": 46
+        }
+      ]
+    },
+    {
+      "targetId": 4031,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 47,
+          "printedPage": 48
+        }
+      ]
+    },
+    {
+      "targetId": 4040,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 49,
+          "printedPage": 50
+        }
+      ]
+    },
+    {
+      "targetId": 4072,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 167,
+          "printedPage": 168
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 168,
+          "printedPage": 169
+        }
+      ]
+    },
+    {
+      "targetId": 4085,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "deferred",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 171,
+          "printedPage": 172
+        }
+      ],
+      "remainingQuestion": "forced movement distance is ambiguous"
+    },
+    {
+      "targetId": 4120,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "deferred",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 178,
+          "printedPage": 179
+        }
+      ],
+      "remainingQuestion": "entry and nonattack clauses conflict"
+    },
+    {
+      "targetId": 4132,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 180,
+          "printedPage": 181
+        }
+      ]
+    },
+    {
+      "targetId": 4133,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 180,
+          "printedPage": 181
+        }
+      ]
+    },
+    {
+      "targetId": 4171,
+      "field": "descriptionHtml",
+      "group": "risk",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 189,
+          "printedPage": 190
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 190,
+          "printedPage": 191
+        }
+      ]
+    },
+    {
+      "targetId": 4204,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "deferred",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 197,
+          "printedPage": 198
+        }
+      ],
+      "remainingQuestion": "duration and resistance conditions are missing"
+    },
+    {
+      "targetId": 4226,
+      "field": "descriptionHtml",
+      "group": "risk",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 203,
+          "printedPage": 204
+        }
+      ]
+    },
+    {
+      "targetId": 4227,
+      "field": "descriptionHtml",
+      "group": "risk",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 203,
+          "printedPage": 204
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 205,
+          "printedPage": 206
+        }
+      ]
+    },
+    {
+      "targetId": 4229,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 205,
+          "printedPage": 206
+        }
+      ]
+    },
+    {
+      "targetId": 4257,
+      "field": "descriptionHtml",
+      "group": "random",
+      "disposition": "corrected",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 210,
+          "printedPage": 211
+        }
+      ],
+      "defectTypes": [
+        "focus-loss"
+      ]
+    },
+    {
+      "targetId": 4267,
+      "field": "descriptionHtml",
+      "group": "risk",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 55,
+          "printedPage": 56
+        }
+      ]
+    },
+    {
+      "targetId": 4278,
+      "field": "descriptionHtml",
+      "group": "random",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 56,
+          "printedPage": 57
+        }
+      ]
+    },
+    {
+      "targetId": 4293,
+      "field": "descriptionHtml",
+      "group": "risk",
+      "disposition": "corrected",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 216,
+          "printedPage": 217
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 217,
+          "printedPage": 218
+        }
+      ],
+      "defectTypes": [
+        "removal"
+      ]
+    },
+    {
+      "targetId": 4296,
+      "field": "descriptionHtml",
+      "group": "expansion",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 217,
+          "printedPage": 218
+        }
+      ]
+    },
+    {
+      "targetId": 4300,
+      "field": "name",
+      "group": "name",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 218,
+          "printedPage": 219
+        }
+      ]
+    },
+    {
+      "targetId": 4318,
+      "field": "descriptionHtml",
+      "group": "risk",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 223,
+          "printedPage": 224
+        }
+      ]
+    },
+    {
+      "targetId": 4336,
+      "field": "descriptionHtml",
+      "group": "risk",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 129,
+          "printedPage": 130
+        }
+      ]
+    },
+    {
+      "targetId": 4336,
+      "field": "name",
+      "group": "name",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 129,
+          "printedPage": 130
+        }
+      ]
+    },
+    {
+      "targetId": 4348,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 59,
+          "printedPage": 60
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 60,
+          "printedPage": 61
+        }
+      ]
+    },
+    {
+      "targetId": 4367,
+      "field": "descriptionHtml",
+      "group": "random",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 130,
+          "printedPage": 131
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 131,
+          "printedPage": 132
+        }
+      ]
+    },
+    {
+      "targetId": 4373,
+      "field": "name",
+      "group": "name",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 131,
+          "printedPage": 132
+        }
+      ]
+    },
+    {
+      "targetId": 4397,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 66,
+          "printedPage": 67
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 67,
+          "printedPage": 68
+        }
+      ]
+    },
+    {
+      "targetId": 4411,
+      "field": "descriptionHtml",
+      "group": "expansion",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 69,
+          "printedPage": 70
+        }
+      ]
+    },
+    {
+      "targetId": 4427,
+      "field": "descriptionHtml",
+      "group": "expansion",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 75,
+          "printedPage": 76
+        }
+      ]
+    },
+    {
+      "targetId": 4432,
+      "field": "descriptionHtml",
+      "group": "risk",
+      "disposition": "corrected",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 77,
+          "printedPage": 78
+        }
+      ],
+      "defectTypes": [
+        "header",
+        "flavor"
+      ]
+    },
+    {
+      "targetId": 4435,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 16,
+          "printedPage": 17
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 18,
+          "printedPage": 19
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 77,
+          "printedPage": 78
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 78,
+          "printedPage": 79
+        }
+      ]
+    },
+    {
+      "targetId": 4443,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "deferred",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 79,
+          "printedPage": 80
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 80,
+          "printedPage": 81
+        }
+      ],
+      "remainingQuestion": "rod rule and example conflict"
+    },
+    {
+      "targetId": 4488,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 243,
+          "printedPage": 244
+        }
+      ]
+    },
+    {
+      "targetId": 4515,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 94,
+          "printedPage": 95
+        }
+      ]
+    },
+    {
+      "targetId": 4530,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 97,
+          "printedPage": 98
+        }
+      ]
+    },
+    {
+      "targetId": 4563,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 107,
+          "printedPage": 108
+        }
+      ]
+    },
+    {
+      "targetId": 4575,
+      "field": "descriptionHtml",
+      "group": "random",
+      "disposition": "corrected",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 142,
+          "printedPage": 143
+        }
+      ],
+      "defectTypes": [
+        "ability"
+      ]
+    },
+    {
+      "targetId": 4578,
+      "field": "descriptionHtml",
+      "group": "random",
+      "disposition": "corrected",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 142,
+          "printedPage": 143
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 143,
+          "printedPage": 144
+        }
+      ],
+      "defectTypes": [
+        "geometry",
+        "category",
+        "typography"
+      ]
+    },
+    {
+      "targetId": 4621,
+      "field": "descriptionHtml",
+      "group": "expansion",
+      "disposition": "corrected",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 152,
+          "printedPage": 153
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 153,
+          "printedPage": 154
+        }
+      ],
+      "defectTypes": [
+        "condition-result-omission"
+      ]
+    },
+    {
+      "targetId": 4622,
+      "field": "descriptionHtml",
+      "group": "expansion",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 152,
+          "printedPage": 153
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 153,
+          "printedPage": 154
+        }
+      ]
+    },
+    {
+      "targetId": 4636,
+      "field": "descriptionHtml",
+      "group": "risk",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 158,
+          "printedPage": 159
+        }
+      ]
+    },
+    {
+      "targetId": 4656,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 160,
+          "printedPage": 161
+        }
+      ]
+    },
+    {
+      "targetId": 4657,
+      "field": "descriptionHtml",
+      "group": "random",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 227,
+          "printedPage": 228
+        }
+      ]
+    },
+    {
+      "targetId": 4678,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 108,
+          "printedPage": 109
+        }
+      ]
+    },
+    {
+      "targetId": 4681,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 108,
+          "printedPage": 109
+        }
+      ]
+    },
+    {
+      "targetId": 4731,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "accepted",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 228,
+          "printedPage": 229
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 229,
+          "printedPage": 230
+        }
+      ]
+    },
+    {
+      "targetId": 4735,
+      "field": "descriptionHtml",
+      "group": "deferred",
+      "disposition": "deferred",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 229,
+          "printedPage": 230
+        }
+      ],
+      "remainingQuestion": "summoned count differs between header and body"
+    },
+    {
+      "targetId": 4753,
+      "field": "descriptionHtml",
+      "group": "risk",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 230,
+          "printedPage": 231
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 231,
+          "printedPage": 232
+        }
+      ]
+    },
+    {
+      "targetId": 4764,
+      "field": "descriptionHtml",
+      "group": "risk",
+      "disposition": "corrected",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 236,
+          "printedPage": 237
+        }
+      ],
+      "defectTypes": [
+        "header"
+      ]
+    },
+    {
+      "targetId": 4783,
+      "field": "descriptionHtml",
+      "group": "random",
+      "disposition": "retained",
+      "pages": [
+        {
+          "sourceId": "errata",
+          "pageIndex": 0,
+          "printedPage": null
+        },
+        {
+          "sourceId": "sc",
+          "pageIndex": 241,
+          "printedPage": 242
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    "Only selected fields in book86 are proposed; all 1002 targets retain two-field coverage, and unaffected fields and other books are preserved.",
+    "PDF evidence supplements unchanged DB alignment, source freshness, correction and complete-body audit checks.",
+    "Frozen canonical English/mechanics, identity, summaries, publication metadata and raw inputs are unchanged.",
+    "Selected pages and complete used entries were visually checked; persisted spans/geometry and effective Chinese bindings are independently reread.",
+    "Original ambiguities remain explicit deferrals; sample results do not certify all 664 originally accepted bodies.",
+    "No DB import, app-state write, production operation or suspended PHB/MinerU/SRD queue."
+  ]
+}

@@ -117,3 +117,43 @@ JSONL rows do not enter the PHB interfaces, dice accepted exports, or runtime
 DBs. Future use as accepted evidence must follow the existing source verification
 and acceptance workflow. Extraction and small visual samples cannot certify a
 whole book, resolve edition/errata conflicts, or authorize DB/production writes.
+
+## Supplemental Review Verification
+
+Book-specific private evidence can additionally be checked against fresh PDF
+extraction and the current scoped field decisions:
+
+```powershell
+& $pdfPython -m pdf_extract.verify_evidence `
+  --evidence 'D:/private/book/pdf-evidence.json' `
+  --decisions 'D:/private/book/decisions.jsonl' `
+  --source 'book=D:/private/source.pdf' `
+  --source 'errata=D:/private/errata.pdf'
+```
+
+The schema-1 evidence object has `pages` and `bindings`. Each page records an
+explicit `sourceId`, `pageIndex`, `pageCount`, extraction `extractor`, `options`,
+`geometry`, and selected `spans`. A span has zero-based block/line/span array
+indices plus its exact extracted `value` (including text, bbox, origin, font,
+size, and flags). Each binding records `sourceKey`, `targetId`, `field`, `status`,
+exact `effectiveText`, semantic `reason`, `visualReview`, and `pages` with source
+IDs, indices, and `spanRefs` pointing to the persisted spans. Persist only the
+source fragments actually needed for the authorized review in the private repo.
+
+Verification reopens caller-supplied PDFs, compares engine/options/geometry and
+every saved span, then binds accepted replacement text or deferred baseline text
+to the current decision. It rejects stale field text/status/identity, altered
+fragments or layout, and missing page/span associations. It prints source-free
+counts and writes nothing. Reinstall the Python package after code changes.
+
+This check supplements the existing dice DB alignment, source freshness,
+correction and full-body audit checks. It does not establish source authority,
+prove a human visual review occurred, decide semantics, or certify unsampled
+content. Record publication/version applicability, observed printed page numbers,
+full-context visual findings, and unresolved source contradictions in the
+book-specific review as well.
+
+The [book86 issue #257 report](../reports/dice-qa/books/86/pdf-qa.json) records a scoped
+review proposal and its precise private evidence commit. It contains source-free
+selection, dispositions and validation results; it does not authorize import or
+certify unsampled entries.
