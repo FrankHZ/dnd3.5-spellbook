@@ -28,5 +28,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Setup Python for PDF extraction tests
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Install PDF extraction package
+        run: python -m pip install ./data-tools/pdf-extract
+
+      - name: Test PDF extraction with synthetic sources
+        run: python -m unittest discover -s data-tools/pdf-extract/tests -v
+
       - name: Run portable validation
         run: npm run ci:portable

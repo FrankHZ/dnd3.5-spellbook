@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dnd-pdf-extract"
+version = "0.1.0"
+description = "Explicit-page PDF text and geometry extraction for local source QA"
+requires-python = ">=3.13,<3.14"
+dependencies = ["PyMuPDF==1.28.2"]
+
+[project.scripts]
+dnd-pdf-extract = "pdf_extract.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

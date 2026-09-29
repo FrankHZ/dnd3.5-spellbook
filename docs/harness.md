@@ -15,6 +15,8 @@ The repository currently has:
 - runtime import smoke for the built `@dnd/contracts` package
 - runtime import smoke for the built server app and Prisma clients
 - data-tooling TypeScript checks in `data-tools`
+- independent Python synthetic PDF extraction/coordinate tests in
+  [data-tools/pdf-extract](../data-tools/pdf-extract/README.md)
 - built runtime resolution for `data-tools/phb-review`
 - private review-console service/API tests, typecheck, and Vite build
 - backend API tests with Vitest and Supertest
@@ -35,6 +37,14 @@ npm run -w data-tools test:portable
 builds the server, imports the compiled app entry point, and then runs backend
 API tests against synthetic disposable SQLite fixtures, so it does not read
 ignored local runtime databases.
+
+The same GitHub job separately installs Python 3.13 and the pinned
+`data-tools/pdf-extract` package, then runs `python -m unittest discover -s
+data-tools/pdf-extract/tests -v`. Those tests generate synthetic PDFs in temporary
+directories and verify explicit page selection, engine text order/Unicode,
+fonts/bboxes, rotation/crop coordinates, and output protection. They do not read
+private PDFs or DBs. Python is not required by the npm `ci:portable` command;
+both validations remain required in the remote job.
 
 `npm run test:deployment-scripts` executes the tracked DB, backend deploy, and
 Nginx helpers against temporary directories with deterministic command stubs.

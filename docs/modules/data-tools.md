@@ -33,6 +33,14 @@ source-data operations workspace.
 
 Command lifecycle metadata lives in `data-tools/scripts.manifest.json`.
 
+Outside the TypeScript modules, [pdf-extract](../../data-tools/pdf-extract/README.md)
+is an independent Python 3.13 subproject with a pinned PyMuPDF dependency and
+native CLI/tests. It owns explicit-page PDF text and geometry facts, preserving
+engine order without book-specific parsing, source acceptance, or DB writes.
+Its tests run separately in GitHub CI; it is not an npm workspace and does not
+replace or resume the suspended PHB/MinerU modules or review-console interfaces.
+Raw output remains private in authorized ignored `data/artifacts/` directories.
+
 ## Data Ownership
 
 Local source inputs, maintained patch data, normalized import JSONL, and review
