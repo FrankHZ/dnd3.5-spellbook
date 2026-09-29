@@ -10,6 +10,10 @@ Install dependencies from the repository root. Commands are defined in
 `npm run -w data-tools <script>`. Real-data operations require the operator's
 nested `data/` repo and [DB setup](../docs/operations/data-setup.md).
 
+The independent [PDF Extract Python subproject](./pdf-extract/README.md) uses its
+own Python 3.13 environment and pinned PyMuPDF dependency. Its native CLI/tests
+are separate from npm installation and run independently in GitHub CI.
+
 | Task | Command |
 | --- | --- |
 | Typecheck | `npm run typecheck:data-tools` |
@@ -33,6 +37,7 @@ the merge gate.
 - [Normalized content and search index](../docs/operations/import-workflow.md#normalized-content-and-search)
 - [Short descriptions](../docs/operations/import-workflow.md#short-descriptions)
 - [DB handoff and artifact provenance](../docs/operations/db-content-workflow.md)
+- [Explicit-page PDF text/geometry extraction](./pdf-extract/README.md)
 
 The read-only dice TXT intake and field-level QA validation are described at the
 [replacement boundary](../docs/operations/import-workflow.md#dice-text-boundary).
@@ -40,6 +45,8 @@ PHB PDF extraction/review is suspended and is
 not a prerequisite for these operations. Only an explicit resumption scope
 should use the [PHB safeguards](../docs/releases/v1.4/phb-source-and-errata-plan.md#paused-workflow-execution-safeguards)
 and [private review console](../review-console/README.md).
+The Python PDF extractor requires its own authorized source/page/output scope;
+it does not resume that PHB workflow or accept extracted English as content.
 
 ## Code And Data Boundaries
 
