@@ -2,7 +2,7 @@
   "issue": 257,
   "rulebookId": 86,
   "validation": "validated-scoped-pdf-review-proposal",
-  "privateDataCommit": "8841d2ce75e5043c10dc4a8dd43870ec175d3590",
+  "privateDataCommit": "46e2cf35c39c410182de066d57be962773201fda",
   "acceptedBaseline": "f598a4ff3e9285778d9ad150b5218f4b57e624fd",
   "privateStartBaseline": "b4aa951db9eda98ca3598b5ec408abc408284654",
   "originalDeferred": {
@@ -124,8 +124,8 @@
       4622
     ],
     "results": {
-      "corrected": 2,
-      "retained": 6
+      "corrected": 3,
+      "retained": 5
     },
     "headerRiskIds": [
       3878,
@@ -1738,7 +1738,7 @@
       "targetId": 4621,
       "field": "descriptionHtml",
       "group": "expansion",
-      "disposition": "retained",
+      "disposition": "corrected",
       "pages": [
         {
           "sourceId": "errata",
@@ -1755,6 +1755,9 @@
           "pageIndex": 153,
           "printedPage": 154
         }
+      ],
+      "defectTypes": [
+        "condition-result-omission"
       ]
     },
     {
