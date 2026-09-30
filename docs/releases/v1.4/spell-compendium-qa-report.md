@@ -22,10 +22,10 @@ The resulting review dispositions are proposals:
 
 | Consumer | Source-correct | Corrected | Unresolved | English fallback |
 | --- | ---: | ---: | ---: | ---: |
-| English text/HTML | 770 | 207 | 24 | 0 |
-| Mechanics/relationships | 838 | 123 | 40 | 0 |
+| English text/HTML | 775 | 210 | 16 | 0 |
+| Mechanics/relationships | 841 | 124 | 36 | 0 |
 | Chinese name | 954 | 31 | 13 | 3 |
-| Chinese body | 275 | 630 | 93 | 3 |
+| Chinese body | 272 | 610 | 116 | 3 |
 
 An unresolved entry can retain a definite local correction while preserving its
 unresolved dependency or printed conflict. These counts do not authorize writes.
@@ -39,8 +39,10 @@ fallback; reviewed absence is not a Chinese quality pass.
 Observed foreign links do not establish foreign-source acceptance. The only
 authorized cross-book change is the local English text/HTML link in target 3817,
 from Miniatures target 1982 to the SC base spell 3804. Target 1982 remains intact.
-Untraced extra list memberships, contradictory printed rules and unavailable
-external references retain concrete unresolved dispositions and fallback.
+Untraced extra list memberships, contradictory printed rules and displayed
+historical rules without their original authority retain concrete unresolved
+dispositions and fallback. An accurate named reference that adds no external
+numerical rule does not require whole-book external certification.
 
 ## Fresh native field QA
 
@@ -51,21 +53,42 @@ fields. All 724 owned candidate occurrences have fresh, field-specific decisions
 | Field | Accepted proposal | Rejected | Deferred | Excluded |
 | --- | ---: | ---: | ---: | ---: |
 | Name | 6 | 8 | 5 | 705 |
-| Body | 650 | 0 | 61 | 13 |
+| Body | 652 | 0 | 59 | 13 |
 
 The native unchanged-name guard remains intact. Excluded fields are not Chinese
-quality passes. The 656 accepted fields cover 651 targets and have 612 correction
+quality passes. The 658 accepted fields cover 653 targets and have 614 correction
 records; acceptance and correction counts therefore describe different things.
 Independent full-body bindings, actual English/mechanics/HTML, current Chinese,
-original locators and specific rule pairs were verified for all 650 bodies.
-Five changed-input cases have explicit latest evidence; old frozen records remain.
+original locators and specific rule pairs were verified for all 652 bodies.
+Fourteen changed-input cases have explicit latest evidence; old frozen records
+remain. Ten previously proposed complete bodies now retain specific historical
+source deferrals rather than claiming SC also proves their earlier versions.
 
 Actual accepted/fallback exports match the individual decisions across all 2,004
-DB fields: 1,328 retain existing Chinese and 20 retain English fallback. The extra
-4837 record retains both fallback fields. Nine newly identified unavailable
-template, disease, terrain, weather, plane or historical-comparison dependencies
-remain body-deferred. Another 174 standalone fallback correction proposals remain
-unaccepted, including independently verified local edits within unresolved bodies.
+DB fields: 1,326 retain existing Chinese and 20 retain English fallback. The extra
+4837 record retains both fallback fields. Complete-body source conflicts and
+specific expanded or historical rules remain deferred; bare named references
+were reread against their actual impact.
+
+The separate source-bound fallback channel individually reviewed 140 fields,
+including complete old/new Chinese HTML, actual current English/HTML/mechanics
+and original source evidence. Its maintained CLI returned `validated-proposal`
+and exported 115 fields: 31 independent names and 84 complete bodies. Twenty-five
+complete bodies retain specific historical source deferrals. Fourteen body fixes
+have explicit frozen-prior/latest proof; frozen task inputs were not replaced.
+Names 4153, 4464, 4496 and 4756 no longer inherit unrelated body blockers.
+
+This channel preserves null source keys, exact target/field identities, current
+before values and the native unchanged-name guard. It rejects duplicate fields,
+native accepted overlap, stale full inputs and incomplete body/HTML audits.
+Native accepted/fallback exports remain intact; main-gate accepts the exact
+private revision and independent export before a later writer may consume it.
+The verified combined handoff projects 773 accepted proposal fields and 1,231
+retained fallback fields across all 2,004 DB fields; this projection performs no
+write or activation.
+A zero blocker count alone never supplies semantic acceptance. Of the 176
+recorded standalone proposals, 61 remain outside the independent accepted export,
+including the 25 historical deferrals and other concretely blocked fields.
 
 The maintained supplemental PDF verifier passed 312 original pages, 48,105 exact
 spans and all 722 accepted/deferred field bindings. Rejected/excluded identity and
@@ -104,9 +127,12 @@ source string completely.
 ## Validation and handoff
 
 Targeted validation passed 19 portable harness cases, five artifact cases,
-data-tools typechecking and diff checks. Remote `ci:portable` passed for the
-implementation revision. Independent review of the actual six-file tooling diff
-found no concrete defect; this does not substitute for main-gate review.
+32 source-bound contract cases, actual readonly CLI/stale-input/output-boundary
+cases, data-tools typechecking and diff checks. Null-clear updates without their
+required old condition now produce the expected diagnostic instead of a TypeError.
+Private checks also reject changed allocation, source scope, consumer inputs,
+historical disposition and prior/latest proof boundaries. The final public PR
+records remote `ci:portable`, which remains the merge gate.
 
 Private reproduction inputs live under
 `data/dice-qa/books/86/issue-259/`, including complete-entry records, exact source
@@ -115,10 +141,18 @@ final patch incorporates the earlier starting-error patch; they must not both
 be applied as an activation sequence.
 
 The exact private evidence and pending patches are committed locally as
-`50525b06bd05594860659f7343881734c6b0736e` and were not pushed. Generated reports
+`c4311dd2f273f2e0412bc7a14045b4953faeafb3` and were not pushed. Native and independent formal QA
+record the actual tooling revision `deab6344d9dcc779d7948678b8bc94e3a03cba3b`.
+Generated reports
 retain their actual earlier runtime revisions and dirty flags; this bundle commit
 does not relabel that provenance. Reproducible image caches, logs and an unused
 PHB page extraction are excluded from the commit.
+
+[Issue 263](https://github.com/FrankHZ/dnd3.5-spellbook/issues/263) owns the bounded
+remaining semantic source disputes, historical rules and identity dispositions.
+Its inventory is the exact private per-consumer summary, native historical proofs
+and independent deferred-field records; main-gate owns scope and acceptance.
+Creating that follow-up does not declare issue 259 accepted.
 
 [Issue 121](https://github.com/FrankHZ/dnd3.5-spellbook/issues/121) owns the future
 selective Chinese writer, transaction/order/replay validation and API/web/search
