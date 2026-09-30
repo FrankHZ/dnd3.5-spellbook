@@ -250,6 +250,10 @@ descriptor entities. Descriptors remain untouched when this field is omitted.
 The CLI rebuilds both derived indexes using the maintained SQL in the same transaction as spell
 and relationship corrections; any condition or index failure rolls it all back.
 
+The [Spell Compendium QA report](../releases/v1.4/spell-compendium-qa-report.md)
+records disposable-copy and maintained-consumer verification of a real guarded
+proposal, with its source and activation boundaries.
+
 Synthetic schema example (real corrections and evidence belong in `data/`):
 
 ```json
