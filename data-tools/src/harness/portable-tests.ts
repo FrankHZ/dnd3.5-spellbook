@@ -1588,6 +1588,15 @@ const tests: TestCase[] = [
         );
         assert.ok(
           validate({
+            op: "updateSpell",
+            id: 7,
+            spell: { extraComponents: null },
+          }).errors.some((error) =>
+            error.includes("expected.spell.extraComponents is required"),
+          ),
+        );
+        assert.ok(
+          validate({
             ...patch,
             expected: { spell: { ...patch.expected.spell, target: "wrong" } },
           }).errors.some((e) => e.includes("does not match")),

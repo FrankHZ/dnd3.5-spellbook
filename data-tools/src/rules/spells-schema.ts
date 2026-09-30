@@ -345,6 +345,7 @@ function parseUpdateFields(
         // Expected strings compare exactly, including NULL versus empty string.
         Object.assign(fields, {
           [field]:
+            value === null ||
             expected ||
             (nullable && field !== "extraComponents") ||
             (exactText && field !== "slug")

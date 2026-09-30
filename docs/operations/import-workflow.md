@@ -397,6 +397,35 @@ only a successful formal run's `validated-proposal` report is eligible for
 main-gate review. Keep source-bearing outputs in private data or ignored
 `data-tools/out/`, never in the public PR.
 
+### Independent fallback corrections
+
+An original-book review can find a correction without a dice candidate, or to a
+name that the native unchanged-name guard cannot accept. Keep that guard intact.
+Use the explicit `--source-bound-fallback-reviews <absolute-jsonl>` option with
+`--rulebook-id` and the normal formal QA inputs for a separate field proposal.
+Ordinary dice QA does not load this ledger by default.
+
+The [independent review schema](../../data-tools/src/dice-intake/source-bound-fallback.ts)
+retains `sourceKey: null` and binds an existing target and publication, actual
+current Chinese name/text/HTML, full current English/HTML/mechanics, exact old
+field, complete replacement, original-source locators, reviewer and specific
+English/Chinese rule pairs. Each `(targetId, field)` is unique and cannot overlap
+a native accepted field. Accepted bodies require an embedded full-body audit of
+the complete new text, actual old HTML and explicitly escaped `<pre>` projection.
+Missing Chinese is reviewed absence, not permission to invent a corrected fallback.
+Changed inputs, unreviewed fields and unresolved source evidence fail acceptance.
+
+Formal validation writes `source-bound-fallback-accepted.jsonl` and source-free
+`source-bound-fallback-coverage.json` in the scoped report directory, separately
+from native `accepted.jsonl` and `fallback.jsonl`. Incomplete mode writes coverage
+only. These are validated proposals: independently verify original pages/spans
+and their target/field bindings, then obtain the owning book issue's main-gate
+acceptance of the exact private revision. The native supplemental PDF field
+schema uses dice source keys; null-key rows require their independent target/field
+verification. A retained named reference without added external rules does not
+require certifying the entire referenced book; concrete translation, numerical
+or inherited-rule dependencies still require the applicable source.
+
 [Activation issue #121](https://github.com/FrankHZ/dnd3.5-spellbook/issues/121)
 owns the accepted-input, variant/request compatibility, and tested import-order
 requirements. Do not feed TXT into the HTML parser or use the CHM importer for

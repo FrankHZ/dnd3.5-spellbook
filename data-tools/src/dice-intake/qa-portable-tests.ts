@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import "./source-bound-fallback-portable-tests";
+import { escapedFallbackHtml, type SourceBoundFallbackReview } from "./source-bound-fallback";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -369,6 +371,46 @@ try {
   assert(existsSync(join(ownOutput, "coverage.json")));
   assert.equal(readFileSync(globalAccepted, "utf8"), "global-alias:accepted.jsonl:sentinel");
   assert.equal(readFileSync(globalFallback, "utf8"), "global-alias:fallback.jsonl:sentinel");
+  // The optional independent channel uses real old HTML and never creates a candidate.
+  saveRows(join(intakeDir, "candidates.jsonl"), allCandidates);
+  saveRows(join(intakeDir, "source-inventory.jsonl"), allInventory);
+  const independentRules = new Database(rulesPath);
+  independentRules.exec("ALTER TABLE dnd_spell ADD COLUMN description_html TEXT"); independentRules.close();
+  const independentContent = new Database(contentPath);
+  independentContent.exec("ALTER TABLE I18nSpellText ADD COLUMN descriptionHtml TEXT");
+  independentContent.prepare("INSERT INTO I18nSpellText VALUES (?, ?, ?, ?, ?, ?)")
+    .run(2, "旧名", "旧正文", "zh", "chm", "<p>旧正文</p>"); independentContent.close();
+  const after = "完整新正文";
+  const sourceBound: SourceBoundFallbackReview = { sourceKey: null, targetId: 2, rulebookId: 10,
+    field: "descriptionText", before: "旧正文", after, proposedHtml: escapedFallbackHtml(after),
+    input: { chinese: { name: "旧名", descriptionText: "旧正文", descriptionHtml: "<p>旧正文</p>" },
+      english: fixtureEnglish.get(2)!, englishHtml: null }, sourceRef: "synthetic.jsonl:1",
+    sourcePages: [{ sourceId: "synthetic", pageIndex: 0, printedPage: 1, spanRefs: [[0, 0, 0]] }],
+    status: "accepted", reviewer: "portable-independent", reason: "Read synthetic full source and before/after consumers.", originalSourceRead: true,
+    rulePairs: [{ english: fixtureEnglish.get(2)!.description, chinese: after, sourceId: "synthetic", printedPage: 1,
+      sourceQuote: "Synthetic full spell body." }], fullBodyAudit: { effectiveText: after, effectiveHtml: escapedFallbackHtml(after),
+      beforeHtml: "<p>旧正文</p>", reviewer: "portable-independent", reason: "Full text and old/new HTML reviewed.",
+      englishEvidence: [fixtureEnglish.get(2)!.description], currentHtmlReviewed: true, proposedHtmlReviewed: true } };
+  const sourceBoundPath = join(bookDir, "source-bound-reviews.jsonl"); saveRows(sourceBoundPath, [sourceBound]);
+  const rulesBefore = readFileSync(rulesPath), contentBefore = readFileSync(contentPath);
+  run("--source-bound-fallback-reviews", sourceBoundPath);
+  const independentAccepted = join(reportDir, "source-bound-fallback-accepted.jsonl");
+  assert.deepEqual(JSON.parse(readFileSync(independentAccepted, "utf8")), sourceBound);
+  assert.equal(JSON.parse(readFileSync(join(reportDir, "source-bound-fallback-coverage.json"), "utf8")).validation, "validated-proposal");
+  assert.deepEqual(readFileSync(rulesPath), rulesBefore); assert.deepEqual(readFileSync(contentPath), contentBefore);
+  assert.equal(JSON.parse(readFileSync(join(reportDir, "accepted.jsonl"), "utf8")).targetId, 1);
+  const independentBytes = readFileSync(independentAccepted, "utf8");
+  run("--source-bound-fallback-reviews", sourceBoundPath); assert.equal(readFileSync(independentAccepted, "utf8"), independentBytes);
+  saveRows(sourceBoundPath, [{ ...sourceBound, before: "wrong old value" }]);
+  assert.throws(() => run("--source-bound-fallback-reviews", sourceBoundPath), /current-before/);
+  assert.equal(readFileSync(independentAccepted, "utf8"), independentBytes, "failed validation cannot overwrite previous proposal");
+  const foreignFile = join(otherBookDir, "independent-sentinel.jsonl");writeFileSync(foreignFile, "foreign independent sentinel");
+  // Protect the optional filename itself against aliases, just like native outputs.
+  const independentAlias = join(ownOutput, "source-bound-fallback-accepted.jsonl");
+  symlinkSync(otherBookDir, independentAlias, process.platform === "win32" ? "junction" : "dir");
+  assert.throws(() => writeQaOutputs(dataRoot, ownOutput, result, false, 10,
+    { accepted: [sourceBound], summary: { reviewedFields: 1, acceptedFields: 1, fullBodyAudits: 1, pendingFields: 0, decisions: {} } }), /filesystem destination/);
+  assert.equal(readFileSync(foreignFile, "utf8"), "foreign independent sentinel");
 } finally {
   rmSync(fixtureRoot, { recursive: true, force: true });
 }
