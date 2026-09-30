@@ -9,6 +9,9 @@ usage, and safety boundaries, not parallel plans or live status ledgers.
 
 - The coordinating task opens an issue for a concrete feature, then one
   independent task linked to it. Do not create a new task for every small fix.
+- Before dispatch, check that the scope can be delivered and reviewed independently.
+  Split oversized work into child issues using feature-workflow; internal subagent
+  assignments do not replace separately reviewable deliveries.
 - Task prompts identify the issue, workspace/base, write boundaries, and the
   coordinating task's report destination. Read the issue, relevant code/tests,
   and only the technical references needed for the change.
