@@ -10,7 +10,7 @@ acceptance; this report does not accept content or adjudicate source rules.
 
 - Public base: `7a0344c69a6260c7b911d0e04994fa5a6a80d44b`.
 - Private base: `7777cb7016ecb115acc7426c25759528593215f9`.
-- Private local delivery: `df344cd975cb6486c9702687486198b1d713c2a9`.
+- Private local delivery: `3ccda19e2e5e483696cf305374fc9343703525af`.
 - Private directory: `data/dice-qa/books/86/issue-264/` in the sole nested data
   repository. It is committed locally and must not be pushed or copied into this
   public repository.
@@ -36,8 +36,8 @@ identity/source boundaries; they do not enlarge the original-entry denominator.
 
 | Routing category | Problem rows |
 | --- | ---: |
-| Confirmed source conflicts | 17 |
-| Interpretation questions | 12 |
+| Confirmed source conflicts | 15 |
+| Interpretation questions | 14 |
 | Specific missing explanations in the source | 5 |
 | Missing applicable source evidence | 116 |
 | Identity or mapping decisions | 23 |
