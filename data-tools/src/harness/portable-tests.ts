@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
 import Database from "better-sqlite3";
 
 import {
@@ -10,14 +11,18 @@ import {
 } from "../short-desc/en-summary-matching";
 import {
   parsePatchJsonlText,
+  spellUpdateEntries,
+  type UpdateSpellOperation,
   isSpellUpdateNoop,
   validateInsertSpellShape,
   validateLevelShape,
   validateUpdateSpellShape,
 } from "../rules/spells-schema";
+import { verifySpellOperation } from "../rules/manifest";
 import {
   applySpellPatchAtomically,
   applySpellUpdates,
+  validatePatch,
 } from "../rules/spells";
 import {
   parseRulebookPatchJsonlText,
@@ -1359,7 +1364,7 @@ const tests: TestCase[] = [
           op: "updateSpell",
           id: 7,
           spell: {
-            extraComponents: "M/DF",
+            extraComponents: " M/DF ",
             description: "Corrected fixture text.",
             descriptionHtml: "<p>Corrected fixture text.</p>",
           },
@@ -1459,6 +1464,756 @@ const tests: TestCase[] = [
         });
       } finally {
         db.close();
+      }
+    },
+  },
+  {
+    name: "conditional spell corrections clear fields, preserve relations, and reject stale or unsafe patches atomically",
+    run: () => {
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), "spell-patch-test-"));
+      const patchPath = path.join(dir, "synthetic.jsonl");
+      const db = new Database(":memory:");
+      try {
+        db.exec(`
+          CREATE TABLE dnd_spell (id INTEGER PRIMARY KEY, name TEXT, slug TEXT,
+            extra_components TEXT, description TEXT, description_html TEXT,
+            casting_time TEXT, range TEXT, target TEXT, effect TEXT, area TEXT,
+            duration TEXT, saving_throw TEXT, spell_resistance TEXT,
+            verbal_component INTEGER, somatic_component INTEGER, material_component INTEGER,
+            arcane_focus_component INTEGER, divine_focus_component INTEGER, xp_component INTEGER,
+            meta_breath_component INTEGER, true_name_component INTEGER, corrupt_component INTEGER);
+          INSERT INTO dnd_spell VALUES (7, 'Fixture', 'fixture', NULL, 'Text', '<p>Text</p>',
+            'Old action', 'Old range', 'Misplaced area', 'Misplaced duration', NULL,
+            NULL, 'Old save', 'No', 1,0,0,0,1,0,0,0,0);
+          INSERT INTO dnd_spell SELECT 8,'Unrelated','unrelated',extra_components,description,
+            description_html,casting_time,range,target,effect,area,duration,saving_throw,
+            spell_resistance,verbal_component,somatic_component,material_component,
+            arcane_focus_component,divine_focus_component,xp_component,meta_breath_component,
+            true_name_component,corrupt_component FROM dnd_spell WHERE id=7;
+          CREATE TABLE dnd_spellclasslevel (id INTEGER PRIMARY KEY, spell_id INTEGER, character_class_id INTEGER, level INTEGER, extra TEXT);
+          INSERT INTO dnd_spellclasslevel VALUES (1,7,1,1,''), (2,7,2,3,''), (3,7,1,2,'variant');
+          CREATE TABLE idx_spell_class_level (spell_id INTEGER, class_id INTEGER, level INTEGER, extra TEXT);
+          INSERT INTO idx_spell_class_level SELECT spell_id,character_class_id,level,extra FROM dnd_spellclasslevel;
+          CREATE TABLE dnd_spelldomainlevel (id INTEGER PRIMARY KEY, domain_id INTEGER, spell_id INTEGER, level INTEGER, extra TEXT);
+          CREATE TABLE dnd_spell_descriptors (id INTEGER PRIMARY KEY, spell_id INTEGER, spelldescriptor_id INTEGER);
+          CREATE TABLE dnd_rulebook (id INTEGER, abbr TEXT);
+          CREATE TABLE dnd_spellschool (id INTEGER, name TEXT);
+          CREATE TABLE dnd_spellsubschool (id INTEGER, name TEXT);
+          CREATE TABLE dnd_spelldescriptor (id INTEGER, name TEXT);
+          CREATE TABLE dnd_characterclass (id INTEGER, name TEXT);
+          INSERT INTO dnd_characterclass VALUES (1,'Cleric'),(2,'Paladin'),(99,'Cleric');
+          CREATE TABLE dnd_domain (id INTEGER, name TEXT);
+        `);
+        for (const column of [
+          "added TEXT",
+          "rulebook_id INTEGER",
+          "page INTEGER",
+          "school_id INTEGER",
+          "sub_school_id INTEGER",
+          "corrupt_level INTEGER",
+          "verified INTEGER",
+          "verified_author_id INTEGER",
+          "verified_time TEXT",
+        ]) {
+          db.exec(`ALTER TABLE dnd_spell ADD COLUMN ${column}`);
+        }
+        db.exec(
+          "INSERT INTO dnd_rulebook VALUES (1, 'FIX'); INSERT INTO dnd_spellsubschool VALUES (1,'Counter'); UPDATE dnd_spell SET rulebook_id=1, page=8, sub_school_id=1;",
+        );
+        const baseline = db
+          .prepare("SELECT * FROM dnd_spell ORDER BY id")
+          .all();
+        const patch = {
+          op: "updateSpell",
+          id: 7,
+          spell: {
+            page: 9,
+            subschoolId: null,
+            castingTime: "2 rounds",
+            range: "Personal",
+            target: null,
+            effect: "",
+            area: "60-ft.-radius burst",
+            duration: "1 round/level",
+            savingThrow: "None",
+            spellResistance: "Yes",
+            components: { somatic: true, divineFocus: false },
+          },
+          expected: {
+            spell: {
+              page: 8,
+              subschoolId: 1,
+              castingTime: "Old action",
+              range: "Old range",
+              target: "Misplaced area",
+              effect: "Misplaced duration",
+              area: null,
+              duration: null,
+              savingThrow: "Old save",
+              spellResistance: "No",
+              components: { somatic: false, divineFocus: true },
+            },
+          },
+          levels: {
+            classes: [
+              { class: "Cleric", extra: "", level: 4, expectedLevel: 1 },
+            ],
+          },
+        };
+        const validate = (value: unknown) => {
+          fs.writeFileSync(patchPath, JSON.stringify(value) + "\n", "utf8");
+          return validatePatch(db, patchPath);
+        };
+        assert.ok(
+          validate({ ...patch, mystery: 1 }).errors.some((e) =>
+            e.includes("unsupported updateSpell"),
+          ),
+        );
+        assert.ok(
+          validate({
+            ...patch,
+            spell: { subschoolId: 999 },
+            expected: { spell: { subschoolId: 1 } },
+          }).errors.some((e) => e.includes("subschool id does not exist")),
+        );
+        assert.ok(
+          validate({ ...patch, spell: { range: 123 } }).errors.some((e) =>
+            e.includes("must be a string or null"),
+          ),
+        );
+        assert.ok(
+          validate({ ...patch, expected: undefined }).errors.some((e) =>
+            e.includes("expected.spell"),
+          ),
+        );
+        assert.ok(
+          validate({
+            op: "updateSpell",
+            id: 7,
+            spell: { extraComponents: null },
+          }).errors.some((error) =>
+            error.includes("expected.spell.extraComponents is required"),
+          ),
+        );
+        assert.ok(
+          validate({
+            ...patch,
+            expected: { spell: { ...patch.expected.spell, target: "wrong" } },
+          }).errors.some((e) => e.includes("does not match")),
+        );
+        assert.ok(
+          validate({
+            ...patch,
+            levels: {
+              classes: [
+                { class: "Cleric", level: 4, expectedLevel: 1 },
+                { class: "Cleric", level: 4, expectedLevel: 1 },
+              ],
+            },
+          }).errors.some((e) => e.includes("duplicate class")),
+        );
+        assert.ok(
+          validate({
+            ...patch,
+            levels: {
+              classes: [{ class: "Missing", level: 4, expectedLevel: 1 }],
+            },
+          }).errors.some((e) => e.includes("not found")),
+        );
+        assert.ok(
+          validate({
+            ...patch,
+            levels: {
+              classes: [{ class: "Cleric", level: 10, expectedLevel: 1 }],
+            },
+          }).errors.some((e) => e.includes("0..9")),
+        );
+        assert.ok(
+          validate({
+            ...patch,
+            expected: {
+              spell: {
+                ...patch.expected.spell,
+                components: { somatic: false },
+              },
+            },
+          }).errors.some((e) => e.includes("divineFocus")),
+        );
+        assert.deepEqual(
+          db.prepare("SELECT * FROM dnd_spell ORDER BY id").all(),
+          baseline,
+        );
+        for (const page of [0, -1, 1.5, "9", "", true]) {
+          assert.ok(
+            validate({
+              ...patch,
+              spell: { page },
+              expected: { spell: { page: 8 } },
+            }).errors.some((error) =>
+              error.includes("positive integer or null"),
+            ),
+          );
+        }
+        assert.ok(
+          validate({
+            ...patch,
+            spell: { page: 9 },
+            expected: undefined,
+          }).errors.some((error) => error.includes("expected.spell.page")),
+        );
+        const validation = validate(patch);
+        assert.deepEqual(validation.errors, []);
+        const updates = validation.operations.filter(
+          (op) => op.kind === "updateSpell",
+        );
+        const rebuild = [
+          {
+            sqlPath: "synthetic-index.sql",
+            sql: `DELETE FROM idx_spell_class_level;
+          INSERT INTO idx_spell_class_level SELECT spell_id,character_class_id,level,extra FROM dnd_spellclasslevel;`,
+          },
+        ];
+        // The same resolved operation must be guarded when applied, not only when validated.
+        db.prepare(
+          "UPDATE dnd_spell SET range='concurrent change' WHERE id=7",
+        ).run();
+        assert.throws(
+          () => applySpellPatchAtomically(db, [], updates, rebuild),
+          /expected range/,
+        );
+        assert.equal(
+          (
+            db.prepare("SELECT target FROM dnd_spell WHERE id=7").get() as {
+              target: string;
+            }
+          ).target,
+          "Misplaced area",
+        );
+        db.prepare("UPDATE dnd_spell SET range='Old range' WHERE id=7").run();
+        assert.throws(
+          () =>
+            applySpellPatchAtomically(db, [], updates, [
+              ...rebuild,
+              { sqlPath: "fail.sql", sql: "INSERT INTO missing VALUES (1)" },
+            ]),
+          /no such table/,
+        );
+        assert.deepEqual(
+          db.prepare("SELECT * FROM dnd_spell ORDER BY id").all(),
+          baseline,
+        );
+        assert.equal(
+          (
+            db
+              .prepare(
+                "SELECT level FROM idx_spell_class_level WHERE class_id=1 AND extra='' ",
+              )
+              .get() as { level: number }
+          ).level,
+          1,
+        );
+        // A later operation's bad condition rolls back an earlier successful row change.
+        assert.throws(
+          () =>
+            applySpellPatchAtomically(
+              db,
+              [],
+              [
+                ...updates,
+                {
+                  spellId: 8,
+                  fields: { range: "New" },
+                  expected: { range: "bad" },
+                },
+              ],
+              rebuild,
+            ),
+          /expected range/,
+        );
+        assert.deepEqual(
+          db.prepare("SELECT * FROM dnd_spell ORDER BY id").all(),
+          baseline,
+        );
+        applySpellPatchAtomically(db, [], updates, rebuild);
+        const row = db
+          .prepare(
+            `SELECT page, sub_school_id AS subschoolId, casting_time AS castingTime, range, target, effect, area, duration,
+          saving_throw AS savingThrow, spell_resistance AS spellResistance, somatic_component AS somatic,
+          divine_focus_component AS divineFocus FROM dnd_spell WHERE id=7`,
+          )
+          .get();
+        assert.deepEqual(row, {
+          page: 9,
+          subschoolId: null,
+          castingTime: "2 rounds",
+          range: "Personal",
+          target: null,
+          effect: "",
+          area: "60-ft.-radius burst",
+          duration: "1 round/level",
+          savingThrow: "None",
+          spellResistance: "Yes",
+          somatic: 1,
+          divineFocus: 0,
+        });
+        // Read the derived list used by browse/generation, with unrelated/variant memberships retained.
+        assert.deepEqual(
+          db
+            .prepare(
+              `SELECT c.name, i.level, i.extra FROM idx_spell_class_level i
+          JOIN dnd_characterclass c ON c.id=i.class_id WHERE i.spell_id=7 ORDER BY c.id,i.extra`,
+            )
+            .all(),
+          [
+            { name: "Cleric", level: 4, extra: "" },
+            { name: "Cleric", level: 2, extra: "variant" },
+            { name: "Paladin", level: 3, extra: "" },
+          ],
+        );
+        const manifestPatch: UpdateSpellOperation = {
+          ...patch,
+          op: "updateSpell",
+          spell: {
+            ...patch.spell,
+            slug: "fixture",
+            extraComponents: null,
+            description: "Text",
+            descriptionHtml: "<p>Text</p>",
+            components: {
+              verbal: true,
+              somatic: true,
+              material: false,
+              arcaneFocus: false,
+              divineFocus: false,
+              xp: false,
+              metaBreath: false,
+              trueName: false,
+              corrupt: false,
+            },
+          },
+        };
+        const presence = (operation: UpdateSpellOperation = manifestPatch) =>
+          verifySpellOperation(db, "synthetic.jsonl", 1, operation);
+        assert.equal(presence().status, "verified");
+        assert.deepEqual(presence().issues, []);
+        // Presence validates the applied result; old expected values are intentionally no longer current.
+        for (const entry of spellUpdateEntries(manifestPatch.spell!)) {
+          const drift =
+            entry.value === null
+              ? ""
+              : typeof entry.value === "number"
+                ? 1 - entry.value
+                : null;
+          db.prepare(`UPDATE dnd_spell SET ${entry.column}=? WHERE id=7`).run(
+            drift,
+          );
+          assert.equal(
+            presence().status,
+            "mismatch",
+            `${entry.field} drift status`,
+          );
+          assert.ok(
+            presence().issues.includes(`${entry.field} mismatch`),
+            `${entry.field} drift issue`,
+          );
+          db.prepare(`UPDATE dnd_spell SET ${entry.column}=? WHERE id=7`).run(
+            entry.value,
+          );
+        }
+        assert.equal(
+          presence({ op: "updateSpell", id: 7, levels: patch.levels }).status,
+          "verified",
+        );
+        db.prepare("UPDATE dnd_spellclasslevel SET level=1 WHERE id=1").run();
+        assert.equal(presence().status, "mismatch");
+        assert.ok(presence().issues.includes("missing class level: Cleric 4"));
+        db.prepare(
+          "UPDATE dnd_spellclasslevel SET level=4, extra='drift' WHERE id=1",
+        ).run();
+        assert.equal(presence().status, "mismatch");
+        db.prepare("UPDATE dnd_spellclasslevel SET extra='' WHERE id=1").run();
+        assert.equal(presence().status, "verified");
+        const consumerSpell = db
+          .prepare(
+            `SELECT id, page, name, slug, description,
+          description_html AS descriptionHtml, casting_time AS castingTime, range, target,
+          effect, area, duration, saving_throw AS savingThrow, spell_resistance AS spellResistance,
+          verbal_component AS verbalComponent, somatic_component AS somaticComponent,
+          material_component AS materialComponent, arcane_focus_component AS arcaneFocusComponent,
+          divine_focus_component AS divineFocusComponent, xp_component AS xpComponent,
+          meta_breath_component AS metaBreathComponent, true_name_component AS trueNameComponent,
+          corrupt_component AS corruptComponent FROM dnd_spell WHERE id=7`,
+          )
+          .get() as LegacyRulesContentInput["spells"][number];
+        const consumerLists = db
+          .prepare(
+            `SELECT scl.id, scl.spell_id AS spellId, 'class' AS listType,
+          c.id AS ownerId, c.name AS ownerName, lower(c.name) AS ownerSlug, scl.level, scl.extra,
+          'dnd_spellclasslevel' AS sourceTable FROM dnd_spellclasslevel scl
+          JOIN dnd_characterclass c ON c.id=scl.character_class_id
+          JOIN idx_spell_class_level idx ON idx.spell_id=scl.spell_id AND idx.class_id=scl.character_class_id
+            AND idx.level=scl.level AND idx.extra=scl.extra WHERE scl.spell_id=7 ORDER BY scl.id`,
+          )
+          .all() as LegacyRulesContentInput["listEntries"];
+        const normalized = normalizeRulesContent(
+          {
+            rulebooks: [
+              {
+                id: 1,
+                dndEditionId: 1,
+                name: "Fixture Book",
+                abbr: "FIX",
+                slug: "fixture-book",
+                publicationCategory: "supplement",
+                publicationFamily: "fixture",
+                publicationSourceKind: "rulebook",
+                publicationDisplayOrder: 1,
+                publicationYear: null,
+                publicationDate: null,
+                publicationUrl: null,
+                publicationImage: null,
+                publicationReviewStatus: "review",
+              },
+            ],
+            spells: [
+              {
+                ...consumerSpell,
+                added: "2026-01-01",
+                rulebookId: 1,
+                schoolId: 1,
+                schoolName: "Transmutation",
+                schoolSlug: "transmutation",
+                verified: false,
+              },
+            ],
+            descriptors: [],
+            listEntries: consumerLists,
+          },
+          "2026-01-01T00:00:00Z",
+        );
+        assert.equal(normalized.spells[0]?.sourcePage, 9);
+        assert.equal(normalized.spells[0]?.targetRaw, null);
+        assert.equal(normalized.spells[0]?.effectRaw, null);
+        assert.equal(normalized.spells[0]?.areaRaw, "60-ft.-radius burst");
+        assert.equal(normalized.spells[0]?.resistanceRaw, "Yes");
+        assert.ok(
+          normalized.components.some(
+            (item) => item.componentType === "somatic" && item.present,
+          ),
+        );
+        assert.ok(
+          !normalized.components.some(
+            (item) => item.componentType === "divine_focus" && item.present,
+          ),
+        );
+        assert.deepEqual(
+          normalized.listEntries.map((item) => [
+            item.ownerName,
+            item.level,
+            item.rawExtra,
+          ]),
+          [
+            ["Cleric", 4, null],
+            ["Paladin", 3, null],
+            ["Cleric", 2, "variant"],
+          ],
+        );
+        assert.deepEqual(
+          db.prepare("SELECT * FROM dnd_spell WHERE id=8").get(),
+          baseline[1],
+        );
+        assert.ok(
+          validate(patch).errors.some((e) => e.includes("does not match")),
+        );
+        assert.throws(
+          () => applySpellPatchAtomically(db, [], updates, rebuild),
+          /does not match/,
+        );
+        assert.ok(
+          validate({
+            op: "updateSpell",
+            id: 7,
+            spell: { range: "Personal" },
+            expected: { spell: { range: "Personal" } },
+          }).errors.some((e) => e.includes("does not change")),
+        );
+        const exactBodyPatch: UpdateSpellOperation = {
+          op: "updateSpell",
+          id: 7,
+          spell: {
+            description: " \nCorrected\n ",
+            descriptionHtml: "\t<p>Corrected</p>\n",
+          },
+          expected: {
+            spell: { description: "Text", descriptionHtml: "<p>Text</p>" },
+          },
+        };
+        const exactBody = validate(exactBodyPatch);
+        assert.deepEqual(exactBody.errors, []);
+        applySpellPatchAtomically(
+          db,
+          [],
+          exactBody.operations.filter((op) => op.kind === "updateSpell"),
+          rebuild,
+        );
+        assert.deepEqual(
+          db
+            .prepare(
+              "SELECT description,description_html AS descriptionHtml FROM dnd_spell WHERE id=7",
+            )
+            .get(),
+          exactBodyPatch.spell,
+        );
+        assert.equal(presence(exactBodyPatch).status, "verified");
+        db.prepare("UPDATE dnd_spell SET description_html=? WHERE id=7").run(
+          exactBodyPatch.spell!.descriptionHtml!.trim(),
+        );
+        assert.equal(presence(exactBodyPatch).status, "mismatch");
+        db.prepare("UPDATE dnd_spell SET description_html=? WHERE id=7").run(
+          exactBodyPatch.spell!.descriptionHtml,
+        );
+        const legacyBodyPatch: UpdateSpellOperation = {
+          op: "updateSpell",
+          id: 7,
+          spell: {
+            extraComponents: " Legacy focus ",
+            description: " Legacy ",
+            descriptionHtml: " \n<p>Legacy</p>\n ",
+          },
+        };
+        const legacyBody = validate(legacyBodyPatch);
+        assert.deepEqual(legacyBody.errors, []);
+        applySpellPatchAtomically(
+          db,
+          [],
+          legacyBody.operations.filter((op) => op.kind === "updateSpell"),
+          rebuild,
+        );
+        assert.deepEqual(
+          db
+            .prepare(
+              "SELECT extra_components AS extraComponents,description,description_html AS descriptionHtml FROM dnd_spell WHERE id=7",
+            )
+            .get(),
+          { extraComponents: "Legacy focus", description: "Legacy", descriptionHtml: "<p>Legacy</p>" },
+        );
+        assert.equal(presence(legacyBodyPatch).status, "verified");
+        db.prepare("UPDATE dnd_spell SET description_html=? WHERE id=7").run(
+          " <p>Legacy</p>",
+        );
+        assert.equal(presence(legacyBodyPatch).status, "mismatch");
+        db.prepare("UPDATE dnd_spell SET description_html=? WHERE id=7").run(
+          "<p>Legacy</p>",
+        );
+        const clearPage = validate({
+          op: "updateSpell",
+          id: 7,
+          spell: { page: null },
+          expected: { spell: { page: 9 } },
+        });
+        assert.deepEqual(clearPage.errors, []);
+        applySpellPatchAtomically(
+          db,
+          [],
+          clearPage.operations.filter((op) => op.kind === "updateSpell"),
+          rebuild,
+        );
+        assert.equal(
+          (
+            db.prepare("SELECT page FROM dnd_spell WHERE id=7").get() as {
+              page: null;
+            }
+          ).page,
+          null,
+        );
+        assert.equal(
+          presence({ op: "updateSpell", id: 7, spell: { page: null } }).status,
+          "verified",
+        );
+        db.exec(
+          "INSERT INTO dnd_characterclass VALUES (6,'Druid'); INSERT INTO dnd_spelldescriptor VALUES (1,'Good'),(2,'Light'),(3,'Cold'); INSERT INTO dnd_spell_descriptors VALUES (1,8,3);",
+        );
+        const taxonomyPatch: UpdateSpellOperation = {
+          op: "updateSpell",
+          id: 7,
+          descriptors: ["Good", "Light"],
+          expected: { descriptors: [] },
+          levels: {
+            classes: [{ class: "Druid", level: 5, expectedLevel: null }],
+          },
+        };
+        assert.ok(
+          validate({ ...taxonomyPatch, expected: undefined }).errors.some(
+            (error) => error.includes("expected.descriptors"),
+          ),
+        );
+        assert.ok(
+          validate({
+            ...taxonomyPatch,
+            descriptors: ["Good", "good"],
+          }).errors.some((error) => error.includes("duplicate")),
+        );
+        assert.ok(
+          validate({ ...taxonomyPatch, descriptors: ["Unknown"] }).errors.some(
+            (error) => error.includes("not found"),
+          ),
+        );
+        assert.ok(
+          validate({
+            ...taxonomyPatch,
+            expected: { descriptors: ["Cold"] },
+          }).errors.some((error) => error.includes("do not match current set")),
+        );
+        assert.ok(
+          validate({
+            ...taxonomyPatch,
+            levels: {
+              classes: [{ class: "Cleric", level: 5, expectedLevel: null }],
+            },
+          }).errors.some((error) => error.includes("ambiguous")),
+        );
+        const taxonomy = validate(taxonomyPatch);
+        assert.deepEqual(taxonomy.errors, []);
+        const taxonomyUpdates = taxonomy.operations.filter(
+          (op) => op.kind === "updateSpell",
+        );
+        assert.throws(
+          () =>
+            applySpellPatchAtomically(db, [], taxonomyUpdates, [
+              ...rebuild,
+              { sqlPath: "fail.sql", sql: "INSERT INTO missing VALUES(1)" },
+            ]),
+          /no such table/,
+        );
+        assert.deepEqual(
+          db.prepare("SELECT * FROM dnd_spell_descriptors ORDER BY id").all(),
+          [{ id: 1, spell_id: 8, spelldescriptor_id: 3 }],
+        );
+        assert.equal(
+          (
+            db
+              .prepare(
+                "SELECT COUNT(*) AS n FROM dnd_spellclasslevel WHERE character_class_id=6",
+              )
+              .get() as { n: number }
+          ).n,
+          0,
+        );
+        db.prepare("INSERT INTO dnd_spell_descriptors VALUES(2,7,1)").run();
+        assert.throws(
+          () => applySpellPatchAtomically(db, [], taxonomyUpdates, rebuild),
+          /expected descriptors/,
+        );
+        db.prepare("DELETE FROM dnd_spell_descriptors WHERE spell_id=7").run();
+        db.prepare("INSERT INTO dnd_spellclasslevel VALUES(4,7,6,2,'')").run();
+        assert.throws(
+          () => applySpellPatchAtomically(db, [], taxonomyUpdates, rebuild),
+          /relationship to be absent/,
+        );
+        db.prepare(
+          "DELETE FROM dnd_spellclasslevel WHERE character_class_id=6",
+        ).run();
+        applySpellPatchAtomically(db, [], taxonomyUpdates, rebuild);
+        assert.deepEqual(
+          db
+            .prepare(
+              `SELECT d.name FROM dnd_spell_descriptors sd
+          JOIN dnd_spelldescriptor d ON d.id=sd.spelldescriptor_id WHERE sd.spell_id=7 ORDER BY d.name`,
+            )
+            .all(),
+          [{ name: "Good" }, { name: "Light" }],
+        );
+        assert.deepEqual(
+          db
+            .prepare(
+              `SELECT c.name,idx.level FROM idx_spell_class_level idx
+          JOIN dnd_characterclass c ON c.id=idx.class_id WHERE idx.spell_id=7 AND c.id IN (1,2,6) AND idx.extra='' ORDER BY c.id`,
+            )
+            .all(),
+          [
+            { name: "Cleric", level: 4 },
+            { name: "Paladin", level: 3 },
+            { name: "Druid", level: 5 },
+          ],
+        );
+        assert.deepEqual(
+          db
+            .prepare("SELECT * FROM dnd_spell_descriptors WHERE spell_id=8")
+            .all(),
+          [{ id: 1, spell_id: 8, spelldescriptor_id: 3 }],
+        );
+        assert.equal(presence(taxonomyPatch).status, "verified");
+        assert.equal(
+          presence({ ...taxonomyPatch, descriptors: ["Good"] }).status,
+          "mismatch",
+        );
+        assert.equal(
+          presence({ ...taxonomyPatch, descriptors: ["Good", "Light", "Cold"] })
+            .status,
+          "mismatch",
+        );
+        assert.ok(
+          validate(taxonomyPatch).errors.some((error) =>
+            error.includes("expected descriptors"),
+          ),
+        );
+        assert.throws(
+          () => applySpellPatchAtomically(db, [], taxonomyUpdates, rebuild),
+          /expected descriptors/,
+        );
+        assert.ok(
+          validate({
+            op: "updateSpell",
+            id: 7,
+            levels: taxonomyPatch.levels,
+          }).errors.some((error) =>
+            error.includes("relationship to be absent"),
+          ),
+        );
+        const clearDescriptors = validate({
+          op: "updateSpell",
+          id: 7,
+          descriptors: [],
+          expected: { descriptors: ["Light", "Good"] },
+        });
+        assert.deepEqual(clearDescriptors.errors, []);
+        applySpellPatchAtomically(
+          db,
+          [],
+          clearDescriptors.operations.filter((op) => op.kind === "updateSpell"),
+          rebuild,
+        );
+        assert.equal(
+          presence({ op: "updateSpell", id: 7, descriptors: [] }).status,
+          "verified",
+        );
+        assert.equal(
+          (
+            db
+              .prepare(
+                "SELECT COUNT(*) AS n FROM dnd_spell_descriptors WHERE spell_id=7",
+              )
+              .get() as { n: number }
+          ).n,
+          0,
+        );
+        db.prepare("INSERT INTO dnd_spellclasslevel VALUES (5,7,1,4,'')").run();
+        assert.equal(
+          presence({ op: "updateSpell", id: 7, levels: patch.levels }).status,
+          "mismatch",
+        );
+        assert.ok(
+          validate({
+            op: "updateSpell",
+            id: 7,
+            levels: {
+              classes: [{ class: "Cleric", level: 5, expectedLevel: 4 }],
+            },
+          }).errors.some((e) => e.includes("exactly one")),
+        );
+      } finally {
+        db.close();
+        fs.rmSync(dir, { recursive: true, force: true });
       }
     },
   },

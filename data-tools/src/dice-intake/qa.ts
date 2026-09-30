@@ -4,6 +4,7 @@ import { basename, dirname, isAbsolute, join, relative, resolve } from "node:pat
 import Database from "better-sqlite3";
 import { parseDiceFile, type DiceRecord, type ParsedFile } from "./parse";
 import { reconcile, type Candidate, type PublicationMap, type Rulebook } from "./reconcile";
+import { validateSourceBoundFallbackReviews, type SourceBoundFallbackReview } from "./source-bound-fallback";
 
 export type Field = "name" | "descriptionHtml";
 export type EnglishMechanics = {
@@ -352,7 +353,9 @@ function arg(name: string): string {
 }
 
 export function writeQaOutputs(dataRoot: string, reportDir: string,
-  result: ReturnType<typeof validateReviews>, checkIncomplete: boolean, rulebookId?: number): void {
+  result: ReturnType<typeof validateReviews>, checkIncomplete: boolean, rulebookId?: number,
+  sourceBound?: ReturnType<typeof validateSourceBoundFallbackReviews>): void {
+  assert(!sourceBound || rulebookId !== undefined, "source-bound outputs require a rulebook scope");
   if (rulebookId !== undefined) {
     // Resolve existing ancestors too: report directories may not exist yet.
     // lstat distinguishes a missing path from a dangling link, which must fail.
@@ -379,7 +382,9 @@ export function writeQaOutputs(dataRoot: string, reportDir: string,
       || within(join(dataRoot, "dice-qa", "books", String(rulebookId)), reportDir),
     "scoped reports inside data must stay in this rulebook directory");
     const outputs = [reportDir, join(reportDir, "coverage.json"),
-      ...(checkIncomplete ? [] : [join(reportDir, "accepted.jsonl"), join(reportDir, "fallback.jsonl")])];
+      ...(checkIncomplete ? [] : [join(reportDir, "accepted.jsonl"), join(reportDir, "fallback.jsonl")]),
+      ...(sourceBound ? [join(reportDir, "source-bound-fallback-coverage.json"),
+        ...(checkIncomplete ? [] : [join(reportDir, "source-bound-fallback-accepted.jsonl")])] : [])];
     for (const output of outputs) {
       const actual = destination(output);
       assert(!within(actualDataRoot, actual) || within(actualBookDir, actual),
@@ -395,6 +400,16 @@ export function writeQaOutputs(dataRoot: string, reportDir: string,
     mkdirSync(outputDir, { recursive: true });
     writeFileSync(join(outputDir, "accepted.jsonl"), jsonl(result.accepted));
     writeFileSync(join(outputDir, "fallback.jsonl"), jsonl(result.fallback));
+  }
+  if (sourceBound) {
+    writeFileSync(join(reportDir, "source-bound-fallback-coverage.json"), JSON.stringify({
+      ...sourceBound.summary, scope: { kind: "rulebook", rulebookId },
+      validation: checkIncomplete ? "incomplete-check" : "validated-proposal",
+      sourceRevision: result.summary.sourceRevision, mappingRevision: result.summary.mappingRevision,
+      sourceAuthority: "Independent source-bound fallback correction proposal; external PDF verification and main-gate acceptance remain required.",
+      activation: false,
+    }, null, 2) + "\n", "utf8");
+    if (!checkIncomplete) writeFileSync(join(reportDir, "source-bound-fallback-accepted.jsonl"), jsonl(sourceBound.accepted), "utf8");
   }
 }
 
@@ -467,6 +482,10 @@ function main(): void {
   const reviews = input<Review>("reviews", "decisions.jsonl", true);
   const corrections = input<Correction>("corrections", "corrections.jsonl");
   const duplicates = input<DuplicateResolution>("duplicates", "duplicate-resolutions.jsonl");
+  const sourceBoundEnabled = process.argv.includes("--source-bound-fallback-reviews");
+  assert(!sourceBoundEnabled || rulebookId !== undefined, "source-bound fallback reviews require --rulebook-id");
+  // Explicit only: a stale standalone ledger must never enter ordinary dice QA by default.
+  const sourceBoundReviews = sourceBoundEnabled ? rows<SourceBoundFallbackReview>(arg("source-bound-fallback-reviews")) : [];
   const reportDir = arg("report-dir");
   const mappingRevision = execFileSync("git", ["-C", dataRoot, "log", "-1", "--format=%H", "--",
     "dice-intake/publication-map.json"], { encoding: "utf8" }).trim();
@@ -501,11 +520,13 @@ function main(): void {
   const db = new Database(rulesPath, { readonly: true, fileMustExist: true });
   db.pragma("query_only = ON");
   const english = loadEnglishRecords(db);
+  const englishHtml = sourceBoundEnabled ? new Map((db.prepare("SELECT id, CAST(description_html AS BLOB) AS html FROM dnd_spell")
+    .all() as Array<{ id: number; html: Buffer | null }>).map(row => [row.id, row.html?.toString("utf8") ?? null])) : new Map<number, string | null>();
   db.close();
   const content = new Database(contentPath, { readonly: true, fileMustExist: true });
   content.pragma("query_only = ON");
-  const zh = new Map((content.prepare("SELECT spellId, name, descriptionText FROM I18nSpellText WHERE lang='zh' AND variant='chm'")
-    .all() as Array<{ spellId: number; name: string | null; descriptionText: string | null }>).map((row) =>
+  const zh = new Map((content.prepare(`SELECT spellId, name, descriptionText${sourceBoundEnabled ? ", descriptionHtml" : ""} FROM I18nSpellText WHERE lang='zh' AND variant='chm'`)
+    .all() as Array<{ spellId: number; name: string | null; descriptionText: string | null; descriptionHtml?: string | null }>).map((row) =>
     [row.spellId, row] as const));
   content.close();
   const targets = new Map([...english].map(([id, en]) => [id, {
@@ -540,7 +561,10 @@ function main(): void {
   result.summary.sourceRevision = sourceRevision;
   result.summary.mappingRevision = mappingRevision;
   result.summary.sourceCoverage = { files: sourceFiles.length, candidateOccurrences: candidates.length };
-  writeQaOutputs(dataRoot, reportDir, result, checkIncomplete, rulebookId);
+  const sourceBound = sourceBoundEnabled ? validateSourceBoundFallbackReviews(sourceBoundReviews, rulebookId!, english, englishHtml,
+    new Map([...zh].map(([id, row]) => [id, { name: row.name, descriptionText: row.descriptionText, descriptionHtml: row.descriptionHtml ?? null }])),
+    result.accepted, checkIncomplete) : undefined;
+  writeQaOutputs(dataRoot, reportDir, result, checkIncomplete, rulebookId, sourceBound);
   const { candidateOccurrences, matchedTargets, existingTargets, acceptedTargets,
     pendingFields, pendingFullBodyAudits, decisions } =
     result.summary;

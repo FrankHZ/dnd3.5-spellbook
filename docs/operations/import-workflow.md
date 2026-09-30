@@ -93,8 +93,15 @@ npm run -w data-tools rules:spells:apply -- pending/spells/example.jsonl
 
 Validators read the rules DB; apply dry-runs operate on a temporary copy.
 `insertSpell` creates base and relationship rows and rebuilds derived indexes.
-`updateSpell` permits only `slug`, non-empty raw `extraComponents`, or paired
-non-empty `description`/`descriptionHtml` updates; unknown fields are rejected.
+`updateSpell` supports spell headers, page, an existing subschool ID or null,
+component flags, paired English text/HTML, descriptor replacement, and exact
+class-level changes or additions.
+Header/page/component updates require matching `expected.spell` values;
+descriptor replacement requires the complete old set. Class-level changes
+require the old level, and additions require explicit absence. Text headers
+can explicitly be cleared with `null` or an empty string. Unknown fields are
+rejected. See [structured spell updates](./rules-db-notes.md#structured-spell-updates)
+for the patch shape and compatibility rules.
 Spell apply commits row changes and derived-index rebuilds in one transaction.
 `insertRulebook` adds a reviewed identity after validating its edition and fields.
 
@@ -389,6 +396,35 @@ failed or incomplete run does not approve older accepted/fallback exports;
 only a successful formal run's `validated-proposal` report is eligible for
 main-gate review. Keep source-bearing outputs in private data or ignored
 `data-tools/out/`, never in the public PR.
+
+### Independent fallback corrections
+
+An original-book review can find a correction without a dice candidate, or to a
+name that the native unchanged-name guard cannot accept. Keep that guard intact.
+Use the explicit `--source-bound-fallback-reviews <absolute-jsonl>` option with
+`--rulebook-id` and the normal formal QA inputs for a separate field proposal.
+Ordinary dice QA does not load this ledger by default.
+
+The [independent review schema](../../data-tools/src/dice-intake/source-bound-fallback.ts)
+retains `sourceKey: null` and binds an existing target and publication, actual
+current Chinese name/text/HTML, full current English/HTML/mechanics, exact old
+field, complete replacement, original-source locators, reviewer and specific
+English/Chinese rule pairs. Each `(targetId, field)` is unique and cannot overlap
+a native accepted field. Accepted bodies require an embedded full-body audit of
+the complete new text, actual old HTML and explicitly escaped `<pre>` projection.
+Missing Chinese is reviewed absence, not permission to invent a corrected fallback.
+Changed inputs, unreviewed fields and unresolved source evidence fail acceptance.
+
+Formal validation writes `source-bound-fallback-accepted.jsonl` and source-free
+`source-bound-fallback-coverage.json` in the scoped report directory, separately
+from native `accepted.jsonl` and `fallback.jsonl`. Incomplete mode writes coverage
+only. These are validated proposals: independently verify original pages/spans
+and their target/field bindings, then obtain the owning book issue's main-gate
+acceptance of the exact private revision. The native supplemental PDF field
+schema uses dice source keys; null-key rows require their independent target/field
+verification. A retained named reference without added external rules does not
+require certifying the entire referenced book; concrete translation, numerical
+or inherited-rule dependencies still require the applicable source.
 
 [Activation issue #121](https://github.com/FrankHZ/dnd3.5-spellbook/issues/121)
 owns the accepted-input, variant/request compatibility, and tested import-order
