@@ -88,6 +88,29 @@ class SupplementalEvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "duplicate decision"):
             self.verify(decisions=self.decisions * 2)
 
+    def test_independent_retained_issue_bindings(self):
+        pages = copy.deepcopy(self.evidence["bindings"][0]["pages"])
+        quote = self.evidence["pages"][0]["spans"][0]["value"]["text"]
+        review = {"sourceKey": None, "targetId": 7, "field": "descriptionText",
+                  "status": "accepted-with-source-issues", "after": "三轮。原文疑义备注。",
+                  "sourcePages": pages, "retainedSourceIssues": {"issues": [{"statements": [
+                      {**pages[0], "sourceQuote": quote}]}]}}
+        binding = self.evidence["bindings"][0]
+        binding.update(sourceKey=None, field="descriptionText", status=review["status"], effectiveText=review["after"])
+        other = {**copy.deepcopy(review), "targetId": 8}
+        self.evidence["bindings"].append({**copy.deepcopy(binding), "targetId": 8})
+        self.assertEqual(self.verify(decisions=[review, other])["fields"], 2)
+        for mutate, pattern in (
+            (lambda r: r.update(after="旧证据"), "stale effective"),
+            (lambda r: r["sourcePages"][0].update(pageIndex=1), "stale original source pages"),
+            (lambda r: r["retainedSourceIssues"]["issues"][0]["statements"][0].update(sourceQuote="unknown rule"), "stale source issue quote"),
+            (lambda r: r["retainedSourceIssues"]["issues"][0]["statements"][0].update(sourceId="unknown-old-book"), "unverified source issue span"),
+        ):
+            changed = copy.deepcopy(review)
+            mutate(changed)
+            with self.subTest(pattern=pattern), self.assertRaisesRegex(ValueError, pattern):
+                self.verify(decisions=[changed, other])
+
 
 if __name__ == "__main__":
     unittest.main()

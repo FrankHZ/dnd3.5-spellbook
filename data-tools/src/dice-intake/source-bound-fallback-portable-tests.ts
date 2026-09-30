@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { escapedFallbackHtml, validateSourceBoundFallbackReviews, type SourceBoundFallbackReview } from "./source-bound-fallback";
+import { escapedFallbackHtml, validateSourceBoundFallbackReviews, withSourceIssueNotes, type SourceBoundFallbackReview } from "./source-bound-fallback";
 import type { EnglishRecord } from "./qa";
 
 const en: EnglishRecord = { name: "Cold Touch", rulebookId: 10, editionId: 5,
@@ -70,5 +70,33 @@ const absent = structuredClone(row);absent.before = null;absent.input.chinese = 
 assert.throws(() => validateSourceBoundFallbackReviews([absent], 10, english, html, new Map(), []), /absent Chinese/);
 const deferred = { ...row, status: "deferred" as const, pendingSourceEvidence: ["unread original dependency"], originalSourceRead: false };
 assert.equal(run([deferred]).accepted.length, 0);
+const retained = structuredClone(row);
+retained.status = "accepted-with-source-issues";
+retained.sourcePages[0]!.spanRefs.push([0, 1, 0]);
+retained.retainedSourceIssues = { bodyText: after, sourceId: "synthetic", issues: [{ id: "synthetic-conflict",
+  status: "source-unresolved", kind: "conflict", note: "原书同页两项陈述保留。", impact: "影响伤害与移动。",
+  statements: ["造成2d6寒冷伤害。", "目标以半速移动。"].map((chinese, line) => ({ sourceId: "synthetic", pageIndex: 0,
+    printedPage: 1, spanRefs: [[0, line, 0]], sourceQuote: "Synthetic original statement", chinese })) }] };
+function refresh(item: SourceBoundFallbackReview): void {
+  item.after = withSourceIssueNotes(item.retainedSourceIssues!); item.proposedHtml = escapedFallbackHtml(item.after);
+  item.fullBodyAudit!.effectiveText = item.after; item.fullBodyAudit!.effectiveHtml = item.proposedHtml;
+}
+refresh(retained);
+assert.equal(run([retained]).summary.sourceUnresolvedFields, 1);
+assert.equal(run([retained]).summary.retainedSourceIssues, 1);
+function retainedFails(change: (item: SourceBoundFallbackReview) => void, pattern: RegExp): void {
+  const item = structuredClone(retained); change(item); assert.throws(() => run([item]), pattern); rejected++;
+}
+retainedFails(r => { delete r.retainedSourceIssues; }, /requires explicit/);
+retainedFails(r => { r.status = "accepted"; }, /requires explicit/);
+retainedFails(r => { r.after = after; r.proposedHtml = escapedFallbackHtml(after); }, /stale source issue notes/);
+retainedFails(r => { r.fullBodyAudit = structuredClone(row.fullBodyAudit!); }, /audited full text/);
+retainedFails(r => { r.retainedSourceIssues!.bodyText = "一道苍白光芒出现。造成2d6寒冷伤害。"; refresh(r); }, /missing from complete body/);
+retainedFails(r => { r.retainedSourceIssues!.issues[0]!.statements.pop(); refresh(r); }, /opposing source/);
+retainedFails(r => { const issue = r.retainedSourceIssues!.issues[0]!; issue.statements[1] = structuredClone(issue.statements[0]!); }, /duplicate opposing/);
+retainedFails(r => { r.retainedSourceIssues!.issues[0]!.statements[0]!.sourceId = "unknown-old-book"; }, /original page/);
+retainedFails(r => { r.retainedSourceIssues!.issues[0]!.statements[0]!.spanRefs = [[9, 0, 0]]; }, /original page/);
+retainedFails(r => { r.pendingSourceEvidence = ["unavailable external historical rule"]; }, /closed rule evidence/);
+retainedFails(r => { delete r.fullBodyAudit; }, /full-body audit/);
 assert.throws(() => validateSourceBoundFallbackReviews([row], 99, english, html, chinese, []), /unknown.*scope/);
 console.log(`source-bound fallback portable tests passed (${rejected + 6} rejection checks)`);

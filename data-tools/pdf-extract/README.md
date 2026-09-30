@@ -146,6 +146,17 @@ to the current decision. It rejects stale field text/status/identity, altered
 fragments or layout, and missing page/span associations. It prints source-free
 counts and writes nothing. Reinstall the Python package after code changes.
 
+Independent source-bound fallback reviews also use schema 1, retaining
+`sourceKey: null` and identifying each binding by `(targetId, field)` with
+`field: descriptionText` or `name`. The verifier binds `after` for `accepted`
+and `accepted-with-source-issues`, or `before` for `deferred`, and requires the
+binding's pages to equal the review's `sourcePages`. For retained internal source
+issues, each `sourceQuote` must equal the newline-joined fresh text of its explicit
+span references. Their `source-unresolved` status is preserved. Run the maintained
+dice QA first: PDF checks supplement its full English/mechanics/Chinese/HTML and
+complete-body audit checks; they do not adjudicate conflicts or waive unavailable
+external evidence.
+
 This check supplements the existing dice DB alignment, source freshness,
 correction and full-body audit checks. It does not establish source authority,
 prove a human visual review occurred, decide semantics, or certify unsampled

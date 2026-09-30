@@ -415,6 +415,21 @@ the complete new text, actual old HTML and explicitly escaped `<pre>` projection
 Missing Chinese is reviewed absence, not permission to invent a corrected fallback.
 Changed inputs, unreviewed fields and unresolved source evidence fail acceptance.
 
+For an explicitly authorized faithful translation of a known internal source
+conflict or missing explanation, the independent body schema supports
+`accepted-with-source-issues`. Its `retainedSourceIssues` binds the complete body,
+each preserved source statement and original page/spans, and separately marked
+Chinese project notes with impacts and pending external review. The exported
+issues remain `source-unresolved`; this status accepts a translation proposal,
+not a rule interpretation. The full-body audit covers the complete body, notes
+and escaped HTML. Ordinary `accepted` cannot carry this exception, and the new
+status cannot omit it. `pendingSourceEvidence` must still be empty: unavailable
+external or historical rules cannot be accepted by adding notes. Independently
+verify the actual source statements with the supplemental PDF verifier and
+main-gate review before accepting an exact private revision. These checks do not
+infer semantic completeness, certify a different printing, or authorize writing
+canonical English/mechanics or production content.
+
 Formal validation writes `source-bound-fallback-accepted.jsonl` and source-free
 `source-bound-fallback-coverage.json` in the scoped report directory, separately
 from native `accepted.jsonl` and `fallback.jsonl`. Incomplete mode writes coverage

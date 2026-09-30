@@ -19,16 +19,32 @@ export type FallbackBodyAudit = {
   reviewer: string; reason: string; englishEvidence: string[];
   currentHtmlReviewed: boolean; proposedHtmlReviewed: boolean;
 };
+/** Known internal source issues, retained in a faithful body; never missing external evidence. */
+export type RetainedSourceIssues = {
+  bodyText: string; sourceId: string;
+  issues: Array<{
+    id: string; status: "source-unresolved"; kind: "conflict" | "missing-explanation";
+    statements: Array<SourcePage & { sourceQuote: string; chinese: string }>;
+    note: string; impact: string;
+  }>;
+};
+export const sourceIssueHeading = "原文疑义备注（本项目说明，非官方勘误）";
+export const sourceIssueDisposition = "尚无明确解决依据；待 DND 文档项目审核。";
+export function withSourceIssueNotes(review: RetainedSourceIssues): string {
+  return `${review.bodyText}\n\n${sourceIssueHeading}\n${review.issues.map(issue =>
+    `[${issue.id}] ${issue.note} 影响：${issue.impact} ${sourceIssueDisposition}`).join("\n\n")}`;
+}
 export type SourceBoundFallbackReview = {
   sourceKey: null; targetId: number; rulebookId: number; field: FallbackField;
   before: string | null; after: string; proposedHtml: string | null;
   input: { chinese: ChineseTextBinding; english: EnglishRecord; englishHtml: string | null };
   sourceRef: string; sourcePages: SourcePage[];
-  status: "accepted" | "rejected" | "deferred" | "excluded";
+  status: "accepted" | "accepted-with-source-issues" | "rejected" | "deferred" | "excluded";
   reviewer: string; reason: string; originalSourceRead: boolean;
   rulePairs: SourceRulePair[];
   fullBodyAudit?: FallbackBodyAudit;
   pendingSourceEvidence?: unknown[];
+  retainedSourceIssues?: RetainedSourceIssues;
 };
 type NativeAccepted = { targetId: number; rulebookId: number; name?: string; descriptionHtml?: string };
 
@@ -48,7 +64,7 @@ export function validateSourceBoundFallbackReviews(reviews: SourceBoundFallbackR
   chinese: Map<number, ChineseTextBinding>, nativeAccepted: NativeAccepted[], allowPending = false): {
     accepted: SourceBoundFallbackReview[];
     summary: { reviewedFields: number; acceptedFields: number; fullBodyAudits: number;
-      pendingFields: number; decisions: Record<string, number> };
+      pendingFields: number; decisions: Record<string, number>; sourceUnresolvedFields?: number; retainedSourceIssues?: number };
   } {
   assert(positive(rulebookId), "source-bound fallback requires a positive rulebook scope");
   assert([...english.values()].some(row => row.rulebookId === rulebookId), "unknown source-bound rulebook scope");
@@ -78,7 +94,9 @@ export function validateSourceBoundFallbackReviews(reviews: SourceBoundFallbackR
     assert(!nativeAccepted.some(native => native.targetId === row.targetId
       && (row.field === "name" ? native.name !== undefined : native.descriptionHtml !== undefined)),
     `source-bound correction overlaps native accepted field ${key}`);
-    assert(["accepted", "rejected", "deferred", "excluded"].includes(row.status), `invalid source-bound status ${key}`);
+    assert(["accepted", "accepted-with-source-issues", "rejected", "deferred", "excluded"].includes(row.status), `invalid source-bound status ${key}`);
+    assert((row.status === "accepted-with-source-issues") === (row.retainedSourceIssues !== undefined),
+      `source-issue acceptance requires explicit retained issues ${key}`);
     assert(text(row.reason) && text(row.reviewer), `missing source-bound rationale/reviewer ${key}`);
     const pending = row.reviewer.startsWith("queue:");
     assert(allowPending || !pending, `unreviewed source-bound field ${key}`);
@@ -107,7 +125,35 @@ export function validateSourceBoundFallbackReviews(reviews: SourceBoundFallbackR
         `rule-pair source page outside binding ${key}`);
     }
     assert(row.pendingSourceEvidence === undefined || Array.isArray(row.pendingSourceEvidence), `invalid pending source evidence ${key}`);
-    if (row.status === "accepted") {
+    if (row.retainedSourceIssues !== undefined) {
+      const retained = row.retainedSourceIssues;
+      assert(row.field === "descriptionText" && retained && text(retained.bodyText) && text(retained.sourceId),
+        `invalid retained source body ${key}`);
+      assert(Array.isArray(retained.issues) && retained.issues.length > 0, `missing retained source issues ${key}`);
+      const issueIds = new Set<string>();
+      for (const issue of retained.issues) {
+        assert(text(issue.id) && !issueIds.has(issue.id), `duplicate or missing source issue ${key}`); issueIds.add(issue.id);
+        assert(issue.status === "source-unresolved" && ["conflict", "missing-explanation"].includes(issue.kind),
+          `source issue cannot claim resolution ${key}`);
+        assert(text(issue.note) && text(issue.impact), `missing source issue explanation ${key}`);
+        assert(Array.isArray(issue.statements) && issue.statements.length >= (issue.kind === "conflict" ? 2 : 1),
+          `missing opposing source statements ${key}`);
+        const statements = new Set<string>();
+        for (const statement of issue.statements) {
+          const page = row.sourcePages.find(page => page.sourceId === statement.sourceId && page.pageIndex === statement.pageIndex
+            && page.printedPage === statement.printedPage);
+          assert(statement.sourceId === retained.sourceId && page && Array.isArray(statement.spanRefs) && statement.spanRefs.length > 0
+            && statement.spanRefs.every(ref => Array.isArray(ref) && page.spanRefs.some(bound => stable(bound) === stable(ref))),
+          `source issue outside original page/span binding ${key}`);
+          assert(text(statement.sourceQuote) && text(statement.chinese) && retained.bodyText.includes(statement.chinese),
+            `source statement missing from complete body ${key}`);
+          const location = stable([statement.sourceId, statement.pageIndex, statement.spanRefs]);
+          assert(!statements.has(location), `duplicate opposing source statement ${key}`); statements.add(location);
+        }
+      }
+      assert.equal(row.after, withSourceIssueNotes(retained), `missing or stale source issue notes ${key}`);
+    }
+    if (row.status === "accepted" || row.status === "accepted-with-source-issues") {
       assert(!pending && row.originalSourceRead === true, `accepted source-bound field not actually reviewed ${key}`);
       assert(text(row.before), `accepted correction cannot invent absent Chinese fallback ${key}`);
       assert(row.rulePairs.length > 0 && !row.pendingSourceEvidence?.length, `accepted source-bound field lacks closed rule evidence ${key}`);
@@ -129,5 +175,9 @@ export function validateSourceBoundFallbackReviews(reviews: SourceBoundFallbackR
     decisions[status] = (decisions[status] ?? 0) + 1;
   }
   return { accepted, summary: { reviewedFields: reviews.length, acceptedFields: accepted.length,
-    fullBodyAudits, pendingFields, decisions } };
+    fullBodyAudits, pendingFields, decisions,
+    ...(reviews.some(row => row.retainedSourceIssues) ? {
+      sourceUnresolvedFields: accepted.filter(row => row.retainedSourceIssues).length,
+      retainedSourceIssues: accepted.reduce((count, row) => count + (row.retainedSourceIssues?.issues.length ?? 0), 0),
+    } : {}) } };
 }
