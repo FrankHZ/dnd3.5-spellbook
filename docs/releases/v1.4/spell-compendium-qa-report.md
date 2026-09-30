@@ -92,13 +92,16 @@ including the 25 historical deferrals and other concretely blocked fields.
 
 The 736 accepted body proposals were screened across both outlets for area-type
 and modifier/check discrepancies. Original-source checks covered 123 area
-headers or clauses and 37 modifier-related paragraphs. Eighteen complete bodies
-have explicit repairs: eleven native and seven independent. Area repairs preserve
-the printed field, type, center, radius and per-level scale; the modifier repair
-preserves attack rolls and the source's melee limitation. Every changed complete
+headers or clauses and 37 modifier-related paragraphs. Supplemental English
+reverse screening of 554 lexical exclusions identified four candidates; original
+paragraph checks found one omitted caster-level bonus cap in target 4396.
+Nineteen complete bodies have explicit repairs: twelve native and seven
+independent. Area repairs preserve the printed field, type, center, radius and
+per-level scale; modifier repairs preserve attack rolls, the source's melee
+limitation and the caster-level bonus cap within a dispel check. Every changed complete
 body has renewed original-entry, actual English/mechanics/paired HTML, old CHM
-HTML and complete new text/HTML review. Changed-clause verification read 25 bound
-original pages and checked 19 quotes with ligature, whitespace and line-break
+HTML and complete new text/HTML review. Changed-clause verification read 27 bound
+original pages and checked 20 quotes with ligature, whitespace and line-break
 hyphen normalization alongside exact original spans. Unchanged category checks
 do not claim fresh whole-body acceptance.
 
@@ -160,8 +163,8 @@ final patch incorporates the earlier starting-error patch; they must not both
 be applied as an activation sequence.
 
 The exact private evidence and pending patches are committed locally as
-`a07e9b03517d735259f4ea237b65cee72c2744f6` and were not pushed. Native and independent formal QA
-record the actual tooling revision `f51ac52953fd7c9c72cbdb178d8c9dce7c875bb4`.
+`7777cb7016ecb115acc7426c25759528593215f9` and were not pushed. Native and independent formal QA
+record the actual tooling revision `8c94ebd636e4cf6cf23bc56f764a82354d56a6b8`.
 Generated reports
 retain their actual earlier runtime revisions and dirty flags; this bundle commit
 does not relabel that provenance. Reproducible image caches, logs and an unused
