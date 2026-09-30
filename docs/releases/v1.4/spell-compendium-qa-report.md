@@ -25,7 +25,7 @@ The resulting review dispositions are proposals:
 | English text/HTML | 775 | 210 | 16 | 0 |
 | Mechanics/relationships | 841 | 124 | 36 | 0 |
 | Chinese name | 954 | 31 | 13 | 3 |
-| Chinese body | 272 | 610 | 116 | 3 |
+| Chinese body | 271 | 611 | 116 | 3 |
 
 An unresolved entry can retain a definite local correction while preserving its
 unresolved dependency or printed conflict. These counts do not authorize writes.
@@ -60,8 +60,8 @@ quality passes. The 658 accepted fields cover 653 targets and have 614 correctio
 records; acceptance and correction counts therefore describe different things.
 Independent full-body bindings, actual English/mechanics/HTML, current Chinese,
 original locators and specific rule pairs were verified for all 652 bodies.
-Fourteen changed-input cases have explicit latest evidence; old frozen records
-remain. Ten previously proposed complete bodies now retain specific historical
+Changed-input cases have explicit committed-prior/latest evidence; old frozen
+records remain. Ten previously proposed complete bodies now retain specific historical
 source deferrals rather than claiming SC also proves their earlier versions.
 
 Actual accepted/fallback exports match the individual decisions across all 2,004
@@ -74,7 +74,7 @@ The separate source-bound fallback channel individually reviewed 140 fields,
 including complete old/new Chinese HTML, actual current English/HTML/mechanics
 and original source evidence. Its maintained CLI returned `validated-proposal`
 and exported 115 fields: 31 independent names and 84 complete bodies. Twenty-five
-complete bodies retain specific historical source deferrals. Fourteen body fixes
+complete bodies retain specific historical source deferrals. Complete body revisions
 have explicit frozen-prior/latest proof; frozen task inputs were not replaced.
 Names 4153, 4464, 4496 and 4756 no longer inherit unrelated body blockers.
 
@@ -89,6 +89,25 @@ write or activation.
 A zero blocker count alone never supplies semantic acceptance. Of the 176
 recorded standalone proposals, 61 remain outside the independent accepted export,
 including the 25 historical deferrals and other concretely blocked fields.
+
+The 736 accepted body proposals were screened across both outlets for area-type
+and modifier/check discrepancies. Original-source checks covered 123 area
+headers or clauses and 37 modifier-related paragraphs. Eighteen complete bodies
+have explicit repairs: eleven native and seven independent. Area repairs preserve
+the printed field, type, center, radius and per-level scale; the modifier repair
+preserves attack rolls and the source's melee limitation. Every changed complete
+body has renewed original-entry, actual English/mechanics/paired HTML, old CHM
+HTML and complete new text/HTML review. Changed-clause verification read 25 bound
+original pages and checked 19 quotes with ligature, whitespace and line-break
+hyphen normalization alongside exact original spans. Unchanged category checks
+do not claim fresh whole-body acceptance.
+
+The private adapter first validates old canonical records and accepted exports
+directly against their committed revision. It then validates the latest complete
+bodies against actual read-only consumers and verifies both regenerated channels.
+Unlisted accepted fields and every original fallback remain exact. Thirty
+synthetic negative cases cover stale or jointly altered snapshots, ownership,
+full input/HTML, field identity, exports and active override boundaries.
 
 The maintained supplemental PDF verifier passed 312 original pages, 48,105 exact
 spans and all 722 accepted/deferred field bindings. Rejected/excluded identity and
@@ -141,8 +160,8 @@ final patch incorporates the earlier starting-error patch; they must not both
 be applied as an activation sequence.
 
 The exact private evidence and pending patches are committed locally as
-`c4311dd2f273f2e0412bc7a14045b4953faeafb3` and were not pushed. Native and independent formal QA
-record the actual tooling revision `deab6344d9dcc779d7948678b8bc94e3a03cba3b`.
+`a07e9b03517d735259f4ea237b65cee72c2744f6` and were not pushed. Native and independent formal QA
+record the actual tooling revision `f51ac52953fd7c9c72cbdb178d8c9dce7c875bb4`.
 Generated reports
 retain their actual earlier runtime revisions and dirty flags; this bundle commit
 does not relabel that provenance. Reproducible image caches, logs and an unused
