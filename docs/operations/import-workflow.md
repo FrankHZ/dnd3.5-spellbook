@@ -93,8 +93,15 @@ npm run -w data-tools rules:spells:apply -- pending/spells/example.jsonl
 
 Validators read the rules DB; apply dry-runs operate on a temporary copy.
 `insertSpell` creates base and relationship rows and rebuilds derived indexes.
-`updateSpell` permits only `slug`, non-empty raw `extraComponents`, or paired
-non-empty `description`/`descriptionHtml` updates; unknown fields are rejected.
+`updateSpell` supports spell headers, page, an existing subschool ID or null,
+component flags, paired English text/HTML, descriptor replacement, and exact
+class-level changes or additions.
+Header/page/component updates require matching `expected.spell` values;
+descriptor replacement requires the complete old set. Class-level changes
+require the old level, and additions require explicit absence. Text headers
+can explicitly be cleared with `null` or an empty string. Unknown fields are
+rejected. See [structured spell updates](./rules-db-notes.md#structured-spell-updates)
+for the patch shape and compatibility rules.
 Spell apply commits row changes and derived-index rebuilds in one transaction.
 `insertRulebook` adds a reviewed identity after validating its edition and fields.
 

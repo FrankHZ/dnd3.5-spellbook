@@ -13,6 +13,7 @@ import {
   isInsertRulebook,
   type InsertRulebookOperation,
 } from "./rulebooks-schema";
+import { spellUpdateEntries, type UpdateSpellOperation } from "./spells-schema";
 
 type Mode = "write" | "verify";
 
@@ -31,17 +32,6 @@ type InsertSpellOperation = {
     domains?: Array<{ domain?: string; level?: number; extra?: string }>;
   };
   descriptors?: string[];
-};
-
-type UpdateSpellOperation = {
-  op?: string;
-  id?: number;
-  spell?: {
-    slug?: string;
-    extraComponents?: string;
-    description?: string;
-    descriptionHtml?: string;
-  };
 };
 
 type SpellOperation = InsertSpellOperation | UpdateSpellOperation;
@@ -248,29 +238,25 @@ function normalized(value: string | undefined | null) {
   return (value ?? "").trim().toLowerCase();
 }
 
-function verifySpellOperation(
+export function verifySpellOperation(
   db: Database.Database,
   patchPath: string,
   line: number,
   op: SpellOperation,
 ): SpellOperationCheck {
   const id = typeof op.id === "number" ? op.id : null;
-  const name = isInsertSpell(op) && typeof op.spell?.name === "string" ? op.spell.name : null;
+  const name =
+    isInsertSpell(op) && typeof op.spell?.name === "string"
+      ? op.spell.name
+      : null;
   const rulebook =
-    isInsertSpell(op) && typeof op.source?.rulebook === "string" ? op.source.rulebook : null;
+    isInsertSpell(op) && typeof op.source?.rulebook === "string"
+      ? op.source.rulebook
+      : null;
   const slug = typeof op.spell?.slug === "string" ? op.spell.slug : null;
-  const extraComponents =
-    isUpdateSpell(op) && typeof op.spell?.extraComponents === "string"
-      ? op.spell.extraComponents
-      : null;
-  const description =
-    isUpdateSpell(op) && typeof op.spell?.description === "string"
-      ? op.spell.description
-      : null;
-  const descriptionHtml =
-    isUpdateSpell(op) && typeof op.spell?.descriptionHtml === "string"
-      ? op.spell.descriptionHtml
-      : null;
+  const updateFields = isUpdateSpell(op)
+    ? spellUpdateEntries(op.spell ?? {})
+    : [];
   const issues: string[] = [];
 
   if (id === null) issues.push("operation id is missing");
@@ -280,10 +266,9 @@ function verifySpellOperation(
   }
   if (
     isUpdateSpell(op) &&
-    !slug &&
-    !extraComponents &&
-    !description &&
-    !descriptionHtml
+    updateFields.length === 0 &&
+    (op.levels?.classes?.length ?? 0) === 0 &&
+    op.descriptors === undefined
   ) {
     issues.push("update has no supported spell fields");
   }
@@ -295,12 +280,7 @@ function verifySpellOperation(
           .prepare(
             `
             SELECT
-              s.id,
-              s.name,
-              s.slug,
-              s.extra_components AS extraComponents,
-              s.description,
-              s.description_html AS descriptionHtml,
+              s.*,
               rb.abbr AS rulebook
             FROM dnd_spell s
             JOIN dnd_rulebook rb ON rb.id = s.rulebook_id
@@ -312,10 +292,8 @@ function verifySpellOperation(
               id: number;
               name: string;
               slug: string;
-              extraComponents: string | null;
-              description: string;
-              descriptionHtml: string;
               rulebook: string;
+              [column: string]: unknown;
             }
           | undefined);
 
@@ -331,35 +309,40 @@ function verifySpellOperation(
     if (slug && spell.slug !== slug) {
       issues.push(`slug mismatch: db=${spell.slug}`);
     }
-    if (extraComponents && spell.extraComponents !== extraComponents) {
-      issues.push(`extraComponents mismatch: db=${spell.extraComponents ?? "null"}`);
-    }
-    if (description && spell.description !== description) {
-      issues.push("description mismatch");
-    }
-    if (descriptionHtml && spell.descriptionHtml !== descriptionHtml) {
-      issues.push("descriptionHtml mismatch");
+    for (const entry of updateFields) {
+      const legacyText =
+        isUpdateSpell(op) &&
+        op.expected === undefined &&
+        ["extraComponents", "description", "descriptionHtml"].includes(entry.field);
+      const matches = legacyText
+        ? typeof spell[entry.column] === "string" &&
+          typeof entry.value === "string" &&
+          spell[entry.column] === entry.value.trim()
+        : spell[entry.column] === entry.value;
+      if (!matches) {
+        issues.push(`${entry.field} mismatch`);
+      }
     }
   }
 
-  for (const level of isInsertSpell(op) ? (op.levels?.classes ?? []) : []) {
+  for (const level of op.levels?.classes ?? []) {
     if (!level.class || typeof level.level !== "number") continue;
-    const row = db
+    const rows = db
       .prepare(
         `
-        SELECT 1 AS ok
+        SELECT scl.level
         FROM dnd_spellclasslevel scl
         JOIN dnd_characterclass cc ON cc.id = scl.character_class_id
         WHERE scl.spell_id = ?
-          AND lower(cc.name) = lower(?)
-          AND scl.level = ?
+          AND lower(trim(cc.name)) = lower(trim(?))
           AND COALESCE(scl.extra, '') = ?
       `,
       )
-      .get(id, level.class, level.level, level.extra ?? "") as
-      | { ok: number }
-      | undefined;
-    if (!row) {
+      .all(id, level.class, level.extra ?? "") as Array<{ level: number }>;
+    const present = isUpdateSpell(op)
+      ? rows.length === 1 && rows[0]?.level === level.level
+      : rows.some((row) => row.level === level.level);
+    if (!present) {
       issues.push(`missing class level: ${level.class} ${level.level}`);
     }
   }
@@ -398,6 +381,22 @@ function verifySpellOperation(
       )
       .get(id, descriptor) as { ok: number } | undefined;
     if (!row) issues.push(`missing descriptor: ${descriptor}`);
+  }
+
+  if (isUpdateSpell(op) && op.descriptors !== undefined) {
+    const rows = db
+      .prepare(
+        `SELECT d.name
+         FROM dnd_spell_descriptors sd
+         JOIN dnd_spelldescriptor d ON d.id = sd.spelldescriptor_id
+         WHERE sd.spell_id = ?`,
+      )
+      .all(id) as Array<{ name: string }>;
+    const actual = rows.map((row) => normalized(row.name)).sort();
+    const expected = op.descriptors.map((name) => normalized(name)).sort();
+    if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+      issues.push("descriptors mismatch");
+    }
   }
 
   const status =
@@ -728,4 +727,6 @@ function main() {
   usage();
 }
 
-main();
+if (require.main === module) {
+  main();
+}

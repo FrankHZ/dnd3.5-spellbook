@@ -13,7 +13,7 @@ import {
   asBoolean,
   asInteger,
   asOptionalString,
-  isSpellUpdateNoop,
+  spellUpdateEntries,
   normalizeLookup,
   parsePatchJsonlText,
   validateInsertSpellShape,
@@ -50,6 +50,15 @@ type ResolvedInsertSpell = SpellInsertApplyOperation & {
 export type SpellUpdateApplyOperation = {
   spellId: number;
   fields: SpellUpdateFields;
+  expected?: SpellUpdateFields;
+  descriptorIds?: number[];
+  expectedDescriptorIds?: number[];
+  classLevels?: Array<{
+    classId: number;
+    extra: string;
+    level: number;
+    expectedLevel: number | null;
+  }>;
 };
 
 export type SpellIndexSqlPatch = {
@@ -223,7 +232,10 @@ function tableCounts(db: Database.Database): TableCounts {
   return counts;
 }
 
-function validatePatch(db: Database.Database, patchPath: string): ValidationResult {
+export function validatePatch(
+  db: Database.Database,
+  patchPath: string,
+): ValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
   const parsed = parseJsonl(patchPath, errors);
@@ -245,36 +257,25 @@ function validatePatch(db: Database.Database, patchPath: string): ValidationResu
   for (const { line, value } of parsed) {
     if (value.op === "updateSpell") {
       const shape = validateUpdateSpellShape(value, line, errors);
-      if (shape.spellId === undefined || Object.keys(shape.fields).length === 0) {
+      if (
+        shape.spellId === undefined ||
+        (Object.keys(shape.fields).length === 0 &&
+          shape.classLevels.length === 0 &&
+          shape.descriptors === undefined)
+      ) {
         continue;
       }
       if (seenUpdateSpellIds.has(shape.spellId)) {
-        errors.push(`line ${line}: duplicate spell id in update patch: ${shape.spellId}`);
+        errors.push(
+          `line ${line}: duplicate spell id in update patch: ${shape.spellId}`,
+        );
         continue;
       }
       seenUpdateSpellIds.add(shape.spellId);
       const existing = db
-        .prepare(`
-          SELECT
-            id,
-            name,
-            slug,
-            extra_components AS extraComponents,
-            description,
-            description_html AS descriptionHtml
-          FROM dnd_spell
-          WHERE id = ?
-        `)
+        .prepare("SELECT id, name, slug FROM dnd_spell WHERE id = ?")
         .get(shape.spellId) as
-        | {
-            id: number;
-            name: string;
-            slug: string;
-            extraComponents: string | null;
-            description: string;
-            descriptionHtml: string;
-          }
-        | undefined;
+        { id: number; name: string; slug: string } | undefined;
       if (!existing) {
         errors.push(`line ${line}: spell id does not exist: ${shape.spellId}`);
         continue;
@@ -291,17 +292,104 @@ function validatePatch(db: Database.Database, patchPath: string): ValidationResu
           );
         }
       }
-      if (isSpellUpdateNoop(shape.fields, existing)) {
-        errors.push(`line ${line}: spell update does not change any listed field`);
-        continue;
+      const classLevels: NonNullable<SpellUpdateApplyOperation["classLevels"]> =
+        [];
+      const classKeys = new Set<string>();
+      for (const item of shape.classLevels) {
+        const foundClassId = resolveLookup(
+          classes,
+          item.class,
+          "class",
+          line,
+          errors,
+        );
+        if (foundClassId === undefined) continue;
+        let classId: number;
+        if (item.expectedLevel === null) {
+          const matches = db
+            .prepare(
+              "SELECT id FROM dnd_characterclass WHERE LOWER(TRIM(name)) = ?",
+            )
+            .all(normalizeLookup(item.class)) as Array<{ id: number }>;
+          if (matches.length !== 1) {
+            errors.push(
+              `line ${line}: class ${item.class} lookup is ambiguous`,
+            );
+            continue;
+          }
+          classId = matches[0]!.id;
+        } else {
+          // Resolve within this spell's memberships: editions can share class names.
+          const memberships = db
+            .prepare(
+              `SELECT c.id AS classId FROM dnd_spellclasslevel scl
+            JOIN dnd_characterclass c ON c.id = scl.character_class_id
+            WHERE scl.spell_id = ? AND LOWER(TRIM(c.name)) = ? AND COALESCE(scl.extra, '') = ?`,
+            )
+            .all(
+              shape.spellId,
+              normalizeLookup(item.class),
+              item.extra ?? "",
+            ) as Array<{ classId: number }>;
+          if (memberships.length !== 1) {
+            errors.push(
+              `line ${line}: class ${item.class}/${item.extra ?? ""} must match exactly one relationship`,
+            );
+            continue;
+          }
+          classId = memberships[0]!.classId;
+        }
+        const key = JSON.stringify([classId, item.extra]);
+        if (classKeys.has(key))
+          errors.push(
+            `line ${line}: duplicate class update: ${item.class}/${item.extra}`,
+          );
+        classKeys.add(key);
+        classLevels.push({
+          classId,
+          extra: item.extra ?? "",
+          level: item.level,
+          expectedLevel: item.expectedLevel,
+        });
       }
-      resolved.push({
+      const resolveDescriptorNames = (names: string[]) =>
+        names.flatMap((name) => {
+          const id = resolveLookup(
+            descriptors,
+            name,
+            "descriptor",
+            line,
+            errors,
+          );
+          return id === undefined ? [] : [id];
+        });
+      const operation: ResolvedUpdateSpell = {
         kind: "updateSpell",
         line,
         op: value,
         spellId: shape.spellId,
         fields: shape.fields,
-      });
+        ...(shape.expected ? { expected: shape.expected } : {}),
+        classLevels,
+        ...(shape.descriptors !== undefined
+          ? { descriptorIds: resolveDescriptorNames(shape.descriptors) }
+          : {}),
+        ...(shape.expectedDescriptors !== undefined
+          ? {
+              expectedDescriptorIds: resolveDescriptorNames(
+                shape.expectedDescriptors,
+              ),
+            }
+          : {}),
+      };
+      try {
+        checkSpellUpdate(db, operation);
+      } catch (error) {
+        errors.push(
+          `line ${line}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+      resolved.push(operation);
       continue;
     }
 
@@ -614,38 +702,160 @@ function insertSpells(
   }
 }
 
+function checkSpellUpdate(
+  db: Database.Database,
+  op: SpellUpdateApplyOperation,
+) {
+  if (Object.keys(op.fields).length) {
+    const errors: string[] = [];
+    validateUpdateSpellShape(
+      {
+        op: "updateSpell",
+        id: op.spellId,
+        spell: op.fields,
+        ...(op.expected ? { expected: { spell: op.expected } } : {}),
+      },
+      1,
+      errors,
+    );
+    if (errors.length) throw new Error(errors.join("; "));
+  }
+  if (!db.prepare("SELECT id FROM dnd_spell WHERE id = ?").get(op.spellId))
+    throw new Error(`spell id does not exist: ${op.spellId}`);
+  if (
+    op.fields.subschoolId != null &&
+    !db
+      .prepare("SELECT id FROM dnd_spellsubschool WHERE id = ?")
+      .get(op.fields.subschoolId)
+  )
+    throw new Error(
+      `spell ${op.spellId}: subschool id does not exist: ${op.fields.subschoolId}`,
+    );
+  const entries = spellUpdateEntries(op.fields);
+  const expected = spellUpdateEntries(op.expected ?? {});
+  // Recheck conditions inside the apply transaction, after any earlier writes.
+  for (const item of expected) {
+    const row = db
+      .prepare(`SELECT ${item.column} AS value FROM dnd_spell WHERE id = ?`)
+      .get(op.spellId) as { value: unknown };
+    if (row.value !== item.value)
+      throw new Error(
+        `spell ${op.spellId}: expected ${item.field} does not match current value`,
+      );
+  }
+  let descriptorsChanged = false;
+  if (op.descriptorIds !== undefined) {
+    if (op.expectedDescriptorIds === undefined)
+      throw new Error(`spell ${op.spellId}: expected descriptors are required`);
+    const current = db
+      .prepare(
+        "SELECT spelldescriptor_id AS id FROM dnd_spell_descriptors WHERE spell_id = ? ORDER BY spelldescriptor_id",
+      )
+      .all(op.spellId) as Array<{ id: number }>;
+    const exact = (ids: number[]) =>
+      JSON.stringify([...ids].sort((a, b) => a - b));
+    if (
+      JSON.stringify(current.map((row) => row.id)) !==
+      exact(op.expectedDescriptorIds)
+    )
+      throw new Error(
+        `spell ${op.spellId}: expected descriptors do not match current set`,
+      );
+    descriptorsChanged =
+      exact(op.descriptorIds) !== exact(op.expectedDescriptorIds);
+  }
+  let changed =
+    descriptorsChanged ||
+    entries.some((item) => {
+      const row = db
+        .prepare(`SELECT ${item.column} AS value FROM dnd_spell WHERE id = ?`)
+        .get(op.spellId) as { value: unknown };
+      return row.value !== item.value;
+    });
+  for (const level of op.classLevels ?? []) {
+    const rows = db
+      .prepare(
+        `SELECT id, level FROM dnd_spellclasslevel
+      WHERE spell_id = ? AND character_class_id = ? AND COALESCE(extra, '') = ?`,
+      )
+      .all(op.spellId, level.classId, level.extra) as Array<{
+      id: number;
+      level: number;
+    }>;
+    if (level.expectedLevel === null) {
+      if (rows.length !== 0)
+        throw new Error(
+          `spell ${op.spellId}: expected class ${level.classId}/${level.extra} relationship to be absent`,
+        );
+      changed = true;
+      continue;
+    }
+    if (rows.length !== 1)
+      throw new Error(
+        `spell ${op.spellId}: class ${level.classId}/${level.extra} must match exactly one relationship`,
+      );
+    if (rows[0]!.level !== level.expectedLevel)
+      throw new Error(
+        `spell ${op.spellId}: expected class ${level.classId}/${level.extra} level does not match current value`,
+      );
+    if (level.level !== level.expectedLevel) changed = true;
+  }
+  if (!changed)
+    throw new Error(
+      `spell update does not change any listed field or relationship`,
+    );
+}
+
 function updateSpells(
   db: Database.Database,
   operations: readonly SpellUpdateApplyOperation[],
 ) {
-  const updateSpell = db.prepare(`
-    UPDATE dnd_spell
-    SET
-      slug = CASE WHEN @update_slug = 1 THEN @slug ELSE slug END,
-      extra_components = CASE
-        WHEN @update_extra_components = 1 THEN @extra_components
-        ELSE extra_components
-      END,
-      description = CASE WHEN @update_description = 1 THEN @description ELSE description END,
-      description_html = CASE
-        WHEN @update_description_html = 1 THEN @description_html
-        ELSE description_html
-      END
-    WHERE id = @id
-  `);
-
   for (const op of operations) {
-    updateSpell.run({
-      id: op.spellId,
-      update_slug: op.fields.slug === undefined ? 0 : 1,
-      slug: op.fields.slug ?? null,
-      update_extra_components: op.fields.extraComponents === undefined ? 0 : 1,
-      extra_components: op.fields.extraComponents ?? null,
-      update_description: op.fields.description === undefined ? 0 : 1,
-      description: op.fields.description ?? null,
-      update_description_html: op.fields.descriptionHtml === undefined ? 0 : 1,
-      description_html: op.fields.descriptionHtml ?? null,
-    });
+    checkSpellUpdate(db, op);
+    const entries = spellUpdateEntries(op.fields);
+    if (entries.length) {
+      db.prepare(
+        `UPDATE dnd_spell SET ${entries.map((item) => `${item.column} = ?`).join(", ")} WHERE id = ?`,
+      ).run(...entries.map((item) => item.value), op.spellId);
+    }
+    if (op.descriptorIds !== undefined) {
+      db.prepare("DELETE FROM dnd_spell_descriptors WHERE spell_id=?").run(
+        op.spellId,
+      );
+      const next =
+        (
+          db
+            .prepare(
+              "SELECT COALESCE(MAX(id),0) AS id FROM dnd_spell_descriptors",
+            )
+            .get() as { id: number }
+        ).id + 1;
+      const insert = db.prepare(
+        "INSERT INTO dnd_spell_descriptors (id,spell_id,spelldescriptor_id) VALUES (?,?,?)",
+      );
+      for (const [index, id] of op.descriptorIds.entries())
+        insert.run(next + index, op.spellId, id);
+    }
+    for (const level of op.classLevels ?? []) {
+      if (level.expectedLevel === null) {
+        const next =
+          (
+            db
+              .prepare(
+                "SELECT COALESCE(MAX(id),0) AS id FROM dnd_spellclasslevel",
+              )
+              .get() as { id: number }
+          ).id + 1;
+        db.prepare(
+          "INSERT INTO dnd_spellclasslevel (id,spell_id,character_class_id,level,extra) VALUES (?,?,?,?,?)",
+        ).run(next, op.spellId, level.classId, level.level, level.extra);
+        continue;
+      }
+      db.prepare(
+        `UPDATE dnd_spellclasslevel SET level = ?
+        WHERE spell_id = ? AND character_class_id = ? AND COALESCE(extra, '') = ?`,
+      ).run(level.level, op.spellId, level.classId, level.extra);
+    }
   }
 }
 
@@ -822,6 +1032,8 @@ function applyPatch(targetDbPath: string, patchPath: string, dryRun: boolean) {
     const updatedSpells = updateOperations.map((op) => ({
       id: op.spellId,
       fields: op.fields,
+      classLevels: op.classLevels,
+      descriptorIds: op.descriptorIds,
     }));
     const reportPath = writeReport(
       {

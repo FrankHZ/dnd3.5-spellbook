@@ -197,14 +197,89 @@ those with page-specific or issue-specific sources rather than the book ISBN
 enrichment workflow. The deferred rows remain outside accepted output until
 their source ambiguity is resolved.
 
+### Structured Spell Updates
+
 `insertSpell` writes one `dnd_spell` row, optional
 `dnd_spell_descriptors` rows, class/domain level rows, and then rebuilds
-`idx_spell_class_level` and `idx_spell_domain_level`. `updateSpell` is a
-narrow field-level correction operation: it can change only `slug`, a non-empty
-raw `extraComponents` value, or a paired non-empty `description` and
-`descriptionHtml` replacement. It rejects unknown fields, unpaired text
-updates, empty updates, and DB no-ops; unlisted spell columns, levels, and
-descriptors remain untouched.
+`idx_spell_class_level` and `idx_spell_domain_level`. `updateSpell` corrects
+listed fields without replacing the spell identity or unrelated relationships.
+It supports `slug`, `extraComponents`, paired non-empty `description` and
+`descriptionHtml`, the eight nullable header fields (`castingTime`, `range`,
+`target`, `effect`, `area`, `duration`, `savingThrow`, `spellResistance`), and
+individual boolean `components` using the same names as `insertSpell`.
+`spell.page` corrects a printed-page locator: a positive integer sets it, and
+null clears it; zero, negative numbers, fractions and strings are rejected.
+It requires an exact `expected.spell.page` old value and does not change the
+rulebook or spell identity.
+`spell.subschoolId` sets an existing subschool ID or explicitly clears it with
+null. It requires the exact old ID in `expected.spell.subschoolId`; missing
+subschool entities are rejected. It does not create or rename a taxonomy entity.
+A nullable text value of `null` clears to SQL NULL; `""` explicitly stores an
+empty string. Omitted fields remain unchanged; component `false` clears its
+flag, while null is rejected for components and required text.
+
+New header/component corrections and clearing `extraComponents` require
+`expected.spell` old values for every changed field/component. Legacy non-empty
+slug/component-text/body updates may still omit `expected` for compatibility;
+when supplied, it must cover every changed field, with no extra conditions.
+Conditions compare exact values (including NULL versus empty string), both at
+validation and inside the write transaction.
+Conditioned body updates also preserve the new text's exact outer whitespace;
+legacy body and component-text updates without `expected` retain their previous
+trimming behavior.
+Unknown fields, missing conditions, unpaired descriptions, empty updates, and
+DB no-ops are rejected. A repeated conditional patch fails its old-value
+condition without changing the DB.
+
+`levels.classes` changes one existing relationship per entry. Each entry names
+`class`, the exact `extra` label (default `""`), `expectedLevel`, and the new
+`level`. The class lookup must exist; a numeric `expectedLevel` requires the
+spell/class/extra key to resolve to exactly one current row. `expectedLevel: null`
+adds a relationship only when the class name resolves to exactly one existing
+class entity and that spell/class/extra relationship is absent. Existing
+memberships stay intact; this operation does not create classes or delete
+relationships.
+Unlisted class/domain relationships remain intact.
+
+Top-level `descriptors` replaces the complete descriptor set and requires
+`expected.descriptors` to equal the complete current set (order-independent).
+Both values are arrays of existing descriptor names; unknown names and duplicate
+names are rejected. An empty array explicitly clears the set. These corrections
+reuse descriptor lookups and relationship ID allocation; they never create
+descriptor entities. Descriptors remain untouched when this field is omitted.
+The CLI rebuilds both derived indexes using the maintained SQL in the same transaction as spell
+and relationship corrections; any condition or index failure rolls it all back.
+
+Synthetic schema example (real corrections and evidence belong in `data/`):
+
+```json
+{
+  "op": "updateSpell",
+  "id": 7,
+  "source": { "provenance": "Reviewed source and errata evidence" },
+  "spell": {
+    "target": null,
+    "area": "60-ft.-radius burst",
+    "components": { "somatic": true }
+  },
+  "expected": {
+    "spell": {
+      "target": "Misplaced area",
+      "area": null,
+      "components": { "somatic": false }
+    }
+  },
+  "levels": {
+    "classes": [
+      { "class": "Cleric", "extra": "", "expectedLevel": 1, "level": 4 }
+    ]
+  }
+}
+```
+
+Write each operation on one JSONL line. A class-only correction may omit
+`spell` and `expected`; its `expectedLevel` remains mandatory. These commands
+still require explicit operator authorization for writes to operator-owned DBs.
 
 For the post-v1.1 full-corpus correction handoff, the accepted patch has been
 applied locally and moved to
@@ -410,4 +485,3 @@ to the rules DB's historical `Otiluke's Supressing Field` spelling.
 - Future local rules DB patch files should live under
   `data/rules-patches/`; decide later whether a redacted schema-safe
   patch format can be committed.
-
