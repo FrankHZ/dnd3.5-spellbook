@@ -44,7 +44,7 @@ Raw output remains private in authorized ignored `data/artifacts/` directories.
 ## Data Ownership
 
 Local source inputs, maintained patch data, normalized import JSONL, and review
-decisions belong in the nested `data/` repo. Generated reports and parser output
+decisions belong in the configured private data repo. Generated reports and parser output
 belong under `data-tools/out/`.
 
 The canonical local publication metadata source is
@@ -82,10 +82,10 @@ database constraints: it applies tracked content migrations to a disposable
 in-memory SQLite database and imports only public-safe portable fixtures. It
 does not read or write `server/db/local/`.
 
-Local acceptance commands may depend on the nested `data/` repo and local DBs,
+Local acceptance commands may depend on the configured private data repo and local DBs,
 but they should remain explicit and outside root `npm run verify` or CI.
 
-The suspended PHB workflow keeps source-bearing rows and review decisions in the nested
+The suspended PHB workflow keeps source-bearing rows and review decisions in the private
 data repo. Public parent-repo reports are aggregates only. The full run uses
 MinerU for structure, order, fields, bodies, and tables; exact PDF.js text may
 project only inside MinerU boundaries or through current reviewed layout

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { localDataDir } from "../shared/env";
 import { scanHtmlFiles, relFile } from "./scan";
 import { segmentLetterPage } from "./segment";
 import { matchByEnNameAllBooks } from "./match";
@@ -55,16 +56,12 @@ function inferBookLabelsFromPath(file: string): string[] {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const inputDir = args.get("--input");
+  const inputDir = args.get("--input") ?? path.join(
+    localDataDir(),
+    args.has("--test-input") ? "chm-test" : "chm-clean",
+  );
   const outDir = args.get("--outDir") ?? "out/zh-parser";
   const defaultBookAbbr = args.get("--defaultBookAbbr") ?? "PH";
-
-  if (!inputDir) {
-    console.error(
-      "Usage: npm run -w data-tools zh:parse -- --input <html_root> [--outDir out/zh-parser]",
-    );
-    process.exit(1);
-  }
 
   const rootDir = path.resolve(inputDir);
   const files = scanHtmlFiles(rootDir);

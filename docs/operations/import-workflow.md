@@ -15,7 +15,7 @@ commands live in [data-tools/package.json](../../data-tools/package.json) and
   `APP_DATABASE_URL` is a compatibility alias for content only. Never use
   content reset/import commands on app-state or substitute a fresh upstream
   rules DB for the locked rules baseline.
-- Keep source, patch, review, and normalized JSONL in the nested `data/` repo;
+- Keep source, patch, review, and normalized JSONL in the configured private data repo;
   keep generated reports in `data-tools/out/`. Neither local runtime DBs nor
   source-bearing output belong in the public parent repo.
 - Inspect the exact inputs and target DB before mutation. Dry-run semantics
@@ -275,7 +275,7 @@ npm run -w data-tools dice:intake -- --data-root <absolute-data-repo> --rules-db
 The command reads both SQLite files with read-only/query-only connections. It
 requires clean, committed source and map inputs. It writes private source and
 target inventories, candidate records, and representative pilot cases under
-`data/dice-intake/`; commit those in the nested data repo for the QA handoff.
+`data/dice-intake/`; commit those in the private data repo for the QA handoff.
 The source-free aggregate is `data-tools/out/dice-intake/coverage.json`.
 Every candidate keeps its source revision and line locator, raw body, escaped
 `<pre>` rendering, publication mapping, field-level CHM comparison, and parser

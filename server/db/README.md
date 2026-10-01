@@ -45,14 +45,14 @@ Fixture file names should describe the API or transform behavior they support,
 for example `spell-detail.jsonl` or `rules-content-normalization.jsonl`.
 
 CI uses portable fixtures under this directory. Local acceptance may point at
-real JSONL in the nested `data/` repo through environment variables, but those
+real JSONL in the configured private data repo through environment variables, but those
 source files do not belong in the parent repo.
 
 `server/db/fixtures.manifest.json` records the lightweight correspondence
 between maintained local data JSONL inputs and the public-safe portable server
 fixtures that cover the same DB role or table shape. Portable CI validates the
-manifest and the checked-in fixture files. When the nested `data/` repo exists
-locally, the same harness scans each listed JSONL file root or directory root
+manifest and the checked-in fixture files. Explicit local acceptance scans each
+listed JSONL file root or directory root in the configured private data repo
 and fails if a maintained data JSONL file has no portable fixture mapping.
 
 Server API tests load seed rows through

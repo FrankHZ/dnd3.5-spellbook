@@ -298,29 +298,6 @@ const tests: TestCase[] = [
         }
       }
 
-      const dataRoot = path.join(repoRoot, "data");
-      if (!fs.existsSync(dataRoot)) return;
-
-      const maintainedDataFiles = manifest.dataRoots
-        .flatMap((root) => collectJsonlFiles(path.join(repoRoot, root)))
-        .map((filePath) => toRepoPath(repoRoot, filePath))
-        .sort();
-
-      const missingMappings = maintainedDataFiles.filter(
-        (filePath) => !mappedDataPaths.has(filePath),
-      );
-      assert.deepEqual(
-        missingMappings,
-        [],
-        "maintained data JSONL files need server DB portable fixture mappings",
-      );
-
-      for (const mappedPath of mappedDataPaths) {
-        assert.ok(
-          fs.existsSync(path.join(repoRoot, mappedPath)),
-          `fixture manifest maps a missing data repo file: ${mappedPath}`,
-        );
-      }
     },
   },
   {
@@ -2412,29 +2389,6 @@ const tests: TestCase[] = [
     },
   },
 ];
-
-function collectJsonlFiles(root: string): string[] {
-  if (!fs.existsSync(root)) return [];
-  const rootStat = fs.statSync(root);
-  if (rootStat.isFile()) return root.endsWith(".jsonl") ? [root] : [];
-  if (!rootStat.isDirectory()) return [];
-
-  const entries = fs.readdirSync(root, { withFileTypes: true });
-  const files: string[] = [];
-  for (const entry of entries) {
-    const entryPath = path.join(root, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...collectJsonlFiles(entryPath));
-    } else if (entry.isFile() && entry.name.endsWith(".jsonl")) {
-      files.push(entryPath);
-    }
-  }
-  return files;
-}
-
-function toRepoPath(repoRoot: string, filePath: string) {
-  return path.relative(repoRoot, filePath).replace(/\\/g, "/");
-}
 
 function isSameOrChild(root: string, candidate: string) {
   return candidate === root || candidate.startsWith(`${root}/`);

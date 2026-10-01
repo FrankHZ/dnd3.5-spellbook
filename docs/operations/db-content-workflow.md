@@ -9,7 +9,7 @@ new command sequences here when an existing operations doc already owns them.
 
 This workflow covers:
 
-- accepted data handoffs from the nested `data/` repo
+- accepted data handoffs from the configured private data repo
 - local rules-clean patching as a build input
 - local content DB regeneration and provenance checks
 - portable fixture manifest coverage for maintained local JSONL inputs
@@ -24,7 +24,7 @@ It does not cover:
 
 ## Source Of Truth
 
-- Real source, patch, review, and decision data lives in the nested `data/`
+- Real source, patch, review, and decision data lives in the private data repo
   repo.
 - Runtime SQLite files live under `server/db/local/` and are ignored by the
   parent repo.
@@ -60,7 +60,7 @@ and unmerged PR #113 are paused work, not implicit accepted inputs.
 
 1. Refresh context.
    - Confirm parent repo branch/status.
-   - Confirm nested `data/` branch/status.
+   - Confirm the configured private data repo branch/status.
    - Read the owning feature issue and its accepted data handoff.
    - Run the smallest relevant portable/data-tool validation before writing DB
      files.
@@ -71,7 +71,7 @@ and unmerged PR #113 are paused work, not implicit accepted inputs.
    - Apply to operator-owned `rules-clean.sqlite` only with explicit DB-write
      authorization, accepted input and the required validation.
    - Move accepted patch files from `pending/` to `applied/` in the nested
-     `data/` repo.
+     private data repo.
    - Rewrite and verify the rules manifest.
 
 3. Regenerate the content DB artifact.

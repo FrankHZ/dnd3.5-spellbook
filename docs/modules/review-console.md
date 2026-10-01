@@ -17,7 +17,7 @@ part of the public `web`, production `server`, or deployment build.
   full-queue merge rules, and atomic decision writes. The console does not
   reproduce those rules.
 - The only write targets are the current MinerU layout and full-row review
-  JSONL files in the nested `data/` repo. The console cannot write SQLite,
+  JSONL files in the configured private data repo. The console cannot write SQLite,
   manifests, source/extraction files, reports, or production state.
 - Source PDFs are selected by verified source ID. The API receives a stream
   handle and never accepts or returns a filesystem path.

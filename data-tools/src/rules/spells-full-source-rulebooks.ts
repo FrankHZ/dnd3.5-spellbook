@@ -76,8 +76,8 @@ function usage(): never {
   console.error(`Usage:
   npm run -w data-tools spells-full:rulebooks
   npm run -w data-tools spells-full:rulebooks -- --input data-tools/out/spells-full/<report>.json
-  npm run -w data-tools spells-full:rulebooks -- --output ../data/spells-full/source-rulebooks.generated.jsonl
-  npm run -w data-tools spells-full:rulebooks -- --ambiguous-output ../data/spells-full/source-rulebooks-ambiguous.generated.jsonl
+  npm run -w data-tools spells-full:rulebooks -- --output <explicit-output-path>
+  npm run -w data-tools spells-full:rulebooks -- --ambiguous-output <explicit-output-path>
 
 Reads a spells-full corpus inventory report and writes local deferred source
 labels as review JSONL. The command does not read or write SQLite databases.

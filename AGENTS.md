@@ -81,8 +81,10 @@ when reassessing them.
 ## Data And Production Boundaries
 
 - Source text, maintained patches/indexes, normalized import JSONL, and review
-  decisions belong in the nested `data/` repo. Public code may contain schemas,
-  validators, synthetic/redacted fixtures, and source-free reports. Never commit
+  decisions belong in the private data repo selected by root `.env`
+  `DATA_REPO_PATH`. Logical `data/...` paths in manifests and provenance remain
+  unchanged. Public code may contain schemas, validators, synthetic/redacted
+  fixtures, and source-free reports. Never commit
   local DBs, raw sources, credentials, logs, or personal wrapper scripts here.
 - `server/db/local/` contains operator-owned, ignored SQLite files. Do not
   replace, move, or write them without explicit authorization for a write-capable
@@ -108,6 +110,9 @@ when reassessing them.
   authorization. Canonical deployment helpers live in `docs/deployment-scripts/`;
   root `.bat` files are personal wrappers. Use
   [deployment](docs/operations/deployment.md) for operational safeguards.
+- Keep the private data repo and operator DBs outside removable public-code
+  worktrees. Create worktrees manually without junctions or symlinks to those
+  files; configure each worktree's ignored root `.env` to the private data path.
 
 ## Validation And Conditional References
 

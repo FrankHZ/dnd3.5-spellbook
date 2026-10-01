@@ -7,8 +7,8 @@ artifact generation. The API runtime belongs to `server/`.
 
 Install dependencies from the repository root. Commands are defined in
 [package.json](./package.json); run them from the root with
-`npm run -w data-tools <script>`. Real-data operations require the operator's
-nested `data/` repo and [DB setup](../docs/operations/data-setup.md).
+`npm run -w data-tools <script>`. Real-data operations require the configured
+private data repo and [DB setup](../docs/operations/data-setup.md).
 
 The independent [PDF Extract Python subproject](./pdf-extract/README.md) uses its
 own Python 3.13 environment and pinned PyMuPDF dependency. Its native CLI/tests
@@ -56,7 +56,7 @@ The public Node review entry is `data-tools/phb-review`; browser code may use
 its types but must not import its runtime or deep source paths.
 
 Real source data, accepted patches, normalized JSONL, and review decisions stay
-in the nested `data/` repo. Rebuildable output stays in `data-tools/out/`.
+in the configured private data repo. Rebuildable output stays in `data-tools/out/`.
 Operator-owned SQLite files stay under `server/db/local/`. Do not commit these
 inputs or generated source-bearing output to the parent repo. Public PHB
 reports contain only source-free aggregates such as counts, hashes, and status.

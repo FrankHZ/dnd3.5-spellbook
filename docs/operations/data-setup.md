@@ -15,7 +15,7 @@ one-time remote host setup, use [bootstrap-remote.md](./bootstrap-remote.md).
 
 ## Local-Only Data Policy
 
-Local data is expected to exist in a few workspace-owned locations, but it is
+Local data is expected to exist in a few operator-owned locations, but it is
 intentionally not committed as part of the public repository baseline.
 
 That means:
@@ -29,10 +29,32 @@ Current local data ownership:
 
 - `server/db/`: tracked DB migrations, seed entry points, portable fixtures,
   and ignored runtime SQLite databases under `server/db/local/`
-- `data/`: nested local data repo for parser and data-tool source inputs such
+- Private data repo selected by root `.env` `DATA_REPO_PATH`: parser and data-tool source inputs such
   as CHM HTML, upstream raw data, entity translation JSON, and rules DB patch
   files
 - `data-tools/out/`: generated parser reports and intermediate output
+
+## Private Data Repository Path
+
+Keep the private data repo outside public-code checkouts and worktrees. Set
+`DATA_REPO_PATH` in each public checkout's ignored root `.env`, for example:
+
+```dotenv
+DATA_REPO_PATH="G:/spell-book/data"
+```
+
+An absolute path may contain spaces. A relative value such as `../data` resolves
+from the public repository root, regardless of whether a command starts from
+that root or a workspace directory. A process environment value takes
+precedence over root `.env`. When unset, data tools use the legacy
+`<public-repo>/data` path; an explicitly configured missing path or file fails.
+The root [`.env.example`](../../.env.example) documents this fallback.
+
+Create public worktrees manually and give each its own ignored root `.env`.
+Do not place or link the private repo or `server/db/local/` SQLite files inside
+a removable worktree. `data/...` paths in manifests, provenance, and reports
+remain logical labels relative to the selected private repo; they are not
+physical paths under the public checkout.
 
 ## Current Database Roles
 
@@ -101,7 +123,7 @@ The rules DB lineage starts from the original `dnd.sqlite` dataset from the
 - upstream source: `https://github.com/dndtools/dndtools`
 
 This repository does not treat that upstream raw database as a tracked project
-artifact. When present in this workspace's nested local data repo, keep the raw
+artifact. When present in the configured private data repo, keep the raw
 upstream SQLite file under:
 
 ```text
@@ -196,7 +218,7 @@ If your local checkout lives elsewhere, update the paths accordingly.
 
 The rules DB is an operator-provided locked baseline, not a Prisma-created
 or automatically replaced database. Source-bearing patches live only in the
-nested `data/` repo. Use [rules patch operations](./import-workflow.md#rules-patches)
+private data repo. Use [rules patch operations](./import-workflow.md#rules-patches)
 for validation, temporary-copy dry-runs, apply, pending-to-applied movement,
 and manifest verification. [Spells-full candidates](./import-workflow.md#spells-full-candidates)
 produce review inputs, not DB activation.
@@ -309,15 +331,12 @@ After that, the backend can use:
   or recreate those files themselves.
 - Parent-repo DB fixtures belong under `server/db/<db-role>/fixtures/portable/`
   as public-safe JSONL. CI uses these dummy fixtures; local acceptance may point
-  to real JSONL in the nested `data/` repo through environment variables.
+  to real JSONL in the configured private data repo through environment variables.
 - `server/db/fixtures.manifest.json` maps maintained local data JSONL inputs to
   their public-safe server DB portable fixture coverage. Portable CI checks the
-  parent-repo fixture paths, and local runs with the nested `data/` repo present
-  also catch maintained data JSONL file roots or files under listed directory
-  roots that have no manifest mapping.
-- The root `data/` directory is a nested local Git repo in this workspace. Use
-  that repo to version local source inputs without adding them to the parent
-  project repo.
+  parent-repo fixture paths. Explicit local acceptance checks maintained JSONL
+  under `DATA_REPO_PATH` for missing mappings.
+- The private data repo versions source inputs separately from the public repo.
 
 ## Related Files
 

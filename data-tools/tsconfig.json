@@ -13,7 +13,6 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "paths": {
-      "DATA/*": ["../data/*"],
       "prisma-rules-clean/*": ["../server/prisma-rules-clean/*"]
     }
   },

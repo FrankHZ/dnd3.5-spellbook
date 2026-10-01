@@ -106,7 +106,7 @@ and [TextPage structure](https://pymupdf.readthedocs.io/en/latest/textpage.html)
 ## Private Data And Acceptance
 
 Raw PDFs, source text, extracted JSONL, and page images remain private under the
-operator's nested `data/` repo. Use a separately authorized, new ignored
+operator's configured private data repo. Use a separately authorized, new
 `data/artifacts/` output directory; durable experiment handoffs also belong in
 that private repo. Do not commit real source output, logs, environments, or
 credentials to this public project. Public tests and examples use synthetic text.
