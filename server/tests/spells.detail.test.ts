@@ -1,5 +1,6 @@
 import request from "supertest";
 import { app } from "#server/app";
+import { contentPrisma } from "#server/lib/content-prisma-client";
 
 describe("GET /api/spells/:id", () => {
   const previousSource = process.env.SPELL_READ_SOURCE;
@@ -158,5 +159,27 @@ describe("GET /api/spells/:id", () => {
       shortDescription:
         "获得60尺速度,+4基于力量,敏捷,体质的检定；可使用一次次元门。",
     });
+  });
+
+  it("keeps omitted and explicit chm detail unchanged beside an internal effective row", async () => {
+    for (const source of ["rules", "content"]) {
+      process.env.SPELL_READ_SOURCE = source;
+      const before = await request(app).get("/api/spells/1?lang=zh&variant=chm");
+      expect(before.status).toBe(200);
+      await contentPrisma.i18nSpellText.create({ data: {
+        spellId: 1, rulebookId: 4, lang: "zh", variant: "effective",
+        name: "Synthetic effective name", descriptionText: "Synthetic effective body",
+        nameProvenanceJson: '{"language":"en"}', bodyProvenanceJson: '{"language":"en"}',
+      } });
+      try {
+        for (const query of ["lang=zh", "lang=zh&variant=chm"]) {
+          const after = await request(app).get(`/api/spells/1?${query}`);
+          expect(after.status).toBe(200);
+          expect(after.body).toEqual(before.body);
+        }
+      } finally {
+        await contentPrisma.i18nSpellText.deleteMany({ where: { spellId: 1, lang: "zh", variant: "effective" } });
+      }
+    }
   });
 });

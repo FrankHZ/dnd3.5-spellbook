@@ -74,40 +74,50 @@ export function assertCompletePdfBindings(bindings: Array<{ targetId: number; fi
   assert.deepEqual(actual, expected, "PDF bindings must cover exactly every accepted field");
 }
 
-function main() {
-  const argv = process.argv.slice(2);
+export function effectiveArguments(argv: string[]) {
   const arg = (name: string): string => {
     const at = argv.indexOf(`--${name}`);
     assert(at >= 0 && argv[at + 1], `missing --${name}`);
     return argv[at + 1]!;
   };
   const root = repoRoot();
-  mkdirSync(join(root, "data-tools/out"), { recursive: true });
-  const outputRoot = realpathSync(join(root, "data-tools/out"));
-  // One fresh destination prevents a failed run leaving previous success files.
-  // Fixed worktree-owned parent; user input is a single directory name, not a path.
   const run = arg("run");
   assert(/^[a-z0-9][a-z0-9-]*$/.test(run), "--run must be a new lowercase directory name");
+  const sources = argv.flatMap((value, index) => value === "--source" ? [argv[index + 1]!] : []);
+  assert(sources.length > 0 && sources.every(Boolean), "missing --source ID=PDF");
+  return { root, run, dataRoot: localDataDir(root), acceptedBaseline: arg("accepted-baseline"),
+    rulesPath: resolve(root, arg("rules-db")), contentPath: resolve(root, arg("content-db")),
+    python: resolve(root, arg("pdf-python")), sources,
+    evidencePath: argv.includes("--pdf-evidence") ? resolve(root, arg("pdf-evidence")) : undefined };
+}
+
+export function effectiveOutputRoot(root: string) {
+  mkdirSync(join(root, "data-tools/out"), { recursive: true });
+  const outputRoot = realpathSync(join(root, "data-tools/out"));
   assert.equal(relative(join(root, "data-tools/out"), outputRoot), "", "output root must not redirect through a filesystem alias");
-  const output = join(outputRoot, `dice-effective-${run}`);
-  const result = preflightEffectiveSc(localDataDir(root), arg("accepted-baseline"),
-    resolve(root, arg("rules-db")), resolve(root, arg("content-db")));
+  return outputRoot;
+}
+
+/** The same complete QA, original-source binding and fresh PDF verification is
+ * mandatory for both inspection and the disposable writer. No JSON projection
+ * file can replace this entry. */
+export function verifiedEffectiveSc(options: ReturnType<typeof effectiveArguments>) {
+  const { root, dataRoot, acceptedBaseline, rulesPath, contentPath, evidencePath, python, sources } = options;
+  const outputRoot = effectiveOutputRoot(root);
+  const result = preflightEffectiveSc(dataRoot, acceptedBaseline, rulesPath, contentPath);
   // Generated evidence may be compared, but never supplies original authority.
-  const evidencePath = argv.includes("--pdf-evidence") ? resolve(root, arg("pdf-evidence")) : undefined;
   if (evidencePath) {
     const candidate = JSON.parse(readFileSync(evidencePath, "utf8")) as {
       bindings: Parameters<typeof assertCompletePdfBindings>[0] };
     assertCompletePdfBindings(candidate.bindings, result.output);
   }
-  const sources = argv.flatMap((value, index) => value === "--source" ? [argv[index + 1]!] : []);
-  assert(sources.length > 0 && sources.every(Boolean), "missing --source ID=PDF");
   const scratch = mkdtempSync(join(outputRoot, "dice-effective-preflight-"));
   let pdf: unknown;
   try {
     const decisions = join(scratch, "decisions.jsonl");
     writeFileSync(decisions, result.reviews.map(row => JSON.stringify(row)).join("\n") + "\n", "utf8");
-    pdf = JSON.parse(execFileSync(resolve(root, arg("pdf-python")), ["-B", "-m", "pdf_extract.verify_effective_sc",
-      "--data-root", localDataDir(root), "--accepted-baseline", arg("accepted-baseline"),
+    pdf = JSON.parse(execFileSync(python, ["-B", "-m", "pdf_extract.verify_effective_sc",
+      "--data-root", dataRoot, "--accepted-baseline", acceptedBaseline,
       ...(evidencePath ? ["--evidence", evidencePath] : []),
       "--decisions", decisions, ...sources.flatMap(value => ["--source", value])],
     { cwd: root, encoding: "utf8", env: { ...process.env,
@@ -115,9 +125,15 @@ function main() {
   } finally {
     rmSync(scratch, { recursive: true }); // Exact tool-created disposable directory.
   }
-  const summary = { ...result.summary, currentPdfVerification: pdf };
+  return { ...result, summary: { ...result.summary, currentPdfVerification: pdf } };
+}
+
+function main() {
+  const options = effectiveArguments(process.argv.slice(2));
+  const output = join(effectiveOutputRoot(options.root), `dice-effective-${options.run}`);
+  const { output: rows, summary } = verifiedEffectiveSc(options);
   mkdirSync(output); // No recursive/exist-ok: an old run is never overwritten.
-  writeFileSync(join(output, "effective.jsonl"), result.output.map(row => JSON.stringify(row)).join("\n") + "\n", "utf8");
+  writeFileSync(join(output, "effective.jsonl"), rows.map(row => JSON.stringify(row)).join("\n") + "\n", "utf8");
   writeFileSync(join(output, "coverage.json"), JSON.stringify(summary, null, 2) + "\n", "utf8");
   console.log(JSON.stringify({ output, ...summary }));
 }

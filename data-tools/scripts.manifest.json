@@ -472,6 +472,20 @@
       "requiresLocalData": false,
       "requiresSqlite": false,
       "writeCapable": false
+    },
+    "dice:effective:write": {
+      "module": "zh-parser",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "dice:effective:write:test": {
+      "module": "zh-parser",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": false
     }
   }
 }

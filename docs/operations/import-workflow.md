@@ -588,20 +588,78 @@ and 1125 complement fields. The complement counts legitimate CHM retention and
 English fallback, not quality errors or completion of outstanding review.
 These files are explicitly `importable: false`, `activation: false`.
 
-#### Follow-up storage and consumers
+#### Disposable effective writer
 
-The current `I18nSpellText` unique key `(spellId, lang, variant)` can hold a
-separate effective variant while preserving explicit `chm`, but its single
-row-level `sourceKey` cannot truthfully describe mixed name/body origins. A
-bounded follow-up should add field provenance on that existing row (for example
-two nullable provenance JSON columns carrying origin and accepted revision/
-target/field locator), with corresponding DTO mapping. Keep the row sourceKey
-only when both fields really have the same source; use null for mixed origins.
-No source registry or separate translation service is required. The exact schema,
-variant name and omitted-variant/default policy remain follow-up decisions.
+`dice:effective:write` uses the same arguments as `dice:effective`, with an
+optional `--apply`. It supports only this accepted SC handoff. For example,
+use the rules-copy/PDF paths from the preflight command above:
 
-A writer must materialize complete effective fields, preserve the original CHM
-variant, and distinguish an English fallback field from a Chinese translation.
+```powershell
+npm run -w data-tools dice:effective:write -- `
+  --accepted-baseline <exact-main-gate-accepted-private-commit> `
+  --rules-db <absolute-disposable-patched-rules.sqlite> `
+  --content-db <absolute-readonly-content.sqlite> `
+  --pdf-python <absolute-pdf-extract-venv-python.exe> `
+  --source sc=<absolute-SC.pdf> --source errata=<absolute-SC-errata.pdf> `
+  --source phb=<absolute-PHB.pdf> --source phb-errata=<absolute-PHB-errata.pdf> `
+  --run sc-writer-check-01 --apply
+```
+
+From `data-tools/`, omit `-w data-tools`. Relative paths still resolve from the
+code repository root. There is no writable DB destination argument and no
+projection JSON input. The command creates a fresh SQLite backup of the read-only
+content input under this worktree's output root, then runs the complete original
+QA/source/PDF preflight against that isolated snapshot before any schema or
+overlay changes. Missing, stale or changed originals fail with no final run
+directory. Scratch directories are removed on failure; existing runs are never
+overwritten. The original rules/content databases and app-state stay read-only.
+
+The real writer materializes exactly the existing normalized SC target set as
+`I18nSpellText(lang=zh, variant=effective)`. It stores complete names/text/HTML
+and nullable `nameProvenanceJson` / `bodyProvenanceJson`. Each JSON records the
+actual field language, accepted revision, target/field, original origin, accepted
+input locator and evidence locator. Native evidence navigates the exact original
+supplemental target/field/sourceKey binding; independent evidence retains its
+sourceRef/pages/status. CHM and English fallbacks navigate the current snapshot
+and actual source table. English fallback has `language=en`, even though the
+composed row is in the Chinese request namespace. Row `sourceKey` is populated
+only when both fields share the same non-null origin/key, otherwise null.
+Old variants retain their original values, sourceKey and timestamps; their new
+provenance columns default to null. No canonical fields, summaries, relationships,
+publication metadata, app-state or search data are written.
+
+`plan.json` includes the full source-bearing plan and belongs only in ignored
+output/private evidence. `report.json` contains coverage and a separate
+`storagePlan` with insert/update/unchanged counts. Without `--apply`, the command
+emits only these files and discards the untouched DB copy. With `--apply`, it
+also emits `content.experiment.sqlite`. The dry-run and applied plan are compared
+directly. Nullable-column SQL upgrade, all effective-row changes and build marker
+replacement are one SQLite transaction. An identical second overlay preserves
+values and timestamps. Portable tests inject real SQL failures in the middle of
+row writes and at the final metadata write, and exercise the real CHM importer.
+
+The tracked content migration is part of normal Prisma generation/migration
+setup. This experiment applies its SQL to an old-schema disposable copy without
+claiming a production Prisma migration deployment. It replaces that copy's old
+`RulesContentBuild` claims with `sourceKind=dice-effective-experiment`, clears
+old generation hashes/commits, and records `artifact.scope=limited`,
+`importable=false`, `activation=false` with search/consumer/provenance limitations.
+This is an inspection handoff, never a deployable full artifact. Existing deploy
+helpers validate SQLite tables/integrity; this marker is not a new deployment
+authorization or a claim that those helpers reject all experimental DBs.
+Full artifact generation/provenance and consumer/search integration remain a
+separate delivery. Do not upload or activate this experiment.
+
+#### Follow-up consumers and full build
+
+The existing unique key `(spellId, lang, variant)` preserves the original `chm`
+beside the internal `effective` variant. Field provenance storage is implemented
+for disposable experiments; DTO mapping and the omitted-variant/default policy
+remain follow-up decisions. No source registry or separate translation service
+is required.
+
+The writer materializes complete effective fields, preserves the original CHM
+variant, and distinguishes English fallback from Chinese translation.
 The future omitted-variant policy must work consistently in detail, lists,
 search and summary fallback. Explicit `variant=chm` must continue to return the
 original CHM row. Current consumers default Chinese requests to `chm`, expose
