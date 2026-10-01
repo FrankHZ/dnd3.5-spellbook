@@ -1,5 +1,11 @@
 # Spell Compendium residual routing
 
+The user-transferable checklist in this frozen handoff is superseded by the
+[issue-270 complete replacement](spell-compendium-errata-correction-report.md).
+Use its private `issue-270/dnd-review-checklist.zh-CN.md` entry; the old 4709
+question must not be forwarded as an unresolved inherited example conflict.
+This report retains the original handoff evidence and counts.
+
 This source-free handoff for [issue 264](https://github.com/FrankHZ/dnd3.5-spellbook/issues/264)
 classifies the existing residual evidence for [parent issue 263](https://github.com/FrankHZ/dnd3.5-spellbook/issues/263)
 and delivers a Chinese checklist that the user can pass to the DND document
