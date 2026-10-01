@@ -41,6 +41,11 @@ the merge gate.
 
 The read-only dice TXT intake and field-level QA validation are described at the
 [replacement boundary](../docs/operations/import-workflow.md#dice-text-boundary).
+`dice:effective` composes SC's exact accepted native/independent handoff with
+complete current CHM/English after the unchanged formal QA and fresh PDF verifier.
+It writes inspection-only field provenance and coverage to a new directory in
+this worktree's `data-tools/out/`; see the
+[effective projection contract](../docs/operations/import-workflow.md#effective-chinese-preflight).
 PHB PDF extraction/review is suspended and is
 not a prerequisite for these operations. Only an explicit resumption scope
 should use the [PHB safeguards](../docs/releases/v1.4/phb-source-and-errata-plan.md#paused-workflow-execution-safeguards)

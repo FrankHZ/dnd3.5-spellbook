@@ -382,10 +382,10 @@ export function validateReviews(candidates: Candidate[], reviews: Review[], mapp
     pendingFields, classifications, decisions, sourceByPublication, byBook } };
 }
 
-function arg(name: string): string {
-  const index = process.argv.indexOf(`--${name}`);
-  if (index < 0 || !process.argv[index + 1]) throw new Error(`missing --${name}`);
-  return resolve(process.argv[index + 1]!);
+function arg(name: string, argv: string[]): string {
+  const index = argv.indexOf(`--${name}`);
+  if (index < 0 || !argv[index + 1]) throw new Error(`missing --${name}`);
+  return resolve(argv[index + 1]!);
 }
 
 export function writeQaOutputs(dataRoot: string, reportDir: string,
@@ -497,17 +497,21 @@ export function loadEnglishRecords(db: Database.Database): Map<number, EnglishRe
   return english;
 }
 
-function main(): void {
-  const dataRoot = arg("data-root");
-  const rulesPath = arg("rules-db");
-  const contentPath = arg("content-db");
-  const checkIncomplete = process.argv.includes("--check-incomplete");
-  const restoredAt = process.argv.indexOf("--restored-sc-baseline");
-  const rulebookAt = process.argv.indexOf("--rulebook-id");
-  const rulebookId = rulebookAt < 0 ? undefined : Number(process.argv[rulebookAt + 1]);
+/** The CLI's complete read-only validation, also used by effective projection.
+ * No output files are written here; the restored SC input contract stays fixed.
+ */
+export function validateQaInputs(argv: string[]) {
+  const inputArg = (name: string): string => arg(name, argv);
+  const dataRoot = inputArg("data-root");
+  const rulesPath = inputArg("rules-db");
+  const contentPath = inputArg("content-db");
+  const checkIncomplete = argv.includes("--check-incomplete");
+  const restoredAt = argv.indexOf("--restored-sc-baseline");
+  const rulebookAt = argv.indexOf("--rulebook-id");
+  const rulebookId = rulebookAt < 0 ? undefined : Number(argv[rulebookAt + 1]);
   assert(rulebookId === undefined || (Number.isSafeInteger(rulebookId) && rulebookId > 0),
     "--rulebook-id requires a positive integer");
-  assert(restoredAt < 0 || (process.argv[restoredAt + 1] === "fe089990e2a5eeac69c92e068ca695f10c42ec58"
+  assert(restoredAt < 0 || (argv[restoredAt + 1] === "fe089990e2a5eeac69c92e068ca695f10c42ec58"
     && rulebookId === 86 && !checkIncomplete),
     "--restored-sc-baseline requires the #298 fixed baseline and complete SC QA");
   const inputPaths: string[] = [];
@@ -515,7 +519,7 @@ function main(): void {
   const bookDir = rulebookId === undefined ? undefined
     : join(dataRoot, "dice-qa", "books", String(rulebookId));
   const input = <T>(name: string, file: string, required = false): T[] => {
-    if (process.argv.includes(`--${name}`)) return readInput<T>(arg(name));
+    if (argv.includes(`--${name}`)) return readInput<T>(inputArg(name));
     const path = bookDir && join(bookDir, file);
     if (path && existsSync(path)) return readInput<T>(path);
     assert(!required, `missing --${name}${path ? ` or ${path}` : ""}`);
@@ -524,7 +528,7 @@ function main(): void {
   const reviews = input<Review>("reviews", "decisions.jsonl", true);
   const corrections = input<Correction>("corrections", "corrections.jsonl");
   const duplicates = input<DuplicateResolution>("duplicates", "duplicate-resolutions.jsonl");
-  const sourceBoundEnabled = process.argv.includes("--source-bound-fallback-reviews");
+  const sourceBoundEnabled = argv.includes("--source-bound-fallback-reviews");
   assert(!sourceBoundEnabled || rulebookId !== undefined, "source-bound fallback reviews require --rulebook-id");
   if (restoredAt >= 0) {
     // #298 revalidates this frozen handoff, not later unaccepted SC proposals.
@@ -535,13 +539,12 @@ function main(): void {
       ["boundaries", "issue-259/fresh-qa/boundary-decisions.jsonl"],
       ["source-bound-fallback-reviews", "issue-292/independent-accepted.jsonl"],
     ] as const) {
-      assert(process.argv.includes(`--${option}`) && arg(option) === resolve(bookDir!, file),
+      assert(argv.includes(`--${option}`) && inputArg(option) === resolve(bookDir!, file),
         `restored SC QA requires the #298 ${option} input`);
     }
   }
   // Explicit only: a stale standalone ledger must never enter ordinary dice QA by default.
-  const sourceBoundReviews = sourceBoundEnabled ? readInput<SourceBoundFallbackReview>(arg("source-bound-fallback-reviews")) : [];
-  const reportDir = arg("report-dir");
+  const sourceBoundReviews = sourceBoundEnabled ? readInput<SourceBoundFallbackReview>(inputArg("source-bound-fallback-reviews")) : [];
   let mappingRevision = execFileSync("git", ["-C", dataRoot, "log", "-1", "--format=%H", "--",
     "dice-intake/publication-map.json"], { encoding: "utf8" }).trim();
   assert(mappingRevision, "missing committed publication map");
@@ -560,7 +563,7 @@ function main(): void {
     .map((name) => { const path = join(inputDir, name); inputPaths.push(path); const bytes = readFileSync(path);
       return { bytes: bytes.length, parsed: parseDiceFile(name, bytes) }; });
   inputPaths.push(join(dataRoot, "dice-intake/publication-map.json"), join(dataRoot, "chm-mapping/enName-aliases-global.json"));
-  const restoredBinding = restoredAt < 0 ? undefined : bindRestoredScQaInputs(dataRoot, process.argv[restoredAt + 1]!,
+  const restoredBinding = restoredAt < 0 ? undefined : bindRestoredScQaInputs(dataRoot, argv[restoredAt + 1]!,
     inputPaths, candidates.map(row => row.sourceKey), [...reviews, ...duplicates, ...boundaries].map(row => row.mappingRevision));
   if (restoredBinding) {
     sourceRevision = restoredBinding.historicalSourceRevision;
@@ -628,7 +631,16 @@ function main(): void {
   const sourceBound = sourceBoundEnabled ? validateSourceBoundFallbackReviews(sourceBoundReviews, rulebookId!, english, englishHtml,
     new Map([...zh].map(([id, row]) => [id, { name: row.name, descriptionText: row.descriptionText, descriptionHtml: row.descriptionHtml ?? null }])),
     result.accepted, checkIncomplete) : undefined;
-  writeQaOutputs(dataRoot, reportDir, result, checkIncomplete, rulebookId, sourceBound);
+  return { result, sourceBound, english, englishHtml, reviews,
+    chinese: new Map([...zh].map(([id, row]) => [id, { name: row.name,
+      descriptionText: row.descriptionText, descriptionHtml: row.descriptionHtml ?? null }])),
+    rulebookId, checkIncomplete };
+}
+
+function main(): void {
+  const { result, sourceBound, rulebookId, checkIncomplete } = validateQaInputs(process.argv.slice(2));
+  writeQaOutputs(arg("data-root", process.argv), arg("report-dir", process.argv),
+    result, checkIncomplete, rulebookId, sourceBound);
   const { candidateOccurrences, matchedTargets, existingTargets, acceptedTargets,
     pendingFields, pendingFullBodyAudits, decisions } =
     result.summary;

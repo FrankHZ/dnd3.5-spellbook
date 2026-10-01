@@ -1,0 +1,101 @@
+{
+  "issue": 315,
+  "publicAcceptedBase": "b346864e037daefe1ede32bf4acb40164e5ff658",
+  "privateAcceptedBase": "da691dacd3973d38a9d0f66a08d78fdb1eaafd47",
+  "privateEvidenceDirectory": "data/dice-qa/books/86/issue-315",
+  "targets": 1002,
+  "fields": 2004,
+  "native": 658,
+  "independent": 221,
+  "chm": 1105,
+  "english": 20,
+  "acceptedNames": 41,
+  "acceptedBodies": 838,
+  "changed": 879,
+  "unchanged": 1125,
+  "absentChinese": 20,
+  "accepted": 879,
+  "complement": 1125,
+  "activation": false,
+  "importable": false,
+  "rulebookId": 86,
+  "acceptedInputBinding": {
+    "currentBaseline": "da691dacd3973d38a9d0f66a08d78fdb1eaafd47",
+    "historicalSourceRevision": "9847e70236cd4bcd841347ed1b42b2f478826268",
+    "historicalMappingRevision": "4cd593b44e73f591d46e2f35a90d882befc19702",
+    "files": 3,
+    "historicalContinuityAuthenticated": false
+  },
+  "restoredInputBinding": {
+    "currentBaseline": "fe089990e2a5eeac69c92e068ca695f10c42ec58",
+    "historicalSourceRevision": "9847e70236cd4bcd841347ed1b42b2f478826268",
+    "historicalMappingRevision": "4cd593b44e73f591d46e2f35a90d882befc19702",
+    "files": 115,
+    "historicalContinuityAuthenticated": false
+  },
+  "sourceRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+  "mappingRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+  "nativeSourceCoverage": {
+    "files": 105,
+    "candidateOccurrences": 5606
+  },
+  "currentPdfVerification": {
+    "validation": "verified-supplemental-pdf-bindings",
+    "pages": 327,
+    "spans": 52166,
+    "fields": 879
+  },
+  "verification": {
+    "rootPackageOutputsByteIdentical": true,
+    "portableRejections": 23,
+    "existingSourceBoundPortableRejections": 104,
+    "actualCliFailuresWithoutSuccessDirectory": [
+      "missing-source",
+      "missing-binding",
+      "duplicate-binding",
+      "changed-span"
+    ],
+    "freshSourceQuarantine": 0,
+    "acceptedRulesPatchOperationsOnDisposableCopy": 315,
+    "unchangedRulesTables": 56,
+    "protectedComplementBodies": [
+      4432,
+      4505,
+      4659,
+      4753,
+      4555,
+      4610,
+      4615
+    ],
+    "legitimateEnglishFallbackTargets": [
+      3846,
+      4521,
+      4611,
+      4612,
+      4613,
+      4614,
+      4616,
+      4617,
+      4677
+    ],
+    "identity4837Unchanged": true,
+    "currentChmHtmlTextMismatches": 0,
+    "historicalNativeDeferralsAlreadySupersededByAcceptedIndependentFields": 39,
+    "modelMetadataVerified": {
+      "model": "gpt-6.1-sol",
+      "effort": "high"
+    }
+  },
+  "implemented": "Read-only preflight and pure effective projection only",
+  "notImplemented": [
+    "transactional writer",
+    "storage schema",
+    "variant/default selection",
+    "API/web consumer changes",
+    "content import",
+    "search rebuild",
+    "production activation"
+  ],
+  "operatorWrites": false,
+  "newSourceAcceptance": false
+}

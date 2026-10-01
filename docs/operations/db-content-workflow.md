@@ -55,6 +55,10 @@ and acceptance live in [the activation issue](https://github.com/FrankHZ/dnd3.5-
 Its accepted input, variant/request compatibility and safe import order must be
 implemented and tested before a write-capable handoff. Existing PHB artifacts
 and unmerged PR #113 are paused work, not implicit accepted inputs.
+SC's [effective Chinese preflight](./import-workflow.md#effective-chinese-preflight)
+revalidates its exact accepted handoff and computes field provenance read-only.
+Its inspection outputs do not implement storage, import, consumer compatibility
+or activation, and must not be passed to a DB writer.
 
 ## Standard Handoff Flow
 
