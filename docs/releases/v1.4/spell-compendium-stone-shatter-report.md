@@ -12,8 +12,9 @@ the translation and evidence; this task does not accept, merge or activate it.
 
 Public base: `dbb15f3b0b57b74850c8c81be2ed2afdfdec9d0e`.
 Tool implementation: `8ff10862631fa5ea733603d6ef65b55761a5f7a7`.
+Physical-source alias repair: `33b6d92176281347224d29faeaa3bef848a90f0c`.
 Private base: `616df1d60a80f5706bc27aab50543bba7db20b20`.
-Private local-only evidence commit: `82acae9380b41bece09efcd200f8464616e954b2`.
+Private local-only evidence commit: `29796e7e0166ad2d8be7a00f39c4a97415f0fa5f`.
 Only `dice-qa/books/86/issue-282/` was added in the private repository; no private
 push occurred and all unrelated untracked files were preserved.
 
@@ -50,6 +51,18 @@ verifier and explicit PDF source paths. A declaration alone proves neither
 source identity nor a source ruling. Durable usage is documented in
 [import-workflow](../../operations/import-workflow.md).
 
+Independent review demonstrated that two IDs could alias the same actual PDF,
+page, span and quote while using equivalent Chinese wording in body and note.
+The original validators accepted this fabricated opposition. The PDF verifier
+now resolves trusted explicit paths and uses `Path.samefile()` to reject aliases
+between the primary and comparisons or between comparisons. Same-path,
+normalized-path and hardlink cases reject even with identical valid quotes and
+equal page counts. Distinct PDFs still pass; a different, incorrect PDF with the
+same page count still fails actual span verification. Old records without an
+explicit comparison declaration retain their previous verification behavior.
+This bounded check does not compare copies by content or certify publication
+identity; no content hashes, registry or identity infrastructure was added.
+
 | Check | Actual result and private evidence |
 | --- | --- |
 | Prior contract failure | Both actual-proposal failures reproduced from the public base; `prior-contract-failure.json` |
@@ -62,7 +75,9 @@ source identity nor a source ruling. Durable usage is documented in
 | Frozen scope and disjoint union | 658 native and 137 independent fields preserved, one new body with no overlap; `scope-verification.json` |
 | Data-tools typecheck and dice QA tests | Exit 0; 104 maintained synthetic rejection checks and readonly CLI coverage |
 | PDF extractor tests | All 18 passed with Python 3.13/PyMuPDF 1.28.2 and explicit current-worktree source |
-| Complete reproduction | All 15 commands exited 0; exact argv/cwd/output/results in `reproduction-verification.json` |
+| Original complete reproduction | All 15 commands exited 0 at the original implementation head; `reproduction-verification.json` is preserved unchanged |
+| Physical-source repair recheck | Seven targeted checks exited 0 at the repair head; `alias-recheck-verification.json` records exact argv/cwd/output/results |
+| Alias regression and compatibility | Dual-layer same-file case now rejects; expanded 18 PDF tests, actual nine-page PDF verification, formal QA, old 137 fields and frozen scope rechecked |
 | Scoped diffs and links | Passed |
 
 Rules input was only the specified disposable copy containing the accepted
@@ -71,6 +86,11 @@ PDF ICC warnings did not prevent verification or visual review; no PDF was
 repaired. Execution-time heads are recorded in the command reports; the private
 evidence commit above contains the final handoff. Remote `ci:portable` and the
 independent PDF tests remain the PR merge gate.
+The repair recheck did not re-extract the corpus or rewrite body proposals,
+source-page snapshots, quotes, input bindings or source dispositions. It also
+verified those original files and the original 15-step record against private
+commit `82acae9380b41bece09efcd200f8464616e954b2`. The two execution records are
+distinct; the original full run is not presented as a post-repair rerun.
 
 ## Preserved Boundaries
 
