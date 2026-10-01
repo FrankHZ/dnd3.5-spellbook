@@ -6,7 +6,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import Database from "better-sqlite3";
-import { candidateRulebook, loadEnglishRecords, selectRulebookScope, validateBoundaries, validateFullBodyAudits, validateReviews, validateSourceCoverage, writeQaOutputs, type Correction, type DuplicateResolution, type EnglishMechanics,
+import { bindRestoredScQaInputs, candidateRulebook, loadEnglishRecords, selectRulebookScope, validateBoundaries, validateFullBodyAudits, validateReviews, validateSourceCoverage, writeQaOutputs, type Correction, type DuplicateResolution, type EnglishMechanics,
   type Review } from "./qa";
 import { parseDiceFile } from "./parse";
 import { compareBody, reconcile, type Candidate } from "./reconcile";
@@ -227,10 +227,39 @@ try {
   ];
   writeFileSync(join(intakeDir, "publication-map.json"), JSON.stringify(mappings));
   writeFileSync(join(dataRoot, "chm-mapping", "enName-aliases-global.json"), "{}");
+  writeFileSync(join(intakeDir, "surviving.jsonl"), '{"value":1}\n');
   const git = (...args: string[]) => execFileSync("git", ["-C", dataRoot, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
   git("init"); git("add", ".");
   git("-c", "user.name=Portable Test", "-c", "user.email=test@example.invalid", "commit", "-m", "fixture");
   const revision = git("rev-parse", "HEAD");
+  const restoredSourceKeys = ["9847e70236cd4bcd841347ed1b42b2f478826268:test.txt:1:1"];
+  const restoredMappings = ["4cd593b44e73f591d46e2f35a90d882befc19702"];
+  const boundFiles = [join(sourceDir, "test.txt"), join(intakeDir, "publication-map.json"),
+    join(dataRoot, "chm-mapping", "enName-aliases-global.json"), join(intakeDir, "surviving.jsonl")];
+  const bind = () => bindRestoredScQaInputs(dataRoot, revision, boundFiles, restoredSourceKeys, restoredMappings);
+  assert.deepEqual(bind(), { currentBaseline: revision, historicalSourceRevision: restoredSourceKeys[0]!.split(":")[0],
+    historicalMappingRevision: restoredMappings[0], files: 4, historicalContinuityAuthenticated: false });
+  writeFileSync(boundFiles[3]!, '{"value":1}\r\n');
+  assert.equal(bind().files, 4, "Git text checkout line endings preserve the JSON input");
+  writeFileSync(boundFiles[3]!, '{"value":1}\n');
+  // Same location and byte length cannot hide changed source text.
+  writeFileSync(boundFiles[0]!, sourceBytes.toString("utf8").replace("正文", "变文"));
+  assert.throws(bind, /changed restored input/); writeFileSync(boundFiles[0]!, sourceBytes);
+  writeFileSync(boundFiles[1]!, JSON.stringify([{ ...mappings[0], rulebookIds: [20] }, mappings[1]]));
+  assert.throws(bind, /changed restored input/); writeFileSync(boundFiles[1]!, JSON.stringify(mappings));
+  writeFileSync(boundFiles[2]!, '{"Fire":"Uncovered"}');
+  assert.throws(bind, /changed restored input/); writeFileSync(boundFiles[2]!, "{}");
+  assert.throws(() => bindRestoredScQaInputs(dataRoot, revision, [...boundFiles, join(dataRoot, "missing.json")],
+    restoredSourceKeys, restoredMappings), /ENOENT/);
+  const outside = join(fixtureRoot, "outside.json"); writeFileSync(outside, "{}");
+  assert.throws(() => bindRestoredScQaInputs(dataRoot, revision, [...boundFiles, outside],
+    restoredSourceKeys, restoredMappings), /private data root/);
+  assert.throws(() => bindRestoredScQaInputs(dataRoot, "unknown-baseline", boundFiles,
+    restoredSourceKeys, restoredMappings));
+  assert.throws(() => bindRestoredScQaInputs(dataRoot, revision, boundFiles,
+    [`${revision}:test.txt:1:1`], restoredMappings), /preserved source namespace/);
+  assert.throws(() => bindRestoredScQaInputs(dataRoot, revision, boundFiles,
+    restoredSourceKeys, [revision]), /preserved mapping namespace/);
   const rulesPath = join(fixtureRoot, "rules.sqlite");
   const contentPath = join(fixtureRoot, "content.sqlite");
   writeFileSync(rulesPath, rulesFixtureBytes);
@@ -291,6 +320,9 @@ try {
     "--rulebook-id", "10", "--report-dir", reportDir];
   const run = (...extra: string[]) => execFileSync(process.execPath, [...args, ...extra], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
   run();
+  assert.throws(() => run("--restored-sc-baseline", "fe089990e2a5eeac69c92e068ca695f10c42ec58"),
+    /fixed baseline and complete SC QA/);
+  assert.throws(() => run("--restored-sc-baseline", revision), /fixed baseline and complete SC QA/);
   const coveragePath = join(reportDir, "coverage.json");
   const coverageBytes = readFileSync(coveragePath, "utf8");
   const coverage = JSON.parse(coverageBytes);
@@ -334,6 +366,10 @@ try {
   saveRows(join(bookDir, "boundary-decisions.jsonl"), [{ ...boundary, sourceKey: foreignKey }]);
   assert.throws(run, /boundary decision count mismatch/);
   saveRows(join(bookDir, "boundary-decisions.jsonl"), []);
+  saveRows(join(intakeDir, "candidates.jsonl"), allCandidates.map((row, index) => index === 0
+    ? { ...row, sourceKey: row.sourceKey.replace(/:1$/, ":999") } : row));
+  assert.throws(run, /stale source candidate/);
+  saveRows(join(intakeDir, "candidates.jsonl"), allCandidates);
   saveRows(join(intakeDir, "candidates.jsonl"), allCandidates.filter((row) => row.rulebookId === 10));
   assert.throws(run, /missing entire candidate file or occurrence other.txt/);
   saveRows(join(intakeDir, "source-inventory.jsonl"), allInventory.filter((row) => row.file === "test.txt"));
