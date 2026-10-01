@@ -34,8 +34,9 @@ outside this delivery.
 
 Twenty-nine bodies have null native source keys. Eight have actual native keys
 and explicit deferred decisions: 3991/3995/4046/4078/4097/4113/4153/4293.
-Their exact keys, status and reasons remain unchanged. Old source-correct labels
-selected work; they did not accept it. Each complete private disposition binds
+Their exact keys, status and reasons remain unchanged. The 37 entries were
+selected from the old unresolved queue. Old labels do not constitute current
+acceptance. Each complete private disposition binds
 current fields, preserved complete old Chinese, old reviewer inputs, formal
 fallback and frozen residuals. Current English/mechanics/HTML bind to the accepted
 315-patch input.
