@@ -16,6 +16,8 @@ import {
 
 export const SELECT_SPELL_I18N_MIN = {
   spellId: true,
+  rulebookId: true,
+  nameProvenanceJson: true,
   lang: true,
   variant: true,
   name: true,
@@ -23,6 +25,7 @@ export const SELECT_SPELL_I18N_MIN = {
 
 export const SELECT_SPELL_I18N_DETAIL = {
   ...SELECT_SPELL_I18N_MIN,
+  bodyProvenanceJson: true,
   descriptionHtml: true,
   descriptionText: true,
   sourceKey: true,
@@ -52,7 +55,10 @@ function summaryTarget(i18n: I18nContext): { lang: Lang; variant: string } {
   if (i18n.lang === "en") {
     return { lang: "en", variant: "imarvin" };
   }
-  return { lang: i18n.lang, variant: i18n.variant ?? "chm" };
+  return {
+    lang: i18n.lang,
+    variant: i18n.variant === "effective" ? "chm" : i18n.variant ?? "chm",
+  };
 }
 
 function normalizedTaxonomyWhere(filters: SpellTaxonomyFilterIds) {

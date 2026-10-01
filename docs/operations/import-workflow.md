@@ -654,8 +654,9 @@ separate delivery. Do not upload or activate this experiment.
 
 The existing unique key `(spellId, lang, variant)` preserves the original `chm`
 beside the internal `effective` variant. Field provenance storage is implemented
-for disposable experiments; DTO mapping and the omitted-variant/default policy
-remain follow-up decisions. No source registry or separate translation service
+for disposable experiments; [explicit effective API mapping](../modules/server.md#explicit-effective-spell-overlay)
+validates and exposes minimal field metadata. The omitted-variant/default policy
+remains a follow-up decision. No source registry or separate translation service
 is required.
 
 The writer materializes complete effective fields, preserves the original CHM
@@ -663,8 +664,9 @@ variant, and distinguishes English fallback from Chinese translation.
 The future omitted-variant policy must work consistently in detail, lists,
 search and summary fallback. Explicit `variant=chm` must continue to return the
 original CHM row. Current consumers default Chinese requests to `chm`, expose
-one sourceKey, and select summary variants separately; this slice changes none
-of those behaviors. Canonical English/mechanics, summaries, relationships,
+legacy sourceKey values, and select summary variants separately. Explicit
+`effective` API reads expose field metadata and reuse CHM summaries without changing
+the omitted-variant/default policy. Canonical English/mechanics, summaries, relationships,
 normalized entities and publication metadata remain outside the overlay.
 
 The safe rebuild order is: accepted rules-copy generation and normalized content

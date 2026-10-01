@@ -176,3 +176,31 @@ command, and diff checks. Remote PR CI remains the merge gate.
 - [../operations/data-setup.md](../operations/data-setup.md)
 - [../operations/deployment.md](../operations/deployment.md)
 - [../../server/README.md](../../server/README.md)
+
+### Explicit effective spell overlay
+
+`lang=zh&variant=effective` reads the stored effective overlay on detail,
+list/batch, by-level and resolve endpoints in both content and rules read modes.
+`i18n.lang=zh` is the request namespace; `nameProvenance.language` and
+`bodyProvenance.language` describe the actual field language, including English
+fallback. Lists and resolve return name provenance; detail also returns body
+provenance. Each typed field metadata contains `schemaVersion`,
+`acceptedRevision` and an origin (`native`, `independent`, `chm`, or `english`).
+Native/CHM origins carry their source key; independent/English keys are null.
+Private evidence locators, source pages and review notes are never returned.
+Effective detail omits a row source key because fields may have different origins.
+
+Effective fields require valid stored writer envelopes matching the spell,
+rulebook, field, language, revision format and source locator shape. Invalid or
+missing provenance returns HTTP 500 with `INVALID_EFFECTIVE_PROVENANCE` and a
+sanitized message. Runtime checks storage integrity; source quality and acceptance
+remain the import workflow's responsibility. Legacy CHM rows may have null
+provenance and retain their existing responses.
+
+Explicit effective requests reuse `zh/chm` summaries with their original variant
+and source key. Missing effective rows keep canonical English fields and only
+any existing CHM summary overlay; localized resolve matching stays variant-specific
+and retains its existing exact English fallback. Omitted variants still select
+CHM. English requests keep the existing English summary path. This explicit
+consumer contract does not activate effective content or change search/default
+selection policy.
