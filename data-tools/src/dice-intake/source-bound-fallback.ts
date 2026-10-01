@@ -23,7 +23,7 @@ export type FallbackBodyAudit = {
 export type RetainedSourceIssues = {
   bodyText: string; sourceId: string;
   issues: Array<{
-    id: string; status: "source-unresolved"; kind: "conflict" | "missing-explanation";
+    id: string; status: "source-unresolved"; kind: "conflict" | "missing-explanation" | "interpretation";
     statements: Array<SourcePage & { sourceQuote: string; chinese: string }>;
     note: string; impact: string;
   }>;
@@ -133,11 +133,11 @@ export function validateSourceBoundFallbackReviews(reviews: SourceBoundFallbackR
       const issueIds = new Set<string>();
       for (const issue of retained.issues) {
         assert(text(issue.id) && !issueIds.has(issue.id), `duplicate or missing source issue ${key}`); issueIds.add(issue.id);
-        assert(issue.status === "source-unresolved" && ["conflict", "missing-explanation"].includes(issue.kind),
+        assert(issue.status === "source-unresolved" && ["conflict", "missing-explanation", "interpretation"].includes(issue.kind),
           `source issue cannot claim resolution ${key}`);
         assert(text(issue.note) && text(issue.impact), `missing source issue explanation ${key}`);
         assert(Array.isArray(issue.statements) && issue.statements.length >= (issue.kind === "conflict" ? 2 : 1),
-          `missing opposing source statements ${key}`);
+          `${issue.kind === "conflict" ? "missing opposing source statements" : "missing source issue statements"} ${key}`);
         const statements = new Set<string>();
         for (const statement of issue.statements) {
           const page = row.sourcePages.find(page => page.sourceId === statement.sourceId && page.pageIndex === statement.pageIndex

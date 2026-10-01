@@ -416,7 +416,8 @@ Missing Chinese is reviewed absence, not permission to invent a corrected fallba
 Changed inputs, unreviewed fields and unresolved source evidence fail acceptance.
 
 For an explicitly authorized faithful translation of a known internal source
-conflict or missing explanation, the independent body schema supports
+conflict, missing explanation or interpretation question, the independent body
+schema supports
 `accepted-with-source-issues`. Its `retainedSourceIssues` binds the complete body,
 each preserved source statement and original page/spans, and separately marked
 Chinese project notes with impacts and pending external review. The exported
@@ -429,6 +430,16 @@ verify the actual source statements with the supplemental PDF verifier and
 main-gate review before accepting an exact private revision. These checks do not
 infer semantic completeness, certify a different printing, or authorize writing
 canonical English/mechanics or production content.
+
+Use issue kind `conflict` for opposing source statements (at least two),
+`missing-explanation` for a concrete absent explanation, and `interpretation`
+for an ambiguous scope or application whose possible readings are not a proven
+contradiction. The latter two may bind one actual statement; do not invent an
+opposing quotation. Each kind still requires distinct statement locations,
+without duplicate span refs or a second copy of the same location set in a
+different order. Interpretation notes should identify the question, preserved
+wording, possible coordinated reading and unresolved impact, with no unofficial
+ruling added to the body or mechanics.
 
 Formal validation writes `source-bound-fallback-accepted.jsonl` and source-free
 `source-bound-fallback-coverage.json` in the scoped report directory, separately
