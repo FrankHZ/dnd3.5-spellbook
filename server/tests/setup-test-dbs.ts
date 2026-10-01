@@ -242,6 +242,8 @@ function seedContentDb() {
         descriptionHtml TEXT,
         descriptionText TEXT,
         sourceKey TEXT,
+        nameProvenanceJson TEXT,
+        bodyProvenanceJson TEXT,
         createdAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
         UNIQUE (spellId, lang, variant)

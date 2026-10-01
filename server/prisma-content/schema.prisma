@@ -23,6 +23,10 @@ model I18nSpellText {
 
     sourceKey String?
 
+    /// Field origins for internal effective overlays; null on legacy variants.
+    nameProvenanceJson String?
+    bodyProvenanceJson String?
+
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 

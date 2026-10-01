@@ -59,6 +59,11 @@ SC's [effective Chinese preflight](./import-workflow.md#effective-chinese-prefli
 revalidates its exact accepted handoff and computes field provenance read-only.
 Its inspection outputs do not implement storage, import, consumer compatibility
 or activation, and must not be passed to a DB writer.
+The [disposable effective writer](./import-workflow.md#disposable-effective-writer)
+reuses that complete preflight directly and writes only a command-created
+experimental content copy under worktree output. Its field provenance and
+limited build marker do not constitute a deployable artifact or permission to
+migrate/write operator DBs. Full build/search/consumer integration remains separate.
 
 ## Standard Handoff Flow
 

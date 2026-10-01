@@ -146,3 +146,6 @@ try {
   assert.equal((db.prepare("SELECT body FROM search").get() as { body: string }).body, body.after);
 } finally { db.close(); }
 console.log(`effective Chinese portable tests passed (${rejections} rejection checks; import order counterexamples)`);
+
+// Reuse this formally validated synthetic projection in the actual writer suite.
+export { result as syntheticProjection, run as projectSynthetic, body as syntheticIndependent };

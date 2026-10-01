@@ -48,6 +48,12 @@ the accepted private Git revision; optional generated evidence is comparison-onl
 It writes inspection-only field provenance and coverage to a new directory in
 this worktree's `data-tools/out/`; see the
 [effective projection contract](../docs/operations/import-workflow.md#effective-chinese-preflight).
+`dice:effective:write` reuses the complete preflight and writes field provenance
+only into a fresh disposable content copy with `--apply`; its default dry-run
+emits a plan/report without a database. See the
+[writer command and non-publishing boundary](../docs/operations/import-workflow.md#disposable-effective-writer).
+Run `npm run -w data-tools dice:effective:write:test` for the synthetic migration,
+transaction, idempotence and actual CHM-order checks.
 PHB PDF extraction/review is suspended and is
 not a prerequisite for these operations. Only an explicit resumption scope
 should use the [PHB safeguards](../docs/releases/v1.4/phb-source-and-errata-plan.md#paused-workflow-execution-safeguards)
