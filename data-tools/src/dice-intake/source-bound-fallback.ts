@@ -19,12 +19,13 @@ export type FallbackBodyAudit = {
   reviewer: string; reason: string; englishEvidence: string[];
   currentHtmlReviewed: boolean; proposedHtmlReviewed: boolean;
 };
-/** Known internal source issues, retained in a faithful body; never missing external evidence. */
+/** Known source issues with read, bound evidence; never missing external evidence. */
 export type RetainedSourceIssues = {
   bodyText: string; sourceId: string;
+  comparisonSourceIds?: string[];
   issues: Array<{
     id: string; status: "source-unresolved"; kind: "conflict" | "missing-explanation" | "interpretation";
-    statements: Array<SourcePage & { sourceQuote: string; chinese: string }>;
+    statements: Array<SourcePage & { sourceQuote: string; chinese: string; contentLocation?: "body" | "note" }>;
     note: string; impact: string;
   }>;
 };
@@ -130,6 +131,17 @@ export function validateSourceBoundFallbackReviews(reviews: SourceBoundFallbackR
       assert(row.field === "descriptionText" && retained && text(retained.bodyText) && text(retained.sourceId),
         `invalid retained source body ${key}`);
       assert(Array.isArray(retained.issues) && retained.issues.length > 0, `missing retained source issues ${key}`);
+      const comparisons = new Set<string>();
+      if (retained.comparisonSourceIds !== undefined) {
+        assert(Array.isArray(retained.comparisonSourceIds) && retained.comparisonSourceIds.length > 0,
+          `missing explicit comparison sources ${key}`);
+        for (const sourceId of retained.comparisonSourceIds) {
+          assert(text(sourceId) && sourceId !== retained.sourceId && !comparisons.has(sourceId)
+            && row.sourcePages.some(page => page.sourceId === sourceId), `invalid comparison source binding ${key}`);
+          comparisons.add(sourceId);
+        }
+      }
+      const usedComparisons = new Set<string>();
       const issueIds = new Set<string>();
       for (const issue of retained.issues) {
         assert(text(issue.id) && !issueIds.has(issue.id), `duplicate or missing source issue ${key}`); issueIds.add(issue.id);
@@ -139,20 +151,32 @@ export function validateSourceBoundFallbackReviews(reviews: SourceBoundFallbackR
         assert(Array.isArray(issue.statements) && issue.statements.length >= (issue.kind === "conflict" ? 2 : 1),
           `${issue.kind === "conflict" ? "missing opposing source statements" : "missing source issue statements"} ${key}`);
         const statements = new Set<string>();
+        let hasBodyStatement = false, hasComparison = false;
         for (const statement of issue.statements) {
           const page = row.sourcePages.find(page => page.sourceId === statement.sourceId && page.pageIndex === statement.pageIndex
             && page.printedPage === statement.printedPage);
-          assert(statement.sourceId === retained.sourceId && page && Array.isArray(statement.spanRefs) && statement.spanRefs.length > 0
+          const location = statement.contentLocation === undefined ? "body" : statement.contentLocation;
+          const primary = statement.sourceId === retained.sourceId;
+          assert(primary ? location === "body"
+            : issue.kind === "conflict" && comparisons.has(statement.sourceId) && statement.contentLocation === "note",
+          `source issue outside original page/span binding or explicit comparison note ${key}`);
+          assert(page && Array.isArray(statement.spanRefs) && statement.spanRefs.length > 0
             && statement.spanRefs.every(ref => Array.isArray(ref) && page.spanRefs.some(bound => stable(bound) === stable(ref))),
           `source issue outside original page/span binding ${key}`);
-          assert(text(statement.sourceQuote) && text(statement.chinese) && retained.bodyText.includes(statement.chinese),
-            `source statement missing from complete body ${key}`);
+          assert(text(statement.sourceQuote) && text(statement.chinese)
+            && (primary ? retained.bodyText : issue.note).includes(statement.chinese),
+            `source statement missing from complete body or comparison note ${key}`);
+          assert(primary || !retained.bodyText.includes(statement.chinese), `comparison statement copied into primary body ${key}`);
+          if (primary) hasBodyStatement = true;
+          else { hasComparison = true; usedComparisons.add(statement.sourceId); }
           const refs = statement.spanRefs.map(ref => ref.join(":"));
           assert(new Set(refs).size === refs.length, `duplicate source issue span ${key}`);
-          const location = stable([statement.sourceId, statement.pageIndex, refs.sort()]);
-          assert(!statements.has(location), `duplicate opposing source statement ${key}`); statements.add(location);
+          const sourceLocation = stable([statement.sourceId, statement.pageIndex, refs.sort()]);
+          assert(!statements.has(sourceLocation), `duplicate opposing source statement ${key}`); statements.add(sourceLocation);
         }
+        assert(!hasComparison || hasBodyStatement, `comparison conflict lacks original body statement ${key}`);
       }
+      assert(comparisons.size === usedComparisons.size, `unused comparison source binding ${key}`);
       assert.equal(row.after, withSourceIssueNotes(retained), `missing or stale source issue notes ${key}`);
     }
     if (row.status === "accepted" || row.status === "accepted-with-source-issues") {
