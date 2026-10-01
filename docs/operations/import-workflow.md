@@ -390,8 +390,9 @@ for the exact execution and handoff revisions.
 
 Subsequent complete-entry handoffs keep retained fields and specific evidence
 gaps separate from new correction exports. The
-[SC batch-01 report](../releases/v1.4/spell-compendium-batch-01-report.md) and
-[SC batch-02 report](../releases/v1.4/spell-compendium-batch-02-report.md)
+[SC batch-01 report](../releases/v1.4/spell-compendium-batch-01-report.md),
+[SC batch-02 report](../releases/v1.4/spell-compendium-batch-02-report.md) and
+[SC batch-03 report](../releases/v1.4/spell-compendium-batch-03-report.md)
 record their exact scopes, input contracts, old export blockers and proposed unions.
 These handoffs do not widen the restored CLI's fixed input paths or authorize activation.
 
