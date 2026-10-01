@@ -26,7 +26,7 @@ function usage(): never {
   console.error(`Usage:
   npm run -w data-tools summaries:import -- --dry-run
   npm run -w data-tools summaries:import
-  npm run -w data-tools summaries:import -- --input data/short-desc-normalized/summaries.generated.jsonl
+  npm run -w data-tools summaries:import -- --input <explicit-input-path>
 
 Imports accepted short descriptions into the content DB I18nSpellSummaryText table.
 `);

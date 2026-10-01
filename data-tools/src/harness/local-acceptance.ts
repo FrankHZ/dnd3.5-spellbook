@@ -1,11 +1,54 @@
+import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
+import { localDataDir } from "../shared/env";
 
 const npmCliPath = process.env.npm_execpath;
 if (!npmCliPath) {
   throw new Error("npm_execpath is not set; run this command through npm.");
 }
 const dataToolsRoot = path.resolve(__dirname, "..", "..");
+
+function collectJsonlFiles(root: string): string[] {
+  if (!fs.existsSync(root)) return [];
+  if (fs.statSync(root).isFile()) return root.endsWith(".jsonl") ? [root] : [];
+  return fs.readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
+    const filePath = path.join(root, entry.name);
+    if (entry.isDirectory()) return collectJsonlFiles(filePath);
+    return entry.isFile() && entry.name.endsWith(".jsonl") ? [filePath] : [];
+  });
+}
+
+function verifyFixtureMappings() {
+  const dataRoot = localDataDir();
+  assert.ok(fs.existsSync(dataRoot), `Data repository is unavailable: ${dataRoot}`);
+  const manifestPath = path.join(
+    dataToolsRoot, "..", "server", "db", "fixtures.manifest.json",
+  );
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8")) as {
+    dataRoots: string[];
+    mappings: Array<{ dataPath: string }>;
+  };
+  const mapped = new Set(manifest.mappings.map((entry) => entry.dataPath));
+  const actual = manifest.dataRoots.flatMap((root) =>
+    collectJsonlFiles(path.join(dataRoot, root.replace(/^data\//, "")))
+      .map((filePath) => `data/${path.relative(dataRoot, filePath).replace(/\\/g, "/")}`),
+  );
+  assert.deepEqual(
+    actual.filter((filePath) => !mapped.has(filePath)),
+    [],
+    "maintained data JSONL files need server DB portable fixture mappings",
+  );
+  for (const filePath of mapped) {
+    assert.ok(
+      fs.existsSync(path.join(dataRoot, filePath.replace(/^data\//, ""))),
+      `fixture manifest maps a missing data repo file: ${filePath}`,
+    );
+  }
+}
+
+verifyFixtureMappings();
 
 const commands: Array<{ label: string; args: string[] }> = [
   { label: "typecheck", args: ["run", "typecheck"] },

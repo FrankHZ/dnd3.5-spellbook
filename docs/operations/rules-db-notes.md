@@ -35,7 +35,7 @@ The server workspace keeps a compatibility wrapper at
 ## Local Manifest
 
 The local rules DB has no internal semantic version table. Track the current
-local `rules-clean.sqlite` state with the nested data repo manifest instead:
+local `rules-clean.sqlite` state with the configured private data repo manifest instead:
 
 ```bash
 npm run -w data-tools rules:manifest:write

@@ -9,7 +9,7 @@ Data-bearing local artifact directories are intentionally local-only.
 They are not part of the public repository baseline and may contain:
 
 - `server/db/local/`: processed rules-side and app SQLite databases
-- `data/`: nested local data repo containing upstream raw inputs, CHM-derived
+- Private data repo selected by root `.env` `DATA_REPO_PATH`: upstream raw inputs, CHM-derived
   HTML, parser mappings, raw text inputs, entity translation JSON, and rules
   patch inputs
 - `data-tools/out/`: generated parser reports and intermediate artifacts
@@ -17,7 +17,7 @@ They are not part of the public repository baseline and may contain:
 For the PHB 3.5 workflow, raw PDFs, generated subset PDFs, MinerU models,
 virtual environments, images, and raw MinerU output stay ignored under
 `data/artifacts/`. Source-bearing extracted rows and review decisions live only
-in the nested data repo under `data/phb35/`. The parent repo may commit the
+in the private data repo under logical `data/phb35/`. The parent repo may commit the
 extractor, validators, redacted fixtures, and aggregate reports containing only
 hashes, counts, and statuses.
 

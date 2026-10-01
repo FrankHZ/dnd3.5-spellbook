@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { localDataDir } from "../../shared/env";
 import { load } from "cheerio";
 
 import { BOOK_LABEL_TO_ABBR } from "../mapping";
@@ -48,8 +49,6 @@ type QaSummary = {
   missingZhByRulebook?: Record<string, number>;
 };
 
-const DEFAULT_INPUT = "../data/chm-clean";
-const DEFAULT_RAW_INPUT = "../data/chm-raw";
 const DEFAULT_OUT = "out/zh-parser/qa";
 const DEFAULT_PARSER_OUT = "out/zh-parser";
 const DEFAULT_BOOK_ABBR = "PH";
@@ -271,8 +270,8 @@ function qaParserOutput(parserOutDir: string, issues: QaIssue[]) {
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
-  const inputDir = path.resolve(args.get("--input") ?? DEFAULT_INPUT);
-  const rawInputDir = path.resolve(args.get("--rawInput") ?? DEFAULT_RAW_INPUT);
+  const inputDir = path.resolve(args.get("--input") ?? path.join(localDataDir(), "chm-clean"));
+  const rawInputDir = path.resolve(args.get("--rawInput") ?? path.join(localDataDir(), "chm-raw"));
   const outDir = path.resolve(args.get("--outDir") ?? DEFAULT_OUT);
   const parserOutDir = path.resolve(
     args.get("--parserOutDir") ?? DEFAULT_PARSER_OUT,

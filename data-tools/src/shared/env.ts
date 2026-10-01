@@ -30,8 +30,21 @@ export function serverDir() {
   return path.join(repoRoot(), "server");
 }
 
-export function localDataDir() {
-  return path.join(repoRoot(), "data");
+export function localDataDir(root = repoRoot()) {
+  const envPath = path.join(root, ".env");
+  const rootEnv = fs.existsSync(envPath)
+    ? dotenv.parse(fs.readFileSync(envPath, "utf8"))
+    : {};
+  const configured = process.env.DATA_REPO_PATH ?? rootEnv.DATA_REPO_PATH;
+  if (configured === undefined) return path.join(root, "data");
+  if (!configured.trim()) {
+    throw new Error("DATA_REPO_PATH must name an existing directory.");
+  }
+  const dataPath = path.resolve(root, configured);
+  if (!fs.existsSync(dataPath) || !fs.statSync(dataPath).isDirectory()) {
+    throw new Error(`DATA_REPO_PATH is not an existing directory: ${dataPath}`);
+  }
+  return dataPath;
 }
 
 export function loadServerEnv() {

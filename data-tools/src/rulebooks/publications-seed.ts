@@ -42,7 +42,7 @@ type RulebookRow = {
 function usage(): never {
   console.error(`Usage:
   npm run -w data-tools rulebooks:publications:seed
-  npm run -w data-tools rulebooks:publications:seed -- --output ../data/rulebook-publications/publications.jsonl
+  npm run -w data-tools rulebooks:publications:seed -- --output <explicit-output-path>
   npm run -w data-tools rulebooks:publications:seed -- --force
 
 Seeds the maintained publication metadata JSONL from the configured rules DB and

@@ -21,7 +21,7 @@ commands defined in [package.json](./package.json):
 | Explicit read-only real-data smoke | `npm run smoke:local` |
 
 Launch, typecheck, and test scripts build the `data-tools/phb-review` public
-entry before consuming it. The real-data smoke requires the nested data repo
+entry before consuming it. The real-data smoke requires the configured data repo
 and pinned PHB sources; it checks token handoff, layout detail, PDF byte ranges,
 and either current English detail or the expected `stale-queue` response. It
 never submits a decision. Documentation-only edits need link, command, and
@@ -43,7 +43,7 @@ The browser displays evidence and submits explicit decisions. It does not
 choose candidates, eligible targets, fingerprints, source authority, or terminal
 validity. The service rebuilds candidates, verifies evidence and review-state
 fingerprints, validates the queue, and atomically writes only the selected
-nested-data decision file (`full-mineru-layout-review.jsonl` or
+private data decision file (`full-mineru-layout-review.jsonl` or
 `full-row-review.jsonl`). Stale responses preserve drafts and refresh evidence;
 they do not overwrite newer decisions.
 

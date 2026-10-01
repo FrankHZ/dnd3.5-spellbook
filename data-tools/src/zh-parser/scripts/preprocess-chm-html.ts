@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { localDataDir } from "../../shared/env";
 import iconv from "iconv-lite";
 import * as cheerio from "cheerio";
 
@@ -167,16 +168,8 @@ function parseArgs(): Options {
     return idx >= 0 ? args[idx + 1] : undefined;
   };
 
-  const inputDir = get("--in");
-  const outputDir = get("--out");
-
-  if (!inputDir || !outputDir) {
-    console.error(`Usage:
-npx tsx scripts/preprocess-chm-html.ts --in <inputDir> --out <outputDir> [--utf8] [--keep-body]
-Defaults assume GB2312 input and keep only #winchm_template_content.
-`);
-    process.exit(1);
-  }
+  const inputDir = get("--in") ?? path.join(localDataDir(), "chm-raw");
+  const outputDir = get("--out") ?? path.join(localDataDir(), "chm-clean");
 
   opts.inputDir = inputDir;
   opts.outputDir = outputDir;

@@ -47,8 +47,9 @@ The app does not provide full character sheets, automatic spell-slot legality,
 multi-edition support, or a general rules engine.
 
 This is an unofficial fan project, unaffiliated with Wizards of the Coast.
-Source inputs and maintained decisions belong in the ignored nested `data/`
-repo; runtime SQLite files under `server/db/local/` are also excluded. Generated
+Source inputs and maintained decisions belong in the private data repo selected
+by root `.env` `DATA_REPO_PATH`; runtime SQLite files under `server/db/local/`
+are also excluded. Generated
 local reports live under `data-tools/out/`. Do not publish those artifacts as
 portable source data. See [public repository boundaries](docs/operations/public-repo-notes.md).
 
