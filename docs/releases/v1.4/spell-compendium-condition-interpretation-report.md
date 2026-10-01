@@ -10,7 +10,7 @@ not accept its own proposals, decide the rules or activate content.
 
 Public base: `a909b6483c90facb9aed71f157716e651b99c00b`.
 Private local-only base: `2ee22e46e12eb4b1ade5556ab09f7f568f549c62`.
-Private evidence commit: `b508697599a0b66122f4bf227c669ac1f746e391`.
+Private evidence commit: `c6624878b4bba676690b0e27c7f2faf151004457`.
 Only `dice-qa/books/86/issue-274/` was added to the private repository; it was
 not pushed. Unrelated untracked files were preserved.
 
@@ -29,8 +29,10 @@ does not reduce its original-source questions.
 | 4216 | `accepted-with-source-issues` | `duration-choice`, `interpretation`, `source-unresolved` |
 | 4756 | `accepted-with-source-issues` | `scaling-example`, `interpretation`, `source-unresolved` |
 
-The notes distinguish potentially coordinated readings from confirmed
-translation repairs. They do not invent opposing citations, decide duration or
+Reader notes present the source wording, question, potentially coordinated
+readings, impact and version/errata limits. Translation repair history and audit
+process remain in private review records and full-body audits. The notes do not
+invent opposing citations, decide duration or
 scaling thresholds, or claim that compatible statements prove a numerical error.
 The complete old bodies were checked for inherited and historical rules.
 Target 4120's existing exception has a specific Sanctuary source, recorded
@@ -61,16 +63,22 @@ resume the PHB/MinerU/SRD queue or certify all later printings.
 | Full inputs and predecessor bindings | Three complete input bindings and 16 frozen predecessor records; `current-inputs.json`, `prior-bindings.json` |
 | Complete maintained formal QA CLI | Exit 0, three candidate exports/full-body audits; native accepted/fallback byte-identical; `formal-verification.json`, `formal-check/` |
 | Supplemental actual PDF verification | Eleven pages, 1,134 spans, three fields, seven exact issue statements; 18 real-source counterexamples rejected; `pdf-verification.json` |
-| Targeted contract rejection checks | 35 passed, including five actual formal CLI failures with no accepted export; `counterexample-results.json` |
+| Initial contract rejection checks | 35 passed, including five actual formal CLI failures with no accepted export; `counterexample-results.json` |
 | Frozen scope and disjoint union | Old 658 native and 126 independent fields preserved; three new bodies have no overlap, accepted name retained; `scope-verification.json` |
-| `npm run -w data-tools typecheck` | Exit 0 |
-| `npm run -w data-tools dice:qa:test` | Exit 0, 72 maintained synthetic rejection checks and readonly CLI tests |
-| PDF extractor unittest discovery | Exit 0, all 17 tests with Python 3.13/PyMuPDF 1.28.2 and this worktree's explicit source path |
-| Complete private reproduction | Twelve commands, all exit 0; argv/cwd/output/results in `reproduction-verification.json` |
+| Initial `npm run -w data-tools typecheck` | Exit 0 |
+| Initial `npm run -w data-tools dice:qa:test` | Exit 0, 72 maintained synthetic rejection checks and readonly CLI tests |
+| Initial PDF extractor unittest discovery | Exit 0, all 17 tests with Python 3.13/PyMuPDF 1.28.2 and this worktree's explicit source path |
+| Initial complete private reproduction | Twelve commands, all exit 0; argv/cwd/output/results in `reproduction-verification.json` |
+| Reader-note revision verification | Four commands, all exit 0: proposal regeneration, complete formal QA, actual PDF verification and scope checks; exact unchanged bodies/inputs/sources/issue statements/status audited against the initial revision; `note-revision-verification.json` |
 | Scoped private/public diff checks | Passed |
 
+The original twelve-step run and contract counterexamples apply to private
+revision `b508697599a0b66122f4bf227c669ac1f746e391`; those records are preserved
+unchanged. The note revision regenerated affected text/HTML/full-body and
+effective-field bindings and formal exports, then repeated formal/PDF/scope
+verification. It did not repeat the unchanged full test suite or source intake.
 Command evidence records HEADs at execution time; the private commit above
-identifies the commit containing those results. The reproduction explicitly
+identifies the commit containing both sets of results. The reproduction explicitly
 sets the current Python source path to avoid the reused environment's old
 editable installation. Existing PDF ICC warnings did not prevent text/span or
 visual verification; source PDFs were not repaired. Remote `ci:portable` and
