@@ -104,5 +104,37 @@ retainedFails(r => { r.retainedSourceIssues!.issues[0]!.statements[0]!.sourceId 
 retainedFails(r => { r.retainedSourceIssues!.issues[0]!.statements[0]!.spanRefs = [[9, 0, 0]]; }, /original page/);
 retainedFails(r => { r.pendingSourceEvidence = ["unavailable external historical rule"]; }, /closed rule evidence/);
 retainedFails(r => { delete r.fullBodyAudit; }, /full-body audit/);
+// A real ambiguity may have only one statement. It must still close the same
+// original-page, complete-body, note, HTML and input evidence gates.
+for (const kind of ["missing-explanation", "interpretation"] as const) {
+  const item = structuredClone(retained);
+  const issue = item.retainedSourceIssues!.issues[0]!;
+  issue.kind = kind; issue.statements = [issue.statements[0]!];
+  issue.note = kind === "interpretation" ? "解释疑问：原句适用范围有待审核，正文保留原述。"
+    : "原句缺少具体说明，正文保留原述。";
+  refresh(item);
+  assert.equal(run([item]).accepted.length, 1, `${kind} accepts one actual statement`);
+  const reject = (change: (r: SourceBoundFallbackReview) => void, pattern: RegExp) => {
+    const bad = structuredClone(item); change(bad); assert.throws(() => run([bad]), pattern); rejected++;
+  };
+  reject(r => { r.retainedSourceIssues!.issues[0]!.statements = []; }, /missing source issue statements/);
+  reject(r => { r.retainedSourceIssues!.issues[0]!.note = ""; }, /missing source issue explanation/);
+  reject(r => { r.after = after; r.proposedHtml = escapedFallbackHtml(after); }, /stale source issue notes/);
+  reject(r => { r.pendingSourceEvidence = ["unavailable external rule"]; }, /closed rule evidence/);
+  reject(r => { r.retainedSourceIssues!.issues[0]!.statements[0]!.sourceId = "unknown"; }, /original page/);
+  reject(r => { r.input.english.mechanics.duration = "stale"; }, /full English/);
+  reject(r => { r.input.chinese.descriptionHtml = "stale"; }, /full Chinese/);
+  reject(r => { r.input.englishHtml = "stale"; }, /English HTML/);
+  reject(r => { r.proposedHtml = "stale"; }, /projection mismatch/);
+  reject(r => { delete r.fullBodyAudit; }, /full-body audit/);
+  reject(r => { const statements = r.retainedSourceIssues!.issues[0]!.statements; statements.push(structuredClone(statements[0]!)); }, /duplicate opposing/);
+  reject(r => { r.retainedSourceIssues!.issues[0]!.statements[0]!.spanRefs.push([0, 0, 0]); }, /duplicate source issue span/);
+  reject(r => {
+    const statements = r.retainedSourceIssues!.issues[0]!.statements;
+    statements[0]!.spanRefs = [[0, 0, 0], [0, 1, 0]];
+    statements.push({ ...structuredClone(statements[0]!), spanRefs: [[0, 1, 0], [0, 0, 0]] });
+  }, /duplicate opposing/);
+}
+retainedFails(r => { (r.retainedSourceIssues!.issues[0] as unknown as { kind: string }).kind = "unverified-external-source"; }, /cannot claim resolution/);
 assert.throws(() => validateSourceBoundFallbackReviews([row], 99, english, html, chinese, []), /unknown.*scope/);
 console.log(`source-bound fallback portable tests passed (${rejected + 6} rejection checks)`);
