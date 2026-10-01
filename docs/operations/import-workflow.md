@@ -371,6 +371,21 @@ Foreign-book review, correction, duplicate, boundary, or audit rows fail;
 another book's pending reviews are not loaded. A missing book decision file,
 missing owned row, or empty/unknown scope cannot become an accepted empty result.
 
+SC's recovered #298 handoff has an explicit, bounded revalidation mode:
+`--restored-sc-baseline fe089990e2a5eeac69c92e068ca695f10c42ec58` with
+`--rulebook-id 86`. It requires the #259 `fresh-qa` review/correction/full-body/
+boundary inputs and #292 independent export through their explicit options.
+Every consumed source, map, alias and review file must match that real private
+Git snapshot; TXT bytes are exact and JSON/JSONL permits only CRLF/LF checkout
+normalization. Complete parsing, source coverage, reconciliation and all current
+English/mechanics/Chinese and review checks still execute. Historical row-key
+namespaces stay intact; coverage records actual source/map Git revisions and
+the current input baseline separately. This mode does not authenticate missing
+old history or admit later candidate exports. Use the committed private
+`dice-qa/books/86/issue-298/reproduce.py` with explicit code and readonly DB paths
+for the accompanying patch-copy, complete input and actual PDF verification.
+Main-gate must review that restored contract before subsequent batches use it.
+
 With `--check-incomplete`, the command writes only `coverage.json` and allows
 existing `queue:` reviewer markers and missing full-body audits to remain
 pending. Evidence-based `deferred` decisions are distinct from those queue

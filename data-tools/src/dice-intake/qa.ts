@@ -98,6 +98,42 @@ function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
 }
 
+/** Bind surviving inputs to a real current commit while retaining historical row IDs.
+ * This proves current file identity, never continuity with unavailable old Git trees.
+ * Parsing, source coverage, reconciliation and all review guards still run below.
+ */
+export function bindRestoredScQaInputs(dataRoot: string, baseline: string, inputPaths: string[],
+  sourceKeys: string[], mappingRevisions: string[]): {
+    currentBaseline: string; historicalSourceRevision: string; historicalMappingRevision: string;
+    files: number; historicalContinuityAuthenticated: false;
+  } {
+  const currentBaseline = execFileSync("git", ["-C", dataRoot, "rev-parse", "--verify", `${baseline}^{commit}`],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
+  const sourceRevisions = new Set(sourceKeys.map(key => key.split(":")[0]!));
+  const mappings = new Set(mappingRevisions);
+  assert(sourceRevisions.size === 1 && sourceRevisions.has("9847e70236cd4bcd841347ed1b42b2f478826268"),
+    "restored SC inputs require the preserved source namespace");
+  assert(mappings.size === 1 && mappings.has("4cd593b44e73f591d46e2f35a90d882befc19702"),
+    "restored SC inputs require the preserved mapping namespace");
+  const inputs = new Set(inputPaths.map(path => resolve(path)));
+  assert(inputs.size > 0, "missing restored input files");
+  for (const inputPath of inputs) {
+    const file = relative(realpathSync(dataRoot), realpathSync(inputPath)).replace(/\\/g, "/");
+    assert(file && file !== ".." && !file.startsWith("../") && !isAbsolute(file),
+      "restored QA input must belong to the private data root");
+    const committed = execFileSync("git", ["-C", dataRoot, "show", `${currentBaseline}:${file}`],
+      { maxBuffer: 64 * 1024 * 1024 });
+    const current = readFileSync(inputPath);
+    // These private JSON inputs are Git text files; TXT source bytes stay exact.
+    const same = /\.jsonl?$/.test(file)
+      ? committed.toString("utf8").replace(/\r\n/g, "\n") === current.toString("utf8").replace(/\r\n/g, "\n")
+      : committed.equals(current);
+    assert(same, `changed restored input ${file}`);
+  }
+  return { currentBaseline, historicalSourceRevision: [...sourceRevisions][0]!,
+    historicalMappingRevision: [...mappings][0]!, files: inputs.size, historicalContinuityAuthenticated: false };
+}
+
 export function validateSourceCoverage(files: Array<{ bytes: number; parsed: ParsedFile }>,
   inventory: SourceInventory[], candidates: Candidate[]): void {
   const byFile = new Map(inventory.map((row) => [row.file, row]));
@@ -466,16 +502,22 @@ function main(): void {
   const rulesPath = arg("rules-db");
   const contentPath = arg("content-db");
   const checkIncomplete = process.argv.includes("--check-incomplete");
+  const restoredAt = process.argv.indexOf("--restored-sc-baseline");
   const rulebookAt = process.argv.indexOf("--rulebook-id");
   const rulebookId = rulebookAt < 0 ? undefined : Number(process.argv[rulebookAt + 1]);
   assert(rulebookId === undefined || (Number.isSafeInteger(rulebookId) && rulebookId > 0),
     "--rulebook-id requires a positive integer");
+  assert(restoredAt < 0 || (process.argv[restoredAt + 1] === "fe089990e2a5eeac69c92e068ca695f10c42ec58"
+    && rulebookId === 86 && !checkIncomplete),
+    "--restored-sc-baseline requires the #298 fixed baseline and complete SC QA");
+  const inputPaths: string[] = [];
+  const readInput = <T>(path: string): T[] => { inputPaths.push(path); return rows<T>(path); };
   const bookDir = rulebookId === undefined ? undefined
     : join(dataRoot, "dice-qa", "books", String(rulebookId));
   const input = <T>(name: string, file: string, required = false): T[] => {
-    if (process.argv.includes(`--${name}`)) return rows<T>(arg(name));
+    if (process.argv.includes(`--${name}`)) return readInput<T>(arg(name));
     const path = bookDir && join(bookDir, file);
-    if (path && existsSync(path)) return rows<T>(path);
+    if (path && existsSync(path)) return readInput<T>(path);
     assert(!required, `missing --${name}${path ? ` or ${path}` : ""}`);
     return [];
   };
@@ -484,25 +526,46 @@ function main(): void {
   const duplicates = input<DuplicateResolution>("duplicates", "duplicate-resolutions.jsonl");
   const sourceBoundEnabled = process.argv.includes("--source-bound-fallback-reviews");
   assert(!sourceBoundEnabled || rulebookId !== undefined, "source-bound fallback reviews require --rulebook-id");
+  if (restoredAt >= 0) {
+    // #298 revalidates this frozen handoff, not later unaccepted SC proposals.
+    for (const [option, file] of [
+      ["reviews", "issue-259/fresh-qa/decisions.jsonl"],
+      ["corrections", "issue-259/fresh-qa/corrections.jsonl"],
+      ["full-body-audit", "issue-259/fresh-qa/full-body-audit.jsonl"],
+      ["boundaries", "issue-259/fresh-qa/boundary-decisions.jsonl"],
+      ["source-bound-fallback-reviews", "issue-292/independent-accepted.jsonl"],
+    ] as const) {
+      assert(process.argv.includes(`--${option}`) && arg(option) === resolve(bookDir!, file),
+        `restored SC QA requires the #298 ${option} input`);
+    }
+  }
   // Explicit only: a stale standalone ledger must never enter ordinary dice QA by default.
-  const sourceBoundReviews = sourceBoundEnabled ? rows<SourceBoundFallbackReview>(arg("source-bound-fallback-reviews")) : [];
+  const sourceBoundReviews = sourceBoundEnabled ? readInput<SourceBoundFallbackReview>(arg("source-bound-fallback-reviews")) : [];
   const reportDir = arg("report-dir");
-  const mappingRevision = execFileSync("git", ["-C", dataRoot, "log", "-1", "--format=%H", "--",
+  let mappingRevision = execFileSync("git", ["-C", dataRoot, "log", "-1", "--format=%H", "--",
     "dice-intake/publication-map.json"], { encoding: "utf8" }).trim();
   assert(mappingRevision, "missing committed publication map");
   assert(!execFileSync("git", ["-C", dataRoot, "status", "--porcelain", "--",
     "spells-dice-db-by-mo", "dice-intake/publication-map.json"], { encoding: "utf8" }).trim(),
   "source or publication map is dirty");
-  const candidates = rows<Candidate>(join(dataRoot, "dice-intake", "candidates.jsonl"));
+  const candidates = readInput<Candidate>(join(dataRoot, "dice-intake", "candidates.jsonl"));
   const fullBodyAudits = input<FullBodyAudit>("full-body-audit", "full-body-audit.jsonl", !checkIncomplete);
   const boundaries = input<BoundaryDecision>("boundaries", "boundary-decisions.jsonl", bookDir === undefined);
-  const inventory = rows<SourceInventory>(join(dataRoot, "dice-intake", "source-inventory.jsonl"));
-  const sourceRevision = execFileSync("git", ["-C", dataRoot, "log", "-1", "--format=%H", "--",
+  const inventory = readInput<SourceInventory>(join(dataRoot, "dice-intake", "source-inventory.jsonl"));
+  let sourceRevision = execFileSync("git", ["-C", dataRoot, "log", "-1", "--format=%H", "--",
     "spells-dice-db-by-mo"], { encoding: "utf8" }).trim();
+  const currentSourceRevision = sourceRevision, currentMappingRevision = mappingRevision;
   const inputDir = join(dataRoot, "spells-dice-db-by-mo");
   const sourceFiles = readdirSync(inputDir).filter((name) => name.endsWith(".txt")).sort()
-    .map((name) => { const bytes = readFileSync(join(inputDir, name));
+    .map((name) => { const path = join(inputDir, name); inputPaths.push(path); const bytes = readFileSync(path);
       return { bytes: bytes.length, parsed: parseDiceFile(name, bytes) }; });
+  inputPaths.push(join(dataRoot, "dice-intake/publication-map.json"), join(dataRoot, "chm-mapping/enName-aliases-global.json"));
+  const restoredBinding = restoredAt < 0 ? undefined : bindRestoredScQaInputs(dataRoot, process.argv[restoredAt + 1]!,
+    inputPaths, candidates.map(row => row.sourceKey), [...reviews, ...duplicates, ...boundaries].map(row => row.mappingRevision));
+  if (restoredBinding) {
+    sourceRevision = restoredBinding.historicalSourceRevision;
+    mappingRevision = restoredBinding.historicalMappingRevision;
+  }
   validateSourceCoverage(sourceFiles, inventory, candidates);
   const parsed = new Map<string, DiceRecord>();
   const records: DiceRecord[] = [];
@@ -558,8 +621,9 @@ function main(): void {
   result.summary.pendingFullBodyAudits = validateFullBodyAudits(reviews, fullBodyAudits, checkIncomplete);
   result.summary.scope = rulebookId === undefined ? { kind: "global" } : { kind: "rulebook", rulebookId };
   result.summary.validation = checkIncomplete ? "incomplete-check" : "validated-proposal";
-  result.summary.sourceRevision = sourceRevision;
-  result.summary.mappingRevision = mappingRevision;
+  result.summary.sourceRevision = currentSourceRevision;
+  result.summary.mappingRevision = currentMappingRevision;
+  if (restoredBinding) result.summary.restoredInputBinding = restoredBinding;
   result.summary.sourceCoverage = { files: sourceFiles.length, candidateOccurrences: candidates.length };
   const sourceBound = sourceBoundEnabled ? validateSourceBoundFallbackReviews(sourceBoundReviews, rulebookId!, english, englishHtml,
     new Map([...zh].map(([id, row]) => [id, { name: row.name, descriptionText: row.descriptionText, descriptionHtml: row.descriptionHtml ?? null }])),
