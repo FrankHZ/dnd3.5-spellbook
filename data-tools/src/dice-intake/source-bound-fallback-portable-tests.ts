@@ -82,7 +82,7 @@ function refresh(item: SourceBoundFallbackReview): void {
   item.fullBodyAudit!.effectiveText = item.after; item.fullBodyAudit!.effectiveHtml = item.proposedHtml;
 }
 refresh(retained);
-assert.equal(run([retained]).summary.sourceUnresolvedFields, 1);
+assert.equal(run([retained]).summary.sourceUnresolvedFields, 1, "adjacent distinct original spans remain valid");
 assert.equal(run([retained]).summary.retainedSourceIssues, 1);
 function retainedFails(change: (item: SourceBoundFallbackReview) => void, pattern: RegExp): void {
   const item = structuredClone(retained); change(item); assert.throws(() => run([item]), pattern); rejected++;
@@ -94,6 +94,12 @@ retainedFails(r => { r.fullBodyAudit = structuredClone(row.fullBodyAudit!); }, /
 retainedFails(r => { r.retainedSourceIssues!.bodyText = "一道苍白光芒出现。造成2d6寒冷伤害。"; refresh(r); }, /missing from complete body/);
 retainedFails(r => { r.retainedSourceIssues!.issues[0]!.statements.pop(); refresh(r); }, /opposing source/);
 retainedFails(r => { const issue = r.retainedSourceIssues!.issues[0]!; issue.statements[1] = structuredClone(issue.statements[0]!); }, /duplicate opposing/);
+retainedFails(r => { r.retainedSourceIssues!.issues[0]!.statements[1]!.spanRefs = [[0, 0, 0], [0, 0, 0]]; }, /duplicate source issue span/);
+retainedFails(r => {
+  const statements = r.retainedSourceIssues!.issues[0]!.statements;
+  statements[0]!.spanRefs = [[0, 0, 0], [0, 1, 0]];
+  statements[1]!.spanRefs = [[0, 1, 0], [0, 0, 0]];
+}, /duplicate opposing/);
 retainedFails(r => { r.retainedSourceIssues!.issues[0]!.statements[0]!.sourceId = "unknown-old-book"; }, /original page/);
 retainedFails(r => { r.retainedSourceIssues!.issues[0]!.statements[0]!.spanRefs = [[9, 0, 0]]; }, /original page/);
 retainedFails(r => { r.pendingSourceEvidence = ["unavailable external historical rule"]; }, /closed rule evidence/);

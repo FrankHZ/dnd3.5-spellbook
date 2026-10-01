@@ -147,7 +147,9 @@ export function validateSourceBoundFallbackReviews(reviews: SourceBoundFallbackR
           `source issue outside original page/span binding ${key}`);
           assert(text(statement.sourceQuote) && text(statement.chinese) && retained.bodyText.includes(statement.chinese),
             `source statement missing from complete body ${key}`);
-          const location = stable([statement.sourceId, statement.pageIndex, statement.spanRefs]);
+          const refs = statement.spanRefs.map(ref => ref.join(":"));
+          assert(new Set(refs).size === refs.length, `duplicate source issue span ${key}`);
+          const location = stable([statement.sourceId, statement.pageIndex, refs.sort()]);
           assert(!statements.has(location), `duplicate opposing source statement ${key}`); statements.add(location);
         }
       }
