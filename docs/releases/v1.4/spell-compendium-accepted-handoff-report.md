@@ -4,11 +4,11 @@ Issue [#288](https://github.com/FrankHZ/dnd3.5-spellbook/issues/288), parent
 [#263](https://github.com/FrankHZ/dnd3.5-spellbook/issues/263).
 This source-free report describes a static union of previously accepted exports
 and navigation from the complete source-question checklist to Chinese acceptance
-or specific missing evidence. It does not accept new content, resolve unanswered
+or specific missing evidence/consumer obligations. It does not accept new content, resolve unanswered
 source questions, or complete the parent issue.
 
 The private handoff is local-only at
-`c917e7cc4a176b15a2dc00a03a16a6e2e48936f1`, under
+`63889c8e4fa0dcc180bd2e912d017de9e4558de7`, under
 `data/dice-qa/books/86/issue-288/`. No private data was pushed.
 Public dispatch base: `32fb4ec69e42f99807db2752f8985d1c631fa8fd`.
 Private dispatch base: `f3fb0f0466f70c6567a28e9579b7f6fa8f34b8c2`.
@@ -86,7 +86,7 @@ locations and full-body audits, or the corresponding source-gap request.
 | Source-question state | Chinese disposition at dispatch |
 | --- | --- |
 | 27 unanswered questions | 26 complete bodies accepted with retained source issues |
-| 6 unanswered questions | 5 complete bodies deferred for missing source evidence |
+| 6 unanswered questions | 5 complete bodies remain deferred: four displayed historical-source gaps and one consumer obligation to define |
 | 1 official resolution: 4709 | Separate ordinary accepted complete body from #280 |
 
 All 34 problem IDs occur once. The 33 unanswered source questions remain
@@ -94,26 +94,30 @@ unanswered; Chinese acceptance does not imply a source ruling. The official
 resolution is kept separate and is not counted as a 34th unanswered question.
 The new navigation does not rewrite the existing checklist's rules or questions.
 
-## Five Targeted Source Requests
+## Four Source Requests And One Consumer Obligation
 
 The private `source-gap-needs.md` is a readable request list, with full current
 CHM text/HTML, current English/mechanics, exact predecessor records and fallback
 fields in `source-gap-needs.json`. It binds the actual expanded historical
 claims, distinguishes known SC locators from unverified external-book locators,
 and specifies the minimum entry, header, inherited context, printing and errata
-needed. It does not request whole-book QA.
+needed for the four displayed historical-source gaps. For 4469 it first requires
+definition of the actual consumer obligation; evidence gathering is conditional
+on identifying a specific unsupported rule. It does not request whole-book QA.
 
 | Target | Required evidence and boundary |
 | --- | --- |
 | 4047 | Historical pearl/component rule. An unaccepted prior proposal labels the book Draconomicon; original publication/printing/page still require confirmation. |
 | 4574 | Historical XP rule. The old book shorthand does not establish exact publication or allow reuse of 4047's proposed identity. |
-| 4469 | Applicable v3.5 Monster Manual water-elemental entries and relevant shared abilities/traits needed by the existing inheritance boundary; no claim that the old Chinese expands every creature ability. |
+| 4469 | Define the actual spell consumer's external-rule obligation first. Its current fields do not expand creature statistics or abilities; SC supports the displayed elemental-related claims. A prior unread-abilities boundary does not make MM statblocks an acceptance prerequisite. Seek only a specific required rule/context if SC cannot support it; deferred fields and the Close question remain. |
 | 4504 | Identify the original publication for the historical class-level and damage/radius claims and its parent entry. Warmage does not identify a rulebook. |
 | 4691 | Applicable Book of Exalted Deeds complete historical entry and shared header, bound to the existing #268 gap; SC-only evidence cannot close it. |
 
 The configured local PDF inventory was inspected: only SC, PHB and their errata
-are available. Required historical books/MM are absent there. Their applicable
-printings and original page numbers remain explicitly unlocated. No original
+are available. The historical books and MM are absent there; absence of MM alone
+does not establish an evidence obligation for 4469. Historical book printings and
+original page numbers remain explicitly unlocated; an MM locator is needed only
+if the consumer review establishes a specific external-rule obligation. No original
 book was guessed, downloaded or claimed read. All five targets still have both
 name and body in the actual fallback complement; this handoff does not accept
 names or erase historical annotations to manufacture a pass.
@@ -147,6 +151,16 @@ write into frozen directories were not executed. Remote `ci:portable` remains
 the PR merge gate.
 
 ## Preserved Scope
+
+The 4469 obligation correction was rederived and checked using committed helper
+source `dda00f3e8416122e4df024a21ea532ee1f01fd6a`.
+`gap-revalidation-01.json` records exact commands, exit codes and public execution
+head `9bbc4f6609168ec45553a45989795899a367b090`. Affected derivation/reference checks
+pass; all 13 frozen directories, original run03, current inputs, exports, 800/1204
+partition, all 34 question dispositions, other four gap records and 4469's exact
+prior/fallback/Close issue remain unchanged. Its external-rule obligation remains
+undetermined and it is not automatically accepted or cleared. This bounded
+recheck did not rerun the original six-step validation or old slices.
 
 Other missing-source, identity and terminology items, and 4204's name residual,
 remain with #263/#197 and their existing owners. The parent is not complete and
