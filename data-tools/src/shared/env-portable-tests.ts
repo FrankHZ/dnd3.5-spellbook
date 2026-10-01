@@ -13,6 +13,7 @@ const originalEnv = process.env.DATA_REPO_PATH;
 const originalCwd = process.cwd();
 
 try {
+  delete process.env.DATA_REPO_PATH;
   fs.mkdirSync(workspace, { recursive: true });
   fs.mkdirSync(dataRoot);
   assert.equal(localDataDir(codeRoot), path.join(codeRoot, "data"));
