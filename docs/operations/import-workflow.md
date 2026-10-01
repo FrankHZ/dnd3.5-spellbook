@@ -385,6 +385,8 @@ old history or admit later candidate exports. Use the committed private
 `dice-qa/books/86/issue-298/reproduce.py` with explicit code and readonly DB paths
 for the accompanying patch-copy, complete input and actual PDF verification.
 Main-gate must review that restored contract before subsequent batches use it.
+See the [source-free current verification report](../releases/v1.4/spell-compendium-restored-baseline-report.md)
+for the exact execution and handoff revisions.
 
 With `--check-incomplete`, the command writes only `coverage.json` and allows
 existing `queue:` reviewer markers and missing full-body audits to remain
