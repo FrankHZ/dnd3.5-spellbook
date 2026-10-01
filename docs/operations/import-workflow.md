@@ -393,8 +393,9 @@ gaps separate from new correction exports. The
 [SC batch-01 report](../releases/v1.4/spell-compendium-batch-01-report.md),
 [SC batch-02 report](../releases/v1.4/spell-compendium-batch-02-report.md),
 [SC batch-03 report](../releases/v1.4/spell-compendium-batch-03-report.md),
-[SC batch-04 report](../releases/v1.4/spell-compendium-batch-04-report.md) and
-[SC batch-05 report](../releases/v1.4/spell-compendium-batch-05-report.md)
+[SC batch-04 report](../releases/v1.4/spell-compendium-batch-04-report.md),
+[SC batch-05 report](../releases/v1.4/spell-compendium-batch-05-report.md) and
+[SC batch-06 report](../releases/v1.4/spell-compendium-batch-06-report.md)
 record their exact scopes, input contracts, old export blockers and proposed unions.
 These handoffs do not widen the restored CLI's fixed input paths or authorize activation.
 
