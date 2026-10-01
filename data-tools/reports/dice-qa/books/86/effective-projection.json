@@ -43,7 +43,13 @@
     "validation": "verified-supplemental-pdf-bindings",
     "pages": 327,
     "spans": 52166,
-    "fields": 879
+    "fields": 879,
+    "acceptedSourceRevision": "da691dacd3973d38a9d0f66a08d78fdb1eaafd47",
+    "acceptedSourceInputFiles": 20,
+    "authoritySpans": {
+      "sc": 4,
+      "errata": 147
+    }
   },
   "verification": {
     "rootPackageOutputsByteIdentical": true,
@@ -84,6 +90,22 @@
     "modelMetadataVerified": {
       "model": "gpt-6.1-sol",
       "effort": "high"
+    },
+    "acceptedSourceBinding": {
+      "originalFilesBound": 20,
+      "generatedEvidenceAuthority": false,
+      "originalNativePagesReasonsAndVisualClaimsPreserved": true,
+      "pythonFocusedTests": 6,
+      "actualCliRejected": [
+        "real-unrelated-native-page",
+        "visual-relabel",
+        "authority-source-missing",
+        "errata-source-missing",
+        "errata-source-changed"
+      ],
+      "authorityInputMissingChangedRejectedAtReadBoundary": true,
+      "actualAuthorityFilesModified": false,
+      "effectiveFieldsByteIdenticalToPriorVerifiedProjection": true
     }
   },
   "implemented": "Read-only preflight and pure effective projection only",
@@ -97,5 +119,10 @@
     "production activation"
   ],
   "operatorWrites": false,
-  "newSourceAcceptance": false
+  "newSourceAcceptance": false,
+  "priorValidationEvidence": {
+    "publicRevision": "837398c274c9a445e27c15e113dddd4f5f87949f",
+    "privateRevision": "312c1ba36968605e2a0fca6e552191d07a6a1e08",
+    "unaffectedWholeDbComparisonRerun": false
+  }
 }

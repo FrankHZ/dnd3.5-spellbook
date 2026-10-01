@@ -529,8 +529,8 @@ later deferred drafts cannot enter via a different file or mutated export.
 Use the accepted 315-patch rules input on a disposable copy produced by the
 existing `rules:spells:apply ... --dry-run` command. The unpatched operator rules
 file is not the accepted QA input. Keep operator rules/content/app-state read
-only. Prepare complete supplemental PDF evidence from the existing accepted
-page/span bindings in private data or ignored output, then run:
+only. The entry derives complete supplemental evidence directly from the original
+accepted private files; no generated evidence input is required:
 
 ```powershell
 npm run -w data-tools dice:effective -- `
@@ -538,7 +538,6 @@ npm run -w data-tools dice:effective -- `
   --rules-db <absolute-disposable-patched-rules.sqlite> `
   --content-db <absolute-readonly-content.sqlite> `
   --pdf-python <absolute-pdf-extract-venv-python.exe> `
-  --pdf-evidence <absolute-complete-accepted-pdf-evidence.json> `
   --source sc=<absolute-SC.pdf> --source errata=<absolute-SC-errata.pdf> `
   --source phb=<absolute-PHB.pdf> --source phb-errata=<absolute-PHB-errata.pdf> `
   --run sc-check-01
@@ -550,10 +549,27 @@ paths resolve from the code repository root in either cwd; `--source ID=PDF`
 paths likewise resolve there in the verifier. `--run` is a fresh lowercase
 directory name, not a path. Output is always this checkout's
 `data-tools/out/dice-effective-<run>/`; the output root may not redirect through
-a filesystem alias. Existing runs are never overwritten. Missing, duplicate,
-out-of-scope or illegal evidence bindings fail before final output; the
-maintained PDF verifier then reopens explicit actual PDFs and validates every
-accepted field's current page/span/effective-text binding. Its temporary decision
+a filesystem alias. Existing runs are never overwritten. The bounded SC verifier
+authenticates 20 original files against the same accepted private commit, using
+Git bytes and direct comparison (only JSON/JSONL CRLF/LF normalization is allowed):
+the 17 original evidence files used by #311's reconstruction, the two accepted
+exports and `issue-259/source-authority.json`. Native fields retain their exact
+original pages/spans, reasons and visual review; independent fields retain the
+accepted row's sourcePages and surviving original visual binding. Missing or
+changed originals fail; generated aggregates never replace them.
+
+Optional `--pdf-evidence <path>` compares an existing generated object with that
+complete derived object, including every original binding/page/span and visual
+claim. It grants no authority. A real but unrelated span cannot replace an
+accepted field's original page, even when the generic supplemental verifier
+would accept the field text and find that span in the PDF. The bounded verifier
+also reopens SC's accepted printing-identity page and the complete official
+errata page against the committed authority contract (4 SC and 147 errata spans).
+Missing source IDs, changed actual authority/errata spans or changed authority
+input files fail before final output. It then uses the maintained supplemental
+verifier to re-read all 327 accepted-evidence pages and bind all 879 fields.
+This inexpensive read avoids freshness caches and retains the original tested
+coverage; it performs no new semantic or visual review. Its temporary decision
 file stays under worktree output and is removed even on failure. No importer
 consumes these files.
 

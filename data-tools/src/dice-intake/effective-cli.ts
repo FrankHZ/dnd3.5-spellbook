@@ -92,10 +92,13 @@ function main() {
   const output = join(outputRoot, `dice-effective-${run}`);
   const result = preflightEffectiveSc(localDataDir(root), arg("accepted-baseline"),
     resolve(root, arg("rules-db")), resolve(root, arg("content-db")));
-  const evidencePath = resolve(root, arg("pdf-evidence"));
-  const evidence = JSON.parse(readFileSync(evidencePath, "utf8")) as {
-    bindings: Parameters<typeof assertCompletePdfBindings>[0] };
-  assertCompletePdfBindings(evidence.bindings, result.output);
+  // Generated evidence may be compared, but never supplies original authority.
+  const evidencePath = argv.includes("--pdf-evidence") ? resolve(root, arg("pdf-evidence")) : undefined;
+  if (evidencePath) {
+    const candidate = JSON.parse(readFileSync(evidencePath, "utf8")) as {
+      bindings: Parameters<typeof assertCompletePdfBindings>[0] };
+    assertCompletePdfBindings(candidate.bindings, result.output);
+  }
   const sources = argv.flatMap((value, index) => value === "--source" ? [argv[index + 1]!] : []);
   assert(sources.length > 0 && sources.every(Boolean), "missing --source ID=PDF");
   const scratch = mkdtempSync(join(outputRoot, "dice-effective-preflight-"));
@@ -103,11 +106,10 @@ function main() {
   try {
     const decisions = join(scratch, "decisions.jsonl");
     writeFileSync(decisions, result.reviews.map(row => JSON.stringify(row)).join("\n") + "\n", "utf8");
-    // Some real PDFs emit MuPDF diagnostics on stdout. Route diagnostics to
-    // stderr so the maintained verifier's JSON result remains machine-readable.
-    pdf = JSON.parse(execFileSync(resolve(root, arg("pdf-python")), ["-B", "-c",
-      "import sys,runpy,pymupdf; pymupdf.set_messages(stream=sys.stderr); runpy.run_module('pdf_extract.verify_evidence',run_name='__main__')",
-      "--evidence", evidencePath, "--decisions", decisions, ...sources.flatMap(value => ["--source", value])],
+    pdf = JSON.parse(execFileSync(resolve(root, arg("pdf-python")), ["-B", "-m", "pdf_extract.verify_effective_sc",
+      "--data-root", localDataDir(root), "--accepted-baseline", arg("accepted-baseline"),
+      ...(evidencePath ? ["--evidence", evidencePath] : []),
+      "--decisions", decisions, ...sources.flatMap(value => ["--source", value])],
     { cwd: root, encoding: "utf8", env: { ...process.env,
       PYTHONPATH: join(root, "data-tools/pdf-extract/src") } }));
   } finally {

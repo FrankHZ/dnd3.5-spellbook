@@ -43,6 +43,8 @@ The read-only dice TXT intake and field-level QA validation are described at the
 [replacement boundary](../docs/operations/import-workflow.md#dice-text-boundary).
 `dice:effective` composes SC's exact accepted native/independent handoff with
 complete current CHM/English after the unchanged formal QA and fresh PDF verifier.
+The source entry derives original bindings and printing/errata authority from
+the accepted private Git revision; optional generated evidence is comparison-only.
 It writes inspection-only field provenance and coverage to a new directory in
 this worktree's `data-tools/out/`; see the
 [effective projection contract](../docs/operations/import-workflow.md#effective-chinese-preflight).
