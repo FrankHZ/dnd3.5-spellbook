@@ -8,7 +8,7 @@ repeats no entry QA and makes no source ruling or activation decision.
 
 Public dispatch and execution base: `b3a80865175d68de48342c8eba1a81bee1c48683`.
 Private accepted base: `64bfb81abd8f32eeb6f2cc889c265b8bf01f7044`.
-Private delivery: `0fe4d49d39e505034ef08ae15581363612784be2`, local only, under
+Private delivery: `da691dacd3973d38a9d0f66a08d78fdb1eaafd47`, local only, under
 `data/dice-qa/books/86/issue-313/`. No private data was pushed.
 
 ## Recomputed field and target coverage
@@ -116,7 +116,8 @@ no body is moved into a neighboring absent-Chinese target and no entity is added
 
 ## Validation and activation boundary
 
-Executing helper source: `558924188ca7733e28aea44796bdb84fdd51526f`.
+Original root/package executing helper source:
+`558924188ca7733e28aea44796bdb84fdd51526f`.
 Private `reproduction-run-01.json` and `reproduction-run-02.json` record root and
 package invocations, actual outer/nested argv/cwd, public/private execution heads,
 committed-source comparisons, output and exit codes. Both runs pass five commands:
@@ -133,6 +134,18 @@ committed-source comparisons, output and exit codes. Both runs pass five command
   old consumers and source-request joins. Old evidence outside #313 is unchanged.
 - Maintained `dice:qa:test`, including 104 source-bound rejection checks;
   the reused actual-input verifier also passes six rejection cases.
+
+The bounded source-group correction uses helper revision
+`6ac87adec980a53a60f24fd206c59b57ab2ae69a`.
+`source-revalidation-01.json` records the actual aggregate commands and committed
+helper bindings. All 149 frozen pending publication labels were checked; the
+omitted Libris Mortis label for 3978 is restored without authenticating a printing
+or locator. The other 148 requests, coverage, question mapping and inventory are
+unchanged. Historical comparison aids and unexpanded literal references remain
+distinct from required sources; genuine unknown claims remain unknown. Both
+label-loss and comparison-promotion regressions are rejected. This check reruns
+only aggregate derivation and source-group validation. Original DB run records
+and their executing versions remain unchanged; no DB or PDF check was repeated.
 
 Independent checkout dependencies and Prisma clients were prepared. Session
 `turn_context` metadata verifies model `gpt-6.1-sol`, effort `high`; the private
