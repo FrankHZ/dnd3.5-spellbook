@@ -31,12 +31,16 @@ def verify_evidence(evidence: dict, decisions: list[dict], sources: dict[str, Pa
     span (text, bbox, font, origin and flags) is compared with a fresh extraction.
     """
     require(evidence.get("schema") == 1, "unsupported supplemental evidence schema")
-    reviews = {row["sourceKey"]: row for row in decisions}
-    require(len(reviews) == len(decisions), "duplicate decision sourceKey")
+    def review_key(row):
+        return (row["targetId"], row["field"]) if row["sourceKey"] is None else row["sourceKey"]
+
+    reviews = {review_key(row): row for row in decisions}
+    require(len(reviews) == len(decisions), "duplicate decision sourceKey/target/field")
     pages = evidence["pages"]
     require(bool(pages), "missing PDF pages")
     seen_pages = set()
     verified_spans = {}
+    verified_text = {}
     span_count = 0
     for saved in pages:
         key = (saved["sourceId"], saved["pageIndex"])
@@ -63,6 +67,7 @@ def verify_evidence(evidence: dict, decisions: list[dict], sources: dict[str, Pa
             except IndexError as error:
                 raise ValueError(f"missing PDF span {key} {loc}") from error
             require(span == fragment["value"], f"changed PDF span {key} {loc}")
+            verified_text[(key, loc)] = span["text"]
             span_count += 1
         verified_spans[key] = seen_spans
 
@@ -70,24 +75,29 @@ def verify_evidence(evidence: dict, decisions: list[dict], sources: dict[str, Pa
     bindings = evidence["bindings"]
     require(bool(bindings), "missing field bindings")
     for binding in bindings:
-        key = (binding["sourceKey"], binding["field"])
+        independent = binding["sourceKey"] is None
+        decision_key = (binding["targetId"], binding["field"]) if independent else binding["sourceKey"]
+        key = (decision_key, binding["field"])
         require(key not in seen_bindings, f"duplicate field binding {key}")
         seen_bindings.add(key)
-        review = reviews.get(key[0])
+        review = reviews.get(decision_key)
         require(review is not None and review["targetId"] == binding["targetId"],
                 f"stale target/source binding {key}")
-        require(key[1] in ("name", "descriptionHtml"), f"invalid bound field {key}")
-        decision = review["fields"][key[1]]
+        require(key[1] in (("name", "descriptionText") if independent else ("name", "descriptionHtml")),
+                f"invalid bound field {key}")
+        decision = review if independent else review["fields"][key[1]]
         require(decision["status"] == binding["status"], f"stale field status {key}")
-        if decision["status"] == "accepted":
-            effective = decision["replacementText"]
+        if decision["status"] == "accepted" or (independent and decision["status"] == "accepted-with-source-issues"):
+            effective = decision["after"] if independent else decision["replacementText"]
         else:
             require(decision["status"] == "deferred", f"unsupported evidence disposition {key}")
-            effective = review["input"]["baselineName" if key[1] == "name" else "baselineBody"]
+            effective = review["before"] if independent else review["input"]["baselineName" if key[1] == "name" else "baselineBody"]
         require(effective == binding["effectiveText"], f"stale effective field text {key}")
         require(bool(binding["reason"].strip()) and bool(binding["visualReview"].strip()),
                 f"incomplete semantic/visual review {key}")
         require(bool(binding["pages"]), f"missing bound PDF pages {key}")
+        if independent:
+            require(binding["pages"] == review["sourcePages"], f"stale original source pages {key}")
         for page in binding["pages"]:
             page_key = (page["sourceId"], page["pageIndex"])
             require(page_key in seen_pages,
@@ -95,6 +105,14 @@ def verify_evidence(evidence: dict, decisions: list[dict], sources: dict[str, Pa
             require(bool(page["spanRefs"]), f"missing bound PDF spans {key}")
             require(all(tuple(loc) in verified_spans[page_key] for loc in page["spanRefs"]),
                     f"unverified bound PDF span {key}")
+        if independent and review.get("retainedSourceIssues"):
+            for issue in review["retainedSourceIssues"]["issues"]:
+                for statement in issue["statements"]:
+                    page_key = (statement["sourceId"], statement["pageIndex"])
+                    require(page_key in seen_pages and all(tuple(loc) in verified_spans[page_key]
+                            for loc in statement["spanRefs"]), f"unverified source issue span {key}")
+                    quote = "\n".join(verified_text[(page_key, tuple(loc))] for loc in statement["spanRefs"])
+                    require(statement["sourceQuote"] == quote, f"stale source issue quote {key}")
     return {"validation": "verified-supplemental-pdf-bindings", "pages": len(pages),
             "spans": span_count, "fields": len(bindings)}
 
