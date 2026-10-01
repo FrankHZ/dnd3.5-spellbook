@@ -415,7 +415,7 @@ the complete new text, actual old HTML and explicitly escaped `<pre>` projection
 Missing Chinese is reviewed absence, not permission to invent a corrected fallback.
 Changed inputs, unreviewed fields and unresolved source evidence fail acceptance.
 
-For an explicitly authorized faithful translation of a known internal source
+For an explicitly authorized faithful translation of a known source
 conflict, missing explanation or interpretation question, the independent body
 schema supports
 `accepted-with-source-issues`. Its `retainedSourceIssues` binds the complete body,
@@ -430,6 +430,20 @@ verify the actual source statements with the supplemental PDF verifier and
 main-gate review before accepting an exact private revision. These checks do not
 infer semantic completeness, certify a different printing, or authorize writing
 canonical English/mechanics or production content.
+
+For a verified cross-source `conflict`, explicitly list distinct
+`retainedSourceIssues.comparisonSourceIds` bound in `sourcePages`. Each opposing
+comparison statement must set `contentLocation: "note"`, with its Chinese text
+contained in that issue's reviewed `note`; it cannot enter the primary body.
+The conflict must also retain a primary-source statement in `bodyText`.
+Primary statements use `contentLocation: "body"` (the default for older rows).
+Every declared comparison source must be used. Missing declarations, a foreign
+body statement, a primary-source note statement, stale note text, or relabeling
+an external conflict as an interpretation/omission fails validation. Supply
+the real source identity, page, spans and exact quote for both statements and
+verify all comparison spans against explicit actual PDFs with the supplemental
+verifier before handoff. Neither a declaration nor `originalSourceRead` alone
+proves the PDF's identity or resolves the conflict.
 
 Use issue kind `conflict` for opposing source statements (at least two),
 `missing-explanation` for a concrete absent explanation, and `interpretation`

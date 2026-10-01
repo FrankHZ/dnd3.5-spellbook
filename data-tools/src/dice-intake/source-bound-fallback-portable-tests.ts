@@ -136,5 +136,62 @@ for (const kind of ["missing-explanation", "interpretation"] as const) {
   }, /duplicate opposing/);
 }
 retainedFails(r => { (r.retainedSourceIssues!.issues[0] as unknown as { kind: string }).kind = "unverified-external-source"; }, /cannot claim resolution/);
+const cross = structuredClone(retained);
+cross.sourcePages.push({ sourceId: "comparison", pageIndex: 1, printedPage: 2, spanRefs: [[1, 0, 0], [1, 1, 0]] });
+cross.retainedSourceIssues!.comparisonSourceIds = ["comparison"];
+const crossIssue = cross.retainedSourceIssues!.issues[0]!;
+crossIssue.note = "对照来源通常规定：造成1d6寒冷伤害。主来源原述保留，是否例外未决。";
+crossIssue.statements[1] = { sourceId: "comparison", pageIndex: 1, printedPage: 2,
+  spanRefs: [[1, 0, 0], [1, 1, 0]], sourceQuote: "Synthetic comparison rule", chinese: "造成1d6寒冷伤害。", contentLocation: "note" };
+refresh(cross);
+assert.equal(run([cross]).summary.sourceUnresolvedFields, 1, "explicit comparison remains in audited notes");
+assert(!cross.retainedSourceIssues!.bodyText.includes(crossIssue.statements[1]!.chinese));
+function crossFails(change: (item: SourceBoundFallbackReview) => void, pattern: RegExp): void {
+  const item = structuredClone(cross); change(item); assert.throws(() => run([item]), pattern); rejected++;
+}
+crossFails(r => { delete r.retainedSourceIssues!.comparisonSourceIds; }, /explicit comparison note/);
+crossFails(r => { r.retainedSourceIssues!.comparisonSourceIds = []; }, /explicit comparison sources/);
+crossFails(r => { r.retainedSourceIssues!.comparisonSourceIds = ["unknown"]; }, /comparison source binding/);
+crossFails(r => { r.retainedSourceIssues!.comparisonSourceIds = ["synthetic"]; }, /comparison source binding/);
+crossFails(r => { r.retainedSourceIssues!.comparisonSourceIds!.push("comparison"); }, /comparison source binding/);
+crossFails(r => {
+  r.sourcePages.push({ sourceId: "unused", pageIndex: 0, printedPage: 1, spanRefs: [[0, 0, 0]] });
+  r.retainedSourceIssues!.comparisonSourceIds!.push("unused");
+}, /unused comparison/);
+crossFails(r => { delete r.retainedSourceIssues!.issues[0]!.statements[1]!.contentLocation; }, /explicit comparison note/);
+crossFails(r => { r.retainedSourceIssues!.issues[0]!.statements[1]!.contentLocation = "body"; }, /explicit comparison note/);
+crossFails(r => { r.retainedSourceIssues!.issues[0]!.statements[0]!.contentLocation = "note"; }, /original page/);
+crossFails(r => {
+  (r.retainedSourceIssues!.issues[0]!.statements[0] as unknown as { contentLocation: null }).contentLocation = null;
+}, /original page/);
+crossFails(r => { r.retainedSourceIssues!.issues[0]!.statements[1]!.sourceId = "unknown"; }, /original page/);
+crossFails(r => { r.retainedSourceIssues!.issues[0]!.statements[1]!.sourceId = "synthetic"; }, /original page/);
+crossFails(r => { r.retainedSourceIssues!.issues[0]!.statements[1]!.printedPage = 3; }, /original page/);
+crossFails(r => { r.retainedSourceIssues!.issues[0]!.statements[1]!.spanRefs = [[9, 0, 0]]; }, /original page/);
+crossFails(r => { r.retainedSourceIssues!.issues[0]!.note = "已删除实际对照规则"; refresh(r); }, /comparison note/);
+crossFails(r => { r.retainedSourceIssues!.bodyText += "造成1d6寒冷伤害。"; refresh(r); }, /copied into primary body/);
+crossFails(r => { r.retainedSourceIssues!.issues[0]!.statements = [structuredClone(r.retainedSourceIssues!.issues[0]!.statements[1]!)]; }, /opposing source/);
+crossFails(r => {
+  const issue = r.retainedSourceIssues!.issues[0]!;
+  issue.statements[0] = { ...structuredClone(issue.statements[1]!), spanRefs: [[1, 0, 0]] };
+}, /lacks original body statement/);
+crossFails(r => { r.retainedSourceIssues!.issues[0]!.statements.push(structuredClone(r.retainedSourceIssues!.issues[0]!.statements[1]!)); }, /duplicate opposing/);
+crossFails(r => {
+  const issue = r.retainedSourceIssues!.issues[0]!;
+  issue.statements.push({ ...structuredClone(issue.statements[1]!), spanRefs: [[1, 1, 0], [1, 0, 0]] });
+}, /duplicate opposing/);
+crossFails(r => { r.retainedSourceIssues!.issues[0]!.statements[1]!.spanRefs.push([1, 0, 0]); }, /duplicate source issue span/);
+for (const kind of ["missing-explanation", "interpretation"] as const) {
+  crossFails(r => { r.retainedSourceIssues!.issues[0]!.kind = kind; }, /explicit comparison note/);
+}
+crossFails(r => { r.pendingSourceEvidence = ["unread external comparison"]; }, /closed rule evidence/);
+crossFails(r => { r.originalSourceRead = false; }, /not actually reviewed/);
+crossFails(r => { delete r.fullBodyAudit; }, /full-body audit/);
+crossFails(r => { r.fullBodyAudit!.effectiveText = after; }, /audited full text/);
+crossFails(r => { r.after += "stale note"; r.proposedHtml = escapedFallbackHtml(r.after); }, /stale source issue notes/);
+crossFails(r => { r.input.english.mechanics.range = "stale"; }, /full English/);
+crossFails(r => { r.input.chinese.descriptionHtml = "stale"; }, /full Chinese/);
+crossFails(r => { r.input.englishHtml = "stale"; }, /English HTML/);
+crossFails(r => { r.proposedHtml = "stale"; }, /projection mismatch/);
 assert.throws(() => validateSourceBoundFallbackReviews([row], 99, english, html, chinese, []), /unknown.*scope/);
 console.log(`source-bound fallback portable tests passed (${rejected + 6} rejection checks)`);

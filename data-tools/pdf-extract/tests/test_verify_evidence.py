@@ -112,5 +112,43 @@ class SupplementalEvidenceTests(unittest.TestCase):
                 self.verify(decisions=[changed, other])
 
 
+    def test_explicit_comparison_re_reads_both_actual_pdf_sources(self):
+        comparison = Path(self.temp.name) / "comparison.pdf"
+        with pymupdf.open() as document:
+            page = document.new_page()
+            page.insert_text((72, 72), "Synthetic comparison: every two levels")
+            document.save(comparison)
+        with pymupdf.open(comparison) as document:
+            page = json.loads(json.dumps(extract_page(document[0], {})))
+        self.evidence["pages"].append({"sourceId": "comparison", "pageIndex": 0, "pageCount": 1,
+            **{key: page[key] for key in ("extractor", "options", "geometry")},
+            "spans": [{"block": 0, "line": 0, "span": 0, "value": page["blocks"][0]["lines"][0]["spans"][0]}]})
+        pages = [{"sourceId": source, "pageIndex": 0, "printedPage": 1, "spanRefs": [[0, 0, 0]]}
+                 for source in ("fixture", "comparison")]
+        statements = [{**p, "contentLocation": location, "sourceQuote": saved["spans"][0]["value"]["text"]}
+                      for p, location, saved in zip(pages, ("body", "note"), self.evidence["pages"])]
+        review = {"sourceKey": None, "targetId": 7, "field": "descriptionText",
+            "status": "accepted-with-source-issues", "after": "原述。对照备注。", "sourcePages": pages,
+            "retainedSourceIssues": {"sourceId": "fixture", "comparisonSourceIds": ["comparison"],
+                                     "issues": [{"statements": statements}]}}
+        self.evidence["bindings"][0].update(sourceKey=None, field=review["field"], status=review["status"],
+                                         effectiveText=review["after"], pages=pages)
+        sources = {"fixture": self.pdf, "comparison": comparison}
+        self.assertEqual(verify_evidence(self.evidence, [review], sources)["pages"], 2)
+        for mutate, pattern in (
+            (lambda r: r["retainedSourceIssues"]["issues"][0]["statements"][1].update(sourceQuote="stale quote"), "stale source issue quote"),
+            (lambda r: r["retainedSourceIssues"]["issues"][0]["statements"][1].update(sourceId="fixture"), "stale source issue quote"),
+            (lambda r: r["retainedSourceIssues"]["issues"][0]["statements"][1].update(spanRefs=[[9, 0, 0]]), "unverified source issue span"),
+            (lambda r: r.update(after="stale comparison note"), "stale effective field"),
+        ):
+            changed = copy.deepcopy(review); mutate(changed)
+            with self.subTest(pattern=pattern), self.assertRaisesRegex(ValueError, pattern):
+                verify_evidence(self.evidence, [changed], sources)
+        with self.assertRaisesRegex(ValueError, "missing explicit PDF source"):
+            verify_evidence(self.evidence, [review], {"fixture": self.pdf})
+        with self.assertRaisesRegex(ValueError, "changed PDF page count"):
+            verify_evidence(self.evidence, [review], {"fixture": self.pdf, "comparison": self.pdf})
+
+
 if __name__ == "__main__":
     unittest.main()
