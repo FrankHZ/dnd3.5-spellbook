@@ -388,6 +388,12 @@ Main-gate must review that restored contract before subsequent batches use it.
 See the [source-free current verification report](../releases/v1.4/spell-compendium-restored-baseline-report.md)
 for the exact execution and handoff revisions.
 
+Subsequent complete-entry handoffs keep retained fields and specific evidence
+gaps separate from new correction exports. The
+[SC batch-01 report](../releases/v1.4/spell-compendium-batch-01-report.md)
+records its exact scope, input contract, old export blockers and proposed union.
+It does not widen the restored CLI's fixed input paths or authorize activation.
+
 With `--check-incomplete`, the command writes only `coverage.json` and allows
 existing `queue:` reviewer markers and missing full-body audits to remain
 pending. Evidence-based `deferred` decisions are distinct from those queue
