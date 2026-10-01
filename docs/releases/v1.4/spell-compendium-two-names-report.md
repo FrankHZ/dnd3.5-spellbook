@@ -8,7 +8,7 @@ The proposals are project translations, without a claim of official terminology.
 This report contains no source text, translations, or PDF spans.
 
 The local-only private delivery is
-`ed94784a5a5d21ee4dea0bf0693edbbb2fb5de13`, under
+`2d3f925fc42e0b72e6c7bb8a47a82c63d907df6f`, under
 `data/dice-qa/books/86/issue-290/`. Public dispatch base is
 `1bd5614f307adb82e4dcf17cd2cf948e31bb380b`; private dispatch base is
 `63889c8e4fa0dcc180bd2e912d017de9e4558de7`.
@@ -57,7 +57,11 @@ fields, target 4204's name and other residuals remain unchanged.
 
 The private `reproduce.py` records exact argv, cwd, public/private execution
 heads, stdout/stderr and exits in append-only `reproduction-run-NN.json`.
-The final recorded run is 04: all ten commands exit 0.
+The final recorded run is 05: all ten commands exit 0. Its execution heads are
+public `07f7faff9028b6b4746d79111b4de902fea349bb` and private
+`ed94784a5a5d21ee4dea0bf0693edbbb2fb5de13`. The private
+`run-source-bindings.json` directly compares every helper with that committed
+source revision. Public tool sources are unchanged by the reporting commits.
 
 - Existing all-table checker verifies the designated temporary 315-operation
   rules patch copy and 56 unchanged tables. Content generation provenance and
