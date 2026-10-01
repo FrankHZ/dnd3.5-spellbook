@@ -131,6 +131,15 @@ extraction and the current scoped field decisions:
   --source 'errata=D:/private/errata.pdf'
 ```
 
+The generic supplemental verifier proves span freshness and decision/text
+alignment; it does not authenticate a native field's accepted original page or
+visual-review claim. SC's maintained `dice:effective` entry instead invokes
+`pdf_extract.verify_effective_sc`: it binds #311's original evidence files and
+SC printing/complete-errata authority to the explicit accepted private commit,
+derives the fixed evidence union, and then calls this supplemental verifier.
+Any optional generated evidence is comparison-only. See the
+[effective preflight contract](../../docs/operations/import-workflow.md#effective-chinese-preflight).
+
 The schema-1 evidence object has `pages` and `bindings`. Each page records an
 explicit `sourceId`, `pageIndex`, `pageCount`, extraction `extractor`, `options`,
 `geometry`, and selected `spans`. A span has zero-based block/line/span array

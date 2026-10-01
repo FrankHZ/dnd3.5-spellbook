@@ -511,6 +511,116 @@ selective replacement. Preserve uncovered CHM and English fallback, canonical
 English, mechanics, summaries, existing identities, and source provenance.
 Runtime consumers do not adjudicate competing sources.
 
+### Effective Chinese preflight
+
+`dice:effective` supports only the accepted SC #311/batch-06 handoff, with an
+explicit main-gate accepted private commit. An arbitrary commit or `accepted`
+label is not acceptance authority. The command binds the actual native and
+independent exports and complete 1002-target current snapshot to that commit;
+#313 navigation/aggregate reports are not inputs. It calls the same complete
+formal QA validation as `dice:qa`, including the fixed #298 restored inputs,
+105 TXT files, reconciliation, decisions, corrections, boundaries and audits.
+It compares the native export to that result and revalidates all 221 independent
+rows against current Chinese/English/HTML/mechanics and the native accepted set.
+The fixed restored CLI contract remains unchanged. Historical native deferrals
+already superseded by the exact accepted independent handoff remain accepted;
+later deferred drafts cannot enter via a different file or mutated export.
+
+Use the accepted 315-patch rules input on a disposable copy produced by the
+existing `rules:spells:apply ... --dry-run` command. The unpatched operator rules
+file is not the accepted QA input. Keep operator rules/content/app-state read
+only. The entry derives complete supplemental evidence directly from the original
+accepted private files; no generated evidence input is required:
+
+```powershell
+npm run -w data-tools dice:effective -- `
+  --accepted-baseline <exact-main-gate-accepted-private-commit> `
+  --rules-db <absolute-disposable-patched-rules.sqlite> `
+  --content-db <absolute-readonly-content.sqlite> `
+  --pdf-python <absolute-pdf-extract-venv-python.exe> `
+  --source sc=<absolute-SC.pdf> --source errata=<absolute-SC-errata.pdf> `
+  --source phb=<absolute-PHB.pdf> --source phb-errata=<absolute-PHB-errata.pdf> `
+  --run sc-check-01
+```
+
+Use `npm run dice:effective -- ...` from `data-tools/`. Root `.env`
+`DATA_REPO_PATH` selects the independent private repo. Explicit relative file
+paths resolve from the code repository root in either cwd; `--source ID=PDF`
+paths likewise resolve there in the verifier. `--run` is a fresh lowercase
+directory name, not a path. Output is always this checkout's
+`data-tools/out/dice-effective-<run>/`; the output root may not redirect through
+a filesystem alias. Existing runs are never overwritten. The bounded SC verifier
+authenticates 20 original files against the same accepted private commit, using
+Git bytes and direct comparison (only JSON/JSONL CRLF/LF normalization is allowed):
+the 17 original evidence files used by #311's reconstruction, the two accepted
+exports and `issue-259/source-authority.json`. Native fields retain their exact
+original pages/spans, reasons and visual review; independent fields retain the
+accepted row's sourcePages and surviving original visual binding. Missing or
+changed originals fail; generated aggregates never replace them.
+
+Optional `--pdf-evidence <path>` compares an existing generated object with that
+complete derived object, including every original binding/page/span and visual
+claim. It grants no authority. A real but unrelated span cannot replace an
+accepted field's original page, even when the generic supplemental verifier
+would accept the field text and find that span in the PDF. The bounded verifier
+also reopens SC's accepted printing-identity page and the complete official
+errata page against the committed authority contract (4 SC and 147 errata spans).
+Missing source IDs, changed actual authority/errata spans or changed authority
+input files fail before final output. It then uses the maintained supplemental
+verifier to re-read all 327 accepted-evidence pages and bind all 879 fields.
+This inexpensive read avoids freshness caches and retains the original tested
+coverage; it performs no new semantic or visual review. Its temporary decision
+file stays under worktree output and is removed even on failure. No importer
+consumes these files.
+
+`effective.jsonl` contains exactly two effective fields per existing target,
+with independent `name.origin` and `body.origin`. Each records native sourceKey,
+independent null sourceKey plus sourceRef/pages/status, retained CHM sourceKey,
+or explicit English fallback. Names and bodies can have different languages
+and sources. Native escaped `<pre>` HTML is decoded through the existing
+Cheerio HTML mechanism; independent complete text and escaped HTML retain
+their full-body audit and source-issue notes. Retained CHM/English text and HTML
+are copied verbatim, including tables and mixed historical content. No field
+is deleted, translated, moved to another target, or given the other field's
+provenance. `coverage.json` contains source-free counts and input revisions:
+879 accepted replacements (658 native + 221 independent; 41 names + 838 bodies)
+and 1125 complement fields. The complement counts legitimate CHM retention and
+English fallback, not quality errors or completion of outstanding review.
+These files are explicitly `importable: false`, `activation: false`.
+
+#### Follow-up storage and consumers
+
+The current `I18nSpellText` unique key `(spellId, lang, variant)` can hold a
+separate effective variant while preserving explicit `chm`, but its single
+row-level `sourceKey` cannot truthfully describe mixed name/body origins. A
+bounded follow-up should add field provenance on that existing row (for example
+two nullable provenance JSON columns carrying origin and accepted revision/
+target/field locator), with corresponding DTO mapping. Keep the row sourceKey
+only when both fields really have the same source; use null for mixed origins.
+No source registry or separate translation service is required. The exact schema,
+variant name and omitted-variant/default policy remain follow-up decisions.
+
+A writer must materialize complete effective fields, preserve the original CHM
+variant, and distinguish an English fallback field from a Chinese translation.
+The future omitted-variant policy must work consistently in detail, lists,
+search and summary fallback. Explicit `variant=chm` must continue to return the
+original CHM row. Current consumers default Chinese requests to `chm`, expose
+one sourceKey, and select summary variants separately; this slice changes none
+of those behaviors. Canonical English/mechanics, summaries, relationships,
+normalized entities and publication metadata remain outside the overlay.
+
+The safe rebuild order is: accepted rules-copy generation and normalized content
+import → complete CHM rebuild and other Chinese imports → validated selective
+overlay in a transaction → derived search rebuild → provenance/parity and
+explicit/default consumer checks. `import-zh-chm.ts` deletes **all** Chinese
+spell rows before recreating CHM, including other variants. Running it after
+overlay destroys that overlay; rebuilding search too early leaves missing or
+stale search text. Disposable SQL counterexamples cover both errors. A writer
+must treat the full order as one build contract and require fresh preflight;
+these projection checks establish no storage import, API compatibility, default
+change, production variant or deployment readiness. #121 and other books remain
+separate scopes.
+
 ## Suspended PHB Work
 
 PDF/MinerU/SRD extraction, translation, and manual queues remain suspended;
