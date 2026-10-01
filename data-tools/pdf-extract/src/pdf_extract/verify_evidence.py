@@ -36,6 +36,17 @@ def verify_evidence(evidence: dict, decisions: list[dict], sources: dict[str, Pa
 
     reviews = {review_key(row): row for row in decisions}
     require(len(reviews) == len(decisions), "duplicate decision sourceKey/target/field")
+    for review in decisions:
+        retained = review.get("retainedSourceIssues") if review["sourceKey"] is None else None
+        if retained and retained.get("comparisonSourceIds"):
+            source_paths = []
+            for source_id in [retained["sourceId"], *retained["comparisonSourceIds"]]:
+                require(source_id in sources, f"missing explicit PDF source {source_id}")
+                path = Path(sources[source_id]).resolve(strict=True)
+                for other_id, other_path in source_paths:
+                    require(not path.samefile(other_path),
+                            f"comparison sources alias the same physical PDF: {other_id}, {source_id}")
+                source_paths.append((source_id, path))
     pages = evidence["pages"]
     require(bool(pages), "missing PDF pages")
     seen_pages = set()

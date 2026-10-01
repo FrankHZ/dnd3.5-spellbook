@@ -1,5 +1,6 @@
 import copy
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -117,10 +118,11 @@ class SupplementalEvidenceTests(unittest.TestCase):
         with pymupdf.open() as document:
             page = document.new_page()
             page.insert_text((72, 72), "Synthetic comparison: every two levels")
+            document.new_page()
             document.save(comparison)
         with pymupdf.open(comparison) as document:
             page = json.loads(json.dumps(extract_page(document[0], {})))
-        self.evidence["pages"].append({"sourceId": "comparison", "pageIndex": 0, "pageCount": 1,
+        self.evidence["pages"].append({"sourceId": "comparison", "pageIndex": 0, "pageCount": 2,
             **{key: page[key] for key in ("extractor", "options", "geometry")},
             "spans": [{"block": 0, "line": 0, "span": 0, "value": page["blocks"][0]["lines"][0]["spans"][0]}]})
         pages = [{"sourceId": source, "pageIndex": 0, "printedPage": 1, "spanRefs": [[0, 0, 0]]}
@@ -146,8 +148,52 @@ class SupplementalEvidenceTests(unittest.TestCase):
                 verify_evidence(self.evidence, [changed], sources)
         with self.assertRaisesRegex(ValueError, "missing explicit PDF source"):
             verify_evidence(self.evidence, [review], {"fixture": self.pdf})
-        with self.assertRaisesRegex(ValueError, "changed PDF page count"):
+        with self.assertRaisesRegex(ValueError, "same physical PDF"):
             verify_evidence(self.evidence, [review], {"fixture": self.pdf, "comparison": self.pdf})
+
+        # Distinct, equally long wrong PDF: span verification still rejects it.
+        wrong = Path(self.temp.name) / "wrong.pdf"
+        with pymupdf.open() as document:
+            document.new_page().insert_text((72, 72), "Synthetic unrelated rule")
+            document.new_page()
+            document.save(wrong)
+        with self.assertRaisesRegex(ValueError, "changed PDF span"):
+            verify_evidence(self.evidence, [review], {"fixture": self.pdf, "comparison": wrong})
+
+        # Both source IDs now claim exactly the same real page, span and quote.
+        # Text/geometry/page-count checks would all pass without file identity.
+        aliased = copy.deepcopy(self.evidence["pages"][0])
+        aliased["sourceId"] = "comparison"
+        self.evidence["pages"][1] = aliased
+        statements[1]["sourceQuote"] = statements[0]["sourceQuote"]
+        nested = Path(self.temp.name) / "nested"
+        nested.mkdir()
+        hardlink = Path(self.temp.name) / "hardlink.pdf"
+        os.link(self.pdf, hardlink)
+        for alias in (self.pdf, nested / ".." / self.pdf.name, hardlink):
+            with self.subTest(alias=alias), self.assertRaisesRegex(ValueError, "same physical PDF"):
+                verify_evidence(self.evidence, [review], {"fixture": self.pdf, "comparison": alias})
+
+        # Old records without a comparison declaration keep their previous path.
+        legacy = copy.deepcopy(review)
+        del legacy["retainedSourceIssues"]["comparisonSourceIds"]
+        legacy["retainedSourceIssues"]["issues"][0]["statements"] = [legacy["retainedSourceIssues"]["issues"][0]["statements"][0]]
+        self.assertEqual(verify_evidence(self.evidence, [legacy],
+                                        {"fixture": self.pdf, "comparison": self.pdf})["pages"], 2)
+
+        # Aliases between two comparison IDs also fail, even when the primary
+        # PDF is a distinct file and every saved quote matches actual spans.
+        sources["other-comparison"] = comparison
+        third_page = {**copy.deepcopy(pages[1]), "sourceId": "other-comparison"}
+        pages.append(third_page)
+        review["retainedSourceIssues"]["comparisonSourceIds"].append("other-comparison")
+        statements[1]["sourceQuote"] = page["blocks"][0]["lines"][0]["spans"][0]["text"]
+        statements.append({**third_page, "sourceQuote": statements[1]["sourceQuote"]})
+        self.evidence["pages"][1] = {**aliased, "spans": [{"block": 0, "line": 0, "span": 0,
+                                                       "value": page["blocks"][0]["lines"][0]["spans"][0]}]}
+        self.evidence["pages"].append({**copy.deepcopy(self.evidence["pages"][1]), "sourceId": "other-comparison"})
+        with self.assertRaisesRegex(ValueError, "comparison, other-comparison"):
+            verify_evidence(self.evidence, [review], sources)
 
 
 if __name__ == "__main__":

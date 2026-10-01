@@ -442,7 +442,13 @@ body statement, a primary-source note statement, stale note text, or relabeling
 an external conflict as an interpretation/omission fails validation. Supply
 the real source identity, page, spans and exact quote for both statements and
 verify all comparison spans against explicit actual PDFs with the supplemental
-verifier before handoff. Neither a declaration nor `originalSourceRead` alone
+verifier before handoff. For declared comparisons, that verifier resolves the
+trusted explicit paths and uses filesystem identity to reject different IDs
+aliasing the same actual PDF, including primary/comparison and comparison pairs.
+This check covers normalized paths and filesystem links; it does not certify
+publication identity or compare copies by content. Older rows without comparison
+declarations retain their existing verification path.
+Neither a declaration nor `originalSourceRead` alone
 proves the PDF's identity or resolves the conflict.
 
 Use issue kind `conflict` for opposing source statements (at least two),
