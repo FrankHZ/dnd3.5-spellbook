@@ -28,7 +28,9 @@ function seed(db: Database.Database, legacy = false) {
       ('other:1', 1, 10, 'zh', 'other', '其他', '其他正文', 'other:1', CURRENT_TIMESTAMP),
       ('outside', 99, 99, 'zh', 'effective', '外书', '外书正文', 'outside', CURRENT_TIMESTAMP);
     INSERT INTO I18nSpellSummaryText (id, spellId, rulebookId, lang, summaryText, updatedAt)
-    VALUES ('summary:1', 1, 10, 'zh', '保留摘要', CURRENT_TIMESTAMP);`);
+    VALUES ('summary:1', 1, 10, 'zh', '保留摘要', CURRENT_TIMESTAMP);
+    INSERT INTO RulesContentIssue (id, sourceTable, sourceField, issueCode, severity)
+    VALUES ('synthetic-issue', 'synthetic', 'synthetic', 'preserved-issue', 'warning');`);
 }
 const overlays = (db: Database.Database) => db.prepare("SELECT * FROM I18nSpellText WHERE rulebookId=10 AND variant='effective' ORDER BY spellId").all();
 const dump = (db: Database.Database) => db.serialize();
@@ -81,6 +83,7 @@ try {
   assert.equal(stored[3]!.sourceKey, null, "English fallback is explicit");
   const meta = db.prepare("SELECT * FROM RulesContentBuild").get() as Record<string, unknown>;
   assert.equal(meta.sourceKind, "dice-effective-experiment");
+  assert.equal(meta.issueCount, 1, "experiment metadata retains the actual issue count");
   for (const col of ["sourceSha256", "rulesDbSha256", "migrationSetSha256", "parentRepoCommit", "dataRepoCommit"]) assert.equal(meta[col], null);
   assert.equal(JSON.parse(meta.buildMetaJson as string).artifact.importable, false);
   const after = dump(db);
@@ -89,6 +92,10 @@ try {
   assert.equal(repeat.unchanged, 5);
   assert.equal(repeat.markExperiment, false);
   assert.deepEqual(dump(db), after, "repeat leaves values, timestamps and metadata unchanged");
+  db.exec("UPDATE RulesContentBuild SET sourceSha256='stale-full-hash'");
+  assert.equal(writeEffectiveOverlay(db, rows, baseline, true).markExperiment, true);
+  writeEffectiveOverlay(db, rows, baseline, false);
+  assert.equal((db.prepare("SELECT sourceSha256 FROM RulesContentBuild").get() as { sourceSha256: string | null }).sourceSha256, null);
   const altered = structuredClone(rows); altered[0]!.name.text = "Different synthetic name";
   const updatePlan = writeEffectiveOverlay(db, altered, baseline, true);
   assert.equal(updatePlan.updates, 1);

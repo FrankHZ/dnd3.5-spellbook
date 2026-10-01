@@ -68,10 +68,15 @@ export function writeEffectiveOverlay(db: Database.Database, projection: Effecti
     scope: "limited", importable: false, activation: false,
     limitations: ["disposable SC overlay experiment", "search and consumers unvalidated", "full artifact provenance invalidated"] },
     acceptedRevision, rulebookId: book, targets: rows.length });
-  const builds = db.prepare("SELECT id, sourceKind, buildMetaJson FROM RulesContentBuild").all() as
-    Array<{ id: string; sourceKind: string; buildMetaJson: string | null }>;
-  const markExperiment = builds.length !== 1 || builds[0]!.id !== "dice-effective-experiment" ||
-    builds[0]!.sourceKind !== "dice-effective-experiment" || builds[0]!.buildMetaJson !== buildMetaJson;
+  const totals = db.prepare(`SELECT (SELECT count(*) FROM SpellContent) AS spellCount,
+    (SELECT count(*) FROM RulesContentIssue) AS issueCount`).get() as { spellCount: number; issueCount: number };
+  const experimentBuild = { id: "dice-effective-experiment", sourceKind: "dice-effective-experiment",
+    generatorVersion: "dice-effective-experiment.v1", ...totals, buildMetaJson,
+    sourceSha256: null, parentRepoCommit: null, dataRepoCommit: null, rulesManifestSha256: null,
+    rulesDbSha256: null, migrationSetSha256: null };
+  const builds = db.prepare("SELECT * FROM RulesContentBuild").all() as Array<Record<string, unknown>>;
+  const markExperiment = builds.length !== 1 || Object.entries(experimentBuild)
+    .some(([key, value]) => builds[0]![key] !== value);
   const plan = { migrate, markExperiment, targets: rows.length,
     inserts: rows.filter(row => row.action === "insert").length,
     updates: rows.filter(row => row.action === "update").length,
@@ -93,8 +98,7 @@ export function writeEffectiveOverlay(db: Database.Database, projection: Effecti
       // or deployment-looking commits attached to the altered database.
       db.prepare("DELETE FROM RulesContentBuild").run();
       db.prepare(`INSERT INTO RulesContentBuild (id, sourceKind, generatorVersion, spellCount, issueCount, buildMetaJson)
-        VALUES ('dice-effective-experiment', 'dice-effective-experiment', 'dice-effective-experiment.v1',
-          (SELECT count(*) FROM SpellContent), 0, ?)`).run(buildMetaJson);
+        VALUES (@id, @sourceKind, @generatorVersion, @spellCount, @issueCount, @buildMetaJson)`).run(experimentBuild);
     }
   }).immediate();
   return plan;
