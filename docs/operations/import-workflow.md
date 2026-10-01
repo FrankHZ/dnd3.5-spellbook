@@ -398,6 +398,10 @@ gaps separate from new correction exports. The
 [SC batch-06 report](../releases/v1.4/spell-compendium-batch-06-report.md)
 record their exact scopes, input contracts, old export blockers and proposed unions.
 These handoffs do not widen the restored CLI's fixed input paths or authorize activation.
+The [SC evidence handoff](../releases/v1.4/spell-compendium-evidence-handoff-report.md)
+reconciles all six batches, the accepted union/complement and concrete private
+source requests. Its static navigation preserves unresolved source, consumer and
+identity boundaries; it does not authorize evidence collection or activation.
 
 With `--check-incomplete`, the command writes only `coverage.json` and allows
 existing `queue:` reviewer markers and missing full-body audits to remain
