@@ -157,10 +157,8 @@ environment, exits, execution heads and helper-to-commit comparisons are private
   dependency boundaries, rewritten old native decisions, cleared residuals and
   candidate admission misrepresented as acceptance. Four PDF mutations also reject.
   Existing baseline input/PDF rejection checks and `dice:qa:test` pass.
-- 
-pm run typecheck:data-tools` passes after normal
-  
-pm run -w server db:generate` setup. The initial run lacked generated Prisma
+- `npm run typecheck:data-tools` passes after normal
+  `npm run -w server db:generate` setup. The initial run lacked generated Prisma
   clients; no schema or DB write was needed. Git diff and changed-link checks
   pass. Remote `ci:portable` remains the PR merge gate.
 
