@@ -54,11 +54,21 @@ Raise effort or model capability when investigation or failed acceptance shows
 a reasoning limitation; a tool outage, environment failure, or missing input
 alone is not such evidence.
 
-Put the recommended model, effort, and a brief reason in the task prompt. Check
-host availability and tool rules before applying overrides; use them only when
-authorized and supported. Otherwise distinguish the recommendation from the
-inherited setting. Prompt text alone does not change the running model. Do not
-add role adapters, global defaults, or a model registry to enforce this guidance.
+Carry forward the user's applicable model/version choice and authorization;
+do not request the same choice again. Put the selected model, effort, and a brief
+reason in the prompt, and pass the exact model ID and reasoning effort through
+the dispatch or continuation tool when authorized and supported. Model versions
+are distinct choices. Prompt text alone does not configure the running model.
+If tool rules or host availability prevent applying the selection, disclose the
+limitation before launching a substitute; do not silently inherit defaults.
+
+After creation or continuation, verify the actual model/version and effort from
+task/run metadata or read-only configuration before reporting the selected setup
+as active. Prompt text and the task's self-report are not verification. If the
+actual setup differs, correct it in the same task with explicit parameters and
+preserve existing work. Record the verified settings with the issue's dispatch
+evidence; if verification is unavailable, report that uncertainty. Do not add
+role adapters, global defaults, or a model registry to enforce this guidance.
 
 These are task-specific starting points; consult the current
 [OpenAI model-selection guidance](https://developers.openai.com/api/docs/guides/model-selection)
