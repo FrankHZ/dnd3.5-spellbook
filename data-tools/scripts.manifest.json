@@ -317,6 +317,20 @@
       "requiresSqlite": true,
       "writeCapable": false
     },
+    "summaries:step": {
+      "module": "short-desc",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "summaries:step:test": {
+      "module": "short-desc",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
     "summaries:import": {
       "module": "short-desc",
       "lifecycle": "maintained-local",

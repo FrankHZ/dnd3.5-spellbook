@@ -44,6 +44,7 @@ as described in the [short descriptions workflow](../docs/operations/import-work
 - [Exact search check, atomic rebuild and repeat](../docs/operations/import-workflow.md#exact-search-index-step)
 - [Exact normalized import check/apply/repeat](../docs/operations/import-workflow.md#normalized-content-import-step)
 - [Short descriptions](../docs/operations/import-workflow.md#short-descriptions)
+- [Exact summary check, atomic apply and repeat](../docs/operations/import-workflow.md#summary-import-step)
 - [DB handoff and artifact provenance](../docs/operations/db-content-workflow.md)
 - [Explicit-page PDF text/geometry extraction](./pdf-extract/README.md)
 
