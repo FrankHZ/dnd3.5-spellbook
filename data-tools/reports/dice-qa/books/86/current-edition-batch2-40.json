@@ -1,0 +1,682 @@
+{
+  "schema": 1,
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/324",
+  "parentIssue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/263",
+  "rulebookId": 86,
+  "validation": "validated-proposal-awaiting-main-gate",
+  "publicCodeBase": "94585f4f6bf986fe415246071330f071735bb1ca",
+  "publicExecutionHead": "94585f4f6bf986fe415246071330f071735bb1ca",
+  "privateInput": "513806265cf56a2732641dfc075ad2434db6a0cb",
+  "privateHandoffRevision": "95e1b5a639d25187788a0eb1ae5b1db302ff9ea7",
+  "privateHandoffDirectory": "dice-qa/books/86/issue-324",
+  "committedHelperRevision": "cfb14810349d0f542cf8bc37197a737988a56e81",
+  "scope": "Exactly frozen issue-313 positions 41-80: forty complete SC Chinese body proposals under the current-edition delivery scope",
+  "exactTargetIds": [
+    4309,
+    4316,
+    4643,
+    4655,
+    4739,
+    4743,
+    4760,
+    4768,
+    4774,
+    4781,
+    4782,
+    4787,
+    3779,
+    4490,
+    3883,
+    3941,
+    4279,
+    4280,
+    4455,
+    4478,
+    4486,
+    3531,
+    3541,
+    3565,
+    3776,
+    3823,
+    3832,
+    3834,
+    3835,
+    3838,
+    3843,
+    3845,
+    3847,
+    3853,
+    3859,
+    3861,
+    3863,
+    3868,
+    3872,
+    3899
+  ],
+  "bodyDispositions": {
+    "accepted": 39,
+    "accepted-with-source-issues": 1,
+    "deferred": 0
+  },
+  "targets": [
+    {
+      "targetId": 4309,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4316,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4643,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4655,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4739,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4743,
+      "bodyDisposition": "accepted-with-source-issues",
+      "historicalObligationRetired": false,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [
+        "4743:omitted-time-source"
+      ]
+    },
+    {
+      "targetId": 4760,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4768,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4774,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4781,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4782,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4787,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3779,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4490,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3883,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": false,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3941,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4279,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": false,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4280,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": false,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4455,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": false,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4478,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": false,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4486,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": false,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3531,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3541,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3565,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3776,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3823,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3832,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3834,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3835,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3838,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3843,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3845,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3847,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3853,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3859,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3861,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3863,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3868,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3872,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3899,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    }
+  ],
+  "history": {
+    "targetsWithRetiredObligations": 33,
+    "exactActualCurrentPassagesRecordedPrivately": 59,
+    "historicalClaimsAuthenticated": 0,
+    "frozenRecordsRewritten": false
+  },
+  "sourceIssues": {
+    "retainedInNewBodies": 1,
+    "targetIds": [
+      4743
+    ],
+    "frozenPending": 33,
+    "frozenOfficiallyResolved": 1,
+    "rulingsChanged": false,
+    "missingHeaderMechanicsCertified": false
+  },
+  "fieldUnion": {
+    "baselineNative": 658,
+    "nativeRows": 653,
+    "baselineIndependent": 261,
+    "baselineAccepted": 919,
+    "newIndependentBodies": 40,
+    "proposedIndependent": 301,
+    "proposedTotal": 959,
+    "proposedNames": 41,
+    "proposedBodies": 918,
+    "proposedFallbackComplement": 1045,
+    "totalFields": 2004,
+    "prior919FieldsBytePreserved": true,
+    "exactUniqueUnionAndComplementReconciled": true,
+    "otherFieldsPreserved": true
+  },
+  "sourceGapTargets": {
+    "oldNavigationCount": 149,
+    "previousSliceReviewed": 40,
+    "reviewedHere": 40,
+    "retainedOperativeBlockersHere": 0,
+    "outsideSliceUnreviewed": 69,
+    "proposedRemaining": 69,
+    "wholeBookCompletionClaim": false
+  },
+  "checks": {
+    "rootReproductionPassed": true,
+    "packageReproductionPassed": true,
+    "commandsPerReproduction": 6,
+    "committedHelperBytesVerified": true,
+    "readOnlyCurrentTargets": 1002,
+    "maintainedDisposablePatchOperations": 315,
+    "protectedUnchangedTables": 56,
+    "unlistedColumnsAndRelationshipsPreserved": true,
+    "fixedRestoredFormalNativeFields": 658,
+    "fixedRestoredFormalIndependentFields": 145,
+    "formalNativeAndFallbackExportsIdentical": true,
+    "baseline261AndProposed301IndependentFieldsRevalidated": true,
+    "fullFieldMutationRejections": 26,
+    "inputMutationRejections": 6,
+    "pdfOriginalPagesVerifiedAndViewed": 46,
+    "pdfOriginalSpansVerified": 2055,
+    "pdfBoundBodies": 40,
+    "pdfMutationRejections": 7,
+    "currentHTMLFieldsChecked": 80,
+    "finalHTMLFieldsChecked": 40,
+    "isolatedMarkupBodiesRendered": 40,
+    "representativeMarkupScreenshotsActuallyViewed": 4,
+    "maintainedDiceQATests": "passed: 104 source-bound rejection checks",
+    "maintainedEffectiveTests": "passed: 23 rejection checks and import-order counterexamples",
+    "actualConsumerReviews": 40,
+    "untouchedNeighborConsumerRead": 3846
+  },
+  "model": {
+    "id": "gpt-6.1-sol",
+    "reasoningEffort": "high",
+    "verifiedFromActualRunMetadata": true
+  },
+  "consumerBoundary": {
+    "acceptedIssue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/292",
+    "actualFieldsRelationshipsAndDisplayCodeReviewed": true,
+    "reviewedCodeFiles": 11,
+    "sourceSupportedDeclarationsAndInheritedRestrictionsPreserved": true,
+    "expandedUnsupportedExternalClaimsInProposedBodies": 0,
+    "externalCapabilitiesAuthenticated": false,
+    "keywordAbsenceUsedAsSemanticProof": false,
+    "privateEvidence": "consumer-obligation.json; reviewed-consumer-inputs.json; consumer-findings.json"
+  },
+  "retainedUnreadSourceAndRelationLimits": [
+    {
+      "targetId": 4743,
+      "exactPriorPreservedPrivately": true,
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 3883,
+      "exactPriorPreservedPrivately": true,
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4279,
+      "exactPriorPreservedPrivately": true,
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4280,
+      "exactPriorPreservedPrivately": true,
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4455,
+      "exactPriorPreservedPrivately": true,
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4478,
+      "exactPriorPreservedPrivately": true,
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4486,
+      "exactPriorPreservedPrivately": true,
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 3832,
+      "exactPriorPreservedPrivately": true,
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 3834,
+      "exactPriorPreservedPrivately": true,
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 3835,
+      "exactPriorPreservedPrivately": true,
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 3859,
+      "exactPriorPreservedPrivately": true,
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 3868,
+      "exactPriorPreservedPrivately": true,
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    }
+  ],
+  "identityBoundary": {
+    "targetId": 3845,
+    "untouchedNeighborId": 3846,
+    "donorTextPreservedPrivately": true,
+    "identityLimitsUnresolved": true,
+    "donorRelocated": false,
+    "entitiesCreatedOrRemapped": false
+  },
+  "nonHistoricalGlossBoundary": {
+    "targetId": 3859,
+    "expandedGeneralConditionGlossExcluded": true,
+    "excludedGlossRetainedUnreadInPrivateEvidence": true,
+    "excludedGlossClassifiedAsHistory": false,
+    "namedConditionAndAllSCLocalRestrictionsRetained": true,
+    "generalConditionGlossAuthenticated": false
+  },
+  "separateUnchangedConsumerFindings": [
+    {
+      "targetId": 4316,
+      "field": "summary:zh",
+      "kind": "semantic",
+      "detailsRef": "consumer-findings.json",
+      "needsSeparateOwner": true,
+      "fieldUnchanged": true,
+      "bodyDispositionUnaffected": true
+    },
+    {
+      "targetId": 4768,
+      "field": "summary:zh",
+      "kind": "semantic",
+      "detailsRef": "consumer-findings.json",
+      "needsSeparateOwner": true,
+      "fieldUnchanged": true,
+      "bodyDispositionUnaffected": true
+    },
+    {
+      "targetId": 3883,
+      "field": "summary:en",
+      "kind": "semantic",
+      "detailsRef": "consumer-findings.json",
+      "needsSeparateOwner": true,
+      "fieldUnchanged": true,
+      "bodyDispositionUnaffected": true
+    },
+    {
+      "targetId": 3883,
+      "field": "summary:zh",
+      "kind": "semantic",
+      "detailsRef": "consumer-findings.json",
+      "needsSeparateOwner": true,
+      "fieldUnchanged": true,
+      "bodyDispositionUnaffected": true
+    },
+    {
+      "targetId": 3872,
+      "field": "summary:en",
+      "kind": "semantic",
+      "detailsRef": "consumer-findings.json",
+      "needsSeparateOwner": true,
+      "fieldUnchanged": true,
+      "bodyDispositionUnaffected": true
+    },
+    {
+      "targetId": 3872,
+      "field": "summary:zh",
+      "kind": "semantic",
+      "detailsRef": "consumer-findings.json",
+      "needsSeparateOwner": true,
+      "fieldUnchanged": true,
+      "bodyDispositionUnaffected": true
+    },
+    {
+      "targetId": 3863,
+      "field": "summary:en",
+      "kind": "semantic",
+      "detailsRef": "consumer-findings.json",
+      "needsSeparateOwner": true,
+      "fieldUnchanged": true,
+      "bodyDispositionUnaffected": true
+    },
+    {
+      "targetId": 3863,
+      "field": "summary:zh",
+      "kind": "semantic",
+      "detailsRef": "consumer-findings.json",
+      "needsSeparateOwner": true,
+      "fieldUnchanged": true,
+      "bodyDispositionUnaffected": true
+    },
+    {
+      "targetId": 3846,
+      "field": "summary:en",
+      "kind": "semantic",
+      "detailsRef": "consumer-findings.json",
+      "needsSeparateOwner": true,
+      "fieldUnchanged": true,
+      "bodyDispositionUnaffected": true
+    },
+    {
+      "targetId": 3883,
+      "field": "mechanic:saving_throw",
+      "kind": "semantic",
+      "detailsRef": "consumer-findings.json",
+      "needsSeparateOwner": true,
+      "fieldUnchanged": true,
+      "bodyDispositionUnaffected": true
+    },
+    {
+      "targetId": 3868,
+      "field": "mechanic:saving_throw",
+      "kind": "semantic",
+      "detailsRef": "consumer-findings.json",
+      "needsSeparateOwner": true,
+      "fieldUnchanged": true,
+      "bodyDispositionUnaffected": true
+    },
+    {
+      "targetId": 3899,
+      "field": "mechanic:duration",
+      "kind": "semantic",
+      "detailsRef": "consumer-findings.json",
+      "needsSeparateOwner": true,
+      "fieldUnchanged": true,
+      "bodyDispositionUnaffected": true
+    },
+    {
+      "targetId": 4655,
+      "field": "mechanic:target",
+      "kind": "inherited-normalization",
+      "detailsRef": "consumer-findings.json",
+      "needsSeparateOwner": true,
+      "fieldUnchanged": true,
+      "bodyDispositionUnaffected": true
+    },
+    {
+      "targetId": 3834,
+      "field": "mechanic:inherited-header",
+      "kind": "inherited-normalization",
+      "detailsRef": "consumer-findings.json",
+      "needsSeparateOwner": true,
+      "fieldUnchanged": true,
+      "bodyDispositionUnaffected": true
+    },
+    {
+      "targetId": 3861,
+      "field": "mechanic:target-area",
+      "kind": "inherited-normalization",
+      "detailsRef": "consumer-findings.json",
+      "needsSeparateOwner": true,
+      "fieldUnchanged": true,
+      "bodyDispositionUnaffected": true
+    },
+    {
+      "targetId": 3883,
+      "field": "class-list",
+      "kind": "unreviewed-extra-relation",
+      "detailsRef": "consumer-findings.json",
+      "needsSeparateOwner": true,
+      "fieldUnchanged": true,
+      "bodyDispositionUnaffected": true
+    }
+  ],
+  "boundaries": {
+    "publicCorpusText": false,
+    "newRuntimeStripping": false,
+    "maintainedValidatorChanges": false,
+    "nativeGuardRelaxed": false,
+    "fixedRestoredQAContractChanged": false,
+    "fixedEffectiveProjectionBaselineChanged": false,
+    "fixedEffectiveFields": 879,
+    "operatorWrites": false,
+    "appStateOpened": false,
+    "privatePushed": false,
+    "productionActivation": false,
+    "otherBookCollection": false,
+    "wholeBookExtraction": false,
+    "phbQueueResumed": false,
+    "mainGateAcceptance": false
+  }
+}
