@@ -715,8 +715,8 @@ optional `--apply`.
 The writer accepts only the two exact revisions listed above. Both dry-run and
 `--apply` require an explicit revision and the complete formal/source/PDF preflight.
 No floating latest, arbitrary revision, or caller-supplied projection is writable.
-This command authorizes only its own disposable copy; consumer activation and
-operator/production writes remain separate.
+Writes are confined to the command-created disposable copy; consumer activation
+and operator/production writes remain separate.
 Use the rules-copy/PDF paths from the preflight command above:
 
 ```powershell
