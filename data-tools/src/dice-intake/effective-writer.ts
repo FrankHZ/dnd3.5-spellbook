@@ -4,6 +4,7 @@ import { join } from "node:path";
 import type Database from "better-sqlite3";
 import { repoRoot } from "../shared/env";
 import type { EffectiveChinese, FieldOrigin } from "./effective";
+import { assertEffectiveBaseline, currentEffectiveBaseline, acceptedUnionRevision } from "./effective-cli";
 
 const handoff = "dice-qa/books/86/issue-311/batch-06";
 export const fieldProvenanceMigration = "20261001233000_add_spell_field_provenance";
@@ -14,10 +15,14 @@ function provenance(row: EffectiveChinese, field: "name" | "body", acceptedRevis
   const origin = row[field].origin;
   const acceptedField = field === "name" ? "name" : origin.kind === "native" ? "descriptionHtml" : "descriptionText";
   const locator = { targetId: row.targetId, field: acceptedField, sourceKey: origin.sourceKey };
-  return JSON.stringify({ schemaVersion: 1, acceptedRevision, targetId: row.targetId, field,
+  const current = acceptedRevision === currentEffectiveBaseline;
+  const acceptedInput = current
+    ? { revision: acceptedUnionRevision, path: `dice-qa/books/86/issue-329/${origin.kind === "native" ? "native-accepted" : "independent-proposed-union"}.jsonl`, ...locator }
+    : { path: `${handoff}/${origin.kind}-accepted.jsonl`, ...locator };
+  const original = { schemaVersion: 1, acceptedRevision, targetId: row.targetId, field,
     language: origin.kind === "english" ? "en" : "zh", origin,
     input: origin.kind === "native" || origin.kind === "independent"
-      ? { path: `${handoff}/${origin.kind}-accepted.jsonl`, ...locator }
+      ? acceptedInput
       : { path: `${handoff}/current-inputs.json`, targetId: row.targetId,
           field: origin.kind === "english" ? `english.${field === "name" ? "name" : "description"}`
             : `chinese.${field === "name" ? "name" : "descriptionText"}` },
@@ -26,11 +31,22 @@ function provenance(row: EffectiveChinese, field: "name" | "body", acceptedRevis
       : origin.kind === "chm"
         ? { table: "I18nSpellText", spellId: row.targetId, lang: "zh", variant: "chm", sourceKey: origin.sourceKey }
         : origin.kind === "english" ? { table: "dnd_spell", id: row.targetId,
-            field: field === "name" ? "name" : "description" } : { sourceRef: origin.sourceRef, pages: origin.sourcePages } });
+            field: field === "name" ? "name" : "description" } : { sourceRef: origin.sourceRef, pages: origin.sourcePages } };
+  const amendment = origin.activeAmendment;
+  if (!amendment) return JSON.stringify(original);
+  // Active body authority is separate from the original native/independent owner.
+  // The full prior ledger row remains internal evidence, never API response data.
+  return JSON.stringify({ ...original,
+    originalInput: { ...original.input, revision: amendment.prior.revision, path: amendment.prior.path },
+    originalEvidence: original.evidence,
+    input: { revision: amendment.revision, path: amendment.path, targetId: row.targetId,
+      field: "descriptionText", sourceKey: null },
+    evidence: { revision: amendment.revision, path: amendment.path,
+      sourceRef: amendment.sourceRef, pages: amendment.sourcePages, status: amendment.status } });
 }
 
 function rowSource(name: FieldOrigin, body: FieldOrigin) {
-  return name.kind === body.kind && name.sourceKey !== null && name.sourceKey === body.sourceKey
+  return !name.activeAmendment && !body.activeAmendment && name.kind === body.kind && name.sourceKey !== null && name.sourceKey === body.sourceKey
     ? name.sourceKey : null;
 }
 
@@ -39,9 +55,16 @@ function rowSource(name: FieldOrigin, body: FieldOrigin) {
  * Portable tests use this same real SQL writer on synthetic databases. */
 export function writeEffectiveOverlay(db: Database.Database, projection: EffectiveChinese[],
   acceptedRevision: string, dryRun: boolean) {
-  assert(/^[0-9a-f]{40}$/.test(acceptedRevision), "accepted revision must be an exact commit");
-  assert(projection.every(row => !row.name.origin.activeAmendment && !row.body.origin.activeAmendment),
-    "writer cannot consume the read-only amended projection");
+  assertEffectiveBaseline(acceptedRevision);
+  for (const row of projection) {
+    assert(!row.name.origin.activeAmendment, "name amendments are unsupported");
+    const amendment = row.body.origin.activeAmendment;
+    if (amendment) {
+      assert.equal(acceptedRevision, currentEffectiveBaseline, "amendment requires the current accepted baseline");
+      assert.equal(amendment.revision, acceptedRevision, "stale amendment revision");
+      assert.equal(amendment.prior.owner, row.body.origin.kind, "amendment original owner mismatch");
+    }
+  }
   assert(projection.length > 0, "empty overlay");
   const book = projection[0]!.rulebookId;
   const ids = projection.map(row => row.targetId).sort((a, b) => a - b);

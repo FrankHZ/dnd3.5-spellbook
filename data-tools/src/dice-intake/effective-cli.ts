@@ -14,9 +14,9 @@ export const currentEffectiveBaseline = "6a73f4d64682325c67e2c40595008344fb5c3be
 export const acceptedUnionRevision = "296903c61e20ce359812148fc0faa234ca2508e7";
 const amendmentPath = "dice-qa/books/86/issue-335/validated-amendments.jsonl";
 
-export function assertEffectiveBaseline(revision: string, write = false) {
-  assert(revision === effective879Baseline || (!write && revision === currentEffectiveBaseline),
-    write ? "writer supports only the fixed effective879 accepted baseline" : "unsupported exact accepted SC baseline");
+export function assertEffectiveBaseline(revision: string) {
+  assert(revision === effective879Baseline || revision === currentEffectiveBaseline,
+    "unsupported exact accepted SC baseline");
 }
 const jsonRows = <T>(path: string): T[] => readFileSync(path, "utf8").split(/\r?\n/)
   .filter(line => line.trim()).map(line => JSON.parse(line) as T);

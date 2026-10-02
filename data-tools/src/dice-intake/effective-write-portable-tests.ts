@@ -6,10 +6,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { repoRoot } from "../shared/env";
 import { fieldProvenanceMigration, writeEffectiveOverlay } from "./effective-writer";
-import { syntheticProjection, projectSynthetic, syntheticIndependent } from "./effective-portable-tests";
+import { syntheticProjection, projectSynthetic, syntheticIndependent, amendSynthetic, syntheticAmendments } from "./effective-portable-tests";
+import { effective879Baseline, currentEffectiveBaseline } from "./effective-cli";
 
 const root = repoRoot();
-const baseline = "a".repeat(40);
+const baseline = effective879Baseline;
 const rows = syntheticProjection.output;
 const migrationsRoot = join(root, "server/db/content/migrations");
 function seed(db: Database.Database, legacy = false) {
@@ -38,21 +39,26 @@ const db = new Database(":memory:");
 try {
   seed(db, true);
   const before = dump(db);
-  const readOnlyRows = structuredClone(rows);
-  readOnlyRows[0]!.body.origin.activeAmendment = { revision: "b".repeat(40), path: "synthetic/amendments.jsonl",
-    prior: { owner: "independent", revision: baseline, path: "synthetic/accepted.jsonl", acceptedRow: syntheticIndependent },
-    sourceRef: "synthetic-amendment", sourcePages: syntheticIndependent.sourcePages, status: "accepted" };
-  assert.throws(() => writeEffectiveOverlay(db, readOnlyRows, baseline, false), /read-only amended projection/);
+  const currentRows = amendSynthetic().output;
+  assert.throws(() => writeEffectiveOverlay(db, currentRows, baseline, false), /current accepted baseline/);
+  assert.throws(() => writeEffectiveOverlay(db, currentRows, "a".repeat(40), false), /unsupported exact/);
   assert.deepEqual(dump(db), before);
   const plan = writeEffectiveOverlay(db, rows, baseline, true);
   assert.deepEqual(dump(db), before, "dry-run must not migrate or mutate metadata");
   assert.equal(plan.migrate, true);
   assert.equal(plan.inserts, 5);
+  // The first row aborts immediately after the nullable-column migration.
+  db.exec(`CREATE TRIGGER fail_after_migration BEFORE INSERT ON I18nSpellText
+    WHEN NEW.variant='effective' BEGIN SELECT RAISE(ABORT, 'after migration failure'); END`);
+  const migratedFailure = dump(db);
+  assert.throws(() => writeEffectiveOverlay(db, currentRows, currentEffectiveBaseline, false), /after migration failure/);
+  assert.deepEqual(dump(db), migratedFailure, "failure after migration restores the old schema");
+  db.exec("DROP TRIGGER fail_after_migration");
   // An actual SQLite trigger fails after earlier rows have been written.
   db.exec(`CREATE TRIGGER fail_middle BEFORE INSERT ON I18nSpellText
     WHEN NEW.variant='effective' AND NEW.spellId=3 BEGIN SELECT RAISE(ABORT, 'middle failure'); END`);
   const triggered = dump(db);
-  assert.throws(() => writeEffectiveOverlay(db, rows, baseline, false), /middle failure/);
+  assert.throws(() => writeEffectiveOverlay(db, currentRows, currentEffectiveBaseline, false), /middle failure/);
   assert.deepEqual(dump(db), triggered, "schema, overlay and build marker all roll back");
   db.exec("DROP TRIGGER fail_middle");
   db.exec(`CREATE TRIGGER fail_metadata BEFORE DELETE ON RulesContentBuild BEGIN SELECT RAISE(ABORT, 'metadata failure'); END`);
@@ -61,8 +67,9 @@ try {
   assert.deepEqual(dump(db), metadataTriggered, "failure after all overlay rows still rolls everything back");
   db.exec("DROP TRIGGER fail_metadata");
   const original = db.prepare("SELECT id, spellId, name, descriptionText, sourceKey, createdAt, updatedAt FROM I18nSpellText").all();
-  const protectedTables = ["SpellContent", "SpellAppearance", "RulebookContent", "SpellComponent", "SpellListEntry",
-    "SpellTaxonomyFacet", "SpellMechanicFacet", "RulesContentIssue", "I18nSpellSummaryText", "SpellSearchIndexState", "SpellSearchDocument"];
+  const protectedTables = (db.prepare("SELECT name FROM sqlite_schema WHERE type='table' ORDER BY name")
+    .all() as Array<{ name: string }>).map(row => row.name)
+    .filter(name => !["I18nSpellText", "RulesContentBuild", "sqlite_sequence"].includes(name));
   const snapshot = () => protectedTables.map(table => db.prepare(`SELECT * FROM "${table}"`).all());
   const protectedBefore = snapshot();
   assert.deepEqual(writeEffectiveOverlay(db, rows, baseline, false), plan);
@@ -98,6 +105,57 @@ try {
   assert.equal(repeat.unchanged, 5);
   assert.equal(repeat.markExperiment, false);
   assert.deepEqual(dump(db), after, "repeat leaves values, timestamps and metadata unchanged");
+  const currentPlan = writeEffectiveOverlay(db, currentRows, currentEffectiveBaseline, true);
+  assert.deepEqual(dump(db), after, "current dry-run leaves the old baseline intact");
+  assert.deepEqual(writeEffectiveOverlay(db, currentRows, currentEffectiveBaseline, false), currentPlan);
+  assert.deepEqual(snapshot(), protectedBefore);
+  for (const [index, row] of currentRows.entries()) {
+    const saved = (overlays(db) as Array<Record<string, unknown>>)[index]!;
+    assert.equal(saved.name, row.name.text);
+    assert.equal(saved.descriptionText, row.body.text);
+    assert.equal(saved.descriptionHtml, row.body.html);
+    const p = JSON.parse(saved.bodyProvenanceJson as string);
+    assert.deepEqual(p.origin, row.body.origin);
+    assert.equal(p.acceptedRevision, currentEffectiveBaseline);
+    const active = row.body.origin.activeAmendment;
+    if (active) {
+      assert.equal(saved.sourceKey, null, "an amended value must not claim unchanged native source");
+      assert.equal(p.input.path, active.path);
+      assert.equal(p.input.revision, currentEffectiveBaseline);
+      assert.equal(p.input.sourceKey, null);
+      assert.equal(p.originalInput.path, active.prior.path);
+      assert.equal(p.originalInput.revision, active.prior.revision);
+      assert.deepEqual(p.evidence.pages, active.sourcePages);
+      assert.equal(p.evidence.sourceRef, active.sourceRef);
+      assert.equal(p.evidence.status, active.status);
+    }
+  }
+  const currentAfter = dump(db);
+  const currentRepeat = writeEffectiveOverlay(db, currentRows, currentEffectiveBaseline, false);
+  assert.equal(currentRepeat.unchanged, 5);
+  assert.equal(currentRepeat.markExperiment, false);
+  assert.deepEqual(dump(db), currentAfter);
+  // Reuse the same overlay transaction to restore/reapply the explicit baselines.
+  writeEffectiveOverlay(db, rows, baseline, false);
+  assert.deepEqual((overlays(db) as Array<{ bodyProvenanceJson: string }>).map(r => JSON.parse(r.bodyProvenanceJson).origin), rows.map(r => r.body.origin));
+  writeEffectiveOverlay(db, currentRows, currentEffectiveBaseline, false);
+  assert.equal(writeEffectiveOverlay(db, currentRows, currentEffectiveBaseline, false).updates, 0);
+  writeEffectiveOverlay(db, rows, baseline, false);
+  // The maintained amendment validator rejects stale/forged authority before SQL.
+  for (const mutate of [
+    (a: typeof syntheticAmendments[number]) => { a.prior.owner = "native"; },
+    (a: typeof syntheticAmendments[number]) => { a.prior.revision = "c".repeat(40); },
+    (a: typeof syntheticAmendments[number]) => { a.prior.path = "forged.jsonl"; },
+    (a: typeof syntheticAmendments[number]) => { a.prior.acceptedRow.targetId = 99; },
+    (a: typeof syntheticAmendments[number]) => { a.review.input.chinese.descriptionText = "stale"; },
+    (a: typeof syntheticAmendments[number]) => { a.review.sourcePages = []; },
+    (a: typeof syntheticAmendments[number]) => { a.review.status = "deferred"; },
+  ]) {
+    const broken = structuredClone(syntheticAmendments); mutate(broken[0]!);
+    const previous = dump(db);
+    assert.throws(() => writeEffectiveOverlay(db, amendSynthetic(broken).output, currentEffectiveBaseline, false));
+    assert.deepEqual(dump(db), previous);
+  }
   db.exec("UPDATE RulesContentBuild SET sourceSha256='stale-full-hash'");
   assert.equal(writeEffectiveOverlay(db, rows, baseline, true).markExperiment, true);
   writeEffectiveOverlay(db, rows, baseline, false);
