@@ -6,7 +6,7 @@
   "publicBase": "997b1008843053763f407e01268bc29b84331500",
   "frozenAudit": "e793ff09a38060c5c6b336d28690353bd0d96909",
   "privateInput": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411",
-  "privateHandoffAndHelperCommit": "94cd57946ce59f69000b1b7efefa1f8f958803dd",
+  "privateHandoffAndHelperCommit": "4d33200241c53cc36da399e5dd5a24af5f76c77f",
   "privateDirectory": "dice-qa/books/86/issue-405",
   "acceptedHelperContracts": {
     "353": "e154c69e817c81d7e48da105c46daba83a4da8c4",

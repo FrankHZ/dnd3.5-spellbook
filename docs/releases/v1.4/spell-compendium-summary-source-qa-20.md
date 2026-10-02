@@ -12,7 +12,7 @@ Frozen audit `e793ff09a38060c5c6b336d28690353bd0d96909` assigns 17 targets /
 `a9cbe07747b1bc908ff4ebcd24244e38e58cb411`; public base is
 `997b1008843053763f407e01268bc29b84331500`.
 
-Private handoff/helper commit `94cd57946ce59f69000b1b7efefa1f8f958803dd` owns
+Private handoff/helper commit `4d33200241c53cc36da399e5dd5a24af5f76c77f` owns
 `dice-qa/books/86/issue-405/`. It reuses [#353 provenance](./spell-compendium-summary-source-qa-01.md),
 [#361 narrow importer](./spell-compendium-summary-source-qa-02.md), strengthened
 [#379](./spell-compendium-summary-source-qa-09.md)/[#380](./spell-compendium-summary-source-qa-10.md),
@@ -25,7 +25,7 @@ Historical #329/#335 records remain context; final records do not override PDFs.
 
 The proposal corrects 7 rows (2 EN / 5 ZH) across 6 targets and retains 25.
 Demonstrated errors concern plant damage versus destruction, cumulative cold
-damage before fatigue/exhaustion, alignment mistranslation, universal attack
+damage before fatigue/exhaustion, four explicitly specified alignments, universal attack
 triggers, deity-relative successful-hit activation and preexisting portal exceptions.
 Accurate concise descriptions remain when omitted qualifications correctly stay
 in the complete body. Missing Chinese summaries remain absent.
@@ -71,7 +71,7 @@ sentinel. The DB is removed. Importer CLI `main` is disabled before loading code
 Run from both public root and `data-tools`, using absolute roots and distinct labels:
 
 ```powershell
-& "$runtimeRoot/data-tools/pdf-extract/.venv/Scripts/python.exe" -X utf8 "$dataRoot/dice-qa/books/86/issue-405/reproduce.py" --code-root $codeRoot --runtime-root $runtimeRoot --private-revision 94cd57946ce59f69000b1b7efefa1f8f958803dd --run final-root
+& "$runtimeRoot/data-tools/pdf-extract/.venv/Scripts/python.exe" -X utf8 "$dataRoot/dice-qa/books/86/issue-405/reproduce.py" --code-root $codeRoot --runtime-root $runtimeRoot --private-revision 4d33200241c53cc36da399e5dd5a24af5f76c77f --run final-root
 ```
 
 Replay checks every helper against that fixed private revision, regenerates
