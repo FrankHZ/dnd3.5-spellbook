@@ -19,6 +19,7 @@ function pages(v: unknown): boolean {
 
 // The selected final writer contract is bound to these reviewed packages, not an arbitrary revision.
 const finalRevision = "0688739d92a2aa9fb3eceeb444daa7260e711058";
+const noteRevision = "c61b9dea676cfd89bdfcaa6dcbcccbc99280d7c4";
 const coverageRevision = "a9cbe07747b1bc908ff4ebcd24244e38e58cb411";
 const unionRevision = "296903c61e20ce359812148fc0faa234ca2508e7";
 const missingRevision = "db04cc54684c8e63407341717cb9e00e883f1203";
@@ -75,7 +76,8 @@ function finalAmendment(a: any, o: any, target: { id: number; rulebookId: number
 }
 
 function mapFinalProvenance(v: Record<string, any>, field: "name" | "body",
-  target: { id: number; rulebookId: number }, fail: () => never): SpellFieldProvenance {
+  target: { id: number; rulebookId: number }, bodyText: string | null | undefined,
+  fail: () => never): SpellFieldProvenance {
   const o = v.origin, r = v.review;
   if (v.acceptedRevision !== finalRevision || target.rulebookId !== 86 || v.language !== "zh"
     || !["native", "independent", "chm"].includes(o.kind)
@@ -124,10 +126,41 @@ function mapFinalProvenance(v: Record<string, any>, field: "name" | "body",
       || !r.sourceQuestionIds.every(questionId) || new Set(r.sourceQuestionIds).size !== r.sourceQuestionIds.length
       || (r.disposition === "accepted-with-source-issues") !== (r.sourceQuestionIds.length > 0))) return fail();
   }
+  let review: NonNullable<SpellFieldProvenance["review"]> = {disposition: r.disposition,
+    acceptedRevision: r.revision, originalEntryReviewed: true, sourceQuestionIds: r.sourceQuestionIds ?? []};
+  if ("readerNoteAddendum" in v) {
+    const a = v.readerNoteAddendum, amendment = a?.amendment, prior = amendment?.prior;
+    const before = prior?.acceptedRow, note = amendment?.review;
+    const line = [4088, 4111, 4229].indexOf(target.id) + 1;
+    if (field !== "body" || !line || !record(a) || a.revision !== noteRevision
+      || a.path !== bookPath + "issue-407/amendments.jsonl" || a.rowRef !== a.path + ":" + line
+      || !record(amendment) || amendment.targetId !== target.id || amendment.rulebookId !== 86
+      || amendment.field !== "descriptionText" || !record(prior) || prior.revision !== finalRevision
+      || prior.path !== v.input.path || prior.owner !== o.kind || !record(before)
+      || before.targetId !== target.id || before.rulebookId !== 86 || before.field !== "body"
+      || !isDeepStrictEqual(before.origin, o) || !isDeepStrictEqual(before.review, r)
+      || !text(before.text) || !text(before.html) || !record(prior.nameRow)
+      || prior.nameRow.targetId !== target.id || prior.nameRow.rulebookId !== 86 || prior.nameRow.field !== "name"
+      || !record(note) || note.targetId !== target.id || note.rulebookId !== 86 || note.field !== "descriptionText"
+      || note.status !== "accepted-with-source-issues" || !pages(note.sourcePages) || !text(note.sourceRef)
+      || note.originalSourceRead !== true || note.before !== before.text || note.after !== bodyText
+      || !text(note.after) || !note.after.startsWith(before.text + "\n\n原文疑义备注（本项目说明，非官方勘误）\n")
+      || !record(note.input) || !record(note.input.chinese) || note.input.chinese.descriptionHtml !== before.html
+      || !before.html.endsWith("</pre>") || note.proposedHtml !== before.html.slice(0, -6)
+        + note.after.slice(before.text.length).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;") + "</pre>"
+      || !record(note.fullBodyAudit) || note.fullBodyAudit.beforeHtml !== before.html
+      || note.fullBodyAudit.effectiveText !== note.after || note.fullBodyAudit.effectiveHtml !== note.proposedHtml
+      || note.fullBodyAudit.currentHtmlReviewed !== true || note.fullBodyAudit.proposedHtmlReviewed !== true
+      || !record(note.retainedSourceIssues) || note.retainedSourceIssues.bodyText !== before.text
+      || !Array.isArray(note.retainedSourceIssues.issues) || note.retainedSourceIssues.issues.length !== 1
+      || !note.retainedSourceIssues.issues.every((q: any) => record(q) && questionId(q.id)
+        && q.id.startsWith(target.id + ":") && q.status === "source-unresolved")) return fail();
+    review = {disposition: note.status, acceptedRevision: noteRevision, originalEntryReviewed: true,
+      sourceQuestionIds: [...review.sourceQuestionIds, ...note.retainedSourceIssues.issues.map((q: any) => q.id)]};
+  }
   return { schemaVersion: 1, language: "zh", acceptedRevision: finalRevision,
     origin: o.kind === "independent" ? { kind: "independent", sourceKey: null } : { kind: o.kind, sourceKey: o.sourceKey },
-    review: { disposition: r.disposition, acceptedRevision: r.revision, originalEntryReviewed: true,
-      sourceQuestionIds: r.sourceQuestionIds ?? [] }, ...(amendment ? { amendment } : {}) };
+    review, ...(amendment ? { amendment } : {}) };
 }
 
 /** Validate the stored writer envelope, never re-adjudicate source quality or expose locators. */
@@ -144,7 +177,7 @@ export function mapFieldProvenance(raw: string | null, field: "name" | "body",
     || row.spellId !== target.id || row.rulebookId !== target.rulebookId || row.lang !== "zh"
     || !revision(v.acceptedRevision)
     || !record(v.origin) || !record(v.input) || !record(v.evidence)) return fail();
-  if (v.acceptedRevision === finalRevision || "review" in v) return mapFinalProvenance(v, field, target, fail);
+  if (v.acceptedRevision === finalRevision || "review" in v) return mapFinalProvenance(v, field, target, row.descriptionText, fail);
   const o = v.origin;
   let input = v.input, evidence = v.evidence;
   let amendment: SpellFieldProvenance["amendment"];

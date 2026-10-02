@@ -94,7 +94,14 @@ must not be presented as an ongoing migrated-DB or deployment validator.
 the selected exact candidate. Run it only within the task's authorized DB write
 boundary. Every invocation authenticates clean accepted Git inputs, regenerates
 the complete formal QA/candidate, verifies original PDFs and applicable errata,
-and compares all 2,002 envelopes with the selected candidate. Caller field JSON
+and compares all 2,002 envelopes with the selected candidate. It then authenticates
+the fixed accepted [#407](https://github.com/FrankHZ/dnd3.5-spellbook/issues/407)
+reader-note handoff at `c61b9dea676cfd89bdfcaa6dcbcccbc99280d7c4`, including
+the exact private verification helpers, full original page text/geometry, source
+questions and complete prior fields. Only bodies 4088, 4111 and 4229 receive a
+separate project commentary note; all 1,999 other envelopes and the 37 existing
+notes stay exact. Text and HTML prefixes remain separately authoritative,
+including their original whitespace differences. Caller field JSON
 and aggregate counts never supply authority. Historical commands retain their
 original accepted-baseline guards.
 
@@ -145,6 +152,29 @@ revisions. Field metadata retains original origin/owner separately from review
 status, original entry evidence, complete active/prior amendments (including
 4736), and source questions. Retained CHM fields have original-source review
 proof; text equality alone does not confer acceptance.
+
+Changed bodies additionally store `readerNoteAddendum` with the fixed #407
+revision, exact amendment row and its complete prior origin/review/history.
+Their original #365 envelope remains intact. Unchanged fields keep byte-exact
+existing provenance and acquire no reader-note revision. Build metadata records
+the accepted addendum and its verification separately. The API's existing review
+DTO exposes the new review revision and unresolved question IDs for these three
+bodies while preserving their original ownership/amendments; private envelopes
+and source locators stay internal.
+
+For a coordinated full migration, use the commands in
+[normalized content and search](./import-workflow.md#normalized-content-and-search)
+with explicitly authorized DB paths and owned output/manifest paths. Apply the
+accepted rules patches and derived indexes, then `rules:manifest:write` and
+`rules:manifest:verify`; run `rules:content:generate`,
+`rules:content:import -- --dry-run`, then `rules:content:import`. Complete CHM and
+entity text imports before this final overlay. Run the above `dice:final:write`
+command first in dry-run, then with `--apply`, then `--validate`. Import the
+separately accepted summaries through `summaries:import`; after all text imports,
+run `content:search:rebuild -- --dry-run`, then `content:search:rebuild`, and repeat
+final validation plus consumer/search checks. Never rerun CHM after the overlay.
+The summary selection is governed separately by #411; this addendum does not
+read or change canonical summaries or resolve #354's pending relationships.
 
 The normalized artifact's full scope describes its coverage. Overlay semantic
 metadata explicitly leaves summaries and the 20 extra relationships pending;

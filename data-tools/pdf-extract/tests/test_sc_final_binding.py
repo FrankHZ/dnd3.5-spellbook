@@ -1,6 +1,7 @@
 """Synthetic #365 source-authority and candidate rejection checks."""
 import copy
 import json
+import html
 from pathlib import Path
 import subprocess
 import sys
@@ -49,6 +50,74 @@ def synthetic():
 
 
 class FinalBindingTests(unittest.TestCase):
+    def test_reader_note_composition_keeps_independent_prefixes_and_history(self):
+        derived, reviews = synthetic()
+        fields = final.bind_fields(derived, reviews)
+        for old, new in zip([1, 2, 3], final.NOTE_TARGETS):
+            for field in fields:
+                if field['targetId'] == old:
+                    field['targetId'] = new
+        amendments = []
+        for tid in final.NOTE_TARGETS:
+            body = next(r for r in fields if r['targetId'] == tid and r['field'] == 'body')
+            name = next(r for r in fields if r['targetId'] == tid and r['field'] == 'name')
+            body['text'] += ' '  # Authoritative text has a space absent from HTML.
+            body['origin']['activeAmendment'] = {'prior': {'history': ['protected']}}
+            suffix = '\n\n原文疑义备注（本项目说明，非官方勘误）\n合成疑义 <保留>'
+            amendments.append({'targetId': tid, 'rulebookId': 86, 'field': 'descriptionText',
+                'prior': {'owner': body['origin']['kind'], 'revision': final.CANDIDATE,
+                    'path': final.BOOK + 'issue-365/field-dispositions.jsonl',
+                    'acceptedRow': copy.deepcopy(body), 'nameRow': copy.deepcopy(name)},
+                'review': {'targetId': tid, 'rulebookId': 86, 'field': 'descriptionText',
+                    'before': body['text'], 'after': body['text'] + suffix,
+                    'input': {'chinese': {'descriptionHtml': body['html']}},
+                    'proposedHtml': body['html'][:-6] + html.escape(suffix, quote=False) + '</pre>'}})
+        untouched = copy.deepcopy(fields)
+        output = final.compose_reader_notes(fields, amendments)
+        self.assertEqual(fields, untouched)
+        self.assertEqual(sum(a == b for a, b in zip(fields, output)), 1999)
+        for before, after in zip(fields, output):
+            if before != after:
+                self.assertEqual(after['origin'], before['origin'])
+                self.assertEqual(after['review'], before['review'])
+                self.assertTrue(after['text'].startswith(before['text']))
+                self.assertTrue(after['html'].startswith(before['html'][:-6]))
+                self.assertEqual(after['readerNoteAddendum']['amendment']['prior']['acceptedRow'], before)
+        for label in ['missing', 'duplicate', 'wrong', 'cross-target', 'stale-origin', 'stale-review',
+                      'outside-text', 'outside-html', 'normalize-html']:
+            rows = copy.deepcopy(amendments)
+            if label == 'missing': rows.pop()
+            elif label == 'duplicate': rows.append(copy.deepcopy(rows[0]))
+            elif label == 'wrong': rows[0]['targetId'] = 3996
+            elif label == 'cross-target': rows[0]['review']['targetId'] = 4111
+            elif label == 'stale-origin': rows[0]['prior']['acceptedRow']['origin'] = {}
+            elif label == 'stale-review': rows[0]['prior']['acceptedRow']['review'] = {}
+            elif label == 'outside-text': rows[0]['review']['after'] = 'forged' + rows[0]['review']['after']
+            elif label == 'outside-html': rows[0]['review']['proposedHtml'] = '<pre>forged</pre>'
+            else: rows[0]['review']['proposedHtml'] = '<pre>' + html.escape(rows[0]['review']['after'], quote=False) + '</pre>'
+            with self.subTest(label=label), self.assertRaises(ValueError):
+                final.compose_reader_notes(fields, rows)
+
+    def test_reader_note_source_page_mismatch_rejects(self):
+        import pymupdf
+        sys.path.insert(0, str(AUDITS.parent / 'pdf-extract/src'))
+        from pdf_extract.extraction import extract_page
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / 'synthetic.pdf'
+            with pymupdf.open() as document:
+                page = document.new_page()
+                page.insert_text((72, 72), 'Synthetic source ambiguity')
+                document.save(source)
+            with pymupdf.open(source) as document:
+                fresh = json.loads(json.dumps([{'sourceId': 'sc', 'sourcePath': source.name,
+                    'pageIndex': 0, 'pageCount': 1, 'printedPage': 1, **extract_page(document[0], {})}]))
+            final.fresh_note_pages(directory, fresh, {'sc': source.name})
+            for key in ['blocks', 'geometry', 'pageCount']:
+                stale = copy.deepcopy(fresh)
+                stale[0][key] = [] if key == 'blocks' else {} if key == 'geometry' else 2
+                with self.subTest(key=key), self.assertRaisesRegex(ValueError, 'PDF text/geometry mismatch'):
+                    final.fresh_note_pages(directory, stale, {'sc': source.name})
+
     def test_exact_scope_and_real_retention_pass_required(self):
         derived, reviews = synthetic()
         self.assertEqual(len(final.bind_fields(derived, reviews)), 2002)
