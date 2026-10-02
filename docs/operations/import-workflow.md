@@ -475,6 +475,8 @@ decision does not rewrite previous accepted exports, resolve outstanding source
 questions, change the fixed restored QA contract or advance the effective
 projection baseline; those require their own accepted integration scope. See
 [the initial bounded SC delivery scope](https://github.com/FrankHZ/dnd3.5-spellbook/issues/321).
+The [second bounded handoff report](../../data-tools/reports/dice-qa/books/86/current-edition-batch2-40.json)
+locates its exact proposed slice, private evidence and unchanged consumer follow-ups.
 
 For an explicitly authorized faithful translation of a known source
 conflict, missing explanation or interpretation question, the independent body
