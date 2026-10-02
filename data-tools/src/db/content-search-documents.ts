@@ -1,6 +1,6 @@
 import type Database from "better-sqlite3";
 
-export const CONTENT_SEARCH_SCHEMA_VERSION = 1;
+export const CONTENT_SEARCH_SCHEMA_VERSION = 2;
 
 export type ContentSearchSpellRow = {
   spellId: number;
@@ -69,11 +69,6 @@ export function buildContentSearchDocuments(
     const texts = textsBySpell.get(spell.spellId) ?? [];
     const summaries = summariesBySpell.get(spell.spellId) ?? [];
     const mechanics = mechanicsBySpell.get(spell.spellId) ?? [];
-    const localizedNames = texts.filter(row => row.variant !== "effective").map((row) => row.name).filter(isText);
-    const aliases = uniqueText([
-      spell.slug.replaceAll("-", " "),
-      ...localizedNames,
-    ]);
     const mechanicText = uniqueText([
       spell.castingTimeRaw,
       spell.rangeRaw,
@@ -125,14 +120,11 @@ export function buildContentSearchDocuments(
     }
 
     for (const draft of drafts.values()) {
-      const summaryText = summaries
-        .filter((row) => row.lang === draft.lang)
-        .sort((left, right) => {
-          const leftExact = left.variant === draft.variant ? 0 : 1;
-          const rightExact = right.variant === draft.variant ? 0 : 1;
-          return leftExact - rightExact || left.variant.localeCompare(right.variant);
-        })
-        .map((row) => row.summaryText);
+      // Match the API's maintained summary owner, without mixing other variants into the document.
+      const summaryVariant = draft.lang === "en" ? "imarvin"
+        : draft.variant === "effective" ? "chm" : draft.variant;
+      const summaryText = summaries.filter(row => row.lang === draft.lang && row.variant === summaryVariant)
+        .map(row => row.summaryText);
       documents.push({
         spellId: spell.spellId,
         lang: draft.lang,
@@ -140,7 +132,7 @@ export function buildContentSearchDocuments(
         name: draft.name,
         aliases: uniqueText([
           spell.canonicalName,
-          ...(draft.variant === "effective" ? [spell.slug.replaceAll("-", " ")] : aliases),
+          spell.slug.replaceAll("-", " "),
         ]).filter((value) => value !== draft.name).join("\n"),
         summary: uniqueText(summaryText).join("\n"),
         mechanics: mechanicText,

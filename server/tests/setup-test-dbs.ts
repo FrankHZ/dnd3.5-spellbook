@@ -520,16 +520,13 @@ function seedContentDb() {
       'en',
       'default',
       s.canonicalName,
-      COALESCE((
-        SELECT group_concat(i.name, char(10))
-        FROM I18nSpellText i
-        WHERE i.spellId = s.legacySpellId AND i.name IS NOT NULL
-      ), ''),
+      REPLACE(s.slug, '-', ' '),
       COALESCE((
         SELECT group_concat(sm.summaryText, char(10))
         FROM I18nSpellSummaryText sm
         WHERE sm.spellId = s.legacySpellId
           AND sm.lang = 'en'
+          AND sm.variant = 'imarvin'
           AND sm.reviewStatus = 'accepted'
       ), ''),
       COALESCE(s.castingTimeRaw, '') || char(10) ||
@@ -562,6 +559,7 @@ function seedContentDb() {
         FROM I18nSpellSummaryText sm
         WHERE sm.spellId = s.legacySpellId
           AND sm.lang = i.lang
+          AND sm.variant = CASE WHEN i.variant = 'effective' THEN 'chm' ELSE i.variant END
           AND sm.reviewStatus = 'accepted'
       ), ''),
       COALESCE(s.castingTimeRaw, '') || char(10) ||
@@ -581,11 +579,7 @@ function seedContentDb() {
       sm.lang,
       sm.variant,
       s.canonicalName,
-      COALESCE((
-        SELECT group_concat(i.name, char(10))
-        FROM I18nSpellText i
-        WHERE i.spellId = s.legacySpellId AND i.name IS NOT NULL
-      ), ''),
+      REPLACE(s.slug, '-', ' '),
       sm.summaryText,
       COALESCE(s.castingTimeRaw, '') || char(10) ||
         COALESCE(s.rangeRaw, '') || char(10) ||
@@ -607,7 +601,7 @@ function seedContentDb() {
     INSERT INTO SpellSearchIndexState (
       id, schemaVersion, rebuiltAt, documentCount
     )
-    SELECT 1, 1, CURRENT_TIMESTAMP, COUNT(*) FROM SpellSearchDocument;
+    SELECT 1, 2, CURRENT_TIMESTAMP, COUNT(*) FROM SpellSearchDocument;
   `);
 
   db.close();

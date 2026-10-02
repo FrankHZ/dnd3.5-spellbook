@@ -177,41 +177,57 @@ command, and diff checks. Remote PR CI remains the merge gate.
 - [../operations/deployment.md](../operations/deployment.md)
 - [../../server/README.md](../../server/README.md)
 
-### Explicit effective spell overlay
+### Selected effective spell overlay
 
-`lang=zh&variant=effective` reads the stored effective overlay on detail,
-list/batch, by-level and resolve endpoints in both content and rules read modes.
+Chinese spell requests with no variant, and `lang=zh&variant=effective`, select
+stored effective text when present, then CHM, then canonical English. Explicit
+`variant=chm` or another variant selects only that variant with the existing
+English fallback. Detail, list/batch, by-level, localized name search and resolve
+use this selection in both content and legacy rules read modes. Matching selects
+the field owner before comparing a localized name, so a superseded CHM name
+cannot resolve or match a default name search. Exact English resolve fallback
+remains available.
+
 `i18n.lang=zh` is the request namespace; `nameProvenance.language` and
-`bodyProvenance.language` describe the actual field language, including English
-fallback. Lists and resolve return name provenance; detail also returns body
-provenance. Each typed field metadata contains `schemaVersion`,
-`acceptedRevision` and an origin (`native`, `independent`, `chm`, or `english`).
-Native/CHM origins carry their source key; independent/English keys are null.
-An amended body additionally exposes `amendment` with kind
-`accepted-body-amendment`, current/prior accepted revisions and accepted status.
-Its `origin` describes the original owner, not an assertion that the current
-body is unchanged native content. Names cannot carry body amendments.
-Private evidence locators, source pages and review notes are never returned.
-Effective detail omits a row source key because fields may have different origins.
+`bodyProvenance.language` describe the actual field language. Lists and resolve
+return name provenance; detail also returns body provenance. Metadata contains
+`schemaVersion`, `acceptedRevision` and original field `origin` (`native`,
+`independent`, `chm`, or historical `english`). Native/CHM source keys are retained;
+independent/English keys are null. Effective detail omits a row source key because
+fields may have different origins.
 
-Effective fields require valid stored writer envelopes matching the spell,
-rulebook, field, language, revision format and source locator shape. Invalid or
-missing provenance returns HTTP 500 with `INVALID_EFFECTIVE_PROVENANCE` and a
-sanitized message. Runtime checks storage integrity; source quality and acceptance
-remain the import workflow's responsibility. Legacy CHM rows may have null
-provenance and retain their existing responses.
-Amendment validation binds active input/evidence to current authority and the
-original input/evidence to the prior row's target, book, field and owner. The
-entire prior row, source passages and private paths remain internal.
+The selected final [SC envelope](../operations/sc-final-source-binding.md)
+separately exposes `review.disposition`, its accepted revision, original-entry
+review status and source-question IDs. Retained CHM remains CHM with
+`source-reviewed-retention`; original-source review does not make it a new
+translation. Original ambiguities remain faithful reader notes in the selected
+body, not new rules decisions. English original PDFs and applicable official
+errata govern source review; CHM, dice and derived English DB text are references.
+An amended body exposes current/original accepted revisions and status, plus a
+safe `priorAmendment` summary when a previous amendment was superseded (4736).
+Its origin continues to describe the original owner. Names cannot carry body
+amendments. Private paths, raw proof, source passages and span locators never
+enter these DTOs.
 
-Explicit effective requests reuse `zh/chm` summaries with their original variant
-and source key. Missing effective rows keep canonical English fields and only
-any existing CHM summary overlay; localized resolve matching stays variant-specific
-and retains its existing exact English fallback. Omitted variants still select
-CHM. English requests keep the existing English summary path. This explicit
-consumer contract does not activate effective content or change default overlay
-selection. Full-text effective searches select `zh/effective` and canonical
-`en/default` documents. Other requests exclude effective documents and keep
-their existing search variants; effective names do not enter old aliases.
-Localized name search, like resolve, matches the requested variant (`chm`
-when omitted) before returning its overlay.
+Both historical and final stored writer envelopes are validated against the
+selected spell, book, field, language, origin and material evidence. Final
+metadata must bind the exact selected candidate, field-disposition input and
+accepted original/source-review packages, including active and prior amendments.
+Invalid/missing effective metadata fails closed with HTTP 500 and sanitized
+`INVALID_EFFECTIVE_PROVENANCE`; it cannot silently fall back to CHM. Runtime
+checks storage integrity, while authenticating private source quality and
+acceptance remains the maintained writer/validator's responsibility. Legacy CHM
+rows may have null provenance and retain their responses.
+
+Effective Chinese text continues to consume accepted `zh/chm` summaries with
+their original variant and source key. English uses accepted `en/imarvin`.
+Summary QA is independent of name/body review. Full-text Chinese search selects
+the same text variant and CHM fallback where effective text is absent, plus
+canonical `en/default`. Explicit variants do not search another Chinese variant.
+Search documents include only the maintained selected summary and canonical
+English aliases, so superseded Chinese names or other summary variants cannot
+leak through English documents. The existing index-state gate requires version 2;
+older indexes return `FULL_TEXT_SEARCH_UNAVAILABLE` (503) until the maintained
+`npm run -w data-tools content:search:rebuild` runs after final text and summaries
+are integrated on an authorized target. This consumer change does not write DBs
+or activate production content.

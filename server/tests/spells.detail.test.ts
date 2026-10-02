@@ -161,7 +161,7 @@ describe("GET /api/spells/:id", () => {
     });
   });
 
-  it("keeps omitted and explicit chm detail unchanged beside an internal effective row", async () => {
+  it("fails closed on default malformed effective while preserving explicit CHM", async () => {
     for (const source of ["rules", "content"]) {
       process.env.SPELL_READ_SOURCE = source;
       const before = await request(app).get("/api/spells/1?lang=zh&variant=chm");
@@ -172,7 +172,10 @@ describe("GET /api/spells/:id", () => {
         nameProvenanceJson: '{"language":"en"}', bodyProvenanceJson: '{"language":"en"}',
       } });
       try {
-        for (const query of ["lang=zh", "lang=zh&variant=chm"]) {
+        const invalid = await request(app).get("/api/spells/1?lang=zh");
+        expect(invalid.status).toBe(500);
+        expect(invalid.body.code).toBe("INVALID_EFFECTIVE_PROVENANCE");
+        for (const query of ["lang=zh&variant=chm"]) {
           const after = await request(app).get(`/api/spells/1?${query}`);
           expect(after.status).toBe(200);
           expect(after.body).toEqual(before.body);
