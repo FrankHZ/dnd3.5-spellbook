@@ -241,6 +241,7 @@ export function validatePatch(
   db: Database.Database,
   patchPath: string,
   parsedOperations?: ParsedPatchOperation[],
+  strictLookupNames = false,
 ): ValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -312,11 +313,13 @@ export function validatePatch(
         if (foundClassId === undefined) continue;
         let classId: number;
         if (item.expectedLevel === null) {
-          const matches = db
-            .prepare(
-              "SELECT id FROM dnd_characterclass WHERE LOWER(TRIM(name)) = ?",
-            )
-            .all(normalizeLookup(item.class)) as Array<{ id: number }>;
+          const matches = strictLookupNames
+            ? stepLookupMatches(db, "dnd_characterclass", "name", item.class)
+            : (db
+                .prepare(
+                  "SELECT id FROM dnd_characterclass WHERE LOWER(TRIM(name)) = ?",
+                )
+                .all(normalizeLookup(item.class)) as Array<{ id: number }>);
           if (matches.length !== 1) {
             errors.push(
               `line ${line}: class ${item.class} lookup is ambiguous`,
@@ -326,17 +329,33 @@ export function validatePatch(
           classId = matches[0]!.id;
         } else {
           // Resolve within this spell's memberships: editions can share class names.
-          const memberships = db
-            .prepare(
-              `SELECT c.id AS classId FROM dnd_spellclasslevel scl
+          const memberships = strictLookupNames
+            ? (
+                db
+                  .prepare(
+                    `SELECT c.id AS classId,c.name AS label FROM dnd_spellclasslevel scl
+              JOIN dnd_characterclass c ON c.id=scl.character_class_id
+              WHERE scl.spell_id=? AND COALESCE(scl.extra,'')=?`,
+                  )
+                  .all(shape.spellId, item.extra ?? "") as {
+                  classId: number;
+                  label: string;
+                }[]
+              ).filter(
+                (row) =>
+                  normalizeLookup(row.label) === normalizeLookup(item.class),
+              )
+            : (db
+                .prepare(
+                  `SELECT c.id AS classId FROM dnd_spellclasslevel scl
             JOIN dnd_characterclass c ON c.id = scl.character_class_id
             WHERE scl.spell_id = ? AND LOWER(TRIM(c.name)) = ? AND COALESCE(scl.extra, '') = ?`,
-            )
-            .all(
-              shape.spellId,
-              normalizeLookup(item.class),
-              item.extra ?? "",
-            ) as Array<{ classId: number }>;
+                )
+                .all(
+                  shape.spellId,
+                  normalizeLookup(item.class),
+                  item.extra ?? "",
+                ) as Array<{ classId: number }>);
           if (memberships.length !== 1) {
             errors.push(
               `line ${line}: class ${item.class}/${item.extra ?? ""} must match exactly one relationship`,
@@ -428,11 +447,17 @@ export function validatePatch(
       : null;
 
     if (rulebookId && name) {
-      const existingName = db
-        .prepare(
-          "SELECT id FROM dnd_spell WHERE lower(name) = lower(?) AND rulebook_id = ?",
-        )
-        .get(name, rulebookId) as { id: number } | undefined;
+      const existingName = strictLookupNames
+        ? (
+            db
+              .prepare("SELECT id,name FROM dnd_spell WHERE rulebook_id=?")
+              .all(rulebookId) as { id: number; name: string }[]
+          ).find((row) => normalizeLookup(row.name) === normalizeLookup(name))
+        : (db
+            .prepare(
+              "SELECT id FROM dnd_spell WHERE lower(name) = lower(?) AND rulebook_id = ?",
+            )
+            .get(name, rulebookId) as { id: number } | undefined);
       if (existingName) {
         errors.push(
           `line ${line}: spell already exists in rulebook: ${name} (${existingName.id})`,
@@ -1078,6 +1103,22 @@ function requireStepSchema(db: Database.Database) {
   }
 }
 
+function stepLookupMatches(
+  db: Database.Database,
+  table: string,
+  column: string,
+  name: string,
+) {
+  // Identical to loadLookup's label semantics; SQLite LOWER/TRIM would miss
+  // aliases that JavaScript normalizes (including tabs/newlines and Unicode).
+  const rows = db
+    .prepare(`SELECT id,${column} AS label FROM ${table}`)
+    .all() as LookupValue[];
+  return rows.filter(
+    (row) => normalizeLookup(row.label) === normalizeLookup(name),
+  );
+}
+
 function validateStepOperations(
   db: Database.Database,
   operations: readonly SpellStepOperation[],
@@ -1179,17 +1220,32 @@ function validateStepOperations(
           )
         )
           throw new Error("Complete rulebook identity is required");
+        const matches = stepLookupMatches(
+          db,
+          "dnd_rulebook",
+          "abbr",
+          book.abbr,
+        );
+        if (matches.length !== 1 || matches[0]!.id !== book.id)
+          throw new Error("Rulebook identity is missing, ambiguous or changed");
         const rows = db
           .prepare(
             `SELECT b.id,b.abbr,b.dnd_edition_id AS editionId,e.slug AS editionSlug,e.system
-          FROM dnd_rulebook b JOIN dnd_dndedition e ON e.id=b.dnd_edition_id WHERE LOWER(TRIM(b.abbr))=?`,
+          FROM dnd_rulebook b JOIN dnd_dndedition e ON e.id=b.dnd_edition_id WHERE b.id=?`,
           )
-          .all(normalizeLookup(book.abbr));
+          .all(book.id);
         if (rows.length !== 1 || exact(rows[0]) !== exact(book))
           throw new Error("Rulebook identity is missing, ambiguous or changed");
-        const editions = db
-          .prepare("SELECT id FROM dnd_dndedition WHERE slug=? AND system=?")
-          .all(book.editionSlug, book.system);
+        const editions = (
+          db.prepare("SELECT slug,system FROM dnd_dndedition").all() as {
+            slug: string;
+            system: string;
+          }[]
+        ).filter(
+          (row) =>
+            normalizeLookup(row.slug) === normalizeLookup(book.editionSlug) &&
+            normalizeLookup(row.system) === normalizeLookup(book.system),
+        );
         if (editions.length !== 1)
           throw new Error("Edition identity is ambiguous");
       }
@@ -1203,17 +1259,15 @@ function validateStepOperations(
       const errors: string[] = [];
       const shape = validateUpdateSpellShape(patch, 1, errors);
       if (errors.length) throw new Error(errors.join("; "));
-      // Use the legacy map's normalization, including tabs/newlines, rather
-      // than SQLite TRIM's narrower whitespace handling.
-      const descriptorRows = db
-        .prepare("SELECT name FROM dnd_spelldescriptor")
-        .all() as { name: string }[];
       for (const name of [
         ...(shape.descriptors ?? []),
         ...(shape.expectedDescriptors ?? []),
       ]) {
-        const matches = descriptorRows.filter(
-          row => normalizeLookup(row.name) === normalizeLookup(name),
+        const matches = stepLookupMatches(
+          db,
+          "dnd_spelldescriptor",
+          "name",
+          name,
         );
         if (matches.length !== 1)
           throw new Error(`Ambiguous spell step descriptor lookup: ${name}`);
@@ -1309,13 +1363,16 @@ function checkStepEntities(
       .all(guard.spell.rulebook_id);
     if (book.length !== 1)
       throw new Error("Missing or ambiguous spell edition");
-    if (
+    const collisions = (
       db
-        .prepare(
-          "SELECT id FROM dnd_spell WHERE LOWER(name)=LOWER(?) AND rulebook_id=? AND id<>?",
-        )
-        .get(guard.spell.name, guard.spell.rulebook_id, patch.id)
-    )
+        .prepare("SELECT name FROM dnd_spell WHERE rulebook_id=? AND id<>?")
+        .all(guard.spell.rulebook_id, patch.id) as { name: string }[]
+    ).filter(
+      (row) =>
+        normalizeLookup(row.name) ===
+        normalizeLookup(guard.spell!.name as string),
+    );
+    if (collisions.length)
       throw new Error("Spell name/rulebook identity collision");
   }
 }
@@ -1420,7 +1477,7 @@ export function maintainSpellStep(
             ? []
             : [{ line: index + 1, value: patch }],
       );
-      const validation = validatePatch(memory, "spell-step", parsed);
+      const validation = validatePatch(memory, "spell-step", parsed, true);
       if (validation.errors.length)
         throw new Error(validation.errors.join("; "));
       // Snapshot guards must agree with the existing shape/expected contract.
@@ -1457,11 +1514,7 @@ export function maintainSpellStep(
           ]),
         ];
         for (const [table, column, name] of names) {
-          if (
-            memory
-              .prepare(`SELECT id FROM ${table} WHERE LOWER(TRIM(${column}))=?`)
-              .all(normalizeLookup(name!)).length !== 1
-          )
+          if (stepLookupMatches(memory, table!, column!, name!).length !== 1)
             throw new Error(`Ambiguous spell step lookup: ${table}/${name}`);
         }
       }

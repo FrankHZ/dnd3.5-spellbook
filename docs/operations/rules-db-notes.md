@@ -220,9 +220,17 @@ memberships and detects duplicate, missing and extra relations. An insert has
 `patch.spell.added` timestamp so repeat checks remain deterministic.
 `readSpellStepGuard` exposes that shape for preparing task-owned fixtures or an
 authorized reviewed handoff; taking a snapshot does not accept its source text.
-Requested and expected descriptor names in a step must each resolve uniquely
-after case/whitespace normalization; ambiguous labels cannot select an ID by
-lookup traversal order.
+All strict step name checks use the same `normalizeLookup` case/whitespace
+semantics as the maintained name map, including tabs/newlines and Unicode.
+Insert rulebook, school, subschool, descriptor, class and domain labels must
+resolve uniquely, as must requested/expected update descriptors. Class
+additions require global uniqueness; existing class changes resolve uniquely
+within that spell's memberships and extra label, preserving edition boundaries.
+Move book abbreviations and edition/system identities use the same normalized
+comparison while retaining exact identity guards. Spell name/book collision
+checks also use that normalization. Ambiguous labels cannot
+select an ID by traversal order, including during repeat checks. Legacy CLI
+lookup behavior is unchanged.
 
 Identity corrections use the bounded `moveSpellRulebook` patch with `id`,
 `from` and `to`. Each book identity contains `id`, `abbr`, `editionId`,

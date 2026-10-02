@@ -126,6 +126,242 @@ async function main() {
     applySpellPatchAtomically,
     validatePatch,
   } = require("./spells") as typeof import("./spells");
+  // Every insert lookup shares the map's normalization, including aliases
+  // introduced after a successful batch. No incorrect relation may be written.
+  const lookupDb = fixture(":memory:");
+  try {
+    lookupDb.exec("INSERT INTO dnd_spellsubschool VALUES(1,'Sub')");
+    const insert: SpellStepOperation[] = [
+      {
+        patch: {
+          op: "insertSpell",
+          id: 120,
+          source: { rulebook: "BETA", page: 4 },
+          spell: {
+            added: "2004-01-01 00:00:00",
+            name: "Lookup",
+            slug: "lookup",
+            school: "School",
+            subschool: "Sub",
+            description: "Synthetic",
+            descriptionHtml: "<p>Synthetic</p>",
+          },
+          descriptors: ["New"],
+          levels: {
+            classes: [{ class: "Cleric", level: 2 }],
+            domains: [{ domain: "Domain", level: 3 }],
+          },
+        },
+        before: { spell: null, descriptors: [], classes: [], domains: [] },
+      },
+    ];
+    for (const phase of ["before", "after"] as const) {
+      for (const [table, label] of [
+        ["dnd_rulebook", "BETA"],
+        ["dnd_spellschool", "School"],
+        ["dnd_spellsubschool", "Sub"],
+        ["dnd_spelldescriptor", "New"],
+        ["dnd_characterclass", "Cleric"],
+        ["dnd_domain", "Domain"],
+      ]) {
+        lookupDb.exec("SAVEPOINT duplicate_lookup");
+        lookupDb
+          .prepare(
+            `INSERT INTO ${table} VALUES(50,?${table === "dnd_rulebook" ? ",2" : ""})`,
+          )
+          .run(`\t${label!.toUpperCase()}\n`);
+        const before = dump(lookupDb);
+        for (const mode of ["check", "apply"] as const) {
+          assert.throws(
+            () => maintainSpellStep(lookupDb, insert, rebuild, mode),
+            /Ambiguous spell step lookup/,
+          );
+          assert.equal(dump(lookupDb), before);
+          assert.equal(
+            lookupDb
+              .prepare(
+                "SELECT * FROM dnd_spellclasslevel WHERE spell_id=120 AND character_class_id=50",
+              )
+              .get(),
+            undefined,
+          );
+          if (phase === "before")
+            assert.equal(readSpellStepGuard(lookupDb, 120).spell, null);
+        }
+        lookupDb.exec("ROLLBACK TO duplicate_lookup; RELEASE duplicate_lookup");
+      }
+      lookupDb.exec("SAVEPOINT duplicate_spell_identity");
+      lookupDb
+        .prepare(
+          "INSERT INTO dnd_spell(id,name,rulebook_id,school_id) VALUES(50,?,2,1)",
+        )
+        .run("\tLOOKUP\n");
+      const identityBefore = dump(lookupDb);
+      for (const mode of ["check", "apply"] as const) {
+        assert.throws(
+          () => maintainSpellStep(lookupDb, insert, rebuild, mode),
+          /already exists|collision/,
+        );
+        assert.equal(dump(lookupDb), identityBefore);
+      }
+      lookupDb.exec(
+        "ROLLBACK TO duplicate_spell_identity; RELEASE duplicate_spell_identity",
+      );
+      if (phase === "before")
+        assert.deepEqual(
+          maintainSpellStep(lookupDb, insert, rebuild, "apply"),
+          { state: "after", changed: true },
+        );
+    }
+  } finally {
+    lookupDb.close();
+  }
+  const moveDb = fixture(":memory:");
+  try {
+    const move: SpellStepOperation[] = [
+      {
+        patch: {
+          op: "moveSpellRulebook",
+          id: 8,
+          from: {
+            id: 2,
+            abbr: "BETA",
+            editionId: 2,
+            editionSlug: "second",
+            system: "dnd3.5",
+          },
+          to: {
+            id: 1,
+            abbr: "ALPHA",
+            editionId: 1,
+            editionSlug: "first",
+            system: "dnd3.5",
+          },
+        },
+        before: readSpellStepGuard(moveDb, 8),
+      },
+    ];
+    for (const phase of ["before", "after"] as const) {
+      for (const sql of [
+        "INSERT INTO dnd_rulebook VALUES(50,char(9)||'BETA'||char(10),2)",
+        "INSERT INTO dnd_rulebook VALUES(50,char(9)||'ALPHA'||char(10),1)",
+        "INSERT INTO dnd_dndedition VALUES(50,char(9)||'SECOND'||char(10),' DND3.5 ')",
+        "INSERT INTO dnd_dndedition VALUES(50,char(9)||'FIRST'||char(10),' DND3.5 ')",
+      ]) {
+        moveDb.exec("SAVEPOINT duplicate_move_identity");
+        moveDb.exec(sql);
+        const before = dump(moveDb);
+        for (const mode of ["check", "apply"] as const) {
+          assert.throws(
+            () => maintainSpellStep(moveDb, move, rebuild, mode),
+            /ambiguous/i,
+          );
+          assert.equal(dump(moveDb), before);
+        }
+        moveDb.exec(
+          "ROLLBACK TO duplicate_move_identity; RELEASE duplicate_move_identity",
+        );
+      }
+      if (phase === "before") maintainSpellStep(moveDb, move, rebuild, "apply");
+    }
+  } finally {
+    moveDb.close();
+  }
+  const classDb = fixture(":memory:");
+  try {
+    const addition: SpellStepOperation[] = [
+      {
+        patch: {
+          op: "updateSpell",
+          id: 7,
+          levels: {
+            classes: [{ class: "Cleric", level: 4, expectedLevel: null }],
+          },
+        },
+        before: readSpellStepGuard(classDb, 7),
+      },
+    ];
+    for (const phase of ["before", "after"] as const) {
+      classDb.exec("SAVEPOINT duplicate_class_addition");
+      classDb
+        .prepare("INSERT INTO dnd_characterclass VALUES(50,?)")
+        .run("\tCLERIC\n");
+      const before = dump(classDb);
+      for (const mode of ["check", "apply"] as const) {
+        assert.throws(
+          () => maintainSpellStep(classDb, addition, rebuild, mode),
+          /ambiguous/i,
+        );
+        assert.equal(dump(classDb), before);
+        assert.equal(
+          classDb
+            .prepare(
+              "SELECT id FROM dnd_spellclasslevel WHERE spell_id=7 AND character_class_id=50",
+            )
+            .get(),
+          undefined,
+        );
+      }
+      classDb.exec(
+        "ROLLBACK TO duplicate_class_addition; RELEASE duplicate_class_addition",
+      );
+      if (phase === "before")
+        maintainSpellStep(classDb, addition, rebuild, "apply");
+    }
+    // Existing class changes resolve within memberships, preserving editions
+    // with shared names. A sole normalized alias must resolve to its actual ID.
+    classDb
+      .prepare("INSERT INTO dnd_characterclass VALUES(50,?)")
+      .run("\tWIZARD\n");
+    classDb.exec(
+      "UPDATE dnd_spellclasslevel SET character_class_id=50 WHERE id=1",
+    );
+    classDb.exec(rebuild[0]!.sql);
+    const relative: SpellStepOperation[] = [
+      {
+        patch: {
+          op: "updateSpell",
+          id: 7,
+          levels: {
+            classes: [{ class: "Wizard", level: 5, expectedLevel: 1 }],
+          },
+        },
+        before: readSpellStepGuard(classDb, 7),
+      },
+    ];
+    assert.deepEqual(maintainSpellStep(classDb, relative, rebuild), {
+      state: "before",
+      changed: false,
+    });
+    maintainSpellStep(classDb, relative, rebuild, "apply");
+    assert.deepEqual(
+      classDb
+        .prepare(
+          "SELECT character_class_id AS id,level FROM dnd_spellclasslevel WHERE id=1",
+        )
+        .get(),
+      { id: 50, level: 5 },
+    );
+    assert.deepEqual(maintainSpellStep(classDb, relative, rebuild, "apply"), {
+      state: "after",
+      changed: false,
+    });
+    classDb.exec("INSERT INTO dnd_spellclasslevel VALUES(50,7,1,1,'')");
+    classDb.exec(rebuild[0]!.sql);
+    const ambiguousRelative = [
+      { ...relative[0]!, before: readSpellStepGuard(classDb, 7) },
+    ];
+    const before = dump(classDb);
+    for (const mode of ["check", "apply"] as const) {
+      assert.throws(
+        () => maintainSpellStep(classDb, ambiguousRelative, rebuild, mode),
+        /exactly one relationship/,
+      );
+      assert.equal(dump(classDb), before);
+    }
+  } finally {
+    classDb.close();
+  }
   const dbPath = path.join(dir, "rules.sqlite");
   const db = fixture(dbPath);
   const first: SpellStepOperation[] = [
@@ -170,7 +406,7 @@ async function main() {
     }
   };
   const rejectAmbiguousDescriptors = (operations: SpellStepOperation[]) => {
-    for (const label of ["New", "Old"].flatMap(name => [
+    for (const label of ["New", "Old"].flatMap((name) => [
       `  ${name.toUpperCase()}  `,
       `\t${name.toUpperCase()}\n`,
     ])) {
