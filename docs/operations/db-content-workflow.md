@@ -24,6 +24,20 @@ It does not cover:
 
 ## Source Of Truth
 
+English original rulebook PDFs and applicable official errata govern translation
+and rules content. Existing Chinese CHM, dice database text, and derived English
+DB text are references, not acceptance authority. Translate missing Chinese
+directly and correct demonstrated English/Chinese/mechanical discrepancies through
+source-bound QA. Retained translations need source-faithfulness evidence; legacy
+resemblance alone is not acceptance. Preserve original ambiguities faithfully
+with separate reader notes.
+
+Keep stable IDs, source evidence/fingerprint checks, and safe import order.
+Preserve existing content and fallback outside accepted corrections/translations;
+an existing English baseline does not override the original or applicable errata.
+Corrections follow the accepted-input and explicit DB-write gates below. This
+authority rule does not resume paused broad PHB extraction or translation work.
+
 - Real source, patch, review, and decision data lives in the private data repo
   repo.
 - Runtime SQLite files live under `server/db/local/` and are ignored by the
@@ -64,6 +78,13 @@ reuses that complete preflight directly and writes only a command-created
 experimental content copy under worktree output. Its field provenance and
 limited build marker do not constitute a deployable artifact or permission to
 migrate/write operator DBs. Full build/search/consumer integration remains separate.
+The selected final candidate uses the maintained
+[final overlay and migrated-state validator](./sc-final-source-binding.md#final-overlay-and-migrated-state-validation)
+after genuine full normalized generation/import. It preserves generation
+provenance and records accepted name/body authority while summaries and extra
+relationship QA remain pending. Its validation needs durable final inputs,
+not removable rehearsal DB snapshots; operator writes still require the owning
+migration's authorization and acceptance.
 
 ## Standard Handoff Flow
 

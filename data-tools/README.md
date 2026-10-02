@@ -86,6 +86,23 @@ Operator-owned SQLite files stay under `server/db/local/`. Do not commit these
 inputs or generated source-bearing output to the parent repo. Public PHB
 reports contain only source-free aggregates such as counts, hashes, and status.
 
+The standalone [SC coverage audit](./audits/sc_coverage.py) reconciles frozen
+Git evidence with current read-only fields and emits exact field/slice identities.
+See its [coverage report and reproduction recipe](../docs/releases/v1.4/spell-compendium-final-qa-coverage-report.md).
+It requires explicit data/revision/DB roots and grants no content acceptance or
+write authority. It is a bounded audit helper, outside routine local acceptance.
+
+The [final SC name/body candidate replay](../docs/operations/sc-final-source-binding.md)
+composes the exact 1,001-entry sources through complete historical QA, maintained
+in-memory rules patching and fresh PDF/retention coverage checks. It keeps
+historical effective baselines intact and emits inspection evidence only.
+The selected candidate's maintained `dice:final:write` path replays source QA and
+PDF verification against durable final inputs. It defaults to read-only dry-run;
+`--apply` writes transactionally and `--validate` checks the migrated state.
+It preserves genuine full normalized build provenance and records accepted
+name/body overlay provenance separately from pending semantic QA. See the
+[final overlay command](../docs/operations/sc-final-source-binding.md#final-overlay-and-migrated-state-validation).
+
 A documented command is not permission to write local DBs or activate production.
 Use the task's explicit write boundary and the operation-specific dry-run path;
 not every importer supports dry-run. App-state must never be reset or mutated

@@ -37,6 +37,8 @@ export function withSourceIssueNotes(review: RetainedSourceIssues): string {
 }
 export type SourceBoundFallbackReview = {
   sourceKey: null; targetId: number; rulebookId: number; field: FallbackField;
+  /** Explicit direct translation of an absent field, never a fabricated CHM baseline. */
+  intent?: "translate-missing";
   before: string | null; after: string; proposedHtml: string | null;
   input: { chinese: ChineseTextBinding; english: EnglishRecord; englishHtml: string | null };
   sourceRef: string; sourcePages: SourcePage[];
@@ -53,11 +55,13 @@ export type AcceptedBodyBaseline = {
   revision: string;
   native: { path: string; rows: NativeAccepted[] };
   independent: { path: string; rows: SourceBoundFallbackReview[] };
+  currentAmendments?: { revision: string; path: string; rows: AcceptedBodyAmendment[] };
 };
 export type AcceptedBodyAmendment = {
   targetId: number; rulebookId: number; field: "descriptionText";
   prior: { owner: "native" | "independent"; revision: string; path: string;
-    acceptedRow: NativeAccepted | SourceBoundFallbackReview };
+    acceptedRow: NativeAccepted | SourceBoundFallbackReview;
+    currentAmendment?: { revision: string; path: string; acceptedRow: AcceptedBodyAmendment } };
   review: SourceBoundFallbackReview;
 };
 
@@ -98,6 +102,25 @@ export function validateAcceptedBodyAmendments(amendments: AcceptedBodyAmendment
     assert(!independentKeys.has(key), "duplicate independent accepted baseline field"); independentKeys.add(key);
     if (row.field === "descriptionText") independent.set(row.targetId, row);
   }
+  // A second review retains original ownership and also binds the exact current
+  // amendment. Revalidate that independently loaded layer against the original
+  // ledgers before trusting its replacement as the selected prior value.
+  const active = new Map<number, AcceptedBodyAmendment>();
+  const layer = baseline.currentAmendments;
+  if (layer) {
+    assert(/^[0-9a-f]{40}$/.test(layer.revision) && text(layer.path)
+      && layer.path !== baseline.native.path && layer.path !== baseline.independent.path,
+    "require exact distinct current amendment authority");
+    const originalChinese = new Map(chinese);
+    for (const row of layer.rows) {
+      assert(!row.prior.currentAmendment, "nested current amendment baseline is unsupported");
+      assert(!active.has(row.targetId), "duplicate current amendment baseline target");
+      active.set(row.targetId, row);
+      originalChinese.set(row.targetId, row.review.input.chinese);
+    }
+    const { currentAmendments: _layer, ...original } = baseline;
+    validateAcceptedBodyAmendments(layer.rows, original, rulebookId, english, englishHtml, originalChinese);
+  }
   const keys = new Set<string>();
   for (const amendment of amendments) {
     assert(amendment.field === "descriptionText", "amendment is restricted to body fields");
@@ -117,21 +140,35 @@ export function validateAcceptedBodyAmendments(amendments: AcceptedBodyAmendment
     assert.equal(stable(prior.acceptedRow), stable(actual), `stale prior accepted row ${key}`);
     const current = chinese.get(amendment.targetId);
     assert(current && text(current.descriptionText), `missing selected accepted body ${key}`);
-    if (prior.owner === "native") {
+    const currentPrior = active.get(amendment.targetId);
+    if (currentPrior) {
+      assert(prior.currentAmendment, `missing current amendment binding ${key}`);
+      assert.equal(prior.currentAmendment.revision, layer!.revision, `stale current amendment revision ${key}`);
+      assert.equal(prior.currentAmendment.path, layer!.path, `stale current amendment path ${key}`);
+      assert.equal(stable(prior.currentAmendment.acceptedRow), stable(currentPrior), `stale current amendment row ${key}`);
+      assert.equal(current.descriptionText, currentPrior.review.after, `stale selected current amendment text ${key}`);
+      assert.equal(current.descriptionHtml, currentPrior.review.proposedHtml, `stale selected current amendment HTML ${key}`);
+    } else {
+      assert(!prior.currentAmendment, `unrelated current amendment binding ${key}`);
+    }
+    if (prior.owner === "native" && !currentPrior) {
       assert(n && text(n.sourceKey) && text(n.descriptionHtml), `missing native prior source/body ${key}`);
       assert.equal(current.descriptionHtml, n.descriptionHtml, `stale selected native HTML ${key}`);
       // No text/HTML decoder: require the exact existing escaped projection.
       assert.equal(escapedFallbackHtml(current.descriptionText), n.descriptionHtml, `stale selected native text ${key}`);
-    } else {
+    } else if (prior.owner === "independent" && !currentPrior) {
       assert(i && (i.status === "accepted" || i.status === "accepted-with-source-issues")
         && i.sourceKey === null, `unaccepted independent prior ${key}`);
       assert.equal(current.descriptionText, i.after, `stale selected independent text ${key}`);
       assert.equal(current.descriptionHtml, i.proposedHtml, `stale selected independent HTML ${key}`);
-      if (i.retainedSourceIssues) {
+    }
+    // Both original and current unresolved statements remain immutable.
+    for (const previous of [i, currentPrior?.review]) {
+      if (previous?.retainedSourceIssues) {
         const proposed = amendment.review.retainedSourceIssues;
-        assert(proposed && proposed.sourceId === i.retainedSourceIssues.sourceId,
+        assert(proposed && proposed.sourceId === previous.retainedSourceIssues.sourceId,
           `amendment cannot retire prior source issues ${key}`);
-        for (const issue of i.retainedSourceIssues.issues) assert.equal(
+        for (const issue of previous.retainedSourceIssues.issues) assert.equal(
           stable(proposed.issues.find(item => item.id === issue.id)), stable(issue),
           `amendment cannot change prior unresolved source issue ${key}`);
       }
@@ -177,6 +214,12 @@ function validateReviews(reviews: SourceBoundFallbackReview[],
     assert(englishHtml.has(row.targetId) && nullableText(row.input.englishHtml), `missing English HTML ${key}`);
     assert.equal(row.input.englishHtml, englishHtml.get(row.targetId), `stale full English HTML ${key}`);
     assert.equal(row.before, current[row.field], `stale current-before field ${key}`);
+    assert(row.intent === undefined || row.intent === "translate-missing", `invalid source-bound intent ${key}`);
+    if (row.intent === "translate-missing") {
+      assert(row.before === null, `missing translation requires absent Chinese field ${key}`);
+      if (row.field === "descriptionText") assert(current.descriptionHtml === null,
+        `missing translation requires absent Chinese HTML ${key}`);
+    }
     assert(text(row.after) && row.after !== row.before, `empty or unchanged source-bound correction ${key}`);
     assert.equal(row.proposedHtml, row.field === "descriptionText" ? escapedFallbackHtml(row.after) : null,
       `source-bound text/HTML projection mismatch ${key}`);
@@ -269,7 +312,8 @@ function validateReviews(reviews: SourceBoundFallbackReview[],
     }
     if (row.status === "accepted" || row.status === "accepted-with-source-issues") {
       assert(!pending && row.originalSourceRead === true, `accepted source-bound field not actually reviewed ${key}`);
-      assert(text(row.before), `accepted correction cannot invent absent Chinese fallback ${key}`);
+      assert(row.intent === "translate-missing" || text(row.before),
+        `accepted correction cannot invent absent Chinese fallback ${key}`);
       assert(row.rulePairs.length > 0 && !row.pendingSourceEvidence?.length, `accepted source-bound field lacks closed rule evidence ${key}`);
       if (row.field === "descriptionText") {
         const audit = row.fullBodyAudit;

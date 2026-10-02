@@ -100,13 +100,21 @@ when reassessing them.
   replace, move, or write them without explicit authorization for a write-capable
   workflow. Content import must not mutate app-state. Keep root `.env` local;
   use `.env.example` for non-secret helper keys.
-- Preserve accepted source authority, provenance, fingerprints, import order,
-  and fallback. Passing counts/tests or PR documentation edits do not authorize
-  changing those boundaries. For data/DB work, consult
+- English original rulebook PDFs and applicable official errata govern
+  translation and rules content. Existing Chinese CHM, dice database text, and
+  derived English DB text are references, not acceptance authority. Translate
+  missing Chinese directly; correct demonstrated English/Chinese/mechanical
+  discrepancies through source-bound QA. Preserve original ambiguities faithfully
+  with separate reader notes; legacy resemblance alone is not a QA pass.
+- Preserve stable IDs, provenance, fingerprints, safe import order, and fallback
+  for untouched or unaccepted content. Source-supported corrections still require
+  accepted inputs and explicit write authorization; passing counts/tests or PR
+  documentation edits do not authorize writes. For data/DB work, consult
   [db-content-workflow](docs/operations/db-content-workflow.md).
-- Dice TXT is candidate input, not accepted content. Preserve existing IDs,
-  canonical English, mechanics, summaries, and CHM/English fallback. Use aligned
-  English for substantive Chinese discrepancy QA. Selective replacement must
+- Dice TXT is candidate input, not accepted content. Retain existing English,
+  mechanics, summaries, and CHM/English fallback unless source-bound QA accepts
+  a correction or translation. Use the original and applicable errata for
+  substantive Chinese discrepancy QA. Selective replacement must
   prove safe ordering: the existing CHM importer deletes all Chinese spell text.
 - PHB PDF/MinerU/SRD extraction and translation remain suspended pending an
   explicit resumption decision. Preserve implementation, tests, and data; do not
@@ -123,6 +131,29 @@ when reassessing them.
 - Keep the private data repo and operator DBs outside removable public-code
   worktrees. Create worktrees manually without junctions or symlinks to those
   files; configure each worktree's ignored root `.env` to the private data path.
+
+## Worktree Reuse And Cleanup
+
+- Independent issues/tasks need separate topic branches and PRs, not a new
+  checkout per issue. Main-gate must inspect `git worktree list` and assign an
+  idle checkout before creating another. Create one only when existing checkouts
+  are occupied or incompatible with the required work; record that reason in
+  the issue. Size the pool for active concurrency, not completed batch count.
+- Before reuse, confirm the previous owner has finished, its accepted changes
+  are merged, and no task or process still uses the checkout or its outputs.
+  Inspect tracked, untracked and ignored files. Preserve unmerged work and
+  required evidence; do not use blind `reset --hard` or `clean` to make it idle.
+  Fetch remote `main`, create the next issue's branch from that base in the
+  existing checkout, and verify its root, local configuration and dependencies.
+- Return completed checkouts to the reusable pool. Retain dependency installs
+  when compatible; do not install another full environment or copy full test
+  databases for each batch by default. Keep shared runtime and accepted rehearsal
+  outputs while consumers depend on them, with ownership recorded in the issue.
+- Remove surplus inactive worktrees after checking merge state, ignored outputs,
+  nested repositories and link targets. Verify absolute cleanup paths and use
+  `git worktree remove`; never traverse links into independent data or operator
+  databases. Durable sources/evidence belong in the configured data repo, and
+  progress/ownership stay in GitHub rather than a second worktree registry.
 
 ## Validation And Conditional References
 

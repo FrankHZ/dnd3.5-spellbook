@@ -113,6 +113,9 @@ const tests: TestCase[] = [
           },
         ],
         summaries: [
+          { spellId: 100, lang: "zh", variant: "chm", summaryText: "maintained Chinese summary" },
+          { spellId: 100, lang: "zh", variant: "effective", summaryText: "unselected effective summary" },
+          { spellId: 100, lang: "zh", variant: "other", summaryText: "other variant summary" },
           {
             spellId: 100,
             lang: "en",
@@ -132,11 +135,16 @@ const tests: TestCase[] = [
 
       assert.deepEqual(
         documents.map((document) => `${document.lang}:${document.variant}`),
-        ["en:default", "en:imarvin", "zh:chm", "zh:effective"],
+        ["en:default", "en:imarvin", "zh:chm", "zh:effective", "zh:other"],
       );
       for (const document of documents.filter(document => document.variant !== "effective"))
         assert(!document.aliases.includes("审核名称"), "effective names must not leak into old aliases");
       assert.equal(documents.find(document => document.variant === "effective")!.body, "审核正文");
+      assert.equal(documents.find(document => document.variant === "effective")!.summary, "maintained Chinese summary");
+      assert.equal(documents.find(document => document.variant === "chm")!.summary, "maintained Chinese summary");
+      assert.equal(documents.find(document => document.variant === "other")!.summary, "other variant summary");
+      assert(documents.every(document => !document.summary.includes("unselected effective summary")));
+      assert(documents.every(document => !document.aliases.includes("火球术")), "superseded localized names stay in their own document");
 
       const db = new Database(":memory:");
       try {
@@ -168,7 +176,7 @@ const tests: TestCase[] = [
             WHERE "SpellSearchDocument" MATCH ?
           `)
           .all('"火球术"') as Array<{ spellId: number; lang: string }>;
-        assert.equal(chineseMatches.length, 3);
+        assert.equal(chineseMatches.length, 1);
         assert.deepEqual(
           Array.from(new Set(chineseMatches.map((row) => row.spellId))),
           [100],
@@ -180,7 +188,7 @@ const tests: TestCase[] = [
           )
           .get();
         assert.deepEqual(state, {
-          schemaVersion: 1,
+          schemaVersion: 2,
           documentCount: documents.length,
         });
       } finally {

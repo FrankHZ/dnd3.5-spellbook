@@ -8,8 +8,31 @@ import { assertEffectiveBaseline, currentEffectiveBaseline, acceptedUnionRevisio
 
 const handoff = "dice-qa/books/86/issue-311/batch-06";
 export const fieldProvenanceMigration = "20261001233000_add_spell_field_provenance";
-const columns = ["rulebookId", "name", "descriptionText", "descriptionHtml", "sourceKey",
+export const overlayColumns = ["rulebookId", "name", "descriptionText", "descriptionHtml", "sourceKey",
   "nameProvenanceJson", "bodyProvenanceJson"] as const;
+const columns = overlayColumns;
+
+export type OverlayRow = { spellId: number; rulebookId: number; name: string; descriptionText: string;
+  descriptionHtml: string | null; sourceKey: string | null; nameProvenanceJson: string; bodyProvenanceJson: string;
+  action: string };
+
+/** Shared SQL materialization; callers own source authentication/build policy. */
+export function applyOverlayRows(db: Database.Database, rows: OverlayRow[], migrate: boolean,
+  updateBuild: () => void) {
+  db.transaction(() => {
+    if (migrate) db.exec(readFileSync(join(repoRoot(), "server/db/content/migrations", fieldProvenanceMigration, "migration.sql"), "utf8"));
+    const insert = db.prepare(`INSERT INTO I18nSpellText
+      (id, spellId, lang, variant, ${columns.join(", ")}, updatedAt)
+      VALUES (@id, @spellId, 'zh', 'effective', ${columns.map(col => `@${col}`).join(", ")}, CURRENT_TIMESTAMP)`);
+    const update = db.prepare(`UPDATE I18nSpellText SET ${columns.map(col => `${col}=@${col}`).join(", ")}, updatedAt=CURRENT_TIMESTAMP
+      WHERE spellId=@spellId AND lang='zh' AND variant='effective'`);
+    for (const row of rows) {
+      if (row.action === "insert") insert.run({ ...row, id: `dice-effective:${row.rulebookId}:${row.spellId}` });
+      if (row.action === "update") update.run(row);
+    }
+    updateBuild();
+  }).immediate();
+}
 
 function provenance(row: EffectiveChinese, field: "name" | "body", acceptedRevision: string) {
   const origin = row[field].origin;
@@ -107,17 +130,7 @@ export function writeEffectiveOverlay(db: Database.Database, projection: Effecti
     updates: rows.filter(row => row.action === "update").length,
     unchanged: rows.filter(row => row.action === "unchanged").length, rows };
   if (dryRun) return plan;
-  db.transaction(() => {
-    if (migrate) db.exec(readFileSync(join(repoRoot(), "server/db/content/migrations", fieldProvenanceMigration, "migration.sql"), "utf8"));
-    const insert = db.prepare(`INSERT INTO I18nSpellText
-      (id, spellId, lang, variant, ${columns.join(", ")}, updatedAt)
-      VALUES (@id, @spellId, 'zh', 'effective', ${columns.map(col => `@${col}`).join(", ")}, CURRENT_TIMESTAMP)`);
-    const update = db.prepare(`UPDATE I18nSpellText SET ${columns.map(col => `${col}=@${col}`).join(", ")}, updatedAt=CURRENT_TIMESTAMP
-      WHERE spellId=@spellId AND lang='zh' AND variant='effective'`);
-    for (const row of rows) {
-      if (row.action === "insert") insert.run({ ...row, id: `dice-effective:${book}:${row.spellId}` });
-      if (row.action === "update") update.run(row);
-    }
+  applyOverlayRows(db, rows, migrate, () => {
     if (markExperiment) {
       // Retire old full-build claims in this disposable copy. Keep no old hashes
       // or deployment-looking commits attached to the altered database.
@@ -125,6 +138,6 @@ export function writeEffectiveOverlay(db: Database.Database, projection: Effecti
       db.prepare(`INSERT INTO RulesContentBuild (id, sourceKind, generatorVersion, spellCount, issueCount, buildMetaJson)
         VALUES (@id, @sourceKind, @generatorVersion, @spellCount, @issueCount, @buildMetaJson)`).run(experimentBuild);
     }
-  }).immediate();
+  });
   return plan;
 }

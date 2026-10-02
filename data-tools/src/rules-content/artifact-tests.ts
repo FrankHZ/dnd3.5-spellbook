@@ -39,7 +39,7 @@ const tests: Array<{ name: string; run: () => void }> = [
         const rulesDbPath = path.join(tempRoot, "rules.sqlite");
         const rulesManifestPath = path.join(dataRoot, "rules-db-manifest.json");
         fs.writeFileSync(rulesDbPath, "portable rules DB input", "utf8");
-        fs.writeFileSync(rulesManifestPath, "{}\n", "utf8");
+        fs.writeFileSync(rulesManifestPath, JSON.stringify({ database: { sha256: sha256File(rulesDbPath) } }), "utf8");
 
         assert.throws(
           () =>
@@ -169,9 +169,10 @@ const tests: Array<{ name: string; run: () => void }> = [
       const current = structuredClone(expected);
       current.rulesDb.sha256 = hash("f");
       current.canonicalInputs.rulebookPublicationMetadata!.sha256 = hash("e");
+      current.contentMigrations.sha256 = hash("d");
       assert.throws(
         () => verifyRulesContentArtifactProvenance(expected, current),
-        /rules DB SHA-256 changed[\s\S]*canonical publication metadata SHA-256 changed/,
+        /rules DB SHA-256 changed[\s\S]*canonical publication metadata SHA-256 changed[\s\S]*content migrations SHA-256 changed/,
       );
     },
   },
@@ -192,8 +193,8 @@ const tests: Array<{ name: string; run: () => void }> = [
         const rulesDbPath = path.join(tempRoot, "rules.sqlite");
         fs.mkdirSync(path.dirname(publicationsPath), { recursive: true });
         fs.writeFileSync(publicationsPath, "{\"portable\":true}\n", "utf8");
-        fs.writeFileSync(rulesManifestPath, "{\"database\":{\"sha256\":\"stale\"}}\n", "utf8");
         fs.writeFileSync(rulesDbPath, "actual rules DB bytes", "utf8");
+        fs.writeFileSync(rulesManifestPath, JSON.stringify({ database: { sha256: sha256File(rulesDbPath) } }), "utf8");
 
         const provenance = collectRulesContentArtifactProvenance(
           {
@@ -222,7 +223,8 @@ const tests: Array<{ name: string; run: () => void }> = [
           },
         );
         assert.equal(provenance.rulesDb.sha256, sha256File(rulesDbPath));
-        assert.notEqual(provenance.rulesDb.sha256, "stale");
+        assert.equal(provenance.canonicalInputs.rulesManifest?.sha256, sha256File(rulesManifestPath));
+        assert.notEqual(provenance.rulesDb.sha256, provenance.canonicalInputs.rulesManifest?.sha256);
         assert.equal(
           provenance.canonicalInputs.rulebookPublicationMetadata?.sha256,
           sha256File(publicationsPath),

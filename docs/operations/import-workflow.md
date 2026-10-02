@@ -169,7 +169,13 @@ npm run -w data-tools rules:content:meta
 
 Audit/generate read the rules DB and write artifacts under
 `data-tools/out/rules-content/`. Full generation requires canonical publication
-coverage. `rules:content:generate -- --audit-only [--limit N]` writes a separate
+coverage. Full generation and ordinary import (including dry-run) require valid
+JSON in `rules-db-manifest.json` with an existing lowercase 64-hex
+`database.sha256` matching the independently computed rules DB hash. They fail
+closed before artifact output or row mutation and never repair the manifest;
+`rules:manifest:write` and `rules:manifest:verify` remain the explicit owners.
+Audit-only generation does not require this binding and remains non-importable.
+`rules:content:generate -- --audit-only [--limit N]` writes a separate
 limited, non-importable artifact; `--limit` alone is invalid.
 
 Import validates current rules DB, canonical-input, and migration hashes even
@@ -464,7 +470,12 @@ field, complete replacement, original-source locators, reviewer and specific
 English/Chinese rule pairs. Each `(targetId, field)` is unique and cannot overlap
 a native accepted field. Accepted bodies require an embedded full-body audit of
 the complete new text, actual old HTML and explicitly escaped `<pre>` projection.
-Missing Chinese is reviewed absence, not permission to invent a corrected fallback.
+For an explicitly authorized direct translation of a missing field, set
+`intent: "translate-missing"` and bind `before: null` to the actual absent field.
+A missing body also requires absent current Chinese HTML. Keep `sourceKey: null`;
+do not manufacture a CHM baseline or native candidate. The same complete input,
+original-source, rule-pair, full-body and HTML checks still apply. Ordinary
+correction proposals continue to require an existing non-empty Chinese field.
 Changed inputs, unreviewed fields and unresolved source evidence fail acceptance.
 
 For SC current-edition Chinese delivery, an explicit owning-book scope decision
@@ -585,6 +596,16 @@ page/span, rule-pair and full-body audit checks. Fresh supplemental PDF verifica
 and actual source/HTML review remain necessary; this helper does not certify them.
 
 The result retains amendment envelopes and reports zero new accepted fields.
+For a further review of a currently amended body, the caller can additionally
+select `baseline.currentAmendments` by exact revision, path and complete rows.
+The helper revalidates that layer against the original ledgers, and requires
+`prior.currentAmendment` to match its exact revision, path and entire envelope.
+Selected text/HTML must match that current replacement. Original ownership and
+prior row remain bound, and unresolved source issues from both layers remain
+unchanged. Missing, stale, unrelated or nested current bindings fail validation;
+ordinary fallback overlap rejection stays intact. This proposal path does not
+change the fixed effective preflight or writer's selected inputs.
+
 It is a validated amendment proposal, not a replacement accepted union, fallback
 export or input for an effective projection/DB writer. Keep original accepted
 ledgers and frozen QA untouched. Privately prove the exact scoped differences and
@@ -601,6 +622,12 @@ English, mechanics, summaries, existing identities, and source provenance.
 Runtime consumers do not adjudicate competing sources.
 
 ### Effective Chinese preflight
+
+The separate [final 1,001-entry name/body candidate replay](./sc-final-source-binding.md)
+authenticates the exact accepted sources and retained original review evidence
+after 4837 publication reconciliation. It preserves the historical preflight and
+writer baseline guards. Its projection remains inspection evidence; final
+accepted-input selection and writer/post-migration integration are separate.
 
 `dice:effective` requires an explicit, fixed main-gate accepted SC revision:
 
@@ -785,24 +812,32 @@ helpers validate SQLite tables/integrity; this marker is not a new deployment
 authorization or a claim that those helpers reject all experimental DBs.
 Full artifact generation/provenance and consumer/search integration remain a
 separate delivery. Do not upload or activate this experiment.
+For the selected final 1,001-entry name/body candidate, use the maintained
+[final overlay entry](./sc-final-source-binding.md#final-overlay-and-migrated-state-validation)
+after genuine full normalized generation/import. It keeps historical experiment
+guards and preserves full generation provenance; summary/relationship QA and
+final migration/search/consumer acceptance remain separately owned.
 
 #### Follow-up consumers and full build
 
 The existing unique key `(spellId, lang, variant)` preserves the original `chm`
 beside the internal `effective` variant. Field provenance storage is implemented
-for disposable experiments; [explicit effective API mapping](../modules/server.md#explicit-effective-spell-overlay)
-validates and exposes minimal field metadata. The omitted-variant/default policy
-remains a follow-up decision. No source registry or separate translation service
-is required.
+for disposable experiments; [selected effective API mapping](../modules/server.md#selected-effective-spell-overlay)
+validates historical and final envelopes and exposes minimal field metadata.
+Omitted Chinese variants select effective when present, then CHM and English;
+explicit variants preserve their selection. Source origin remains separate from
+original/errata review, including retained CHM and superseded body amendments.
+Summary selection stays with accepted CHM/imarvin rows. Stored user preferences
+are preserved. No source registry or separate translation service is required.
 
-The writer materializes complete effective fields, preserves the original CHM
-variant, and distinguishes English fallback from Chinese translation.
-The future omitted-variant policy must work consistently in detail, lists,
-search and summary fallback. Explicit `variant=chm` must continue to return the
-original CHM row. Current consumers default Chinese requests to `chm`, expose
-legacy sourceKey values, and select summary variants separately. Explicit
-`effective` API reads expose field metadata and reuse CHM summaries without changing
-the omitted-variant/default policy. Canonical English/mechanics, summaries, relationships,
+The writer materializes complete effective fields and preserves the original CHM
+variant. The selected consumer policy applies consistently to detail, lists,
+search and resolve; explicit `variant=chm` returns the original CHM row. Rebuild
+the maintained FTS index after final text and summaries: version 2 keeps variant
+aliases and summary owners separate; older indexes fail closed with an actionable
+503. Consumer support does not authorize experimental or production activation.
+`effective` API reads expose field metadata and reuse CHM summaries. Canonical
+English/mechanics, summaries, relationships,
 normalized entities and publication metadata remain outside the overlay.
 
 After authorized disposable imports and the verified writer, build contracts
