@@ -5,6 +5,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 
 AUDITS = Path(__file__).resolve().parents[2] / 'audits'
@@ -91,6 +92,8 @@ class FinalBindingTests(unittest.TestCase):
             final.exact_candidate('0' * 40)
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
+            with self.assertRaisesRegex(ValueError, 'invoking helper checkout'):
+                final.derive_final(SimpleNamespace(code_root=root, data_root=root, runtime_root=root))
             git = lambda *args: subprocess.check_output(['git', '-C', str(root), *args], encoding='utf8').strip()
             git('init', '--quiet'); git('config', 'user.name', 'Synthetic'); git('config', 'user.email', 'synthetic@example.invalid')
             owned = root / final.BOOK / 'issue-365'

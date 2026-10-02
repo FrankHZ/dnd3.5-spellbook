@@ -4,11 +4,12 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 const {execFileSync} = require('node:child_process');
-const {readExact, refreshMissing, rawRows} = require('./sc-final-inputs.cjs');
+const {readExact, refreshMissing, rawRows, derive} = require('./sc-final-inputs.cjs');
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sc-final-inputs-'));
 const git = (...args) => execFileSync('git', ['-C', root, ...args], {encoding: 'utf8'}).trim();
 try {
+  assert.throws(() => derive({code: root}), /code root must match/);
   git('init', '--quiet'); git('config', 'user.name', 'Synthetic'); git('config', 'user.email', 'synthetic@example.invalid');
   fs.writeFileSync(path.join(root, 'input.json'), '{"targetId":4837,"rulebookId":9}\n');
   git('add', '--', 'input.json'); git('commit', '--quiet', '-m', 'Synthetic exact input');
