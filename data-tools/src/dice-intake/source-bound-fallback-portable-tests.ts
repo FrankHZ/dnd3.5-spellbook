@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { escapedFallbackHtml, validateSourceBoundFallbackReviews, validateAcceptedBodyAmendments,
-  withSourceIssueNotes, type AcceptedBodyBaseline, type AcceptedBodyAmendment, type SourceBoundFallbackReview } from "./source-bound-fallback";
+  withSourceIssueNotes, type AcceptedBodyBaseline, type AcceptedBodyAmendment,
+  type ChineseTextBinding, type SourceBoundFallbackReview } from "./source-bound-fallback";
 import type { EnglishRecord } from "./qa";
 
 const en: EnglishRecord = { name: "Cold Touch", rulebookId: 10, editionId: 5,
@@ -253,7 +254,8 @@ const amendment: AcceptedBodyAmendment = { targetId: 1, rulebookId: 10, field: "
   prior: { owner: "native", revision, path: "native.jsonl", acceptedRow: nativePrior },
   review: { ...structuredClone(row), input: { ...row.input, chinese: acceptedChinese },
     fullBodyAudit: { ...row.fullBodyAudit!, beforeHtml: acceptedChinese.descriptionHtml } } };
-const amend = (rows: AcceptedBodyAmendment[], base = baseline, selected = new Map([[1, acceptedChinese]])) =>
+const amend = (rows: AcceptedBodyAmendment[], base = baseline,
+  selected: Map<number, ChineseTextBinding> = new Map([[1, acceptedChinese]])) =>
   validateAcceptedBodyAmendments(rows, base, 10, english, html, selected);
 assert.equal(amend([amendment]).summary.newAcceptedFields, 0);
 assert.equal(amend([amendment]).amendments[0]!.prior.owner, "native");
@@ -326,3 +328,65 @@ const mixedResult = validateAcceptedBodyAmendments([amendment, secondAmendment],
 assert.deepEqual(mixedResult.amendments.map(a => a.prior.owner), ["native", "independent"]);
 assert.equal(mixedResult.summary.newAcceptedFields, 0);
 console.log(`accepted body amendment portable tests passed (${amendmentRejected + 11} rejection checks)`);
+
+// Re-review the selected amendment without relabeling its native origin.
+const currentRevision = "c".repeat(40), currentPath = "current-amendments.jsonl";
+const currentBase: AcceptedBodyBaseline = { ...baseline,
+  currentAmendments: { revision: currentRevision, path: currentPath, rows: [amendment] } };
+const currentChinese: ChineseTextBinding = { ...acceptedChinese, descriptionText: amendment.review.after,
+  descriptionHtml: amendment.review.proposedHtml };
+const nextAmendment = structuredClone(amendment);
+nextAmendment.prior.currentAmendment = { revision: currentRevision, path: currentPath, acceptedRow: amendment };
+nextAmendment.review.input.chinese = currentChinese;
+nextAmendment.review.before = currentChinese.descriptionText;
+nextAmendment.review.after += " Further reviewed flavor.";
+nextAmendment.review.proposedHtml = escapedFallbackHtml(nextAmendment.review.after);
+nextAmendment.review.fullBodyAudit = { ...nextAmendment.review.fullBodyAudit!,
+  beforeHtml: currentChinese.descriptionHtml, effectiveText: nextAmendment.review.after,
+  effectiveHtml: nextAmendment.review.proposedHtml };
+const next = (item = nextAmendment, base = currentBase, selected = currentChinese) =>
+  amend([item], base, new Map([[1, selected]]));
+assert.equal(next().summary.newAcceptedFields, 0);
+assert.equal(next().amendments[0]!.prior.owner, "native");
+assert.throws(() => validateSourceBoundFallbackReviews([nextAmendment.review], 10, english,
+  html, new Map([[1, currentChinese]]), baseline.native.rows), /overlaps/);
+let currentRejected = 0;
+function currentFails(change: (item: AcceptedBodyAmendment) => void, pattern: RegExp) {
+  const item = structuredClone(nextAmendment); change(item);
+  assert.throws(() => next(item), pattern); currentRejected++;
+}
+currentFails(a => { delete a.prior.currentAmendment; }, /missing current amendment/);
+currentFails(a => { a.prior.currentAmendment!.revision = revision; }, /stale current amendment revision/);
+currentFails(a => { a.prior.currentAmendment!.path = "wrong.jsonl"; }, /stale current amendment path/);
+currentFails(a => { a.prior.currentAmendment!.acceptedRow.review.after += "forged"; }, /stale current amendment row/);
+currentFails(a => { a.prior.owner = "independent"; }, /missing.*prior/);
+assert.throws(() => next(nextAmendment, baseline), /unrelated current amendment/);
+assert.throws(() => next(nextAmendment, currentBase, acceptedChinese), /stale selected current amendment text/);
+assert.throws(() => next(nextAmendment, currentBase, { ...currentChinese, descriptionHtml: "stale" }), /stale selected current amendment HTML/);
+assert.throws(() => next(nextAmendment, { ...currentBase, currentAmendments: {
+  ...currentBase.currentAmendments!, rows: [amendment, amendment] } }), /duplicate current amendment/);
+assert.throws(() => next(nextAmendment, { ...currentBase, currentAmendments: {
+  ...currentBase.currentAmendments!, revision: "floating-main" } }), /exact distinct current/);
+const forgedLayer = structuredClone(currentBase);
+forgedLayer.currentAmendments!.rows[0]!.prior.acceptedRow = { ...nativePrior, sourceKey: "forged" };
+assert.throws(() => next(nextAmendment, forgedLayer), /stale prior accepted row/);
+const nestedLayer = structuredClone(currentBase);
+nestedLayer.currentAmendments!.rows[0]!.prior.currentAmendment = nextAmendment.prior.currentAmendment!;
+assert.throws(() => next(nextAmendment, nestedLayer), /nested current/);
+// This issue was introduced by the current amendment, not the original native row.
+const currentIssueAmendment = structuredClone(amendment);
+currentIssueAmendment.review = { ...structuredClone(keptIssues.review),
+  before: acceptedChinese.descriptionText, input: { ...keptIssues.review.input, chinese: acceptedChinese },
+  fullBodyAudit: { ...keptIssues.review.fullBodyAudit!, beforeHtml: acceptedChinese.descriptionHtml } };
+const currentIssuesBase: AcceptedBodyBaseline = { ...baseline,
+  currentAmendments: { revision: currentRevision, path: currentPath, rows: [currentIssueAmendment] } };
+const currentIssuesChinese = { ...acceptedChinese, descriptionText: currentIssueAmendment.review.after,
+  descriptionHtml: currentIssueAmendment.review.proposedHtml };
+const nextIssues = structuredClone(nextAmendment);
+nextIssues.prior.currentAmendment = { revision: currentRevision, path: currentPath, acceptedRow: currentIssueAmendment };
+assert.throws(() => next(nextIssues, currentIssuesBase, currentIssuesChinese), /cannot retire prior source issues/);
+const changedCurrentIssue = structuredClone(nextIssues);
+changedCurrentIssue.review.retainedSourceIssues = structuredClone(currentIssueAmendment.review.retainedSourceIssues!);
+changedCurrentIssue.review.retainedSourceIssues.issues[0]!.note += "forged";
+assert.throws(() => next(changedCurrentIssue, currentIssuesBase, currentIssuesChinese), /cannot change prior unresolved/);
+console.log(`current body amendment portable tests passed (${currentRejected + 10} rejection checks)`);

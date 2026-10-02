@@ -24,6 +24,20 @@ It does not cover:
 
 ## Source Of Truth
 
+English original rulebook PDFs and applicable official errata govern translation
+and rules content. Existing Chinese CHM, dice database text, and derived English
+DB text are references, not acceptance authority. Translate missing Chinese
+directly and correct demonstrated English/Chinese/mechanical discrepancies through
+source-bound QA. Retained translations need source-faithfulness evidence; legacy
+resemblance alone is not acceptance. Preserve original ambiguities faithfully
+with separate reader notes.
+
+Keep stable IDs, source evidence/fingerprint checks, and safe import order.
+Preserve existing content and fallback outside accepted corrections/translations;
+an existing English baseline does not override the original or applicable errata.
+Corrections follow the accepted-input and explicit DB-write gates below. This
+authority rule does not resume paused broad PHB extraction or translation work.
+
 - Real source, patch, review, and decision data lives in the private data repo
   repo.
 - Runtime SQLite files live under `server/db/local/` and are ignored by the

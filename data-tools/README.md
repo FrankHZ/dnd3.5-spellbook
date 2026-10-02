@@ -85,6 +85,12 @@ Operator-owned SQLite files stay under `server/db/local/`. Do not commit these
 inputs or generated source-bearing output to the parent repo. Public PHB
 reports contain only source-free aggregates such as counts, hashes, and status.
 
+The standalone [SC coverage audit](./audits/sc_coverage.py) reconciles frozen
+Git evidence with current read-only fields and emits exact field/slice identities.
+See its [coverage report and reproduction recipe](../docs/releases/v1.4/spell-compendium-final-qa-coverage-report.md).
+It requires explicit data/revision/DB roots and grants no content acceptance or
+write authority. It is a bounded audit helper, outside routine local acceptance.
+
 A documented command is not permission to write local DBs or activate production.
 Use the task's explicit write boundary and the operation-specific dry-run path;
 not every importer supports dry-run. App-state must never be reset or mutated

@@ -590,6 +590,16 @@ page/span, rule-pair and full-body audit checks. Fresh supplemental PDF verifica
 and actual source/HTML review remain necessary; this helper does not certify them.
 
 The result retains amendment envelopes and reports zero new accepted fields.
+For a further review of a currently amended body, the caller can additionally
+select `baseline.currentAmendments` by exact revision, path and complete rows.
+The helper revalidates that layer against the original ledgers, and requires
+`prior.currentAmendment` to match its exact revision, path and entire envelope.
+Selected text/HTML must match that current replacement. Original ownership and
+prior row remain bound, and unresolved source issues from both layers remain
+unchanged. Missing, stale, unrelated or nested current bindings fail validation;
+ordinary fallback overlap rejection stays intact. This proposal path does not
+change the fixed effective preflight or writer's selected inputs.
+
 It is a validated amendment proposal, not a replacement accepted union, fallback
 export or input for an effective projection/DB writer. Keep original accepted
 ledgers and frozen QA untouched. Privately prove the exact scoped differences and
