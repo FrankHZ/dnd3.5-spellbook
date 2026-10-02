@@ -42,6 +42,7 @@ as described in the [short descriptions workflow](../docs/operations/import-work
 - [Normalized content and search index](../docs/operations/import-workflow.md#normalized-content-and-search)
 - [Short descriptions](../docs/operations/import-workflow.md#short-descriptions)
 - [DB handoff and artifact provenance](../docs/operations/db-content-workflow.md)
+- [Offline bilingual HTML / CHM source pages](../docs/operations/offline-html.md)
 - [Explicit-page PDF text/geometry extraction](./pdf-extract/README.md)
 
 The read-only dice TXT intake and field-level QA validation are described at the
