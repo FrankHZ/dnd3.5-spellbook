@@ -9,7 +9,7 @@ main-gate/#346 semantic acceptance and maintained integration.
 Scope is `suggestedSummarySlices[13]` at public audit
 `e793ff09a38060c5c6b336d28690353bd0d96909`. Canonical input is private
 `a9cbe07747b1bc908ff4ebcd24244e38e58cb411`; integration base is
-`3e3a131842ccf9bcc8e7955466c68e3434c6afb6`.
+`2fa4d2be871bce40e2c240690cd58483fa3ca1db`.
 
 Private handoff/helper commit `9f76e6c8828512b5306e602bafa50975bedc5673`
 owns `dice-qa/books/86/issue-390/`. It reuses accepted
