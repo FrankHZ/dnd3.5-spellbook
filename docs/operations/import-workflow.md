@@ -623,6 +623,12 @@ Runtime consumers do not adjudicate competing sources.
 
 ### Effective Chinese preflight
 
+The separate [final 1,001-entry name/body candidate replay](./sc-final-source-binding.md)
+authenticates the exact accepted sources and retained original review evidence
+after 4837 publication reconciliation. It preserves the historical preflight and
+writer baseline guards. Its projection remains inspection evidence; final
+accepted-input selection and writer/post-migration integration are separate.
+
 `dice:effective` requires an explicit, fixed main-gate accepted SC revision:
 
 - `da691dacd3973d38a9d0f66a08d78fdb1eaafd47`: original #311/batch-06, 879 fields.
