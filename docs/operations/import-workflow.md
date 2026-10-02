@@ -208,6 +208,76 @@ document counts; live rebuild replaces only derived `SpellSearchDocument` and
 normalized consistency and artifact provenance. Restart an API after swapping
 DB files before using cached endpoints as evidence.
 
+### Fixed Content Sequence
+
+For a prepared and accepted rules/manifest/generation handoff, `content:sequence`
+runs the maintained normalized import, complete summary import and derived
+search steps in that fixed order. Default mode checks one **explicit existing**
+content DB through a read-only connection. Both accepted full normalized artifacts
+and both complete canonical summary inventories are required on every invocation:
+
+```powershell
+npm run -w data-tools content:sequence -- `
+  --content-db <existing-content.sqlite> `
+  --previous-normalized-input <accepted-previous-full.json> `
+  --normalized-input <accepted-next-full.json> `
+  --previous-summary-input <accepted-previous-full.jsonl> `
+  --summary-input <accepted-next-full.jsonl>
+# Add --apply only within an explicitly authorized content-write workflow.
+npm run -w data-tools content:sequence:test
+```
+
+All explicit paths resolve from this code checkout's root, including from the
+package, an independent caller or another checkout. Source/provenance paths use
+the existing configured data-root and manifest helpers. The command creates no
+database or schema, writes no rules or app-state, and generates no acceptance
+artifact. Flags and syntactically accepted rows establish neither source QA nor
+write authority. It does not run CHM, overlays, rules preparation or generation.
+
+Before any stage writes, preflight checks the role/schema, accepted inputs,
+current source provenance, full normalized predecessor/after and complete summary
+predecessor/after, known annotations, search schema and readonly FTS integrity.
+The shared summary binding rule checks both inventories against accepted **next
+normalized rows**, plus the currently persisted inventory against today's rows.
+The maintained search source guards/builder also validate the future projection,
+including retained localized text and next summaries/mechanics. These checks use
+rows in memory, without a copied database or another importer/search builder.
+An annotated changed predecessor still rejects; valid unchanged annotations are
+preserved only where the existing stage validators permit them.
+
+The JSON `preflight` fields describe today's observed states. `summaryRecheckRequired`
+and `searchRecheckRequired` describe dependencies at preflight: search may currently
+match today's rows while pending content or summary changes require a later recheck.
+Such a check returns `complete=false`; a current initial search observation is
+never evidence of final sequence completion. Inputs are pinned by direct byte
+comparison throughout the invocation, including between dependent stages. The
+same expected byte pairs enter each stage's existing transactional recheck;
+entering a stage cannot acquire a new baseline. The maintained normalized reader
+checks the bytes it actually parses, while summary parsing consumes the captured
+buffer. Expected bytes constrain identity and confer no acceptance. Before the
+first write, all preflight checks repeat on the newly opened connection.
+
+Apply uses each stage's own atomic transaction and transactional recheck.
+Normalized and summary `changed=false` never suppress the search check/apply.
+There is no global transaction: if summary SQL fails after normalized commits,
+the normalized commit remains; if search fails, prior content/summary commits
+remain. Errors include `phase`, `stage` and the invocation result. Each stage's
+`application` is `not-attempted`, `committed`, `no-op` or `failed`; completed calls
+also retain their real `result`. A failure before a stage call leaves that stage
+unattempted. Failure of a final check does not relabel earlier commits as rolled
+back. Only the failing stage's own transactional writes roll back.
+
+Restart with the same accepted pairs to resume. Every invocation derives state
+afresh from the actual DB; previous JSON output is never a resume ledger. Success
+requires fresh complete normalized, summary and search `final` checks in one
+consistent read snapshot. `complete=true` certifies only this content sequence,
+not source QA, whole-book acceptance, cross-DB coordination or activation.
+A fully current apply repeat opens only a readonly connection and preserves
+rows/schema/import/summary/search timestamps without database-data/application
+writes. Normal SQLite readonly WAL coordination may create an empty WAL or
+create/update SHM, as described below; zero filesystem writes are not promised.
+Standalone stage commands and legacy import/rebuild behavior remain available.
+
 ### Exact Search Index Step
 
 `content:search:step` checks an existing content DB read-only by default. Use
