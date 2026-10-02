@@ -12,7 +12,7 @@ The scope is `suggestedSummarySlices[4]` from frozen audit
 `e793ff09a38060c5c6b336d28690353bd0d96909`: 50 targets / 93 existing EN/ZH rows.
 Canonical input is private `a9cbe07747b1bc908ff4ebcd24244e38e58cb411`.
 The public base is `a5a15c4d3656cfed4710797469af8bbcc2348ef5`, synchronized
-with relevant main through `e3f8fccfbc026871c15ee99e6ba86f67d4e2741f`.
+with relevant main through `a7125a54b1f125dc52d8065c5137e0e081b8e014`.
 
 Private handoff/helper revision `729510064c313c1383452b050db7da9304adf9ff`
 owns `dice-qa/books/86/issue-369/`. It adapts accepted #353 helpers
