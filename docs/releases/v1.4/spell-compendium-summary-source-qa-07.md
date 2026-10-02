@@ -14,7 +14,7 @@ Scope is `suggestedSummarySlices[6]` at frozen audit
 summary rows. Canonical input remains private
 `a9cbe07747b1bc908ff4ebcd24244e38e58cb411`. Missing rows are not created.
 Public work starts from `e3f8fccfbc026871c15ee99e6ba86f67d4e2741f` and is
-synchronized with main `52bf0b725d3f16dde1eac7aeec172d14d8a05d96`.
+synchronized with main `fe4b9db939e0d49787f5582cf8957c531798aad7`.
 
 Private handoff/helper commit `fd9c4f0ddcbe4598c594192f6159eada9f25c62b` owns
 `dice-qa/books/86/issue-373/`. It reuses the accepted
