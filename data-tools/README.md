@@ -91,6 +91,12 @@ See its [coverage report and reproduction recipe](../docs/releases/v1.4/spell-co
 It requires explicit data/revision/DB roots and grants no content acceptance or
 write authority. It is a bounded audit helper, outside routine local acceptance.
 
+The [final SC name/body candidate replay](../docs/operations/sc-final-source-binding.md)
+composes the exact 1,001-entry sources through complete historical QA, maintained
+in-memory rules patching and fresh PDF/retention coverage checks. It keeps
+historical effective baselines intact and emits inspection evidence only.
+Candidate acceptance and final writer/post-migration integration remain separate.
+
 A documented command is not permission to write local DBs or activate production.
 Use the task's explicit write boundary and the operation-specific dry-run path;
 not every importer supports dry-run. App-state must never be reset or mutated
