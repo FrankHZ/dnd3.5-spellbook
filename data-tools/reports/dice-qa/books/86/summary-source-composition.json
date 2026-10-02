@@ -1,0 +1,511 @@
+{
+  "schema": 1,
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/411",
+  "rulebookId": 86,
+  "status": "composition-proposal-awaiting-main-gate",
+  "publicBase": "92198c59292e47a0079f10ce0c00049472ec60e3",
+  "frozenCanonical": {
+    "revision": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411",
+    "path": "short-desc-normalized/summaries.generated.jsonl",
+    "rows": 6572
+  },
+  "frozenAudit": {
+    "revision": "e793ff09a38060c5c6b336d28690353bd0d96909",
+    "path": "data-tools/reports/dice-qa/books/86/final-qa-coverage.json"
+  },
+  "privateHelperAndHandoffRevision": "c4fe0c0a7b14aafed04bc9e733387afb51ae45eb",
+  "privateDirectory": "dice-qa/books/86/issue-411",
+  "delivery": {
+    "narrowHandoff": "corrections.jsonl",
+    "derivedCanonicalCandidate": "summaries.proposed.jsonl",
+    "originalDecisionIndex": "composition-index.jsonl",
+    "candidateOrder": "frozen canonical order",
+    "correctionRows": "exact accepted complete rows and their original bytes; no new composition source owner",
+    "retainedLines": "byte-identical to frozen canonical Git blob",
+    "provenance": "retained complete in authoritative JSONL; runtime parser stores maintained projection"
+  },
+  "counts": {
+    "targets": 967,
+    "reviewedRows": 1671,
+    "corrections": 442,
+    "retentions": 1229,
+    "canonicalRows": 6572,
+    "bytePreservedLines": 6130,
+    "accepted323Preserved": 29,
+    "correctionLanguages": {
+      "en": 192,
+      "zh": 250
+    }
+  },
+  "packets": [
+    {
+      "slice": 1,
+      "issue": 353,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-01.json",
+      "privateRevision": "e154c69e817c81d7e48da105c46daba83a4da8c4",
+      "privateDirectory": "dice-qa/books/86/issue-353",
+      "acceptedPublicHead": "5e94ec728f7af52f1e31bcc5898fc0944d067cfb",
+      "mergeCommit": "37711b9b270b4f1931729dc3eccf3c67a9a5dd41",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/360",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/360#issuecomment-5950312125",
+      "targets": 50,
+      "rows": 95,
+      "corrections": 30,
+      "retentions": 65,
+      "correctionLanguages": {
+        "en": 12,
+        "zh": 18
+      }
+    },
+    {
+      "slice": 2,
+      "issue": 361,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-02.json",
+      "privateRevision": "af9296f19b29a05d60915fe4871a1d0e5ebaf63e",
+      "privateDirectory": "dice-qa/books/86/issue-361",
+      "acceptedPublicHead": "63ccd699db6a31df3b8a3784e17122011e8075a7",
+      "mergeCommit": "a5a15c4d3656cfed4710797469af8bbcc2348ef5",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/368",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/368#issuecomment-5950820913",
+      "targets": 50,
+      "rows": 96,
+      "corrections": 15,
+      "retentions": 81,
+      "correctionLanguages": {
+        "en": 6,
+        "zh": 9
+      }
+    },
+    {
+      "slice": 3,
+      "issue": 362,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-03.json",
+      "privateRevision": "3c808df922c0b8043b8e74809ae4b78549667863",
+      "privateDirectory": "dice-qa/books/86/issue-362",
+      "acceptedPublicHead": "042e93906ac17ccced5663ef1404ae317ea5f1ee",
+      "mergeCommit": "e3f8fccfbc026871c15ee99e6ba86f67d4e2741f",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/367",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/367#issuecomment-5951081717",
+      "targets": 50,
+      "rows": 96,
+      "corrections": 23,
+      "retentions": 73,
+      "correctionLanguages": {
+        "en": 11,
+        "zh": 12
+      }
+    },
+    {
+      "slice": 4,
+      "issue": 363,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-04.json",
+      "privateRevision": "07ac95421f8cfc2661ffd73f1a6611d1f9a16629",
+      "privateDirectory": "dice-qa/books/86/issue-363",
+      "acceptedPublicHead": "d47729ece7514a6d10b56cfc689fcc06d177158f",
+      "mergeCommit": "ad5c782d7dc36204e6e38fa69e44021426751a90",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/370",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/370#issuecomment-5950984453",
+      "targets": 50,
+      "rows": 92,
+      "corrections": 17,
+      "retentions": 75,
+      "correctionLanguages": {
+        "en": 12,
+        "zh": 5
+      }
+    },
+    {
+      "slice": 5,
+      "issue": 369,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-05.json",
+      "privateRevision": "729510064c313c1383452b050db7da9304adf9ff",
+      "privateDirectory": "dice-qa/books/86/issue-369",
+      "acceptedPublicHead": "f821f1b3675fdbce3723bc530982084e88199832",
+      "mergeCommit": "52bf0b725d3f16dde1eac7aeec172d14d8a05d96",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/374",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/374#issuecomment-5951425571",
+      "targets": 50,
+      "rows": 93,
+      "corrections": 28,
+      "retentions": 65,
+      "correctionLanguages": {
+        "en": 14,
+        "zh": 14
+      }
+    },
+    {
+      "slice": 6,
+      "issue": 371,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-06.json",
+      "privateRevision": "481fb3e13c8afacb5ab60696b2fddd0bfe5d3803",
+      "privateDirectory": "dice-qa/books/86/issue-371",
+      "acceptedPublicHead": "ff3b1801d589af83a90d15f00ada89b80707a3ed",
+      "mergeCommit": "fe4b9db939e0d49787f5582cf8957c531798aad7",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/378",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/378#issuecomment-5951710471",
+      "targets": 50,
+      "rows": 92,
+      "corrections": 27,
+      "retentions": 65,
+      "correctionLanguages": {
+        "en": 10,
+        "zh": 17
+      }
+    },
+    {
+      "slice": 7,
+      "issue": 373,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-07.json",
+      "privateRevision": "fd9c4f0ddcbe4598c594192f6159eada9f25c62b",
+      "privateDirectory": "dice-qa/books/86/issue-373",
+      "acceptedPublicHead": "f9bde388e77b2ca1b3547b12c59bef99cdf2b535",
+      "mergeCommit": "071cf8b13246a05971326095548aef91880b0fe2",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/377",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/377#issuecomment-5951711369",
+      "targets": 50,
+      "rows": 90,
+      "corrections": 28,
+      "retentions": 62,
+      "correctionLanguages": {
+        "en": 17,
+        "zh": 11
+      }
+    },
+    {
+      "slice": 8,
+      "issue": 376,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-08.json",
+      "privateRevision": "11c38629ae3a7ebe957ed88210a9ff519fd6656e",
+      "privateDirectory": "dice-qa/books/86/issue-376",
+      "acceptedPublicHead": "8ae47c9f23ad21e232d635a459b763a4b5325d9d",
+      "mergeCommit": "70eff96c77223dd6e1c05206de549b80407b5423",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/381",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/381#issuecomment-5951906251",
+      "targets": 50,
+      "rows": 95,
+      "corrections": 21,
+      "retentions": 74,
+      "correctionLanguages": {
+        "en": 8,
+        "zh": 13
+      }
+    },
+    {
+      "slice": 9,
+      "issue": 379,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-09.json",
+      "privateRevision": "9d1a6d4229d7153b834b36b116570e48de5916a2",
+      "privateDirectory": "dice-qa/books/86/issue-379",
+      "acceptedPublicHead": "3f620ce2d2321250b02fe0fa5465bd3b52449b7a",
+      "mergeCommit": "ae076ce82c34b1a1daae26db84ece9d3b746068b",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/385",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/385#issuecomment-5952253086",
+      "targets": 50,
+      "rows": 96,
+      "corrections": 38,
+      "retentions": 58,
+      "correctionLanguages": {
+        "en": 17,
+        "zh": 21
+      }
+    },
+    {
+      "slice": 10,
+      "issue": 380,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-10.json",
+      "privateRevision": "e9f8a9788f97a12cdb7d0c67991e79d2dc27b4de",
+      "privateDirectory": "dice-qa/books/86/issue-380",
+      "acceptedPublicHead": "a696e9315ece501ac63f9b31cf89448ff32c7c4e",
+      "mergeCommit": "9f118a070a298cadf25a7209a52886b89b905d95",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/384",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/384#issuecomment-5952145348",
+      "targets": 50,
+      "rows": 94,
+      "corrections": 19,
+      "retentions": 75,
+      "correctionLanguages": {
+        "en": 7,
+        "zh": 12
+      }
+    },
+    {
+      "slice": 11,
+      "issue": 383,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-11.json",
+      "privateRevision": "1bf3afc26f263bebb25b38e5b2edb99ae8bfec11",
+      "privateDirectory": "dice-qa/books/86/issue-383",
+      "acceptedPublicHead": "0f92071510ebcbf35ab97fd6eb5a17a8e5fbb438",
+      "mergeCommit": "9b3a4910a82fc2969191a8a2024ff159a136866f",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/387",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/387#issuecomment-5952350615",
+      "targets": 50,
+      "rows": 89,
+      "corrections": 22,
+      "retentions": 67,
+      "correctionLanguages": {
+        "en": 13,
+        "zh": 9
+      }
+    },
+    {
+      "slice": 12,
+      "issue": 386,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-12.json",
+      "privateRevision": "edcc352f051e59baa13db28729ea0535c8403e78",
+      "privateDirectory": "dice-qa/books/86/issue-386",
+      "acceptedPublicHead": "8321f1019ccc08f8f063f01f039a570d4235ea30",
+      "mergeCommit": "d285533327c5990ab72d4d6814cba1c166cd43df",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/391",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/391#issuecomment-5952865541",
+      "targets": 50,
+      "rows": 84,
+      "corrections": 20,
+      "retentions": 64,
+      "correctionLanguages": {
+        "en": 10,
+        "zh": 10
+      }
+    },
+    {
+      "slice": 13,
+      "issue": 389,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-13.json",
+      "privateRevision": "24ee6b817d4f490026d87518f0b0475acba6eef1",
+      "privateDirectory": "dice-qa/books/86/issue-389",
+      "acceptedPublicHead": "d194dfce8277a74f02d7bdc592f45d7e89f49571",
+      "mergeCommit": "2fa4d2be871bce40e2c240690cd58483fa3ca1db",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/392",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/392#issuecomment-5952992502",
+      "targets": 50,
+      "rows": 82,
+      "corrections": 15,
+      "retentions": 67,
+      "correctionLanguages": {
+        "en": 3,
+        "zh": 12
+      }
+    },
+    {
+      "slice": 14,
+      "issue": 390,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-14.json",
+      "privateRevision": "9f76e6c8828512b5306e602bafa50975bedc5673",
+      "privateDirectory": "dice-qa/books/86/issue-390",
+      "acceptedPublicHead": "c37a44705a8cc036e9a29138e2537c76f6969450",
+      "mergeCommit": "b24f3b0a74ca022929626cbe4f6f61f94f193ffe",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/393",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/393#issuecomment-5953133594",
+      "targets": 50,
+      "rows": 75,
+      "corrections": 10,
+      "retentions": 65,
+      "correctionLanguages": {
+        "en": 4,
+        "zh": 6
+      }
+    },
+    {
+      "slice": 15,
+      "issue": 394,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-15.json",
+      "privateRevision": "352a300ac0c664761af466daeb43248d8de48d6b",
+      "privateDirectory": "dice-qa/books/86/issue-394",
+      "acceptedPublicHead": "d1101dfa590e388b322084b3ca916a53a4e419da",
+      "mergeCommit": "c0b8c7de854b17deb2e92275ee0fd622239393c9",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/400",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/400#issuecomment-5953949727",
+      "targets": 50,
+      "rows": 67,
+      "corrections": 26,
+      "retentions": 41,
+      "correctionLanguages": {
+        "en": 9,
+        "zh": 17
+      }
+    },
+    {
+      "slice": 16,
+      "issue": 395,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-16.json",
+      "privateRevision": "8478c7a9bdfb2704b32194f345be50157cf899ea",
+      "privateDirectory": "dice-qa/books/86/issue-395",
+      "acceptedPublicHead": "3f40e4dcff55ea69002723656bfd3c56bf75ee72",
+      "mergeCommit": "997b1008843053763f407e01268bc29b84331500",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/401",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/401#issuecomment-5954297379",
+      "targets": 50,
+      "rows": 73,
+      "corrections": 24,
+      "retentions": 49,
+      "correctionLanguages": {
+        "en": 7,
+        "zh": 17
+      }
+    },
+    {
+      "slice": 17,
+      "issue": 396,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-17.json",
+      "privateRevision": "8ac9f555f694ec442638f0aee96721cb9deccf2a",
+      "privateDirectory": "dice-qa/books/86/issue-396",
+      "acceptedPublicHead": "bdce2a8350257478f7275fa00d8b81f0a592eb43",
+      "mergeCommit": "3cc489e254ccb596af6f20137b4234749f3ab0df",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/402",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/402#issuecomment-5954556034",
+      "targets": 50,
+      "rows": 78,
+      "corrections": 18,
+      "retentions": 60,
+      "correctionLanguages": {
+        "en": 7,
+        "zh": 11
+      }
+    },
+    {
+      "slice": 18,
+      "issue": 403,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-18.json",
+      "privateRevision": "447e713f26dba4043419aaa7cb93d37ca309466f",
+      "privateDirectory": "dice-qa/books/86/issue-403",
+      "acceptedPublicHead": "eefc0c3865ff8a6903a002058d1468cf75e99f02",
+      "mergeCommit": "19798c9a3da32b89d532ae9319816b9b2cef1f4c",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/406",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/406#issuecomment-5954852322",
+      "targets": 50,
+      "rows": 73,
+      "corrections": 33,
+      "retentions": 40,
+      "correctionLanguages": {
+        "en": 16,
+        "zh": 17
+      }
+    },
+    {
+      "slice": 19,
+      "issue": 404,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-19.json",
+      "privateRevision": "72cdcf5e9ea086a892b7b0fc27d458d6d609c194",
+      "privateDirectory": "dice-qa/books/86/issue-404",
+      "acceptedPublicHead": "51029fb4e4b17ee659bec7bd1a47ee723d309f44",
+      "mergeCommit": "92198c59292e47a0079f10ce0c00049472ec60e3",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/408",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/408#issuecomment-5955164006",
+      "targets": 50,
+      "rows": 79,
+      "corrections": 21,
+      "retentions": 58,
+      "correctionLanguages": {
+        "en": 7,
+        "zh": 14
+      }
+    },
+    {
+      "slice": 20,
+      "issue": 405,
+      "publicReport": "data-tools/reports/dice-qa/books/86/summary-source-qa-20.json",
+      "privateRevision": "4d33200241c53cc36da399e5dd5a24af5f76c77f",
+      "privateDirectory": "dice-qa/books/86/issue-405",
+      "acceptedPublicHead": "b063206196520c52a23633215fd35949a0f32e9d",
+      "mergeCommit": "df67f2e5f22db366cca01a31c93a6dc4e5e0062c",
+      "pr": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/409",
+      "acceptanceComment": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/409#issuecomment-5955033962",
+      "targets": 17,
+      "rows": 32,
+      "corrections": 7,
+      "retentions": 25,
+      "correctionLanguages": {
+        "en": 2,
+        "zh": 5
+      }
+    }
+  ],
+  "validation": {
+    "fullBaselineRowEquality": true,
+    "exactKeysTargetsOwnershipVariants": true,
+    "allPacketWorkingTextMatchesAcceptedGit": true,
+    "allAcceptanceCommentsBindFinalPrivateRevision": true,
+    "allMergedPacketsInFrozenPublicBase": true,
+    "completeCorrectionRowAndReviewProvenanceEquality": true,
+    "noSourceReinterpretationOrRepeatedFullQA": true,
+    "bindingNegativeControls": [
+      "stale-canonical",
+      "stale-packet-ref",
+      "stale-packet-content"
+    ],
+    "packetNegativeControls": [
+      "stale-baseline",
+      "missing",
+      "duplicate",
+      "cross-target",
+      "value",
+      "provenance"
+    ],
+    "compositionNegativeControls": [
+      "missing",
+      "duplicate",
+      "extra",
+      "cross-target",
+      "text",
+      "provenance",
+      "retention",
+      "reorder",
+      "untouched-candidate"
+    ],
+    "maintainedParserAndImportRowsExecuted": true,
+    "actualSummaryMigrationUsed": true,
+    "disposableSummaryOnlyDatabase": true,
+    "dryRun": {
+      "inserted": 0,
+      "updated": 442,
+      "unchanged": 0,
+      "total": 442
+    },
+    "apply": {
+      "inserted": 0,
+      "updated": 442,
+      "unchanged": 0,
+      "total": 442
+    },
+    "repeat": {
+      "inserted": 0,
+      "updated": 0,
+      "unchanged": 442,
+      "total": 442
+    },
+    "allPersistedColumnsEqualCandidate": true,
+    "createdAtPreserved": true,
+    "updatedAtMatchesExecutionTimestamp": true,
+    "all6130UntouchedRowsAndSentinelPreserved": true,
+    "maintainedNormalizerGuardPortableTest": "passes from root and package using external tsx loader",
+    "fixedCommitReplay": "root and data-tools cwd with explicit roots; final public head recorded in private proof",
+    "fullRemoteCiPortable": "required at final public PR head"
+  },
+  "integration": {
+    "promotion": "main-gate accepts and promotes exact derived candidate to maintained canonical before subsequent rebuild/import",
+    "normalization": "existing guard rejects reviewed canonical; raw regeneration uses separate --out/--report and explicit review merge",
+    "summaryImport": "maintained summaries:import --input exact promoted canonical after complete CHM/text/normalized content rebuild",
+    "narrowExistingBaseline": "442-row handoff updates an independently baseline-matched target; full canonical import remains normal rebuild input",
+    "newPublicToolRequired": false
+  },
+  "executionSettings": {
+    "model": "gpt-6.1-sol",
+    "effort": "high",
+    "verifiedFromRunMetadata": true
+  },
+  "boundaries": {
+    "canonicalOwnerWritten": false,
+    "previousPacketsWritten": false,
+    "operatorDatabasesOpened": false,
+    "appStateOpened": false,
+    "acceptedFinalRehearsalWritten": false,
+    "missingSummaryRowsCreated": false,
+    "namesBodiesMechanicsRelationshipsChanged": false,
+    "ftsRebuilt": false,
+    "privatePush": false,
+    "productionActivation": false,
+    "wholeBookQAComplete": false,
+    "notesIntegrationOwner": 407,
+    "externalSourceIssuesOwner": 354,
+    "migrationOwner": 346
+  }
+}
