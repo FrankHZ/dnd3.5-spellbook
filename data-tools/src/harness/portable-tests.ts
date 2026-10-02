@@ -799,6 +799,40 @@ const tests: TestCase[] = [
     },
   },
   {
+    name: "qualified no-save and spaced per-level mechanics retain their semantics",
+    run: () => {
+      for (const raw of ["None (harmless)", "No (object)", "None (harmless, object)"]) {
+        const value = normalizeMechanicValue("saving_throw", raw);
+        assert.equal(value.category, "none");
+        assert.equal(value.flags.allowsSave, false);
+        assert.equal(value.flags.harmless, raw.includes("harmless"));
+        assert.equal(value.flags.object, raw.includes("object"));
+        assert.equal(value.normalizedText, raw.replace(/^No\b/, "None"));
+        assert.equal(value.displayCoverage, "complete");
+      }
+      for (const raw of ["1 minute / level", "1 minute/ level", "1 minute /level"]) {
+        const value = normalizeMechanicValue("duration", raw);
+        assert.equal(value.flags.perLevel, true);
+        assert.equal(value.amount, 1);
+        assert.equal(value.unit, "minute");
+        assert.equal(value.normalizedText, "1 minute/level");
+        assert.equal(value.displayCoverage, "complete");
+      }
+      const qualified = normalizeMechanicValue("duration", "2 hours / level (D)");
+      assert.equal(qualified.normalizedText, "2 hours/level (D)");
+      assert.equal(qualified.flags.dismissible, true);
+      for (const [kind, raw] of [
+        ["saving_throw", "None (harmless); see text"],
+        ["saving_throw", "None or Will negates"],
+        ["duration", "1 minute / level or until discharged"],
+      ] as const) {
+        const value = normalizeMechanicValue(kind, raw);
+        assert.notEqual(value.displayCoverage, "complete");
+        assert.equal(value.normalizedText, null);
+      }
+    },
+  },
+  {
     name: "rules content normalizer preserves raw mechanics and emits review issues",
     run: () => {
       const input: LegacyRulesContentInput = {

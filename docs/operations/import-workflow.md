@@ -181,7 +181,11 @@ state and hashes, with importer state recorded separately in `buildMetaJson`.
 Mechanics retain raw source strings. Only `displayCoverage=complete` exposes
 replacement-safe canonical English `normalizedText`; `partial` and `review`
 keep raw fallback, while `empty` has no display. Parser `reviewStatus` is not
-display coverage. `npm run -w data-tools rules:content:review` inventories these
+display coverage. `None`/`No` saves with `harmless` or `object` qualifiers retain
+their no-save category and flags, and spaces around a timed duration's `/level`
+separator do not change its per-level meaning. Complete projection still requires consuming
+the entire value; appended conditions keep raw fallback.
+`npm run -w data-tools rules:content:review` inventories these
 facets read-only; `detail_only` output must not be promoted into public filters.
 
 Rebuild FTS after **all** text, summary, and normalized-content imports, and
