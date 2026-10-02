@@ -411,6 +411,71 @@ canonical normalized JSONL and upserts `I18nSpellSummaryText` by
 `spellId + lang + variant`, without deleting full descriptions or existing
 summary rows. Rebuild FTS after this and other content imports finish.
 
+### Summary Import Step
+
+`summaries:step` defaults to a read-only check of an existing content DB;
+`--apply` imports only a complete accepted predecessor. Both files must be
+already accepted **complete canonical inventories**, including on repeat.
+The owning handoff establishes source acceptance and inventory completeness:
+flags, `reviewStatus=accepted`, snapshots captured from the target DB, counts
+and hashes do not confer either. This is a summary-stage foundation, not source
+QA, new-book activation or a cross-DB pipeline.
+
+```powershell
+npm run -w data-tools summaries:step -- `
+  --previous-input <accepted-previous-full.jsonl> --input <accepted-next-full.jsonl> `
+  --content-db <existing-content.sqlite>
+# Only with explicit content-write authorization:
+npm run -w data-tools summaries:step -- `
+  --previous-input <accepted-previous-full.jsonl> --input <accepted-next-full.jsonl> `
+  --content-db <existing-content.sqlite> --apply
+npm run -w data-tools summaries:step:test
+```
+
+The maintained parser and `stableSummaryId` define the persisted fields and
+identity. The step compares every row/key/value/ID with before or after;
+extra, missing, mixed, duplicate, stale or drifted rows reject. Parser errors,
+unsafe numeric IDs, deletions and identity/book reassignment reject before
+mutation. Updates and additions reuse the legacy upsert SQL. Spell/book IDs
+must match normalized legacy identities; a primary source book or an established
+`SpellAppearance` can bind the target book. Donor summary provenance does not
+rebind that identity or establish acceptance.
+
+Valid existing creation/update timestamp shapes are retained on inspection
+and repeat. Apply preserves all creation times and unchanged rows exactly;
+only inserted/changed rows receive the maintained SQL's current timestamp.
+Check/apply share state classification. Apply rereads the accepted inputs and
+state inside an immediate content transaction, runs the maintained SQL, then
+proves complete after, timestamp preservation and unchanged schema/non-summary
+SQLite cells, including blobs and 64-bit integers, before committing. SQL or
+postcondition failures roll back the whole stage.
+
+`RulesContentBuild`, provenance, full descriptions, base content, FTS and control
+data are protected byte-for-byte at the cell level. The existing full annotation
+shape/revision/scope validator recognizes known downstream markers without
+authenticating their source QA. Unknown/malformed extensions reject. A changed
+summary predecessor carrying downstream annotations is refused with guidance
+for later migration coordination to invalidate/revalidate acceptance explicitly;
+the step cannot erase or carry stale acceptance. Exact-after preserves valid
+annotations and their original metadata bytes.
+
+Explicit input and `--content-db` paths resolve from this code checkout's root,
+even from `data-tools/`, an independent caller or another checkout. Without
+`--content-db`, only `CONTENT_DATABASE_URL` supplies the target; `file:` paths
+retain the server-relative convention. Missing/wrong-role DBs, configured
+rules/app-state targets and incompatible schemas reject; no DB/schema creation
+or migration occurs. The connection API takes resolved paths.
+
+The JSON result reports `state`, `changed` and `wouldChange`. Completed repeats
+recognize after without application/database-data writes, reports or timestamp
+refreshes, including after a process interruption following commit. SQLite
+read-only WAL coordination may create an empty WAL or create/update SHM; this
+is not a zero-filesystem-write claim. No immutable/nolock mode, checkpoint or
+manual sidecar cleanup is used. FTS remains untouched and may be stale after
+apply; later coordination must check/rebuild it with the maintained search step.
+The legacy `summaries:import` defaults, reports and no-deletion upsert behavior
+remain available.
+
 ## Dice Text Boundary
 
 The TXT package at `data/spells-dice-db-by-mo/` is proposed input under
