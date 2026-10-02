@@ -447,6 +447,35 @@ the complete new text, actual old HTML and explicitly escaped `<pre>` projection
 Missing Chinese is reviewed absence, not permission to invent a corrected fallback.
 Changed inputs, unreviewed fields and unresolved source evidence fail acceptance.
 
+For SC current-edition Chinese delivery, an explicit owning-book scope decision
+may exclude other books' old levels, costs, values, effects, version comparisons
+and translator history. Review the complete SC entry and applicable official
+errata against actual current text/HTML, canonical English/mechanics and the
+previous complete proposal. Record the exact excluded passages and retired
+historical source obligations privately. Retirement means out of delivery scope,
+not authenticated history. It does not waive evidence for retained operative
+rules, inherited clauses, creature abilities, tables or restrictions. Preserve
+SC source ambiguities and necessary reader notes through the existing mechanism.
+
+Determine external evidence obligations from the complete actual consumer fields,
+references, relationships and display code. A creature name, granted ability or
+inheritance declaration directly supported by SC does not by itself require
+certifying every external statistic or procedure. Preserve the declaration and
+the exact unread-source prior; distinguish faithful transmission from evaluating
+forms, legal summons, creature abilities or item properties. If published fields
+actually expand a rule that SC does not support, identify the exact field, claim
+and missing source and defer that dependency. A keyword search alone cannot
+establish this boundary. See [the accepted consumer review](https://github.com/FrankHZ/dnd3.5-spellbook/issues/292).
+
+Keep such a handoff distinct and bound to exact public/private revisions, with
+a disposition for every scoped complete body and source-free counts and IDs.
+Preserve names, canonical English, mechanics, summaries, identities, current
+fallback and all frozen evidence outside the authorized body proposals. A scope
+decision does not rewrite previous accepted exports, resolve outstanding source
+questions, change the fixed restored QA contract or advance the effective
+projection baseline; those require their own accepted integration scope. See
+[the initial bounded SC delivery scope](https://github.com/FrankHZ/dnd3.5-spellbook/issues/321).
+
 For an explicitly authorized faithful translation of a known source
 conflict, missing explanation or interpretation question, the independent body
 schema supports

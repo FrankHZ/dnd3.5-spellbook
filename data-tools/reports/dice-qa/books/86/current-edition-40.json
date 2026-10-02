@@ -1,0 +1,553 @@
+{
+  "schema": 1,
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/321",
+  "rulebookId": 86,
+  "validation": "validated-proposal-awaiting-main-gate",
+  "publicCodeBase": "6903d2c2d8c106760819f52152cfc3c29949a2ed",
+  "privateInput": "9a99b63d552a0cd3aa73268db34752b65cfe4dbb",
+  "privateHandoffRevision": "513806265cf56a2732641dfc075ad2434db6a0cb",
+  "privateHandoffDirectory": "dice-qa/books/86/issue-321",
+  "committedHelperRevision": "67f5a96584b8c443104effcc4b87c81063830c2e",
+  "scope": "Exactly 40 complete SC current-edition Chinese bodies; excluded historical commentary recorded privately",
+  "exactTargetIds": [
+    3822,
+    3837,
+    3542,
+    4047,
+    4477,
+    4483,
+    4485,
+    4509,
+    4377,
+    4380,
+    4457,
+    4459,
+    4451,
+    4573,
+    4574,
+    4586,
+    4605,
+    4118,
+    3538,
+    4625,
+    4631,
+    4632,
+    4660,
+    4073,
+    4083,
+    4091,
+    4090,
+    4093,
+    4094,
+    4101,
+    4103,
+    4108,
+    4109,
+    4128,
+    4140,
+    4141,
+    4198,
+    3780,
+    4281,
+    4282
+  ],
+  "bodyDispositions": {
+    "accepted": 38,
+    "accepted-with-source-issues": 2,
+    "deferred": 0
+  },
+  "targets": [
+    {
+      "targetId": 3822,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3837,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3542,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4047,
+      "bodyDisposition": "accepted-with-source-issues",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [
+        "4047:missing-header"
+      ]
+    },
+    {
+      "targetId": 4477,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": false,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4483,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": false,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4485,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4509,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4377,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4380,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4457,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4459,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4451,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4573,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4574,
+      "bodyDisposition": "accepted-with-source-issues",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [
+        "4574:permanent-duration"
+      ]
+    },
+    {
+      "targetId": 4586,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4605,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4118,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3538,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4625,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4631,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": false,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4632,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": false,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4660,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4073,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4083,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4091,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4090,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4093,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4094,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4101,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4103,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4108,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4109,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4128,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": false,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4140,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4141,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4198,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 3780,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": false,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4281,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": false,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    },
+    {
+      "targetId": 4282,
+      "bodyDisposition": "accepted",
+      "historicalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": []
+    }
+  ],
+  "history": {
+    "targetsWithRetiredObligations": 33,
+    "exactActualCurrentPassagesRecordedPrivately": 46,
+    "historicalClaimsAuthenticated": 0,
+    "frozenRecordsRewritten": false
+  },
+  "sourceIssues": {
+    "retainedInNewBodies": 2,
+    "targetIds": [
+      4047,
+      4574
+    ],
+    "frozenPending": 33,
+    "frozenOfficiallyResolved": 1,
+    "rulingsChanged": false
+  },
+  "fieldUnion": {
+    "baselineNative": 658,
+    "baselineIndependent": 221,
+    "baselineAccepted": 879,
+    "newIndependentBodies": 40,
+    "proposedIndependent": 261,
+    "proposedTotal": 919,
+    "proposedFallbackComplement": 1085,
+    "totalFields": 2004,
+    "otherFieldsPreserved": true
+  },
+  "sourceGapTargets": {
+    "oldNavigationCount": 149,
+    "reviewedHere": 40,
+    "retainedOperativeBlockersHere": 0,
+    "outsideSliceUnreviewed": 109,
+    "proposedRemaining": 109,
+    "wholeBookCompletionClaim": false
+  },
+  "checks": {
+    "rootReproductionPassed": true,
+    "packageReproductionPassed": true,
+    "committedHelperBytesVerified": true,
+    "readOnlyCurrentTargets": 1002,
+    "maintainedDisposablePatchOperations": 315,
+    "fixedRestoredFormalNativeFields": 658,
+    "fixedRestoredFormalIndependentFields": 145,
+    "formalNativeAndFallbackExportsIdentical": true,
+    "fullFieldMutationRejections": 26,
+    "inputMutationRejections": 6,
+    "pdfOriginalPagesVerifiedAndViewed": 49,
+    "pdfOriginalSpansVerified": 2749,
+    "pdfBoundBodies": 40,
+    "pdfMutationRejections": 7,
+    "maintainedIndependentQAMutationRejections": 104,
+    "maintainedDiceQATests": "passed",
+    "maintainedSupplementalPDFTests": 8,
+    "baseline221AndProposed261IndependentFieldsRevalidated": true,
+    "actualConsumerReviews": 10
+  },
+  "model": {
+    "id": "gpt-6.1-sol",
+    "reasoningEffort": "high",
+    "verifiedFromActualRunMetadata": true
+  },
+  "boundaries": {
+    "publicCorpusText": false,
+    "newRuntimeStripping": false,
+    "maintainedValidatorChanges": false,
+    "nativeGuardRelaxed": false,
+    "fixedRestoredQAContractChanged": false,
+    "fixedEffectiveProjectionBaselineChanged": false,
+    "operatorWrites": false,
+    "appStateOpened": false,
+    "privatePushed": false,
+    "productionActivation": false,
+    "otherBookCollection": false,
+    "wholeBookExtraction": false,
+    "phbQueueResumed": false,
+    "mainGateAcceptance": false
+  },
+  "publicExecutionHead": "1b88e23b3f09f286a74ccece9f2d2e9f75d7d94a",
+  "priorUnreviewedExternalCapabilities": [
+    {
+      "targetId": 4477,
+      "sourcesForFutureExpansion": [
+        "MM 13"
+      ],
+      "kind": "construct abilities",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4483,
+      "sourcesForFutureExpansion": [
+        "MM 118"
+      ],
+      "kind": "created creature abilities",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4485,
+      "sourcesForFutureExpansion": [
+        "MM 287",
+        "applicable listed creature entries"
+      ],
+      "kind": "eligible forms and inherited abilities",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4509,
+      "sourcesForFutureExpansion": [
+        "DMG flaming burst property; frozen issue 270"
+      ],
+      "kind": "weapon property",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4631,
+      "sourcesForFutureExpansion": [
+        "MM 239"
+      ],
+      "kind": "summoned swarm abilities",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4632,
+      "sourcesForFutureExpansion": [
+        "MM 225",
+        "MM 265",
+        "PH 198"
+      ],
+      "kind": "templates and corpse restrictions",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4128,
+      "sourcesForFutureExpansion": [
+        "MM 314"
+      ],
+      "kind": "granted sense ability",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 3780,
+      "sourcesForFutureExpansion": [
+        "MM 226",
+        "MM 266"
+      ],
+      "kind": "applicable level-1 summon statistics and abilities",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4281,
+      "sourcesForFutureExpansion": [
+        "MM 10",
+        "MM 118",
+        "MM 119",
+        "MM 226",
+        "MM 227",
+        "MM 266",
+        "MM 267"
+      ],
+      "kind": "applicable levels 1-4 summon statistics and abilities",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4282,
+      "sourcesForFutureExpansion": [
+        "MM 10",
+        "MM 118",
+        "MM 119",
+        "MM 190",
+        "MM 221",
+        "MM 226",
+        "MM 227",
+        "MM 253",
+        "MM 255",
+        "MM 266",
+        "MM 267"
+      ],
+      "kind": "applicable levels 1-5 summon statistics and abilities",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    }
+  ],
+  "consumerBoundary": {
+    "acceptedIssue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/292",
+    "completeIndividualReviews": 10,
+    "actualFieldsRelationshipsAndDisplayCodeReviewed": true,
+    "sourceSupportedDeclarationsPreserved": true,
+    "expandedUnsupportedExternalClaims": 0,
+    "externalCapabilitiesAuthenticated": false,
+    "supersededObligationProposalRevision": "5ef7148ab4b874e2070536b5d216bca48bf2a1bd",
+    "privateEvidence": "consumer-obligation.json; reviewed-consumer-inputs.json; consumer-inputs.json",
+    "keywordAbsenceUsedAsSemanticProof": false
+  },
+  "separateUnchangedSummaryFinding": {
+    "targetId": 4128,
+    "field": "English summaryText duration",
+    "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/323",
+    "summaryAcceptedStatePreserved": true,
+    "bodyDispositionUnaffected": true
+  }
+}
