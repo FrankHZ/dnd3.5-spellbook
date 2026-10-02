@@ -5,10 +5,10 @@
   "rulebookId": 86,
   "validation": "validated-proposal-awaiting-main-gate",
   "publicCodeBase": "acd08e4c2d84d20a52c6a93f42ec6453a57b56a9",
-  "publicExecutionHead": "e365d86a8e7fe21eb97c27b8c4645d1941674801",
+  "publicExecutionHead": "b5716642ad8662903bdea2e53828319fdbb7b634",
   "privateInput": "296903c61e20ce359812148fc0faa234ca2508e7",
-  "privateHandoffRevision": "5c748b0eb6460bcd578e5cdaa3f1e1a8267a3c6b",
-  "committedHelperRevision": "1f1b4d4a2b34a47c6fff5468b678813f4f5e47ed",
+  "privateHandoffRevision": "8d72c1a50eb1623f089957c8a4c052831d428ea6",
+  "committedHelperRevision": "809b2583530d66ec83ee940dbf66a1814579f674",
   "privateHandoffDirectory": "dice-qa/books/86/issue-323",
   "scope": "Exactly 29 reviewed summary rows across 24 SC targets; 12 English and 17 Chinese rows",
   "targets": [
@@ -47,21 +47,22 @@
     "canonicalRows": 6572,
     "correctedRows": 29,
     "unscopedRowsBytePreserved": 6543,
-    "runtimeOrImporterChanges": false
+    "serverRuntimeOrImporterChanges": false,
+    "normalizerRejectsReviewedOutputBeforeAnyWrite": true
   },
   "originalRuleVerification": {
     "scPrinting": "First Printing: December 2005",
     "explicitPagesReopened": 32,
     "rawExtractionAndGeometryMatch": true,
     "visuallyInspectedPages": 31,
-    "verifiedSpanRefs": 123,
+    "verifiedSpanRefs": 124,
     "scErrataCompleteAndNoApplicableEntry": true,
     "fireShieldParentAndCompletePhbErrataVerified": true,
     "priorConsumerFindingsUsedOnlyAsLocators": true,
     "fullBookExtractionOrQa": false
   },
   "disposableReplay": {
-    "run": "final-package",
+    "run": "review-package",
     "helperBytesMatchCommittedRevision": true,
     "callerWorkingDirectory": "data-tools",
     "importWorkingDirectories": ["repository root", "data-tools"],
@@ -100,9 +101,22 @@
   "targetedChecks": [
     "data-tools/src/harness/portable-tests.ts",
     "data-tools/src/short-desc/en-summaries-write-safety-tests.ts",
+    "summaries:normalize:test (also included in test:portable)",
     "data-tools/src/dice-intake/effective-write-portable-tests.ts",
+    "npm run -w data-tools typecheck",
     "changed documentation commands and git diff --check"
   ],
+  "normalizationGuardVerification": {
+    "existingReviewedOutputAndReportBytePreserved": true,
+    "rejectionBeforeInputReadsOrAnyWrites": true,
+    "newReportAbsentOnRejection": true,
+    "freshAndRepeatCandidateGenerationWorks": true,
+    "syntheticRootAndPackageCliRegression": true,
+    "realSourceIndexRootAndPackageReplay": true,
+    "realFreshCandidatesMatchAcrossWorkingDirectories": true,
+    "canonicalOwnerByteUnchanged": true,
+    "newSourceRegistry": false
+  },
   "retainedOwnership": {
     "normalizedConsumers": 327,
     "unresolvedIdentityAndSourceDecisions": 263,
