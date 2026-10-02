@@ -143,12 +143,89 @@ async function main() {
       before: readSpellStepGuard(db, 7),
     },
   ];
-  const rejectsUnchanged = (run: () => unknown, pattern: RegExp) => {
-    const original = dump(db);
+  const rejectsUnchanged = (
+    run: () => unknown,
+    pattern: RegExp,
+    target = db,
+  ) => {
+    const original = dump(target);
     assert.throws(run, pattern);
-    assert.equal(dump(db), original);
+    assert.equal(dump(target), original);
+  };
+  const rejectIndexSideEffects = (operations: SpellStepOperation[]) => {
+    for (const sql of [
+      "UPDATE dnd_spell SET range='UNREQUESTED' WHERE id=7",
+      "UPDATE dnd_spell SET page=99 WHERE id=7",
+      "UPDATE dnd_spellclasslevel SET level=8 WHERE spell_id=7 AND extra='variant'",
+      "UPDATE dnd_spelldomainlevel SET level=8 WHERE spell_id=7",
+      "DELETE FROM dnd_spell_descriptors WHERE spell_id=7",
+      "UPDATE dnd_spellclasslevel SET id=id+100 WHERE spell_id=7",
+    ]) {
+      const unsafe = [...rebuild, { sqlPath: "base-side-effect.sql", sql }];
+      for (const mode of ["check", "apply"] as const)
+        rejectsUnchanged(
+          () => maintainSpellStep(db, operations, unsafe, mode),
+          /Index rebuild changed base/,
+        );
+    }
+  };
+  const rejectAmbiguousDescriptors = (operations: SpellStepOperation[]) => {
+    for (const name of ["New", "Old"]) {
+      db.exec("SAVEPOINT ambiguous_descriptor");
+      db.prepare("INSERT INTO dnd_spelldescriptor VALUES(50,?)").run(
+        `  ${name.toUpperCase()}  `,
+      );
+      for (const mode of ["check", "apply"] as const)
+        rejectsUnchanged(
+          () => maintainSpellStep(db, operations, rebuild, mode),
+          /Ambiguous spell step descriptor/,
+        );
+      db.exec("ROLLBACK TO ambiguous_descriptor; RELEASE ambiguous_descriptor");
+    }
   };
   try {
+    // The index stage cannot enlarge the requested typed update's authority.
+    const pageOnly: SpellStepOperation[] = [
+      {
+        patch: {
+          op: "updateSpell",
+          id: 7,
+          spell: { page: 9 },
+          expected: { spell: { page: 8 } },
+        },
+        before: readSpellStepGuard(db, 7),
+      },
+    ];
+    rejectIndexSideEffects(pageOnly);
+    rejectAmbiguousDescriptors(first);
+    const expectedAmbiguity = fixture(":memory:");
+    try {
+      expectedAmbiguity.exec(
+        "INSERT INTO dnd_spelldescriptor VALUES(50,'Old'); UPDATE dnd_spell_descriptors SET spelldescriptor_id=50 WHERE spell_id=7",
+      );
+      const descriptorOnly: SpellStepOperation[] = [
+        {
+          patch: {
+            op: "updateSpell",
+            id: 7,
+            descriptors: ["New"],
+            expected: { descriptors: ["Old"] },
+          },
+          before: readSpellStepGuard(expectedAmbiguity, 7),
+        },
+      ];
+      // The relation matches the legacy map's last row. Only an explicit
+      // uniqueness guard can reject this instead of accepting the expected set.
+      for (const mode of ["check", "apply"] as const)
+        rejectsUnchanged(
+          () =>
+            maintainSpellStep(expectedAmbiguity, descriptorOnly, rebuild, mode),
+          /Ambiguous spell step descriptor/,
+          expectedAmbiguity,
+        );
+    } finally {
+      expectedAmbiguity.close();
+    }
     const baseline = dump(db);
     const stat = fs.statSync(dbPath);
     assert.deepEqual(maintainSpellStepFile(dbPath, first, rebuild), {
@@ -202,6 +279,24 @@ async function main() {
       () => maintainSpellStep(db, first, diskFailure, "apply"),
       /NOT NULL/,
     );
+    // Both memory replays leave base rules intact, while the actual disk-only
+    // index side effect must be rejected after typed writes and fully roll back.
+    rejectsUnchanged(
+      () =>
+        maintainSpellStep(
+          db,
+          first,
+          [
+            ...rebuild,
+            {
+              sqlPath: "disk-base-side-effect.sql",
+              sql: "UPDATE dnd_spell SET range='UNREQUESTED' WHERE id=7 AND (SELECT file FROM pragma_database_list WHERE name='main')<>''",
+            },
+          ],
+          "apply",
+        ),
+      /Index rebuild changed base/,
+    );
     rejectsUnchanged(
       () =>
         maintainSpellStep(
@@ -223,6 +318,9 @@ async function main() {
       state: "after",
       changed: true,
     });
+    // The same strict boundaries hold when exact after would otherwise no-op.
+    rejectIndexSideEffects(first);
+    rejectAmbiguousDescriptors(first);
     const afterFirst = dump(db);
     const afterStat = fs.statSync(dbPath);
     assert.deepEqual(maintainSpellStepFile(dbPath, first, rebuild), {

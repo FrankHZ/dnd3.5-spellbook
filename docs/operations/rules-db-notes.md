@@ -220,6 +220,9 @@ memberships and detects duplicate, missing and extra relations. An insert has
 `patch.spell.added` timestamp so repeat checks remain deterministic.
 `readSpellStepGuard` exposes that shape for preparing task-owned fixtures or an
 authorized reviewed handoff; taking a snapshot does not accept its source text.
+Requested and expected descriptor names in a step must each resolve uniquely
+after case/whitespace normalization; ambiguous labels cannot select an ID by
+lookup traversal order.
 
 Identity corrections use the bounded `moveSpellRulebook` patch with `id`,
 `from` and `to`. Each book identity contains `id`, `abbr`, `editionId`,
@@ -236,6 +239,10 @@ derived index rows and their key/schema structure to match the maintained
 index SQL, including book/edition IDs and extra labels. Other rules rows,
 tables and schema are protected. Missing DBs, content/app-state roles, stale or
 mixed rules, incomplete indexes and changed guards fail closed.
+The typed after state is captured before index SQL runs. Each index stage must
+preserve all base rules and relationships, including targeted rows and their
+surrogate IDs; index SQL cannot authorize additional target edits. Both replay
+and real apply verify this boundary with the existing direct state comparison.
 
 Explicit apply rechecks under an immediate transaction and commits the rules,
 relationships and indexes together. Legacy whole-script index transaction

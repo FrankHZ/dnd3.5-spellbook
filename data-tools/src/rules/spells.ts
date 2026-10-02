@@ -1199,7 +1199,23 @@ function validateStepOperations(
         before.spell?.rulebook_id !== patch.from.id
       )
         throw new Error("Invalid guarded rulebook move");
-    } else if (patch.op !== "insertSpell" && patch.op !== "updateSpell")
+    } else if (patch.op === "updateSpell") {
+      const errors: string[] = [];
+      const shape = validateUpdateSpellShape(patch, 1, errors);
+      if (errors.length) throw new Error(errors.join("; "));
+      for (const name of [
+        ...(shape.descriptors ?? []),
+        ...(shape.expectedDescriptors ?? []),
+      ]) {
+        const matches = db
+          .prepare(
+            "SELECT id FROM dnd_spelldescriptor WHERE LOWER(TRIM(name))=?",
+          )
+          .all(normalizeLookup(name));
+        if (matches.length !== 1)
+          throw new Error(`Ambiguous spell step descriptor lookup: ${name}`);
+      }
+    } else if (patch.op !== "insertSpell")
       throw new Error("Unsupported spell step operation");
   }
 }
@@ -1304,7 +1320,9 @@ function checkStepEntities(
 function stepIndexState(db: Database.Database) {
   return ["idx_spell_class_level", "idx_spell_domain_level"].map((table) => ({
     schema: db
-      .prepare("SELECT type,name,sql FROM sqlite_master WHERE tbl_name=? ORDER BY name")
+      .prepare(
+        "SELECT type,name,sql FROM sqlite_master WHERE tbl_name=? ORDER BY name",
+      )
       .all(table),
     columns: db.pragma(`table_info(${table})`),
     indexes: (db.pragma(`index_list(${table})`) as { name: string }[]).map(
@@ -1336,8 +1354,9 @@ function stepProtectedState(
     rows: schema
       .filter((row) => row.type === "table" && !indexes.includes(row.name))
       .map((row) => {
-        const column =
-          row.name === "dnd_spell"
+        const column = !ids.length
+          ? null
+          : row.name === "dnd_spell"
             ? "id"
             : STEP_RELATIONS.some(([table]) => table === row.name)
               ? "spell_id"
@@ -1353,6 +1372,21 @@ function stepProtectedState(
         };
       }),
   };
+}
+
+function rebuildStepIndexes(
+  db: Database.Database,
+  indexes: readonly SpellIndexSqlPatch[],
+) {
+  // Index SQL has no authority to change base rows, even targeted rows or
+  // relationship surrogate IDs. Reuse the same direct state comparison with
+  // no typed-operation exclusions for this stage.
+  const before = exact(stepProtectedState(db, []));
+  rebuildIndexes(db, indexes);
+  if (exact(stepProtectedState(db, [])) !== before)
+    throw new Error(
+      "Index rebuild changed base rules, relationships or protected schema",
+    );
 }
 
 /** Default check and explicit apply share the same replay and exact guards.
@@ -1450,19 +1484,21 @@ export function maintainSpellStep(
         }
       };
       // Replay the real writer, including old whole-script SQL wrappers.
-      memory.transaction(() => {
+      const after = memory.transaction(() => {
         move(memory);
-        applySpellPatchAtomically(memory, inserts, updates, indexes);
+        applySpellPatchAtomically(memory, inserts, updates, []);
         checkStepEntities(memory, operations);
+        const typedAfter = operations.map(({ patch }) =>
+          readSpellStepGuard(memory, patch.id!),
+        );
+        rebuildStepIndexes(memory, indexes);
+        return typedAfter;
       })();
       requireStepSchema(memory);
       if (exact(stepProtectedState(memory, operations)) !== protectedState)
         throw new Error(
           "Spell step changed protected rules or schema in replay",
         );
-      const after = operations.map(({ patch }) =>
-        readSpellStepGuard(memory, patch.id!),
-      );
       const current = operations.map(({ patch }) =>
         readSpellStepGuard(db, patch.id!),
       );
@@ -1478,13 +1514,8 @@ export function maintainSpellStep(
       const currentReplay = new Database(db.serialize());
       try {
         currentReplay.pragma("foreign_keys=OFF");
-        rebuildIndexes(currentReplay, indexes);
+        rebuildStepIndexes(currentReplay, indexes);
         requireStepSchema(currentReplay);
-        if (
-          exact(stepProtectedState(currentReplay, operations)) !==
-          protectedState
-        )
-          throw new Error("Index rebuild changed protected rules or schema");
         if (exact(stepIndexState(db)) !== exact(stepIndexState(currentReplay)))
           throw new Error(
             "Spell step derived indexes are missing, drifted or incomplete",
@@ -1497,7 +1528,8 @@ export function maintainSpellStep(
       if (isAfter) return { state: "after" as const, changed: false };
       if (mode === "check") return { state: "before" as const, changed: false };
       move(db);
-      applySpellPatchAtomically(db, inserts, updates, indexes);
+      applySpellPatchAtomically(db, inserts, updates, []);
+      rebuildStepIndexes(db, indexes);
       requireStepSchema(db);
       if (
         exact(
