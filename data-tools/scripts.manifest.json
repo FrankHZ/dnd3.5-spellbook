@@ -528,6 +528,20 @@
       "module": "rules",
       "writeCapable": false,
       "requiresLocalData": false
+    },
+    "rules:content:step": {
+      "module": "rules-content",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "rules:content:step:test": {
+      "module": "rules-content",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": false
     }
   }
 }

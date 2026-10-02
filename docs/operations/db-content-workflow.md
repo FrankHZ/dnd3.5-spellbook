@@ -110,6 +110,11 @@ migration's authorization and acceptance.
 3. Regenerate the content DB artifact.
    - Use [import-workflow.md](./import-workflow.md) for the canonical local
      command order.
+   - For an already accepted pair of full normalized artifacts, the
+     [normalized import step](./import-workflow.md#normalized-content-import-step)
+     proves exact before/after and supports atomic apply or a zero-write repeat.
+     An annotated predecessor is refused until later coordination handles
+     downstream acceptance; this stage does not run overlays, summaries or FTS.
    - Require canonical publication metadata for the full artifact; use the
      explicit audit-only generator only for limited, non-importable output.
    - Run content generate/import, then dry-run and rebuild the derived search

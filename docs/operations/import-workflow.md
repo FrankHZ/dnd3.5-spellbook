@@ -208,6 +208,59 @@ document counts; live rebuild replaces only derived `SpellSearchDocument` and
 normalized consistency and artifact provenance. Restart an API after swapping
 DB files before using cached endpoints as evidence.
 
+### Normalized Content Import Step
+
+`rules:content:step` checks one existing content DB by default; `--apply` imports
+only an exact accepted predecessor. This is a normalized-stage foundation, not
+the complete migration sequence. **A predecessor carrying downstream overlay or
+summary acceptance annotations is rejected.** Later migration coordination must
+explicitly invalidate/revalidate those annotations; this command cannot activate
+the next QA book against an annotated SC base. Exact-after repeats recognize the
+existing SC final overlay/summary metadata contract and preserve its bytes.
+Recognition does not authenticate downstream source QA or accept the full pipeline.
+
+```powershell
+npm run -w data-tools rules:content:step -- `
+  --previous-input <accepted-previous-full.json> --input <accepted-next-full.json> `
+  --content-db <existing-content.sqlite>
+# The same checks run before an explicitly authorized write:
+npm run -w data-tools rules:content:step -- `
+  --previous-input <accepted-previous-full.json> --input <accepted-next-full.json> `
+  --content-db <existing-content.sqlite> --apply
+npm run -w data-tools rules:content:step:test
+```
+
+Both full artifacts must already be accepted by the owning handoff and are
+required even on repeat. Flags, file paths, generated projections and synthetic
+fixtures grant no source acceptance or operator write permission. No target-DB
+snapshot, hash, count, build ID or report alone supplies the predecessor. The
+previous file must match every generated row/key/value, the single build's
+identity/source SHA and complete generation/source totals. Its generation is
+checked against persisted historical importer provenance; the new file is
+checked against actual current rules/manifest/publication/migration inputs.
+Historical importer commits/dirty flags and valid timestamps are preserved,
+not rewritten to match today's checkout. Unknown metadata extensions, malformed
+known annotations, mixed/drifted rows, wrong roles and incomplete schemas fail.
+
+Artifact paths and explicit `--content-db` paths resolve from this code checkout's
+repository root, including when launched from `data-tools/` or another directory.
+Without `--content-db`, the command uses `CONTENT_DATABASE_URL`; its `file:` path
+retains the existing server-relative convention. Data/provenance paths use the
+existing `DATA_REPO_PATH` and manifest helpers. Targets must exist and be separate
+from configured rules/app-state DBs. This command never creates/migrates DBs.
+
+Check/apply share the same implementation. Apply rechecks inside one content
+write transaction, calls the maintained importer, then verifies the complete
+normalized after/build and unchanged outside-owned tables/schema before commit.
+Importer SQL failures or failed acceptance roll back this stage. A process stopped
+after commit can repeat and recognize after without writes, timestamp refreshes
+or metadata replacement. The JSON result reports `state`, `changed` and
+`wouldChange`: only a committed replacement sets `changed=true`; checks and
+exact-after repeats return false. No cross-DB transaction or FTS completion is
+claimed. All i18n/base text, summaries, search and control tables remain unchanged;
+the later coordinator must verify/rebuild search after required content stages.
+The original `rules:content:import` command retains its replacement/dry-run behavior.
+
 ## Short Descriptions
 
 The import boundary is
