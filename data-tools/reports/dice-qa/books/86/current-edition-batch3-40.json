@@ -1,0 +1,592 @@
+{
+  "schema": 1,
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/326",
+  "parentIssue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/263",
+  "rulebookId": 86,
+  "validation": "validated-proposal-awaiting-main-gate",
+  "publicCodeBase": "d787cd391f912c1d07ed31fce0a24b91966874d8",
+  "publicExecutionHead": "d787cd391f912c1d07ed31fce0a24b91966874d8",
+  "privateInput": "95e1b5a639d25187788a0eb1ae5b1db302ff9ea7",
+  "privateHandoffRevision": "12b030c0dc2ec9cc72aa02bfe581a30ba38889b5",
+  "committedHelperRevision": "3c714493109e752bbaba39f41b2802e5d8c383f7",
+  "privateHandoffDirectory": "dice-qa/books/86/issue-326",
+  "scope": "Exactly frozen issue-313 positions 81–120; forty complete SC body reviews under the current-edition delivery scope",
+  "exactTargetIds": [
+    3903,
+    3913,
+    3928,
+    3934,
+    3946,
+    3958,
+    3959,
+    3964,
+    3967,
+    3978,
+    3982,
+    3984,
+    3985,
+    3991,
+    3995,
+    3997,
+    4006,
+    4013,
+    4035,
+    4046,
+    4052,
+    4078,
+    4096,
+    4097,
+    4113,
+    4153,
+    4179,
+    4260,
+    4266,
+    4277,
+    4291,
+    4293,
+    4294,
+    4303,
+    4313,
+    4315,
+    4410,
+    4412,
+    4414,
+    4415
+  ],
+  "bodyDispositions": {
+    "accepted": 37,
+    "accepted-with-source-issues": 1,
+    "deferred": 2,
+    "incomplete": 0
+  },
+  "targets": [
+    {
+      "targetId": 3903,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": true,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 3913,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 3928,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 3934,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": true,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 3946,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 3958,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": true,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 3959,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 3964,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 3967,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": true,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 3978,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 3982,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 3984,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 3985,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": true,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 3991,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 3995,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": true,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 3997,
+      "bodyDisposition": "deferred",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": true,
+      "identityLimitPreserved": true
+    },
+    {
+      "targetId": 4006,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4013,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4035,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4046,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": false,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": true,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4052,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4078,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4096,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": true,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4097,
+      "bodyDisposition": "deferred",
+      "candidateHistoricalObligationRetired": false,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": true,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4113,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4153,
+      "bodyDisposition": "accepted-with-source-issues",
+      "candidateHistoricalObligationRetired": false,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [
+        "4153:omitted-time-source"
+      ],
+      "unreviewedExternalCapabilityLimitPreserved": true,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4179,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": true,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4260,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4266,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": true,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4277,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4291,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4293,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4294,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4303,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4313,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4315,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4410,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4412,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4414,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": false,
+      "identityLimitPreserved": false
+    },
+    {
+      "targetId": 4415,
+      "bodyDisposition": "accepted",
+      "candidateHistoricalObligationRetired": true,
+      "historicalClaimAuthenticated": false,
+      "retainedSourceIssueIds": [],
+      "unreviewedExternalCapabilityLimitPreserved": true,
+      "identityLimitPreserved": false
+    }
+  ],
+  "fieldUnion": {
+    "universe": 2004,
+    "nativeFields": 658,
+    "nativeRows": 653,
+    "priorIndependentFields": 301,
+    "newIndependentBodies": 38,
+    "proposedIndependentFields": 339,
+    "priorAcceptedFieldsBytePreserved": 959,
+    "proposedFields": 997,
+    "acceptedNames": 41,
+    "acceptedBodies": 956,
+    "exactRemainingFallbackFields": 1007
+  },
+  "sourceGaps": {
+    "oldBaselineTargets": 149,
+    "previouslyReviewed": 80,
+    "completeEntriesReviewedInSlice": 40,
+    "retainedOperativeBlockerIds": [
+      3997,
+      4097
+    ],
+    "outsideSliceUnreviewedTargets": 29,
+    "proposedRemainingTargets": 31,
+    "alreadyAcceptedHistoryInventory": "separate future scope"
+  },
+  "historicalRetirement": {
+    "candidateTargets": 37,
+    "acceptedCandidateTargets": 36,
+    "deferredEffectiveHistoryPreserved": true,
+    "historyAuthenticated": false,
+    "exactPassagesAndCompleteOldNewBodies": "private dispositions.jsonl and packets.json"
+  },
+  "sourceQuestions": {
+    "originalFrozenChecklist": "33 pending / 1 officially resolved; bytes unchanged",
+    "previousSupplementalIds": [
+      "4743:omitted-time-source"
+    ],
+    "newSupplementalIds": [
+      "4153:omitted-time-source"
+    ],
+    "newSupplementalStatus": "source-unresolved",
+    "sourceQuestionAdjudication": false,
+    "newSupplementalCanonicalMechanicChanged": false,
+    "privateInventory": "supplemental-source-questions.json"
+  },
+  "operativeBlockers": [
+    {
+      "targetId": 3997,
+      "expandedDependency": "DMG224 special weapon ability; complete applicable entry, context, printing and errata missing",
+      "candidateAndCurrentFallbackPreserved": true
+    },
+    {
+      "targetId": 4097,
+      "expandedDependency": "DMG149 planar trait numerical penalty; complete applicable entry, context, printing and errata missing",
+      "candidateAndCurrentFallbackPreserved": true
+    }
+  ],
+  "supplementalRuleReview": {
+    "targetId": 3934,
+    "dependency": "authorized PHB140 complete critical-hit sidebar plus complete official PHB errata",
+    "derivedMultiplierRetained": true,
+    "SCAndGeneralRuleAuthorityDistinguished": true,
+    "PHBPrintingLimit": "local revised v3.5 PDF and accepted original authority; image credits viewed; no specific printing date claimed",
+    "suspendedPHBQueuesRun": false
+  },
+  "consumerReview": {
+    "completeOwnTargets": 40,
+    "relevantCodeFiles": 11,
+    "externalCapabilitiesAuthenticated": false,
+    "unreadExternalLimitsPreserved": 14,
+    "identityLimitIds": [
+      3997
+    ],
+    "unscopedFindings": "private consumer-findings.json; summary discrepancies, normalized-versus-patched-canonical drift and existing partial/review facets unchanged",
+    "specificSummaryFollowupTargetIds": [
+      4006,
+      4035,
+      4078,
+      4293,
+      4294,
+      4414,
+      4415
+    ],
+    "specificNormalizedFollowupTargetIds": [
+      3928,
+      3967,
+      3991,
+      3997,
+      4277
+    ],
+    "mechanicSourceLimitTargetIds": [
+      4153
+    ]
+  },
+  "validationEvidence": {
+    "maintained315PatchDisposableRules": "passed; all unlisted columns/relations and 56 unchanged tables protected; copy removed",
+    "currentSnapshotTargets": 1002,
+    "maintainedFormalQA": {
+      "exitCode": 0,
+      "nativeFields": 658,
+      "independentFields": 145,
+      "exportsPreserved": true,
+      "staleInputRejections": 6
+    },
+    "proposedFullFieldValidator": {
+      "acceptedBodies": 38,
+      "fullBodyAudits": 38,
+      "rejectedMutations": 26
+    },
+    "maintainedPDFValidator": {
+      "pages": 47,
+      "spans": 2907,
+      "boundReviewedFields": 40,
+      "rejectedMutations": 7,
+      "freshRenderedPagesActuallyViewed": 47
+    },
+    "HTML": {
+      "currentFields": 80,
+      "proposedFields": 40,
+      "projectionsMatched": true,
+      "isolatedDOMBodies": 40,
+      "representativeScreenshotsActuallyViewed": [
+        3934,
+        3958,
+        4153,
+        4315
+      ],
+      "productionUISmoke": false
+    },
+    "focusedPortableChecks": {
+      "dice:qa:test": "passed; 104 rejection checks",
+      "dice:effective:test": "passed; 23 rejection checks and import-order counterexamples"
+    },
+    "rootPackageReproduction": {
+      "passed": true,
+      "helperRevision": "3c714493109e752bbaba39f41b2802e5d8c383f7",
+      "invocations": [
+        "repository root",
+        "data-tools package"
+      ],
+      "commandsPerInvocation": 6,
+      "privateEvidence": [
+        "reproduction-root.json",
+        "reproduction-package.json"
+      ]
+    },
+    "exactHeadRemotePortableCI": "reported with PR check state"
+  },
+  "model": {
+    "verified": "gpt-6.1-sol",
+    "reasoningEffort": "high",
+    "evidence": "actual turn_context metadata in private model-verification.json"
+  },
+  "preservedBoundaries": {
+    "namesIDsCanonicalEnglishMechanicsSummariesAndUnscopedBodies": true,
+    "allPriorAccepted959Fields": true,
+    "frozenEvidence": true,
+    "fixedRestoredCLIContract": true,
+    "fixedEffective879Baseline": true,
+    "privatePush": false,
+    "operatorWrites": false,
+    "appStateOpened": false,
+    "activation": false,
+    "deployment": false,
+    "mainGateAcceptance": false
+  }
+}
