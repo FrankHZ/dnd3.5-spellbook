@@ -207,3 +207,8 @@ integrated; the coordinating migration owns the final search/consumer gates.
 Run `npm run -w data-tools dice:final:write:test` for synthetic full-artifact,
 schema migration, protected-data, transaction fault, repeat and provenance
 rejection checks. Source replay/PDF rejection tests remain in the Python suite.
+
+The bounded [combined rehearsal report](../releases/v1.4/spell-compendium-final-combined-rehearsal.md)
+records full summary/FTS/API verification and the separate operator handoff.
+Use fresh native connections for final integrity/search checks after a rebuild;
+FTS handles opened before another connection's index replacement can be stale.
