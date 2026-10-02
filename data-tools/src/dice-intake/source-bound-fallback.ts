@@ -47,7 +47,19 @@ export type SourceBoundFallbackReview = {
   pendingSourceEvidence?: unknown[];
   retainedSourceIssues?: RetainedSourceIssues;
 };
-type NativeAccepted = { targetId: number; rulebookId: number; name?: string; descriptionHtml?: string };
+export type NativeAccepted = { targetId: number; rulebookId: number; sourceKey?: string; name?: string; descriptionHtml?: string };
+
+export type AcceptedBodyBaseline = {
+  revision: string;
+  native: { path: string; rows: NativeAccepted[] };
+  independent: { path: string; rows: SourceBoundFallbackReview[] };
+};
+export type AcceptedBodyAmendment = {
+  targetId: number; rulebookId: number; field: "descriptionText";
+  prior: { owner: "native" | "independent"; revision: string; path: string;
+    acceptedRow: NativeAccepted | SourceBoundFallbackReview };
+  review: SourceBoundFallbackReview;
+};
 
 const stable = (value: unknown): string => JSON.stringify(value, (_key, item) =>
   item && typeof item === "object" && !Array.isArray(item)
@@ -62,7 +74,83 @@ export const escapedFallbackHtml = (value: string): string =>
 /** Independent correction proposals. Never synthesize dice candidates or write a DB. */
 export function validateSourceBoundFallbackReviews(reviews: SourceBoundFallbackReview[],
   rulebookId: number, english: Map<number, EnglishRecord>, englishHtml: Map<number, string | null>,
-  chinese: Map<number, ChineseTextBinding>, nativeAccepted: NativeAccepted[], allowPending = false): {
+  chinese: Map<number, ChineseTextBinding>, nativeAccepted: NativeAccepted[], allowPending = false) {
+  return validateReviews(reviews, rulebookId, english, englishHtml, chinese, nativeAccepted, allowPending, new Set());
+}
+
+/** Read-only amendments, never a new accepted union or an importable fallback export.
+ * The caller loads baseline and current inputs from the independently selected Git revision.
+ * Original owners/rows stay in the envelope, including the native source key.
+ */
+export function validateAcceptedBodyAmendments(amendments: AcceptedBodyAmendment[],
+  baseline: AcceptedBodyBaseline, rulebookId: number, english: Map<number, EnglishRecord>,
+  englishHtml: Map<number, string | null>, chinese: Map<number, ChineseTextBinding>) {
+  assert(/^[0-9a-f]{40}$/.test(baseline.revision), "require exact accepted baseline revision");
+  assert(text(baseline.native.path) && text(baseline.independent.path)
+    && baseline.native.path !== baseline.independent.path, "require distinct accepted baseline paths");
+  const native = new Map<number, NativeAccepted>(), independent = new Map<number, SourceBoundFallbackReview>();
+  for (const row of baseline.native.rows) {
+    assert(!native.has(row.targetId), "duplicate native accepted baseline target"); native.set(row.targetId, row);
+  }
+  const independentKeys = new Set<string>();
+  for (const row of baseline.independent.rows) {
+    const key = `${row.targetId}:${row.field}`;
+    assert(!independentKeys.has(key), "duplicate independent accepted baseline field"); independentKeys.add(key);
+    if (row.field === "descriptionText") independent.set(row.targetId, row);
+  }
+  const keys = new Set<string>();
+  for (const amendment of amendments) {
+    assert(amendment.field === "descriptionText", "amendment is restricted to body fields");
+    const key = `${amendment.targetId}:descriptionText`;
+    assert(!keys.has(key), `duplicate accepted body amendment ${key}`); keys.add(key);
+    assert(amendment.rulebookId === rulebookId && amendment.review.targetId === amendment.targetId
+      && amendment.review.rulebookId === rulebookId && amendment.review.field === amendment.field,
+    `unrelated amendment review ${key}`);
+    const prior = amendment.prior;
+    assert(prior.owner === "native" || prior.owner === "independent", `invalid prior owner ${key}`);
+    assert.equal(prior.revision, baseline.revision, `stale prior accepted revision ${key}`);
+    const n = native.get(amendment.targetId), i = independent.get(amendment.targetId);
+    assert(!(n?.descriptionHtml !== undefined && i), `overlapping accepted baseline body ${key}`);
+    const actual = prior.owner === "native" ? n : i;
+    assert(actual && actual.rulebookId === rulebookId, `missing or foreign prior accepted body ${key}`);
+    assert.equal(prior.path, baseline[prior.owner].path, `stale prior accepted path ${key}`);
+    assert.equal(stable(prior.acceptedRow), stable(actual), `stale prior accepted row ${key}`);
+    const current = chinese.get(amendment.targetId);
+    assert(current && text(current.descriptionText), `missing selected accepted body ${key}`);
+    if (prior.owner === "native") {
+      assert(n && text(n.sourceKey) && text(n.descriptionHtml), `missing native prior source/body ${key}`);
+      assert.equal(current.descriptionHtml, n.descriptionHtml, `stale selected native HTML ${key}`);
+      // No text/HTML decoder: require the exact existing escaped projection.
+      assert.equal(escapedFallbackHtml(current.descriptionText), n.descriptionHtml, `stale selected native text ${key}`);
+    } else {
+      assert(i && (i.status === "accepted" || i.status === "accepted-with-source-issues")
+        && i.sourceKey === null, `unaccepted independent prior ${key}`);
+      assert.equal(current.descriptionText, i.after, `stale selected independent text ${key}`);
+      assert.equal(current.descriptionHtml, i.proposedHtml, `stale selected independent HTML ${key}`);
+      if (i.retainedSourceIssues) {
+        const proposed = amendment.review.retainedSourceIssues;
+        assert(proposed && proposed.sourceId === i.retainedSourceIssues.sourceId,
+          `amendment cannot retire prior source issues ${key}`);
+        for (const issue of i.retainedSourceIssues.issues) assert.equal(
+          stable(proposed.issues.find(item => item.id === issue.id)), stable(issue),
+          `amendment cannot change prior unresolved source issue ${key}`);
+      }
+    }
+    assert(amendment.review.status === "accepted" || amendment.review.status === "accepted-with-source-issues",
+      `amendment requires complete reviewed replacement ${key}`);
+  }
+  const result = validateReviews(amendments.map(row => row.review), rulebookId, english, englishHtml,
+    chinese, baseline.native.rows, false, keys);
+  const { acceptedFields, ...reviewSummary } = result.summary;
+  return { amendments, summary: { ...reviewSummary, reviewedReplacementFields: acceptedFields,
+    validation: "validated-amendment-proposal" as const,
+    newAcceptedFields: 0, baselineRevision: baseline.revision } };
+}
+
+function validateReviews(reviews: SourceBoundFallbackReview[],
+  rulebookId: number, english: Map<number, EnglishRecord>, englishHtml: Map<number, string | null>,
+  chinese: Map<number, ChineseTextBinding>, nativeAccepted: NativeAccepted[], allowPending: boolean,
+  amendmentKeys: Set<string>): {
     accepted: SourceBoundFallbackReview[];
     summary: { reviewedFields: number; acceptedFields: number; fullBodyAudits: number;
       pendingFields: number; decisions: Record<string, number>; sourceUnresolvedFields?: number; retainedSourceIssues?: number };
@@ -92,7 +180,7 @@ export function validateSourceBoundFallbackReviews(reviews: SourceBoundFallbackR
     assert(text(row.after) && row.after !== row.before, `empty or unchanged source-bound correction ${key}`);
     assert.equal(row.proposedHtml, row.field === "descriptionText" ? escapedFallbackHtml(row.after) : null,
       `source-bound text/HTML projection mismatch ${key}`);
-    assert(!nativeAccepted.some(native => native.targetId === row.targetId
+    assert(amendmentKeys.has(key) || !nativeAccepted.some(native => native.targetId === row.targetId
       && (row.field === "name" ? native.name !== undefined : native.descriptionHtml !== undefined)),
     `source-bound correction overlaps native accepted field ${key}`);
     assert(["accepted", "accepted-with-source-issues", "rejected", "deferred", "excluded"].includes(row.status), `invalid source-bound status ${key}`);

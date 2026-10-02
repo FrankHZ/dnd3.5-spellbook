@@ -563,6 +563,36 @@ verification. A retained named reference without added external rules does not
 require certifying the entire referenced book; concrete translation, numerical
 or inherited-rule dependencies still require the applicable source.
 
+### Accepted body amendments
+
+Already accepted bodies require a separate re-review envelope; submitting them
+as new independent fallback fields still fails native overlap validation.
+`validateAcceptedBodyAmendments` in the
+[review helper](../../data-tools/src/dice-intake/source-bound-fallback.ts) binds
+each body to its original owner, exact accepted private Git revision, ledger path
+and entire prior row, including the native source key. The caller must load the
+baseline ledgers and canonical input snapshots from the independently selected
+revision, then derive the selected Chinese values from that accepted union.
+Do not trust baseline copies supplied by the amendment as authority.
+
+This entry permits only unique existing body fields. It rejects foreign/missing
+owners, stale revisions/rows/values, unrelated fields, ambiguous prior ownership
+and duplicate baseline or amendment fields. Native bodies must have an exact
+escaped `<pre>` text/HTML projection; other markup requires a separately reviewed
+contract. Existing unresolved source issues cannot be retired or changed here.
+The new review reuses all complete English/mechanics/HTML, Chinese, original-source
+page/span, rule-pair and full-body audit checks. Fresh supplemental PDF verification
+and actual source/HTML review remain necessary; this helper does not certify them.
+
+The result retains amendment envelopes and reports zero new accepted fields.
+It is a validated amendment proposal, not a replacement accepted union, fallback
+export or input for an effective projection/DB writer. Keep original accepted
+ledgers and frozen QA untouched. Privately prove the exact scoped differences and
+preservation of the unscoped fields; obtain main-gate acceptance of the exact
+amendment revision before any separately authorized downstream integration.
+The [bounded SC amendment report](../../data-tools/reports/dice-qa/books/86/accepted-history-amendments.json)
+locates the private evidence and reproduction helpers.
+
 [Activation issue #121](https://github.com/FrankHZ/dnd3.5-spellbook/issues/121)
 owns the accepted-input, variant/request compatibility, and tested import-order
 requirements. Do not feed TXT into the HTML parser or use the CHM importer for

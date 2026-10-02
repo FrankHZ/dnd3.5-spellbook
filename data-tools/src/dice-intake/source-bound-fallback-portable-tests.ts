@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { escapedFallbackHtml, validateSourceBoundFallbackReviews, withSourceIssueNotes, type SourceBoundFallbackReview } from "./source-bound-fallback";
+import { escapedFallbackHtml, validateSourceBoundFallbackReviews, validateAcceptedBodyAmendments,
+  withSourceIssueNotes, type AcceptedBodyBaseline, type AcceptedBodyAmendment, type SourceBoundFallbackReview } from "./source-bound-fallback";
 import type { EnglishRecord } from "./qa";
 
 const en: EnglishRecord = { name: "Cold Touch", rulebookId: 10, editionId: 5,
@@ -195,3 +196,87 @@ crossFails(r => { r.input.englishHtml = "stale"; }, /English HTML/);
 crossFails(r => { r.proposedHtml = "stale"; }, /projection mismatch/);
 assert.throws(() => validateSourceBoundFallbackReviews([row], 99, english, html, chinese, []), /unknown.*scope/);
 console.log(`source-bound fallback portable tests passed (${rejected + 6} rejection checks)`);
+
+// Re-review binds a real accepted owner; the ordinary fallback path still rejects overlap.
+const revision = "a".repeat(40);
+const acceptedChinese = { ...old, descriptionHtml: escapedFallbackHtml(old.descriptionText) };
+const nativePrior = { targetId: 1, rulebookId: 10, sourceKey: "synthetic-native-source", descriptionHtml: acceptedChinese.descriptionHtml };
+const baseline: AcceptedBodyBaseline = { revision, native: { path: "native.jsonl", rows: [nativePrior] },
+  independent: { path: "independent.jsonl", rows: [] } };
+const amendment: AcceptedBodyAmendment = { targetId: 1, rulebookId: 10, field: "descriptionText",
+  prior: { owner: "native", revision, path: "native.jsonl", acceptedRow: nativePrior },
+  review: { ...structuredClone(row), input: { ...row.input, chinese: acceptedChinese },
+    fullBodyAudit: { ...row.fullBodyAudit!, beforeHtml: acceptedChinese.descriptionHtml } } };
+const amend = (rows: AcceptedBodyAmendment[], base = baseline, selected = new Map([[1, acceptedChinese]])) =>
+  validateAcceptedBodyAmendments(rows, base, 10, english, html, selected);
+assert.equal(amend([amendment]).summary.newAcceptedFields, 0);
+assert.equal(amend([amendment]).amendments[0]!.prior.owner, "native");
+assert.throws(() => validateSourceBoundFallbackReviews([amendment.review], 10, english, html,
+  new Map([[1, acceptedChinese]]), baseline.native.rows), /overlaps/);
+const independentPrior = { ...structuredClone(row), after: old.descriptionText, proposedHtml: acceptedChinese.descriptionHtml };
+const independentBase: AcceptedBodyBaseline = { revision, native: { path: "native.jsonl", rows: [] },
+  independent: { path: "independent.jsonl", rows: [independentPrior] } };
+const independentAmendment = { ...amendment, prior: { owner: "independent" as const, revision,
+  path: "independent.jsonl", acceptedRow: independentPrior } };
+assert.equal(amend([independentAmendment], independentBase).amendments[0]!.prior.owner, "independent");
+let amendmentRejected = 0;
+function amendmentFails(change: (item: AcceptedBodyAmendment) => void, pattern: RegExp) {
+  const item = structuredClone(amendment); change(item); assert.throws(() => amend([item]), pattern); amendmentRejected++;
+}
+amendmentFails(a => { a.prior.revision = "b".repeat(40); }, /stale prior.*revision/);
+amendmentFails(a => { a.prior.path = "other.jsonl"; }, /stale prior.*path/);
+amendmentFails(a => { (a.prior.acceptedRow as typeof nativePrior).descriptionHtml += "stale"; }, /stale prior.*row/);
+amendmentFails(a => { (a.prior.acceptedRow as typeof nativePrior).sourceKey = "relabeled"; }, /stale prior.*row/);
+amendmentFails(a => { a.prior.owner = "independent"; }, /missing.*prior/);
+amendmentFails(a => { a.review.targetId = 2; }, /unrelated/);
+amendmentFails(a => { a.targetId = 2; a.review.targetId = 2; }, /missing.*prior/);
+amendmentFails(a => { (a as unknown as {field:string}).field = "name"; }, /restricted to body/);
+amendmentFails(a => { a.review.field = "name"; }, /unrelated/);
+amendmentFails(a => { a.review.before = "stale"; }, /current-before/);
+amendmentFails(a => { a.review.input.english.mechanics.range = "new mechanics"; }, /full English/);
+amendmentFails(a => { delete a.review.fullBodyAudit; }, /full-body audit/);
+amendmentFails(a => { a.review.fullBodyAudit!.beforeHtml = null; }, /audited old HTML/);
+amendmentFails(a => { a.review.pendingSourceEvidence = ["unread original"]; }, /closed rule evidence/);
+amendmentFails(a => { a.review.originalSourceRead = false; }, /not actually reviewed/);
+amendmentFails(a => { a.review.sourcePages = []; }, /provenance/);
+amendmentFails(a => { a.review.status = "deferred"; }, /complete reviewed replacement/);
+assert.throws(() => amend([amendment, amendment]), /duplicate.*amendment/);
+assert.throws(() => amend([amendment], { ...baseline, revision: "floating-main" }), /exact.*revision/);
+assert.throws(() => amend([amendment], { ...baseline, native: { ...baseline.native, rows: [] } }), /missing.*prior/);
+assert.throws(() => amend([amendment], { ...baseline, native: { ...baseline.native, rows: [nativePrior, nativePrior] } }), /duplicate native/);
+assert.throws(() => amend([amendment], { ...baseline, independent: independentBase.independent }), /overlapping accepted baseline/);
+assert.throws(() => amend([independentAmendment], { ...independentBase,
+  independent: { ...independentBase.independent, rows: [independentPrior, independentPrior] } }), /duplicate independent/);
+assert.throws(() => amend([amendment], baseline, new Map([[1, { ...acceptedChinese, descriptionText: "changed" }]])), /stale selected native text/);
+assert.throws(() => amend([amendment], baseline, new Map([[1, { ...acceptedChinese, descriptionHtml: "changed" }]])), /stale selected native HTML/);
+assert.throws(() => amend([independentAmendment], independentBase, new Map([[1, { ...acceptedChinese, descriptionText: "changed" }]])), /stale selected independent text/);
+const priorIssuesBase: AcceptedBodyBaseline = { ...independentBase,
+  independent: { ...independentBase.independent, rows: [retained] } };
+const selectedIssues = { ...acceptedChinese, descriptionText: retained.after, descriptionHtml: retained.proposedHtml! };
+const issuesAmendment: AcceptedBodyAmendment = { ...independentAmendment,
+  prior: { ...independentAmendment.prior, acceptedRow: retained }, review: {
+    ...amendment.review, before: retained.after, input: { ...row.input, chinese: selectedIssues },
+    fullBodyAudit: { ...row.fullBodyAudit!, beforeHtml: retained.proposedHtml } } };
+assert.throws(() => amend([issuesAmendment], priorIssuesBase, new Map([[1, selectedIssues]])), /cannot retire prior source issues/);
+const changedPriorIssue = structuredClone(issuesAmendment);
+changedPriorIssue.review.retainedSourceIssues = structuredClone(retained.retainedSourceIssues!);
+changedPriorIssue.review.retainedSourceIssues.issues[0]!.status = "resolved" as "source-unresolved";
+assert.throws(() => amend([changedPriorIssue], priorIssuesBase, new Map([[1, selectedIssues]])), /cannot change prior unresolved/);
+const keptIssues = structuredClone(issuesAmendment);
+keptIssues.review.retainedSourceIssues = structuredClone(retained.retainedSourceIssues!);
+keptIssues.review.sourcePages = structuredClone(retained.sourcePages);
+keptIssues.review.retainedSourceIssues.bodyText += " 保留光芒。";
+keptIssues.review.status = "accepted-with-source-issues";
+refresh(keptIssues.review);
+assert.equal(amend([keptIssues], priorIssuesBase, new Map([[1, selectedIssues]])).summary.retainedSourceIssues, 1);
+const secondPrior = { ...independentPrior, targetId: 2 };
+const mixedBase = { ...baseline, independent: { ...baseline.independent, rows: [secondPrior] } };
+const secondAmendment = { ...independentAmendment, targetId: 2,
+  prior: { ...independentAmendment.prior, acceptedRow: secondPrior },
+  review: { ...independentAmendment.review, targetId: 2 } };
+const mixedResult = validateAcceptedBodyAmendments([amendment, secondAmendment], mixedBase, 10,
+  new Map([[1, en], [2, en]]), new Map([[1, row.input.englishHtml], [2, row.input.englishHtml]]),
+  new Map([[1, acceptedChinese], [2, acceptedChinese]]));
+assert.deepEqual(mixedResult.amendments.map(a => a.prior.owner), ["native", "independent"]);
+assert.equal(mixedResult.summary.newAcceptedFields, 0);
+console.log(`accepted body amendment portable tests passed (${amendmentRejected + 11} rejection checks)`);
