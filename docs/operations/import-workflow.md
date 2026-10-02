@@ -457,6 +457,16 @@ not authenticated history. It does not waive evidence for retained operative
 rules, inherited clauses, creature abilities, tables or restrictions. Preserve
 SC source ambiguities and necessary reader notes through the existing mechanism.
 
+Determine external evidence obligations from the complete actual consumer fields,
+references, relationships and display code. A creature name, granted ability or
+inheritance declaration directly supported by SC does not by itself require
+certifying every external statistic or procedure. Preserve the declaration and
+the exact unread-source prior; distinguish faithful transmission from evaluating
+forms, legal summons, creature abilities or item properties. If published fields
+actually expand a rule that SC does not support, identify the exact field, claim
+and missing source and defer that dependency. A keyword search alone cannot
+establish this boundary. See [the accepted consumer review](https://github.com/FrankHZ/dnd3.5-spellbook/issues/292).
+
 Keep such a handoff distinct and bound to exact public/private revisions, with
 a disposition for every scoped complete body and source-free counts and IDs.
 Preserve names, canonical English, mechanics, summaries, identities, current

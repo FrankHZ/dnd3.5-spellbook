@@ -5,9 +5,9 @@
   "validation": "validated-proposal-awaiting-main-gate",
   "publicCodeBase": "6903d2c2d8c106760819f52152cfc3c29949a2ed",
   "privateInput": "9a99b63d552a0cd3aa73268db34752b65cfe4dbb",
-  "privateHandoffRevision": "5ef7148ab4b874e2070536b5d216bca48bf2a1bd",
+  "privateHandoffRevision": "513806265cf56a2732641dfc075ad2434db6a0cb",
   "privateHandoffDirectory": "dice-qa/books/86/issue-321",
-  "committedHelperRevision": "d922f253146d0c36409dede25db85c8d0006fb72",
+  "committedHelperRevision": "67f5a96584b8c443104effcc4b87c81063830c2e",
   "scope": "Exactly 40 complete SC current-edition Chinese bodies; excluded historical commentary recorded privately",
   "exactTargetIds": [
     3822,
@@ -52,9 +52,9 @@
     4282
   ],
   "bodyDispositions": {
-    "accepted": 28,
+    "accepted": 38,
     "accepted-with-source-issues": 2,
-    "deferred": 10
+    "deferred": 0
   },
   "targets": [
     {
@@ -89,28 +89,28 @@
     },
     {
       "targetId": 4477,
-      "bodyDisposition": "deferred",
+      "bodyDisposition": "accepted",
       "historicalObligationRetired": false,
       "historicalClaimAuthenticated": false,
       "retainedSourceIssueIds": []
     },
     {
       "targetId": 4483,
-      "bodyDisposition": "deferred",
+      "bodyDisposition": "accepted",
       "historicalObligationRetired": false,
       "historicalClaimAuthenticated": false,
       "retainedSourceIssueIds": []
     },
     {
       "targetId": 4485,
-      "bodyDisposition": "deferred",
+      "bodyDisposition": "accepted",
       "historicalObligationRetired": true,
       "historicalClaimAuthenticated": false,
       "retainedSourceIssueIds": []
     },
     {
       "targetId": 4509,
-      "bodyDisposition": "deferred",
+      "bodyDisposition": "accepted",
       "historicalObligationRetired": true,
       "historicalClaimAuthenticated": false,
       "retainedSourceIssueIds": []
@@ -203,14 +203,14 @@
     },
     {
       "targetId": 4631,
-      "bodyDisposition": "deferred",
+      "bodyDisposition": "accepted",
       "historicalObligationRetired": false,
       "historicalClaimAuthenticated": false,
       "retainedSourceIssueIds": []
     },
     {
       "targetId": 4632,
-      "bodyDisposition": "deferred",
+      "bodyDisposition": "accepted",
       "historicalObligationRetired": false,
       "historicalClaimAuthenticated": false,
       "retainedSourceIssueIds": []
@@ -294,7 +294,7 @@
     },
     {
       "targetId": 4128,
-      "bodyDisposition": "deferred",
+      "bodyDisposition": "accepted",
       "historicalObligationRetired": false,
       "historicalClaimAuthenticated": false,
       "retainedSourceIssueIds": []
@@ -322,21 +322,21 @@
     },
     {
       "targetId": 3780,
-      "bodyDisposition": "deferred",
+      "bodyDisposition": "accepted",
       "historicalObligationRetired": false,
       "historicalClaimAuthenticated": false,
       "retainedSourceIssueIds": []
     },
     {
       "targetId": 4281,
-      "bodyDisposition": "deferred",
+      "bodyDisposition": "accepted",
       "historicalObligationRetired": false,
       "historicalClaimAuthenticated": false,
       "retainedSourceIssueIds": []
     },
     {
       "targetId": 4282,
-      "bodyDisposition": "deferred",
+      "bodyDisposition": "accepted",
       "historicalObligationRetired": true,
       "historicalClaimAuthenticated": false,
       "retainedSourceIssueIds": []
@@ -358,115 +358,23 @@
     "frozenOfficiallyResolved": 1,
     "rulingsChanged": false
   },
-  "retainedOperativeDependencies": [
-    {
-      "targetId": 4477,
-      "requiredSources": [
-        "MM 13"
-      ],
-      "kind": "construct abilities"
-    },
-    {
-      "targetId": 4483,
-      "requiredSources": [
-        "MM 118"
-      ],
-      "kind": "created creature abilities"
-    },
-    {
-      "targetId": 4485,
-      "requiredSources": [
-        "MM 287",
-        "applicable listed creature entries"
-      ],
-      "kind": "eligible forms and inherited abilities"
-    },
-    {
-      "targetId": 4509,
-      "requiredSources": [
-        "DMG flaming burst property; frozen issue 270"
-      ],
-      "kind": "weapon property"
-    },
-    {
-      "targetId": 4631,
-      "requiredSources": [
-        "MM 239"
-      ],
-      "kind": "summoned swarm abilities"
-    },
-    {
-      "targetId": 4632,
-      "requiredSources": [
-        "MM 225",
-        "MM 265",
-        "PH 198"
-      ],
-      "kind": "templates and corpse restrictions"
-    },
-    {
-      "targetId": 4128,
-      "requiredSources": [
-        "MM 314"
-      ],
-      "kind": "granted sense ability"
-    },
-    {
-      "targetId": 3780,
-      "requiredSources": [
-        "MM 226",
-        "MM 266"
-      ],
-      "kind": "applicable level-1 summon statistics and abilities"
-    },
-    {
-      "targetId": 4281,
-      "requiredSources": [
-        "MM 10",
-        "MM 118",
-        "MM 119",
-        "MM 226",
-        "MM 227",
-        "MM 266",
-        "MM 267"
-      ],
-      "kind": "applicable levels 1-4 summon statistics and abilities"
-    },
-    {
-      "targetId": 4282,
-      "requiredSources": [
-        "MM 10",
-        "MM 118",
-        "MM 119",
-        "MM 190",
-        "MM 221",
-        "MM 226",
-        "MM 227",
-        "MM 253",
-        "MM 255",
-        "MM 266",
-        "MM 267"
-      ],
-      "kind": "applicable levels 1-5 summon statistics and abilities"
-    }
-  ],
   "fieldUnion": {
     "baselineNative": 658,
     "baselineIndependent": 221,
     "baselineAccepted": 879,
-    "newIndependentBodies": 30,
-    "proposedIndependent": 251,
-    "proposedTotal": 909,
-    "proposedFallbackComplement": 1095,
+    "newIndependentBodies": 40,
+    "proposedIndependent": 261,
+    "proposedTotal": 919,
+    "proposedFallbackComplement": 1085,
     "totalFields": 2004,
     "otherFieldsPreserved": true
   },
   "sourceGapTargets": {
     "oldNavigationCount": 149,
     "reviewedHere": 40,
-    "retainedOperativeBlockersHere": 10,
+    "retainedOperativeBlockersHere": 0,
     "outsideSliceUnreviewed": 109,
-    "proposedRemaining": 119,
+    "proposedRemaining": 109,
     "wholeBookCompletionClaim": false
   },
   "checks": {
@@ -478,8 +386,7 @@
     "fixedRestoredFormalNativeFields": 658,
     "fixedRestoredFormalIndependentFields": 145,
     "formalNativeAndFallbackExportsIdentical": true,
-    "baseline221AndProposed251IndependentFieldsRevalidated": true,
-    "fullFieldMutationRejections": 23,
+    "fullFieldMutationRejections": 26,
     "inputMutationRejections": 6,
     "pdfOriginalPagesVerifiedAndViewed": 49,
     "pdfOriginalSpansVerified": 2749,
@@ -487,7 +394,9 @@
     "pdfMutationRejections": 7,
     "maintainedIndependentQAMutationRejections": 104,
     "maintainedDiceQATests": "passed",
-    "maintainedSupplementalPDFTests": 8
+    "maintainedSupplementalPDFTests": 8,
+    "baseline221AndProposed261IndependentFieldsRevalidated": true,
+    "actualConsumerReviews": 10
   },
   "model": {
     "id": "gpt-6.1-sol",
@@ -509,5 +418,136 @@
     "wholeBookExtraction": false,
     "phbQueueResumed": false,
     "mainGateAcceptance": false
+  },
+  "publicExecutionHead": "1b88e23b3f09f286a74ccece9f2d2e9f75d7d94a",
+  "priorUnreviewedExternalCapabilities": [
+    {
+      "targetId": 4477,
+      "sourcesForFutureExpansion": [
+        "MM 13"
+      ],
+      "kind": "construct abilities",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4483,
+      "sourcesForFutureExpansion": [
+        "MM 118"
+      ],
+      "kind": "created creature abilities",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4485,
+      "sourcesForFutureExpansion": [
+        "MM 287",
+        "applicable listed creature entries"
+      ],
+      "kind": "eligible forms and inherited abilities",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4509,
+      "sourcesForFutureExpansion": [
+        "DMG flaming burst property; frozen issue 270"
+      ],
+      "kind": "weapon property",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4631,
+      "sourcesForFutureExpansion": [
+        "MM 239"
+      ],
+      "kind": "summoned swarm abilities",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4632,
+      "sourcesForFutureExpansion": [
+        "MM 225",
+        "MM 265",
+        "PH 198"
+      ],
+      "kind": "templates and corpse restrictions",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4128,
+      "sourcesForFutureExpansion": [
+        "MM 314"
+      ],
+      "kind": "granted sense ability",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 3780,
+      "sourcesForFutureExpansion": [
+        "MM 226",
+        "MM 266"
+      ],
+      "kind": "applicable level-1 summon statistics and abilities",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4281,
+      "sourcesForFutureExpansion": [
+        "MM 10",
+        "MM 118",
+        "MM 119",
+        "MM 226",
+        "MM 227",
+        "MM 266",
+        "MM 267"
+      ],
+      "kind": "applicable levels 1-4 summon statistics and abilities",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    },
+    {
+      "targetId": 4282,
+      "sourcesForFutureExpansion": [
+        "MM 10",
+        "MM 118",
+        "MM 119",
+        "MM 190",
+        "MM 221",
+        "MM 226",
+        "MM 227",
+        "MM 253",
+        "MM 255",
+        "MM 266",
+        "MM 267"
+      ],
+      "kind": "applicable levels 1-5 summon statistics and abilities",
+      "externalCapabilitiesAuthenticated": false,
+      "bodyBlocked": false
+    }
+  ],
+  "consumerBoundary": {
+    "acceptedIssue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/292",
+    "completeIndividualReviews": 10,
+    "actualFieldsRelationshipsAndDisplayCodeReviewed": true,
+    "sourceSupportedDeclarationsPreserved": true,
+    "expandedUnsupportedExternalClaims": 0,
+    "externalCapabilitiesAuthenticated": false,
+    "supersededObligationProposalRevision": "5ef7148ab4b874e2070536b5d216bca48bf2a1bd",
+    "privateEvidence": "consumer-obligation.json; reviewed-consumer-inputs.json; consumer-inputs.json",
+    "keywordAbsenceUsedAsSemanticProof": false
+  },
+  "separateUnchangedSummaryFinding": {
+    "targetId": 4128,
+    "field": "English summaryText duration",
+    "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/323",
+    "summaryAcceptedStatePreserved": true,
+    "bodyDispositionUnaffected": true
   }
 }
