@@ -198,6 +198,28 @@ describe("GET /api/spells/search", () => {
     expect(res.body.total).toBe(1);
     expect(res.body.items.map((item: any) => item.id)).toEqual([100]);
   });
+  it("keeps opt-in effective documents out of default/chm/en search", async () => {
+    await contentPrisma.$executeRawUnsafe(`INSERT INTO SpellSearchDocument
+      (spellId,lang,variant,name,aliases,summary,mechanics,body)
+      VALUES (100,'zh','effective','Synthetic effective','','Synthetic summary','','currentamendment')`);
+    try {
+      await withSpellReadSource("content", async () => {
+        for (const context of [{}, { lang: "zh" }, { lang: "zh", variant: "chm" }, { lang: "en", variant: "effective" }]) {
+          const res = await request(app).get("/api/spells/search").query({
+            q: "currentamendment", mode: "full", rulebookIds: "6", ...context });
+          expect(res.status).toBe(200); expect(res.body.total).toBe(0);
+        }
+        const res = await request(app).get("/api/spells/search").query({ q: "currentamendment", mode: "full",
+          rulebookIds: "6", lang: "zh", variant: "effective" });
+        expect(res.status).toBe(200); expect(res.body.items.map((item: any) => item.id)).toEqual([100]);
+        const fallback = await request(app).get("/api/spells/search").query({ q: "description", mode: "full",
+          rulebookIds: "6", lang: "zh", variant: "effective" });
+        expect(fallback.status).toBe(200); expect(fallback.body.total).toBeGreaterThan(0);
+      });
+    } finally {
+      await contentPrisma.$executeRawUnsafe("DELETE FROM SpellSearchDocument WHERE variant='effective'");
+    }
+  });
 
   it("ranks name matches ahead of body-only matches", async () => {
     const res = await withSpellReadSource("content", () =>

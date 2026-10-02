@@ -75,6 +75,18 @@ describe("api http helpers", () => {
       signal: undefined,
     });
   });
+  it("propagates explicit effective preferences through detail, list, search and resolve", async () => {
+    mockedGetI18nFromStorage.mockReturnValue({ lang: "zh", variant: "effective" });
+    for (const endpoint of ["/api/spells/1", "/api/spells/by-level?classIds=1", "/api/spells/search?q=synthetic"])
+      await apiGet(endpoint);
+    await apiPost("/api/spells/batch", { ids: [1] });
+    await apiPost("/api/spells/resolve", { names: ["Synthetic"] });
+    for (const [url] of vi.mocked(fetch).mock.calls) {
+      const params = new URL(String(url), "http://localhost").searchParams;
+      expect(params.get("lang")).toBe("zh");
+      expect(params.get("variant")).toBe("effective");
+    }
+  });
 
   it("sends JSON bodies for POST requests", async () => {
     mockedGetI18nFromStorage.mockReturnValue({ lang: "zh", variant: "chm" });
