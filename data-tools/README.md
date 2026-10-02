@@ -95,7 +95,12 @@ The [final SC name/body candidate replay](../docs/operations/sc-final-source-bin
 composes the exact 1,001-entry sources through complete historical QA, maintained
 in-memory rules patching and fresh PDF/retention coverage checks. It keeps
 historical effective baselines intact and emits inspection evidence only.
-Candidate acceptance and final writer/post-migration integration remain separate.
+The selected candidate's maintained `dice:final:write` path replays source QA and
+PDF verification against durable final inputs. It defaults to read-only dry-run;
+`--apply` writes transactionally and `--validate` checks the migrated state.
+It preserves genuine full normalized build provenance and records accepted
+name/body overlay provenance separately from pending semantic QA. See the
+[final overlay command](../docs/operations/sc-final-source-binding.md#final-overlay-and-migrated-state-validation).
 
 A documented command is not permission to write local DBs or activate production.
 Use the task's explicit write boundary and the operation-specific dry-run path;

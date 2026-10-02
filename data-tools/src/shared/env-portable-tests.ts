@@ -3,16 +3,18 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { localDataDir, repoRoot } from "./env";
+import { localDataDir, repoRoot, rulesManifestPath } from "./env";
 
 const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "spellbook-data-path-"));
 const codeRoot = path.join(fixtureRoot, "public code");
 const dataRoot = path.join(fixtureRoot, "private data with spaces");
 const workspace = path.join(codeRoot, "data-tools");
 const originalEnv = process.env.DATA_REPO_PATH;
+const originalManifest = process.env.RULES_MANIFEST_PATH;
 const originalCwd = process.cwd();
 
 try {
+  delete process.env.RULES_MANIFEST_PATH;
   delete process.env.DATA_REPO_PATH;
   fs.mkdirSync(workspace, { recursive: true });
   fs.mkdirSync(dataRoot);
@@ -20,6 +22,18 @@ try {
 
   fs.writeFileSync(path.join(codeRoot, ".env"), `DATA_REPO_PATH="${dataRoot}"\n`);
   assert.equal(localDataDir(codeRoot), dataRoot);
+  assert.equal(rulesManifestPath(codeRoot), path.join(dataRoot, 'rules-db-manifest.json'));
+  process.env.RULES_MANIFEST_PATH = 'owned/manifest.json';
+  for (const cwd of [codeRoot, workspace]) {
+    process.chdir(cwd);
+    assert.equal(rulesManifestPath(codeRoot), path.join(codeRoot, 'owned/manifest.json'));
+  }
+  process.chdir(originalCwd);
+  process.env.RULES_MANIFEST_PATH = path.join(dataRoot, 'owned.json');
+  assert.equal(rulesManifestPath(codeRoot), path.join(dataRoot, 'owned.json'));
+  process.env.RULES_MANIFEST_PATH = '';
+  assert.throws(() => rulesManifestPath(codeRoot), /RULES_MANIFEST_PATH/);
+  delete process.env.RULES_MANIFEST_PATH;
 
   fs.writeFileSync(path.join(codeRoot, ".env"), "DATA_REPO_PATH=../private data with spaces\n");
   assert.equal(localDataDir(codeRoot), dataRoot);
@@ -66,6 +80,8 @@ try {
   fs.writeFileSync(path.join(codeRoot, "ordinary-file"), "not a directory");
   assert.throws(() => localDataDir(codeRoot), /DATA_REPO_PATH.*existing directory/);
 } finally {
+  if (originalManifest === undefined) delete process.env.RULES_MANIFEST_PATH;
+  else process.env.RULES_MANIFEST_PATH = originalManifest;
   process.chdir(originalCwd);
   if (originalEnv === undefined) delete process.env.DATA_REPO_PATH;
   else process.env.DATA_REPO_PATH = originalEnv;

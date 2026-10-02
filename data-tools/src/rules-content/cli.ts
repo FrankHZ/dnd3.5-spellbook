@@ -31,6 +31,7 @@ import {
   loadServerEnv,
   repoRoot,
   resolveServerRelativePath,
+  rulesManifestPath,
 } from "../shared/env";
 import {
   normalizePublicationName,
@@ -58,7 +59,7 @@ const CHM_RULEBOOK_PUBLICATIONS_JSONL_PATH = path.join(
   "rulebook-labels",
   "chm-publications.jsonl",
 );
-const RULES_MANIFEST_PATH = path.join(localDataDir(), "rules-db-manifest.json");
+const RULES_MANIFEST_PATH = rulesManifestPath();
 const CONTENT_MIGRATIONS_PATH = path.join(
   repoRoot(),
   "server",

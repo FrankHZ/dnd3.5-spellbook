@@ -812,6 +812,11 @@ helpers validate SQLite tables/integrity; this marker is not a new deployment
 authorization or a claim that those helpers reject all experimental DBs.
 Full artifact generation/provenance and consumer/search integration remain a
 separate delivery. Do not upload or activate this experiment.
+For the selected final 1,001-entry name/body candidate, use the maintained
+[final overlay entry](./sc-final-source-binding.md#final-overlay-and-migrated-state-validation)
+after genuine full normalized generation/import. It keeps historical experiment
+guards and preserves full generation provenance; summary/relationship QA and
+final migration/search/consumer acceptance remain separately owned.
 
 #### Follow-up consumers and full build
 

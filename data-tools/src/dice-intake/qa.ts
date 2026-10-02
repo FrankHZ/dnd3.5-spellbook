@@ -500,7 +500,14 @@ export function loadEnglishRecords(db: Database.Database): Map<number, EnglishRe
 /** The CLI's complete read-only validation, also used by effective projection.
  * No output files are written here; the restored SC input contract stays fixed.
  */
-export function validateQaInputs(argv: string[]) {
+export type QaRecords = {
+  english: Map<number, EnglishRecord>;
+  englishHtml: Map<number, string | null>;
+  chinese: Map<number, { name: string | null; descriptionText: string | null; descriptionHtml: string | null }>;
+  books: Rulebook[];
+};
+
+export function validateQaInputs(argv: string[], loaded?: QaRecords) {
   const inputArg = (name: string): string => arg(name, argv);
   const dataRoot = inputArg("data-root");
   const rulesPath = inputArg("rules-db");
@@ -583,29 +590,29 @@ export function validateQaInputs(argv: string[]) {
     assert(source && source.rawBody === candidate.rawBody && source.header === candidate.rawHeader,
       `stale source candidate ${candidate.sourceKey}`);
   }
-  const db = new Database(rulesPath, { readonly: true, fileMustExist: true });
-  db.pragma("query_only = ON");
-  const english = loadEnglishRecords(db);
-  const englishHtml = sourceBoundEnabled ? new Map((db.prepare("SELECT id, CAST(description_html AS BLOB) AS html FROM dnd_spell")
-    .all() as Array<{ id: number; html: Buffer | null }>).map(row => [row.id, row.html?.toString("utf8") ?? null])) : new Map<number, string | null>();
-  db.close();
-  const content = new Database(contentPath, { readonly: true, fileMustExist: true });
-  content.pragma("query_only = ON");
-  const zh = new Map((content.prepare(`SELECT spellId, name, descriptionText${sourceBoundEnabled ? ", descriptionHtml" : ""} FROM I18nSpellText WHERE lang='zh' AND variant='chm'`)
+  const db = loaded ? undefined : new Database(rulesPath, { readonly: true, fileMustExist: true });
+  db?.pragma("query_only = ON");
+  const english = loaded?.english ?? loadEnglishRecords(db!);
+  const englishHtml = loaded?.englishHtml ?? (sourceBoundEnabled ? new Map((db!.prepare("SELECT id, CAST(description_html AS BLOB) AS html FROM dnd_spell")
+    .all() as Array<{ id: number; html: Buffer | null }>).map(row => [row.id, row.html?.toString("utf8") ?? null])) : new Map<number, string | null>());
+  db?.close();
+  const content = loaded ? undefined : new Database(contentPath, { readonly: true, fileMustExist: true });
+  content?.pragma("query_only = ON");
+  const zh = loaded?.chinese ?? new Map((content!.prepare(`SELECT spellId, name, descriptionText${sourceBoundEnabled ? ", descriptionHtml" : ""} FROM I18nSpellText WHERE lang='zh' AND variant='chm'`)
     .all() as Array<{ spellId: number; name: string | null; descriptionText: string | null; descriptionHtml?: string | null }>).map((row) =>
     [row.spellId, row] as const));
-  content.close();
+  content?.close();
   const targets = new Map([...english].map(([id, en]) => [id, {
     rulebookId: en.rulebookId, zhName: zh.get(id)?.name ?? null,
     zhBody: zh.get(id)?.descriptionText ?? null,
   }] as const));
   const mappings = JSON.parse(readFileSync(join(dataRoot, "dice-intake", "publication-map.json"), "utf8")) as PublicationMap[];
   const aliases = JSON.parse(readFileSync(join(dataRoot, "chm-mapping", "enName-aliases-global.json"), "utf8")) as Record<string, string>;
-  const rulebooks = new Database(rulesPath, { readonly: true, fileMustExist: true });
-  rulebooks.pragma("query_only = ON");
-  const books = rulebooks.prepare("SELECT id, dnd_edition_id AS editionId, name FROM dnd_rulebook")
+  const rulebooks = loaded ? undefined : new Database(rulesPath, { readonly: true, fileMustExist: true });
+  rulebooks?.pragma("query_only = ON");
+  const books = loaded?.books ?? rulebooks!.prepare("SELECT id, dnd_edition_id AS editionId, name FROM dnd_rulebook")
     .all() as Rulebook[];
-  rulebooks.close();
+  rulebooks?.close();
   const regenerated = reconcile(records, mappings, books, [...targets].map(([id, target]) => ({
     id, rulebookId: target.rulebookId, enName: english.get(id)!.name,
     zhName: target.zhName, zhBody: target.zhBody,
