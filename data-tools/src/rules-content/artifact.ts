@@ -130,17 +130,37 @@ export function collectRulesContentArtifactProvenance(
     );
   }
 
+  const rulesDb = fingerprintFile(paths.parentRepoRoot, paths.rulesDbPath, true)!;
+  const rulesManifest = fingerprintFile(
+    paths.parentRepoRoot,
+    paths.rulesManifestPath,
+    options.requireRulesManifest,
+  );
+  if (options.requireRulesManifest) {
+    let manifest;
+    try {
+      manifest = JSON.parse(fs.readFileSync(paths.rulesManifestPath, "utf8"));
+    } catch {
+      throw new Error(`Required rules manifest is not valid JSON: ${paths.rulesManifestPath}`);
+    }
+    const declaredHash = manifest?.database?.sha256;
+    if (typeof declaredHash !== "string" || !SHA256_PATTERN.test(declaredHash)) {
+      throw new Error(`Required rules manifest database.sha256 must be SHA-256: ${paths.rulesManifestPath}`);
+    }
+    if (declaredHash !== rulesDb.sha256) {
+      throw new Error(
+        `Required rules manifest database.sha256 does not match actual rules DB SHA-256 (${declaredHash} -> ${rulesDb.sha256}). Run rules:manifest:write and rules:manifest:verify explicitly after accepted rules changes.`,
+      );
+    }
+  }
+
   return {
     schemaVersion: 1,
     parentRepo,
     dataRepo,
-    rulesDb: fingerprintFile(paths.parentRepoRoot, paths.rulesDbPath, true)!,
+    rulesDb,
     canonicalInputs: {
-      rulesManifest: fingerprintFile(
-        paths.parentRepoRoot,
-        paths.rulesManifestPath,
-        options.requireRulesManifest,
-      ),
+      rulesManifest,
       rulebookPublicationMetadata: fingerprintFile(
         paths.parentRepoRoot,
         paths.rulebookPublicationMetadataPath,
