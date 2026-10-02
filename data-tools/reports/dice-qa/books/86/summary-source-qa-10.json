@@ -7,7 +7,7 @@
   "synchronizedMain": "70eff96c77223dd6e1c05206de549b80407b5423",
   "frozenAudit": "e793ff09a38060c5c6b336d28690353bd0d96909",
   "privateInput": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411",
-  "privateHandoffAndHelperCommit": "f96f981e92d4b0adc3d49a2e668d7c265b18682f",
+  "privateHandoffAndHelperCommit": "e9f8a9788f97a12cdb7d0c67991e79d2dc27b4de",
   "privateDirectory": "dice-qa/books/86/issue-380",
   "acceptedHelperContracts": {
     "353": "e154c69e817c81d7e48da105c46daba83a4da8c4",
@@ -76,7 +76,7 @@
   "rowDispositions": [
     {
       "stableKey": "3531:en:imarvin",
-      "status": "reviewed-correction"
+      "status": "source-correct"
     },
     {
       "stableKey": "3782:en:imarvin",
@@ -156,7 +156,7 @@
     },
     {
       "stableKey": "3916:en:imarvin",
-      "status": "reviewed-correction"
+      "status": "source-correct"
     },
     {
       "stableKey": "3917:en:imarvin",
@@ -412,7 +412,7 @@
     },
     {
       "stableKey": "4338:zh:chm",
-      "status": "reviewed-correction"
+      "status": "source-correct"
     },
     {
       "stableKey": "4339:zh:chm",
@@ -452,16 +452,14 @@
     }
   ],
   "corrections": {
-    "rows": 22,
-    "targets": 19,
+    "rows": 19,
+    "targets": 17,
     "languages": {
-      "en": 9,
-      "zh": 13
+      "en": 7,
+      "zh": 12
     },
     "keys": [
-      "3531:en:imarvin",
       "3895:en:imarvin",
-      "3916:en:imarvin",
       "4329:en:imarvin",
       "4332:en:imarvin",
       "4336:en:imarvin",
@@ -479,10 +477,9 @@
       "3920:zh:chm",
       "4335:zh:chm",
       "4337:zh:chm",
-      "4338:zh:chm",
       "4669:zh:chm"
     ],
-    "unchangedCanonicalLines": 6550,
+    "unchangedCanonicalLines": 6553,
     "accepted323BytePreserved": true,
     "prior353And361PacketsPreserved": true
   },
@@ -564,7 +561,7 @@
     "narrowAuthoredHandoffImported": true,
     "disposableBaselineRows": 6572,
     "dryRunUnchanged": true,
-    "applicationUpdates": 22,
+    "applicationUpdates": 19,
     "applicationInserts": 0,
     "repeatUpdates": 0,
     "persistedFieldsEqualProposal": true,
