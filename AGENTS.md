@@ -100,13 +100,21 @@ when reassessing them.
   replace, move, or write them without explicit authorization for a write-capable
   workflow. Content import must not mutate app-state. Keep root `.env` local;
   use `.env.example` for non-secret helper keys.
-- Preserve accepted source authority, provenance, fingerprints, import order,
-  and fallback. Passing counts/tests or PR documentation edits do not authorize
-  changing those boundaries. For data/DB work, consult
+- English original rulebook PDFs and applicable official errata govern
+  translation and rules content. Existing Chinese CHM, dice database text, and
+  derived English DB text are references, not acceptance authority. Translate
+  missing Chinese directly; correct demonstrated English/Chinese/mechanical
+  discrepancies through source-bound QA. Preserve original ambiguities faithfully
+  with separate reader notes; legacy resemblance alone is not a QA pass.
+- Preserve stable IDs, provenance, fingerprints, safe import order, and fallback
+  for untouched or unaccepted content. Source-supported corrections still require
+  accepted inputs and explicit write authorization; passing counts/tests or PR
+  documentation edits do not authorize writes. For data/DB work, consult
   [db-content-workflow](docs/operations/db-content-workflow.md).
-- Dice TXT is candidate input, not accepted content. Preserve existing IDs,
-  canonical English, mechanics, summaries, and CHM/English fallback. Use aligned
-  English for substantive Chinese discrepancy QA. Selective replacement must
+- Dice TXT is candidate input, not accepted content. Retain existing English,
+  mechanics, summaries, and CHM/English fallback unless source-bound QA accepts
+  a correction or translation. Use the original and applicable errata for
+  substantive Chinese discrepancy QA. Selective replacement must
   prove safe ordering: the existing CHM importer deletes all Chinese spell text.
 - PHB PDF/MinerU/SRD extraction and translation remain suspended pending an
   explicit resumption decision. Preserve implementation, tests, and data; do not
