@@ -56,7 +56,7 @@ app-state. The accepted #331 summary corrections and #332 normalizer v9 are
 fresh inputs, not SQL edits to consumer output. The writer retains its limited,
 non-importable/non-activation marker and clears full-artifact claims.
 
-- Clean committed replay: 13 maintained command invocations passed; repeated
+- Clean committed replay: 12 maintained command invocations passed; repeated
   derived search rebuild produces identical documents.
 - Actual built HTTP APIs: 10385 requests passed, including all 1002 detail,
   name-search, batch/list and resolve targets, exact text/HTML/metadata, all ten
