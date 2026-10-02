@@ -142,6 +142,7 @@ def bind_fields(derived, reviews):
 
 def derive_final(args):
     code, data, runtime = (Path(getattr(args, key)).resolve(strict=True) for key in ['code_root', 'data_root', 'runtime_root'])
+    require(code == Path(__file__).resolve().parents[2], 'code-root must match the invoking helper checkout')
     sys.path.insert(0, str(code / 'data-tools/pdf-extract/src'))
     from pdf_extract.verify_effective_sc import load_current_sc_sources, verify_sc_authority
     from pdf_extract.verify_evidence import verify_evidence

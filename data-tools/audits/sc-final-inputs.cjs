@@ -157,6 +157,8 @@ function rehearseRules(api, DB, data, originalPath, patchedPath) {
 
 function derive(options) {
   const {code, runtime, data, originalRules, rules, content} = options;
+  assert.equal(fs.realpathSync(code), fs.realpathSync(path.resolve(__dirname, '../..')),
+    'code root must match the invoking helper checkout');
   process.env.NODE_PATH = path.join(runtime, 'node_modules'); Module._initPaths();
   const req = createRequire(path.join(runtime, 'package.json')), ts = req('tsx/cjs/api');
   const load = file => ts.require(path.join(code, 'data-tools/src', file), __filename);
