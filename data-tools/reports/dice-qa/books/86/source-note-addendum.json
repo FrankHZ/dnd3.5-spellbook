@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "issue": 407,
+  "parentIssue": 342,
+  "integrationIssue": 346,
+  "status": "proposed-reader-note-addendum-awaiting-main-gate",
+  "publicBase": "997b1008843053763f407e01268bc29b84331500",
+  "privateHandoffRevision": "c61b9dea676cfd89bdfcaa6dcbcccbc99280d7c4",
+  "privateHandoffRoot": "dice-qa/books/86/issue-407/",
+  "finalCandidate": {
+    "revision": "0688739d92a2aa9fb3eceeb444daa7260e711058",
+    "path": "dice-qa/books/86/issue-365/field-dispositions.jsonl",
+    "targets": 1001,
+    "fields": 2002
+  },
+  "scope": {
+    "targetIds": [
+      3848,
+      3888,
+      4088,
+      4111,
+      4112,
+      4229,
+      4368,
+      4370,
+      4459,
+      4462
+    ],
+    "completeFinalNameBodyRecords": 20,
+    "proposedBodyNotes": 3,
+    "reasonedNoChangeTargets": 7
+  },
+  "rows": [
+    {
+      "targetId": 3848,
+      "status": "no-change",
+      "reasonCode": "explicit-entry-statistics; missing-external-reference-is-not-internal-conflict",
+      "adjudication": false
+    },
+    {
+      "targetId": 3888,
+      "status": "no-change",
+      "reasonCode": "explicit-child-component-list; complete-direct-parent-and-component-context",
+      "adjudication": false
+    },
+    {
+      "targetId": 4088,
+      "status": "proposed-note",
+      "reasonCode": "unresolved-header-description-target-scope",
+      "adjudication": false
+    },
+    {
+      "targetId": 4111,
+      "status": "proposed-note",
+      "reasonCode": "unresolved-overlapping-recipient-categories",
+      "adjudication": false
+    },
+    {
+      "targetId": 4112,
+      "status": "no-change",
+      "reasonCode": "separately-specified-benefit-duration",
+      "adjudication": false
+    },
+    {
+      "targetId": 4229,
+      "status": "proposed-note",
+      "reasonCode": "unexplained-errata-target-and-focus-relationship",
+      "adjudication": false
+    },
+    {
+      "targetId": 4368,
+      "status": "no-change",
+      "reasonCode": "overall-upper-bound-and-explicit-effect-limit",
+      "adjudication": false
+    },
+    {
+      "targetId": 4370,
+      "status": "no-change",
+      "reasonCode": "complete-parent-inheritance-without-new-range-conflict",
+      "adjudication": false
+    },
+    {
+      "targetId": 4459,
+      "status": "no-change",
+      "reasonCode": "explicit-size-distinction-in-continuation",
+      "adjudication": false
+    },
+    {
+      "targetId": 4462,
+      "status": "no-change",
+      "reasonCode": "explicit-target-list-and-general-target-movement; examples-not-exclusive",
+      "adjudication": false
+    }
+  ],
+  "preservation": {
+    "originalTextAndHtmlOutsideNotesExact": true,
+    "existingReaderNotes": 37,
+    "existingReaderNoteBodies": 35,
+    "unchangedFinalFields": 1999,
+    "allNamesOriginsReviewsPriorAmendmentsPreserved": true,
+    "englishMechanicsSummariesIdentityRelationsUnchanged": true
+  },
+  "verification": {
+    "freshOriginalPdfPages": 21,
+    "completeScAndPhbErrataRead": true,
+    "nestedFinalSourceSpanReferences": 3605,
+    "negativeControls": 28,
+    "originalPageVisuals": 21,
+    "pairedHtmlViews": 3,
+    "rootAndPackageCwdReplayRequired": true,
+    "committedHelperRequired": true,
+    "existingSourceQuestionContractReused": true,
+    "finalFieldEnvelopeBoundSeparately": true,
+    "canonicalHtmlProjectionOnlyInMemory": true,
+    "projectionExported": false
+  },
+  "model": {
+    "observedModel": "gpt-6.1-sol",
+    "observedEffort": "high",
+    "verifiedFromLocalTurnContext": true
+  },
+  "handoff": {
+    "authoredFile": "amendments.jsonl",
+    "individualDispositions": "dispositions.jsonl",
+    "exactBeforeFields": "packets.json",
+    "replay": "reproduce.py",
+    "acceptanceOwner": "main-gate",
+    "integrationOwner": "issue346",
+    "canonicalWritten": false,
+    "operatorAppStateAccess": false,
+    "productionActivated": false,
+    "privatePush": false
+  },
+  "externalScope": {
+    "unresolvedExternalRelationshipsOwner": 354,
+    "laterSummarySlicesRequireSeparateIntegrationAudit": true,
+    "broadPhbWorkflowsRemainSuspended": true
+  },
+  "sourceValuesIncluded": false
+}
