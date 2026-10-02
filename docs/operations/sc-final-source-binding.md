@@ -11,7 +11,10 @@ they cannot independently authorize a writer or replace complete source QA.
 The fixed private candidate is
 `0688739d92a2aa9fb3eceeb444daa7260e711058`, under
 `dice-qa/books/86/issue-365/`. Main-gate must review and select the candidate
-before final integration. The [source-free report](../../data-tools/reports/dice-qa/books/86/final-source-binding.json)
+before final integration. Main-gate selected this exact name/body candidate in
+[PR #372 acceptance](https://github.com/FrankHZ/dnd3.5-spellbook/pull/372#issuecomment-5951318420).
+That selection covers name/body source binding, not summaries or whole-book QA.
+The [source-free report](../../data-tools/reports/dice-qa/books/86/final-source-binding.json)
 records the exact source revisions, derived field differences and limitations.
 The private package contains full current inputs, refreshed missing-translation
 bindings, the one changed intake occurrence and 2,002 field dispositions with
@@ -84,3 +87,72 @@ writer/build integration, final rules/content generation provenance, and a
 post-write check that works independently of removable rehearsal snapshots.
 This command itself replays the historical pre-migration baseline and therefore
 must not be presented as an ongoing migrated-DB or deployment validator.
+
+## Final overlay and migrated-state validation
+
+`npm run -w data-tools dice:final:write -- ...` is the maintained write entry for
+the selected exact candidate. Run it only within the task's authorized DB write
+boundary. Every invocation authenticates clean accepted Git inputs, regenerates
+the complete formal QA/candidate, verifies original PDFs and applicable errata,
+and compares all 2,002 envelopes with the selected candidate. Caller field JSON
+and aggregate counts never supply authority. Historical commands retain their
+original accepted-baseline guards.
+
+The final rules input must contain the accepted 315 operations (including 4617
+Sonic once), 4837's book 9 ownership and maintained derived indexes. The command
+replays guarded identity SQL in memory, checks all accepted patch values and
+complete current English/mechanics against accepted original reviews. Historical
+QA uses exact Git-bound SC snapshots plus preserved CHM rows. It requires no
+original/patched rehearsal DBs. Keep the real private sources and final rules
+input outside removable worktrees.
+
+First use the maintained rules manifest write/verify and full normalized
+generate/import commands. When rehearsing, set process environment
+`RULES_MANIFEST_PATH` to the owned manifest file so the shared canonical manifest
+is untouched. This optional override resolves relative paths from the invoking
+repository root; omitted values retain the canonical private-data path.
+`RULES_DATABASE_URL` and `CONTENT_DATABASE_URL` select the authorized DBs.
+Do not duplicate the Sonic patch or run CHM after the final overlay.
+
+```powershell
+npm run -w data-tools dice:final:write -- `
+  --code-root '<absolute-code-root>' --runtime-root '<existing-runtime-root>' `
+  --data-root '<configured-private-data-root>' `
+  --rules-db '<final-rules-input>' --content-db '<authorized-content-target>' `
+  --normalized '<full-generated-artifact>' --rules-manifest '<matching-manifest>' `
+  --helper-revision '<current-clean-public-HEAD>' `
+  --accepted-baseline 0688739d92a2aa9fb3eceeb444daa7260e711058
+```
+
+All path arguments are absolute and independent of caller CWD; `code-root` must
+match the invoking checkout. Runtime dependencies are read through the supplied
+existing runtime (Node modules and Python/PyMuPDF environment), with no install
+or filesystem links. The default opens the destination read-only. Add `--apply`
+for transactional SQL materialization, or `--validate` for read-only full field,
+HTML, origin/review and build metadata matching. Stable effective IDs/variants
+are reused. SQL changes, nullable provenance migration, metadata update and the
+post-write comparison share one immediate transaction; any failure rolls back.
+Repeating the same accepted inputs/helper revision changes no rows/timestamps.
+
+Before either writing or validating, the command compares every normalized
+table value with the genuine full generated artifact and validates its DB,
+manifest, canonical-input and migration fingerprints through the existing
+artifact mechanism. Preserve that generated artifact and manifest as durable
+build evidence, or rebuild/reimport through maintained commands when inputs
+change. It preserves the original generation/importer metadata and adds
+`buildMetaJson.overlays.scFinalNameBody`, including exact accepted/source/helper
+revisions. Field metadata retains original origin/owner separately from review
+status, original entry evidence, complete active/prior amendments (including
+4736), and source questions. Retained CHM fields have original-source review
+proof; text equality alone does not confer acceptance.
+
+The normalized artifact's full scope describes its coverage. Overlay semantic
+metadata explicitly leaves summaries and the 20 extra relationships pending;
+it grants no whole-book QA or activation. Other books/languages/variants,
+summaries, normalized English/mechanics and unrelated content tables are
+preserved. FTS remains unchanged until all final text and summaries are
+integrated; the coordinating migration owns the final search/consumer gates.
+
+Run `npm run -w data-tools dice:final:write:test` for synthetic full-artifact,
+schema migration, protected-data, transaction fault, repeat and provenance
+rejection checks. Source replay/PDF rejection tests remain in the Python suite.

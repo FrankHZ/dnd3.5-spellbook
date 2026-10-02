@@ -155,8 +155,53 @@ function rehearseRules(api, DB, data, originalPath, patchedPath) {
   finally {original.close(); patched.close();}
 }
 
+function validateFinalRules(DB, data, db, api, schema) {
+  const prior = new DB(db.serialize());
+  try {
+    assert.equal(db.prepare('SELECT rulebook_id FROM dnd_spell WHERE id=4837').get().rulebook_id, 9,
+      'final rules require accepted4837 identity');
+    assert.equal(db.prepare('SELECT count(*) AS n FROM dnd_spell').get().n, 5097, 'total IDs changed');
+    assert.deepEqual(db.prepare('SELECT spelldescriptor_id AS id FROM dnd_spell_descriptors WHERE spell_id=4617').all(),
+      [{id: 7}], 'accepted315 Sonic missing');
+    const operations = readExact(data, CURRENT, 'rules-patches/pending/spells/sc-issue-259-joint-corrections.jsonl');
+    assert.equal(operations.length, 315);
+    for (const operation of operations) {
+      assert.equal(operation.op, 'updateSpell');
+      for (const {column, value: expected} of schema.spellUpdateEntries(operation.spell ?? {})) {
+        const actual = db.prepare(`SELECT "${column}" AS value FROM dnd_spell WHERE id=?`).get(operation.id);
+        assert(actual && actual.value === expected, `accepted315 value differs: ${operation.id}:${column}`);
+      }
+    }
+    const repeated = api.validatePatch(prior, path.join(data, BOOK, 'issue-343/rules-patch.jsonl'));
+    assert(repeated.errors.some(error => error.includes('expected descriptors')), 'duplicate Sonic guard changed');
+    // Reverse only the accepted identity to replay its actual guarded SQL and
+    // maintained index derivation in memory, never against the source file.
+    prior.prepare('UPDATE dnd_spell SET rulebook_id=86 WHERE id=4837').run();
+    const sql = ['create-idx-spell-class-level.sql', 'create-idx-spell-domain-level.sql',
+      'derive-spell-class-domain-mapping.sql'].map(name => readExact(data, CURRENT,
+        'rules-patches/applied/legacy-sql/' + name));
+    for (const value of sql) prior.exec(value);
+    const before = new Map(prior.prepare("SELECT name FROM sqlite_master WHERE type='table'").all()
+      .map(row => [row.name, rawRows(prior, row.name)]));
+    prior.exec(readExact(data, IDENTITY, BOOK + 'issue-349/identity-4837.sql'));
+    for (const value of sql) prior.exec(value);
+    for (const table of before.keys()) assert.deepEqual(rawRows(prior, table), rawRows(db, table),
+      'final rules/index differs from guarded identity replay: ' + table);
+    const changes = [{table: 'dnd_spell', changedRows: 1, targetId: 4837, field: 'rulebook_id'}];
+    for (const table of ['idx_spell_class_level', 'idx_spell_domain_level']) {
+      const count = before.get(table).filter(row => JSON.parse(row).spell_id === 4837).length;
+      if (count) changes.push({table, changedRows: count});
+    }
+    assert.equal(db.prepare('PRAGMA integrity_check').get().integrity_check, 'ok');
+    return {db, report: {baselineOperations: operations.length, totalSpellIds: 5097, tables: before.size,
+      changes, sonicIncludedIn315: true, duplicate343SonicGuardRejected: true,
+      allUnlistedFieldsAndRelationsPreserved: true, persistedDatabaseCopies: 0, operatorWrites: false}};
+  } catch (error) {db.close(); throw error;}
+  finally {prior.close();}
+}
+
 function derive(options) {
-  const {code, runtime, data, originalRules, rules, content} = options;
+  const {code, runtime, data, originalRules, rules, content, finalRules} = options;
   assert.equal(fs.realpathSync(code), fs.realpathSync(path.resolve(__dirname, '../..')),
     'code root must match the invoking helper checkout');
   process.env.NODE_PATH = path.join(runtime, 'node_modules'); Module._initPaths();
@@ -167,12 +212,43 @@ function derive(options) {
   const DB = req('better-sqlite3');
   const exact = (revision, name) => readExact(data, revision, BOOK + name);
   // All original QA, corpus/inventory/mapping and current snapshot checks run first.
-  const old = effective.preflightEffectiveSc(data, CURRENT, rules, content);
+  let finalDb, records;
+  if (finalRules) {
+    for (const name of ['decisions.jsonl', 'corrections.jsonl', 'full-body-audit.jsonl', 'boundary-decisions.jsonl'])
+      exact('fe089990e2a5eeac69c92e068ca695f10c42ec58', 'issue-259/fresh-qa/' + name);
+    exact('fe089990e2a5eeac69c92e068ca695f10c42ec58', 'issue-292/independent-accepted.jsonl');
+    for (const name of ['native-accepted.jsonl', 'independent-accepted.jsonl', 'current-inputs.json'])
+      exact(effective.effective879Baseline, 'issue-311/batch-06/' + name);
+    // Authenticate historical SC inputs from their exact accepted Git tree,
+    // then replay the same full QA against them. The live rules DB must match
+    // every final English/mechanical binding below; this is not caller JSON.
+    finalDb = new DB(rules, {readonly: true, fileMustExist: true});
+    finalDb.pragma('query_only=ON');
+    const english = qa.loadEnglishRecords(finalDb);
+    const englishHtml = new Map(finalDb.prepare('SELECT id, CAST(description_html AS BLOB) AS html FROM dnd_spell').all()
+      .map(row => [row.id, row.html?.toString('utf8') ?? null]));
+    for (const input of exact(UNION, 'issue-329/current-inputs.json').inputs) {
+      english.set(input.targetId, input.english);
+      englishHtml.set(input.targetId, input.englishHtml);
+    }
+    const chm = new DB(content, {readonly: true, fileMustExist: true});
+    try {
+      chm.pragma('query_only=ON');
+      records = {english, englishHtml,
+        chinese: new Map(chm.prepare("SELECT spellId,name,descriptionText,descriptionHtml FROM I18nSpellText WHERE lang='zh' AND variant='chm'")
+          .all().map(row => [row.spellId, {name: row.name, descriptionText: row.descriptionText, descriptionHtml: row.descriptionHtml}])),
+        books: finalDb.prepare('SELECT id,dnd_edition_id AS editionId,name FROM dnd_rulebook').all()};
+    } finally {chm.close();}
+  }
+  let old;
+  try { old = effective.preflightEffectiveSc(data, CURRENT, rules, content, records); }
+  catch (error) {finalDb?.close(); throw error;}
   const native = exact(UNION, 'issue-329/native-accepted.jsonl');
   const independent = exact(UNION, 'issue-329/independent-proposed-union.jsonl');
   const currentAmendments = exact(CURRENT, 'issue-335/validated-amendments.jsonl');
   readExact(data, CURRENT, 'rulebook-publications/publications.jsonl');
-  const {db, report} = rehearseRules(load('rules/spells.ts'), DB, data, originalRules, rules);
+  const {db, report} = finalRules ? validateFinalRules(DB, data, finalDb, load('rules/spells.ts'), load('rules/spells-schema.ts'))
+    : rehearseRules(load('rules/spells.ts'), DB, data, originalRules, rules);
   try {
     const english = qa.loadEnglishRecords(db), englishHtml = new Map(db.prepare(
       'SELECT id, CAST(description_html AS BLOB) AS html FROM dnd_spell').all()
@@ -298,5 +374,6 @@ module.exports = {readExact, refreshMissing, derive, rehearseRules, rawRows};
 if (require.main === module) {
   const [code, runtime, data, originalRules, rules, content] = process.argv.slice(2);
   assert([code, runtime, data, originalRules, rules, content].every(Boolean), 'require explicit code/data/runtime/DB roots');
-  process.stdout.write(JSON.stringify(derive({code, runtime, data, originalRules, rules, content})));
+  process.stdout.write(JSON.stringify(derive({code, runtime, data, originalRules, rules, content,
+    finalRules: originalRules === '--final-rules'})));
 }

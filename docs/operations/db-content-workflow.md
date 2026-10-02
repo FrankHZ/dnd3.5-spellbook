@@ -78,6 +78,13 @@ reuses that complete preflight directly and writes only a command-created
 experimental content copy under worktree output. Its field provenance and
 limited build marker do not constitute a deployable artifact or permission to
 migrate/write operator DBs. Full build/search/consumer integration remains separate.
+The selected final candidate uses the maintained
+[final overlay and migrated-state validator](./sc-final-source-binding.md#final-overlay-and-migrated-state-validation)
+after genuine full normalized generation/import. It preserves generation
+provenance and records accepted name/body authority while summaries and extra
+relationship QA remain pending. Its validation needs durable final inputs,
+not removable rehearsal DB snapshots; operator writes still require the owning
+migration's authorization and acceptance.
 
 ## Standard Handoff Flow
 

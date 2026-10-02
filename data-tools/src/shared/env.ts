@@ -30,6 +30,14 @@ export function serverDir() {
   return path.join(repoRoot(), "server");
 }
 
+/** An explicit manifest override is repository-relative, like DATA_REPO_PATH. */
+export function rulesManifestPath(root = repoRoot()) {
+  const configured = process.env.RULES_MANIFEST_PATH;
+  if (configured !== undefined && !configured.trim()) throw new Error("RULES_MANIFEST_PATH must name a file");
+  return configured === undefined ? path.join(localDataDir(root), "rules-db-manifest.json")
+    : path.resolve(root, configured);
+}
+
 export function localDataDir(root = repoRoot()) {
   const envPath = path.join(root, ".env");
   const rootEnv = fs.existsSync(envPath)

@@ -153,7 +153,7 @@ def derive_final(args):
               'phb': data / 'artifacts/pdf/phb3.5/Player Handbook v3.5.pdf',
               'phb-errata': data / 'artifacts/pdf/phb3.5/PHBErrata02172006.pdf'}
     node = subprocess.run(['node', str(code / 'data-tools/audits/sc-final-inputs.cjs'), str(code), str(runtime), str(data),
-                           str(Path(args.original_rules).resolve(strict=True)), str(Path(args.rules_db).resolve(strict=True)),
+                           '--final-rules' if getattr(args, 'final_rules', False) else str(Path(args.original_rules).resolve(strict=True)), str(Path(args.rules_db).resolve(strict=True)),
                            str(Path(args.content_db).resolve(strict=True))], capture_output=True, encoding='utf8')
     require(node.returncode == 0, 'complete QA/rules rehearsal failed: ' + node.stderr)
     derived = json.loads(node.stdout)

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
-import { bindRestoredScQaInputs, validateQaInputs, type EnglishRecord } from "./qa";
+import { bindRestoredScQaInputs, validateQaInputs, type EnglishRecord, type QaRecords } from "./qa";
 import { projectEffectiveChinese, projectAcceptedBodyAmendments, reconcileEffectiveProjection, type EffectiveChinese } from "./effective";
 import type { AcceptedBodyAmendment, ChineseTextBinding, SourceBoundFallbackReview } from "./source-bound-fallback";
 import { localDataDir, repoRoot } from "../shared/env";
@@ -25,7 +25,7 @@ const jsonRows = <T>(path: string): T[] => readFileSync(path, "utf8").split(/\r?
  * Outputs are inspection evidence, never an importer/writer input.
  */
 export function preflightEffectiveSc(dataRoot: string, acceptedBaseline: string,
-  rulesPath: string, contentPath: string) {
+  rulesPath: string, contentPath: string, records?: QaRecords) {
   assertEffectiveBaseline(acceptedBaseline);
   const book = join(dataRoot, "dice-qa/books/86");
   const old = join(book, "issue-259/fresh-qa");
@@ -34,7 +34,7 @@ export function preflightEffectiveSc(dataRoot: string, acceptedBaseline: string,
     "--reviews", join(old, "decisions.jsonl"), "--corrections", join(old, "corrections.jsonl"),
     "--full-body-audit", join(old, "full-body-audit.jsonl"), "--boundaries", join(old, "boundary-decisions.jsonl"),
     "--source-bound-fallback-reviews", join(book, "issue-292/independent-accepted.jsonl")];
-  const qa = validateQaInputs(args);
+  const qa = validateQaInputs(args, records);
   const handoff = join(book, "issue-311/batch-06");
   const paths = ["native-accepted.jsonl", "independent-accepted.jsonl", "current-inputs.json"]
     .map(file => join(handoff, file));
