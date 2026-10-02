@@ -40,6 +40,8 @@ function rowSource(name: FieldOrigin, body: FieldOrigin) {
 export function writeEffectiveOverlay(db: Database.Database, projection: EffectiveChinese[],
   acceptedRevision: string, dryRun: boolean) {
   assert(/^[0-9a-f]{40}$/.test(acceptedRevision), "accepted revision must be an exact commit");
+  assert(projection.every(row => !row.name.origin.activeAmendment && !row.body.origin.activeAmendment),
+    "writer cannot consume the read-only amended projection");
   assert(projection.length > 0, "empty overlay");
   const book = projection[0]!.rulebookId;
   const ids = projection.map(row => row.targetId).sort((a, b) => a - b);

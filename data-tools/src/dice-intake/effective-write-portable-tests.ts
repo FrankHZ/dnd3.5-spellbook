@@ -38,6 +38,12 @@ const db = new Database(":memory:");
 try {
   seed(db, true);
   const before = dump(db);
+  const readOnlyRows = structuredClone(rows);
+  readOnlyRows[0]!.body.origin.activeAmendment = { revision: "b".repeat(40), path: "synthetic/amendments.jsonl",
+    prior: { owner: "independent", revision: baseline, path: "synthetic/accepted.jsonl", acceptedRow: syntheticIndependent },
+    sourceRef: "synthetic-amendment", sourcePages: syntheticIndependent.sourcePages, status: "accepted" };
+  assert.throws(() => writeEffectiveOverlay(db, readOnlyRows, baseline, false), /read-only amended projection/);
+  assert.deepEqual(dump(db), before);
   const plan = writeEffectiveOverlay(db, rows, baseline, true);
   assert.deepEqual(dump(db), before, "dry-run must not migrate or mutate metadata");
   assert.equal(plan.migrate, true);

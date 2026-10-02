@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import Database from "better-sqlite3";
 import { existsSync, mkdtempSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { effectiveArguments, effectiveOutputRoot, verifiedEffectiveSc } from "./effective-cli";
+import { assertEffectiveBaseline, effectiveArguments, effectiveOutputRoot, verifiedEffectiveSc } from "./effective-cli";
 import { writeEffectiveOverlay } from "./effective-writer";
 
 export async function runEffectiveExperiment(argv: string[]) {
@@ -16,6 +16,7 @@ export async function runEffectiveExperiment(argv: string[]) {
     if (key !== "--apply") assert(argv[++i] && !argv[i]!.startsWith("--"), `missing value ${key}`);
   }
   const options = effectiveArguments(argv);
+  assertEffectiveBaseline(options.acceptedBaseline, true); // Before copies or shared read-only preflight.
   const parent = effectiveOutputRoot(options.root);
   const output = join(parent, `dice-effective-write-${options.run}`);
   assert(!existsSync(output), "experiment run already exists");

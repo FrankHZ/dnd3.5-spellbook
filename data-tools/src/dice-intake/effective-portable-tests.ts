@@ -1,11 +1,15 @@
 import assert from "node:assert/strict";
 import Database from "better-sqlite3";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { escapedFallbackHtml, validateSourceBoundFallbackReviews, withSourceIssueNotes,
-  type SourceBoundFallbackReview } from "./source-bound-fallback";
-import { validateReviews, validateFullBodyAudits, type EnglishRecord, type Review } from "./qa";
+  type AcceptedBodyAmendment, type SourceBoundFallbackReview } from "./source-bound-fallback";
+import { bindRestoredScQaInputs, validateReviews, validateFullBodyAudits, type EnglishRecord, type Review } from "./qa";
 import type { Candidate } from "./reconcile";
-import { projectEffectiveChinese, type ProjectionInputs } from "./effective";
-import { assertCompletePdfBindings } from "./effective-cli";
+import { projectEffectiveChinese, projectAcceptedBodyAmendments, reconcileEffectiveProjection, type ProjectionInputs } from "./effective";
+import { assertCompletePdfBindings, assertEffectiveBaseline, effective879Baseline, currentEffectiveBaseline } from "./effective-cli";
 
 const en: EnglishRecord = { name: "Cold Touch", rulebookId: 10, editionId: 5,
   description: "Deals 2d6 cold damage. Round | Damage |",
@@ -129,6 +133,93 @@ assertCompletePdfBindings(bindings, result.output);
 rejects(() => assertCompletePdfBindings(bindings.slice(1), result.output), /every accepted/);
 rejects(() => assertCompletePdfBindings([...bindings, bindings[0]!], result.output), /every accepted/);
 rejects(() => assertCompletePdfBindings([{ ...bindings[0]!, field: "unknown" }, ...bindings.slice(1)], result.output), /illegal/);
+assertEffectiveBaseline(effective879Baseline); assertEffectiveBaseline(effective879Baseline, true);
+assertEffectiveBaseline(currentEffectiveBaseline);
+rejects(() => assertEffectiveBaseline(currentEffectiveBaseline, true), /writer supports only/);
+rejects(() => assertEffectiveBaseline("a".repeat(40)), /unsupported/);
+rejects(() => assertEffectiveBaseline("latest"), /unsupported/);
+const baseline = { revision: "a".repeat(40), native: { path: "synthetic/native.jsonl", rows: native.accepted },
+  independent: { path: "synthetic/independent.jsonl", rows: [body, name] } };
+const authority = { revision: "b".repeat(40), path: "synthetic/amendments.jsonl" };
+const amendments: AcceptedBodyAmendment[] = [1, 2].map(targetId => {
+  const selected = result.output.find(row => row.targetId === targetId)!;
+  const review = structuredClone(body);
+  review.targetId = targetId; review.before = selected.body.text;
+  review.after = `完整修订正文${targetId}\n轮|伤害\n1|2d6`; review.proposedHtml = escapedFallbackHtml(review.after);
+  review.rulePairs[0]!.chinese = `完整修订正文${targetId}`;
+  review.input.chinese = { name: selected.name.text, descriptionText: selected.body.text, descriptionHtml: selected.body.html };
+  review.fullBodyAudit = { ...review.fullBodyAudit!, beforeHtml: selected.body.html,
+    effectiveText: review.after, effectiveHtml: review.proposedHtml };
+  const owner = targetId === 1 ? "independent" : "native";
+  return { targetId, rulebookId: 10, field: "descriptionText", prior: { owner, revision: baseline.revision,
+    path: baseline[owner].path, acceptedRow: targetId === 1 ? body : native.accepted.find(row => row.targetId === 2)! }, review };
+});
+const amend = (rows = amendments, projection = result) => projectAcceptedBodyAmendments(input, projection, baseline, rows, authority);
+const amended = amend();
+assert.equal(amended.summary.accepted, result.summary.accepted);
+assert.equal(amended.summary.complement, result.summary.complement);
+assert.equal(amended.output[1]!.body.origin.kind, "native");
+assert.equal(amended.output[1]!.body.origin.sourceKey, result.output[1]!.body.origin.sourceKey);
+assert.deepEqual(amended.output[1]!.body.origin.activeAmendment!.prior.acceptedRow, native.accepted.find(row => row.targetId === 2));
+assert.deepEqual(result.output[1]!.body.origin.activeAmendment, undefined); // Pure; frozen union retained.
+const diff = reconcileEffectiveProjection(result.output, amended.output);
+assert.deepEqual(diff.amendedBodies, [1, 2]); assert.deepEqual(diff.newlyAcceptedBodies, []);
+assert.equal(diff.fallback.length, result.summary.complement);
+const beforeNewBody = run([name]);
+assert.deepEqual(reconcileEffectiveProjection(beforeNewBody.output, result.output).newlyAcceptedBodies, [1]);
+const activeBindings = bindings.map(row => row.field === "descriptionHtml" || row.field === "descriptionText"
+  ? { ...row, sourceKey: null, field: "descriptionText" } : row);
+assertCompletePdfBindings(activeBindings, amended.output);
+rejects(() => assertCompletePdfBindings(bindings, amended.output), /every accepted/);
+rejects(() => amend([...amendments, amendments[0]!]), /duplicate/);
+for (const mutate of [
+  (row: AcceptedBodyAmendment) => { row.prior.owner = "native"; },
+  (row: AcceptedBodyAmendment) => { row.prior.revision = "c".repeat(40); },
+  (row: AcceptedBodyAmendment) => { row.prior.path = "wrong.jsonl"; },
+  (row: AcceptedBodyAmendment) => { row.prior.acceptedRow.targetId = 99; },
+  (row: AcceptedBodyAmendment) => { row.review.input.chinese.descriptionText = "stale"; },
+  (row: AcceptedBodyAmendment) => { row.review.input.english.description = "stale"; },
+  (row: AcceptedBodyAmendment) => { row.review.sourcePages = []; },
+  (row: AcceptedBodyAmendment) => { row.review.fullBodyAudit!.currentHtmlReviewed = false; },
+  (row: AcceptedBodyAmendment) => { row.review.status = "deferred"; },
+  (row: AcceptedBodyAmendment) => { row.targetId = 99; },
+]) {
+  const broken = structuredClone(amendments); mutate(broken[0]!);
+  rejects(() => amend(broken), /prior|stale|Chinese|English|provenance|audit|review|body|HTML/);
+}
+const forgedOwnership = structuredClone(result);
+forgedOwnership.output[1]!.body.origin = { kind: "independent", sourceKey: null,
+  sourceRef: "forged", sourcePages: body.sourcePages, status: "accepted" };
+rejects(() => amend(amendments, forgedOwnership), /owner mismatch/);
+const wrongName = structuredClone(amended.output); wrongName[0]!.name.text = "forged";
+rejects(() => reconcileEffectiveProjection(result.output, wrongName), /names changed/);
+const lostAmendment = structuredClone(amended.output); delete lostAmendment[0]!.body.origin.activeAmendment;
+rejects(() => reconcileEffectiveProjection(result.output, lostAmendment), /unrelated accepted/);
+const staleFallback = structuredClone(amended.output); staleFallback[2]!.body.html = "stale";
+rejects(() => reconcileEffectiveProjection(result.output, staleFallback), /fallback changed/);
+// Exercise the same exact-Git/direct-comparison boundary as the real union and
+// amendment entry. A plausible accepted object or matching count is insufficient.
+const authScratch = mkdtempSync(join(tmpdir(), "effective-input-binding-"));
+try {
+  const git = (...args: string[]) => execFileSync("git", ["-C", authScratch, ...args], { encoding: "utf8", stdio: "pipe" }).trim();
+  git("init", "-q"); git("config", "user.email", "synthetic@example.invalid"); git("config", "user.name", "Synthetic fixture");
+  git("config", "core.autocrlf", "false");
+  const path = join(authScratch, "union.jsonl"), text = JSON.stringify(body) + "\n";
+  writeFileSync(path, text, "utf8"); git("add", "union.jsonl"); git("commit", "-qm", "Synthetic accepted binding");
+  const revision = git("rev-parse", "HEAD");
+  const bind = (selected = revision) => bindRestoredScQaInputs(authScratch, selected, [path],
+    ["9847e70236cd4bcd841347ed1b42b2f478826268:synthetic:1"], ["4cd593b44e73f591d46e2f35a90d882befc19702"]);
+  assert.equal(bind().files, 1);
+  writeFileSync(path, text.replace(/\n/g, "\r\n"), "utf8"); assert.equal(bind().files, 1);
+  writeFileSync(path, JSON.stringify({ ...body, after: "same-count forged accepted body", accepted: true }) + "\n", "utf8");
+  rejects(() => bind(), /changed restored input/);
+  git("add", "union.jsonl"); git("commit", "-qm", "Synthetic unaccepted change");
+  rejects(() => bind(revision), /changed restored input/);
+  // Newly committed proposal bytes do not make a supported baseline.
+  rejects(() => assertEffectiveBaseline(git("rev-parse", "HEAD")), /unsupported/);
+  rmSync(path);
+  rejects(() => bind(), /ENOENT/);
+} finally { rmSync(authScratch, { recursive: true }); }
 // Model the actual CHM importer's delete-all-Chinese behavior in disposable SQL.
 // A separate variant alone cannot protect overlay from a later complete rebuild.
 const db = new Database(":memory:");
