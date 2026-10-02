@@ -657,11 +657,15 @@ function writeJson(filePath: string, value: unknown) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
-export function readGenerated(filePath: string) {
+export function readGenerated(filePath: string, expectedBytes?: Buffer) {
   if (!fs.existsSync(filePath)) {
     throw new Error(`Generated content file not found: ${filePath}`);
   }
-  const parsed = JSON.parse(fs.readFileSync(filePath, "utf8")) as unknown;
+  const bytes = fs.readFileSync(filePath);
+  if (expectedBytes && !bytes.equals(expectedBytes)) {
+    throw new Error("Accepted artifact input changed while reading generated content");
+  }
+  const parsed = JSON.parse(bytes.toString("utf8")) as unknown;
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
     throw new Error("Generated content must be a JSON object.");
   }

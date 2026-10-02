@@ -103,19 +103,22 @@ export type NormalizedImportStepResult = {
 /** Both paths identify the owning handoff's already accepted full artifacts.
  * This internal context override has the same synthetic-test boundary as
  * importGenerated; the production entry always collects actual current inputs.
+ * Expected bytes retain a sequence's original pin, never source acceptance.
  */
 export function normalizedImportStep(db: Database.Database, inputPath: string, previousInputPath: string,
-  mode: "check" | "apply" = "check", importContext?: RulesContentImportContext): NormalizedImportStepResult {
+  mode: "check" | "apply" = "check", importContext?: RulesContentImportContext,
+  expectedBytes?: {input: Buffer; previous: Buffer}): NormalizedImportStepResult {
   assert(mode === "check" || mode === "apply", "Unknown normalized import mode");
   if (mode === "apply") assert(!db.inTransaction, "Normalized import step owns its content transaction");
   // Pin the bytes for this invocation without adding a detection hash. A second
   // read in the transaction must agree; existing source hashes remain provenance.
-  const inputBytes = fs.readFileSync(inputPath), previousBytes = fs.readFileSync(previousInputPath);
+  const inputBytes = expectedBytes ? expectedBytes.input : fs.readFileSync(inputPath);
+  const previousBytes = expectedBytes ? expectedBytes.previous : fs.readFileSync(previousInputPath);
   const inspect = () => {
     assert(fs.readFileSync(inputPath).equals(inputBytes) && fs.readFileSync(previousInputPath).equals(previousBytes),
       "Accepted artifact input changed during normalized import step");
     requireContentStepSchema(db);
-    const content = readGenerated(inputPath), previous = readGenerated(previousInputPath);
+    const content = readGenerated(inputPath, inputBytes), previous = readGenerated(previousInputPath, previousBytes);
     requireCompleteArtifact(content); requireCompleteArtifact(previous);
     const context = importContext ?? collectImportContext();
     // Dry-run reuses all maintained current input/source checks; it does not

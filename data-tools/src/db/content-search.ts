@@ -1,4 +1,6 @@
 import Database from "better-sqlite3";
+import assert from "node:assert/strict";
+import type { NormalizedRulesContent } from "../rules-content/normalize";
 
 import {
   buildContentSearchDocuments,
@@ -67,23 +69,34 @@ export function assertContentSearchSchema(db: Database.Database) {
   }
 }
 
+const spellFields = ["canonicalName", "slug", "descriptionText", "castingTimeRaw", "rangeRaw", "targetRaw",
+  "effectRaw", "areaRaw", "durationRaw", "savingThrowRaw", "resistanceRaw"] as const;
+
+/** The same maintained source projection, before accepted normalized/summary
+ * replacement. Localized texts are retained by both import stages. */
+export function plannedContentSearchSource(db: Database.Database, content: NormalizedRulesContent,
+  summaries: ContentSearchSummaryRow[]): ContentSearchSource {
+  const byId = new Map(content.spells.map(row => [row.id, row]));
+  for (const row of content.mechanicFacets) assert(byId.has(row.spellId), "Orphan mechanic source");
+  return {
+    spells: content.spells.map(row => ({spellId: row.legacySpellId,
+      ...Object.fromEntries(spellFields.map(field => [field, row[field]]))})) as ContentSearchSpellRow[],
+    texts: readContentSearchSource(db).texts,
+    summaries: summaries.map(({spellId, lang, variant, summaryText}) => ({spellId, lang, variant, summaryText})),
+    mechanics: content.mechanicFacets.filter(row => row.reviewStatus === "accepted").map(row => ({
+      spellId: byId.get(row.spellId)!.legacySpellId, rawText: row.rawText,
+      category: row.category, normalizedText: row.normalizedText,
+    })),
+  };
+}
+
 export function readContentSearchSource(
   db: Database.Database,
 ): ContentSearchSource {
   const spells = db.prepare(`
     SELECT
       "legacySpellId" AS "spellId",
-      "canonicalName",
-      "slug",
-      "descriptionText",
-      "castingTimeRaw",
-      "rangeRaw",
-      "targetRaw",
-      "effectRaw",
-      "areaRaw",
-      "durationRaw",
-      "savingThrowRaw",
-      "resistanceRaw"
+      ${spellFields.map(field => `"${field}"`).join(",")}
     FROM "SpellContent"
     ORDER BY "legacySpellId"
   `).all() as ContentSearchSpellRow[];

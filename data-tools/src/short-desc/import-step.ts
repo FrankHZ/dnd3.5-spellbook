@@ -4,6 +4,7 @@ import fs from "node:fs";
 import { isDeepStrictEqual } from "node:util";
 import { requireContentStepSchema } from "../rules-content/content-step-schema";
 import { requireKnownAnnotations } from "../rules-content/known-annotations";
+import type { NormalizedRulesContent } from "../rules-content/normalize";
 import { importSummaryRows } from "./import";
 import { readSummaryJsonlText, type SummaryRow } from "./summary-row-schema";
 
@@ -32,6 +33,16 @@ function requireSchema(db: Database.Database) {
     ["spellId", "lang", "variant"])), "Missing summary natural key constraint");
 }
 
+function requireBinding(row: SummaryRow, spells: {id: string; sourceRulebookId: bigint}[],
+  books: {id: string}[], appearance: boolean) {
+  assert(spells.length === 1 && spells[0]!.id === `spell:${row.spellId}` &&
+    books.length === 1 && books[0]!.id === `rulebook:${row.rulebookId}`, "Missing/drifted summary spell/book identity");
+  // Summary IDs refer to legacy spells/books. Reuse/source-gap rows bind to
+  // their target book, while an established appearance may bind another book.
+  assert(spells[0]!.sourceRulebookId === BigInt(row.rulebookId) || appearance,
+    "Unsupported summary spell/book relationship");
+}
+
 function requireBindings(db: Database.Database, rows: SummaryRow[]) {
   const spell = db.prepare("SELECT id,sourceRulebookId FROM SpellContent WHERE legacySpellId=?");
   const book = db.prepare("SELECT id FROM RulebookContent WHERE legacyRulebookId=?");
@@ -39,13 +50,20 @@ function requireBindings(db: Database.Database, rows: SummaryRow[]) {
   for (const row of rows) {
     const spells = spell.safeIntegers().all(row.spellId) as {id: string; sourceRulebookId: bigint}[];
     const books = book.all(row.rulebookId) as {id: string}[];
-    assert(spells.length === 1 && spells[0]!.id === `spell:${row.spellId}` &&
-      books.length === 1 && books[0]!.id === `rulebook:${row.rulebookId}`, "Missing/drifted summary spell/book identity");
-    // Summary IDs refer to legacy spells/books. Reuse/source-gap rows bind to
-    // their target book, while an established appearance may bind another book.
-    assert(spells[0]!.sourceRulebookId === BigInt(row.rulebookId) ||
-      appearance.get(spells[0]!.id, row.spellId, row.rulebookId), "Unsupported summary spell/book relationship");
+    requireBinding(row, spells, books, !!appearance.get(`spell:${row.spellId}`, row.spellId, row.rulebookId));
   }
+}
+
+function requirePlannedBindings(content: NormalizedRulesContent, rows: SummaryRow[]) {
+  const spells = new Map<number, NormalizedRulesContent["spells"]>();
+  const books = new Map<number, NormalizedRulesContent["rulebooks"]>();
+  for (const spell of content.spells) spells.set(spell.legacySpellId, [...(spells.get(spell.legacySpellId) ?? []), spell]);
+  for (const book of content.rulebooks) books.set(book.legacyRulebookId, [...(books.get(book.legacyRulebookId) ?? []), book]);
+  const appearances = new Set(content.appearances.map(row => JSON.stringify([row.spellId, row.legacySpellId, row.rulebookId])));
+  for (const row of rows) requireBinding(row,
+    (spells.get(row.spellId) ?? []).map(({id, sourceRulebookId}) => ({id, sourceRulebookId: BigInt(sourceRulebookId)})),
+    books.get(row.rulebookId) ?? [],
+    appearances.has(JSON.stringify([`spell:${row.spellId}`, row.spellId, row.rulebookId])));
 }
 
 function timestamp(value: unknown): value is string {
@@ -84,13 +102,9 @@ export type SummaryImportStepResult = {
   wouldChange: boolean;
 };
 
-/** Paths identify the owning handoff's already accepted COMPLETE inventories.
- * Syntax/reviewStatus alone never establish source acceptance. */
-export function summaryImportStep(db: Database.Database, inputPath: string, previousInputPath: string,
-  mode: "check" | "apply" = "check"): SummaryImportStepResult {
-  assert(mode === "check" || mode === "apply", "Unknown summary import mode");
-  if (mode === "apply") assert(!db.inTransaction, "Summary import step owns its content transaction");
-  const inputBytes = fs.readFileSync(inputPath), previousBytes = fs.readFileSync(previousInputPath);
+function prepareInputs(inputPath: string, previousInputPath: string, expectedBytes?: {input: Buffer; previous: Buffer}) {
+  const inputBytes = expectedBytes ? expectedBytes.input : fs.readFileSync(inputPath);
+  const previousBytes = expectedBytes ? expectedBytes.previous : fs.readFileSync(previousInputPath);
   const next = inventory(inputBytes), previous = inventory(previousBytes);
   const byId = new Map(next.map(row => [row.id, row]));
   for (const row of previous) {
@@ -99,22 +113,50 @@ export function summaryImportStep(db: Database.Database, inputPath: string, prev
   }
   const requireInputs = () => assert(fs.readFileSync(inputPath).equals(inputBytes) &&
     fs.readFileSync(previousInputPath).equals(previousBytes), "Accepted summary input changed during import step");
+  return {next, previous, requireInputs};
+}
+
+function inspectState(db: Database.Database, next: SummaryRow[], previous: SummaryRow[]) {
+  const actual = readRows(db);
+  const metadata = (db.prepare("SELECT buildMetaJson FROM RulesContentBuild").all() as {buildMetaJson: string}[])
+    .map(row => JSON.parse(row.buildMetaJson) as Record<string, unknown>);
+  for (const meta of metadata) requireKnownAnnotations(db, meta);
+  if (matches(actual, next)) return {state: "after" as const, actual};
+  assert(matches(actual, previous), "Unrecognized summary state; neither complete accepted before nor after matches");
+  for (const meta of metadata) {
+    assert(!Object.hasOwn(meta, "overlays"),
+      "Annotated predecessor cannot change summaries; later #420 coordination must invalidate/revalidate downstream acceptance first");
+  }
+  return {state: "before" as const, actual};
+}
+
+/** Readonly sequence preflight against an already validated accepted next full
+ * normalized artifact. Both inventories must bind after normalized replacement;
+ * today's persisted inventory must also bind to today's normalized rows. */
+export function preflightSummaryImport(db: Database.Database, inputPath: string, previousInputPath: string,
+  plannedNormalized: NormalizedRulesContent, expectedBytes?: {input: Buffer; previous: Buffer}) {
+  const {next, previous, requireInputs} = prepareInputs(inputPath, previousInputPath, expectedBytes);
+  return db.transaction(() => {
+    requireInputs(); requireSchema(db);
+    requirePlannedBindings(plannedNormalized, previous); requirePlannedBindings(plannedNormalized, next);
+    const current = inspectState(db, next, previous);
+    requireBindings(db, current.state === "after" ? next : previous);
+    return {result: {mode: "check" as const, state: current.state, changed: false,
+      wouldChange: current.state === "before"}, next};
+  })();
+}
+
+/** Paths identify the owning handoff's already accepted COMPLETE inventories.
+ * Syntax/reviewStatus and optional expected bytes never establish source acceptance. */
+export function summaryImportStep(db: Database.Database, inputPath: string, previousInputPath: string,
+  mode: "check" | "apply" = "check", expectedBytes?: {input: Buffer; previous: Buffer}): SummaryImportStepResult {
+  assert(mode === "check" || mode === "apply", "Unknown summary import mode");
+  if (mode === "apply") assert(!db.inTransaction, "Summary import step owns its content transaction");
+  const {next, previous, requireInputs} = prepareInputs(inputPath, previousInputPath, expectedBytes);
   const inspect = () => {
     requireInputs(); requireSchema(db);
     requireBindings(db, previous); requireBindings(db, next);
-    const actual = readRows(db);
-    const metadata = (db.prepare("SELECT buildMetaJson FROM RulesContentBuild").all() as {buildMetaJson: string}[])
-      .map(row => JSON.parse(row.buildMetaJson) as Record<string, unknown>);
-    for (const meta of metadata) requireKnownAnnotations(db, meta);
-    if (matches(actual, next)) return {state: "after" as const, actual};
-    assert(matches(actual, previous), "Unrecognized summary state; neither complete accepted before nor after matches");
-    // Any downstream acceptance on the predecessor needs explicit later
-    // coordination. Never erase it or silently carry it across summary changes.
-    for (const meta of metadata) {
-      assert(!Object.hasOwn(meta, "overlays"),
-        "Annotated predecessor cannot change summaries; later #420 coordination must invalidate/revalidate downstream acceptance first");
-    }
-    return {state: "before" as const, actual};
+    return inspectState(db, next, previous);
   };
   const result = (state: "before" | "after", changed = false): SummaryImportStepResult =>
     ({mode, state, changed, wouldChange: state === "before"});

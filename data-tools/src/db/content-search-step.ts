@@ -7,7 +7,7 @@ import { requireContentStepSchema } from "../rules-content/content-step-schema";
 import { repoRoot } from "../shared/env";
 import { readContentSearchSource } from "./content-search";
 import { buildContentSearchDocuments, CONTENT_SEARCH_SCHEMA_VERSION,
-  replaceContentSearchIndex, type ContentSearchDocument } from "./content-search-documents";
+  replaceContentSearchIndex, type ContentSearchDocument, type ContentSearchSource } from "./content-search-documents";
 
 const fields = ["spellId", "lang", "variant", "name", "aliases", "summary", "mechanics", "body"] as const;
 const ownedTables = new Set(["SpellSearchDocument", "SpellSearchIndexState",
@@ -35,8 +35,8 @@ function requireSearchStepSchema(db: Database.Database) {
   }
 }
 
-function expectedDocuments(db: Database.Database) {
-  const source = readContentSearchSource(db);
+/** Shared source guards and builder for current rows and accepted future rows. */
+export function requireContentSearchSource(source: ContentSearchSource) {
   const spells = new Set<number>();
   for (const spell of source.spells) {
     assert(Number.isSafeInteger(spell.spellId) && !spells.has(spell.spellId), "Invalid/duplicate source spell key");
@@ -60,10 +60,14 @@ function expectedDocuments(db: Database.Database) {
     assert(spells.has(row.spellId) && typeof row.category === "string" &&
       [row.rawText, row.normalizedText].every(value => value === null || typeof value === "string"), "Invalid mechanic source values");
   }
+  return buildContentSearchDocuments(source);
+}
+
+function expectedDocuments(db: Database.Database) {
   // The maintained reader joins mechanics to spells. Do not silently discard orphans.
   assert(!db.prepare(`SELECT 1 FROM SpellMechanicFacet m LEFT JOIN SpellContent s ON s.id=m.spellId
     WHERE s.id IS NULL LIMIT 1`).get(), "Orphan mechanic source");
-  return buildContentSearchDocuments(source);
+  return requireContentSearchSource(readContentSearchSource(db));
 }
 
 function documentsMatch(db: Database.Database, expected: ContentSearchDocument[]) {
@@ -141,7 +145,7 @@ export type ContentSearchStepResult = {
 /** Derived search state only. Source QA/accepted handoff is the caller's prerequisite. */
 export function contentSearchStep(db: Database.Database, mode: "check" | "apply" = "check"): ContentSearchStepResult {
   assert(mode === "check" || mode === "apply", "Unknown search step mode");
-  assert(!db.inTransaction, "Search step owns its content transaction");
+  if (mode === "apply") assert(!db.inTransaction, "Search step owns its content transaction");
   const inspect = () => {
     requireSearchStepSchema(db);
     const documents = expectedDocuments(db);

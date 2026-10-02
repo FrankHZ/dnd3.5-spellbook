@@ -110,6 +110,12 @@ migration's authorization and acceptance.
 3. Regenerate the content DB artifact.
    - Use [import-workflow.md](./import-workflow.md) for the canonical local
      command order.
+   - When rules/manifest/generation are already prepared and both full normalized
+     and complete summary pairs are accepted, use the
+     [fixed content sequence](./import-workflow.md#fixed-content-sequence) for
+     readonly preflight, ordered stage commits and DB-derived interruption resume.
+     Changed annotated predecessors remain unsupported; this content-only sequence
+     does not accept source QA, coordinate other DBs or authorize activation.
    - For an already accepted pair of full normalized artifacts, the
      [normalized import step](./import-workflow.md#normalized-content-import-step)
      proves exact before/after and supports atomic apply or a zero-write repeat.
