@@ -447,6 +447,25 @@ the complete new text, actual old HTML and explicitly escaped `<pre>` projection
 Missing Chinese is reviewed absence, not permission to invent a corrected fallback.
 Changed inputs, unreviewed fields and unresolved source evidence fail acceptance.
 
+For SC current-edition Chinese delivery, an explicit owning-book scope decision
+may exclude other books' old levels, costs, values, effects, version comparisons
+and translator history. Review the complete SC entry and applicable official
+errata against actual current text/HTML, canonical English/mechanics and the
+previous complete proposal. Record the exact excluded passages and retired
+historical source obligations privately. Retirement means out of delivery scope,
+not authenticated history. It does not waive evidence for retained operative
+rules, inherited clauses, creature abilities, tables or restrictions. Preserve
+SC source ambiguities and necessary reader notes through the existing mechanism.
+
+Keep such a handoff distinct and bound to exact public/private revisions, with
+a disposition for every scoped complete body and source-free counts and IDs.
+Preserve names, canonical English, mechanics, summaries, identities, current
+fallback and all frozen evidence outside the authorized body proposals. A scope
+decision does not rewrite previous accepted exports, resolve outstanding source
+questions, change the fixed restored QA contract or advance the effective
+projection baseline; those require their own accepted integration scope. See
+[the initial bounded SC delivery scope](https://github.com/FrankHZ/dnd3.5-spellbook/issues/321).
+
 For an explicitly authorized faithful translation of a known source
 conflict, missing explanation or interpretation question, the independent body
 schema supports
