@@ -5,10 +5,10 @@
   "rulebookId": 86,
   "validation": "validated-proposal-awaiting-main-gate",
   "publicCodeBase": "d787cd391f912c1d07ed31fce0a24b91966874d8",
-  "publicExecutionHead": "d787cd391f912c1d07ed31fce0a24b91966874d8",
+  "publicExecutionHead": "9ff0e37d870208def023400d85b23fb2ab384a72",
   "privateInput": "95e1b5a639d25187788a0eb1ae5b1db302ff9ea7",
-  "privateHandoffRevision": "12b030c0dc2ec9cc72aa02bfe581a30ba38889b5",
-  "committedHelperRevision": "3c714493109e752bbaba39f41b2802e5d8c383f7",
+  "privateHandoffRevision": "974176f9fefdbd07466370104689f49ca4fbd86f",
+  "committedHelperRevision": "b8d84d42295c4a8dcb2b057f4c4a542433749aa5",
   "privateHandoffDirectory": "dice-qa/books/86/issue-326",
   "scope": "Exactly frozen issue-313 positions 81–120; forty complete SC body reviews under the current-edition delivery scope",
   "exactTargetIds": [
@@ -54,8 +54,8 @@
     4415
   ],
   "bodyDispositions": {
-    "accepted": 37,
-    "accepted-with-source-issues": 1,
+    "accepted": 36,
+    "accepted-with-source-issues": 2,
     "deferred": 2,
     "incomplete": 0
   },
@@ -107,10 +107,12 @@
     },
     {
       "targetId": 3958,
-      "bodyDisposition": "accepted",
+      "bodyDisposition": "accepted-with-source-issues",
       "candidateHistoricalObligationRetired": true,
       "historicalClaimAuthenticated": false,
-      "retainedSourceIssueIds": [],
+      "retainedSourceIssueIds": [
+        "3958:hd-effect-scope-source"
+      ],
       "unreviewedExternalCapabilityLimitPreserved": true,
       "identityLimitPreserved": false
     },
@@ -461,6 +463,7 @@
       "4743:omitted-time-source"
     ],
     "newSupplementalIds": [
+      "3958:hd-effect-scope-source",
       "4153:omitted-time-source"
     ],
     "newSupplementalStatus": "source-unresolved",
@@ -530,13 +533,13 @@
     "proposedFullFieldValidator": {
       "acceptedBodies": 38,
       "fullBodyAudits": 38,
-      "rejectedMutations": 26
+      "rejectedMutations": 28
     },
     "maintainedPDFValidator": {
       "pages": 47,
       "spans": 2907,
       "boundReviewedFields": 40,
-      "rejectedMutations": 7,
+      "rejectedMutations": 8,
       "freshRenderedPagesActuallyViewed": 47
     },
     "HTML": {
@@ -545,10 +548,10 @@
       "projectionsMatched": true,
       "isolatedDOMBodies": 40,
       "representativeScreenshotsActuallyViewed": [
-        3934,
+        3913,
         3958,
-        4153,
-        4315
+        3984,
+        3985
       ],
       "productionUISmoke": false
     },
@@ -558,7 +561,7 @@
     },
     "rootPackageReproduction": {
       "passed": true,
-      "helperRevision": "3c714493109e752bbaba39f41b2802e5d8c383f7",
+      "helperRevision": "b8d84d42295c4a8dcb2b057f4c4a542433749aa5",
       "invocations": [
         "repository root",
         "data-tools package"
@@ -569,7 +572,7 @@
         "reproduction-package.json"
       ]
     },
-    "exactHeadRemotePortableCI": "reported with PR check state"
+    "exactHeadRemotePortableCI": "updated head reported with PR check state"
   },
   "model": {
     "verified": "gpt-6.1-sol",
@@ -588,5 +591,21 @@
     "activation": false,
     "deployment": false,
     "mainGateAcceptance": false
+  },
+  "reviewFollowup": {
+    "reviewedPublicHead": "9ff0e37d870208def023400d85b23fb2ab384a72",
+    "reviewedPrivateHead": "12b030c0dc2ec9cc72aa02bfe581a30ba38889b5",
+    "semanticFixTargetIds": [
+      3913,
+      3984,
+      3985
+    ],
+    "sourceAmbiguityTargetId": 3958,
+    "newSupplementalId": "3958:hd-effect-scope-source",
+    "sourceScopeAdjudicated": false,
+    "targetedOriginalLayoutAndCompleteOfficialErrataRechecked": true,
+    "unchangedOther36ReviewRowsVerified": true,
+    "complementBytesUnchanged": true,
+    "privateEvidence": "focused-rereview.json"
   }
 }
