@@ -78,6 +78,7 @@
     "dice:effective": "tsx src/dice-intake/effective-cli.ts",
     "dice:effective:test": "tsx src/dice-intake/effective-portable-tests.ts",
     "dice:effective:write": "tsx src/dice-intake/effective-write-cli.ts",
+    "dice:effective:consumers": "node scripts/verify-sc-current-consumers.cjs",
     "dice:effective:write:test": "tsx src/dice-intake/effective-write-portable-tests.ts"
   },
   "dependencies": {

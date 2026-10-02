@@ -1,4 +1,5 @@
 import type {
+  I18nContext,
   RulebookId,
   SpellComponentFilters,
   SpellMechanicDetailFacet,
@@ -34,6 +35,7 @@ type MechanicFacetRow = Prisma.SpellMechanicFacetGetPayload<
 const CONTENT_SEARCH_SCHEMA_VERSION = 1;
 
 export type NormalizedFullTextSearchInput = {
+  i18n: I18nContext;
   q: string;
   rulebookIds: number[];
   classIds: number[];
@@ -215,6 +217,12 @@ function fullTextEligibleRows(
   input: NormalizedFullTextSearchInput,
   matchQuery: string,
 ) {
+  // The opt-in overlay must not add matches to existing/default search variants.
+  // Effective requests search their selected text plus canonical English fallback.
+  const selectedDocuments = input.i18n.lang === "zh" && input.i18n.variant === "effective"
+    ? Prisma.sql`AND (("SpellSearchDocument"."lang" = 'zh' AND "SpellSearchDocument"."variant" = 'effective')
+        OR ("SpellSearchDocument"."lang" = 'en' AND "SpellSearchDocument"."variant" = 'default'))`
+    : Prisma.sql`AND NOT ("SpellSearchDocument"."lang" = 'zh' AND "SpellSearchDocument"."variant" = 'effective')`;
   return Prisma.sql`
     SELECT
       s."legacySpellId" AS id,
@@ -226,6 +234,7 @@ function fullTextEligibleRows(
       AND "SpellSearchDocument"."rank"
         MATCH 'bm25(0.0, 0.0, 0.0, 12.0, 8.0, 4.0, 2.0, 1.0)'
       AND s."sourceRulebookId" IN (${Prisma.join(input.rulebookIds)})
+      ${selectedDocuments}
       ${normalizedTaxonomyWhere(input.taxonomyFilters)}
       ${normalizedComponentWhere(input.componentFilters)}
       ${normalizedMechanicWhere(input.mechanicFilters)}
