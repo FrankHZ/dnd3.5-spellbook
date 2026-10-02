@@ -4,10 +4,10 @@
   "rulebookId": 86,
   "status": "reviewed-proposal-awaiting-main-gate",
   "publicBase": "d285533327c5990ab72d4d6814cba1c166cd43df",
-  "synchronizedMain": "0bb50eef9695afc7f6ee176a0f6a058209cbbd4d",
+  "synchronizedMain": "38d54617704056134fedf57424b75e8423eba447",
   "frozenAudit": "e793ff09a38060c5c6b336d28690353bd0d96909",
   "privateInput": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411",
-  "privateHandoffAndHelperCommit": "bc886da66298abda440d39aa7392a20d92a2e1fc",
+  "privateHandoffAndHelperCommit": "352a300ac0c664761af466daeb43248d8de48d6b",
   "privateDirectory": "dice-qa/books/86/issue-394",
   "verifiedRunSettings": {
     "model": "gpt-6.1-sol",

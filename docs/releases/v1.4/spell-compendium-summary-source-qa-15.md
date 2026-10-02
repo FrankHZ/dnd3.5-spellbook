@@ -8,12 +8,12 @@ lists every existing key and disposition. Main-gate/#346 owns acceptance and int
 ## Scope and evidence
 
 Frozen audit `e793ff09a38060c5c6b336d28690353bd0d96909` assigns exactly
-50 targets / 67 existing rows (17 EN / 50 ZH). Canonical summary input remains
+50 targets / 67 existing rows (18 EN / 49 ZH). Canonical summary input remains
 private `a9cbe07747b1bc908ff4ebcd24244e38e58cb411`. Public base
 `d285533327c5990ab72d4d6814cba1c166cd43df` is synchronized with main
-`0bb50eef9695afc7f6ee176a0f6a058209cbbd4d`. Verified actual turn metadata records `gpt-6.1-sol`, high effort.
+`38d54617704056134fedf57424b75e8423eba447`. Verified actual turn metadata records `gpt-6.1-sol`, high effort.
 
-Private handoff/helper commit `bc886da66298abda440d39aa7392a20d92a2e1fc` owns
+Private handoff/helper commit `352a300ac0c664761af466daeb43248d8de48d6b` owns
 `dice-qa/books/86/issue-394/`. It reuses [#353 provenance](./spell-compendium-summary-source-qa-01.md),
 [#361 narrow importer](./spell-compendium-summary-source-qa-02.md), strengthened
 [#379](./spell-compendium-summary-source-qa-09.md)/[#380](./spell-compendium-summary-source-qa-10.md)
@@ -82,7 +82,7 @@ Replay the fixed committed helper from public root and `data-tools`, with
 absolute roots and distinct labels:
 
 ```powershell
-& "$runtimeRoot/data-tools/pdf-extract/.venv/Scripts/python.exe" -X utf8 "$dataRoot/dice-qa/books/86/issue-394/reproduce.py" --code-root $codeRoot --runtime-root $runtimeRoot --private-revision bc886da66298abda440d39aa7392a20d92a2e1fc --run final-root
+& "$runtimeRoot/data-tools/pdf-extract/.venv/Scripts/python.exe" -X utf8 "$dataRoot/dice-qa/books/86/issue-394/reproduce.py" --code-root $codeRoot --runtime-root $runtimeRoot --private-revision 352a300ac0c664761af466daeb43248d8de48d6b --run final-root
 ```
 
 Replay requires helper text to match that revision, regenerates deterministic
