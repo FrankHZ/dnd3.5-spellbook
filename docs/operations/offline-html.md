@@ -18,9 +18,20 @@ npm run -w data-tools offline:html:test
 From `data-tools/`, run `npm run offline:html --` with the same arguments.
 All relative input/output paths resolve from the **current checkout's repository
 root**, using the shared path helper. The DB path, book ID and variant are
-mandatory. The DB is opened read-only and read in one SQLite transaction. For
-a changing experimental DB, first take a SQLite backup into this worktree's
-output directory; copying a database file alone may miss WAL transactions.
+mandatory. The DB is opened read-only with SQLite `query_only=ON` and read in
+one transaction. Use the accepted stable final rehearsal DB directly for the
+final-input preview. Do not copy or rebuild it, and retain its shared runtime
+while other consumers depend on it. Dependency installs or filesystem links are
+unnecessary when an existing compatible runtime is provided:
+
+```powershell
+$env:NODE_PATH = '<runtime-root>/node_modules'
+& node '<runtime-root>/node_modules/tsx/dist/cli.mjs' '<code-root>/data-tools/src/offline-html/cli.ts' --content-db '<stable-final-content-db>' --book 86 --variant effective --out '<code-root>/data-tools/out/new-html-preview'
+```
+
+The same CLI runs from repository or package CWD, with root-relative arguments
+retaining the same meaning. Runtime locations are supplied by the task rather
+than assumed to be the primary checkout.
 
 Output must be a **new directory below this checkout's `data-tools/out/`**;
 existing directories, symlink/junction ancestors, source locations and operator
@@ -42,6 +53,9 @@ For `effective`, existing field provenance supplies only the displayed language;
 missing or conflicting language metadata fails. English fallback fields are
 explicitly labeled and counted, never treated as translated Chinese. Other
 Chinese variants have no field-level language metadata and are not QA-certified.
+Source-reviewed CHM retention in the accepted final writer remains Chinese
+ownership; it is not an untranslated fallback. The formatter does not redo
+the final writer or consumer provenance/source acceptance.
 
 The English section retains complete normalized HTML when available, otherwise
 the exact plain text. The Chinese section uses the same rule. Meaningful plain
@@ -74,3 +88,8 @@ it does not certify that input against the source PDF. English PDF plus official
 errata remain the ultimate SC content authority. Final content certification
 and rebuilding the finished export belong to the independently accepted full
 dataset and [DB workflow](./db-content-workflow.md).
+Accepted name/body rehearsal content and original-source reader notes do not
+certify pending relationship QA, operator migration or browser visual acceptance.
+Source-question IDs/notes already present in the accepted body are reader
+content and remain separate from the original ambiguous rules; private review
+envelopes are never appended to the body.

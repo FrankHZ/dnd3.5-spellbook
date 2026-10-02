@@ -37,7 +37,9 @@ function zh(id: number, name: string, plain: string, html: string | null, lang =
       plain, html, privacy, provenance(id, "name", lang), provenance(id, "body", lang));
 }
 const long = "完整段落 α & <目标>\n\n".repeat(600) + "[原文疑义] 保留说明。";
-const html = '<p id="start">Full <em>emphasis</em> &amp; Unicode 雪</p><table><caption>Fixture</caption><tr><th scope="col">Roll</th><th>Result</th></tr><tr><td colspan="2">A &lt; B</td></tr></table><ul><li>Item</li></ul><p><a href="#start">Return</a> <a href="/spells/book--86/beta--2/">Beta</a> <a href="https://example.invalid/private">Outside</a></p><a id="alias-id" name="旧%名">Anchor</a><a href="#%E6%97%A7%25%E5%90%8D">Named return</a>';
+const sourceNote = '原文疑义备注（本项目说明，非官方勘误）';
+const html = '<p id="start">Full <em>emphasis</em> &amp; Unicode 雪</p><table><caption>Fixture</caption><tr><th scope="col">Roll</th><th>Result</th></tr><tr><td colspan="2">A &lt; B</td></tr></table><ul><li>Item</li></ul><p><a href="#start">Return</a> <a href="/spells/book--86/beta--2/">Beta</a> <a href="https://example.invalid/private">Outside</a></p><a id="alias-id" name="旧%名">Anchor</a><a href="#%E6%97%A7%25%E5%90%8D">Named return</a>'
+  + `<h3>${sourceNote}</h3><p>[fixture-question-one] 原文条件甲和条件乙均保留，未作裁定。</p><p>[fixture-question-two] 第二处独立疑问；此备注不会改写原规则。</p>`;
 const plain = load(html, {}, false).root().text();
 try {
   db.prepare(`INSERT INTO RulebookContent (id,legacyRulebookId,editionId,name,abbr,slug,rawJson,
@@ -79,6 +81,8 @@ try {
   assert.equal($("#en + div a").eq(4).attr("href"), "#en-1-%E6%97%A7%25%E5%90%8D");
   assert.equal($("#en + div a").eq(3).attr("id"), "en-1-alias-id");
   assert.equal($("#en + div a").eq(3).attr("name"), "en-1-旧%名");
+  assert.equal($("#en + div h3").text(), sourceNote);
+  assert.ok(load(read("spell-2.html"))("#zh + div").text().includes('[fixture-question-two] 第二处独立疑问；此备注不会改写原规则。'));
   assert.ok($("#rules + table").text().includes("Printed ambiguity note"));
   const ruleText = $("#rules + table").text();
   for (const raw of ["Fixture school", "Raw subschool", "Raw descriptor", "Fixture caster 3", "Fixture domain 4",

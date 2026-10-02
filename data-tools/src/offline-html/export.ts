@@ -157,6 +157,7 @@ export function exportOfflineHtml(options: ExportOptions) {
   const out = newOutput(path.resolve(repoRoot(), options.outDir), contentDb);
   const db = new Database(contentDb, { readonly: true, fileMustExist: true });
   try {
+    db.pragma("query_only=ON");
     return db.transaction(() => {
       const spells = db.prepare(`SELECT id, legacySpellId, canonicalName, sourceRulebookId, sourcePage,
         schoolRaw, subschoolRaw, componentsRaw, corruptLevel, castingTimeRaw, rangeRaw, targetRaw, effectRaw, areaRaw,
