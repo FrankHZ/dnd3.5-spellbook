@@ -22,6 +22,9 @@ import {
   type InsertSpellOperation,
   type SpellUpdateFields,
   type UpdateSpellOperation,
+  type ParsedPatchOperation,
+  type PatchOperation,
+  isObject,
 } from "./spells-schema";
 
 type Mode = "validate" | "apply";
@@ -107,6 +110,8 @@ function usage(): never {
   npm run -w data-tools rules:spells:validate -- pending/spells/example.jsonl
   npm run -w data-tools rules:spells:apply -- --dry-run pending/spells/example.jsonl
   npm run -w data-tools rules:spells:apply -- pending/spells/example.jsonl
+  npm run -w data-tools rules:spells:step -- pending/spells/example-step.jsonl
+  npm run -w data-tools rules:spells:step -- --apply pending/spells/example-step.jsonl
 
 Patch paths are resolved under data/rules-patches/.
 `);
@@ -235,10 +240,12 @@ function tableCounts(db: Database.Database): TableCounts {
 export function validatePatch(
   db: Database.Database,
   patchPath: string,
+  parsedOperations?: ParsedPatchOperation[],
+  strictLookupNames = false,
 ): ValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
-  const parsed = parseJsonl(patchPath, errors);
+  const parsed = parsedOperations ?? parseJsonl(patchPath, errors);
   const maxIds = readMaxIds(db);
 
   const rulebooks = loadLookup(db, "dnd_rulebook", "abbr");
@@ -306,11 +313,13 @@ export function validatePatch(
         if (foundClassId === undefined) continue;
         let classId: number;
         if (item.expectedLevel === null) {
-          const matches = db
-            .prepare(
-              "SELECT id FROM dnd_characterclass WHERE LOWER(TRIM(name)) = ?",
-            )
-            .all(normalizeLookup(item.class)) as Array<{ id: number }>;
+          const matches = strictLookupNames
+            ? stepLookupMatches(db, "dnd_characterclass", "name", item.class)
+            : (db
+                .prepare(
+                  "SELECT id FROM dnd_characterclass WHERE LOWER(TRIM(name)) = ?",
+                )
+                .all(normalizeLookup(item.class)) as Array<{ id: number }>);
           if (matches.length !== 1) {
             errors.push(
               `line ${line}: class ${item.class} lookup is ambiguous`,
@@ -320,17 +329,33 @@ export function validatePatch(
           classId = matches[0]!.id;
         } else {
           // Resolve within this spell's memberships: editions can share class names.
-          const memberships = db
-            .prepare(
-              `SELECT c.id AS classId FROM dnd_spellclasslevel scl
+          const memberships = strictLookupNames
+            ? (
+                db
+                  .prepare(
+                    `SELECT c.id AS classId,c.name AS label FROM dnd_spellclasslevel scl
+              JOIN dnd_characterclass c ON c.id=scl.character_class_id
+              WHERE scl.spell_id=? AND COALESCE(scl.extra,'')=?`,
+                  )
+                  .all(shape.spellId, item.extra ?? "") as {
+                  classId: number;
+                  label: string;
+                }[]
+              ).filter(
+                (row) =>
+                  normalizeLookup(row.label) === normalizeLookup(item.class),
+              )
+            : (db
+                .prepare(
+                  `SELECT c.id AS classId FROM dnd_spellclasslevel scl
             JOIN dnd_characterclass c ON c.id = scl.character_class_id
             WHERE scl.spell_id = ? AND LOWER(TRIM(c.name)) = ? AND COALESCE(scl.extra, '') = ?`,
-            )
-            .all(
-              shape.spellId,
-              normalizeLookup(item.class),
-              item.extra ?? "",
-            ) as Array<{ classId: number }>;
+                )
+                .all(
+                  shape.spellId,
+                  normalizeLookup(item.class),
+                  item.extra ?? "",
+                ) as Array<{ classId: number }>);
           if (memberships.length !== 1) {
             errors.push(
               `line ${line}: class ${item.class}/${item.extra ?? ""} must match exactly one relationship`,
@@ -422,11 +447,17 @@ export function validatePatch(
       : null;
 
     if (rulebookId && name) {
-      const existingName = db
-        .prepare(
-          "SELECT id FROM dnd_spell WHERE lower(name) = lower(?) AND rulebook_id = ?",
-        )
-        .get(name, rulebookId) as { id: number } | undefined;
+      const existingName = strictLookupNames
+        ? (
+            db
+              .prepare("SELECT id,name FROM dnd_spell WHERE rulebook_id=?")
+              .all(rulebookId) as { id: number; name: string }[]
+          ).find((row) => normalizeLookup(row.name) === normalizeLookup(name))
+        : (db
+            .prepare(
+              "SELECT id FROM dnd_spell WHERE lower(name) = lower(?) AND rulebook_id = ?",
+            )
+            .get(name, rulebookId) as { id: number } | undefined);
       if (existingName) {
         errors.push(
           `line ${line}: spell already exists in rulebook: ${name} (${existingName.id})`,
@@ -942,6 +973,668 @@ export function applySpellPatchAtomically(
   })();
 }
 
+type SqlRow = Record<string, string | number | null>;
+type LevelGuard = { entityId: number; level: number; extra: string };
+export type SpellStepGuard = {
+  spell: SqlRow | null;
+  descriptors: number[];
+  classes: LevelGuard[];
+  domains: LevelGuard[];
+};
+export type SpellBookIdentity = {
+  id: number;
+  abbr: string;
+  editionId: number;
+  editionSlug: string;
+  system: string;
+};
+export type SpellStepOperation = {
+  patch:
+    | PatchOperation
+    | {
+        op: "moveSpellRulebook";
+        id: number;
+        from: SpellBookIdentity;
+        to: SpellBookIdentity;
+      };
+  before: SpellStepGuard;
+};
+
+const STEP_RELATIONS = [
+  ["dnd_spell_descriptors", "spelldescriptor_id", "descriptors"],
+  ["dnd_spellclasslevel", "character_class_id", "classes"],
+  ["dnd_spelldomainlevel", "domain_id", "domains"],
+] as const;
+
+function exact(value: unknown): string {
+  if (Array.isArray(value)) return JSON.stringify(value.map(exact).sort());
+  if (isObject(value))
+    return JSON.stringify(
+      Object.keys(value)
+        .sort()
+        .map((key) => [key, exact(value[key])]),
+    );
+  return JSON.stringify(value);
+}
+
+/** Complete row and natural relationship keys, including NULL versus empty text. */
+export function readSpellStepGuard(
+  db: Database.Database,
+  spellId: number,
+): SpellStepGuard {
+  const levels = (table: string, column: string) =>
+    db
+      .prepare(
+        `SELECT ${column} AS entityId, level, extra FROM ${table} WHERE spell_id=?`,
+      )
+      .all(spellId) as LevelGuard[];
+  return {
+    spell:
+      (db.prepare("SELECT * FROM dnd_spell WHERE id=?").get(spellId) as
+        SqlRow | undefined) ?? null,
+    descriptors: (
+      db
+        .prepare(
+          "SELECT spelldescriptor_id AS id FROM dnd_spell_descriptors WHERE spell_id=?",
+        )
+        .all(spellId) as { id: number }[]
+    ).map((row) => row.id),
+    classes: levels("dnd_spellclasslevel", "character_class_id"),
+    domains: levels("dnd_spelldomainlevel", "domain_id"),
+  };
+}
+
+function requireStepSchema(db: Database.Database) {
+  // A content/app-state DB is never a rules maintenance target, even if it
+  // happens to contain copied legacy tables.
+  for (const table of [
+    "SpellContent",
+    "RulesContentBuild",
+    "I18nSpellText",
+    "User",
+    "FavoriteSpell",
+    "SpellNote",
+  ]) {
+    if (
+      db
+        .prepare(
+          "SELECT 1 FROM sqlite_master WHERE type='table' AND name=? COLLATE NOCASE",
+        )
+        .get(table)
+    )
+      throw new Error("Spell step requires the rules DB role");
+  }
+  for (const [table, columns] of [
+    ["dnd_spell", ["id", "added", "name", "slug", "rulebook_id", "school_id"]],
+    ["dnd_rulebook", ["id", "abbr", "dnd_edition_id"]],
+    ["dnd_dndedition", ["id", "slug", "system"]],
+    ...STEP_RELATIONS.map(
+      ([table, entity]) => [table, ["id", "spell_id", entity]] as const,
+    ),
+  ] as const) {
+    const found = db.pragma(`table_info(${table})`) as {
+      name: string;
+      pk: number;
+    }[];
+    if (
+      !columns.every((column) => found.some((item) => item.name === column)) ||
+      !found.some((item) => item.name === "id" && item.pk === 1)
+    )
+      throw new Error(`Spell step requires rules schema: ${table}`);
+  }
+  for (const [table, entity] of [
+    ["idx_spell_class_level", "class_id"],
+    ["idx_spell_domain_level", "domain_id"],
+  ] as const) {
+    const found = db.pragma(`table_info(${table})`) as {
+      name: string;
+      pk: number;
+    }[];
+    const keys = found
+      .filter((item) => item.pk)
+      .sort((a, b) => a.pk - b.pk)
+      .map((item) => item.name);
+    if (
+      exact(keys) !==
+        exact(["spell_id", entity, "level", "rulebook_id", "extra"]) ||
+      !found.some((item) => item.name === "edition_id")
+    )
+      throw new Error(`Spell step requires derived index keys: ${table}`);
+  }
+}
+
+function stepLookupMatches(
+  db: Database.Database,
+  table: string,
+  column: string,
+  name: string,
+) {
+  // Identical to loadLookup's label semantics; SQLite LOWER/TRIM would miss
+  // aliases that JavaScript normalizes (including tabs/newlines and Unicode).
+  const rows = db
+    .prepare(`SELECT id,${column} AS label FROM ${table}`)
+    .all() as LookupValue[];
+  return rows.filter(
+    (row) => normalizeLookup(row.label) === normalizeLookup(name),
+  );
+}
+
+function validateStepOperations(
+  db: Database.Database,
+  operations: readonly SpellStepOperation[],
+) {
+  if (!Array.isArray(operations as unknown) || !operations.length)
+    throw new Error("Spell step must not be empty");
+  const isRecord = (value: unknown): boolean => isObject(value);
+  const seen = new Set<number>();
+  const spellColumns = (
+    db.pragma("table_info(dnd_spell)") as { name: string }[]
+  ).map((row) => row.name);
+  for (const operation of operations) {
+    if (
+      !isRecord(operation) ||
+      exact(Object.keys(operation)) !== exact(["patch", "before"]) ||
+      !isRecord(operation.patch) ||
+      !isRecord(operation.before)
+    )
+      throw new Error("Spell step requires patch and complete before guard");
+    const { patch, before } = operation;
+    if (!Number.isInteger(patch.id) || patch.id! <= 0 || seen.has(patch.id!))
+      throw new Error("Spell step requires unique positive spell IDs");
+    seen.add(patch.id!);
+    if (
+      exact(Object.keys(before)) !==
+      exact(["spell", "descriptors", "classes", "domains"])
+    )
+      throw new Error("Incomplete before guard");
+    if (patch.op === "insertSpell") {
+      const errors: string[] = [];
+      validateInsertSpellShape(patch, 1, errors, true);
+      if (errors.length) throw new Error(errors.join("; "));
+      if (before.spell !== null || !patch.spell?.added)
+        throw new Error(
+          "Insert step requires absent before and explicit added timestamp",
+        );
+    } else if (
+      !before.spell ||
+      !isRecord(before.spell) ||
+      before.spell.id !== patch.id ||
+      exact(Object.keys(before.spell)) !== exact(spellColumns) ||
+      Object.values(before.spell).some(
+        (value) =>
+          value !== null &&
+          typeof value !== "string" &&
+          (typeof value !== "number" || !Number.isFinite(value)),
+      )
+    ) {
+      throw new Error("Complete before spell row is required");
+    }
+    if (
+      !Array.isArray(before.descriptors) ||
+      before.descriptors.some((id) => !Number.isInteger(id) || id <= 0) ||
+      new Set(before.descriptors).size !== before.descriptors.length
+    )
+      throw new Error("Invalid or duplicate descriptor guard");
+    for (const kind of ["classes", "domains"] as const) {
+      const levels = before[kind];
+      if (
+        !Array.isArray(levels as unknown) ||
+        levels.some(
+          (item) =>
+            !isRecord(item) ||
+            exact(Object.keys(item)) !==
+              exact(["entityId", "level", "extra"]) ||
+            !Number.isInteger(item.entityId) ||
+            item.entityId <= 0 ||
+            !Number.isInteger(item.level) ||
+            item.level < 0 ||
+            item.level > 9 ||
+            typeof item.extra !== "string",
+        ) ||
+        new Set(levels.map((item) => exact([item.entityId, item.extra])))
+          .size !== levels.length
+      )
+        throw new Error(`Invalid or duplicate ${kind} guard`);
+    }
+    if (
+      before.spell === null &&
+      (before.descriptors.length ||
+        before.classes.length ||
+        before.domains.length)
+    )
+      throw new Error("Absent spell cannot have guarded relationships");
+    if (patch.op === "moveSpellRulebook") {
+      if (exact(Object.keys(patch)) !== exact(["op", "id", "from", "to"]))
+        throw new Error("Unsupported moveSpellRulebook field");
+      for (const book of [patch.from, patch.to]) {
+        if (
+          !isRecord(book) ||
+          exact(Object.keys(book)) !==
+            exact(["id", "abbr", "editionId", "editionSlug", "system"]) ||
+          !Number.isInteger(book.id) ||
+          book.id <= 0 ||
+          !Number.isInteger(book.editionId) ||
+          book.editionId <= 0 ||
+          [book.abbr, book.editionSlug, book.system].some(
+            (value) => typeof value !== "string" || !value.trim(),
+          )
+        )
+          throw new Error("Complete rulebook identity is required");
+        const matches = stepLookupMatches(
+          db,
+          "dnd_rulebook",
+          "abbr",
+          book.abbr,
+        );
+        if (matches.length !== 1 || matches[0]!.id !== book.id)
+          throw new Error("Rulebook identity is missing, ambiguous or changed");
+        const rows = db
+          .prepare(
+            `SELECT b.id,b.abbr,b.dnd_edition_id AS editionId,e.slug AS editionSlug,e.system
+          FROM dnd_rulebook b JOIN dnd_dndedition e ON e.id=b.dnd_edition_id WHERE b.id=?`,
+          )
+          .all(book.id);
+        if (rows.length !== 1 || exact(rows[0]) !== exact(book))
+          throw new Error("Rulebook identity is missing, ambiguous or changed");
+        const editions = (
+          db.prepare("SELECT slug,system FROM dnd_dndedition").all() as {
+            slug: string;
+            system: string;
+          }[]
+        ).filter(
+          (row) =>
+            normalizeLookup(row.slug) === normalizeLookup(book.editionSlug) &&
+            normalizeLookup(row.system) === normalizeLookup(book.system),
+        );
+        if (editions.length !== 1)
+          throw new Error("Edition identity is ambiguous");
+      }
+      if (
+        patch.from.id === patch.to.id ||
+        patch.from.system !== patch.to.system ||
+        before.spell?.rulebook_id !== patch.from.id
+      )
+        throw new Error("Invalid guarded rulebook move");
+    } else if (patch.op === "updateSpell") {
+      const errors: string[] = [];
+      const shape = validateUpdateSpellShape(patch, 1, errors);
+      if (errors.length) throw new Error(errors.join("; "));
+      for (const name of [
+        ...(shape.descriptors ?? []),
+        ...(shape.expectedDescriptors ?? []),
+      ]) {
+        const matches = stepLookupMatches(
+          db,
+          "dnd_spelldescriptor",
+          "name",
+          name,
+        );
+        if (matches.length !== 1)
+          throw new Error(`Ambiguous spell step descriptor lookup: ${name}`);
+      }
+    } else if (patch.op !== "insertSpell")
+      throw new Error("Unsupported spell step operation");
+  }
+}
+
+// Restore guards only in the disposable in-memory replay. The target writer
+// never writes caller-provided row snapshots; it uses the maintained patch API.
+function restoreStepBefore(
+  memory: Database.Database,
+  operations: readonly SpellStepOperation[],
+) {
+  for (const { patch, before } of operations) {
+    for (const [table] of STEP_RELATIONS)
+      memory.prepare(`DELETE FROM ${table} WHERE spell_id=?`).run(patch.id);
+    memory.prepare("DELETE FROM dnd_spell WHERE id=?").run(patch.id);
+    if (before.spell) {
+      const columns = Object.keys(before.spell);
+      memory
+        .prepare(
+          `INSERT INTO dnd_spell (${columns.map((column) => `"${column.replace(/"/g, '""')}"`).join(",")}) VALUES (${columns.map(() => "?").join(",")})`,
+        )
+        .run(...columns.map((column) => before.spell![column]));
+    }
+    for (const [table, entity, kind] of STEP_RELATIONS) {
+      const next = (
+        memory
+          .prepare(`SELECT COALESCE(MAX(id),0)+1 AS id FROM ${table}`)
+          .get() as { id: number }
+      ).id;
+      for (const [index, value] of before[kind].entries()) {
+        if (kind === "descriptors")
+          memory
+            .prepare(
+              `INSERT INTO ${table} (id,spell_id,${entity}) VALUES (?,?,?)`,
+            )
+            .run(next + index, patch.id, value);
+        else {
+          const level = value as LevelGuard;
+          memory
+            .prepare(
+              `INSERT INTO ${table} (id,spell_id,${entity},level,extra) VALUES (?,?,?,?,?)`,
+            )
+            .run(
+              next + index,
+              patch.id,
+              level.entityId,
+              level.level,
+              level.extra,
+            );
+        }
+      }
+    }
+  }
+}
+
+function checkStepEntities(
+  db: Database.Database,
+  operations: readonly SpellStepOperation[],
+) {
+  for (const { patch } of operations) {
+    const guard = readSpellStepGuard(db, patch.id!);
+    if (!guard.spell) throw new Error("Missing step spell");
+    for (const levels of [guard.classes, guard.domains]) {
+      if (
+        new Set(levels.map((item) => exact([item.entityId, item.extra])))
+          .size !== levels.length
+      )
+        throw new Error("Duplicate spell relationship key");
+    }
+    if (new Set(guard.descriptors).size !== guard.descriptors.length)
+      throw new Error("Duplicate spell descriptor key");
+    for (const [table, id] of [
+      ["dnd_rulebook", guard.spell.rulebook_id],
+      ["dnd_spellschool", guard.spell.school_id],
+      ...(guard.spell.sub_school_id == null
+        ? []
+        : [["dnd_spellsubschool", guard.spell.sub_school_id]]),
+      ...guard.descriptors.map((id) => ["dnd_spelldescriptor", id]),
+      ...guard.classes.map((item) => ["dnd_characterclass", item.entityId]),
+      ...guard.domains.map((item) => ["dnd_domain", item.entityId]),
+    ]) {
+      if (db.prepare(`SELECT id FROM ${table} WHERE id=?`).all(id).length !== 1)
+        throw new Error(`Missing or ambiguous related entity: ${table}/${id}`);
+    }
+    const book = db
+      .prepare(
+        "SELECT e.id FROM dnd_rulebook b JOIN dnd_dndedition e ON e.id=b.dnd_edition_id WHERE b.id=?",
+      )
+      .all(guard.spell.rulebook_id);
+    if (book.length !== 1)
+      throw new Error("Missing or ambiguous spell edition");
+    const collisions = (
+      db
+        .prepare("SELECT name FROM dnd_spell WHERE rulebook_id=? AND id<>?")
+        .all(guard.spell.rulebook_id, patch.id) as { name: string }[]
+    ).filter(
+      (row) =>
+        normalizeLookup(row.name) ===
+        normalizeLookup(guard.spell!.name as string),
+    );
+    if (collisions.length)
+      throw new Error("Spell name/rulebook identity collision");
+  }
+}
+
+function stepIndexState(db: Database.Database) {
+  return ["idx_spell_class_level", "idx_spell_domain_level"].map((table) => ({
+    schema: db
+      .prepare(
+        "SELECT type,name,sql FROM sqlite_master WHERE tbl_name=? ORDER BY name",
+      )
+      .all(table),
+    columns: db.pragma(`table_info(${table})`),
+    indexes: (db.pragma(`index_list(${table})`) as { name: string }[]).map(
+      (index) => ({
+        ...index,
+        columns: db.pragma(`index_xinfo('${index.name.replace(/'/g, "''")}')`),
+      }),
+    ),
+    rows: db.prepare(`SELECT * FROM ${table}`).all(),
+  }));
+}
+
+function stepProtectedState(
+  db: Database.Database,
+  operations: readonly SpellStepOperation[],
+) {
+  const ids = operations.map((item) => item.patch.id!);
+  const indexes = ["idx_spell_class_level", "idx_spell_domain_level"];
+  const schema = db
+    .prepare("SELECT type,name,tbl_name,sql FROM sqlite_master ORDER BY name")
+    .all() as {
+    type: string;
+    name: string;
+    tbl_name: string;
+    sql: string | null;
+  }[];
+  return {
+    schema: schema.filter((row) => !indexes.includes(row.tbl_name)),
+    rows: schema
+      .filter((row) => row.type === "table" && !indexes.includes(row.name))
+      .map((row) => {
+        const column = !ids.length
+          ? null
+          : row.name === "dnd_spell"
+            ? "id"
+            : STEP_RELATIONS.some(([table]) => table === row.name)
+              ? "spell_id"
+              : null;
+        const table = `"${row.name.replace(/"/g, '""')}"`;
+        return {
+          table: row.name,
+          rows: db
+            .prepare(
+              `SELECT * FROM ${table}${column ? ` WHERE ${column} NOT IN (${ids.map(() => "?").join(",")})` : ""}`,
+            )
+            .all(...(column ? ids : [])),
+        };
+      }),
+  };
+}
+
+function rebuildStepIndexes(
+  db: Database.Database,
+  indexes: readonly SpellIndexSqlPatch[],
+) {
+  // Index SQL has no authority to change base rows, even targeted rows or
+  // relationship surrogate IDs. Reuse the same direct state comparison with
+  // no typed-operation exclusions for this stage.
+  const before = exact(stepProtectedState(db, []));
+  rebuildIndexes(db, indexes);
+  if (exact(stepProtectedState(db, [])) !== before)
+    throw new Error(
+      "Index rebuild changed base rules, relationships or protected schema",
+    );
+}
+
+/** Default check and explicit apply share the same replay and exact guards.
+ * Mixed/unknown states are rejected; this does not recover partial histories.
+ */
+export function maintainSpellStep(
+  db: Database.Database,
+  operations: readonly SpellStepOperation[],
+  indexPatches: readonly SpellIndexSqlPatch[],
+  mode: "check" | "apply" = "check",
+) {
+  if (mode !== "check" && mode !== "apply")
+    throw new Error("Invalid spell step mode");
+  const indexes = indexPatches.map(normalizeIndexSqlPatch);
+  if (!indexes.length)
+    throw new Error("Spell step requires maintained index rebuild SQL");
+  const execute = () => {
+    requireStepSchema(db);
+    validateStepOperations(db, operations);
+    const protectedState = exact(stepProtectedState(db, operations));
+    const memory = new Database(db.serialize());
+    try {
+      memory.pragma("foreign_keys=OFF");
+      restoreStepBefore(memory, operations);
+      const parsed: ParsedPatchOperation[] = operations.flatMap(
+        ({ patch }, index) =>
+          patch.op === "moveSpellRulebook"
+            ? []
+            : [{ line: index + 1, value: patch }],
+      );
+      const validation = validatePatch(memory, "spell-step", parsed, true);
+      if (validation.errors.length)
+        throw new Error(validation.errors.join("; "));
+      // Snapshot guards must agree with the existing shape/expected contract.
+      checkStepEntities(
+        memory,
+        operations.filter((item) => item.patch.op !== "insertSpell"),
+      );
+      const inserts = validation.operations.filter(
+        (op): op is ResolvedInsertSpell => op.kind === "insertSpell",
+      );
+      // Legacy name maps choose a single value; the new step must reject an
+      // ambiguous insert instead of silently choosing one edition's entity.
+      for (const { op } of inserts) {
+        const names = [
+          ["dnd_rulebook", "abbr", op.source?.rulebook],
+          ["dnd_spellschool", "name", op.spell?.school],
+          ...(op.spell?.subschool
+            ? [["dnd_spellsubschool", "name", op.spell.subschool]]
+            : []),
+          ...(op.descriptors ?? []).map((name) => [
+            "dnd_spelldescriptor",
+            "name",
+            name,
+          ]),
+          ...(op.levels?.classes ?? []).map((level) => [
+            "dnd_characterclass",
+            "name",
+            level.class,
+          ]),
+          ...(op.levels?.domains ?? []).map((level) => [
+            "dnd_domain",
+            "name",
+            level.domain,
+          ]),
+        ];
+        for (const [table, column, name] of names) {
+          if (stepLookupMatches(memory, table!, column!, name!).length !== 1)
+            throw new Error(`Ambiguous spell step lookup: ${table}/${name}`);
+        }
+      }
+      const updates = validation.operations.filter(
+        (op): op is ResolvedUpdateSpell => op.kind === "updateSpell",
+      );
+      const moves = operations.flatMap(({ patch }) =>
+        patch.op === "moveSpellRulebook" ? [patch] : [],
+      );
+      const move = (target: Database.Database) => {
+        for (const item of moves) {
+          if (
+            (
+              target
+                .prepare("SELECT rulebook_id AS id FROM dnd_spell WHERE id=?")
+                .get(item.id) as { id: number }
+            ).id !== item.from.id
+          )
+            throw new Error("Rulebook move precondition changed");
+          target
+            .prepare("UPDATE dnd_spell SET rulebook_id=? WHERE id=?")
+            .run(item.to.id, item.id);
+        }
+      };
+      // Replay the real writer, including old whole-script SQL wrappers.
+      const after = memory.transaction(() => {
+        move(memory);
+        applySpellPatchAtomically(memory, inserts, updates, []);
+        checkStepEntities(memory, operations);
+        const typedAfter = operations.map(({ patch }) =>
+          readSpellStepGuard(memory, patch.id!),
+        );
+        rebuildStepIndexes(memory, indexes);
+        return typedAfter;
+      })();
+      requireStepSchema(memory);
+      if (exact(stepProtectedState(memory, operations)) !== protectedState)
+        throw new Error(
+          "Spell step changed protected rules or schema in replay",
+        );
+      const current = operations.map(({ patch }) =>
+        readSpellStepGuard(db, patch.id!),
+      );
+      const isBefore =
+        exact(current) === exact(operations.map((item) => item.before));
+      const isAfter = exact(current) === exact(after);
+      if (!isBefore && !isAfter)
+        throw new Error(
+          "Spell step is mixed or drifted; expected exact before or after",
+        );
+      // Verify indexes against a rebuild of the actual current rules, including
+      // all natural keys, extra labels, edition/book IDs and schema constraints.
+      const currentReplay = new Database(db.serialize());
+      try {
+        currentReplay.pragma("foreign_keys=OFF");
+        rebuildStepIndexes(currentReplay, indexes);
+        requireStepSchema(currentReplay);
+        if (exact(stepIndexState(db)) !== exact(stepIndexState(currentReplay)))
+          throw new Error(
+            "Spell step derived indexes are missing, drifted or incomplete",
+          );
+      } finally {
+        currentReplay.close();
+      }
+      if (isBefore && isAfter)
+        throw new Error("Spell step does not change state");
+      if (isAfter) return { state: "after" as const, changed: false };
+      if (mode === "check") return { state: "before" as const, changed: false };
+      move(db);
+      applySpellPatchAtomically(db, inserts, updates, []);
+      rebuildStepIndexes(db, indexes);
+      requireStepSchema(db);
+      if (
+        exact(
+          operations.map(({ patch }) => readSpellStepGuard(db, patch.id!)),
+        ) !== exact(after) ||
+        exact(stepIndexState(db)) !== exact(stepIndexState(memory))
+      )
+        throw new Error("Spell step failed exact after verification");
+      if (exact(stepProtectedState(db, operations)) !== protectedState)
+        throw new Error("Spell step changed protected rules or schema");
+      return { state: "after" as const, changed: true };
+    } finally {
+      memory.close();
+    }
+  };
+  // Apply classification/replay/preconditions occur under the write lock.
+  return mode === "apply"
+    ? db.transaction(execute).immediate()
+    : db.transaction(execute).deferred();
+}
+
+export function maintainSpellStepFile(
+  dbPath: string,
+  operations: readonly SpellStepOperation[],
+  indexes: readonly SpellIndexSqlPatch[],
+  mode: "check" | "apply" = "check",
+) {
+  const target = path.resolve(dbPath);
+  for (const role of ["CONTENT_DATABASE_URL", "APP_STATE_DATABASE_URL"]) {
+    const url = process.env[role];
+    if (
+      url?.startsWith("file:") &&
+      path.resolve(resolveServerRelativePath(url.slice(5))).toLowerCase() ===
+        target.toLowerCase()
+    )
+      throw new Error(`Spell step target must not be ${role}`);
+  }
+  const db = new Database(dbPath, {
+    readonly: mode === "check",
+    fileMustExist: true,
+  });
+  try {
+    db.pragma("foreign_keys=OFF");
+    return maintainSpellStep(db, operations, indexes, mode);
+  } finally {
+    db.close();
+  }
+}
+
 function writeReport(report: unknown, mode: Mode) {
   fs.mkdirSync(REPORT_ROOT, { recursive: true });
   const reportPath = path.join(REPORT_ROOT, `${timestamp()}-${mode}.json`);
@@ -1077,6 +1770,34 @@ function applyPatch(targetDbPath: string, patchPath: string, dryRun: boolean) {
 
 function main() {
   const [, , command, ...args] = process.argv;
+  if (command === "step") {
+    if (
+      args.some((arg) => arg.startsWith("--") && arg !== "--apply") ||
+      args.filter((arg) => arg !== "--apply").length !== 1
+    )
+      usage();
+    const patchPath = resolvePatchPath(
+      args.find((arg) => arg !== "--apply")!,
+      ".jsonl",
+    );
+    const operations = fs
+      .readFileSync(patchPath, "utf8")
+      .split(/\r?\n/)
+      .filter((line) => line.trim())
+      .map((line) => JSON.parse(line) as SpellStepOperation);
+    console.log(
+      JSON.stringify(
+        maintainSpellStepFile(
+          rulesDbPath(),
+          operations,
+          loadIndexPatches(),
+          args.includes("--apply") ? "apply" : "check",
+        ),
+      ),
+    );
+    return;
+  }
+
   if (command !== "validate" && command !== "apply") usage();
 
   const dryRun = args.includes("--dry-run");

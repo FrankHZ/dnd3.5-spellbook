@@ -96,6 +96,9 @@ migration's authorization and acceptance.
      files.
 
 2. Apply accepted rules patches only after handoff acceptance.
+   - New batches may use the [atomic spell maintenance step](./rules-db-notes.md#atomic-spell-maintenance-step)
+     for a read-only check and explicit transactional apply/repeat validation.
+     This covers only rules and their derived indexes; partial history is rejected.
    - Validate and dry-run the exact pending file.
    - Apply to a temporary copy before touching the local rules DB.
    - Apply to operator-owned `rules-clean.sqlite` only with explicit DB-write

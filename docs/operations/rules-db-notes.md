@@ -197,6 +197,80 @@ those with page-specific or issue-specific sources rather than the book ISBN
 enrichment workflow. The deferred rows remain outside accepted output until
 their source ambiguity is resolved.
 
+### Atomic spell maintenance step
+
+`rules:spells:step` is the explicit entry for a new, accepted single rules-DB
+batch with exact before/after checks. Existing `rules:spells:validate` and
+`rules:spells:apply` retain their stale-input rejection and legacy dry-run.
+
+```bash
+npm run -w data-tools rules:spells:step -- pending/spells/example-step.jsonl
+npm run -w data-tools rules:spells:step -- --apply pending/spells/example-step.jsonl
+npm run -w data-tools rules:spells:step:test
+```
+
+Each JSONL row contains exactly `patch` and `before`. `patch` is an existing
+`insertSpell` or `updateSpell` operation. `before` contains the complete
+`dnd_spell` row in `spell` (all schema columns, exact text and nulls), all
+descriptor IDs in `descriptors`, and complete `classes`/`domains` arrays of
+`{entityId, level, extra}`. These are reviewed input guards, not progress records.
+Relationship row IDs are allocation details; comparison uses full natural
+memberships and detects duplicate, missing and extra relations. An insert has
+`spell: null` and three empty relation arrays and requires an explicit
+`patch.spell.added` timestamp so repeat checks remain deterministic.
+`readSpellStepGuard` exposes that shape for preparing task-owned fixtures or an
+authorized reviewed handoff; taking a snapshot does not accept its source text.
+All strict step name checks use the same `normalizeLookup` case/whitespace
+semantics as the maintained name map, including tabs/newlines and Unicode.
+Insert rulebook, school, subschool, descriptor, class and domain labels must
+resolve uniquely, as must requested/expected update descriptors. Class
+additions require global uniqueness; existing class changes resolve uniquely
+within that spell's memberships and extra label, preserving edition boundaries.
+Move book abbreviations and edition/system identities use the same normalized
+comparison while retaining exact identity guards. Spell name/book collision
+checks also use that normalization. Ambiguous labels cannot
+select an ID by traversal order, including during repeat checks. Legacy CLI
+lookup behavior is unchanged.
+
+Identity corrections use the bounded `moveSpellRulebook` patch with `id`,
+`from` and `to`. Each book identity contains `id`, `abbr`, `editionId`,
+`editionSlug` and `system`. It checks exact old/new ownership, unique book and
+edition resolution, the same rules system, related entities and destination
+name/book collisions. It changes only `rulebook_id`; `SpellUpdateFields` still
+does not expose that field. Include at most one operation per spell per batch.
+
+Default check opens an existing rules DB read-only, restores the guarded before
+state in an in-memory SQLite replay, then uses the maintained shape/lookup/
+expected checks and atomic writer to derive the exact after state. It does not
+copy a DB to disk or write a report. Both before and after require complete
+derived index rows and their key/schema structure to match the maintained
+index SQL, including book/edition IDs and extra labels. Other rules rows,
+tables and schema are protected. Missing DBs, content/app-state roles, stale or
+mixed rules, incomplete indexes and changed guards fail closed.
+The typed after state is captured before index SQL runs. Each index stage must
+preserve all base rules and relationships, including targeted rows and their
+surrogate IDs; index SQL cannot authorize additional target edits. Both replay
+and real apply verify this boundary with the existing direct state comparison.
+
+Explicit apply rechecks under an immediate transaction and commits the rules,
+relationships and indexes together. Legacy whole-script index transaction
+wrappers use the existing normalization. Exact after returns
+`{"state":"after","changed":false}` without row, schema or timestamp writes;
+before check returns `{"state":"before","changed":false}`. Successful apply
+returns after with `changed:true`. Historical partial states are rejected.
+
+Paths follow the existing helpers: patch and maintained index SQL paths are
+under `DATA_REPO_PATH/rules-patches`; relative `DATA_REPO_PATH` is repository
+relative, and relative `file:` rules URLs are server relative, independent of
+caller cwd. The Node APIs `maintainSpellStep`/`maintainSpellStepFile` share this
+implementation with the CLI. The file API does not create missing DBs.
+
+This step covers one rules DB and its indexes. It does not orchestrate content,
+summaries or FTS, resume suspended queues, or recover arbitrary partial history.
+Synthetic guards demonstrate tool behavior only. Real use still requires
+source-bound acceptance and explicit DB write authorization; do not replay the
+already migrated SC baseline through this entry.
+
 ### Structured Spell Updates
 
 `insertSpell` writes one `dnd_spell` row, optional
