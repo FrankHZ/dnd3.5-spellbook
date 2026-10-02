@@ -40,8 +40,10 @@ the current DB body/rule fields and performs no summary import or normalization.
 | Scoped strict TypeScript check | Passed |
 | Browser visual smoke | Unverified: tool security policy rejects `file:` access and prohibits circumvention |
 
-The representation differences include Markdown markers in stored plain text;
-they are reported without rewriting the accepted input. An independent private
+The representation differences include emphasis markers, quoted link/URL syntax
+and typography in stored plain text. They are reported without rewriting the
+accepted input; this is not a claim that every input HTML/text difference has
+been certified semantically equivalent. An independent private
 checker compares every output body with complete input HTML (or exact plain
 text when HTML is absent), checks semantic element counts, names, page counts,
 links and privacy. Private reproduction evidence remains only under the issue's

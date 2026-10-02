@@ -79,10 +79,14 @@ function bodyHtml(html: string | null, plain: string, prefix: string, ids: Set<n
   }
   const anchors = new Map<string, string>();
   $("[id], a[name]").each((_, el) => {
-    const id = $(el).attr("id") ?? $(el).attr("name")!;
-    if (anchors.has(id)) throw new Error(`${prefix}: duplicate body anchor`);
-    const scoped = `${prefix}-${id}`;
-    anchors.set(id, scoped); $(el).attr("id", scoped).removeAttr("name");
+    const local = new Set<string>();
+    for (const attribute of ["id", "name"]) {
+      const id = $(el).attr(attribute);
+      if (id === undefined) continue;
+      if (anchors.has(id) && !local.has(id)) throw new Error(`${prefix}: duplicate body anchor`);
+      const scoped = `${prefix}-${id}`;
+      anchors.set(id, scoped); local.add(id); $(el).attr(attribute, scoped);
+    }
   });
   $("a[href]").each((_, el) => {
     const href = $(el).attr("href")!;
@@ -105,10 +109,11 @@ export function validatePages(pages: Map<string, string>) {
   for (const [name, html] of pages) {
     if (!name.endsWith(".html")) continue;
     const $ = load(html); const found = new Set<string>();
-    $("[id]").each((_, el) => {
-      const id = $(el).attr("id")!;
-      if (found.has(id)) throw new Error(`${name}: duplicate anchor`);
-      found.add(id);
+    $("[id], a[name]").each((_, el) => {
+      for (const id of new Set([$(el).attr("id"), $(el).attr("name")].filter(present))) {
+        if (found.has(id)) throw new Error(`${name}: duplicate anchor`);
+        found.add(id);
+      }
     });
     anchors.set(name, found);
   }
