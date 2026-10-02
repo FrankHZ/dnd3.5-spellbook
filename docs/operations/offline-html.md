@@ -19,14 +19,16 @@ From `data-tools/`, run `npm run offline:html --` with the same arguments.
 All relative input/output paths resolve from the **current checkout's repository
 root**, using the shared path helper. The DB path, book ID and variant are
 mandatory. The DB is opened read-only with SQLite `query_only=ON` and read in
-one transaction. Use the accepted stable final rehearsal DB directly for the
-final-input preview. Do not copy or rebuild it, and retain its shared runtime
-while other consumers depend on it. Dependency installs or filesystem links are
-unnecessary when an existing compatible runtime is provided:
+one transaction. Use the explicitly authorized accepted content DB directly;
+after migration, main-gate generates and verifies the export from the actual
+migrated content DB. A previous rehearsal does not grant operator access.
+Do not copy or rebuild DBs for export, and retain the shared runtime while other
+consumers depend on it. Dependency installs or filesystem links are unnecessary
+when an existing compatible runtime is provided:
 
 ```powershell
 $env:NODE_PATH = '<runtime-root>/node_modules'
-& node '<runtime-root>/node_modules/tsx/dist/cli.mjs' '<code-root>/data-tools/src/offline-html/cli.ts' --content-db '<stable-final-content-db>' --book 86 --variant effective --out '<code-root>/data-tools/out/new-html-preview'
+& node '<runtime-root>/node_modules/tsx/dist/cli.mjs' '<code-root>/data-tools/src/offline-html/cli.ts' --content-db '<authorized-accepted-content-db>' --book 86 --variant effective --out '<code-root>/data-tools/out/new-html-preview'
 ```
 
 The same CLI runs from repository or package CWD, with root-relative arguments
@@ -39,8 +41,11 @@ paths are rejected. Repeated exports use different directories. The command
 validates all pages and links before creating the directory. It never removes
 old pages or recursively overwrites output. A failed filesystem write can leave
 an incomplete directory; choose a new directory after resolving the I/O failure.
-The final accepted export can be copied to a durable local destination by its
-authorized owner after the final DB/content acceptance.
+After final DB/content verification, the authorized owner can copy HTML artifacts
+to a fresh durable destination outside removable worktrees and compare every file
+directly. This copies HTML, not DBs; it does not authorize overwriting shared
+output or confer browser/whole-book acceptance. Keep the content-preview notice
+until the owning integration explicitly accepts a reader-final presentation.
 
 ## Content And Limits
 
@@ -88,8 +93,11 @@ it does not certify that input against the source PDF. English PDF plus official
 errata remain the ultimate SC content authority. Final content certification
 and rebuilding the finished export belong to the independently accepted full
 dataset and [DB workflow](./db-content-workflow.md).
-Accepted name/body rehearsal content and original-source reader notes do not
-certify pending relationship QA, operator migration or browser visual acceptance.
+Authenticated name/body content and original-source reader notes do not certify
+pending relationship QA or browser visual acceptance. Operator migration requires
+its own accepted workflow and authorization; export verification does not replace
+that boundary. Current main-gate results and unclosed gates are recorded in the
+[SC offline HTML report](../reports/sc-offline-html-qa.md).
 Source-question IDs/notes already present in the accepted body are reader
 content and remain separate from the original ambiguous rules; private review
 envelopes are never appended to the body.
