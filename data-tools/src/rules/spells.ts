@@ -1203,15 +1203,18 @@ function validateStepOperations(
       const errors: string[] = [];
       const shape = validateUpdateSpellShape(patch, 1, errors);
       if (errors.length) throw new Error(errors.join("; "));
+      // Use the legacy map's normalization, including tabs/newlines, rather
+      // than SQLite TRIM's narrower whitespace handling.
+      const descriptorRows = db
+        .prepare("SELECT name FROM dnd_spelldescriptor")
+        .all() as { name: string }[];
       for (const name of [
         ...(shape.descriptors ?? []),
         ...(shape.expectedDescriptors ?? []),
       ]) {
-        const matches = db
-          .prepare(
-            "SELECT id FROM dnd_spelldescriptor WHERE LOWER(TRIM(name))=?",
-          )
-          .all(normalizeLookup(name));
+        const matches = descriptorRows.filter(
+          row => normalizeLookup(row.name) === normalizeLookup(name),
+        );
         if (matches.length !== 1)
           throw new Error(`Ambiguous spell step descriptor lookup: ${name}`);
       }

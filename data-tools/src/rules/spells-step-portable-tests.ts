@@ -170,11 +170,12 @@ async function main() {
     }
   };
   const rejectAmbiguousDescriptors = (operations: SpellStepOperation[]) => {
-    for (const name of ["New", "Old"]) {
+    for (const label of ["New", "Old"].flatMap(name => [
+      `  ${name.toUpperCase()}  `,
+      `\t${name.toUpperCase()}\n`,
+    ])) {
       db.exec("SAVEPOINT ambiguous_descriptor");
-      db.prepare("INSERT INTO dnd_spelldescriptor VALUES(50,?)").run(
-        `  ${name.toUpperCase()}  `,
-      );
+      db.prepare("INSERT INTO dnd_spelldescriptor VALUES(50,?)").run(label);
       for (const mode of ["check", "apply"] as const)
         rejectsUnchanged(
           () => maintainSpellStep(db, operations, rebuild, mode),
