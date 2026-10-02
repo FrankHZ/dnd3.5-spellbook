@@ -499,6 +499,12 @@ The [second bounded handoff report](../../data-tools/reports/dice-qa/books/86/cu
 locates its exact proposed slice, private evidence and unchanged consumer follow-ups.
 The [third bounded handoff report](../../data-tools/reports/dice-qa/books/86/current-edition-batch3-40.json)
 locates its reviewed slice, retained operative blockers and supplemental source questions.
+The [accepted-body history inventory](../../data-tools/reports/dice-qa/books/86/accepted-history-inventory.json)
+locates frozen selected HTML, prior review lineage, contextual passage decisions
+and bounded cleanup candidates. Its scan-negative disposition is not a clean
+or semantic-QA certification. Suggested cleanup scopes distinguish candidates
+from preservation controls and require later complete-body source review;
+the inventory itself changes neither accepted content nor the effective baseline.
 
 For an explicitly authorized faithful translation of a known source
 conflict, missing explanation or interpretation question, the independent body
