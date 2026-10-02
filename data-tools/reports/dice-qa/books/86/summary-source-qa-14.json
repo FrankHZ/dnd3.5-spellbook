@@ -1,0 +1,850 @@
+{
+  "schema": 1,
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/390",
+  "rulebookId": 86,
+  "status": "reviewed-proposal-awaiting-main-gate",
+  "publicBase": "9b3a4910a82fc2969191a8a2024ff159a136866f",
+  "integrationBase": "2fa4d2be871bce40e2c240690cd58483fa3ca1db",
+  "frozenAudit": "e793ff09a38060c5c6b336d28690353bd0d96909",
+  "privateInput": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411",
+  "acceptedHelperContract": "e154c69e817c81d7e48da105c46daba83a4da8c4",
+  "acceptedNarrowImporterContract": "af9296f19b29a05d60915fe4871a1d0e5ebaf63e",
+  "strengthenedReferenceContracts": {
+    "383": "1bf3afc26f263bebb25b38e5b2edb99ae8bfec11",
+    "379": "9d1a6d4229d7153b834b36b116570e48de5916a2",
+    "380": "e9f8a9788f97a12cdb7d0c67991e79d2dc27b4de"
+  },
+  "privateHandoffAndHelperCommit": "9f76e6c8828512b5306e602bafa50975bedc5673",
+  "privateReplayEvidenceCommit": "ef0ca91a306fdf3c334d652fa16f96816a2341d3",
+  "privateDirectory": "dice-qa/books/86/issue-390",
+  "modelVerification": {
+    "model": "gpt-6.1-sol",
+    "effort": "high",
+    "privateRecord": "model-verification.json",
+    "verifiedFromPersistedTurnContext": true
+  },
+  "scope": {
+    "sliceIndex": 13,
+    "targetsCount": 50,
+    "targets": [
+      4064,
+      3784,
+      4065,
+      4068,
+      4069,
+      4070,
+      4071,
+      4072,
+      4073,
+      3861,
+      4074,
+      4075,
+      4076,
+      4077,
+      4079,
+      4080,
+      4081,
+      4082,
+      4083,
+      4084,
+      4085,
+      4086,
+      4087,
+      4088,
+      4089,
+      4090,
+      4091,
+      4092,
+      4093,
+      4094,
+      4095,
+      4096,
+      4097,
+      4098,
+      4099,
+      4100,
+      4101,
+      4102,
+      4103,
+      4104,
+      4105,
+      4106,
+      4107,
+      4108,
+      4109,
+      4110,
+      3793,
+      4111,
+      4112,
+      4113
+    ],
+    "rowKeys": [
+      "4074:en:imarvin",
+      "4077:en:imarvin",
+      "4079:en:imarvin",
+      "4083:en:imarvin",
+      "4084:en:imarvin",
+      "4085:en:imarvin",
+      "4086:en:imarvin",
+      "4087:en:imarvin",
+      "4088:en:imarvin",
+      "4089:en:imarvin",
+      "4090:en:imarvin",
+      "4091:en:imarvin",
+      "4092:en:imarvin",
+      "4093:en:imarvin",
+      "4094:en:imarvin",
+      "4097:en:imarvin",
+      "4100:en:imarvin",
+      "4102:en:imarvin",
+      "4105:en:imarvin",
+      "4108:en:imarvin",
+      "4109:en:imarvin",
+      "4110:en:imarvin",
+      "4111:en:imarvin",
+      "4113:en:imarvin",
+      "3784:zh:chm",
+      "3793:zh:chm",
+      "3861:zh:chm",
+      "4064:zh:chm",
+      "4065:zh:chm",
+      "4068:zh:chm",
+      "4069:zh:chm",
+      "4070:zh:chm",
+      "4071:zh:chm",
+      "4072:zh:chm",
+      "4073:zh:chm",
+      "4074:zh:chm",
+      "4075:zh:chm",
+      "4076:zh:chm",
+      "4077:zh:chm",
+      "4079:zh:chm",
+      "4080:zh:chm",
+      "4081:zh:chm",
+      "4082:zh:chm",
+      "4083:zh:chm",
+      "4084:zh:chm",
+      "4085:zh:chm",
+      "4086:zh:chm",
+      "4087:zh:chm",
+      "4088:zh:chm",
+      "4089:zh:chm",
+      "4090:zh:chm",
+      "4091:zh:chm",
+      "4092:zh:chm",
+      "4093:zh:chm",
+      "4094:zh:chm",
+      "4095:zh:chm",
+      "4096:zh:chm",
+      "4097:zh:chm",
+      "4098:zh:chm",
+      "4099:zh:chm",
+      "4100:zh:chm",
+      "4101:zh:chm",
+      "4102:zh:chm",
+      "4103:zh:chm",
+      "4104:zh:chm",
+      "4105:zh:chm",
+      "4106:zh:chm",
+      "4107:zh:chm",
+      "4108:zh:chm",
+      "4109:zh:chm",
+      "4110:zh:chm",
+      "4111:zh:chm",
+      "4112:zh:chm",
+      "4113:zh:chm",
+      "4075:en:imarvin"
+    ],
+    "existingRows": 75,
+    "missingRowsCreated": 0
+  },
+  "context": {
+    "frozenEnglishMechanicsSnapshotRetained": true,
+    "finalAcceptedCandidateRevision": "0688739d92a2aa9fb3eceeb444daa7260e711058",
+    "finalAcceptedCandidatePath": "dice-qa/books/86/issue-365/field-dispositions.jsonl",
+    "finalNameBodyFields": 100,
+    "fullTextHtmlOriginReviewBound": true,
+    "candidateIsOriginalAuthority": false,
+    "staleMissingCrossTargetControlsPassed": true
+  },
+  "outcome": {
+    "correctedRows": 10,
+    "retainedRows": 65,
+    "correctedByLanguage": {
+      "en": 4,
+      "zh": 6
+    },
+    "unresolvedSummaryRows": 0,
+    "newSourceRulings": 0,
+    "preservedSourceOnlyContextNotes": [
+      {
+        "targetId": 4085,
+        "id": "push-distance"
+      },
+      {
+        "targetId": 4088,
+        "id": "creature-object-target-prose"
+      },
+      {
+        "targetId": 4111,
+        "id": "good-undead-overlap"
+      },
+      {
+        "targetId": 4112,
+        "id": "temporary-hp-duration"
+      }
+    ],
+    "existingUnresolvedSourceQuestions": [
+      "4085:push-distance"
+    ],
+    "externalReferenceLimits": [
+      {
+        "reference": "DMG149",
+        "targetIds": [
+          4097
+        ],
+        "SCReferenceRetained": true,
+        "independentExternalMechanicsVerified": false
+      },
+      {
+        "reference": "DMG292",
+        "targetIds": [
+          4087
+        ],
+        "SCReferenceRetained": true,
+        "independentExternalMechanicsVerified": false
+      },
+      {
+        "reference": "MM314",
+        "targetIds": [
+          4088
+        ],
+        "SCReferenceRetained": true,
+        "independentExternalMechanicsVerified": false
+      }
+    ]
+  },
+  "rows": [
+    {
+      "stableKey": "4074:en:imarvin",
+      "targetId": 4074,
+      "lang": "en",
+      "status": "reviewed-correction",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4077:en:imarvin",
+      "targetId": 4077,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4079:en:imarvin",
+      "targetId": 4079,
+      "lang": "en",
+      "status": "reviewed-correction",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4083:en:imarvin",
+      "targetId": 4083,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4084:en:imarvin",
+      "targetId": 4084,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4085:en:imarvin",
+      "targetId": 4085,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": [
+        "push-distance"
+      ]
+    },
+    {
+      "stableKey": "4086:en:imarvin",
+      "targetId": 4086,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4087:en:imarvin",
+      "targetId": 4087,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4088:en:imarvin",
+      "targetId": 4088,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": [
+        "creature-object-target-prose"
+      ]
+    },
+    {
+      "stableKey": "4089:en:imarvin",
+      "targetId": 4089,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4090:en:imarvin",
+      "targetId": 4090,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4091:en:imarvin",
+      "targetId": 4091,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4092:en:imarvin",
+      "targetId": 4092,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4093:en:imarvin",
+      "targetId": 4093,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4094:en:imarvin",
+      "targetId": 4094,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4097:en:imarvin",
+      "targetId": 4097,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4100:en:imarvin",
+      "targetId": 4100,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4102:en:imarvin",
+      "targetId": 4102,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4105:en:imarvin",
+      "targetId": 4105,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4108:en:imarvin",
+      "targetId": 4108,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4109:en:imarvin",
+      "targetId": 4109,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4110:en:imarvin",
+      "targetId": 4110,
+      "lang": "en",
+      "status": "reviewed-correction",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4111:en:imarvin",
+      "targetId": 4111,
+      "lang": "en",
+      "status": "reviewed-correction",
+      "sourceOnlyContextNoteIds": [
+        "good-undead-overlap"
+      ]
+    },
+    {
+      "stableKey": "4113:en:imarvin",
+      "targetId": 4113,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "3784:zh:chm",
+      "targetId": 3784,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "3793:zh:chm",
+      "targetId": 3793,
+      "lang": "zh",
+      "status": "reviewed-correction",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "3861:zh:chm",
+      "targetId": 3861,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4064:zh:chm",
+      "targetId": 4064,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4065:zh:chm",
+      "targetId": 4065,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4068:zh:chm",
+      "targetId": 4068,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4069:zh:chm",
+      "targetId": 4069,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4070:zh:chm",
+      "targetId": 4070,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4071:zh:chm",
+      "targetId": 4071,
+      "lang": "zh",
+      "status": "reviewed-correction",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4072:zh:chm",
+      "targetId": 4072,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4073:zh:chm",
+      "targetId": 4073,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4074:zh:chm",
+      "targetId": 4074,
+      "lang": "zh",
+      "status": "reviewed-correction",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4075:zh:chm",
+      "targetId": 4075,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4076:zh:chm",
+      "targetId": 4076,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4077:zh:chm",
+      "targetId": 4077,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4079:zh:chm",
+      "targetId": 4079,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4080:zh:chm",
+      "targetId": 4080,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4081:zh:chm",
+      "targetId": 4081,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4082:zh:chm",
+      "targetId": 4082,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4083:zh:chm",
+      "targetId": 4083,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4084:zh:chm",
+      "targetId": 4084,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4085:zh:chm",
+      "targetId": 4085,
+      "lang": "zh",
+      "status": "reviewed-correction",
+      "sourceOnlyContextNoteIds": [
+        "push-distance"
+      ]
+    },
+    {
+      "stableKey": "4086:zh:chm",
+      "targetId": 4086,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4087:zh:chm",
+      "targetId": 4087,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4088:zh:chm",
+      "targetId": 4088,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": [
+        "creature-object-target-prose"
+      ]
+    },
+    {
+      "stableKey": "4089:zh:chm",
+      "targetId": 4089,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4090:zh:chm",
+      "targetId": 4090,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4091:zh:chm",
+      "targetId": 4091,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4092:zh:chm",
+      "targetId": 4092,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4093:zh:chm",
+      "targetId": 4093,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4094:zh:chm",
+      "targetId": 4094,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4095:zh:chm",
+      "targetId": 4095,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4096:zh:chm",
+      "targetId": 4096,
+      "lang": "zh",
+      "status": "reviewed-correction",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4097:zh:chm",
+      "targetId": 4097,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4098:zh:chm",
+      "targetId": 4098,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4099:zh:chm",
+      "targetId": 4099,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4100:zh:chm",
+      "targetId": 4100,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4101:zh:chm",
+      "targetId": 4101,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4102:zh:chm",
+      "targetId": 4102,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4103:zh:chm",
+      "targetId": 4103,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4104:zh:chm",
+      "targetId": 4104,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4105:zh:chm",
+      "targetId": 4105,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4106:zh:chm",
+      "targetId": 4106,
+      "lang": "zh",
+      "status": "reviewed-correction",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4107:zh:chm",
+      "targetId": 4107,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4108:zh:chm",
+      "targetId": 4108,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4109:zh:chm",
+      "targetId": 4109,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4110:zh:chm",
+      "targetId": 4110,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4111:zh:chm",
+      "targetId": 4111,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": [
+        "good-undead-overlap"
+      ]
+    },
+    {
+      "stableKey": "4112:zh:chm",
+      "targetId": 4112,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": [
+        "temporary-hp-duration"
+      ]
+    },
+    {
+      "stableKey": "4113:zh:chm",
+      "targetId": 4113,
+      "lang": "zh",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    },
+    {
+      "stableKey": "4075:en:imarvin",
+      "targetId": 4075,
+      "lang": "en",
+      "status": "source-correct",
+      "sourceOnlyContextNoteIds": []
+    }
+  ],
+  "validation": {
+    "passed": true,
+    "reviewedTargets": 50,
+    "reviewedRows": 75,
+    "correctedRows": 10,
+    "retainedRows": 65,
+    "preservedUnchangedLines": 6562,
+    "accepted29BytePreserved": true,
+    "prior353And361PacketsPreserved": true,
+    "originalPagesFreshCompared": 29,
+    "spanReferencesReplayed": 4758,
+    "completeOfficialErrataRead": true,
+    "visualPagesInspected": 29,
+    "negativeControls": [
+      "stale row",
+      "missing decision",
+      "out-of-scope key",
+      "unassigned line alteration",
+      "stale same-count correction handoff",
+      "stale bilingual context",
+      "stale source locator",
+      "stale PDF geometry/text",
+      "duplicate decision",
+      "missing handoff",
+      "duplicate handoff",
+      "out-of-scope handoff",
+      "missing direct parent evidence",
+      "duplicate direct parent evidence",
+      "stale final candidate",
+      "missing final target",
+      "cross-target final candidate",
+      "missing final body",
+      "stale final origin",
+      "missing source page",
+      "duplicate source page",
+      "out-of-scope source page"
+    ],
+    "correctionHandoffFullRowsEqualDecisions": true,
+    "finalAcceptedFieldsBound": 100,
+    "finalNameBodyOriginReviewFullyBound": true,
+    "proseHeuristics": {
+      "uniqueReasons": 75,
+      "longRepeatedProse": 0,
+      "visiblePlaceholderOrCorruptCharacter": 0,
+      "whitespaceDamage": 0,
+      "formatTokenSyntaxPresent": false,
+      "fixedByteBudget": null
+    }
+  },
+  "handoff": {
+    "authoredNarrowInput": "corrections.jsonl",
+    "derivedReviewMirror": "summaries.proposed.jsonl",
+    "mirrorIsCanonicalInput": false,
+    "baselineRows": 6572,
+    "correctionRows": 10,
+    "fullCorrectionRowsEqualDecisionsAndMirror": true,
+    "maintainedParserAndImportRows": true,
+    "disposableSummaryOnlyDatabase": true,
+    "dryRunRowsUnchanged": true,
+    "apply": {
+      "updated": 10,
+      "inserted": 0
+    },
+    "repeat": {
+      "updated": 0,
+      "unchanged": 10
+    },
+    "allPersistedProposalFieldsEqual": true,
+    "updatedAtCurrentTimestampValidated": true,
+    "unassignedRowsAndSentinelUnchanged": true,
+    "rootAndPackageReplayPassed": true,
+    "committedHelperWorkingTextMatches": true
+  },
+  "boundaries": {
+    "canonicalWritten": false,
+    "bodyNameMechanicsChanged": false,
+    "operatorDatabaseOpened": false,
+    "appStateOpened": false,
+    "privatePush": false,
+    "productionActivated": false,
+    "broadOtherBookOrPHBQueuesResumed": false
+  }
+}
