@@ -14,7 +14,7 @@ summary input at private `a9cbe07747b1bc908ff4ebcd24244e38e58cb411`. Missing
 summaries are not created. Public base `37711b9b270b4f1931729dc3eccf3c67a9a5dd41`
 is synchronized through `fde172452f275eedef70a136e773de682f27fded`.
 
-Private handoff/helper commit `4625ff6fdd5c99e2b7932da975a2736852f24d9f` owns
+Private handoff/helper commit `826caffb384fc54266cae0f373811cbebe868e9c` owns
 `dice-qa/books/86/issue-362/`. It adapts the accepted #353 helpers/content at
 `e154c69e817c81d7e48da105c46daba83a4da8c4` and reads its final delivery
 `7de75ae250354372842c23c8c2d2ae4a1f1b1b55` without modifying that packet.
@@ -49,10 +49,12 @@ Every authored correction field equals its decision and derived proposal.
 Bilingual values, Unicode/placeholder/whitespace and repeated-prose heuristics
 pass. Prose has no invented fixed byte budget or control-token syntax.
 
-The actual maintained summary parser and `importRows` execute on a small
-command-created summary-only database. Dry-run preserves all rows; apply updates
-exactly 20 rows with every persisted field equal to the proposal, without inserts;
-repeat updates zero. All 6,552 other rows, identities and variants, #323's 29
+The actual maintained summary parser and `importRows` read the narrow 20-row
+`corrections.jsonl` on a small command-created summary-only database. Every parsed
+correction field equals its mirror row before import. Dry-run preserves all rows;
+apply updates exactly 20 rows with every persisted field equal to the proposal,
+without inserts; repeat updates zero and reports 20 unchanged. All 6,552 other
+rows, identities and variants, #323's 29
 accepted corrections and an unrelated table remain unchanged. The disposable
 database is removed after success. No operator DB or app-state is opened/copied.
 
@@ -61,7 +63,7 @@ public root and again from `data-tools`; exact committed helpers are checked
 before execution, and private replay files record actual head and caller cwd.
 
 ```powershell
-& "$runtimeRoot/data-tools/pdf-extract/.venv/Scripts/python.exe" -X utf8 "$dataRoot/dice-qa/books/86/issue-362/reproduce.py" --code-root $codeRoot --runtime-root $runtimeRoot --private-revision 4625ff6fdd5c99e2b7932da975a2736852f24d9f --run review-root
+& "$runtimeRoot/data-tools/pdf-extract/.venv/Scripts/python.exe" -X utf8 "$dataRoot/dice-qa/books/86/issue-362/reproduce.py" --code-root $codeRoot --runtime-root $runtimeRoot --private-revision 826caffb384fc54266cae0f373811cbebe868e9c --run review-root
 ```
 
 The existing runtime is reused without installation or worktree links. Root and
