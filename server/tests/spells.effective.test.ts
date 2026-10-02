@@ -29,6 +29,24 @@ async function seed(id = 100, book = 6, nameKind = "native", bodyKind = "english
   } });
 }
 const query = { lang: "zh", variant: "effective" };
+function amended(kind: "native" | "independent") {
+  const original = provenance(100, "body", kind);
+  const priorRevision = "b".repeat(40);
+  const prior = { owner: kind, revision: priorRevision, path: "private/prior", acceptedRow: {
+    targetId: 100, rulebookId: 6, sourceKey: original.origin.sourceKey,
+    ...(kind === "native" ? { descriptionHtml: "<pre>Private prior passage</pre>" }
+      : { field: "descriptionText", after: "Private prior passage", sourceRef: original.origin.sourceRef,
+        sourcePages, status: original.origin.status }),
+  } };
+  const activeAmendment = { revision, path: "private/amendment", prior,
+    sourceRef: "private/current-review", sourcePages, status: "accepted" };
+  return { ...original, origin: { ...original.origin, activeAmendment },
+    originalInput: { ...original.input, revision: priorRevision, path: prior.path },
+    originalEvidence: original.evidence,
+    input: { revision, path: activeAmendment.path, targetId: 100, field: "descriptionText", sourceKey: null },
+    evidence: { revision, path: activeAmendment.path, sourceRef: activeAmendment.sourceRef,
+      pages: sourcePages, status: activeAmendment.status } };
+}
 const previous = process.env.SPELL_READ_SOURCE;
 afterEach(async () => {
   await contentPrisma.i18nSpellSummaryText.deleteMany({ where: { spellId: 100, lang: "zh", variant: "chm" } });
@@ -83,6 +101,15 @@ describe.each(["rules", "content"])("explicit effective API (%s)", source => {
     expect(resolve.body.results[0].status).toBe("ambiguous");
     expect(resolve.body.results[0].candidates.map((s: any) => s.id).sort((a: number,b: number) => a-b)).toEqual([1,100]);
     expect(resolve.body.results[0].candidates.every((s: any) => s.i18n.nameProvenance)).toBe(true);
+    const selectedSearch = await request(app).get("/api/spells/search").query({ ...query,
+      q: "Synthetic shared name", rulebookIds: "6" });
+    expect(selectedSearch.status).toBe(200);
+    expect(selectedSearch.body.items.map((s: any) => s.id)).toEqual([100]);
+    for (const context of [{ lang: "zh" }, { lang: "zh", variant: "chm" }, { lang: "en", variant: "effective" }]) {
+      const oldSearch = await request(app).get("/api/spells/search").query({ ...context,
+        q: "Synthetic shared name", rulebookIds: "6" });
+      expect(oldSearch.status).toBe(200); expect(oldSearch.body.items).toEqual([]);
+    }
   });
   it("keeps absent-effective English fallback and summary-only overlays", async () => {
     const legacy = await request(app).get("/api/spells/100").query({ lang: "zh" });
@@ -141,5 +168,77 @@ describe.each(["rules", "content"])("explicit effective API (%s)", source => {
     await contentPrisma.i18nSpellText.updateMany({ where: { spellId: 100, variant: "effective" }, data: { bodyProvenanceJson: null } });
     expect((await request(app).get("/api/spells/100").query(query)).status).toBe(500);
     expect((await request(app).post("/api/spells/batch").query(query).send({ ids: [100] })).status).toBe(200);
+  });
+  it.each(["native", "independent"] as const)("serializes safe current amendment with original %s ownership", async kind => {
+    await seed(100, 6, "chm", kind);
+    await contentPrisma.i18nSpellText.updateMany({ where: { spellId: 100, variant: "effective" },
+      data: { bodyProvenanceJson: JSON.stringify(amended(kind)) } });
+    const res = await request(app).get("/api/spells/100").query(query);
+    expect(res.status).toBe(200);
+    expect(res.body.i18n.bodyProvenance).toEqual({ schemaVersion: 1, language: "zh", acceptedRevision: revision,
+      origin: { kind, sourceKey: kind === "native" ? "synthetic-source" : null },
+      amendment: { kind: "accepted-body-amendment", acceptedRevision: revision,
+        priorAcceptedRevision: "b".repeat(40), status: "accepted" } });
+    const serialized = JSON.stringify(res.body);
+    for (const secret of ["private/", "Private prior passage", "acceptedRow", "sourcePages", "originalInput", "ProvenanceJson"])
+      expect(serialized).not.toContain(secret);
+  });
+  it.each([
+    "missing-active", "missing-original-input", "missing-original-evidence", "stale-active", "same-revision",
+    "wrong-owner", "wrong-prior-target", "wrong-prior-book", "wrong-prior-key", "missing-prior-body",
+    "wrong-input-revision", "wrong-input-path", "wrong-input-target", "wrong-input-field", "wrong-input-key",
+    "wrong-original-revision", "wrong-original-path", "wrong-original-evidence", "wrong-evidence-pages",
+    "wrong-evidence-status", "rejected-status", "empty-pages", "wrong-language", "forged-name",
+    "wrong-independent-field", "wrong-independent-status", "wrong-independent-source", "wrong-independent-pages",
+  ])("fails closed on amendment %s", async caseName => {
+    const kind = caseName.includes("independent") ? "independent" : "native";
+    const p: any = amended(kind);
+    const a = p.origin.activeAmendment;
+    const mutations: Record<string, () => void> = {
+      "missing-active": () => delete p.origin.activeAmendment,
+      "missing-original-input": () => delete p.originalInput,
+      "missing-original-evidence": () => delete p.originalEvidence,
+      "stale-active": () => a.revision = "c".repeat(40),
+      "same-revision": () => a.prior.revision = revision,
+      "wrong-owner": () => a.prior.owner = "independent",
+      "wrong-prior-target": () => a.prior.acceptedRow.targetId = 101,
+      "wrong-prior-book": () => a.prior.acceptedRow.rulebookId = 4,
+      "wrong-prior-key": () => a.prior.acceptedRow.sourceKey = "forged",
+      "missing-prior-body": () => delete a.prior.acceptedRow.descriptionHtml,
+      "wrong-input-revision": () => p.input.revision = "c".repeat(40),
+      "wrong-input-path": () => p.input.path = "private/forged",
+      "wrong-input-target": () => p.input.targetId = 101,
+      "wrong-input-field": () => p.input.field = "descriptionHtml",
+      "wrong-input-key": () => p.input.sourceKey = "forged",
+      "wrong-original-revision": () => p.originalInput.revision = revision,
+      "wrong-original-path": () => p.originalInput.path = "private/forged",
+      "wrong-original-evidence": () => p.originalEvidence.sourceKey = "forged",
+      "wrong-evidence-pages": () => p.evidence.pages = [],
+      "wrong-evidence-status": () => p.evidence.status = "rejected",
+      "rejected-status": () => { a.status = p.evidence.status = "rejected"; },
+      "empty-pages": () => { a.sourcePages = p.evidence.pages = []; },
+      "wrong-language": () => p.language = "en",
+      "forged-name": () => p.field = "name",
+      "wrong-independent-field": () => a.prior.acceptedRow.field = "name",
+      "wrong-independent-status": () => a.prior.acceptedRow.status = "rejected",
+      "wrong-independent-source": () => a.prior.acceptedRow.sourceRef = "private/forged",
+      "wrong-independent-pages": () => a.prior.acceptedRow.sourcePages = [],
+    };
+    mutations[caseName]!();
+    await seed(100, 6, "chm", kind);
+    await contentPrisma.i18nSpellText.updateMany({ where: { spellId: 100, variant: "effective" }, data: {
+      [caseName === "forged-name" ? "nameProvenanceJson" : "bodyProvenanceJson"]: JSON.stringify(p),
+    } });
+    const res = await request(app).get("/api/spells/100").query(query);
+    expect(res.status).toBe(500);
+    expect(res.body.code).toBe("INVALID_EFFECTIVE_PROVENANCE");
+    expect(JSON.stringify(res.body)).not.toContain("private/");
+    if (caseName === "forged-name") {
+      for (const response of [await request(app).post("/api/spells/batch").query(query).send({ ids: [100] }),
+        await request(app).post("/api/spells/resolve").query(query).send({ names: ["Synthetic shared name"], rulebookIds: [6] })]) {
+        expect(response.status).toBe(500); expect(response.body.code).toBe("INVALID_EFFECTIVE_PROVENANCE");
+        expect(JSON.stringify(response.body)).not.toContain("private/");
+      }
+    }
   });
 });

@@ -44,6 +44,12 @@ describe("i18n storage", () => {
     expect(getI18nFromStorage()).toEqual({ lang: "zh", variant: "chm" });
   });
 
+  it("preserves the existing explicit effective preference", () => {
+    vi.stubGlobal("window", {});
+    mockedLoadState.mockReturnValue({ uiPrefs: { lang: "zh", zhVariant: "effective" } } as any);
+    expect(getI18nFromStorage()).toEqual({ lang: "zh", variant: "effective" });
+  });
+
   it("does not return a variant for English", () => {
     vi.stubGlobal("window", {});
     mockedLoadState.mockReturnValue({

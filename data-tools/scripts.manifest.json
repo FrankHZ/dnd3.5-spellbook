@@ -21,6 +21,13 @@
       "requiresSqlite": true,
       "writeCapable": true
     },
+    "dice:effective:consumers": {
+      "module": "harness",
+      "lifecycle": "local-acceptance",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
     "build": {
       "module": "harness",
       "lifecycle": "portable",
