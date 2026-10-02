@@ -689,6 +689,16 @@ function sortRows(rows: NormalizedSummaryRow[]) {
 
 function main() {
   const options = parseArgs(process.argv.slice(2));
+  if (
+    readJsonl<NormalizedSummaryRow>(options.out).some(
+      (row) => row.sourceKind === "reviewed-summary-correction",
+    )
+  ) {
+    throw new Error(
+      `Refusing to overwrite ${options.out}: it contains reviewed-summary-correction rows. ` +
+        "Generate a candidate with --out <new-file> and --report <new-report>, then explicitly review and merge it into the maintained summaries.",
+    );
+  }
   const byRulebook = loadSpellLookup();
   const zhMatched = readJson<ZhMatchedRecord[]>(options.zhMatched);
   const zhConflicts = readJson<ZhConflictRecord[]>(options.zhConflicts);

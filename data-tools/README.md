@@ -30,6 +30,11 @@ when source data, manifests, parser output, or import behavior is affected.
 Documentation-only edits need link, command, and diff checks. Remote CI remains
 the merge gate.
 
+Run `npm run -w data-tools summaries:normalize:test` for the portable short-desc
+normalization guard checks. Normalization refuses to overwrite existing reviewed
+summary corrections; generate a new candidate file and explicitly review/merge it
+as described in the [short descriptions workflow](../docs/operations/import-workflow.md#short-descriptions).
+
 ## Choose The Relevant Operation
 
 - [CHM parsing and Chinese imports](../docs/operations/import-workflow.md#chm-and-entity-translations)

@@ -248,6 +248,22 @@ when source/target numbers differ. ToB is excluded by default. Run punctuation
 after reuse passes so reused rows receive the same final punctuation handling.
 Coverage defaults to the official 3.5 working set; `-- --scope all` broadens it.
 
+For a bounded, original-rule review of an already accepted summary, update its
+row in the canonical JSONL after recording the exact prior row and original
+page/span evidence in the private issue directory. Keep its spell/book IDs,
+language, stable key and variant. A `chm` or `imarvin` variant selects the
+existing summary read path; it does not certify unchanged source text. Mark
+authored corrections with `sourceKind: reviewed-summary-correction` and a
+distinct review `sourceKey`, and retain the prior source fields and provenance
+under `provenance.derivedFrom`. Preserve donor rows and unreviewed summaries.
+Source extraction/normalization outputs remain candidates for such rows;
+`summaries:normalize` refuses to overwrite an existing output containing any
+`reviewed-summary-correction` row before opening inputs or writing either output
+or report. Generate into a new candidate path with `--out` and `--report`, then
+explicitly review and merge candidates while retaining accepted corrections.
+The importer consumes the canonical rows directly, and reuse apply leaves
+already-covered stable keys unchanged.
+
 ### Import Accepted Summaries
 
 ```bash
