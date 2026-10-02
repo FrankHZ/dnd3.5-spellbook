@@ -132,6 +132,29 @@ when reassessing them.
   worktrees. Create worktrees manually without junctions or symlinks to those
   files; configure each worktree's ignored root `.env` to the private data path.
 
+## Worktree Reuse And Cleanup
+
+- Independent issues/tasks need separate topic branches and PRs, not a new
+  checkout per issue. Main-gate must inspect `git worktree list` and assign an
+  idle checkout before creating another. Create one only when existing checkouts
+  are occupied or incompatible with the required work; record that reason in
+  the issue. Size the pool for active concurrency, not completed batch count.
+- Before reuse, confirm the previous owner has finished, its accepted changes
+  are merged, and no task or process still uses the checkout or its outputs.
+  Inspect tracked, untracked and ignored files. Preserve unmerged work and
+  required evidence; do not use blind `reset --hard` or `clean` to make it idle.
+  Fetch remote `main`, create the next issue's branch from that base in the
+  existing checkout, and verify its root, local configuration and dependencies.
+- Return completed checkouts to the reusable pool. Retain dependency installs
+  when compatible; do not install another full environment or copy full test
+  databases for each batch by default. Keep shared runtime and accepted rehearsal
+  outputs while consumers depend on them, with ownership recorded in the issue.
+- Remove surplus inactive worktrees after checking merge state, ignored outputs,
+  nested repositories and link targets. Verify absolute cleanup paths and use
+  `git worktree remove`; never traverse links into independent data or operator
+  databases. Durable sources/evidence belong in the configured data repo, and
+  progress/ownership stay in GitHub rather than a second worktree registry.
+
 ## Validation And Conditional References
 
 Run the smallest checks that prove the changed behavior; record results in the
