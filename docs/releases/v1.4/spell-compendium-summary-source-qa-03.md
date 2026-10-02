@@ -14,26 +14,29 @@ summary input at private `a9cbe07747b1bc908ff4ebcd24244e38e58cb411`. Missing
 summaries are not created. Public base `37711b9b270b4f1931729dc3eccf3c67a9a5dd41`
 is synchronized through `fde172452f275eedef70a136e773de682f27fded`.
 
-Private handoff/helper commit `826caffb384fc54266cae0f373811cbebe868e9c` owns
+Private handoff/helper commit `3c808df922c0b8043b8e74809ae4b78549667863` owns
 `dice-qa/books/86/issue-362/`. It adapts the accepted #353 helpers/content at
 `e154c69e817c81d7e48da105c46daba83a4da8c4` and reads its final delivery
 `7de75ae250354372842c23c8c2d2ae4a1f1b1b55` without modifying that packet.
 The private packet contains full frozen inputs, 96 individually authored
 decisions, 50 bilingual/context comparisons, fresh original geometry/spans,
-20 narrow authored corrections and their derived line-preserving review mirror.
+23 narrow authored corrections and their derived line-preserving review mirror.
 Complete current English, Chinese and mechanics remain read-only context.
 
 Twenty explicit original pages were freshly extracted and visually inspected,
 including scoped SC entries and continuations, printing evidence, the necessary
 direct Blink parent and complete official SC/PHB errata. None of this batch's
-summary clauses requires an errata substitution. There are 20 proposals
-(11 EN / 9 ZH) and 76 retentions. Demonstrated defects include reversed effect
+summary clauses requires an errata substitution. There are 23 proposals
+(11 EN / 12 ZH) and 73 retentions. Demonstrated defects include reversed effect
 recipients, incorrect damage scaling/types and misleading transformation or
 escape conditions. Concise accurate omissions remain unchanged.
 
 Four EN proposals replace unverified external elaboration with the SC entry's
 directly printed grant: the brilliant-energy property and the three called
-inevitables' duties. Original DMG/MM property/lore inputs are unavailable.
+inevitables' duties. Three additional ZH proposals replace generic role labels
+with the exact SC creature identities, preserving their English proper names;
+4007 aligns with the accepted name from #347. Original DMG/MM property/lore
+inputs are unavailable.
 The review verifies SC's grant by reference and task clauses; it does not certify
 all external property mechanics, declare every old elaboration false, or turn
 missing evidence into an original-text ambiguity. The external details in
@@ -49,11 +52,11 @@ Every authored correction field equals its decision and derived proposal.
 Bilingual values, Unicode/placeholder/whitespace and repeated-prose heuristics
 pass. Prose has no invented fixed byte budget or control-token syntax.
 
-The actual maintained summary parser and `importRows` read the narrow 20-row
+The actual maintained summary parser and `importRows` read the narrow 23-row
 `corrections.jsonl` on a small command-created summary-only database. Every parsed
 correction field equals its mirror row before import. Dry-run preserves all rows;
-apply updates exactly 20 rows with every persisted field equal to the proposal,
-without inserts; repeat updates zero and reports 20 unchanged. All 6,552 other
+apply updates exactly 23 rows with every persisted field equal to the proposal,
+without inserts; repeat updates zero and reports 23 unchanged. All 6,549 other
 rows, identities and variants, #323's 29
 accepted corrections and an unrelated table remain unchanged. The disposable
 database is removed after success. No operator DB or app-state is opened/copied.
@@ -63,7 +66,7 @@ public root and again from `data-tools`; exact committed helpers are checked
 before execution, and private replay files record actual head and caller cwd.
 
 ```powershell
-& "$runtimeRoot/data-tools/pdf-extract/.venv/Scripts/python.exe" -X utf8 "$dataRoot/dice-qa/books/86/issue-362/reproduce.py" --code-root $codeRoot --runtime-root $runtimeRoot --private-revision 826caffb384fc54266cae0f373811cbebe868e9c --run review-root
+& "$runtimeRoot/data-tools/pdf-extract/.venv/Scripts/python.exe" -X utf8 "$dataRoot/dice-qa/books/86/issue-362/reproduce.py" --code-root $codeRoot --runtime-root $runtimeRoot --private-revision 3c808df922c0b8043b8e74809ae4b78549667863 --run review-root
 ```
 
 The existing runtime is reused without installation or worktree links. Root and

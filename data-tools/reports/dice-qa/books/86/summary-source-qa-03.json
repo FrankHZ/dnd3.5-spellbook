@@ -7,7 +7,7 @@
   "syncedBase": "fde172452f275eedef70a136e773de682f27fded",
   "frozenAudit": "e793ff09a38060c5c6b336d28690353bd0d96909",
   "privateInput": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411",
-  "privateHandoffAndHelperCommit": "826caffb384fc54266cae0f373811cbebe868e9c",
+  "privateHandoffAndHelperCommit": "3c808df922c0b8043b8e74809ae4b78549667863",
   "privateDirectory": "dice-qa/books/86/issue-362",
   "acceptedHelperContract": {
     "issue": 353,
@@ -406,15 +406,15 @@
     },
     {
       "stableKey": "4007:zh:chm",
-      "status": "source-correct"
+      "status": "reviewed-correction"
     },
     {
       "stableKey": "4008:zh:chm",
-      "status": "source-correct"
+      "status": "reviewed-correction"
     },
     {
       "stableKey": "4009:zh:chm",
-      "status": "source-correct"
+      "status": "reviewed-correction"
     },
     {
       "stableKey": "4010:zh:chm",
@@ -458,14 +458,14 @@
     }
   ],
   "corrections": {
-    "rows": 20,
+    "rows": 23,
     "targets": 18,
     "en": 11,
-    "zh": 9,
+    "zh": 12,
     "demonstratedSemanticCorrections": 16,
-    "directSCGrantReplacingUnverifiedElaboration": 4,
-    "unchangedCanonicalLines": 6552,
-    "accepted29BytePreserved": true
+    "unchangedCanonicalLines": 6549,
+    "accepted29BytePreserved": true,
+    "directSCGrantOrEntityClarifications": 7
   },
   "sourceVerification": {
     "freshPages": 20,
@@ -494,7 +494,12 @@
     "oldExternalStatementsDeclaredFalse": false,
     "externalFullRuleQAClaimed": false,
     "newOriginalAmbiguityInvented": false,
-    "bodyAndOtherFieldAcceptanceChanged": false
+    "bodyAndOtherFieldAcceptanceChanged": false,
+    "exactEntityClarificationKeys": [
+      "4007:zh:chm",
+      "4008:zh:chm",
+      "4009:zh:chm"
+    ]
   },
   "verification": {
     "negativeControls": [
@@ -513,7 +518,7 @@
     "existingSummarySchemaAndImporterUsed": true,
     "disposableBaselineRows": 6572,
     "dryRunUnchanged": true,
-    "applicationUpdates": 20,
+    "applicationUpdates": 23,
     "applicationInserts": 0,
     "repeatUpdates": 0,
     "unrelatedTablePreserved": true,
@@ -523,9 +528,9 @@
     "persistedFieldsEqualProposal": true,
     "fullRemoteCIRequired": true,
     "importerInput": "corrections.jsonl",
-    "parsedCorrectionRows": 20,
+    "parsedCorrectionRows": 23,
     "parsedCorrectionFieldsEqualMirror": true,
-    "repeatUnchanged": 20
+    "repeatUnchanged": 23
   },
   "boundaries": {
     "canonicalOwnerWritten": false,
