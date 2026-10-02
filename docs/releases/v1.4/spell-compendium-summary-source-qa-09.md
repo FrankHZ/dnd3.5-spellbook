@@ -14,22 +14,22 @@ Scope is `suggestedSummarySlices[8]` from audit
 `fe4b9db939e0d49787f5582cf8957c531798aad7`, synchronized with relevant main
 through `70eff96c77223dd6e1c05206de549b80407b5423`.
 
-Private handoff/helper revision `c779c7a0151ec3318b30200c396e181dc259870f`
+Private handoff/helper revision `9d1a6d4229d7153b834b36b116570e48de5916a2`
 owns `dice-qa/books/86/issue-379/`. It reuses the accepted #353 contract
 `e154c69e817c81d7e48da105c46daba83a4da8c4` and #361 narrow importer contract
 `af9296f19b29a05d60915fe4871a1d0e5ebaf63e`, with the later source/context
 binding checks adapted for this batch.
 
 There are 96 individually authored reasons and 50 actual-value bilingual/body
-comparisons. The proposal corrects 39 rows across 26 targets (17 English,
-22 Chinese) and retains 57 rows. Corrections concern target qualification,
+comparisons. The proposal corrects 38 rows across 26 targets (17 English,
+21 Chinese) and retains 58 rows. Corrections concern target qualification,
 triggers, duration, damage scaling, temporary hit points, bonus types,
 movement modes, conditional effects, named appearance and weapon behavior.
 Concise accurate summaries retain their existing wording and level of detail.
 
 `corrections.jsonl` is the authored narrow handoff.
 `summaries.proposed.jsonl` is a derived review mirror preserving row order and
-all 6,476 out-of-scope lines; 6,533 canonical lines remain byte-identical to the
+all 6,476 out-of-scope lines; 6,534 canonical lines remain byte-identical to the
 frozen input. The mirror must not replace canonical summaries or become an
 import input. Prior accepted #323/#353/#361 packets remain read-only.
 
@@ -57,11 +57,11 @@ correction-row equality with decisions and mirror, paired values, repeated
 prose, placeholders, Unicode and whitespace. It invents no byte budget or
 control-token syntax.
 
-The maintained summary parser and `importRows` consume only the 39-row narrow
+The maintained summary parser and `importRows` consume only the 38-row narrow
 handoff on a disposable summary-only database with 6,572 baseline rows and an
 unrelated sentinel table. Dry-run preserves all rows; apply updates exactly
-39 and inserts zero; repeat updates zero. Every persisted proposal field
-matches, and all 6,533 other rows and the sentinel are unchanged. The database
+38 and inserts zero; repeat updates zero. Every persisted proposal field
+matches, and all 6,534 other rows and the sentinel are unchanged. The database
 is removed after the run. Fixed-revision replay passes from repository root
 and `data-tools`; final-head evidence records exact public revisions privately.
 Full remote `ci:portable` at the final PR head remains the merge gate.
@@ -78,7 +78,7 @@ $dataRoot = 'G:/spell-book/data'
 $runtimeRoot = 'G:/spell-book/worktrees/sc-current-effective-writer'
 $qaRoot = Join-Path $dataRoot 'dice-qa/books/86/issue-379'
 $python = Join-Path $runtimeRoot 'data-tools/pdf-extract/.venv/Scripts/python.exe'
-$revision = 'c779c7a0151ec3318b30200c396e181dc259870f'
+$revision = '9d1a6d4229d7153b834b36b116570e48de5916a2'
 $env:PYTHONDONTWRITEBYTECODE = '1'
 Set-Location $codeRoot
 & $python -X utf8 "$qaRoot/reproduce.py" --code-root $codeRoot --runtime-root $runtimeRoot --private-revision $revision --run review-root

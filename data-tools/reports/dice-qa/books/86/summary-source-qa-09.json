@@ -7,7 +7,7 @@
   "synchronizedMain": "70eff96c77223dd6e1c05206de549b80407b5423",
   "frozenAudit": "e793ff09a38060c5c6b336d28690353bd0d96909",
   "privateInput": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411",
-  "privateHandoffAndHelperCommit": "c779c7a0151ec3318b30200c396e181dc259870f",
+  "privateHandoffAndHelperCommit": "9d1a6d4229d7153b834b36b116570e48de5916a2",
   "privateDirectory": "dice-qa/books/86/issue-379",
   "acceptedHelperContracts": {
     "353": "e154c69e817c81d7e48da105c46daba83a4da8c4",
@@ -412,7 +412,7 @@
     },
     {
       "stableKey": "4709:zh:chm",
-      "status": "reviewed-correction"
+      "status": "source-correct"
     },
     {
       "stableKey": "4710:zh:chm",
@@ -460,11 +460,11 @@
     }
   ],
   "corrections": {
-    "rows": 39,
+    "rows": 38,
     "targets": 26,
     "languages": {
       "en": 17,
-      "zh": 22
+      "zh": 21
     },
     "keys": [
       "3880:en:imarvin",
@@ -499,7 +499,6 @@
       "4700:zh:chm",
       "4701:zh:chm",
       "4708:zh:chm",
-      "4709:zh:chm",
       "4712:zh:chm",
       "4713:zh:chm",
       "4714:zh:chm",
@@ -507,8 +506,8 @@
       "4718:zh:chm",
       "4720:zh:chm"
     ],
-    "retainedAssignedRows": 57,
-    "unchangedCanonicalLines": 6533,
+    "retainedAssignedRows": 58,
+    "unchangedCanonicalLines": 6534,
     "outOfScopeLinesPreserved": 6476,
     "accepted323BytePreserved": true,
     "prior353And361PacketsPreserved": true
@@ -605,7 +604,7 @@
     "narrowAuthoredHandoffImported": true,
     "disposableBaselineRows": 6572,
     "dryRunUnchanged": true,
-    "applicationUpdates": 39,
+    "applicationUpdates": 38,
     "applicationInserts": 0,
     "repeatUpdates": 0,
     "persistedFieldsEqualProposal": true,
