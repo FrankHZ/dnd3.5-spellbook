@@ -5,10 +5,10 @@
   "rulebookId": 86,
   "validation": "validated-proposal-awaiting-main-gate",
   "publicCodeBase": "f9484a9f42b7f1a2ae848d6c69f6dd2c42627195",
-  "publicExecutionHead": "f9484a9f42b7f1a2ae848d6c69f6dd2c42627195",
+  "publicExecutionHead": "3d99ff781ecaa6578e355e3fa1f8a1fe3802ae93",
   "privateInput": "974176f9fefdbd07466370104689f49ca4fbd86f",
-  "privateHandoffRevision": "781912bed6df92f952760632bfdbbe5b2b7a17f3",
-  "committedHelperRevision": "a4f55b2d1f99270021ccf755114a041f28430284",
+  "privateHandoffRevision": "296903c61e20ce359812148fc0faa234ca2508e7",
+  "committedHelperRevision": "dc7ca28854103b98947a3d8faa4b5de9cc5d08e0",
   "privateHandoffDirectory": "dice-qa/books/86/issue-329",
   "scope": "Exactly frozen issue-313 positions 121–149; twenty-nine complete SC body reviews under the current-edition delivery scope",
   "exactTargetIds": [
@@ -781,8 +781,10 @@
     "representativeHTMLScreenshotsActuallyViewed": [
       4437,
       4504,
+      4505,
       4610,
-      4691
+      4691,
+      4723
     ],
     "portableTests": [
       {
@@ -800,12 +802,17 @@
     "reproduction": {
       "rootPassed": true,
       "packagePassed": true,
-      "commandsPerInvocation": 6,
+      "commandsPerInvocation": 7,
       "exactCommittedHelperBytesVerified": true,
-      "helperRevision": "a4f55b2d1f99270021ccf755114a041f28430284",
-      "publicExecutionHead": "f9484a9f42b7f1a2ae848d6c69f6dd2c42627195",
+      "helperRevision": "dc7ca28854103b98947a3d8faa4b5de9cc5d08e0",
+      "publicExecutionHead": "3d99ff781ecaa6578e355e3fa1f8a1fe3802ae93",
       "explicitRootsAndReadonlyDBPaths": true
-    }
+    },
+    "correctedCompleteBodiesRereadAndRenderedTargets": [
+      4505,
+      4723
+    ],
+    "portableTestsExecutionHead": "f9484a9f42b7f1a2ae848d6c69f6dd2c42627195"
   },
   "boundaries": {
     "prior997FieldsBytePreserved": true,
@@ -823,5 +830,20 @@
     "productionActivation": false,
     "deployment": false,
     "mainGateAcceptance": false
+  },
+  "reviewRevision": {
+    "priorReviewRevision": "781912bed6df92f952760632bfdbbe5b2b7a17f3",
+    "correctedTargetIds": [
+      4505,
+      4723
+    ],
+    "correctedScope": "Weapon-property exception and named spell-series scope; no extra rules added",
+    "completeBodyChangesExactlyTwoLiteralSubstitutions": true,
+    "other27ReviewsBytePreserved": true,
+    "other366IndependentUnionRowsBytePreserved": true,
+    "originalCurrent1002InputsUnchanged": true,
+    "prior997FieldsBytePreserved": true,
+    "consumersSourceQuestionsAndComplementUnchanged": true,
+    "privateVerification": "review-revision-verification.json; verify_review_revision.py"
   }
 }
