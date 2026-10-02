@@ -70,6 +70,52 @@ assert.throws(() => run([row], [{ targetId: 1, rulebookId: 10, descriptionHtml: 
 assert.throws(() => run([title], [{ targetId: 1, rulebookId: 10, name: "native" }]), /overlaps/);
 const absent = structuredClone(row);absent.before = null;absent.input.chinese = { name: null, descriptionText: null, descriptionHtml: null };
 assert.throws(() => validateSourceBoundFallbackReviews([absent], 10, english, html, new Map(), []), /absent Chinese/);
+// Missing translations need explicit intent and the same source/full-body gates.
+// A different existing field does not make the requested field present.
+const missing = { ...structuredClone(absent), intent: "translate-missing" as const };
+missing.fullBodyAudit!.beforeHtml = null;
+const translate = (reviews: SourceBoundFallbackReview[], current = new Map<number, typeof old | typeof missing.input.chinese>()) =>
+  validateSourceBoundFallbackReviews(reviews, 10, english, html, current, []);
+assert.equal(translate([missing]).summary.fullBodyAudits, 1);
+const missingName = { ...structuredClone(title), intent: "translate-missing" as const, before: null,
+  input: { ...title.input, chinese: { ...old, name: null } } };
+assert.equal(translate([missingName], new Map([[1, missingName.input.chinese]])).accepted.length, 1);
+const namedMissingBody = { ...structuredClone(missing), input: { ...missing.input,
+  chinese: { ...missing.input.chinese, name: old.name } } };
+assert.equal(translate([namedMissingBody], new Map([[1, namedMissingBody.input.chinese]])).accepted.length, 1);
+const missingBoth = { ...structuredClone(missingName), input: missing.input };
+assert.equal(translate([missing, missingBoth]).accepted.length, 2);
+let missingRejected = 0;
+function missingFails(change: (item: SourceBoundFallbackReview) => void, pattern: RegExp,
+  current = new Map<number, typeof old | typeof missing.input.chinese>()) {
+  const item = structuredClone(missing); change(item);
+  assert.throws(() => translate([item], current), pattern); missingRejected++;
+}
+missingFails(r => { delete r.intent; }, /absent Chinese/);
+missingFails(r => { (r as unknown as { intent: string }).intent = "auto-fallback"; }, /invalid.*intent/);
+missingFails(r => { r.before = ""; r.input.chinese.descriptionText = ""; }, /absent Chinese field/,
+  new Map([[1, { ...missing.input.chinese, descriptionText: "" }]]));
+missingFails(r => { r.before = old.descriptionText; r.input.chinese = old; r.fullBodyAudit!.beforeHtml = old.descriptionHtml; },
+  /absent Chinese field/, new Map([[1, old]]));
+missingFails(r => { r.input.chinese.descriptionHtml = "<p>Existing text</p>"; }, /absent Chinese HTML/,
+  new Map([[1, { ...missing.input.chinese, descriptionHtml: "<p>Existing text</p>" }]]));
+missingFails(r => { r.input.english.mechanics.duration = "changed"; }, /full English/);
+missingFails(r => { r.input.englishHtml = "changed"; }, /English HTML/);
+missingFails(r => { r.rulePairs = []; }, /closed rule evidence/);
+missingFails(r => { r.rulePairs[0]!.chinese = "untranslated"; }, /unaligned/);
+missingFails(r => { r.pendingSourceEvidence = ["unread shared header"]; }, /closed rule evidence/);
+missingFails(r => { r.originalSourceRead = false; }, /not actually reviewed/);
+missingFails(r => { r.sourcePages = []; }, /provenance/);
+missingFails(r => { (r as unknown as { sourceKey: string }).sourceKey = "invented-chm"; }, /remain null/);
+missingFails(r => { r.proposedHtml = "<p>changed</p>"; }, /projection mismatch/);
+missingFails(r => { delete r.fullBodyAudit; }, /full-body audit/);
+missingFails(r => { r.fullBodyAudit!.beforeHtml = "invented old HTML"; }, /audited old HTML/);
+missingFails(r => { r.fullBodyAudit!.englishEvidence = ["other spell"]; }, /full-body evidence/);
+missingFails(r => { r.fullBodyAudit!.currentHtmlReviewed = false; }, /unread.*HTML/);
+assert.throws(() => translate([missingName], new Map([[1, old]])), /stale full Chinese/);
+assert.throws(() => validateSourceBoundFallbackReviews([missing], 10, english, html, new Map(),
+  [{ targetId: 1, rulebookId: 10, descriptionHtml: "already owned" }]), /overlaps/);
+console.log(`missing Chinese translation portable tests passed (${missingRejected + 2} rejection checks)`);
 const deferred = { ...row, status: "deferred" as const, pendingSourceEvidence: ["unread original dependency"], originalSourceRead: false };
 assert.equal(run([deferred]).accepted.length, 0);
 const retained = structuredClone(row);

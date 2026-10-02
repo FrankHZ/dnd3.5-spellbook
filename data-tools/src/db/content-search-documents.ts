@@ -69,7 +69,7 @@ export function buildContentSearchDocuments(
     const texts = textsBySpell.get(spell.spellId) ?? [];
     const summaries = summariesBySpell.get(spell.spellId) ?? [];
     const mechanics = mechanicsBySpell.get(spell.spellId) ?? [];
-    const localizedNames = texts.map((row) => row.name).filter(isText);
+    const localizedNames = texts.filter(row => row.variant !== "effective").map((row) => row.name).filter(isText);
     const aliases = uniqueText([
       spell.slug.replaceAll("-", " "),
       ...localizedNames,
@@ -140,7 +140,7 @@ export function buildContentSearchDocuments(
         name: draft.name,
         aliases: uniqueText([
           spell.canonicalName,
-          ...aliases,
+          ...(draft.variant === "effective" ? [spell.slug.replaceAll("-", " ")] : aliases),
         ]).filter((value) => value !== draft.name).join("\n"),
         summary: uniqueText(summaryText).join("\n"),
         mechanics: mechanicText,

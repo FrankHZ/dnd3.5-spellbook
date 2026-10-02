@@ -464,7 +464,12 @@ field, complete replacement, original-source locators, reviewer and specific
 English/Chinese rule pairs. Each `(targetId, field)` is unique and cannot overlap
 a native accepted field. Accepted bodies require an embedded full-body audit of
 the complete new text, actual old HTML and explicitly escaped `<pre>` projection.
-Missing Chinese is reviewed absence, not permission to invent a corrected fallback.
+For an explicitly authorized direct translation of a missing field, set
+`intent: "translate-missing"` and bind `before: null` to the actual absent field.
+A missing body also requires absent current Chinese HTML. Keep `sourceKey: null`;
+do not manufacture a CHM baseline or native candidate. The same complete input,
+original-source, rule-pair, full-body and HTML checks still apply. Ordinary
+correction proposals continue to require an existing non-empty Chinese field.
 Changed inputs, unreviewed fields and unresolved source evidence fail acceptance.
 
 For SC current-edition Chinese delivery, an explicit owning-book scope decision
@@ -814,6 +819,20 @@ legacy sourceKey values, and select summary variants separately. Explicit
 `effective` API reads expose field metadata and reuse CHM summaries without changing
 the omitted-variant/default policy. Canonical English/mechanics, summaries, relationships,
 normalized entities and publication metadata remain outside the overlay.
+
+After authorized disposable imports and the verified writer, build contracts
+and server, then run `npm run -w data-tools dice:effective:consumers --` with
+absolute `--content-db`, `--before-overlay`, `--rules-db`, `--projection` and
+`--report` paths. The first four files must be under this checkout's
+`data-tools/out/`; `--report` must be a new file in the configured external
+`dice-qa/books/86/issue-341/` directory. The projection is an audit expectation,
+never writer authority. Rebuild baseline search after normalized/summary imports
+and rebuild the experiment after overlay writes. The helper starts disposable
+content-read APIs on ports 3411/3412, verifies actual serialized responses and
+derived documents, and stops those processes. It never opens operator app-state.
+Source-bearing responses stay in the private report. This current-SC acceptance
+helper verifies the fixed 1002-target input; it is not a general importer or
+full artifact/deployment gate.
 
 The safe rebuild order is: accepted rules-copy generation and normalized content
 import → complete CHM rebuild and other Chinese imports → validated selective
