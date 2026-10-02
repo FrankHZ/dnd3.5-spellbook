@@ -10,13 +10,13 @@ lists every assigned key and disposition. Main-gate/#346 owns acceptance and int
 The frozen audit is `e793ff09a38060c5c6b336d28690353bd0d96909`:
 50 targets / 73 existing rows (25 EN / 48 ZH). Canonical summary input remains
 private `a9cbe07747b1bc908ff4ebcd24244e38e58cb411`. Public base
-`2fa4d2be871bce40e2c240690cd58483fa3ca1db` is synchronized with main `0bb50eef9695afc7f6ee176a0f6a058209cbbd4d`.
+`2fa4d2be871bce40e2c240690cd58483fa3ca1db` is synchronized with main `c0b8c7de854b17deb2e92275ee0fd622239393c9`.
 
-Private handoff/helper commit `ff61794b85dbc95598dabee5ff76aa87d4231ed2` owns
+Private handoff/helper commit `8478c7a9bdfb2704b32194f345be50157cf899ea` owns
 `dice-qa/books/86/issue-395/`. It reuses [#353 provenance](./spell-compendium-summary-source-qa-01.md),
 [#361 narrow importer](./spell-compendium-summary-source-qa-02.md), and strengthened
 [#379](./spell-compendium-summary-source-qa-09.md)/[#380](./spell-compendium-summary-source-qa-10.md)
-contracts with final-context binding from [#386](./spell-compendium-summary-source-qa-11.md)
+contracts with final-context binding from [#386](./spell-compendium-summary-source-qa-12.md)
 and [#389](./spell-compendium-summary-source-qa-13.md). Exact revisions are in the report.
 All 73 actual summary values have independent reasons and dispositions; 50 paired
 comparisons jointly read complete English, mechanics and accepted Chinese context.
@@ -78,7 +78,7 @@ Importer CLI `main` is disabled before execution to prevent operator defaults op
 Replay from public root and `data-tools` with absolute roots and distinct labels:
 
 ```powershell
-& "$runtimeRoot/data-tools/pdf-extract/.venv/Scripts/python.exe" -X utf8 "$dataRoot/dice-qa/books/86/issue-395/reproduce.py" --code-root $codeRoot --runtime-root $runtimeRoot --private-revision ff61794b85dbc95598dabee5ff76aa87d4231ed2 --run review-root
+& "$runtimeRoot/data-tools/pdf-extract/.venv/Scripts/python.exe" -X utf8 "$dataRoot/dice-qa/books/86/issue-395/reproduce.py" --code-root $codeRoot --runtime-root $runtimeRoot --private-revision 8478c7a9bdfb2704b32194f345be50157cf899ea --run review-root
 ```
 
 Replay requires every helper's working text to equal the committed revision,
