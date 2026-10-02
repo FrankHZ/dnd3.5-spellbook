@@ -1,0 +1,601 @@
+{
+  "schema": 1,
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/371",
+  "rulebookId": 86,
+  "status": "reviewed-proposal-awaiting-main-gate-with-existing-unresolved-source-question",
+  "publicBase": "ad5c782d7dc36204e6e38fa69e44021426751a90",
+  "synchronizedMain": "52bf0b725d3f16dde1eac7aeec172d14d8a05d96",
+  "frozenAudit": "e793ff09a38060c5c6b336d28690353bd0d96909",
+  "privateInput": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411",
+  "privateHandoffAndHelperCommit": "6d4b61f345c4163a0a2168b2602cb8d7340da5d4",
+  "privateDirectory": "dice-qa/books/86/issue-371",
+  "acceptedHelperContract": {
+    "issue353": "e154c69e817c81d7e48da105c46daba83a4da8c4",
+    "issue361NarrowRealImporter": "af9296f19b29a05d60915fe4871a1d0e5ebaf63e"
+  },
+  "scope": {
+    "sliceIndex": 5,
+    "targets": [
+      4399,
+      4400,
+      4401,
+      4402,
+      4403,
+      4404,
+      4405,
+      4406,
+      4407,
+      4408,
+      4409,
+      4410,
+      4411,
+      4412,
+      4413,
+      4415,
+      4417,
+      3967,
+      4418,
+      4419,
+      4420,
+      4421,
+      4422,
+      4423,
+      4424,
+      3778,
+      4425,
+      4245,
+      4426,
+      4427,
+      4428,
+      4429,
+      4492,
+      3544,
+      4430,
+      4431,
+      3535,
+      4432,
+      4433,
+      4434,
+      4435,
+      4436,
+      4437,
+      4438,
+      4439,
+      4440,
+      4441,
+      4442,
+      4443,
+      3541
+    ],
+    "rows": 92,
+    "existingOnly": true
+  },
+  "dispositions": [
+    {
+      "stableKey": "3535:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "3541:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "3544:en:imarvin",
+      "status": "faithful-unresolved-source-note"
+    },
+    {
+      "stableKey": "3778:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "3967:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4245:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4400:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4401:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4402:en:imarvin",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4403:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4404:en:imarvin",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4405:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4406:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4407:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4408:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4409:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4410:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4411:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4412:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4413:en:imarvin",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4415:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4418:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4419:en:imarvin",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4420:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4421:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4422:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4424:en:imarvin",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4425:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4426:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4427:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4428:en:imarvin",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4429:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4430:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4431:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4432:en:imarvin",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4433:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4434:en:imarvin",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4435:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4436:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4437:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4438:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4440:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4441:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4442:en:imarvin",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4443:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4492:en:imarvin",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "3535:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "3541:zh:chm",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "3544:zh:chm",
+      "status": "faithful-unresolved-source-note"
+    },
+    {
+      "stableKey": "3778:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "3967:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4245:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4399:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4400:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4401:zh:chm",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4402:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4403:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4404:zh:chm",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4405:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4406:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4407:zh:chm",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4408:zh:chm",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4409:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4410:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4411:zh:chm",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4412:zh:chm",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4413:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4417:zh:chm",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4418:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4419:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4420:zh:chm",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4421:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4422:zh:chm",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4423:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4424:zh:chm",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4425:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4426:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4427:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4428:zh:chm",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4429:zh:chm",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4430:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4433:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4435:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4436:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4437:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4438:zh:chm",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4439:zh:chm",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4440:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4441:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4442:zh:chm",
+      "status": "source-correct"
+    },
+    {
+      "stableKey": "4443:zh:chm",
+      "status": "reviewed-correction"
+    },
+    {
+      "stableKey": "4492:zh:chm",
+      "status": "source-correct"
+    }
+  ],
+  "corrections": {
+    "rows": 25,
+    "targets": 22,
+    "en": 9,
+    "zh": 16,
+    "keys": [
+      "4402:en:imarvin",
+      "4404:en:imarvin",
+      "4413:en:imarvin",
+      "4419:en:imarvin",
+      "4424:en:imarvin",
+      "4428:en:imarvin",
+      "4432:en:imarvin",
+      "4434:en:imarvin",
+      "4442:en:imarvin",
+      "3541:zh:chm",
+      "4401:zh:chm",
+      "4404:zh:chm",
+      "4407:zh:chm",
+      "4408:zh:chm",
+      "4411:zh:chm",
+      "4412:zh:chm",
+      "4417:zh:chm",
+      "4420:zh:chm",
+      "4422:zh:chm",
+      "4424:zh:chm",
+      "4428:zh:chm",
+      "4429:zh:chm",
+      "4438:zh:chm",
+      "4439:zh:chm",
+      "4443:zh:chm"
+    ],
+    "unchangedCanonicalLines": 6547,
+    "sourceCorrectRetentions": 65,
+    "unresolvedRetentions": 2,
+    "priorAcceptedPacketsReadOnlyAndDisjoint": [
+      323,
+      353,
+      361
+    ],
+    "priorAcceptedCanonicalBaselineLinesBytePreserved": true,
+    "otherProposedSlicesComposed": false,
+    "narrowAuthoredHandoffOnly": true
+  },
+  "sourceVerification": {
+    "freshPages": 27,
+    "spanReferences": 5643,
+    "completeScopedEntriesAndNecessaryDirectParentsRead": true,
+    "completeOfficialErrataRead": true,
+    "visualPagesInspected": 27,
+    "authority": "original SC and applicable official errata; accepted body/mechanics snapshots are read-only context",
+    "scApplicableErrataTargets": [
+      4425
+    ],
+    "phbParentErrataTargets": [
+      4435
+    ],
+    "readOnlyContextRevisions": {
+      "dice-qa/books/86/issue-329/current-inputs.json": "296903c61e20ce359812148fc0faa234ca2508e7",
+      "dice-qa/books/86/issue-329/native-accepted.jsonl": "296903c61e20ce359812148fc0faa234ca2508e7",
+      "dice-qa/books/86/issue-329/independent-proposed-union.jsonl": "296903c61e20ce359812148fc0faa234ca2508e7",
+      "dice-qa/books/86/issue-335/validated-amendments.jsonl": "6a73f4d64682325c67e2c40595008344fb5c3be5",
+      "dice-qa/books/86/issue-259/review-a/joint-review-results.jsonl": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411",
+      "dice-qa/books/86/issue-259/review-d/joint-review-results.jsonl": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411"
+    },
+    "fiveEmptyReviewALocatorsResolvedFromFrozenReviewD": true,
+    "unavailableExternalReferencesNotExpandedOrClaimedVerified": true
+  },
+  "existingSourceQuestions": [
+    {
+      "questionId": "3544:darkness",
+      "scope": "summary-relevant-unresolved",
+      "newQuestion": false,
+      "priorEvidenceChanged": false
+    },
+    {
+      "questionId": "4443:item-energy",
+      "scope": "source-only-context",
+      "newQuestion": false,
+      "priorEvidenceChanged": false
+    },
+    {
+      "questionId": "4443:sr-application",
+      "scope": "source-only-context",
+      "newQuestion": false,
+      "priorEvidenceChanged": false
+    }
+  ],
+  "summaryRelevantUnresolved": [
+    {
+      "questionId": "3544:darkness",
+      "stableKeys": [
+        "3544:en:imarvin",
+        "3544:zh:chm"
+      ],
+      "disposition": "current-values-retained-pending-source-adjudication",
+      "sourceCorrectPass": false
+    }
+  ],
+  "verification": {
+    "negativeControls": [
+      "changed source-locked context",
+      "stale current row",
+      "missing decision",
+      "duplicate decision",
+      "out-of-scope decision",
+      "missing bound input",
+      "changed frozen scope",
+      "unassigned line alteration",
+      "stale original geometry/text",
+      "stale same-count correction text",
+      "stale same-count correction provenance",
+      "missing correction",
+      "duplicate correction"
+    ],
+    "bilingualContextTargets": 50,
+    "independentActualValueContentQA": {
+      "targets": 50,
+      "separateSecondRead": true,
+      "sameTaskOwner": true,
+      "delegatedReviewer": false
+    },
+    "uniqueReasons": 92,
+    "longRepeatedProse": 0,
+    "visiblePlaceholderOrCorruption": 0,
+    "whitespaceDamage": 0,
+    "fixedByteBudget": null,
+    "existingSummarySchemaAndImporterUsed": true,
+    "narrowAuthoredHandoffImported": true,
+    "disposableBaselineRows": 6572,
+    "dryRunUnchanged": true,
+    "applicationUpdates": 25,
+    "applicationInserts": 0,
+    "repeatUpdates": 0,
+    "persistedFieldsEqualProposal": true,
+    "correctionHandoffFullRowsEqualDecisions": true,
+    "unrelatedTablePreserved": true,
+    "exactPublicHeadsRecordedInPrivateReplay": true,
+    "fullExactHeadRemoteCIRequired": true,
+    "validationPassed": true,
+    "semanticFullCoverageAccepted": false,
+    "rootAndPackageReplay": true
+  },
+  "boundaries": {
+    "canonicalOwnerWritten": false,
+    "operatorDatabasesOpened": false,
+    "appStateOpened": false,
+    "namesBodiesMechanicsChanged": false,
+    "missingRowsInvented": false,
+    "privatePush": false,
+    "productionActivation": false,
+    "newImporterOrPipeline": false
+  },
+  "executionSettings": {
+    "model": "gpt-6.1-sol",
+    "effort": "high",
+    "verifiedFromPersistedTurnContext": true
+  }
+}
