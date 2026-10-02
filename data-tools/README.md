@@ -106,6 +106,9 @@ adds only its three body notes, preserving the original final candidate and
 every unchanged field's provenance.
 
 A documented command is not permission to write local DBs or activate production.
+After importing the exact accepted full canonical summaries, the final overlay's
+`--accepted-summaries` gate verifies all persisted columns and records their
+fixed revision in existing build metadata; see the final overlay workflow above.
 Use the task's explicit write boundary and the operation-specific dry-run path;
 not every importer supports dry-run. App-state must never be reset or mutated
 by content workflows.
