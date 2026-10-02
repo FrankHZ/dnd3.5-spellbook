@@ -363,6 +363,7 @@ async function main() {
       "DELETE FROM dnd_spellclasslevel WHERE spell_id=7 AND extra='variant'",
       "INSERT INTO dnd_spell_descriptors VALUES(50,7,2)",
       "DROP TABLE idx_spell_domain_level",
+      "CREATE TRIGGER unexpected_index_trigger AFTER INSERT ON idx_spell_class_level BEGIN SELECT 1; END",
       "ALTER TABLE idx_spell_class_level RENAME TO old_index; CREATE TABLE idx_spell_class_level AS SELECT * FROM old_index",
       "UPDATE dnd_dndedition SET system='Other' WHERE id=2",
       "INSERT INTO dnd_rulebook VALUES(50,'BETA',2)",

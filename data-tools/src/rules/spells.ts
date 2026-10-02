@@ -1303,6 +1303,9 @@ function checkStepEntities(
 
 function stepIndexState(db: Database.Database) {
   return ["idx_spell_class_level", "idx_spell_domain_level"].map((table) => ({
+    schema: db
+      .prepare("SELECT type,name,sql FROM sqlite_master WHERE tbl_name=? ORDER BY name")
+      .all(table),
     columns: db.pragma(`table_info(${table})`),
     indexes: (db.pragma(`index_list(${table})`) as { name: string }[]).map(
       (index) => ({
