@@ -8,10 +8,12 @@ import sys
 import tempfile
 from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
 
 AUDITS = Path(__file__).resolve().parents[2] / 'audits'
 sys.path.insert(0, str(AUDITS))
 import sc_final_binding as final
+import sc_final_auth as auth
 from sc_coverage import Evidence
 
 
@@ -191,6 +193,30 @@ class FinalBindingTests(unittest.TestCase):
     def test_node_exact_input_authentication_and_refresh(self):
         subprocess.run(['node', str(AUDITS / 'test-sc-final-inputs.cjs')], check=True,
                        capture_output=True, text=True, encoding='utf8')
+
+    def test_dirty_summary_parser_rejected_before_final_source_replay(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            git = lambda *args: subprocess.check_output(['git', '-C', str(root), *args], encoding='utf8').strip()
+            git('init', '--quiet'); git('config', 'user.name', 'Synthetic')
+            git('config', 'user.email', 'synthetic@example.invalid')
+            parser = root / 'data-tools/src/short-desc/summary-row-schema.ts'
+            parser.parent.mkdir(parents=True)
+            parser.write_text('// synthetic committed parser\n', 'utf8')
+            git('add', '--', str(parser)); git('commit', '--quiet', '-m', 'Synthetic parser')
+            revision = git('rev-parse', 'HEAD')
+            parser.write_text('// uncommitted parser substitution\n', 'utf8')
+            argv = ['sc_final_auth.py', '--code-root', str(root), '--helper-revision', revision,
+                    '--runtime-root', str(root), '--data-root', str(root),
+                    '--rules-db', str(root / 'never-open-rules.sqlite'),
+                    '--content-db', str(root / 'never-open-content.sqlite'),
+                    '--accepted-baseline', final.CANDIDATE]
+            with patch.object(sys, 'argv', argv), patch.object(auth, 'derive_final') as replay:
+                with self.assertRaisesRegex(ValueError, 'dirty/stale source authentication helpers'):
+                    auth.main()
+                replay.assert_not_called()
+            self.assertFalse((root / 'never-open-rules.sqlite').exists())
+            self.assertFalse((root / 'never-open-content.sqlite').exists())
 
 
 if __name__ == '__main__':

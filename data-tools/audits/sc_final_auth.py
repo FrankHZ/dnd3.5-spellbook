@@ -17,7 +17,7 @@ def main():
     code = Evidence(args.code_root, args.helper_revision)
     require(code.git('rev-parse', 'HEAD') == args.helper_revision, 'helper revision must be current checkout HEAD')
     paths = ['data-tools/audits', 'data-tools/src/dice-intake', 'data-tools/src/rules',
-             'data-tools/src/rules-content', 'data-tools/src/shared', 'data-tools/pdf-extract/src',
+             'data-tools/src/rules-content', 'data-tools/src/short-desc', 'data-tools/src/shared', 'data-tools/pdf-extract/src',
              'server/db/content/migrations', 'server/src/services/spells/spells.provenance.ts']
     require(not code.git('diff', args.helper_revision, '--', *paths) and
             not code.git('status', '--porcelain', '--', *paths), 'dirty/stale source authentication helpers')
