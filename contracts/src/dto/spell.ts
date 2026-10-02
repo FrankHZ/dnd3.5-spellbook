@@ -1,4 +1,4 @@
-import type { I18nSpellOverlay } from "../i18n.js";
+import type { SpellFieldProvenance, I18nSpellOverlay } from "../i18n.js";
 import type { Class } from "./class.js";
 import type { Domain } from "./domain.js";
 import type { RulebookMin } from "./rulebook.js";
@@ -300,6 +300,7 @@ export type SpellDetail = SpellItem & {
 };
 
 export type I18nSpellDetailOverlay = I18nSpellOverlay & {
+  bodyProvenance?: SpellFieldProvenance | undefined;
   sourceKey?: string | undefined;
   description?:
     | {
