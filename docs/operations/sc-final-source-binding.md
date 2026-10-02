@@ -1,5 +1,10 @@
 # SC final name/body candidate replay
 
+For review of the current unresolved original statements and exact reader notes,
+use the [source-question handoff](./sc-source-questions.md). Its private checklist
+binds the selected final fields and accepted note addendum; it does not resolve
+the rules questions or authorize external delivery.
+
 The bounded [#365](https://github.com/FrankHZ/dnd3.5-spellbook/issues/365)
 [helper](../../data-tools/audits/sc_final_binding.py) derives a read-only
 1,001-entry name/body candidate from exact accepted source packages. It preserves
