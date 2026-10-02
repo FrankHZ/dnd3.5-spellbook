@@ -9,10 +9,10 @@ const {createRequire, Module} = require('node:module');
 function main(argv) {
   const value = name => {const at = argv.indexOf('--' + name); assert(at >= 0 && argv[at + 1], 'missing --' + name); return argv[at + 1];};
   const allowed = new Set(['code-root', 'runtime-root', 'data-root', 'rules-db', 'content-db', 'normalized', 'rules-manifest',
-    'helper-revision', 'accepted-baseline', 'apply', 'validate']);
+    'helper-revision', 'accepted-baseline', 'accepted-summaries', 'apply', 'validate']);
   for (let i = 0; i < argv.length; i++) {
     assert(argv[i].startsWith('--') && allowed.has(argv[i].slice(2)), 'unknown argument: ' + argv[i]);
-    if (!['--apply', '--validate'].includes(argv[i])) i++;
+    if (!['--apply', '--validate', '--accepted-summaries'].includes(argv[i])) i++;
   }
   assert(!(argv.includes('--apply') && argv.includes('--validate')), 'choose apply or validate');
   const code = fs.realpathSync(value('code-root')), runtime = fs.realpathSync(value('runtime-root'));
@@ -32,6 +32,19 @@ function main(argv) {
     ['-B', '-X', 'utf8', path.join(code, 'data-tools/audits/sc_final_auth.py'), ...options],
     {cwd: code, encoding: 'utf8', maxBuffer: 128 * 1024 * 1024}));
   const generated = load('rules-content/cli.ts').readGenerated(inputPath);
+  let summaries;
+  if (argv.includes('--accepted-summaries')) {
+    const exact = require('./sc-final-inputs.cjs').readExact;
+    const candidatePath = 'dice-qa/books/86/issue-411/summaries.proposed.jsonl';
+    exact(data, writer.finalScSummaryRevision, writer.finalScSummaryPath);
+    exact(data, writer.finalScSummaryCandidate, candidatePath);
+    const canonical = fs.readFileSync(path.join(data, writer.finalScSummaryPath), 'utf8');
+    assert.equal(canonical.replaceAll('\r\n', '\n'),
+      fs.readFileSync(path.join(data, candidatePath), 'utf8').replaceAll('\r\n', '\n'), 'accepted summary candidate bytes differ');
+    const parsed = load('short-desc/summary-row-schema.ts').readSummaryJsonlText(canonical);
+    assert.deepEqual(parsed.errors, []); assert.equal(parsed.rows.length, 6572, 'complete accepted summary inventory required');
+    summaries = parsed.rows;
+  }
   const current = artifact.collectRulesContentArtifactProvenance({parentRepoRoot: code, dataRepoRoot: data,
     rulesDbPath: rules, rulesManifestPath: manifest,
     rulebookPublicationMetadataPath: path.join(data, 'rulebook-publications/publications.jsonl'),
@@ -43,13 +56,14 @@ function main(argv) {
   try {
     if (!apply) db.pragma('query_only=ON');
     const full = writer.verifyFullNormalized(db, generated, inputPath, current);
-    const plan = writer.planFinalOverlay(db, auth.fields, auth.report, full, value('helper-revision'));
+    const plan = writer.planFinalOverlay(db, auth.fields, auth.report, full, value('helper-revision'), summaries);
     if (apply) writer.applyFinalOverlay(db, plan, () => writer.verifyFullNormalized(db, generated, inputPath, current));
     if (validate) writer.validateFinalOverlay(db, plan);
-    const {rows: _rows, buildMetaJson: _meta, ...report} = plan;
+    const {rows: _rows, buildMetaJson: _meta, acceptedSummaries: _summaries, ...report} = plan;
     console.log(JSON.stringify({mode: apply ? 'apply' : validate ? 'validate' : 'dry-run',
       acceptedRevision: writer.finalScRevision, helperRevision: value('helper-revision'), ...report,
       readerNoteRevision: writer.finalScNoteRevision,
+      acceptedSummaryRevision: summaries ? writer.finalScSummaryRevision : null,
       wholeBookQaComplete: false, activation: false, ftsRefreshed: false}));
   } finally {db.close();}
 }

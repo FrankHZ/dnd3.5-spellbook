@@ -170,14 +170,30 @@ accepted rules patches and derived indexes, then `rules:manifest:write` and
 `rules:content:import -- --dry-run`, then `rules:content:import`. Complete CHM and
 entity text imports before this final overlay. Run the above `dice:final:write`
 command first in dry-run, then with `--apply`, then `--validate`. Import the
-separately accepted summaries through `summaries:import`; after all text imports,
-run `content:search:rebuild -- --dry-run`, then `content:search:rebuild`, and repeat
-final validation plus consumer/search checks. Never rerun CHM after the overlay.
-The summary selection is governed separately by #411; this addendum does not
-read or change canonical summaries or resolve #354's pending relationships.
+separately accepted full canonical summaries through `summaries:import`. Then
+repeat the final overlay with `--accepted-summaries --apply`, followed by
+`--accepted-summaries --validate`. This explicit gate authenticates the promoted
+canonical at private `0b6fd8b88c1609cfdae50d8943d77eda13750ea8` and the accepted
+#411 candidate at `c4fe0c0a7b14aafed04bc9e733387afb51ae45eb` through fixed Git
+inputs and exact candidate bytes. It compares all 6,572 keys and every persisted
+parser column, including protected books, before recording `summaryQa` provenance
+and accepted summary status in the existing overlay metadata. Missing, partial,
+extra or wrong-value rows reject the gate; timestamps remain importer-owned.
+Validation repeats this comparison, including inside the write transaction.
+The recorded semantic scope covers present canonical SC summaries, without
+inventing summaries for missing targets or accepting other books' source QA.
+
+After all text and summary imports, run `content:search:rebuild -- --dry-run`,
+then `content:search:rebuild`, and repeat final validation with
+`--accepted-summaries` plus consumer/search checks. Use this flag consistently
+when refreshing the completed overlay's helper metadata. Omitting it retains
+the conservative pending-summary path. Never rerun CHM after the overlay.
+Neither this gate nor the reader-note addendum changes canonical inputs or
+resolves #354's pending relationships.
 
 The normalized artifact's full scope describes its coverage. Overlay semantic
-metadata explicitly leaves summaries and the 20 extra relationships pending;
+metadata leaves summaries pending unless the explicit accepted-summary gate
+passes, and always leaves the 20 extra relationships pending;
 it grants no whole-book QA or activation. Other books/languages/variants,
 summaries, normalized English/mechanics and unrelated content tables are
 preserved. FTS remains unchanged until all final text and summaries are
