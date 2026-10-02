@@ -1,0 +1,106 @@
+{
+  "schema": 1,
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/414",
+  "rulebookId": 86,
+  "status": "rehearsal-passed-awaiting-independent-main-gate-review",
+  "acceptedDependency": "66b0a9a7197c5458ffec2b4ef9a9fa290482f636",
+  "implementationRevision": "4b47a7d3125322db4339ea1a6b5d5d205a4b33b4",
+  "verificationHeadBeforeReport": "22283e2b2d9c22fbe35fd96dca2b876758c04531",
+  "acceptedInputs": {
+    "nameBody": "0688739d92a2aa9fb3eceeb444daa7260e711058",
+    "readerNotes": "c61b9dea676cfd89bdfcaa6dcbcccbc99280d7c4",
+    "summaryCanonical": "0b6fd8b88c1609cfdae50d8943d77eda13750ea8",
+    "summaryCandidate": "c4fe0c0a7b14aafed04bc9e733387afb51ae45eb",
+    "summaryProof": "6762f9b0de72338d9405ff9962247829a862664b"
+  },
+  "privateVerification": {
+    "directory": "dice-qa/books/86/issue-414",
+    "fixedHelperRevision": "444728b6d1e73ccb73fe18a075f8fc0e287059e8",
+    "firstImportEvidence": "original-protection-4b47a7d-replay.json",
+    "rootPackageReplay": "final-22283e2.json",
+    "finalHeadEvidence": "final-public-head.json",
+    "operatorSequence": "operator-sequence.ps1",
+    "operatorExecutionByThisTask": false
+  },
+  "firstActualIntegration": {
+    "nameBodyTargets": 1001,
+    "fields": 2002,
+    "readerNoteBodiesUpdated": 3,
+    "unchangedFieldProvenanceBytes": 1999,
+    "canonicalSummaryRows": 6572,
+    "summaryUpdates": 471,
+    "summaryInserted": 0,
+    "summaryUnchanged": 6101,
+    "allParserColumnsCompared": true,
+    "allKeysCompared": true,
+    "unchangedCreatedAndUpdatedTimestampsPreserved": true,
+    "firstImporterTimestampMatched": true,
+    "scCanonicalSummaryRows": 1700
+  },
+  "finalRepeat": {
+    "summaryUpdates": 0,
+    "summaryUnchanged": 6572,
+    "fieldInsertsAndUpdates": 0,
+    "repeatBuildMarkerChanged": false,
+    "allRowAndFieldTimestampsPreserved": true,
+    "rootAndPackagePassed": true
+  },
+  "searchAndConsumers": {
+    "indexVersion": 2,
+    "fullDocuments": 12846,
+    "apiRequestsPerWorkingDirectory": 6204,
+    "scDetails": 1001,
+    "summaryItems": 6572,
+    "nonScFallback": 4096,
+    "batchItems": 10194,
+    "resolvedTargets": 1001,
+    "nameSearchTargets": 1001,
+    "phraseAndVariantChecks": 13,
+    "classBrowseDistinctTargets": 961,
+    "sourceQuestionOccurrences": 40,
+    "sourceQuestionBodyTargets": 38,
+    "rawQuestionIds": 37,
+    "everyFtsDocumentColumnCompared": true,
+    "strictNativeRulesContentAllowlist": true,
+    "noAppStateOpen": true,
+    "privateDtoRedactionPassed": true
+  },
+  "protection": {
+    "rulesTables": 60,
+    "contentTables": 26,
+    "allProtectedColumnsAndTextBytesCompared": true,
+    "existingOriginal339AndAccepted375ValuesMatched": true,
+    "rulesDatabaseUnchanged": true,
+    "identity4837Book": 9,
+    "sonic4617Relations": 1,
+    "freshConnectionIntegrity": "ok",
+    "noPersistedDatabaseCopies": true
+  },
+  "generation": {
+    "publicCommit": "4b47a7d3125322db4339ea1a6b5d5d205a4b33b4",
+    "publicDirty": false,
+    "privateCommit": "dac21d3e4070e5c1c6c6bc3a01e5e2a095b917b2",
+    "privateDirty": true,
+    "fullScope": true,
+    "generationAndImporterProvenancePreservedOnFinalReplay": true,
+    "fingerprintMechanism": "existing rules-content artifact v2",
+    "rebuildDidNotRestoreOldSummariesOrDiscardFacets": true
+  },
+  "maintainedSummaryGate": {
+    "flag": "--accepted-summaries",
+    "sourceBoundary": "fixed promoted canonical and identical accepted candidate bytes",
+    "scope": "present-canonical-sc-summaries",
+    "incompleteMissingExtraOrWrongColumnsRejected": true,
+    "dirtySummaryParserRejectedBeforeReplayOrDbOpen": true,
+    "extraRelationships": "pending",
+    "wholeBookComplete": false
+  },
+  "limits": {
+    "unsupportedExternalRelationships": 20,
+    "wholeBookComplete": false,
+    "operatorMigrationExecuted": false,
+    "productionActivated": false,
+    "finalHtmlVisualVerified": false,
+    "otherBookSourceQaPerformed": false
+  }
+}

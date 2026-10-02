@@ -9,6 +9,7 @@ import {importGenerated} from '../rules-content/cli';
 import {RULES_CONTENT_GENERATOR_VERSION, type NormalizedRulesContent} from '../rules-content/normalize';
 import {fieldProvenanceMigration} from './effective-writer';
 import {applyFinalOverlay, planFinalOverlay, validateFinalOverlay, verifyFullNormalized, finalScNoteRevision, type FinalField} from './final-writer';
+import type {SummaryRow} from '../short-desc/summary-row-schema';
 
 const root = repoRoot(), temp = mkdtempSync(join(tmpdir(), 'sc-final-writer-'));
 const inputPath = join(temp, 'normalized.json');
@@ -130,6 +131,37 @@ try {
       const noteRepeat = planFinalOverlay(db, notes, noteReport, verifyFullNormalized(db, content, inputPath, current), helper);
       assert.equal(noteRepeat.updates + noteRepeat.inserts, 0); assert.equal(noteRepeat.markBuild, false);
       applyFinalOverlay(db, noteRepeat); assert.deepEqual(snapshot(db), noteAfter, 'note repeat changed timestamps');
+      const summaryColumns = ['id', 'spellId', 'rulebookId', 'lang', 'variant', 'summaryText',
+        'sourceKey', 'sourceName', 'sourceKind', 'reviewStatus'];
+      const summaries = db.prepare(`SELECT ${summaryColumns.join(',')} FROM I18nSpellSummaryText`).all() as SummaryRow[];
+      const summaryPlan = () => planFinalOverlay(db, notes, noteReport, verifyFullNormalized(db, content, inputPath, current), helper, summaries);
+      assert.equal(JSON.parse(noteRepeat.buildMetaJson).overlays.scFinalNameBody.semanticQa.summaries, 'pending');
+      for (const column of summaryColumns) {
+        const expected = summaries[0]!;
+        const wrong = [{...expected, [column]: column === 'spellId' || column === 'rulebookId' ? 99999 : 'wrong'}] as SummaryRow[];
+        assert.throws(() => planFinalOverlay(db, notes, noteReport, full, helper, wrong), /accepted summary/);
+      }
+      assert.throws(() => planFinalOverlay(db, notes, noteReport, full, helper, []), /empty accepted summary/);
+      assert.throws(() => planFinalOverlay(db, notes, noteReport, full, helper, [...summaries, {...summaries[0]!, id:'extra'}]), /accepted summary inventory/);
+      const acceptedSummaryPlan = summaryPlan();
+      const summaryMeta = JSON.parse(acceptedSummaryPlan.buildMetaJson).overlays.scFinalNameBody;
+      assert.equal(summaryMeta.semanticQa.summaries, 'accepted-source-bound');
+      assert.equal(summaryMeta.summaryQa.scope, 'present-canonical-sc-summaries');
+      assert.equal(summaryMeta.semanticQa.extraRelationships, 'pending');
+      assert.equal(summaryMeta.semanticQa.wholeBookComplete, false);
+      assert.equal(acceptedSummaryPlan.updates + acceptedSummaryPlan.inserts, 0);
+      applyFinalOverlay(db, acceptedSummaryPlan);
+      const summaryAfter = snapshot(db);
+      const summaryRepeat = summaryPlan(); assert.equal(summaryRepeat.markBuild, false);
+      applyFinalOverlay(db, summaryRepeat); assert.deepEqual(snapshot(db), summaryAfter, 'summary metadata repeat changed timestamps');
+      // A corrupted persisted summary cannot validate or be marked accepted.
+      db.prepare('UPDATE I18nSpellSummaryText SET summaryText=? WHERE id=?').run('partial import', summaries[0]!.id);
+      assert.throws(summaryPlan, /accepted summary column/);
+      assert.throws(() => validateFinalOverlay(db, acceptedSummaryPlan), /accepted summary column/);
+      const corruptSnapshot = snapshot(db);
+      assert.throws(() => applyFinalOverlay(db, {...acceptedSummaryPlan, markBuild:true}), /accepted summary column/);
+      assert.deepEqual(snapshot(db), corruptSnapshot, 'stale summary plan fault failed transaction rollback');
+      db.prepare('UPDATE I18nSpellSummaryText SET summaryText=? WHERE id=?').run(summaries[0]!.summaryText, summaries[0]!.id);
       // Restore the baseline to exercise the existing corruption/repair tests.
       applyFinalOverlay(db, {...repeat, markBuild: true, rows: repeat.rows.map(r => ({...r, action: 'update'}))});
       db.prepare("UPDATE I18nSpellText SET bodyProvenanceJson='{}' WHERE id=?").run(`dice-effective:86:${ids[0]}`);
