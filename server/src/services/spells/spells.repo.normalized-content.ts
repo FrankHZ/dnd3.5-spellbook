@@ -32,7 +32,7 @@ type MechanicFacetRow = Prisma.SpellMechanicFacetGetPayload<
   Record<string, never>
 >;
 
-const CONTENT_SEARCH_SCHEMA_VERSION = 1;
+const CONTENT_SEARCH_SCHEMA_VERSION = 2;
 
 export type NormalizedFullTextSearchInput = {
   i18n: I18nContext;
@@ -217,12 +217,18 @@ function fullTextEligibleRows(
   input: NormalizedFullTextSearchInput,
   matchQuery: string,
 ) {
-  // The opt-in overlay must not add matches to existing/default search variants.
-  // Effective requests search their selected text plus canonical English fallback.
-  const selectedDocuments = input.i18n.lang === "zh" && input.i18n.variant === "effective"
-    ? Prisma.sql`AND (("SpellSearchDocument"."lang" = 'zh' AND "SpellSearchDocument"."variant" = 'effective')
-        OR ("SpellSearchDocument"."lang" = 'en' AND "SpellSearchDocument"."variant" = 'default'))`
-    : Prisma.sql`AND NOT ("SpellSearchDocument"."lang" = 'zh' AND "SpellSearchDocument"."variant" = 'effective')`;
+  const variant = input.i18n.variant ?? "effective";
+  const selectedDocuments = input.i18n.lang === "zh"
+    ? Prisma.sql`AND (("SpellSearchDocument"."lang" = 'en' AND "SpellSearchDocument"."variant" = 'default')
+        OR ("SpellSearchDocument"."lang" = 'zh' AND (
+          ("SpellSearchDocument"."variant" = ${variant}
+            ${variant === "effective" ? Prisma.sql`AND EXISTS (
+              SELECT 1 FROM I18nSpellText chosen WHERE chosen.spellId = s."legacySpellId"
+                AND chosen.lang = 'zh' AND chosen.variant = 'effective')` : Prisma.empty})
+          ${variant === "effective" ? Prisma.sql`OR ("SpellSearchDocument"."variant" = 'chm' AND NOT EXISTS (
+            SELECT 1 FROM I18nSpellText chosen WHERE chosen.spellId = s."legacySpellId"
+              AND chosen.lang = 'zh' AND chosen.variant = 'effective'))` : Prisma.empty})))`
+    : Prisma.sql`AND "SpellSearchDocument"."lang" = 'en' AND "SpellSearchDocument"."variant" = 'default'`;
   return Prisma.sql`
     SELECT
       s."legacySpellId" AS id,

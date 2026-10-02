@@ -150,7 +150,7 @@ describe("GET /api/spells/search", () => {
     expect(res.body).toEqual({
       message: "Full-text search unavailable",
       error:
-        "The active spell source does not provide a compatible full-text index",
+        "Rebuild a compatible content search index after integrating final text and summaries",
       code: "FULL_TEXT_SEARCH_UNAVAILABLE",
     });
   });
@@ -198,7 +198,7 @@ describe("GET /api/spells/search", () => {
     expect(res.body.total).toBe(1);
     expect(res.body.items.map((item: any) => item.id)).toEqual([100]);
   });
-  it("keeps opt-in effective documents out of default/chm/en search", async () => {
+  it("ignores orphan effective documents while preserving canonical fallback", async () => {
     await contentPrisma.$executeRawUnsafe(`INSERT INTO SpellSearchDocument
       (spellId,lang,variant,name,aliases,summary,mechanics,body)
       VALUES (100,'zh','effective','Synthetic effective','','Synthetic summary','','currentamendment')`);
@@ -211,7 +211,9 @@ describe("GET /api/spells/search", () => {
         }
         const res = await request(app).get("/api/spells/search").query({ q: "currentamendment", mode: "full",
           rulebookIds: "6", lang: "zh", variant: "effective" });
-        expect(res.status).toBe(200); expect(res.body.items.map((item: any) => item.id)).toEqual([100]);
+        expect(res.status).toBe(200); expect(res.body.items).toEqual([]);
+        const defaultZh = await request(app).get("/api/spells/search").query({ q: "currentamendment", mode: "full", rulebookIds: "6", lang: "zh" });
+        expect(defaultZh.body).toEqual(res.body);
         const fallback = await request(app).get("/api/spells/search").query({ q: "description", mode: "full",
           rulebookIds: "6", lang: "zh", variant: "effective" });
         expect(fallback.status).toBe(200); expect(fallback.body.total).toBeGreaterThan(0);
@@ -287,9 +289,9 @@ describe("GET /api/spells/search", () => {
     expect(res.body.items.map((item: any) => item.id)).toEqual([100]);
   });
 
-  it("fails closed for an incompatible content search index", async () => {
+  it.each([0, 1])("fails closed for incompatible content search index v%s", async version => {
     await contentPrisma.$executeRawUnsafe(
-      'UPDATE "SpellSearchIndexState" SET "schemaVersion" = 0 WHERE "id" = 1',
+      'UPDATE "SpellSearchIndexState" SET "schemaVersion" = ? WHERE "id" = 1', version,
     );
     try {
       const res = await withSpellReadSource("content", () =>
@@ -302,7 +304,7 @@ describe("GET /api/spells/search", () => {
       expect(res.body.code).toBe("FULL_TEXT_SEARCH_UNAVAILABLE");
     } finally {
       await contentPrisma.$executeRawUnsafe(
-        'UPDATE "SpellSearchIndexState" SET "schemaVersion" = 1 WHERE "id" = 1',
+        'UPDATE "SpellSearchIndexState" SET "schemaVersion" = 2 WHERE "id" = 1',
       );
     }
   });

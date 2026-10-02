@@ -1,0 +1,115 @@
+{
+  "schema": "sc-final-consumers-acceptance.v1",
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/382",
+  "base": "3e3a131842ccf9bcc8e7955466c68e3434c6afb6",
+  "acceptedWriterPublic": "c60826e9a72660559652b90349fa39d22c61c20f",
+  "acceptedFinalCandidate": "0688739d92a2aa9fb3eceeb444daa7260e711058",
+  "readOnlyDataset": {
+    "selectedTargets": 1001,
+    "validatedFields": 2002,
+    "realBatchApiItems": 1001,
+    "protectedNonScTargets": 4096,
+    "sourceQuestionOccurrences": 37,
+    "sourceQuestionBodies": 35,
+    "sourceQuestionUniqueIds": 34,
+    "rehearsalFilesUnchanged": true,
+    "representativeEndpoints": [
+      {
+        "id": 3531,
+        "detail": 200,
+        "explicitChm": 200,
+        "nameSearch": 200,
+        "resolve": 200
+      },
+      {
+        "id": 3532,
+        "detail": 200,
+        "explicitChm": 200,
+        "nameSearch": 200,
+        "resolve": 200
+      },
+      {
+        "id": 3846,
+        "detail": 200,
+        "explicitChm": 200,
+        "nameSearch": 200,
+        "resolve": 200
+      },
+      {
+        "id": 3855,
+        "detail": 200,
+        "explicitChm": 200,
+        "nameSearch": 200,
+        "resolve": 200
+      },
+      {
+        "id": 4736,
+        "detail": 200,
+        "explicitChm": 200,
+        "nameSearch": 200,
+        "resolve": 200
+      },
+      {
+        "id": 4837,
+        "detail": 200,
+        "explicitChm": 200,
+        "book": 9
+      },
+      {
+        "id": 3544,
+        "detail": 200,
+        "explicitChm": 200,
+        "nameSearch": 200,
+        "resolve": 200
+      }
+    ],
+    "amended4736": {
+      "kind": "accepted-body-amendment",
+      "acceptedRevision": "00e3c9836be40c878fafe74eb1ad0d915f6d4028",
+      "priorAcceptedRevision": "296903c61e20ce359812148fc0faa234ca2508e7",
+      "status": "accepted",
+      "priorAmendment": {
+        "acceptedRevision": "6a73f4d64682325c67e2c40595008344fb5c3be5",
+        "status": "accepted"
+      }
+    }
+  },
+  "ownedFtsSubset": {
+    "targets": [
+      3531,
+      3532,
+      3846,
+      3855,
+      3918,
+      4736,
+      4837
+    ],
+    "documents": 24,
+    "bytes": 610304,
+    "indexVersion": 2,
+    "realContextChecks": 28,
+    "contexts": [
+      "default Chinese",
+      "explicit effective",
+      "explicit CHM",
+      "English"
+    ],
+    "v1Response": 503
+  },
+  "portableValidation": {
+    "serverAffectedTests": 179,
+    "webTests": 165,
+    "webTypecheck": "passed",
+    "webBuild": "passed",
+    "dataToolsHarnessTests": 20,
+    "contractsBuild": "passed",
+    "serverBuild": "passed",
+    "dataToolsBuild": "passed",
+    "serverAllTests": 253
+  },
+  "limitations": [
+    "Browser smoke blocked by browser file URL policy; no workaround attempted.",
+    "Local dependencies reused through an issue-owned test-only hook; exact-head remote ci:portable is the merge gate.",
+    "This delivery changes consumer compatibility and selection only; no operator writes, source translation, production activation or whole-book QA."
+  ]
+}
