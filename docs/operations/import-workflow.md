@@ -822,19 +822,22 @@ final migration/search/consumer acceptance remain separately owned.
 
 The existing unique key `(spellId, lang, variant)` preserves the original `chm`
 beside the internal `effective` variant. Field provenance storage is implemented
-for disposable experiments; [explicit effective API mapping](../modules/server.md#explicit-effective-spell-overlay)
-validates and exposes minimal field metadata. The omitted-variant/default policy
-remains a follow-up decision. No source registry or separate translation service
-is required.
+for disposable experiments; [selected effective API mapping](../modules/server.md#selected-effective-spell-overlay)
+validates historical and final envelopes and exposes minimal field metadata.
+Omitted Chinese variants select effective when present, then CHM and English;
+explicit variants preserve their selection. Source origin remains separate from
+original/errata review, including retained CHM and superseded body amendments.
+Summary selection stays with accepted CHM/imarvin rows. Stored user preferences
+are preserved. No source registry or separate translation service is required.
 
-The writer materializes complete effective fields, preserves the original CHM
-variant, and distinguishes English fallback from Chinese translation.
-The future omitted-variant policy must work consistently in detail, lists,
-search and summary fallback. Explicit `variant=chm` must continue to return the
-original CHM row. Current consumers default Chinese requests to `chm`, expose
-legacy sourceKey values, and select summary variants separately. Explicit
-`effective` API reads expose field metadata and reuse CHM summaries without changing
-the omitted-variant/default policy. Canonical English/mechanics, summaries, relationships,
+The writer materializes complete effective fields and preserves the original CHM
+variant. The selected consumer policy applies consistently to detail, lists,
+search and resolve; explicit `variant=chm` returns the original CHM row. Rebuild
+the maintained FTS index after final text and summaries: version 2 keeps variant
+aliases and summary owners separate; older indexes fail closed with an actionable
+503. Consumer support does not authorize experimental or production activation.
+`effective` API reads expose field metadata and reuse CHM summaries. Canonical
+English/mechanics, summaries, relationships,
 normalized entities and publication metadata remain outside the overlay.
 
 After authorized disposable imports and the verified writer, build contracts

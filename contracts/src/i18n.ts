@@ -26,14 +26,19 @@ export type I18nSpellOverlay = {
   summary?: I18nSpellSummaryOverlay | undefined;
 };
 
-/** Safe field metadata for the explicit effective overlay; private evidence stays internal. */
+/** Safe field metadata for the selected effective overlay; private evidence stays internal. */
 export type SpellFieldProvenance = {
   schemaVersion: 1;
   language: Lang;
   acceptedRevision: string;
+  /** Review is independent of the original field owner, including retained CHM. */
+  review?: { disposition: "source-reviewed-retention" | "accepted-native-source-bound" |
+    "accepted" | "accepted-with-source-issues"; acceptedRevision: string;
+    originalEntryReviewed: true; sourceQuestionIds: string[] };
   /** Current reviewed body authority; origin below is the original field owner. */
   amendment?: { kind: "accepted-body-amendment"; acceptedRevision: string;
-    priorAcceptedRevision: string; status: "accepted" | "accepted-with-source-issues" };
+    priorAcceptedRevision: string; status: "accepted" | "accepted-with-source-issues";
+    priorAmendment?: { acceptedRevision: string; status: "accepted" | "accepted-with-source-issues" } };
   origin:
     | { kind: "native" | "chm"; sourceKey: string }
     | { kind: "independent" | "english"; sourceKey: null };

@@ -2,7 +2,7 @@ import type { Lang } from "@dnd/contracts";
 
 export const DEFAULT_LANG: Lang = "en";
 export const SUPPORTED_LANGS = ["en", "zh"] as const satisfies readonly Lang[];
-export const DEFAULT_ZH_VARIANT = "chm";
+export const DEFAULT_ZH_VARIANT = "effective";
 
 export const I18N_NAMESPACES = [
   "translation",

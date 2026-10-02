@@ -287,7 +287,7 @@ function fullTextUnavailableError() {
   return new ApiError(
     503,
     "Full-text search unavailable",
-    "The active spell source does not provide a compatible full-text index",
+    "Rebuild a compatible content search index after integrating final text and summaries",
     "FULL_TEXT_SEARCH_UNAVAILABLE",
   );
 }

@@ -81,7 +81,8 @@ describe.each(["rules", "content"])("explicit effective API (%s)", source => {
       expect(res.body.i18n.description.text).toContain("unresolved source note");
       expect(res.body.i18n.summary).toEqual(legacy.body.i18n.summary);
       expect(JSON.stringify(res.body)).not.toContain("private/");
-      for (const q of [{ lang: "zh" }, { lang: "zh", variant: "chm" }]) {
+      expect((await request(app).get("/api/spells/100").query({ lang: "zh" })).body).toEqual(res.body);
+      for (const q of [{ lang: "zh", variant: "chm" }]) {
         expect((await request(app).get("/api/spells/100").query(q)).body).toEqual(legacy.body);
       }
       expect((await request(app).get("/api/spells/100").query({ lang: "en", variant: "effective" })).body).toEqual(en.body);
@@ -105,21 +106,22 @@ describe.each(["rules", "content"])("explicit effective API (%s)", source => {
       q: "Synthetic shared name", rulebookIds: "6" });
     expect(selectedSearch.status).toBe(200);
     expect(selectedSearch.body.items.map((s: any) => s.id)).toEqual([100]);
-    for (const context of [{ lang: "zh" }, { lang: "zh", variant: "chm" }, { lang: "en", variant: "effective" }]) {
+    expect((await request(app).get("/api/spells/search").query({ lang: "zh", q: "Synthetic shared name", rulebookIds: "6" })).body).toEqual(selectedSearch.body);
+    for (const context of [{ lang: "zh", variant: "chm" }, { lang: "en", variant: "effective" }]) {
       const oldSearch = await request(app).get("/api/spells/search").query({ ...context,
         q: "Synthetic shared name", rulebookIds: "6" });
       expect(oldSearch.status).toBe(200); expect(oldSearch.body.items).toEqual([]);
     }
   });
-  it("keeps absent-effective English fallback and summary-only overlays", async () => {
+  it("keeps absent-effective CHM fallback and maintained summaries", async () => {
     const legacy = await request(app).get("/api/spells/100").query({ lang: "zh" });
     const res = await request(app).get("/api/spells/100").query(query);
     expect(res.status).toBe(200);
     expect(res.body.name).toBe(legacy.body.name);
     expect(legacy.body.i18n.summary).toBeDefined();
-    expect(res.body.i18n).toEqual({ summary: legacy.body.i18n.summary });
+    expect(res.body).toEqual(legacy.body);
     const resolve = await request(app).post("/api/spells/resolve").query(query).send({ names: ["火球术", "Fireball"], rulebookIds: [6] });
-    expect(resolve.body.results[0].status).toBe("not_found");
+    expect(resolve.body.results[0]).toMatchObject({ status: "resolved", matchedOn: "zh", spellId: 100 });
     expect(resolve.body.results[1]).toMatchObject({ status: "resolved", matchedOn: "en", spellId: 100 });
   });
   it.each([null, "{", "{}", ...[

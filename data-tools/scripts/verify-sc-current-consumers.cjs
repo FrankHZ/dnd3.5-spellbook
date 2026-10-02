@@ -110,7 +110,7 @@ async function main() {
   assert.deepEqual(oldDocuments(current), oldDocuments(before), 'All old variant search documents remain exact');
   const oldUrl = await start(beforePath, 3411), url = await start(currentPath, 3412);
   const rowById = new Map(projection.map(row => [row.targetId, row]));
-  // Validate every detail and unchanged default/chm/en, including mechanics and relationships.
+  // Validate every detail and unchanged explicit CHM/English, including mechanics and relationships.
   for (const row of projection) {
     const detail = await http(url, '/' + row.targetId, effective);
     assert.equal(detail.i18n.name, row.name.text);
@@ -118,7 +118,8 @@ async function main() {
     assert.deepEqual(detail.i18n.nameProvenance, metadata(row.name));
     assert.deepEqual(detail.i18n.bodyProvenance, metadata(row.body));
     assert.deepEqual(detail.i18n.summary, summary(row.targetId, 'zh')); privacy(detail);
-    for (const query of [{}, { lang: 'zh' }, { lang: 'zh', variant: 'chm' }, { lang: 'en', variant: 'effective' }]) {
+    assert.deepEqual(await http(url, '/' + row.targetId, { lang: 'zh' }), detail, 'Default Chinese selects effective');
+    for (const query of [{}, { lang: 'zh', variant: 'chm' }, { lang: 'en', variant: 'effective' }]) {
       const [old, now] = await Promise.all([http(oldUrl, '/' + row.targetId, query), http(url, '/' + row.targetId, query)]);
       assert.deepEqual(now, old, `${row.targetId} legacy ${JSON.stringify(query)}`);
       assert.deepEqual(stripped(detail), stripped(now), 'English, mechanics and relationships');
@@ -134,7 +135,7 @@ async function main() {
     assert(named.items.some(item => item.id === row.targetId), `Name search ${row.targetId}`);
     named.items.forEach(item => list(item, rowById.get(item.id))); count.nameSearch++;
     if (['native', 'independent'].includes(row.name.origin.kind)) {
-      for (const context of [{ lang: 'zh' }, { lang: 'zh', variant: 'chm' }]) {
+      for (const context of [{ lang: 'zh', variant: 'chm' }]) {
         const query = { ...context, q: row.name.text, rulebookIds: '86', pageSize: '100' };
         const old = await http(oldUrl, '/search', query), now = await http(url, '/search', query);
         assert.deepEqual(now, old, 'Old name-search results remain exact');

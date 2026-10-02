@@ -51,13 +51,35 @@ export type SpellI18nSummaryRow =
     select: typeof SELECT_SPELL_I18N_SUMMARY;
   }>;
 
+// Presence determines fallback; invalid effective metadata is rejected by the mapper.
+function textVariants(variant?: string) {
+  return !variant || variant === "effective" ? ["effective", "chm"] : [variant];
+}
+function selectTextRows<T extends { spellId: number; variant: string }>(rows: T[], variant?: string): T[] {
+  const selected = new Map<number, T>();
+  for (const row of rows) {
+    if (!selected.has(row.spellId) || ((!variant || variant === "effective") && row.variant === "effective")) {
+      selected.set(row.spellId, row);
+    }
+  }
+  return [...selected.values()];
+}
+function selectedTextWhere(variant?: string) {
+  return !variant || variant === "effective"
+    ? Prisma.sql`AND (i.variant = 'effective' OR (i.variant = 'chm' AND NOT EXISTS (
+        SELECT 1 FROM I18nSpellText chosen WHERE chosen.spellId = i.spellId
+          AND chosen.lang = i.lang AND chosen.variant = 'effective')))`
+    : Prisma.sql`AND i.variant = ${variant}`;
+}
+
+/** Effective text does not introduce a summary owner: maintained CHM/imarvin rows remain selected. */
 function summaryTarget(i18n: I18nContext): { lang: Lang; variant: string } {
   if (i18n.lang === "en") {
     return { lang: "en", variant: "imarvin" };
   }
   return {
     lang: i18n.lang,
-    variant: i18n.variant === "effective" ? "chm" : i18n.variant ?? "chm",
+    variant: i18n.variant === "effective" || !i18n.variant ? "chm" : i18n.variant,
   };
 }
 
@@ -204,7 +226,7 @@ export async function queryIdsByI18nName(
         WHERE i.rulebookId IN (${Prisma.join(rulebookIds)})
           AND LOWER(i.name) LIKE ${like}
           AND i.lang = ${i18n.lang}
-          AND i.variant = ${i18n.variant ?? "chm"}
+          ${selectedTextWhere(i18n.variant)}
           ${normalizedTaxonomyWhere(taxonomyFilters)}
           ${normalizedComponentWhere(componentFilters)}
           ${normalizedMechanicWhere(mechanicFilters)}
@@ -223,18 +245,11 @@ export async function queryI18nDetail(
   lang: "zh",
   variant?: string,
 ) {
-  const s = await contentPrisma.i18nSpellText.findUnique({
-    where: {
-      spellId_lang_variant: {
-        spellId: id,
-        lang,
-        ...(variant ? { variant } : { variant: "chm" }),
-      },
-    },
+  const rows = await contentPrisma.i18nSpellText.findMany({
+    where: { spellId: id, lang, variant: { in: textVariants(variant) } },
     select: SELECT_SPELL_I18N_DETAIL,
   });
-
-  return s ? s : null;
+  return selectTextRows(rows, variant)[0] ?? null;
 }
 
 export async function queryI18nSummaryDetail(id: number, i18n: I18nContext) {
@@ -246,6 +261,7 @@ export async function queryI18nSummaryDetail(id: number, i18n: I18nContext) {
         lang: target.lang,
         variant: target.variant,
       },
+      reviewStatus: "accepted",
     },
     select: SELECT_SPELL_I18N_SUMMARY,
   });
@@ -287,6 +303,7 @@ export async function queryI18nSummaryMap(
       spellId: { in: spellIds },
       lang: target.lang,
       variant: target.variant,
+      reviewStatus: "accepted",
     },
     select: SELECT_SPELL_I18N_SUMMARY,
   });
@@ -303,12 +320,12 @@ export async function queryI18nNamesByIds(
     where: {
       spellId: { in: ids },
       lang,
-      ...(variant ? { variant } : { variant: "chm" }),
+      variant: { in: textVariants(variant) },
     },
     select: SELECT_SPELL_I18N_MIN,
   });
 
-  return s;
+  return selectTextRows(s, variant);
 }
 
 // Does not check alias for now
@@ -325,10 +342,12 @@ export async function queryByExactI18nNames(
       lang,
       name: { in: names },
       rulebookId: { in: rulebookIds },
-      ...(variant ? { variant } : { variant: "chm" }),
+      variant: { in: textVariants(variant) },
     },
     select: SELECT_SPELL_I18N_MIN,
   });
 
-  return rows;
+  // Select before matching, so a superseded CHM name cannot resolve to the new text.
+  const selected = await queryI18nNamesByIds(rows.map(row => row.spellId), lang, variant);
+  return selected.filter(row => row.rulebookId !== null && rulebookIds.includes(row.rulebookId) && names.includes(row.name ?? ""));
 }
