@@ -542,6 +542,20 @@
       "requiresLocalData": false,
       "requiresSqlite": true,
       "writeCapable": false
+    },
+    "content:search:step": {
+      "module": "rules-content",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "content:search:step:test": {
+      "module": "rules-content",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": false
     }
   }
 }
