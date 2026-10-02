@@ -257,7 +257,10 @@ authored corrections with `sourceKind: reviewed-summary-correction` and a
 distinct review `sourceKey`, and retain the prior source fields and provenance
 under `provenance.derivedFrom`. Preserve donor rows and unreviewed summaries.
 Source extraction/normalization outputs remain candidates for such rows;
-regenerating the canonical file must preserve accepted reviewed corrections.
+`summaries:normalize` refuses to overwrite an existing output containing any
+`reviewed-summary-correction` row before opening inputs or writing either output
+or report. Generate into a new candidate path with `--out` and `--report`, then
+explicitly review and merge candidates while retaining accepted corrections.
 The importer consumes the canonical rows directly, and reuse apply leaves
 already-covered stable keys unchanged.
 
