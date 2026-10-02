@@ -4,7 +4,7 @@
   "rulebookId": 86,
   "status": "reviewed-proposal-awaiting-main-gate",
   "publicBase": "37711b9b270b4f1931729dc3eccf3c67a9a5dd41",
-  "syncedBase": "fde172452f275eedef70a136e773de682f27fded",
+  "syncedBase": "ad5c782d7dc36204e6e38fa69e44021426751a90",
   "frozenAudit": "e793ff09a38060c5c6b336d28690353bd0d96909",
   "privateInput": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411",
   "privateHandoffAndHelperCommit": "3c808df922c0b8043b8e74809ae4b78549667863",

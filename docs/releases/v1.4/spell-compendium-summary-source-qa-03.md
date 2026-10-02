@@ -12,7 +12,7 @@ acceptance and #346 maintained integration; these are review proposals.
 The audit is frozen at `e793ff09a38060c5c6b336d28690353bd0d96909`, with canonical
 summary input at private `a9cbe07747b1bc908ff4ebcd24244e38e58cb411`. Missing
 summaries are not created. Public base `37711b9b270b4f1931729dc3eccf3c67a9a5dd41`
-is synchronized through `fde172452f275eedef70a136e773de682f27fded`.
+is synchronized through `ad5c782d7dc36204e6e38fa69e44021426751a90`.
 
 Private handoff/helper commit `3c808df922c0b8043b8e74809ae4b78549667863` owns
 `dice-qa/books/86/issue-362/`. It adapts the accepted #353 helpers/content at
