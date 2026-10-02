@@ -208,6 +208,71 @@ document counts; live rebuild replaces only derived `SpellSearchDocument` and
 normalized consistency and artifact provenance. Restart an API after swapping
 DB files before using cached endpoints as evidence.
 
+### Exact Search Index Step
+
+`content:search:step` checks an existing content DB read-only by default. Use
+`--apply` only within an explicitly authorized content write workflow:
+
+```powershell
+npm run -w data-tools content:search:step -- --content-db <existing-content.sqlite>
+npm run -w data-tools content:search:step -- --content-db <existing-content.sqlite> --apply
+npm run -w data-tools content:search:step:test
+```
+
+Explicit DB paths resolve from this checkout's repository root, including when
+called from `data-tools/` or an independent working directory. Without the flag,
+`CONTENT_DATABASE_URL` uses the existing server-relative `file:` convention.
+Missing targets, rules/app-state targets, incomplete normalized/i18n source
+schemas, invalid source keys/values and incompatible search schemas are rejected.
+This command creates neither databases nor schema. The original
+`content:search:rebuild` retains its unconditional rebuild/count-only dry-run.
+
+The shared check/apply implementation derives expected documents with the
+maintained source reader and document builder in one consistent transaction.
+It compares every stored field and the complete document key multiset, including
+extra, missing and duplicate keys. A current index also requires exactly one
+state row with the maintained schema version, exact document count and a valid
+timestamp shape. Only valid-schema stale derived documents/state are repairable;
+matching counts or an upstream stage's `changed=false` do not imply current search.
+
+Document equality alone does not establish FTS internal integrity. The step uses
+`PRAGMA main.integrity_check(SpellSearchDocument)` in the same transaction and
+requires exactly one `ok` result. SQLite **3.44.0 or newer** is required: its
+[built-in FTS5 xIntegrity](https://sqlite.org/vtab.html#the_xintegrity_method)
+checks internal index structure and, for our ordinary content-bearing FTS table,
+content/index agreement and document-size/totals through the same storage checker
+as the [FTS integrity command](https://sqlite.org/fts5.html#the_integrity_check_command).
+The exact maintained FTS declaration is required; other tokenizers, external or
+contentless tables and alternate indexing options are rejected. Older runtimes,
+unavailable verification and internal corruption fail closed. This command does
+not attempt shadow-table repair or downgrade to document-only verification.
+Partial FTS integrity is not whole-database, freelist or foreign-key validation.
+
+Apply rechecks the current source/index under its content write transaction,
+uses the maintained replacement function, then verifies the complete resulting
+documents/state and internal FTS integrity before commit. It also compares all
+outside-owned tables and the entire schema, preserving exact SQLite blobs,
+64-bit integers, source/build/provenance, i18n, summaries and control records.
+SQL failures, trigger side effects and failed post-write verification roll back
+this derived stage. A current repeat preserves rows/schema/`rebuiltAt` and opens
+only a read-only file connection, with zero target writes or timestamp refresh.
+Here zero writes means zero **database-data/application SQL writes**, not zero
+filesystem writes. Normal [SQLite read-only WAL coordination](https://sqlite.org/wal.html#read_only_databases)
+may create an empty `-wal` and create/update `-shm`. With no concurrent writer,
+the main DB bytes/mtime and any pre-existing WAL content/mtime remain unchanged.
+The step does not checkpoint, change journal mode, clean sidecars or use
+immutable/no-lock access; it preserves the normal consistent-snapshot mechanism.
+
+The JSON result reports `state=current|stale`, `changed`, `wouldChange` and the
+expected document count. Only a committed rebuild returns `changed=true`;
+a successful apply returns current with `wouldChange=false`. This is solely the
+derived search stage. The owning handoff/coordinator must validate and accept
+source inputs before invoking it: deriving from current text does not certify
+arbitrary source text, source-bound QA, whole-book or migration-pipeline completion,
+summary/overlay acceptance, activation or cross-DB rollback. Existing language,
+variant, summary ownership and fallback rules remain in the maintained builder
+and search consumer.
+
 ### Normalized Content Import Step
 
 `rules:content:step` checks one existing content DB by default; `--apply` imports

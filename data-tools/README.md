@@ -41,6 +41,7 @@ as described in the [short descriptions workflow](../docs/operations/import-work
 - [Rules patches and source candidates](../docs/operations/import-workflow.md#rules-patches)
 - [Atomic spell step and exact repeat checks](../docs/operations/rules-db-notes.md#atomic-spell-maintenance-step)
 - [Normalized content and search index](../docs/operations/import-workflow.md#normalized-content-and-search)
+- [Exact search check, atomic rebuild and repeat](../docs/operations/import-workflow.md#exact-search-index-step)
 - [Exact normalized import check/apply/repeat](../docs/operations/import-workflow.md#normalized-content-import-step)
 - [Short descriptions](../docs/operations/import-workflow.md#short-descriptions)
 - [DB handoff and artifact provenance](../docs/operations/db-content-workflow.md)
