@@ -1,3 +1,4 @@
+import { mapFieldProvenance } from "#server/services/spells/spells.provenance";
 import type {
   SpellDescriptorBucketKey,
   SpellMechanicDetailMetadata,
@@ -48,6 +49,7 @@ function mapSummary(summary: SpellSummaryI18nRow | null) {
 function mapSpellOverlay(
   spellI18n: SpellNameI18nRow | null,
   summaryI18n: SpellSummaryI18nRow | null,
+  target: { id: number; rulebookId: number },
 ): I18nSpellOverlay | undefined {
   const summary = mapSummary(summaryI18n);
   if (!spellI18n && !summary) return undefined;
@@ -55,6 +57,11 @@ function mapSpellOverlay(
   return {
     ...(spellI18n
       ? {
+          ...(spellI18n.variant === "effective"
+            ? { nameProvenance: mapFieldProvenance(
+                spellI18n.nameProvenanceJson, "name", spellI18n, target,
+              ) }
+            : {}),
           lang: "zh" as const,
           name: spellI18n.name ?? undefined,
           variant: spellI18n.variant ?? undefined,
@@ -106,7 +113,9 @@ export function mapSpellItem(
         a.level - b.level || a.name.localeCompare(b.name) || a.id - b.id,
     );
 
-  const i18n = mapSpellOverlay(spellI18n, summaryI18n);
+  const i18n = mapSpellOverlay(spellI18n, summaryI18n, {
+    id: spell.id, rulebookId: spell.rulebook.id,
+  });
   const rulebookDisplay = spell.rulebook as typeof spell.rulebook & {
     displayAbbr?: unknown;
     displayName?: unknown;
@@ -181,14 +190,23 @@ export function mapSpellDetail(
   spellDetailI18n: SpellDetailI18nRow | null,
   summaryI18n: SpellSummaryI18nRow | null = null,
 ): SpellDetailView {
-  const baseI18n = mapSpellOverlay(spellDetailI18n, summaryI18n);
+  const baseI18n = mapSpellOverlay(spellDetailI18n, summaryI18n, {
+    id: spell.id, rulebookId: spell.rulebook.id,
+  });
   const i18n: I18nSpellDetailOverlay | undefined = spellDetailI18n
     ? {
         ...baseI18n,
+        ...(spellDetailI18n.variant === "effective"
+          ? { bodyProvenance: mapFieldProvenance(
+              spellDetailI18n.bodyProvenanceJson, "body", spellDetailI18n,
+              { id: spell.id, rulebookId: spell.rulebook.id },
+            ) }
+          : {}),
         lang: "zh",
         name: spellDetailI18n.name ?? undefined,
         variant: spellDetailI18n.variant ?? undefined,
-        sourceKey: spellDetailI18n.sourceKey ?? undefined,
+        sourceKey: spellDetailI18n.variant === "effective"
+          ? undefined : spellDetailI18n.sourceKey ?? undefined,
         description: {
           html: spellDetailI18n.descriptionHtml ?? undefined,
           text: spellDetailI18n.descriptionText ?? undefined,
