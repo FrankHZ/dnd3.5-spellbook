@@ -12,8 +12,9 @@ maintained integration; these are guarded proposals awaiting review.
 The scope is `suggestedSummarySlices[10]` at audit
 `e793ff09a38060c5c6b336d28690353bd0d96909`: 50 targets and 89 existing EN/ZH rows.
 Canonical summaries remain frozen at private
-`a9cbe07747b1bc908ff4ebcd24244e38e58cb411`. Public base and checked remote main
-are `70eff96c77223dd6e1c05206de549b80407b5423`.
+`a9cbe07747b1bc908ff4ebcd24244e38e58cb411`. The public base is
+`70eff96c77223dd6e1c05206de549b80407b5423`; the final checked remote main is
+`9f118a070a298cadf25a7209a52886b89b905d95`.
 
 Private handoff/helper revision `e594d44ed330b0d716c90dac8ecf866ad2cd72ce` owns
 `dice-qa/books/86/issue-383/`. It reuses the accepted
