@@ -53,8 +53,9 @@ the accepted private Git revision; optional generated evidence is comparison-onl
 Explicit `--accepted-baseline 6a73f4d64682325c67e2c40595008344fb5c3be5`
 selects the accepted 1,026-field union with ten existing-body amendments. Their
 original owners/ledger rows remain alongside active amendment provenance.
-The previous 879-field revision remains reproducible. The writer supports only
-that previous revision and rejects the new projection before opening any DB.
+The previous 879-field revision remains reproducible. The disposable writer
+supports both exact revisions through the same complete verification; no generated
+projection grants write authority.
 It writes inspection-only field provenance and coverage to a new directory in
 this worktree's `data-tools/out/`; see the
 [effective projection contract](../docs/operations/import-workflow.md#effective-chinese-preflight).

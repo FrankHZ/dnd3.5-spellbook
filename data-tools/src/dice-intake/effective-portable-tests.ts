@@ -9,7 +9,7 @@ import { escapedFallbackHtml, validateSourceBoundFallbackReviews, withSourceIssu
 import { bindRestoredScQaInputs, validateReviews, validateFullBodyAudits, type EnglishRecord, type Review } from "./qa";
 import type { Candidate } from "./reconcile";
 import { projectEffectiveChinese, projectAcceptedBodyAmendments, reconcileEffectiveProjection, type ProjectionInputs } from "./effective";
-import { assertCompletePdfBindings, assertEffectiveBaseline, effective879Baseline, currentEffectiveBaseline } from "./effective-cli";
+import { assertCompletePdfBindings, assertEffectiveBaseline, effective879Baseline, currentEffectiveBaseline, acceptedUnionRevision } from "./effective-cli";
 
 const en: EnglishRecord = { name: "Cold Touch", rulebookId: 10, editionId: 5,
   description: "Deals 2d6 cold damage. Round | Damage |",
@@ -133,14 +133,13 @@ assertCompletePdfBindings(bindings, result.output);
 rejects(() => assertCompletePdfBindings(bindings.slice(1), result.output), /every accepted/);
 rejects(() => assertCompletePdfBindings([...bindings, bindings[0]!], result.output), /every accepted/);
 rejects(() => assertCompletePdfBindings([{ ...bindings[0]!, field: "unknown" }, ...bindings.slice(1)], result.output), /illegal/);
-assertEffectiveBaseline(effective879Baseline); assertEffectiveBaseline(effective879Baseline, true);
+assertEffectiveBaseline(effective879Baseline);
 assertEffectiveBaseline(currentEffectiveBaseline);
-rejects(() => assertEffectiveBaseline(currentEffectiveBaseline, true), /writer supports only/);
 rejects(() => assertEffectiveBaseline("a".repeat(40)), /unsupported/);
 rejects(() => assertEffectiveBaseline("latest"), /unsupported/);
-const baseline = { revision: "a".repeat(40), native: { path: "synthetic/native.jsonl", rows: native.accepted },
+const baseline = { revision: acceptedUnionRevision, native: { path: "synthetic/native.jsonl", rows: native.accepted },
   independent: { path: "synthetic/independent.jsonl", rows: [body, name] } };
-const authority = { revision: "b".repeat(40), path: "synthetic/amendments.jsonl" };
+const authority = { revision: currentEffectiveBaseline, path: "synthetic/amendments.jsonl" };
 const amendments: AcceptedBodyAmendment[] = [1, 2].map(targetId => {
   const selected = result.output.find(row => row.targetId === targetId)!;
   const review = structuredClone(body);
@@ -239,4 +238,5 @@ try {
 console.log(`effective Chinese portable tests passed (${rejections} rejection checks; import order counterexamples)`);
 
 // Reuse this formally validated synthetic projection in the actual writer suite.
-export { result as syntheticProjection, run as projectSynthetic, body as syntheticIndependent };
+export { result as syntheticProjection, run as projectSynthetic, body as syntheticIndependent,
+  amend as amendSynthetic, amendments as syntheticAmendments };

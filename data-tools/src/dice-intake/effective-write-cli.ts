@@ -16,7 +16,7 @@ export async function runEffectiveExperiment(argv: string[]) {
     if (key !== "--apply") assert(argv[++i] && !argv[i]!.startsWith("--"), `missing value ${key}`);
   }
   const options = effectiveArguments(argv);
-  assertEffectiveBaseline(options.acceptedBaseline, true); // Before copies or shared read-only preflight.
+  assertEffectiveBaseline(options.acceptedBaseline); // Before copies or shared read-only preflight.
   const parent = effectiveOutputRoot(options.root);
   const output = join(parent, `dice-effective-write-${options.run}`);
   assert(!existsSync(output), "experiment run already exists");

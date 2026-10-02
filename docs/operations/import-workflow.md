@@ -712,10 +712,11 @@ read-only inspection neither certifies corpus history nor activates consumers.
 
 `dice:effective:write` uses the same arguments as `dice:effective`, with an
 optional `--apply`.
-The writer remains fixed to `da691dacd3973d38a9d0f66a08d78fdb1eaafd47`.
-It rejects the #337 revision before creating a copy or opening a database, in
-both dry-run and `--apply`. Its storage primitive also rejects amended projection
-provenance. Read-only baseline selection grants no writer or consumer activation.
+The writer accepts only the two exact revisions listed above. Both dry-run and
+`--apply` require an explicit revision and the complete formal/source/PDF preflight.
+No floating latest, arbitrary revision, or caller-supplied projection is writable.
+This command authorizes only its own disposable copy; consumer activation and
+operator/production writes remain separate.
 Use the rules-copy/PDF paths from the preflight command above:
 
 ```powershell
@@ -747,7 +748,15 @@ supplemental target/field/sourceKey binding; independent evidence retains its
 sourceRef/pages/status. CHM and English fallbacks navigate the current snapshot
 and actual source table. English fallback has `language=en`, even though the
 composed row is in the Chinese request namespace. Row `sourceKey` is populated
-only when both fields share the same non-null origin/key, otherwise null.
+only when both fields share the same non-null origin/key and neither has an active
+amendment, otherwise null. Current accepted inputs navigate the original #329
+union revision/ledger. Amended body JSON retains its original owner/key and entire
+`activeAmendment` prior row, while the active input/evidence locators record the
+amendment revision/path and current sourceRef/pages/status. `originalInput` and
+`originalEvidence` preserve the superseded accepted binding separately. This is
+internal source-bearing evidence: public consumers must never expose whole prior
+rows or source passages. Actual API/web/search validation for this baseline is
+still outstanding.
 Old variants retain their original values, sourceKey and timestamps; their new
 provenance columns default to null. No canonical fields, summaries, relationships,
 publication metadata, app-state or search data are written.
@@ -759,8 +768,11 @@ emits only these files and discards the untouched DB copy. With `--apply`, it
 also emits `content.experiment.sqlite`. The dry-run and applied plan are compared
 directly. Nullable-column SQL upgrade, all effective-row changes and build marker
 replacement are one SQLite transaction. An identical second overlay preserves
-values and timestamps. Portable tests inject real SQL failures in the middle of
-row writes and at the final metadata write, and exercise the real CHM importer.
+values and timestamps. Re-running against a prior experiment copy can explicitly
+restore either supported baseline and reapply the other; current CHM inputs are
+still reverified. Portable tests inject real SQL failures immediately after the
+migration, in the middle of row writes and at the final metadata write, and
+exercise the real CHM importer. A CHM rebuild must precede the effective overlay.
 
 The tracked content migration is part of normal Prisma generation/migration
 setup. This experiment applies its SQL to an old-schema disposable copy without
