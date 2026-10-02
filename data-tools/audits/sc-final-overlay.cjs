@@ -49,6 +49,7 @@ function main(argv) {
     const {rows: _rows, buildMetaJson: _meta, ...report} = plan;
     console.log(JSON.stringify({mode: apply ? 'apply' : validate ? 'validate' : 'dry-run',
       acceptedRevision: writer.finalScRevision, helperRevision: value('helper-revision'), ...report,
+      readerNoteRevision: writer.finalScNoteRevision,
       wholeBookQaComplete: false, activation: false, ftsRefreshed: false}));
   } finally {db.close();}
 }

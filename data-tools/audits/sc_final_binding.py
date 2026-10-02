@@ -6,6 +6,8 @@ not a caller-authored substitute for accepted sources.
 """
 import argparse
 import copy
+import html
+import importlib.util
 import json
 from pathlib import Path
 import re
@@ -24,6 +26,104 @@ RESIDUAL = '00e3c9836be40c878fafe74eb1ad0d915f6d4028'
 IDENTITY = 'b30ef4390aff768ee337a142c11233b2ece3327c'
 RELATIONS = '7e9186706482f672b36019e7734dc6531267628a'
 CANDIDATE = '0688739d92a2aa9fb3eceeb444daa7260e711058'
+NOTE_REVISION = 'c61b9dea676cfd89bdfcaa6dcbcccbc99280d7c4'
+NOTE_PATH = BOOK + 'issue-407/amendments.jsonl'
+NOTE_TARGETS = [4088, 4111, 4229]
+
+
+def compose_reader_notes(fields, amendments):
+    """Append fixed accepted notes without rebasing any existing field evidence."""
+    require(len(fields) == 2002 and len({(r['targetId'], r['field']) for r in fields}) == 2002,
+            'incomplete/duplicate final fields')
+    require([a['targetId'] for a in amendments] == NOTE_TARGETS, 'wrong/duplicate/missing reader notes')
+    indexed = {(r['targetId'], r['field']): r for r in fields}
+    output = copy.deepcopy(fields)
+    for line, amendment in enumerate(amendments, 1):
+        tid, review = amendment['targetId'], amendment['review']
+        before = indexed[tid, 'body']
+        require(amendment['rulebookId'] == review['rulebookId'] == before['rulebookId'] == 86 and
+                review['targetId'] == tid and amendment['field'] == review['field'] == 'descriptionText',
+                'cross-target reader note')
+        require(amendment['prior'] == {'owner': before['origin']['kind'], 'revision': CANDIDATE,
+                'path': BOOK + 'issue-365/field-dispositions.jsonl', 'acceptedRow': before,
+                'nameRow': indexed[tid, 'name']}, 'stale reader-note prior')
+        require(review['before'] == before['text'] and
+                review['input']['chinese']['descriptionHtml'] == before['html'], 'stale reader-note body')
+        suffix = review['after'][len(before['text']):]
+        require(suffix.startswith('\n\n原文疑义备注（本项目说明，非官方勘误）\n') and
+                review['after'] == before['text'] + suffix and before['html'].endswith('</pre>') and
+                review['proposedHtml'] == before['html'][:-6] + html.escape(suffix, quote=False) + '</pre>',
+                'reader note changes authoritative text/HTML prefixes')
+        row = next(r for r in output if (r['targetId'], r['field']) == (tid, 'body'))
+        row.update(text=review['after'], html=review['proposedHtml'], readerNoteAddendum={
+            'revision': NOTE_REVISION, 'path': NOTE_PATH, 'rowRef': NOTE_PATH + ':' + str(line),
+            'amendment': copy.deepcopy(amendment)})
+    return output
+
+
+def fresh_note_pages(data, fresh, sources):
+    """Reopen bounded originals, comparing full page text and geometry."""
+    import pymupdf
+    from pdf_extract.extraction import extract_page
+    actual = []
+    for frozen in fresh:
+        sid, pi = frozen['sourceId'], frozen['pageIndex']
+        with pymupdf.open(Path(data) / sources[sid]) as document:
+            actual.append({'sourceId': sid, 'sourcePath': sources[sid], 'pageIndex': pi,
+                'pageCount': len(document), 'printedPage': pi + 1 if sid == 'sc' else pi if sid == 'phb' else None,
+                **extract_page(document[pi], {})})
+    actual = json.loads(json.dumps(actual))
+    require(actual == fresh, 'reader-note original PDF text/geometry mismatch')
+    return actual
+
+
+def authenticate_reader_notes(args, result):
+    """Reuse the fixed accepted #407 verifier, never execute its authoring CLI."""
+    evidence = Evidence(args.data_root, NOTE_REVISION)
+    prefix = BOOK + 'issue-407/'
+    files = ['prepare.py', 'author.py', 'verify.py', 'packets.json', 'fresh-pages.json',
+             'amendments.jsonl', 'dispositions.jsonl']
+    require(not evidence.git('status', '--porcelain', '--', *[prefix + f for f in files]),
+            'dirty accepted reader-note helper/input')
+    for file in files:
+        evidence.text(prefix + file)
+    # All imported private code has first been compared with its fixed Git bytes.
+    sys.path.insert(0, str(evidence.root / prefix))
+    try:
+        spec = importlib.util.spec_from_file_location('accepted_sc_reader_notes', evidence.root / prefix / 'verify.py')
+        helper = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(helper)
+    finally:
+        sys.path.pop(0)
+    packets, fresh = (evidence.read(prefix + f) for f in ['packets.json', 'fresh-pages.json'])
+    amendments, dispositions = (evidence.read(prefix + f) for f in ['amendments.jsonl', 'dispositions.jsonl'])
+    snapshot = Evidence(args.data_root, UNION).book('issue-329/current-inputs.json')['inputs']
+    contexts = {}
+    for issue, revision in helper.CONTEXT.items():
+        for row in Evidence(args.data_root, revision).book(f'issue-{issue}/decisions.jsonl'):
+            if row['targetId'] in helper.IDS and row.get('sourceNotes'):
+                contexts.setdefault(row['targetId'], {'issue': issue, 'revision': revision,
+                    'sourceNotes': row['sourceNotes'], 'sourcePages': row['originalPages']})
+    expected_pages = {('sc', 1), ('errata', 0), ('phb-errata', 0), ('phb-errata', 1), ('phb-errata', 2),
+                      ('phb', 146), ('phb', 174), ('phb', 175), ('phb', 176), ('phb', 296)}
+    for context in contexts.values():
+        expected_pages.update((s['sourceId'], s['pageIndex']) for s in context['sourcePages'])
+    require([(r['sourceId'], r['pageIndex']) for r in fresh] == sorted(expected_pages),
+            'missing/duplicate/cross-target reader-note PDF pages')
+    verification = helper.validate(packets, fresh, amendments, dispositions, result['field-dispositions.jsonl'],
+        snapshot, contexts, fresh_note_pages(args.data_root, fresh, helper.SOURCES))
+    result = copy.deepcopy(result)
+    result['field-dispositions.jsonl'] = compose_reader_notes(result['field-dispositions.jsonl'], amendments)
+    report = result['report.json']
+    report['sourceRevisions']['readerNotes'] = NOTE_REVISION
+    report['readerNoteAddendum'] = {'revision': NOTE_REVISION, 'path': NOTE_PATH,
+                                  'targets': NOTE_TARGETS, 'verification': verification}
+    report['sourceQuestionIds'] = [{'targetId': r['targetId'], 'field': r['field'],
+        'ids': r['review'].get('sourceQuestionIds', []) + ([q['id'] for q in
+        r['readerNoteAddendum']['amendment']['review']['retainedSourceIssues']['issues']]
+        if 'readerNoteAddendum' in r else [])} for r in result['field-dispositions.jsonl']
+        if r['review'].get('sourceQuestionIds') or 'readerNoteAddendum' in r]
+    return result
 
 
 def exact_candidate(revision):

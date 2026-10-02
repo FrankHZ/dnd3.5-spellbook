@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import re
 from sc_coverage import Evidence, require
-from sc_final_binding import CANDIDATE, exact_candidate, derive_final, compare_candidate
+from sc_final_binding import CANDIDATE, exact_candidate, derive_final, compare_candidate, authenticate_reader_notes
 
 
 def main():
@@ -18,12 +18,13 @@ def main():
     require(code.git('rev-parse', 'HEAD') == args.helper_revision, 'helper revision must be current checkout HEAD')
     paths = ['data-tools/audits', 'data-tools/src/dice-intake', 'data-tools/src/rules',
              'data-tools/src/rules-content', 'data-tools/src/shared', 'data-tools/pdf-extract/src',
-             'server/db/content/migrations']
+             'server/db/content/migrations', 'server/src/services/spells/spells.provenance.ts']
     require(not code.git('diff', args.helper_revision, '--', *paths) and
             not code.git('status', '--porcelain', '--', *paths), 'dirty/stale source authentication helpers')
     args.final_rules = True
     result = derive_final(args)
     compare_candidate(Evidence(args.data_root, CANDIDATE), result)
+    result = authenticate_reader_notes(args, result)
     print(json.dumps({'fields': result['field-dispositions.jsonl'], 'report': result['report.json']}, ensure_ascii=False))
 
 

@@ -49,8 +49,56 @@ function amended(id = 100, replacement = false): any {
 }
 const row = (id = 100) => ({ spellId: id, rulebookId: 86, lang: "zh", name: "Synthetic final name", descriptionText: "Synthetic final body" });
 function map(v: any) { return mapFieldProvenance(JSON.stringify(v), v.field, row(v.targetId), { id: v.targetId, rulebookId: 86 }); }
+const noteRevision = "c61b9dea676cfd89bdfcaa6dcbcccbc99280d7c4";
+function noted(id = 4088): any {
+  const v = amended(id);
+  const before = {targetId: id, rulebookId: 86, field: "body", text: "Synthetic final body ",
+    html: "<pre>Synthetic final body</pre>", origin: structuredClone(v.origin), review: structuredClone(v.review)};
+  const after = before.text + "\n\n原文疑义备注（本项目说明，非官方勘误）\n[" + id + ":synthetic] 未解决的合成疑义";
+  const proposedHtml = before.html.slice(0, -6) + after.slice(before.text.length) + "</pre>";
+  v.readerNoteAddendum = {revision: noteRevision, path: prefix + "issue-407/amendments.jsonl",
+    rowRef: prefix + "issue-407/amendments.jsonl:" + ([4088, 4111, 4229].indexOf(id) + 1),
+    amendment: {targetId: id, rulebookId: 86, field: "descriptionText", prior: {owner: before.origin.kind,
+      revision: final, path: v.input.path, acceptedRow: before,
+      nameRow: {targetId: id, rulebookId: 86, field: "name"}},
+      review: {targetId: id, rulebookId: 86, field: "descriptionText", status: "accepted-with-source-issues",
+        sourcePages: pages, sourceRef: "synthetic-note", originalSourceRead: true, before: before.text, after, proposedHtml,
+        input: {chinese: {descriptionHtml: before.html}},
+        fullBodyAudit: {beforeHtml: before.html, effectiveText: after, effectiveHtml: proposedHtml,
+          currentHtmlReviewed: true, proposedHtmlReviewed: true},
+        retainedSourceIssues: {bodyText: before.text, issues: [{id: id + ":synthetic", status: "source-unresolved"}]}}}};
+  return v;
+}
+function mapNote(v: any) {
+  return mapFieldProvenance(JSON.stringify(v), v.field,
+    {...row(v.targetId), descriptionText: v.readerNoteAddendum.amendment.review.after}, {id: v.targetId, rulebookId: 86});
+}
 
 describe("final source review contract", () => {
+  it.each([4088, 4111, 4229])("exposes accepted note review for %s while preserving original amendments", id => {
+    const v = noted(id), result = mapNote(v);
+    expect(result.review).toEqual({disposition: "accepted-with-source-issues", acceptedRevision: noteRevision,
+      originalEntryReviewed: true, sourceQuestionIds: [id + ":synthetic"]});
+    expect(result.amendment).toEqual(map(amended(id)).amendment);
+    for (const secret of ["dice-qa/", "acceptedRow", "sourcePages", "readerNoteAddendum", "Synthetic final body"])
+      expect(JSON.stringify(result)).not.toContain(secret);
+    for (const mutate of [
+      (a: any) => {a.revision = final;},
+      (a: any) => {a.rowRef += "0";},
+      (a: any) => {a.amendment.review.targetId = 100;},
+      (a: any) => {a.amendment.prior.acceptedRow.origin = {};},
+      (a: any) => {a.amendment.prior.acceptedRow.review = {};},
+      (a: any) => {a.amendment.review.sourcePages = [];},
+      (a: any) => {a.amendment.review.after = "forged";},
+      (a: any) => {a.amendment.review.retainedSourceIssues.issues = [];},
+    ]) {
+      const wrong = structuredClone(v); mutate(wrong.readerNoteAddendum);
+      expect(() => mapNote(wrong)).toThrow("Invalid effective spell provenance");
+    }
+    const name = structuredClone(v); name.field = "name";
+    expect(() => mapNote(name)).toThrow();
+    expect(() => mapNote(noted(100))).toThrow();
+  });
   it.each(["chm", "native", "independent"])("keeps %s ownership separate from original review", kind => {
     for (const field of ["name", "body"] as const) {
       const mapped = map(envelope(field, kind));
@@ -210,6 +258,31 @@ describe("final default normalized API", () => {
     const other = await request(app).get("/api/spells/1").query({ lang: "zh" });
     expect(other.body).toEqual((await request(app).get("/api/spells/1").query({ lang: "zh", variant: "chm" })).body);
     expect(batch.body.items[1].i18n.variant).toBe("chm");
+  });
+  it("serves the accepted reader note in default detail and batch without private evidence", async () => {
+    const template = await contentPrisma.spellContent.findUniqueOrThrow({where: {legacySpellId: 100}});
+    await contentPrisma.spellContent.create({data: {...template, id: "spell:4088", legacySpellId: 4088, slug: "synthetic-note-4088"}});
+    const v = noted(), descriptionText = v.readerNoteAddendum.amendment.review.after;
+    try {
+      await contentPrisma.i18nSpellText.create({data: {spellId: 4088, rulebookId: 86, lang: "zh", variant: "effective",
+        name: "Synthetic final name", descriptionText, descriptionHtml: "<pre>Synthetic note body</pre>",
+        nameProvenanceJson: JSON.stringify(envelope("name", "chm", 4088)), bodyProvenanceJson: JSON.stringify(v)}});
+      const detail = await request(app).get("/api/spells/4088").query({lang: "zh"});
+      const batch = await request(app).post("/api/spells/batch").query({lang: "zh"}).send({ids: [4088]});
+      for (const response of [detail, batch]) expect(response.status).toBe(200);
+      expect(detail.body.i18n.description.text).toBe(descriptionText);
+      expect(detail.body.i18n.bodyProvenance.review.acceptedRevision).toBe(noteRevision);
+      expect(detail.body.i18n.bodyProvenance.review.sourceQuestionIds).toEqual(["4088:synthetic"]);
+      for (const item of [detail.body, batch.body.items[0]]) {
+        expect(item.i18n.name).toBe("Synthetic final name");
+        expect(item.i18n.nameProvenance.review.acceptedRevision).toBe(coverage);
+        expect(JSON.stringify(item)).not.toContain("dice-qa/");
+        expect(JSON.stringify(item)).not.toContain("acceptedRow");
+      }
+    } finally {
+      await contentPrisma.i18nSpellText.deleteMany({where: {spellId: 4088}});
+      await contentPrisma.spellContent.delete({where: {legacySpellId: 4088}});
+    }
   });
   it("isolates variant names/bodies/summaries and retains canonical aliases in full search", async () => {
     for (const context of [{ lang: "zh" }, { lang: "zh", variant: "chm" }, { lang: "zh", variant: "effective" }, { lang: "zh", variant: "other" }, { lang: "en" }]) {

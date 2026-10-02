@@ -101,6 +101,9 @@ PDF verification against durable final inputs. It defaults to read-only dry-run;
 It preserves genuine full normalized build provenance and records accepted
 name/body overlay provenance separately from pending semantic QA. See the
 [final overlay command](../docs/operations/sc-final-source-binding.md#final-overlay-and-migrated-state-validation).
+That entry also authenticates the fixed accepted #407 reader-note handoff and
+adds only its three body notes, preserving the original final candidate and
+every unchanged field's provenance.
 
 A documented command is not permission to write local DBs or activate production.
 Use the task's explicit write boundary and the operation-specific dry-run path;
