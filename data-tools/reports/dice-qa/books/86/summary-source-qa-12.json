@@ -2,12 +2,12 @@
   "schema": 1,
   "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/386",
   "rulebookId": 86,
-  "status": "reviewed-proposal-awaiting-main-gate-with-existing-duration-ambiguity",
+  "status": "reviewed-proposal-awaiting-main-gate",
   "publicBase": "9f118a070a298cadf25a7209a52886b89b905d95",
-  "synchronizedMain": "9b3a4910a82fc2969191a8a2024ff159a136866f",
+  "synchronizedMain": "3e3a131842ccf9bcc8e7955466c68e3434c6afb6",
   "frozenAudit": "e793ff09a38060c5c6b336d28690353bd0d96909",
   "privateInput": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411",
-  "privateHandoffAndHelperCommit": "45fdd7d226f9f11cd90d9220ca04a7ed9595060e",
+  "privateHandoffAndHelperCommit": "edcc352f051e59baa13db28729ea0535c8403e78",
   "privateDirectory": "dice-qa/books/86/issue-386",
   "helperContracts": {
     "accepted353": "e154c69e817c81d7e48da105c46daba83a4da8c4",
@@ -189,7 +189,7 @@
     },
     {
       "stableKey": "4574:en:imarvin",
-      "status": "faithful-source-ambiguity"
+      "status": "reviewed-correction"
     },
     {
       "stableKey": "4575:en:imarvin",
@@ -345,7 +345,7 @@
     },
     {
       "stableKey": "4574:zh:chm",
-      "status": "faithful-source-ambiguity"
+      "status": "source-correct"
     },
     {
       "stableKey": "4576:zh:chm",
@@ -499,16 +499,15 @@
   "counts": {
     "reviewedTargets": 50,
     "reviewedRows": 84,
-    "correctedRows": 19,
-    "retainedRows": 65,
-    "correctedTargets": 17,
+    "correctedRows": 20,
+    "retainedRows": 64,
+    "correctedTargets": 18,
     "changesByLanguage": {
-      "en": 9,
+      "en": 10,
       "zh": 10
     },
-    "retainedWithSourceAmbiguityRows": 2,
     "baselineRows": 6572,
-    "preservedUnchangedLines": 6553
+    "preservedUnchangedLines": 6552
   },
   "sourceEvidence": {
     "originalPrinting": "First Printing: December 2005",
@@ -662,25 +661,31 @@
       "dice-qa/books/86/issue-259/review-a/joint-review-results.jsonl": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411",
       "dice-qa/books/86/issue-259/review-b/joint-review-results.jsonl": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411",
       "dice-qa/books/86/issue-259/review-c/joint-review-results.jsonl": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411",
-      "dice-qa/books/86/issue-259/review-d/joint-review-results.jsonl": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411"
+      "dice-qa/books/86/issue-259/review-d/joint-review-results.jsonl": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411",
+      "dice-qa/books/86/issue-365/field-dispositions.jsonl": "0688739d92a2aa9fb3eceeb444daa7260e711058"
     },
-    "acceptedChineseBodyUnavailableTargets": [
-      4611,
-      4612,
-      4613,
-      4614,
-      4616,
-      4617
-    ],
-    "unavailableChineseContextHandling": "Original complete SC entries and accepted English/mechanics govern summary review; no absent Chinese body is created or neighboring body accepted."
+    "actualFinalChineseContext": {
+      "revision": "0688739d92a2aa9fb3eceeb444daa7260e711058",
+      "path": "dice-qa/books/86/issue-365/field-dispositions.jsonl",
+      "targets": 50,
+      "nameBodyRows": 100,
+      "allFullRowsCompared": true,
+      "historicalFrozenContextPreserved": true
+    }
   },
   "sourceQuestions": [
     {
       "questionId": "4574:permanent-duration",
       "status": "faithful-unresolved-source-note",
-      "summaryRelevant": true,
+      "summaryRelevant": false,
       "existing": true,
-      "summaryRowsRetainedProvisionally": true,
+      "adjudicated": false
+    },
+    {
+      "questionId": "4611:nonmetal-armor-secondary-effect-source",
+      "status": "faithful-unresolved-source-note",
+      "summaryRelevant": false,
+      "existing": true,
       "adjudicated": false
     }
   ],
@@ -714,6 +719,8 @@
       "stale same-count correction handoff",
       "missing parent evidence",
       "duplicate/extra evidence",
+      "stale final body",
+      "stale final target",
       "stale bilingual context",
       "stale source locator",
       "stale PDF geometry/text",
@@ -732,19 +739,19 @@
     "disposableSummaryOnlyBaselineRows": 6572,
     "dryRunRowsUnchanged": true,
     "apply": {
-      "updated": 19,
+      "updated": 20,
       "inserted": 0
     },
     "repeat": {
       "updated": 0,
-      "unchanged": 19
+      "unchanged": 20
     },
     "allPersistedFieldsCompared": true,
     "untouchedRowsAndUnrelatedSentinelPreserved": true,
     "disposableDatabaseRemoved": true,
     "finalHeadReplayLabels": [
-      "review-root",
-      "review-package"
+      "final-root",
+      "final-package"
     ],
     "remoteGate": "Exact-head full ci:portable required; final proof revisions and public head are reported in PR delivery."
   },
