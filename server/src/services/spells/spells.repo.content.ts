@@ -184,7 +184,7 @@ function normalizedMechanicWhere(filters: SpellMechanicFilters) {
 }
 
 export async function queryIdsByI18nName(
-  lang: Lang,
+  i18n: I18nContext,
   name: string,
   rulebookIds: number[],
   taxonomyFilters: SpellTaxonomyFilterIds,
@@ -203,7 +203,8 @@ export async function queryIdsByI18nName(
         JOIN "SpellContent" s ON s."legacySpellId" = i.spellId
         WHERE i.rulebookId IN (${Prisma.join(rulebookIds)})
           AND LOWER(i.name) LIKE ${like}
-          AND i.lang = ${lang}
+          AND i.lang = ${i18n.lang}
+          AND i.variant = ${i18n.variant ?? "chm"}
           ${normalizedTaxonomyWhere(taxonomyFilters)}
           ${normalizedComponentWhere(componentFilters)}
           ${normalizedMechanicWhere(mechanicFilters)}

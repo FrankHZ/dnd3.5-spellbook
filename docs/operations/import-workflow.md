@@ -810,6 +810,20 @@ legacy sourceKey values, and select summary variants separately. Explicit
 the omitted-variant/default policy. Canonical English/mechanics, summaries, relationships,
 normalized entities and publication metadata remain outside the overlay.
 
+After authorized disposable imports and the verified writer, build contracts
+and server, then run `npm run -w data-tools dice:effective:consumers --` with
+absolute `--content-db`, `--before-overlay`, `--rules-db`, `--projection` and
+`--report` paths. The first four files must be under this checkout's
+`data-tools/out/`; `--report` must be a new file in the configured external
+`dice-qa/books/86/issue-341/` directory. The projection is an audit expectation,
+never writer authority. Rebuild baseline search after normalized/summary imports
+and rebuild the experiment after overlay writes. The helper starts disposable
+content-read APIs on ports 3411/3412, verifies actual serialized responses and
+derived documents, and stops those processes. It never opens operator app-state.
+Source-bearing responses stay in the private report. This current-SC acceptance
+helper verifies the fixed 1002-target input; it is not a general importer or
+full artifact/deployment gate.
+
 The safe rebuild order is: accepted rules-copy generation and normalized content
 import → complete CHM rebuild and other Chinese imports → validated selective
 overlay in a transaction → derived search rebuild → provenance/parity and

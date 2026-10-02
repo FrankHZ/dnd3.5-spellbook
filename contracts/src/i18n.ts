@@ -31,6 +31,9 @@ export type SpellFieldProvenance = {
   schemaVersion: 1;
   language: Lang;
   acceptedRevision: string;
+  /** Current reviewed body authority; origin below is the original field owner. */
+  amendment?: { kind: "accepted-body-amendment"; acceptedRevision: string;
+    priorAcceptedRevision: string; status: "accepted" | "accepted-with-source-issues" };
   origin:
     | { kind: "native" | "chm"; sourceKey: string }
     | { kind: "independent" | "english"; sourceKey: null };

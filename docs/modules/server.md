@@ -187,6 +187,10 @@ fallback. Lists and resolve return name provenance; detail also returns body
 provenance. Each typed field metadata contains `schemaVersion`,
 `acceptedRevision` and an origin (`native`, `independent`, `chm`, or `english`).
 Native/CHM origins carry their source key; independent/English keys are null.
+An amended body additionally exposes `amendment` with kind
+`accepted-body-amendment`, current/prior accepted revisions and accepted status.
+Its `origin` describes the original owner, not an assertion that the current
+body is unchanged native content. Names cannot carry body amendments.
 Private evidence locators, source pages and review notes are never returned.
 Effective detail omits a row source key because fields may have different origins.
 
@@ -196,11 +200,18 @@ missing provenance returns HTTP 500 with `INVALID_EFFECTIVE_PROVENANCE` and a
 sanitized message. Runtime checks storage integrity; source quality and acceptance
 remain the import workflow's responsibility. Legacy CHM rows may have null
 provenance and retain their existing responses.
+Amendment validation binds active input/evidence to current authority and the
+original input/evidence to the prior row's target, book, field and owner. The
+entire prior row, source passages and private paths remain internal.
 
 Explicit effective requests reuse `zh/chm` summaries with their original variant
 and source key. Missing effective rows keep canonical English fields and only
 any existing CHM summary overlay; localized resolve matching stays variant-specific
 and retains its existing exact English fallback. Omitted variants still select
 CHM. English requests keep the existing English summary path. This explicit
-consumer contract does not activate effective content or change search/default
-selection policy.
+consumer contract does not activate effective content or change default overlay
+selection. Full-text effective searches select `zh/effective` and canonical
+`en/default` documents. Other requests exclude effective documents and keep
+their existing search variants; effective names do not enter old aliases.
+Localized name search, like resolve, matches the requested variant (`chm`
+when omitted) before returning its overlay.

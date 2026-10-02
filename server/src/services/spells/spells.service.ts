@@ -96,7 +96,7 @@ export const spellsService = {
       }
     if (doAppQuery) {
       const idsI18n = await queryIdsByI18nName(
-        input.i18n.lang,
+        input.i18n,
         input.q,
         input.rulebookIds,
         input.taxonomyFilters,

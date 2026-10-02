@@ -103,6 +103,7 @@ const tests: TestCase[] = [
           },
         ],
         texts: [
+          { spellId: 100, lang: "zh", variant: "effective", name: "审核名称", descriptionText: "审核正文" },
           {
             spellId: 100,
             lang: "zh",
@@ -131,8 +132,11 @@ const tests: TestCase[] = [
 
       assert.deepEqual(
         documents.map((document) => `${document.lang}:${document.variant}`),
-        ["en:default", "en:imarvin", "zh:chm"],
+        ["en:default", "en:imarvin", "zh:chm", "zh:effective"],
       );
+      for (const document of documents.filter(document => document.variant !== "effective"))
+        assert(!document.aliases.includes("审核名称"), "effective names must not leak into old aliases");
+      assert.equal(documents.find(document => document.variant === "effective")!.body, "审核正文");
 
       const db = new Database(":memory:");
       try {
