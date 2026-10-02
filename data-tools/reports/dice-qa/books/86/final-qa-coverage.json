@@ -2782,7 +2782,7 @@
       "ownerIssue": 347,
       "ownerStatus": "in-progress-unaccepted; do not redispatch",
       "sourceDependencies": [
-        "SC37 and SC174 complete entries",
+        "SC40 (physical index 39) and SC174 complete entries",
         "DMG224/149 only if retaining operative expanded rules; latest authorization allows faithful SC translation with named DMG references and removal of unsupported old expansion"
       ]
     },

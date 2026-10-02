@@ -490,7 +490,7 @@ def audit(args):
                    'sourceDependencies': ['SC original headings and complete entries', 'applicable Beastlands/Belker/Kolyarut terminology; MM159 for Kolyarut']},
                   {'kind': 'external-operative-expansion', 'targetIds': [3997, 4097], 'fields': ['chinese.body'],
                    'ownerIssue': 347, 'ownerStatus': 'in-progress-unaccepted; do not redispatch',
-                   'sourceDependencies': ['SC37 and SC174 complete entries', 'DMG224/149 only if retaining operative expanded rules; latest authorization allows faithful SC translation with named DMG references and removal of unsupported old expansion']},
+                   'sourceDependencies': ['SC40 (physical index 39) and SC174 complete entries', 'DMG224/149 only if retaining operative expanded rules; latest authorization allows faithful SC translation with named DMG references and removal of unsupported old expansion']},
                   {'kind': 'relationship-source', 'targets': relations,
                    'sourceDependencies': ['SC full headers/indexes', 'applicable original source for each actual extra membership; compiled DB alone is insufficient']},
                   {'kind': 'prose', 'targetIds': [4736], 'fields': ['chinese.body.flavor'],

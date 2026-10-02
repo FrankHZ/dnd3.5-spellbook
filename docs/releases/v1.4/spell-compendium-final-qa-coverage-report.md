@@ -130,6 +130,9 @@ Committed helper: `3ce3cf1248fea2ca41728a41f21c0fcdfa09646b`; local-only private
 evidence: `654f54287a2a1adf937f23012813b03ace7ca243`. The latter commits only the
 five #344 evidence files, alongside independently verified `gpt-6.1-sol` / `high`
 turn metadata. Other concurrent private changes are not audit inputs.
+The public dependency label for 3997 is SC40 (physical index 39), matching its
+existing original-page binding; the recorded helper's SC37 label is corrected
+without changing the frozen private evidence or any coverage conclusion.
 
 Validation: seven portable tests, current-field reconciliation, original-span/
 authority replay, root/package reproduction, source-free export and diff/link
