@@ -10,7 +10,7 @@ lists every assigned key and disposition. Main-gate/#346 owns acceptance and int
 The frozen audit is `e793ff09a38060c5c6b336d28690353bd0d96909`:
 50 targets / 73 existing rows (25 EN / 48 ZH). Canonical summary input remains
 private `a9cbe07747b1bc908ff4ebcd24244e38e58cb411`. Public base
-`2fa4d2be871bce40e2c240690cd58483fa3ca1db` is synchronized with main `b24f3b0a74ca022929626cbe4f6f61f94f193ffe`.
+`2fa4d2be871bce40e2c240690cd58483fa3ca1db` is synchronized with main `0bb50eef9695afc7f6ee176a0f6a058209cbbd4d`.
 
 Private handoff/helper commit `ff61794b85dbc95598dabee5ff76aa87d4231ed2` owns
 `dice-qa/books/86/issue-395/`. It reuses [#353 provenance](./spell-compendium-summary-source-qa-01.md),
