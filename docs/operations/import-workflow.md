@@ -464,7 +464,12 @@ field, complete replacement, original-source locators, reviewer and specific
 English/Chinese rule pairs. Each `(targetId, field)` is unique and cannot overlap
 a native accepted field. Accepted bodies require an embedded full-body audit of
 the complete new text, actual old HTML and explicitly escaped `<pre>` projection.
-Missing Chinese is reviewed absence, not permission to invent a corrected fallback.
+For an explicitly authorized direct translation of a missing field, set
+`intent: "translate-missing"` and bind `before: null` to the actual absent field.
+A missing body also requires absent current Chinese HTML. Keep `sourceKey: null`;
+do not manufacture a CHM baseline or native candidate. The same complete input,
+original-source, rule-pair, full-body and HTML checks still apply. Ordinary
+correction proposals continue to require an existing non-empty Chinese field.
 Changed inputs, unreviewed fields and unresolved source evidence fail acceptance.
 
 For SC current-edition Chinese delivery, an explicit owning-book scope decision
