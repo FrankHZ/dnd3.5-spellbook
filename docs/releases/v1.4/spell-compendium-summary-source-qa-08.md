@@ -13,7 +13,7 @@ The scope is `suggestedSummarySlices[7]` at audit
 `e793ff09a38060c5c6b336d28690353bd0d96909`: 50 targets and 95 existing EN/ZH rows.
 Canonical summaries are frozen at private
 `a9cbe07747b1bc908ff4ebcd24244e38e58cb411`. The public base is `52bf0b725d3f16dde1eac7aeec172d14d8a05d96`; the final checked
-remote main is `fe4b9db939e0d49787f5582cf8957c531798aad7`.
+remote main is `071cf8b13246a05971326095548aef91880b0fe2`.
 
 Private handoff/helper revision `11c38629ae3a7ebe957ed88210a9ff519fd6656e` owns
 `dice-qa/books/86/issue-376/`. It reuses the accepted
