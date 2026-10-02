@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { execFileSync, spawnSync } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
 import Database from "better-sqlite3";
@@ -81,7 +82,7 @@ try {
   fs.writeFileSync(rulesDbPath, "portable rules DB bytes", "utf8");
   fs.writeFileSync(
     rulesManifestPath,
-    '{"database":{"sha256":"manifest value is not artifact truth"}}\n',
+    `${JSON.stringify({ database: { sha256: sha256File(rulesDbPath) } })}\n`,
     "utf8",
   );
 
@@ -113,6 +114,7 @@ try {
   const artifactPath = path.join(tempRoot, "rules-content.generated.json");
   writeArtifact(artifactPath, generatedContent);
   const content = readGenerated(artifactPath);
+  verifyCliManifestBinding(tempRoot, content);
 
   const importerProvenance = structuredClone(generationProvenance);
   importerProvenance.parentRepo = {
@@ -200,6 +202,24 @@ try {
     buildMeta.artifact.generation.parentRepo.commit,
     buildMeta.importer.current.parentRepo.commit,
   );
+
+  for (const staleInput of ["rulesDb", "publications", "migrations"] as const) {
+    const staleContext = structuredClone(importContext);
+    const fingerprint = staleInput === "rulesDb"
+      ? staleContext.currentProvenance.rulesDb
+      : staleInput === "publications"
+        ? staleContext.currentProvenance.canonicalInputs.rulebookPublicationMetadata!
+        : staleContext.currentProvenance.contentMigrations;
+    fingerprint.sha256 = "0".repeat(64);
+    const before = db.serialize();
+    for (const dryRun of [true, false]) {
+      assert.throws(
+        () => importGenerated(db, content, dryRun, artifactPath, staleContext),
+        /artifact provenance does not match current import inputs/,
+      );
+      assert.deepEqual(db.serialize(), before);
+    }
+  }
 
   const limited = structuredClone(content);
   limited.artifact = createRulesContentArtifactMetadata({
@@ -396,4 +416,125 @@ function tableCount(db: Database.Database, table: string) {
       }
     ).count,
   );
+}
+
+// Exercise production callers without injecting an already-collected import context.
+function verifyCliManifestBinding(tempRoot: string, content: NormalizedRulesContent) {
+  const dataRoot = path.join(tempRoot, "cli-data");
+  fs.mkdirSync(path.join(dataRoot, "rulebook-publications"), { recursive: true });
+  execFileSync("git", ["init", dataRoot], { stdio: "ignore" });
+  execFileSync("git", ["-C", dataRoot, "-c", "user.name=Portable", "-c", "user.email=portable@example.invalid", "commit", "--allow-empty", "-m", "synthetic inputs"], { stdio: "ignore" });
+  const publications = path.join(dataRoot, "rulebook-publications", "publications.jsonl");
+  fs.writeFileSync(publications, "", "utf8");
+  const rulesPath = path.join(tempRoot, "cli-rules.sqlite");
+  const rules = new Database(rulesPath);
+  // Empty legacy schema: full generation still traverses the actual reader.
+  rules.exec(`
+    CREATE TABLE dnd_dndedition (id, slug, core);
+    CREATE TABLE dnd_rulebook (id, dnd_edition_id, name, abbr, slug, description, year, published, official_url, image);
+    CREATE TABLE dnd_spellschool (id, name, slug);
+    CREATE TABLE dnd_spellsubschool (id, name, slug);
+    CREATE TABLE dnd_spell (id, added, rulebook_id, page, name, slug, school_id, sub_school_id,
+      verbal_component, somatic_component, material_component, arcane_focus_component,
+      divine_focus_component, xp_component, meta_breath_component, true_name_component,
+      corrupt_component, corrupt_level, extra_components, casting_time, range, target,
+      effect, area, duration, saving_throw, spell_resistance, description, description_html,
+      verified, verified_author_id, verified_time);
+    CREATE TABLE dnd_spell_descriptors (spell_id, spelldescriptor_id);
+    CREATE TABLE dnd_spellclasslevel (id, spell_id, character_class_id, level, extra);
+    CREATE TABLE dnd_spelldomainlevel (id, spell_id, domain_id, level, extra);
+  `);
+  rules.close();
+  const contentPath = path.join(tempRoot, "cli-content.sqlite");
+  const target = new Database(contentPath);
+  applyTrackedMigrations(target, migrationsRoot);
+  target.exec("CREATE TABLE ProtectedOverlay (value TEXT); INSERT INTO ProtectedOverlay VALUES ('keep');");
+  target.close();
+  const protectedPath = path.join(tempRoot, "cli-app-state.sqlite");
+  fs.writeFileSync(protectedPath, "protected app-state bytes", "utf8");
+  const manifestPath = path.join(dataRoot, "rules-db-manifest.json");
+  const output = path.join(tempRoot, "cli-generated.json");
+  const input = path.join(tempRoot, "cli-import.json");
+  const cli = path.join(repoRoot, "data-tools", "src", "rules-content", "cli.ts");
+  const env = {
+    ...process.env,
+    DATA_REPO_PATH: dataRoot,
+    RULES_DATABASE_URL: `file:${rulesPath}`,
+    CONTENT_DATABASE_URL: `file:${contentPath}`,
+    APP_DATABASE_URL: `file:${protectedPath}`,
+  };
+  const run = (args: string[], cwd: string, expectedError?: RegExp) => {
+    // Reuse this test's tsx loader/runtime, including an external NODE_PATH.
+    const result = spawnSync(process.execPath, [...process.execArgv, cli, ...args], {
+      cwd, env, encoding: "utf8",
+    });
+    assert.ifError(result.error);
+    const messages = result.stdout + result.stderr;
+    if (expectedError) {
+      assert.notEqual(result.status, 0, messages);
+      assert.match(messages, expectedError);
+    } else {
+      assert.equal(result.status, 0, messages);
+      const report = /^Report: (.+)$/m.exec(result.stdout)?.[1]?.trim();
+      assert.ok(report && path.dirname(report) === path.join(repoRoot, "data-tools", "out", "rules-content"));
+      fs.rmSync(report);
+    }
+  };
+  const validManifest = JSON.stringify({ database: { sha256: sha256File(rulesPath) } });
+  fs.writeFileSync(manifestPath, validManifest, "utf8");
+  for (const cwd of [repoRoot, path.join(repoRoot, "data-tools")]) {
+    run(["generate", "--output", output], cwd);
+    const generated = readGenerated(output);
+    assert.equal(generated.artifact!.scope, "full");
+    assert.equal(generated.artifact!.provenance.rulesDb.sha256, sha256File(rulesPath));
+    assert.equal(generated.artifact!.provenance.canonicalInputs.rulesManifest!.sha256, sha256File(manifestPath));
+    const importContent = structuredClone(content);
+    importContent.artifact!.provenance = generated.artifact!.provenance;
+    writeArtifact(input, importContent);
+    const before = sha256File(contentPath);
+    run(["import", "--dry-run", "--input", input], cwd);
+    assert.equal(sha256File(contentPath), before);
+    run(["import", "--input", input], cwd);
+  }
+  const imported = new Database(contentPath, { readonly: true });
+  assert.equal(tableCount(imported, "SpellContent"), content.spells.length);
+  assert.deepEqual(imported.prepare("SELECT * FROM ProtectedOverlay").all(), [{ value: "keep" }]);
+  imported.close();
+  const protectedFiles = [rulesPath, contentPath, protectedPath, publications, output];
+  const before = protectedFiles.map(sha256File);
+  const cases = [
+    { text: JSON.stringify({ database: { sha256: "0".repeat(64) } }), error: /does not match actual rules DB SHA-256/ },
+    { text: "{broken", error: /not valid JSON/ },
+    ...[null, {}, { database: {} }, { database: { sha256: null } }, { database: { sha256: 42 } },
+      { database: { sha256: "invalid" } }, { database: { sha256: "A".repeat(64) } }]
+      .map((value) => ({ text: JSON.stringify(value), error: /database.sha256 must be SHA-256/ })),
+  ];
+  for (const [index, invalid] of cases.entries()) {
+    fs.writeFileSync(manifestPath, invalid.text, "utf8");
+    // Match the artifact's manifest-file fingerprint to the invalid current file:
+    // rejection must come from DB binding, not merely stale artifact detection.
+    const importContent = readGenerated(input);
+    importContent.artifact!.provenance.canonicalInputs.rulesManifest!.sha256 = sha256File(manifestPath);
+    writeArtifact(input, importContent);
+    const cwd = index % 2 === 0 ? repoRoot : path.join(repoRoot, "data-tools");
+    run(["generate", "--output", output], cwd, invalid.error);
+    for (const flags of [["--dry-run"], []]) {
+      run(["import", ...flags, "--input", input], cwd, invalid.error);
+    }
+    assert.deepEqual(protectedFiles.map(sha256File), before);
+    assert.equal(fs.readFileSync(manifestPath, "utf8"), invalid.text);
+  }
+  fs.rmSync(manifestPath);
+  run(["generate", "--output", output], repoRoot, /Required rules-content input not found/);
+  for (const flags of [["--dry-run"], []]) {
+    run(["import", ...flags, "--input", input], path.join(repoRoot, "data-tools"), /Required rules-content input not found/);
+  }
+  assert.deepEqual(protectedFiles.map(sha256File), before);
+  fs.writeFileSync(manifestPath, "{broken", "utf8");
+  const limitedPath = path.join(tempRoot, "cli-limited.json");
+  run(["generate", "--audit-only", "--output", limitedPath], repoRoot);
+  assert.equal(readGenerated(limitedPath).artifact!.importable, false);
+  run(["import", "--input", limitedPath], repoRoot, /cannot be imported/);
+  assert.deepEqual(protectedFiles.map(sha256File), before);
+  console.log("Rules-content CLI manifest binding and protected-input nonmutation OK");
 }
