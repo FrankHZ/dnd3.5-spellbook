@@ -7,7 +7,7 @@ import {
   type MechanicType,
 } from "./mechanics";
 
-export const RULES_CONTENT_GENERATOR_VERSION = "rules-content-normalizer-v8";
+export const RULES_CONTENT_GENERATOR_VERSION = "rules-content-normalizer-v9";
 
 export type LegacyRulebookRow = {
   id: number;

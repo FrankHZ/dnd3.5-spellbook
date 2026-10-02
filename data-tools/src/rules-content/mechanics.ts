@@ -263,7 +263,7 @@ function parseDuration(raw: string | null | undefined) {
   }
 
   const timedMatch = text.match(
-    /^(\d+) (round|minute|hour|day)s?(\/level)?(?: \(d\))?$/,
+    /^(\d+) (round|minute|hour|day)s?(\s*\/\s*level)?(?: \(d\))?$/,
   );
   if (timedMatch) {
     const amount = Number(timedMatch[1]);
@@ -311,10 +311,16 @@ function parseSavingThrow(raw: string | null | undefined) {
       displayCoverage: "empty",
     });
   }
-  if (text === "none" || text === "no") {
+  const noSaveMatch = text.match(
+    /^(none|no)(?: \((harmless|object)(?:, (harmless|object))?\))?$/,
+  );
+  if (noSaveMatch) {
+    const parentheticals = [noSaveMatch[2], noSaveMatch[3]].filter(
+      (value): value is string => Boolean(value),
+    );
     return mechanic("none", {
       flags: savingThrowFlags(text, false),
-      normalizedText: "None",
+      normalizedText: `None${parentheticals.length ? ` (${parentheticals.join(", ")})` : ""}`,
       displayCoverage: "complete",
     });
   }
