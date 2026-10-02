@@ -4,10 +4,10 @@
   "rulebookId": 86,
   "status": "reviewed-proposal-awaiting-main-gate",
   "publicBase": "38d54617704056134fedf57424b75e8423eba447",
-  "synchronizedMain": "38d54617704056134fedf57424b75e8423eba447",
+  "synchronizedMain": "3cc489e254ccb596af6f20137b4234749f3ab0df",
   "frozenAudit": "e793ff09a38060c5c6b336d28690353bd0d96909",
   "privateInput": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411",
-  "privateHandoffAndHelperCommit": "2c51023142c7833966a5f776dc284e98b2a978a2",
+  "privateHandoffAndHelperCommit": "447e713f26dba4043419aaa7cb93d37ca309466f",
   "privateDirectory": "dice-qa/books/86/issue-403",
   "acceptedHelperContracts": {
     "353": "e154c69e817c81d7e48da105c46daba83a4da8c4",
