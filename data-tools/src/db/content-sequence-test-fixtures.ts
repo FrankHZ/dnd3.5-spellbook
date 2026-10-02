@@ -108,3 +108,12 @@ export async function prepareSequenceFixture(temp: string, file: string) {
     summaryInput: thirdSummaryPath, previousSummaryInput: afterSummaryPath};
   return {first, second, before, after, third, beforeSummaries, afterSummaries, thirdSummaries};
 }
+
+// Test setup also runs in its own process so server compilation never imports
+// data-tools source or changes its package root to accommodate a fixture.
+if (require.main === module) {
+  const [temp, file] = process.argv.slice(2);
+  if (!temp || !file) throw new Error("Synthetic sequence fixture requires its owned temporary input directory and DB");
+  prepareSequenceFixture(temp, file).then(({first, second}) => console.log(JSON.stringify({first, second})))
+    .catch(error => {console.error(error); process.exitCode = 1;});
+}
