@@ -12,7 +12,7 @@ Scope is `suggestedSummarySlices[8]` from audit
 `e793ff09a38060c5c6b336d28690353bd0d96909`. The canonical private input remains
 `a9cbe07747b1bc908ff4ebcd24244e38e58cb411`. Public base is
 `fe4b9db939e0d49787f5582cf8957c531798aad7`, synchronized with relevant main
-through `70eff96c77223dd6e1c05206de549b80407b5423`.
+through `9f118a070a298cadf25a7209a52886b89b905d95`.
 
 Private handoff/helper revision `9d1a6d4229d7153b834b36b116570e48de5916a2`
 owns `dice-qa/books/86/issue-379/`. It reuses the accepted #353 contract
