@@ -39,6 +39,7 @@ as described in the [short descriptions workflow](../docs/operations/import-work
 
 - [CHM parsing and Chinese imports](../docs/operations/import-workflow.md#chm-and-entity-translations)
 - [Rules patches and source candidates](../docs/operations/import-workflow.md#rules-patches)
+- [Atomic spell step and exact repeat checks](../docs/operations/rules-db-notes.md#atomic-spell-maintenance-step)
 - [Normalized content and search index](../docs/operations/import-workflow.md#normalized-content-and-search)
 - [Short descriptions](../docs/operations/import-workflow.md#short-descriptions)
 - [DB handoff and artifact provenance](../docs/operations/db-content-workflow.md)

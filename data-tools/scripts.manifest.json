@@ -514,6 +514,20 @@
       "requiresLocalData": false,
       "requiresSqlite": true,
       "writeCapable": false
+    },
+    "rules:spells:step": {
+      "lifecycle": "maintained-local",
+      "requiresSqlite": true,
+      "module": "rules",
+      "writeCapable": true,
+      "requiresLocalData": true
+    },
+    "rules:spells:step:test": {
+      "lifecycle": "portable",
+      "requiresSqlite": true,
+      "module": "rules",
+      "writeCapable": false,
+      "requiresLocalData": false
     }
   }
 }

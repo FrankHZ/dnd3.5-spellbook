@@ -92,6 +92,13 @@ npm run -w data-tools rules:spells:apply -- pending/spells/example.jsonl
 ```
 
 Validators read the rules DB; apply dry-runs operate on a temporary copy.
+
+For a new single-DB batch that needs exact before/after and repeat no-op checks,
+use the explicit [atomic spell maintenance step](./rules-db-notes.md#atomic-spell-maintenance-step).
+Its default check uses an in-memory replay; `--apply` requires the same accepted
+inputs and explicit write authorization. It does not resume migrated SC or
+coordinate content/summary/FTS writes.
+
 `insertSpell` creates base and relationship rows and rebuilds derived indexes.
 `updateSpell` supports spell headers, page, an existing subschool ID or null,
 component flags, paired English text/HTML, descriptor replacement, and exact
