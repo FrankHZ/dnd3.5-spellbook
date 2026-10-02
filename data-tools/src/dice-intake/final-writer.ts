@@ -7,8 +7,10 @@ import type { NormalizedRulesContent } from "../rules-content/normalize";
 import type { FieldOrigin } from "./effective";
 
 export const finalScRevision = "0688739d92a2aa9fb3eceeb444daa7260e711058";
+export const finalScNoteRevision = "c61b9dea676cfd89bdfcaa6dcbcccbc99280d7c4";
 export type FinalField = { targetId: number; rulebookId: number; field: "name" | "body";
-  text: string; html?: string | null; origin: FieldOrigin; review: Record<string, unknown> };
+  text: string; html?: string | null; origin: FieldOrigin; review: Record<string, unknown>;
+  readerNoteAddendum?: {revision: string; path: string; rowRef: string; amendment: Record<string, unknown>} };
 const tables = { RulebookContent: "rulebooks", SpellContent: "spells", SpellAppearance: "appearances",
   SpellTaxonomyFacet: "taxonomyFacets", SpellListEntry: "listEntries", SpellComponent: "components",
   SpellMechanicFacet: "mechanicFacets", RulesContentIssue: "issues" } as const;
@@ -53,7 +55,8 @@ function persistedField(value: FinalField) {
   return JSON.stringify({schemaVersion: 1, acceptedRevision: finalScRevision,
     targetId: value.targetId, field: value.field, language: 'zh', origin: value.origin,
     input: {revision: finalScRevision, path: 'dice-qa/books/86/issue-365/field-dispositions.jsonl',
-      targetId: value.targetId, field: value.field}, evidence: value.review, review: value.review});
+      targetId: value.targetId, field: value.field}, evidence: value.review, review: value.review,
+    ...(value.readerNoteAddendum ? {readerNoteAddendum: value.readerNoteAddendum} : {})});
 }
 
 /** Internal SQL primitive. The maintained entry derives these fields through
@@ -77,6 +80,12 @@ export function planFinalOverlay(db: Database.Database, fields: FinalField[], so
   const previous = new Map(existing.map(r => [Number(r.spellId), r]));
   const rows: OverlayRow[] = names.sort((a, b) => a.targetId - b.targetId).map(name => {
     const body = bodies.get(name.targetId)!;
+    for (const field of [name, body]) if (field.readerNoteAddendum) {
+      assert.equal(field.field, 'body', 'reader note belongs to body');
+      assert.equal(field.readerNoteAddendum.revision, finalScNoteRevision, 'unsupported reader-note revision');
+      assert.equal(field.readerNoteAddendum.path, 'dice-qa/books/86/issue-407/amendments.jsonl');
+      assert([4088, 4111, 4229].includes(field.targetId), 'unsupported reader-note target');
+    }
     assert(name.rulebookId === 86 && body.rulebookId === 86 && name.text && body.text && body.html,
       'incomplete final Chinese field');
     assert(name.origin.kind !== 'english' && body.origin.kind !== 'english', 'unreviewed final fallback');
@@ -92,6 +101,7 @@ export function planFinalOverlay(db: Database.Database, fields: FinalField[], so
     sourceRevisions: sourceReport.sourceRevisions, targets: rows.length, fields: fields.length,
     changedNames: sourceReport.changedNames, changedBodies: sourceReport.changedBodies,
     retained: sourceReport.retained, sourceQuestionIds: sourceReport.sourceQuestionIds,
+    ...(sourceReport.readerNoteAddendum ? {readerNoteAddendum: sourceReport.readerNoteAddendum} : {}),
     semanticQa: {nameBody: 'accepted-source-bound', summaries: 'pending', extraRelationships: 'pending',
       wholeBookComplete: false}, search: 'rebuild-after-final-text-and-summaries', activation: false};
   // Preserve exact generation/importer provenance, adding only the accepted overlay.

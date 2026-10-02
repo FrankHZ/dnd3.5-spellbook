@@ -8,7 +8,7 @@ import {createRulesContentArtifactMetadata, type RulesContentArtifactProvenance}
 import {importGenerated} from '../rules-content/cli';
 import {RULES_CONTENT_GENERATOR_VERSION, type NormalizedRulesContent} from '../rules-content/normalize';
 import {fieldProvenanceMigration} from './effective-writer';
-import {applyFinalOverlay, planFinalOverlay, validateFinalOverlay, verifyFullNormalized, type FinalField} from './final-writer';
+import {applyFinalOverlay, planFinalOverlay, validateFinalOverlay, verifyFullNormalized, finalScNoteRevision, type FinalField} from './final-writer';
 
 const root = repoRoot(), temp = mkdtempSync(join(tmpdir(), 'sc-final-writer-'));
 const inputPath = join(temp, 'normalized.json');
@@ -25,6 +25,8 @@ const tableKeys = {RulebookContent: 'rulebooks', SpellContent: 'spells', SpellAp
 const arrays = Object.fromEntries(Object.entries(tableKeys).map(([table, key]) => [key,
   fixture.filter(r => r.table === table).map(r => ({...r.data}))])) as Record<string, Array<Record<string, unknown>>>;
 arrays.spells!.forEach((r, i) => {r.sourceRulebookId = i < 2 ? 86 : 9;});
+for (const id of [4088, 4111, 4229]) arrays.spells!.push({...arrays.spells![0],
+  id: 'spell:' + id, legacySpellId: id, slug: 'synthetic-note-' + id, sourceRulebookId: 86});
 for (const [key, rows] of Object.entries(arrays)) {
   const columns = [...new Set(rows.flatMap(r => Object.keys(r)))];
   rows.forEach(r => {
@@ -39,7 +41,7 @@ content.artifact = createRulesContentArtifactMetadata({scope: 'full', sourceTota
   spells: content.counts.spells!, descriptors: 0, classListEntries: 0, domainListEntries: 0}, provenance: current});
 writeFileSync(inputPath, JSON.stringify(content), 'utf8');
 const ids = content.spells.filter(r => r.sourceRulebookId === 86).map(r => r.legacySpellId);
-assert.equal(ids.length, 2);
+assert.equal(ids.length, 5);
 const prior = {owner: 'native', revision: '3'.repeat(40), path: 'synthetic/original.jsonl',
   currentAmendment: {revision: '4'.repeat(40), path: 'synthetic/current.jsonl', acceptedRow: {protected: true}}};
 const fields: FinalField[] = ids.flatMap((targetId, i) => [{targetId, rulebookId: 86, field: 'name', text: '原名',
@@ -96,6 +98,40 @@ try {
       const repeat = planFinalOverlay(db, fields, sourceReport, verifyFullNormalized(db, content, inputPath, current), helper);
       assert.equal(repeat.inserts + repeat.updates, 0); assert.equal(repeat.markBuild, false);
       applyFinalOverlay(db, repeat); assert.deepEqual(snapshot(db), after, 'repeat changed rows/timestamps');
+      const notes = structuredClone(fields);
+      for (const targetId of [4088, 4111, 4229]) {
+        const body = notes.find(f => f.targetId === targetId && f.field === 'body')!;
+        const acceptedRow = structuredClone(body);
+        body.text += '\n\n合成读者备注'; body.html += '<p>合成读者备注</p>';
+        body.readerNoteAddendum = {revision: finalScNoteRevision,
+          path: 'dice-qa/books/86/issue-407/amendments.jsonl',
+          rowRef: 'dice-qa/books/86/issue-407/amendments.jsonl:' + ([4088, 4111, 4229].indexOf(targetId) + 1),
+          amendment: {prior: {acceptedRow}, review: {after: body.text, proposedHtml: body.html}}};
+      }
+      const noteReport = {...sourceReport, readerNoteAddendum: {revision: finalScNoteRevision, targets: [4088, 4111, 4229]}};
+      const notePlan = planFinalOverlay(db, notes, noteReport, verifyFullNormalized(db, content, inputPath, current), helper);
+      assert.equal(notePlan.updates, 3); assert.equal(notePlan.unchanged, 2);
+      assert.deepEqual(snapshot(db), after, 'note dry-run wrote');
+      assert.throws(() => applyFinalOverlay(db, notePlan, () => {throw new Error('note transaction fault');}), /note transaction fault/);
+      assert.deepEqual(snapshot(db), after, 'note transaction rollback failed');
+      applyFinalOverlay(db, notePlan);
+      const noteAfter = snapshot(db);
+      for (const beforeRow of repeat.rows) {
+        const persistedRow = db.prepare("SELECT * FROM I18nSpellText WHERE spellId=? AND lang='zh' AND variant='effective'").get(beforeRow.spellId) as Record<string, unknown>;
+        assert.equal(persistedRow.nameProvenanceJson, beforeRow.nameProvenanceJson, 'unchanged name acquired note revision');
+        if (![4088, 4111, 4229].includes(beforeRow.spellId)) assert.equal(persistedRow.bodyProvenanceJson, beforeRow.bodyProvenanceJson);
+        else {
+          const provenance = JSON.parse(String(persistedRow.bodyProvenanceJson));
+          const {readerNoteAddendum, ...unchanged} = provenance;
+          assert.deepEqual(unchanged, JSON.parse(beforeRow.bodyProvenanceJson));
+          assert.equal(readerNoteAddendum.revision, finalScNoteRevision);
+        }
+      }
+      const noteRepeat = planFinalOverlay(db, notes, noteReport, verifyFullNormalized(db, content, inputPath, current), helper);
+      assert.equal(noteRepeat.updates + noteRepeat.inserts, 0); assert.equal(noteRepeat.markBuild, false);
+      applyFinalOverlay(db, noteRepeat); assert.deepEqual(snapshot(db), noteAfter, 'note repeat changed timestamps');
+      // Restore the baseline to exercise the existing corruption/repair tests.
+      applyFinalOverlay(db, {...repeat, markBuild: true, rows: repeat.rows.map(r => ({...r, action: 'update'}))});
       db.prepare("UPDATE I18nSpellText SET bodyProvenanceJson='{}' WHERE id=?").run(`dice-effective:86:${ids[0]}`);
       assert.throws(() => validateFinalOverlay(db, repeat), /persisted final fields/);
       applyFinalOverlay(db, {...repeat, rows: repeat.rows.map(r => ({...r, action: 'update'}))});
