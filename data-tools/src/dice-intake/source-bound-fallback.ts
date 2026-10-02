@@ -37,6 +37,8 @@ export function withSourceIssueNotes(review: RetainedSourceIssues): string {
 }
 export type SourceBoundFallbackReview = {
   sourceKey: null; targetId: number; rulebookId: number; field: FallbackField;
+  /** Explicit direct translation of an absent field, never a fabricated CHM baseline. */
+  intent?: "translate-missing";
   before: string | null; after: string; proposedHtml: string | null;
   input: { chinese: ChineseTextBinding; english: EnglishRecord; englishHtml: string | null };
   sourceRef: string; sourcePages: SourcePage[];
@@ -177,6 +179,12 @@ function validateReviews(reviews: SourceBoundFallbackReview[],
     assert(englishHtml.has(row.targetId) && nullableText(row.input.englishHtml), `missing English HTML ${key}`);
     assert.equal(row.input.englishHtml, englishHtml.get(row.targetId), `stale full English HTML ${key}`);
     assert.equal(row.before, current[row.field], `stale current-before field ${key}`);
+    assert(row.intent === undefined || row.intent === "translate-missing", `invalid source-bound intent ${key}`);
+    if (row.intent === "translate-missing") {
+      assert(row.before === null, `missing translation requires absent Chinese field ${key}`);
+      if (row.field === "descriptionText") assert(current.descriptionHtml === null,
+        `missing translation requires absent Chinese HTML ${key}`);
+    }
     assert(text(row.after) && row.after !== row.before, `empty or unchanged source-bound correction ${key}`);
     assert.equal(row.proposedHtml, row.field === "descriptionText" ? escapedFallbackHtml(row.after) : null,
       `source-bound text/HTML projection mismatch ${key}`);
@@ -269,7 +277,8 @@ function validateReviews(reviews: SourceBoundFallbackReview[],
     }
     if (row.status === "accepted" || row.status === "accepted-with-source-issues") {
       assert(!pending && row.originalSourceRead === true, `accepted source-bound field not actually reviewed ${key}`);
-      assert(text(row.before), `accepted correction cannot invent absent Chinese fallback ${key}`);
+      assert(row.intent === "translate-missing" || text(row.before),
+        `accepted correction cannot invent absent Chinese fallback ${key}`);
       assert(row.rulePairs.length > 0 && !row.pendingSourceEvidence?.length, `accepted source-bound field lacks closed rule evidence ${key}`);
       if (row.field === "descriptionText") {
         const audit = row.fullBodyAudit;
