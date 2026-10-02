@@ -1,0 +1,35 @@
+{
+  "issue": 413,
+  "candidateRevision": "0688739d92a2aa9fb3eceeb444daa7260e711058",
+  "readerNoteRevision": "c61b9dea676cfd89bdfcaa6dcbcccbc99280d7c4",
+  "fields": 2002,
+  "changedBodyTargets": [
+    4088,
+    4111,
+    4229
+  ],
+  "unchangedFields": 1999,
+  "existingReaderNotesPreserved": 37,
+  "existingReaderNoteBodiesPreserved": 35,
+  "freshAddendumPdfPages": 21,
+  "priorOriginReviewHistoryPreserved": true,
+  "originalTextHtmlPrefixesPreservedSeparately": true,
+  "stable375ReadOnlyComparison": {
+    "fields": 2002,
+    "unchangedProvenanceBytes": 1999,
+    "provenanceFields": 2002
+  },
+  "portable": {
+    "pythonTests": 6,
+    "apiContractTests": 156,
+    "finalWriterTests": "passed"
+  },
+  "boundaries": {
+    "unresolvedRelationshipIssue": 354,
+    "operatorWrites": false,
+    "deployment": false,
+    "wholeBookQaComplete": false,
+    "fullDbCopies": 0,
+    "summariesIssue": 411
+  }
+}
