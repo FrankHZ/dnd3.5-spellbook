@@ -4,7 +4,7 @@
   "rulebookId": 86,
   "status": "reviewed-proposal-awaiting-main-gate",
   "publicBase": "b24f3b0a74ca022929626cbe4f6f61f94f193ffe",
-  "integrationBase": "b24f3b0a74ca022929626cbe4f6f61f94f193ffe",
+  "integrationBase": "997b1008843053763f407e01268bc29b84331500",
   "frozenAudit": "e793ff09a38060c5c6b336d28690353bd0d96909",
   "privateInput": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411",
   "acceptedHelperContract": "e154c69e817c81d7e48da105c46daba83a4da8c4",
