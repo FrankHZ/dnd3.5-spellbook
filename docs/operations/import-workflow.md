@@ -602,15 +602,27 @@ Runtime consumers do not adjudicate competing sources.
 
 ### Effective Chinese preflight
 
-`dice:effective` supports only the accepted SC #311/batch-06 handoff, with an
-explicit main-gate accepted private commit. An arbitrary commit or `accepted`
-label is not acceptance authority. The command binds the actual native and
+`dice:effective` requires an explicit, fixed main-gate accepted SC revision:
+
+- `da691dacd3973d38a9d0f66a08d78fdb1eaafd47`: original #311/batch-06, 879 fields.
+- `6a73f4d64682325c67e2c40595008344fb5c3be5`: #337 read-only projection of the
+  1,026-field union accepted at `296903c61e20ce359812148fc0faa234ca2508e7` plus
+  the ten existing-body amendments accepted in #336.
+
+An arbitrary commit, floating `latest` or `accepted` label is not acceptance
+authority. The original path binds the actual native and
 independent exports and complete 1002-target current snapshot to that commit;
 #313 navigation/aggregate reports are not inputs. It calls the same complete
 formal QA validation as `dice:qa`, including the fixed #298 restored inputs,
 105 TXT files, reconciliation, decisions, corrections, boundaries and audits.
 It compares the native export to that result and revalidates all 221 independent
 rows against current Chinese/English/HTML/mechanics and the native accepted set.
+The current path additionally authenticates #329's native export, complete
+independent union and current snapshot against the union revision, revalidates
+all 368 independent fields against the complete native QA, and authenticates
+`issue-335/validated-amendments.jsonl` against the amendment revision. It validates
+each entire prior row/owner/revision/path and selected old body with the existing
+amendment validator; an envelope never becomes an independent fallback row.
 The fixed restored CLI contract remains unchanged. Historical native deferrals
 already superseded by the exact accepted independent handoff remain accepted;
 later deferred drafts cannot enter via a different file or mutated export.
@@ -646,6 +658,13 @@ exports and `issue-259/source-authority.json`. Native fields retain their exact
 original pages/spans, reasons and visual review; independent fields retain the
 accepted row's sourcePages and surviving original visual binding. Missing or
 changed originals fail; generated aggregates never replace them.
+The current projection authenticates 28 original files: the complete accepted
+union's evidence, ledgers and authority at its original revision, and the
+amendment envelopes/PDF evidence at their independently fixed revision. Fresh
+supplemental verification covers all 1,026 original fields (including superseded
+old values), all ten amendment bindings, then all 1,026 final active fields on
+330 explicit pages. It retains actual original geometry, spans, target bindings,
+reasons and visual claims; it performs no new semantic adjudication.
 
 Optional `--pdf-evidence <path>` compares an existing generated object with that
 complete derived object, including every original binding/page/span and visual
@@ -677,11 +696,27 @@ and 1125 complement fields. The complement counts legitimate CHM retention and
 English fallback, not quality errors or completion of outstanding review.
 These files are explicitly `importable: false`, `activation: false`.
 
+For the current revision, coverage is 1,026 accepted fields (41 names, 985 bodies;
+658 native-origin and 368 independent-origin fields) and 978 fallbacks (961 names,
+17 bodies). Each amended `body.origin` retains its original kind/source key and
+adds `activeAmendment`: the accepted amendment revision/path, exact prior ledger
+row/owner, active sourceRef/pages/status. Six amendments retain native origin and
+four retain independent origin. `reconciliation.json` lists every fallback field
+and separates 147 newly accepted bodies from ten changed existing body values.
+All names, unrelated accepted fields and remaining fallback text/HTML/provenance
+are compared exactly to effective879. Expanded-rule gaps 3997/4097, absent/mixed
+Chinese identities, unresolved source questions and their owners remain; this
+read-only inspection neither certifies corpus history nor activates consumers.
+
 #### Disposable effective writer
 
 `dice:effective:write` uses the same arguments as `dice:effective`, with an
-optional `--apply`. It supports only this accepted SC handoff. For example,
-use the rules-copy/PDF paths from the preflight command above:
+optional `--apply`.
+The writer remains fixed to `da691dacd3973d38a9d0f66a08d78fdb1eaafd47`.
+It rejects the #337 revision before creating a copy or opening a database, in
+both dry-run and `--apply`. Its storage primitive also rejects amended projection
+provenance. Read-only baseline selection grants no writer or consumer activation.
+Use the rules-copy/PDF paths from the preflight command above:
 
 ```powershell
 npm run -w data-tools dice:effective:write -- `

@@ -50,6 +50,11 @@ The read-only dice TXT intake and field-level QA validation are described at the
 complete current CHM/English after the unchanged formal QA and fresh PDF verifier.
 The source entry derives original bindings and printing/errata authority from
 the accepted private Git revision; optional generated evidence is comparison-only.
+Explicit `--accepted-baseline 6a73f4d64682325c67e2c40595008344fb5c3be5`
+selects the accepted 1,026-field union with ten existing-body amendments. Their
+original owners/ledger rows remain alongside active amendment provenance.
+The previous 879-field revision remains reproducible. The writer supports only
+that previous revision and rejects the new projection before opening any DB.
 It writes inspection-only field provenance and coverage to a new directory in
 this worktree's `data-tools/out/`; see the
 [effective projection contract](../docs/operations/import-workflow.md#effective-chinese-preflight).

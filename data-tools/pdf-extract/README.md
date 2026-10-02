@@ -134,9 +134,12 @@ extraction and the current scoped field decisions:
 The generic supplemental verifier proves span freshness and decision/text
 alignment; it does not authenticate a native field's accepted original page or
 visual-review claim. SC's maintained `dice:effective` entry instead invokes
-`pdf_extract.verify_effective_sc`: it binds #311's original evidence files and
-SC printing/complete-errata authority to the explicit accepted private commit,
-derives the fixed evidence union, and then calls this supplemental verifier.
+`pdf_extract.verify_effective_sc`: it binds the explicitly selected #311 or #337
+package and SC printing/complete-errata authority to fixed accepted private
+commits, derives the evidence union, and then calls this supplemental verifier.
+For #337, it separately verifies all 1,026 original accepted bindings and ten
+active amendments, authenticating each prior owner and whole ledger row against
+the original union revision. It then verifies the final 1,026 active bindings.
 Any optional generated evidence is comparison-only. See the
 [effective preflight contract](../../docs/operations/import-workflow.md#effective-chinese-preflight).
 
