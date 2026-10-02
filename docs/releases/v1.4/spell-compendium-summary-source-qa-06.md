@@ -17,7 +17,7 @@ existing summary-relevant source question still unresolved.
 `ad5c782d7dc36204e6e38fa69e44021426751a90`, synchronized with main
 `52bf0b725d3f16dde1eac7aeec172d14d8a05d96`. Missing summaries are not authored.
 
-Private handoff/helper commit `6d4b61f345c4163a0a2168b2602cb8d7340da5d4` owns
+Private handoff/helper commit `481fb3e13c8afacb5ab60696b2fddd0bfe5d3803` owns
 `dice-qa/books/86/issue-371/`. It reuses the accepted
 [#353 contract](./spell-compendium-summary-source-qa-01.md) and
 [#361 narrow importer contract](./spell-compendium-summary-source-qa-02.md),
@@ -27,8 +27,8 @@ accepted full body/mechanical context, decisions, helpers and evidence stay
 private. Five empty review-a locators use the accepted review-d entry boundaries
 at the same frozen private revision; prior packets remain read-only.
 
-The result is 25 proposed corrections (9 EN, 16 ZH), 65 source-correct
-retentions and two unresolved retentions. Corrections address incorrect effect
+The result is 27 proposed corrections (10 EN, 17 ZH) and 65 source-correct
+retentions. Two corrections explicitly retain an existing source ambiguity. Corrections address incorrect effect
 direction, damage recipients, critical terminology, HD and hardness values,
 attack triggers, skill-check scope, probabilities and travel/energy wording.
 Accurate short summaries remain short; omissions alone do not require expansion.
@@ -42,9 +42,11 @@ references, without invented tables, identities or claims of independent review.
 The broad PHB workflow remains paused.
 
 `3544:darkness` remains a summary-relevant unresolved source question. Both
-existing rows are retained with `faithful-unresolved-source-note`, not counted
-as a source-correct pass. The complete original and accepted reader note are
-preserved without a new ruling. Existing `4443:item-energy` and
+summaries are revised with `reviewed-correction-with-source-ambiguity`: readers
+see an explicit conflict warning and a reference to the existing body note.
+The complete original and accepted reader note are preserved without a new
+ruling or an unconditional source-correct claim. These faithful expressions
+can be reviewed without waiting for adjudication of the original question. Existing `4443:item-energy` and
 `4443:sr-application` remain source-only context; these summaries assert neither
 the disputed formula nor an SR check's subject or timing. No new question is added.
 
@@ -52,7 +54,7 @@ the disputed formula nor an SR check's subject or timing. No new question is add
 
 The authored handoff is narrow `corrections.jsonl`; the derived whole-file
 `summaries.proposed.jsonl` is only a review mirror. Full correction rows match
-their decisions and mirror, including prior provenance. The other 6,547
+their decisions and mirror, including prior provenance. The other 6,545
 canonical lines are byte-preserved. Accepted #323/#353/#361 packets are unchanged
 and disjoint; other proposed slices are not composed into this mirror.
 
@@ -66,7 +68,7 @@ Counts and validation success do not resolve the remaining source question.
 
 The maintained parser and actual `importRows` run against a small command-created
 summary-only disposable database with 6,572 baseline rows. Only the narrow
-25-row handoff is consumed. Dry-run changes nothing; apply updates 25 with zero
+27-row handoff is consumed. Dry-run changes nothing; apply updates 27 with zero
 inserts; repeat updates zero. Every persisted proposal field matches, while IDs,
 all other rows and a sentinel table are unchanged. The disposable file is removed.
 CLI `main()` is disabled so it cannot select an operator database.
@@ -75,7 +77,7 @@ Run from the public root and again from `data-tools`, supplying absolute roots
 and the existing runtime checkout, with fresh run labels:
 
 ```powershell
-& "$runtimeRoot/data-tools/pdf-extract/.venv/Scripts/python.exe" -X utf8 "$dataRoot/dice-qa/books/86/issue-371/reproduce.py" --code-root $codeRoot --runtime-root $runtimeRoot --private-revision 6d4b61f345c4163a0a2168b2602cb8d7340da5d4 --run review-root
+& "$runtimeRoot/data-tools/pdf-extract/.venv/Scripts/python.exe" -X utf8 "$dataRoot/dice-qa/books/86/issue-371/reproduce.py" --code-root $codeRoot --runtime-root $runtimeRoot --private-revision 481fb3e13c8afacb5ab60696b2fddd0bfe5d3803 --run review-root
 ```
 
 Private `replay-<run>.json`, `verification-<run>.json` and `importer-<run>.json`

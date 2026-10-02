@@ -2,12 +2,12 @@
   "schema": 1,
   "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/371",
   "rulebookId": 86,
-  "status": "reviewed-proposal-awaiting-main-gate-with-existing-unresolved-source-question",
+  "status": "reviewed-proposal-awaiting-main-gate-with-faithful-existing-source-note",
   "publicBase": "ad5c782d7dc36204e6e38fa69e44021426751a90",
   "synchronizedMain": "52bf0b725d3f16dde1eac7aeec172d14d8a05d96",
   "frozenAudit": "e793ff09a38060c5c6b336d28690353bd0d96909",
   "privateInput": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411",
-  "privateHandoffAndHelperCommit": "6d4b61f345c4163a0a2168b2602cb8d7340da5d4",
+  "privateHandoffAndHelperCommit": "481fb3e13c8afacb5ab60696b2fddd0bfe5d3803",
   "privateDirectory": "dice-qa/books/86/issue-371",
   "acceptedHelperContract": {
     "issue353": "e154c69e817c81d7e48da105c46daba83a4da8c4",
@@ -81,7 +81,7 @@
     },
     {
       "stableKey": "3544:en:imarvin",
-      "status": "faithful-unresolved-source-note"
+      "status": "reviewed-correction-with-source-ambiguity"
     },
     {
       "stableKey": "3778:en:imarvin",
@@ -265,7 +265,7 @@
     },
     {
       "stableKey": "3544:zh:chm",
-      "status": "faithful-unresolved-source-note"
+      "status": "reviewed-correction-with-source-ambiguity"
     },
     {
       "stableKey": "3778:zh:chm",
@@ -441,11 +441,12 @@
     }
   ],
   "corrections": {
-    "rows": 25,
-    "targets": 22,
-    "en": 9,
-    "zh": 16,
+    "rows": 27,
+    "targets": 23,
+    "en": 10,
+    "zh": 17,
     "keys": [
+      "3544:en:imarvin",
       "4402:en:imarvin",
       "4404:en:imarvin",
       "4413:en:imarvin",
@@ -456,6 +457,7 @@
       "4434:en:imarvin",
       "4442:en:imarvin",
       "3541:zh:chm",
+      "3544:zh:chm",
       "4401:zh:chm",
       "4404:zh:chm",
       "4407:zh:chm",
@@ -472,9 +474,9 @@
       "4439:zh:chm",
       "4443:zh:chm"
     ],
-    "unchangedCanonicalLines": 6547,
+    "unchangedCanonicalLines": 6545,
     "sourceCorrectRetentions": 65,
-    "unresolvedRetentions": 2,
+    "unresolvedRetentions": 0,
     "priorAcceptedPacketsReadOnlyAndDisjoint": [
       323,
       353,
@@ -482,7 +484,8 @@
     ],
     "priorAcceptedCanonicalBaselineLinesBytePreserved": true,
     "otherProposedSlicesComposed": false,
-    "narrowAuthoredHandoffOnly": true
+    "narrowAuthoredHandoffOnly": true,
+    "faithfulCorrectionsWithExistingUnresolvedSourceNote": 2
   },
   "sourceVerification": {
     "freshPages": 27,
@@ -535,8 +538,10 @@
         "3544:en:imarvin",
         "3544:zh:chm"
       ],
-      "disposition": "current-values-retained-pending-source-adjudication",
-      "sourceCorrectPass": false
+      "disposition": "faithful-revised-summaries-explicitly-expose-conflict-and-reference-existing-body-note",
+      "sourceCorrectPass": false,
+      "faithfulRepresentationComplete": true,
+      "sourceQuestionAdjudicated": false
     }
   ],
   "verification": {
@@ -571,7 +576,7 @@
     "narrowAuthoredHandoffImported": true,
     "disposableBaselineRows": 6572,
     "dryRunUnchanged": true,
-    "applicationUpdates": 25,
+    "applicationUpdates": 27,
     "applicationInserts": 0,
     "repeatUpdates": 0,
     "persistedFieldsEqualProposal": true,
@@ -581,7 +586,8 @@
     "fullExactHeadRemoteCIRequired": true,
     "validationPassed": true,
     "semanticFullCoverageAccepted": false,
-    "rootAndPackageReplay": true
+    "rootAndPackageReplay": true,
+    "faithfulSourceNoteSummaryRows": 2
   },
   "boundaries": {
     "canonicalOwnerWritten": false,
