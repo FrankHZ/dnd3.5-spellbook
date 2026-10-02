@@ -1,0 +1,485 @@
+{
+  "issue": 354,
+  "status": "blocked-by-missing-original-sources",
+  "dispatchInventoryRevision": "e793ff09a38060c5c6b336d28690353bd0d96909",
+  "publicBase": "50ec8369a046762903cab8a5689e6b8784b58ca5",
+  "privateInputRevision": "a9cbe07747b1bc908ff4ebcd24244e38e58cb411",
+  "acceptedSnapshotRevision": "296903c61e20ce359812148fc0faa234ca2508e7",
+  "acceptedAmendmentRevision": "6a73f4d64682325c67e2c40595008344fb5c3be5",
+  "targetCount": 17,
+  "tupleCount": 20,
+  "sourceCorrectClaims": 0,
+  "patchOperations": 0,
+  "originalSCAndErrataPages": 25,
+  "databaseChecks": {
+    "operatorBaselineRows": 1002,
+    "guardedPatchOperations": 315,
+    "completeCurrentInputMatches": 1002,
+    "databaseWrites": false
+  },
+  "rootPackageReplay": "byte-identical",
+  "operatorWrites": false,
+  "appStateOpened": false,
+  "canonicalInputsChanged": false,
+  "targets": [
+    {
+      "targetId": 3542,
+      "scPrintedPages": [
+        48
+      ],
+      "tuples": [
+        {
+          "kind": "class",
+          "before": [
+            62,
+            3,
+            ""
+          ],
+          "proposed": [
+            62,
+            3,
+            ""
+          ],
+          "baselineRowId": 10203,
+          "disposition": "unresolved-original-source"
+        }
+      ],
+      "requiredOriginalEvidence": "Miniatures Handbook: Healer spell list and complete Close Wounds original entry, plus applicable official errata"
+    },
+    {
+      "targetId": 3837,
+      "scPrintedPages": [
+        13,
+        14
+      ],
+      "tuples": [
+        {
+          "kind": "class",
+          "before": [
+            2,
+            5,
+            ""
+          ],
+          "proposed": [
+            2,
+            5,
+            ""
+          ],
+          "baselineRowId": 10010,
+          "disposition": "unresolved-original-source"
+        }
+      ],
+      "requiredOriginalEvidence": "Direct original source that grants Cleric 5, or sufficient original-owner evidence to demonstrate this imported membership is erroneous"
+    },
+    {
+      "targetId": 3883,
+      "scPrintedPages": [
+        119
+      ],
+      "tuples": [
+        {
+          "kind": "class",
+          "before": [
+            17,
+            2,
+            ""
+          ],
+          "proposed": [
+            17,
+            2,
+            ""
+          ],
+          "baselineRowId": 10107,
+          "disposition": "unresolved-original-source"
+        },
+        {
+          "kind": "class",
+          "before": [
+            16,
+            2,
+            ""
+          ],
+          "proposed": [
+            16,
+            2,
+            ""
+          ],
+          "baselineRowId": 10108,
+          "disposition": "unresolved-original-source"
+        }
+      ],
+      "requiredOriginalEvidence": "Complete Arcane: Warmage/Wu Jen spell lists and Ice Knife original entry (reference locator 112), plus applicable official errata; Oriental Adventures only if needed to resolve the original Wu Jen owner"
+    },
+    {
+      "targetId": 3921,
+      "scPrintedPages": [
+        125
+      ],
+      "tuples": [
+        {
+          "kind": "class",
+          "before": [
+            72,
+            2,
+            ""
+          ],
+          "proposed": [
+            72,
+            2,
+            ""
+          ],
+          "baselineRowId": 10187,
+          "disposition": "unresolved-original-source"
+        },
+        {
+          "kind": "class",
+          "before": [
+            161,
+            2,
+            ""
+          ],
+          "proposed": [
+            161,
+            2,
+            ""
+          ],
+          "baselineRowId": 10188,
+          "disposition": "unresolved-original-source"
+        },
+        {
+          "kind": "domain",
+          "before": [
+            28,
+            1,
+            ""
+          ],
+          "proposed": [
+            28,
+            1,
+            ""
+          ],
+          "baselineRowId": 885,
+          "disposition": "unresolved-original-source"
+        }
+      ],
+      "requiredOriginalEvidence": "PHB II Duskblade list; Complete Adventurer Vigilante list (reference locator 87); Champions of Valor Initiate of Baravar Cloakshadow feat and Swift Invisibility spell (reference locator 56); applicable official errata"
+    },
+    {
+      "targetId": 3924,
+      "scPrintedPages": [
+        125
+      ],
+      "tuples": [
+        {
+          "kind": "class",
+          "before": [
+            161,
+            2,
+            ""
+          ],
+          "proposed": [
+            161,
+            2,
+            ""
+          ],
+          "baselineRowId": 10198,
+          "disposition": "unresolved-original-source"
+        }
+      ],
+      "requiredOriginalEvidence": "Complete Adventurer Vigilante spell list (reference locator 87), plus applicable official errata"
+    },
+    {
+      "targetId": 3952,
+      "scPrintedPages": [
+        28
+      ],
+      "tuples": [
+        {
+          "kind": "class",
+          "before": [
+            673,
+            3,
+            ""
+          ],
+          "proposed": [
+            673,
+            3,
+            ""
+          ],
+          "baselineRowId": 10254,
+          "disposition": "unresolved-original-source"
+        }
+      ],
+      "requiredOriginalEvidence": "Sandstorm Walker in the Waste complete class spellcasting rules (reference locator 89-90), any explicit additions/list and applicable official errata"
+    },
+    {
+      "targetId": 3983,
+      "scPrintedPages": [
+        35
+      ],
+      "tuples": [
+        {
+          "kind": "class",
+          "before": [
+            848,
+            7,
+            ""
+          ],
+          "proposed": [
+            848,
+            7,
+            ""
+          ],
+          "baselineRowId": 10326,
+          "disposition": "unresolved-original-source"
+        }
+      ],
+      "requiredOriginalEvidence": "Unearthed Arcana58 Sorcerer/Wizard animal-companion class feature variant and applicable official errata, or exact officially published original SRD file containing this variant"
+    },
+    {
+      "targetId": 3987,
+      "scPrintedPages": [
+        37
+      ],
+      "tuples": [
+        {
+          "kind": "class",
+          "before": [
+            848,
+            2,
+            ""
+          ],
+          "proposed": [
+            848,
+            2,
+            ""
+          ],
+          "baselineRowId": 10331,
+          "disposition": "unresolved-original-source"
+        }
+      ],
+      "requiredOriginalEvidence": "Unearthed Arcana58 Sorcerer/Wizard animal-companion class feature variant and applicable official errata, or exact officially published original SRD file containing this variant"
+    },
+    {
+      "targetId": 3993,
+      "scPrintedPages": [
+        39
+      ],
+      "tuples": [
+        {
+          "kind": "class",
+          "before": [
+            848,
+            9,
+            ""
+          ],
+          "proposed": [
+            848,
+            9,
+            ""
+          ],
+          "baselineRowId": 10340,
+          "disposition": "unresolved-original-source"
+        }
+      ],
+      "requiredOriginalEvidence": "Unearthed Arcana58 Sorcerer/Wizard animal-companion class feature variant and applicable official errata, or exact officially published original SRD file containing this variant"
+    },
+    {
+      "targetId": 3994,
+      "scPrintedPages": [
+        39
+      ],
+      "tuples": [
+        {
+          "kind": "class",
+          "before": [
+            848,
+            5,
+            ""
+          ],
+          "proposed": [
+            848,
+            5,
+            ""
+          ],
+          "baselineRowId": 10341,
+          "disposition": "unresolved-original-source"
+        }
+      ],
+      "requiredOriginalEvidence": "Unearthed Arcana58 Sorcerer/Wizard animal-companion class feature variant and applicable official errata, or exact officially published original SRD file containing this variant"
+    },
+    {
+      "targetId": 3996,
+      "scPrintedPages": [
+        39
+      ],
+      "tuples": [
+        {
+          "kind": "class",
+          "before": [
+            848,
+            7,
+            ""
+          ],
+          "proposed": [
+            848,
+            7,
+            ""
+          ],
+          "baselineRowId": 10346,
+          "disposition": "unresolved-original-source"
+        }
+      ],
+      "requiredOriginalEvidence": "Unearthed Arcana58 Sorcerer/Wizard animal-companion class feature variant and applicable official errata, or exact officially published original SRD file containing this variant"
+    },
+    {
+      "targetId": 3997,
+      "scPrintedPages": [
+        40
+      ],
+      "tuples": [
+        {
+          "kind": "class",
+          "before": [
+            848,
+            6,
+            ""
+          ],
+          "proposed": [
+            848,
+            6,
+            ""
+          ],
+          "baselineRowId": 10349,
+          "disposition": "unresolved-original-source"
+        }
+      ],
+      "requiredOriginalEvidence": "Unearthed Arcana58 Sorcerer/Wizard animal-companion class feature variant and applicable official errata, or exact officially published original SRD file containing this variant"
+    },
+    {
+      "targetId": 3998,
+      "scPrintedPages": [
+        40
+      ],
+      "tuples": [
+        {
+          "kind": "class",
+          "before": [
+            848,
+            2,
+            ""
+          ],
+          "proposed": [
+            848,
+            2,
+            ""
+          ],
+          "baselineRowId": 10350,
+          "disposition": "unresolved-original-source"
+        }
+      ],
+      "requiredOriginalEvidence": "Unearthed Arcana58 Sorcerer/Wizard animal-companion class feature variant and applicable official errata, or exact officially published original SRD file containing this variant"
+    },
+    {
+      "targetId": 4433,
+      "scPrintedPages": [
+        78
+      ],
+      "tuples": [
+        {
+          "kind": "class",
+          "before": [
+            848,
+            9,
+            ""
+          ],
+          "proposed": [
+            848,
+            9,
+            ""
+          ],
+          "baselineRowId": 11200,
+          "disposition": "unresolved-original-source"
+        }
+      ],
+      "requiredOriginalEvidence": "Unearthed Arcana58 Sorcerer/Wizard animal-companion class feature variant and applicable official errata, or exact officially published original SRD file containing this variant"
+    },
+    {
+      "targetId": 4434,
+      "scPrintedPages": [
+        78
+      ],
+      "tuples": [
+        {
+          "kind": "class",
+          "before": [
+            848,
+            2,
+            ""
+          ],
+          "proposed": [
+            848,
+            2,
+            ""
+          ],
+          "baselineRowId": 11201,
+          "disposition": "unresolved-original-source"
+        }
+      ],
+      "requiredOriginalEvidence": "Unearthed Arcana58 Sorcerer/Wizard animal-companion class feature variant and applicable official errata, or exact officially published original SRD file containing this variant"
+    },
+    {
+      "targetId": 4435,
+      "scPrintedPages": [
+        78,
+        79
+      ],
+      "tuples": [
+        {
+          "kind": "class",
+          "before": [
+            848,
+            7,
+            ""
+          ],
+          "proposed": [
+            848,
+            7,
+            ""
+          ],
+          "baselineRowId": 11202,
+          "disposition": "unresolved-original-source"
+        }
+      ],
+      "requiredOriginalEvidence": "Unearthed Arcana58 Sorcerer/Wizard animal-companion class feature variant and applicable official errata, or exact officially published original SRD file containing this variant"
+    },
+    {
+      "targetId": 4437,
+      "scPrintedPages": [
+        79
+      ],
+      "tuples": [
+        {
+          "kind": "class",
+          "before": [
+            848,
+            7,
+            ""
+          ],
+          "proposed": [
+            848,
+            7,
+            ""
+          ],
+          "baselineRowId": 11205,
+          "disposition": "unresolved-original-source"
+        }
+      ],
+      "requiredOriginalEvidence": "Unearthed Arcana58 Sorcerer/Wizard animal-companion class feature variant and applicable official errata, or exact officially published original SRD file containing this variant"
+    }
+  ],
+  "printingAndCompleteOfficialErrata": {
+    "sc": 4,
+    "errata": 147
+  }
+}
