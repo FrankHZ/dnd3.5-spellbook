@@ -11,7 +11,7 @@ Frozen audit `e793ff09a38060c5c6b336d28690353bd0d96909` assigns exactly
 50 targets / 79 existing rows (32 EN / 47 ZH). Canonical summary input remains
 private `a9cbe07747b1bc908ff4ebcd24244e38e58cb411`. Public base
 `c0b8c7de854b17deb2e92275ee0fd622239393c9` is synchronized with main
-`19798c9a3da32b89d532ae9319816b9b2cef1f4c`. Actual turn metadata verifies
+`df67f2e5f22db366cca01a31c93a6dc4e5e0062c`. Actual turn metadata verifies
 `gpt-6.1-sol`, high effort.
 
 Private handoff/helper commit `72cdcf5e9ea086a892b7b0fc27d458d6d609c194` owns
