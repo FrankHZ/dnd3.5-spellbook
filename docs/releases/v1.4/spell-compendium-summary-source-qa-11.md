@@ -14,17 +14,19 @@ The scope is `suggestedSummarySlices[10]` at audit
 Canonical summaries remain frozen at private
 `a9cbe07747b1bc908ff4ebcd24244e38e58cb411`. The public base is
 `70eff96c77223dd6e1c05206de549b80407b5423`; the final checked remote main is
-`9f118a070a298cadf25a7209a52886b89b905d95`.
+`ae076ce82c34b1a1daae26db84ece9d3b746068b`.
 
-Private handoff/helper revision `e594d44ed330b0d716c90dac8ecf866ad2cd72ce` owns
+Private handoff/helper revision `1bf3afc26f263bebb25b38e5b2edb99ae8bfec11` owns
 `dice-qa/books/86/issue-383/`. It reuses the accepted
 [#353 contract](./spell-compendium-summary-source-qa-01.md) and
 [#361 narrow importer contract](./spell-compendium-summary-source-qa-02.md),
 with independently authored actual-value reasons and 50 paired comparisons.
 Complete original entries, necessary direct parents, accepted bilingual body and
 mechanics, fresh geometry and complete applicable official errata are bound together.
-All 18 bounded original pages were freshly extracted and visually inspected,
-including SC's first-printing imprint and the two necessary PHB reference pages.
+All 21 bounded original pages were freshly extracted and visually inspected,
+including SC's first-printing imprint and five necessary PHB reference pages.
+The retained tracking benefit is supported by complete original Favored Enemy
+and Survival rules; removing its direct parent evidence fails verification.
 This bounded reading does not resume broad PHB or other-book workflows.
 
 There are 22 proposed corrections (13 EN / 9 ZH) and 67 retentions. Corrections
@@ -45,9 +47,9 @@ variant was compared with its complete parent and specific descriptor override.
 
 ## Validation and replay
 
-Private replay evidence `976c461359945e512cdeb654e2a7828a2eca50a3` records root
+Private replay evidence `56ab32c81e327d530229b098fb3e6788b55858dd` records root
 and package runs with the exact committed helper revision. Replay reopens original
-PDFs and compares complete page geometry and all 3,666 cited span references,
+PDFs and compares complete page geometry and all 3,964 cited span references,
 scope, current rows, context source locks and deterministic authored outputs.
 Negative controls reject stale, missing, duplicate and out-of-scope decisions or
 handoff rows, same-count altered corrections, unrelated mirror changes, modified
@@ -71,7 +73,7 @@ Use absolute roots and the existing runtime, and choose a fresh run label. Run
 from the public root and again from `data-tools`:
 
 ```powershell
-& "$runtimeRoot/data-tools/pdf-extract/.venv/Scripts/python.exe" -X utf8 "$dataRoot/dice-qa/books/86/issue-383/reproduce.py" --code-root $codeRoot --runtime-root $runtimeRoot --private-revision e594d44ed330b0d716c90dac8ecf866ad2cd72ce --run review-root
+& "$runtimeRoot/data-tools/pdf-extract/.venv/Scripts/python.exe" -X utf8 "$dataRoot/dice-qa/books/86/issue-383/reproduce.py" --code-root $codeRoot --runtime-root $runtimeRoot --private-revision 1bf3afc26f263bebb25b38e5b2edb99ae8bfec11 --run review-root
 ```
 
 Replay verifies helper working text against the committed revision and writes
