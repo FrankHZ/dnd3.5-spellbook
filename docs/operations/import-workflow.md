@@ -169,7 +169,13 @@ npm run -w data-tools rules:content:meta
 
 Audit/generate read the rules DB and write artifacts under
 `data-tools/out/rules-content/`. Full generation requires canonical publication
-coverage. `rules:content:generate -- --audit-only [--limit N]` writes a separate
+coverage. Full generation and ordinary import (including dry-run) require valid
+JSON in `rules-db-manifest.json` with an existing lowercase 64-hex
+`database.sha256` matching the independently computed rules DB hash. They fail
+closed before artifact output or row mutation and never repair the manifest;
+`rules:manifest:write` and `rules:manifest:verify` remain the explicit owners.
+Audit-only generation does not require this binding and remains non-importable.
+`rules:content:generate -- --audit-only [--limit N]` writes a separate
 limited, non-importable artifact; `--limit` alone is invalid.
 
 Import validates current rules DB, canonical-input, and migration hashes even
