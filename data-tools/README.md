@@ -125,6 +125,14 @@ Use the task's explicit write boundary and the operation-specific dry-run path;
 not every importer supports dry-run. App-state must never be reset or mutated
 by content workflows.
 
+For the exact already accepted SC annotated summary predecessor, use the
+[source-bound final summary upgrade](../docs/operations/sc-final-source-binding.md#upgrade-an-already-accepted-annotated-summary-state)
+through `dice:final:write -- ... --accepted-summaries --upgrade-summaries`.
+It authenticates both fixed inventories and all final fields/notes before
+inserting the accepted 265 additions and changing only summary acceptance
+metadata in one transaction. The generic summary step still rejects changed
+annotated predecessors; its accepted paths never grant source QA authority.
+
 [scripts.manifest.json](./scripts.manifest.json) classifies every package script
 by module and lifecycle. Keep that classification when adding a command.
 Maintained workflows need focused helper tests; dormant source reruns and local

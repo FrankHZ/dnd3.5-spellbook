@@ -126,6 +126,9 @@ migration's authorization and acceptance.
      exact before/after and applies maintained upserts atomically. Annotated
      summary predecessors reject; valid exact-after annotations and all build
      provenance remain unchanged. Search is checked after summary completion.
+     The specific accepted SC directory promotion uses the
+     [source-bound final summary upgrade](./sc-final-source-binding.md#upgrade-an-already-accepted-annotated-summary-state)
+     instead; this authenticated exception does not relax the generic step.
    - Require canonical publication metadata for the full artifact; use the
      explicit audit-only generator only for limited, non-importable output.
    - Run content generate/import, then dry-run and rebuild the derived search
