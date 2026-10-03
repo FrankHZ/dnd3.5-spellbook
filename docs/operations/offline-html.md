@@ -76,8 +76,10 @@ variants match exactly. `SummarySelectionError.gaps` collects missing, multiple,
 wrong-book, unaccepted or empty candidates using only ID/language/variant/reason.
 Any gap fails the export. It does not deduplicate or concatenate candidates,
 derive a first sentence or translate a substitute. Classless spells remain in
-full-body pages without requiring directory summaries. Full-corpus summary
-coverage/acceptance belongs to #431 and main-gate.
+full-body pages without requiring directory summaries. Actual directory summary
+coverage, gap acceptance and full output semantic verification belong to
+#345/main-gate. #431 supplies PDF formatting evidence and its accepted mapping
+contract, not summary acceptance or output semantic verification.
 
 Complete normalized HTML is retained when available, otherwise exact plain text.
 Meaningful whitespace, lists, emphasis, tables, spanning cells and reader source

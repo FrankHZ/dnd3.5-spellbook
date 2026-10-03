@@ -36,8 +36,8 @@ head remote `ci:portable` remains the merge gate on PR #351.
 
 [#431](https://github.com/FrankHZ/dnd3.5-spellbook/issues/431) owns PDF-backed
 paragraph/emphasis mapping, representative 8–12 spell comparisons, full 1,001-ID
-summary-gap inventory and a minimal accepted ingestion contract. DB tags, `pre`
-newlines, regex splits and existing bold markup cannot replace source font/span
+format/page/span evidence inventory and a minimal accepted formatting contract.
+DB tags, `pre` newlines, regex splits and existing bold markup cannot replace source font/span
 evidence. The exporter preserves current complete bodies and reports
 `pdfFormatting: pending-431-source-mapping`; it does not apply unaccepted mappings
 or invent summaries. Accepted #431 inputs must come through main-gate.
@@ -48,6 +48,8 @@ complete bilingual bodies, rules/tables/lists and reader notes, then a fresh
 durable HTML copy and permitted visual review. Previous semantic checkers for
 individual spell pages need adaptation before use on this layout. No actual
 DB/output or frozen private proof was read or overwritten for this revision.
+Actual directory summary coverage/gap acceptance and output semantic verification
+belong to #345/main-gate; they are not delegated to #431.
 
 New-layout visual acceptance is pending. The earlier file-URL browser request
 was rejected by tool security policy with an explicit prohibition on bypass.
