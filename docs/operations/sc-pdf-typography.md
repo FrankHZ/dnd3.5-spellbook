@@ -7,8 +7,10 @@ themselves supply that review. PDF font names/flags, geometry, complete entry
 context and Chinese semantic correspondence must be considered together.
 
 The [source-free inventory](../../data-tools/reports/dice-qa/books/86/pdf-typography.json)
-records existing evidence coverage, representative mapping proposals and their
-remaining gaps. Actual source pages, span references, complete field guards,
+records existing evidence coverage and initial representative mapping proposals.
+The [four-entry disposition report](../../data-tools/reports/dice-qa/books/86/pdf-typography-dispositions.json)
+records the bounded follow-up decisions and their remaining acceptance needs.
+Actual source pages, span references, complete field guards,
 Chinese ranges and reviewed HTML stay in the configured private data repo under
 `dice-qa/books/86/issue-431/`. They are presentation proposals awaiting main-gate
 selection, not accepted content or proof of full-book format QA.
@@ -31,8 +33,12 @@ the actual current fields. Merely supplying a JSON row, matching text, or a
 review status does not grant acceptance. The helper checks representation
 integrity; it neither authenticates Git inputs nor verifies human/PDF semantics.
 Keep this selection step outside the helper; there is no new accepted-baseline
-list. Main-gate selects bounded proposals explicitly; #345 currently integrates
-seven selected representatives and retains current display for all other targets.
+list. Main-gate selected seven initial samples from the frozen private revision
+for bounded #345 preview integration; all other targets retain current display.
+That selection does not certify rendered
+HTML or full-book format QA. The new three-entry disposition proposals use a
+separate path/revision and await their own selection; they do not expand that
+handoff or change its fixed files.
 
 An absent row returns existing HTML. A present row with any changed identity or
 text/HTML field rejects the export; do not silently fall back from a stale row.
@@ -100,10 +106,27 @@ code-point offsets, not JavaScript UTF-16 offsets or copied English offsets.
 They are review navigation, not the consumer's mutation mechanism. Table cells
 are matched by row/column meaning; absent legacy tokens are not invented.
 
-Preserve existing italics, lists, tables, unresolved source statements and project
-notes. Document any source-supported style change individually. Discontinuous
-font runs, compressed Chinese references and inherited captions without PDF
-counterparts stay explicit gaps. Presentation derivatives do not change
+Preserve existing lists, tables, unresolved source statements and project notes.
+Document any source-supported change to existing emphasis individually.
+Discontinuous font runs require an explicit observed-run decision and independent
+Chinese semantic ranges; do not infer intended whole-name emphasis. An implicit
+Chinese reference without a separable named token can remain regular rather than
+gain invented text. Adjacent PDF sidebar/table columns can map to each accepted
+language's existing serial order when complete semantic correspondence is shown;
+that does not claim a page facsimile. Record these decisions explicitly rather
+than treating legacy HTML as source authority.
+
+The four-entry follow-up proposes those dispositions for 4443, 4088 and 4072.
+3958 remains blocked on separate accepted English text/HTML revision: its legacy
+table title has no separate PDF heading counterpart. Removing its visible text
+violates the existing exact-text guard; retaining, hiding or demoting it cannot
+certify source-faithful heading content. The private request removes only that
+title from paired English representations, preserves the other accepted fields
+and structures, and is not an accepted patch or writer input. Main-gate must
+coordinate its source-bound accepted-input review and final binding/rehearsal
+refresh through #346 before a refreshed proposal can be selected.
+
+Presentation derivatives do not change
 accepted fields, canonical inputs, provenance or DBs. A change to persisted
 HTML/text requires the separate [accepted-input workflow](./db-content-workflow.md).
 
