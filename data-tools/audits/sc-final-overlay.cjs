@@ -9,12 +9,13 @@ const {createRequire, Module} = require('node:module');
 function main(argv) {
   const value = name => {const at = argv.indexOf('--' + name); assert(at >= 0 && argv[at + 1], 'missing --' + name); return argv[at + 1];};
   const allowed = new Set(['code-root', 'runtime-root', 'data-root', 'rules-db', 'content-db', 'normalized', 'rules-manifest',
-    'helper-revision', 'accepted-baseline', 'accepted-summaries', 'apply', 'validate']);
+    'helper-revision', 'accepted-baseline', 'accepted-summaries', 'upgrade-summaries', 'apply', 'validate']);
   for (let i = 0; i < argv.length; i++) {
     assert(argv[i].startsWith('--') && allowed.has(argv[i].slice(2)), 'unknown argument: ' + argv[i]);
-    if (!['--apply', '--validate', '--accepted-summaries'].includes(argv[i])) i++;
+    if (!['--apply', '--validate', '--accepted-summaries', '--upgrade-summaries'].includes(argv[i])) i++;
   }
   assert(!(argv.includes('--apply') && argv.includes('--validate')), 'choose apply or validate');
+  assert(!argv.includes('--upgrade-summaries') || argv.includes('--accepted-summaries'), 'upgrade requires accepted summaries');
   const code = fs.realpathSync(value('code-root')), runtime = fs.realpathSync(value('runtime-root'));
   assert.equal(code, fs.realpathSync(path.join(__dirname, '../..')), 'code root must match invoking checkout');
   const absolute = name => {const p = value(name); assert(path.isAbsolute(p), '--' + name + ' must be absolute'); return fs.realpathSync(p);};
@@ -32,29 +33,43 @@ function main(argv) {
     ['-B', '-X', 'utf8', path.join(code, 'data-tools/audits/sc_final_auth.py'), ...options],
     {cwd: code, encoding: 'utf8', maxBuffer: 128 * 1024 * 1024}));
   const generated = load('rules-content/cli.ts').readGenerated(inputPath);
-  let summaries;
+  let summaries, summaryInputs;
   if (argv.includes('--accepted-summaries')) {
-    const exact = require('./sc-final-inputs.cjs').readExact;
-    const candidatePath = 'dice-qa/books/86/issue-411/summaries.proposed.jsonl';
-    exact(data, writer.finalScSummaryRevision, writer.finalScSummaryPath);
-    exact(data, writer.finalScSummaryCandidate, candidatePath);
-    const canonical = fs.readFileSync(path.join(data, writer.finalScSummaryPath), 'utf8');
-    assert.equal(canonical.replaceAll('\r\n', '\n'),
-      fs.readFileSync(path.join(data, candidatePath), 'utf8').replaceAll('\r\n', '\n'), 'accepted summary candidate bytes differ');
-    const parsed = load('short-desc/summary-row-schema.ts').readSummaryJsonlText(canonical);
-    assert.deepEqual(parsed.errors, []); assert.equal(parsed.rows.length, 6572, 'complete accepted summary inventory required');
-    summaries = parsed.rows;
+    summaryInputs = require('./sc-final-summaries.cjs').authenticateSummaries(data,
+      load('short-desc/summary-row-schema.ts').readSummaryJsonlText);
+    summaries = summaryInputs.next;
   }
-  const current = artifact.collectRulesContentArtifactProvenance({parentRepoRoot: code, dataRepoRoot: data,
+  const collectCurrent = () => artifact.collectRulesContentArtifactProvenance({parentRepoRoot: code, dataRepoRoot: data,
     rulesDbPath: rules, rulesManifestPath: manifest,
     rulebookPublicationMetadataPath: path.join(data, 'rulebook-publications/publications.jsonl'),
     chmRulebookPublicationsPath: path.join(data, 'rulebook-labels/chm-publications.jsonl'),
     contentMigrationsPath: path.join(code, 'server/db/content/migrations')},
     {requireDataRepo: true, requireRulesManifest: true, requirePublicationMetadata: true});
+  const current = collectCurrent(), normalizedBytes = fs.readFileSync(inputPath);
   const DB = req('better-sqlite3'), apply = argv.includes('--apply'), validate = argv.includes('--validate');
   const db = new DB(contentPath, {readonly: !apply, fileMustExist: true});
   try {
     if (!apply) db.pragma('query_only=ON');
+    if (argv.includes('--upgrade-summaries')) {
+      const verifyFull = () => {
+        assert(fs.readFileSync(inputPath).equals(normalizedBytes), 'full normalized input changed during upgrade');
+        return writer.verifyFullNormalized(db, generated, inputPath, collectCurrent());
+      };
+      const requireInputs = () => {
+        summaryInputs.requireInputs();
+        assert.equal(execFileSync('git', ['-C', code, 'rev-parse', 'HEAD'], {encoding: 'utf8'}).trim(), value('helper-revision'));
+        assert.equal(execFileSync('git', ['-C', code, 'status', '--porcelain', '--', 'data-tools/audits',
+          'data-tools/src/dice-intake', 'data-tools/src/short-desc', 'data-tools/src/rules-content',
+          'server/db/content/migrations'], {encoding: 'utf8'}).trim(), '', 'dirty final upgrade helpers');
+      };
+      const upgrade = writer.finalSummaryUpgrade(db, auth.fields, auth.report, verifyFull,
+        summaryInputs.previous, summaryInputs.next, requireInputs, apply ? 'apply' : 'check');
+      if (validate) assert.equal(upgrade.state, 'after', 'summary upgrade has not been applied');
+      console.log(JSON.stringify({mode: apply ? 'apply' : validate ? 'validate' : 'dry-run', ...upgrade,
+        helperRevision: value('helper-revision'), acceptedSummaryRevision: writer.finalScSummaryRevision,
+        wholeBookQaComplete: false, activation: false, ftsRefreshed: false}));
+      return;
+    }
     const full = writer.verifyFullNormalized(db, generated, inputPath, current);
     const plan = writer.planFinalOverlay(db, auth.fields, auth.report, full, value('helper-revision'), summaries);
     if (apply) writer.applyFinalOverlay(db, plan, () => writer.verifyFullNormalized(db, generated, inputPath, current));

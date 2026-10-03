@@ -6,11 +6,16 @@ import { assertImportableRulesContentArtifact, sha256File, verifyRulesContentArt
 import type { NormalizedRulesContent } from "../rules-content/normalize";
 import type { FieldOrigin } from "./effective";
 import type { SummaryRow } from "../short-desc/summary-row-schema";
+import { importSummaryRows } from "../short-desc/import";
+import { requireKnownAnnotations } from "../rules-content/known-annotations";
+import { verifySummaryInventory } from "../short-desc/import-step";
 
 export const finalScRevision = "0688739d92a2aa9fb3eceeb444daa7260e711058";
 export const finalScNoteRevision = "c61b9dea676cfd89bdfcaa6dcbcccbc99280d7c4";
-export const finalScSummaryRevision = "0b6fd8b88c1609cfdae50d8943d77eda13750ea8";
-export const finalScSummaryCandidate = "c4fe0c0a7b14aafed04bc9e733387afb51ae45eb";
+export const previousScSummaryRevision = "0b6fd8b88c1609cfdae50d8943d77eda13750ea8";
+export const previousScSummaryCandidate = "c4fe0c0a7b14aafed04bc9e733387afb51ae45eb";
+export const finalScSummaryRevision = "1e86cf7865f42f15abb7d6629d2d9de54607a13c";
+export const finalScSummaryCandidate = "04dd98490e4ad643eafc8f262bb5af57d3bffcd9";
 export const finalScSummaryPath = "short-desc-normalized/summaries.generated.jsonl";
 export type FinalField = { targetId: number; rulebookId: number; field: "name" | "body";
   text: string; html?: string | null; origin: FieldOrigin; review: Record<string, unknown>;
@@ -81,7 +86,8 @@ function verifyAcceptedSummaries(db: Database.Database, acceptedSummaries: Summa
 /** Internal SQL primitive. The maintained entry derives these fields through
  * complete source QA/PDF verification; no caller projection file is accepted. */
 export function planFinalOverlay(db: Database.Database, fields: FinalField[], sourceReport: Record<string, unknown>,
-  full: ReturnType<typeof verifyFullNormalized>, helperRevision: string, acceptedSummaries?: SummaryRow[]) {
+  full: ReturnType<typeof verifyFullNormalized>, helperRevision: string, acceptedSummaries?: SummaryRow[],
+  summaryRevision = finalScSummaryRevision, summaryCandidate = finalScSummaryCandidate) {
   assert.match(helperRevision, /^[0-9a-f]{40}$/);
   const names = fields.filter(f => f.field === 'name'), bodies = new Map(fields.filter(f => f.field === 'body').map(f => [f.targetId, f]));
   assert.equal(fields.length, names.length * 2, 'duplicate/missing field');
@@ -121,9 +127,19 @@ export function planFinalOverlay(db: Database.Database, fields: FinalField[], so
   // Timestamps are importer-owned and intentionally excluded from this matching boundary.
   let summaryQa;
   if (acceptedSummaries) {
+    if (full.meta.overlays?.scFinalNameBody?.summaryQa) {
+      requireKnownAnnotations(db, full.meta);
+      assert.equal(full.meta.overlays.scFinalNameBody.summaryQa.acceptedRevision, summaryRevision,
+        'annotated summary authority requires the exact upgrade path');
+      assert.equal(full.meta.overlays.scFinalNameBody.summaryQa.candidateRevision, summaryCandidate,
+        'annotated summary candidate differs');
+    }
     verifyAcceptedSummaries(db, acceptedSummaries);
-    summaryQa = {schema: 'sc-final-summary.v1', acceptedRevision: finalScSummaryRevision,
-      candidateRevision: finalScSummaryCandidate, path: finalScSummaryPath,
+    assert(summaryRevision === finalScSummaryRevision && summaryCandidate === finalScSummaryCandidate ||
+      summaryRevision === previousScSummaryRevision && summaryCandidate === previousScSummaryCandidate,
+      'unsupported summary authority pair');
+    summaryQa = {schema: 'sc-final-summary.v1', acceptedRevision: summaryRevision,
+      candidateRevision: summaryCandidate, path: finalScSummaryPath,
       scope: 'present-canonical-sc-summaries', canonicalRows: acceptedSummaries.length,
       scRows: acceptedSummaries.filter(row => row.rulebookId === 86).length};
   }
@@ -160,4 +176,79 @@ export function validateFinalOverlay(db: Database.Database, plan: ReturnType<typ
   assert.deepEqual(rows, plan.rows.map(({action: _action, ...row}) => row), 'persisted final fields/provenance differ');
   const build = db.prepare('SELECT buildMetaJson FROM RulesContentBuild WHERE id=?').get(plan.buildId) as {buildMetaJson: string};
   assert.equal(build.buildMetaJson, plan.buildMetaJson, 'persisted final build differs');
+}
+
+/** Internal primitive for the one authenticated #451 promotion. The maintained
+ * entry supplies both inventories from fixed Git blobs and replays full source
+ * QA. This never relaxes the generic annotated-predecessor import guard. */
+export function finalSummaryUpgrade(db: Database.Database, fields: FinalField[], sourceReport: Record<string, unknown>,
+  verifyFull: () => ReturnType<typeof verifyFullNormalized>, previous: SummaryRow[], next: SummaryRow[],
+  requireInputs: () => void, mode: 'check' | 'apply' = 'check', afterWrite: () => void = () => {}) {
+  assert(mode === 'check' || mode === 'apply');
+  assert(!db.inTransaction, 'Final summary upgrade owns its transaction');
+  const prior = new Map(previous.map(row => [row.id, row]));
+  assert.equal(prior.size, previous.length, 'duplicate predecessor summary');
+  assert(next.length > previous.length, 'summary upgrade requires additions');
+  for (const row of previous) assert.deepEqual(next.find(value => value.id === row.id), row, 'predecessor summary changed');
+  const additions = next.filter(row => !prior.has(row.id));
+  assert(additions.every(row => row.rulebookId === 86 && row.reviewStatus === 'accepted' &&
+    row.variant === (row.lang === 'en' ? 'imarvin' : 'chm')), 'unsupported summary addition');
+  const inspect = () => {
+    requireInputs();
+    const full = verifyFull();
+    requireKnownAnnotations(db, full.meta);
+    const overlay = full.meta.overlays?.scFinalNameBody;
+    assert(overlay?.summaryQa && overlay.readerNoteAddendum, 'Missing accepted annotated summary predecessor');
+    const before = overlay.summaryQa.acceptedRevision === previousScSummaryRevision;
+    verifySummaryInventory(db, before ? previous : next);
+    const plan = planFinalOverlay(db, fields, sourceReport, full, overlay.helperRevision,
+      before ? previous : next, before ? previousScSummaryRevision : finalScSummaryRevision,
+      before ? previousScSummaryCandidate : finalScSummaryCandidate);
+    assert.equal(plan.migrate, false, 'summary upgrade cannot migrate text schema');
+    assert.equal(plan.inserts + plan.updates, 0, 'summary upgrade cannot repair final fields');
+    validateFinalOverlay(db, plan); // Exact entire metadata, fields, notes and inventory.
+    return {full, plan, state: before ? 'before' as const : 'after' as const};
+  };
+  const result = (state: 'before' | 'after', inserted = 0) => ({mode, state, changed: inserted > 0,
+    wouldChange: state === 'before', inserted, updated: 0, deleted: 0});
+  const initial = db.transaction(inspect)();
+  if (mode === 'check' || initial.state === 'after') return result(initial.state);
+  assert(!db.readonly, 'Apply requires writable content');
+  return db.transaction(() => {
+    const current = inspect();
+    if (current.state === 'after') return result('after');
+    const quote = (value: string) => '"' + value.replaceAll('"', '""') + '"';
+    // Native BLOB comparison preserves all protected text bytes and timestamps.
+    const protectedState = () => db.prepare("SELECT name FROM sqlite_schema WHERE type='table' ORDER BY name")
+      .all().map(value => (value as {name: string}).name)
+      .filter(table => !['I18nSpellSummaryText', 'RulesContentBuild'].includes(table)).map(table => {
+        const columns = (db.pragma(`table_info(${quote(table)})`) as {name: string}[]).map(row => quote(row.name));
+        return {table, rows: db.prepare(`SELECT ${columns.map(column =>
+          `CASE WHEN typeof(${column})='text' THEN CAST(${column} AS BLOB) ELSE ${column} END`).join(',')}
+          FROM ${quote(table)} ORDER BY ${columns.join(',')}`).safeIntegers().raw().all()};
+      });
+    const protectedBefore = protectedState();
+    const schemaBefore = db.prepare('SELECT * FROM sqlite_schema ORDER BY type,name').all();
+    const summariesBefore = db.prepare('SELECT * FROM I18nSpellSummaryText ORDER BY id').all();
+    const changes = importSummaryRows(db, next, false);
+    assert.equal(changes.inserted, additions.length);
+    assert.equal(changes.updated, 0, 'summary upgrade must only insert');
+    const meta = structuredClone(current.full.meta);
+    Object.assign(meta.overlays.scFinalNameBody.summaryQa, {acceptedRevision: finalScSummaryRevision,
+      candidateRevision: finalScSummaryCandidate, canonicalRows: next.length,
+      scRows: next.filter(row => row.rulebookId === 86).length});
+    db.prepare('UPDATE RulesContentBuild SET buildMetaJson=? WHERE id=?').run(JSON.stringify(meta), current.plan.buildId);
+    afterWrite(); requireInputs();
+    inspect();
+    assert.deepEqual(protectedState(), protectedBefore, 'summary upgrade changed protected tables');
+    assert.deepEqual(db.prepare('SELECT * FROM sqlite_schema ORDER BY type,name').all(), schemaBefore,
+      'summary upgrade changed schema');
+    const summariesAfter = new Map((db.prepare('SELECT * FROM I18nSpellSummaryText').all() as {id: string}[]).map(row => [row.id, row]));
+    for (const row of summariesBefore as {id: string}[]) assert.deepEqual(summariesAfter.get(row.id), row,
+      'summary upgrade changed original row/timestamp');
+    const {buildMetaJson: _beforeMeta, ...beforeBuild} = current.full.build;
+    const {buildMetaJson: _afterMeta, ...afterBuild} = verifyFull().build;
+    assert.deepEqual(afterBuild, beforeBuild, 'summary upgrade changed build columns');
+    return result('after', changes.inserted);
+  }).immediate();
 }
