@@ -267,6 +267,17 @@ stale fields/source evidence and transaction faults reject or roll back. Exact
 repeat changes no rows or timestamps. The generic normalized step still rejects
 changed annotated predecessors.
 
+The complete external source authenticator runs initially and again inside the
+immediate transaction before any content write. After writes, validation uses
+the same content connection: all protected CHM/text/note/provenance/summary
+tables, schema, final fields and the complete new build are checked without an
+external process reopening the destination. This supports rollback-journal
+databases whose write volume causes cache spill and an exclusive lock. Exact
+Git contents/status of source/helper inputs, original PDF/corpus bytes and corpus
+membership, accepted summary inputs, both normalized files and current rules
+generation provenance are rechecked throughout the transaction. A mismatch
+rolls back the content transition; journal mode and lock timeouts are unchanged.
+
 Use `--accepted-english-title --accepted-summaries` consistently for subsequent
 ordinary final validation/helper refreshes of this upgraded artifact. The old
 English source path rejects the patched rules input. Rebuild FTS after the
