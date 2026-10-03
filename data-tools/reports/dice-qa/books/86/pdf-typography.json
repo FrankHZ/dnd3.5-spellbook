@@ -1,0 +1,208 @@
+{
+  "scope": "SC PDF typography availability inventory and representative presentation proposals",
+  "issue": 431,
+  "parentIssue": 345,
+  "fieldRevision": "0688739d92a2aa9fb3eceeb444daa7260e711058",
+  "readerNoteRevision": "c61b9dea676cfd89bdfcaa6dcbcccbc99280d7c4",
+  "inventoryDataRevision": "5d6f8f1c2af35230bd4f232a54e8377bbb55600c",
+  "privateEvidencePath": "dice-qa/books/86/issue-431/",
+  "inventory": {
+    "targets": 1001,
+    "evidenceFiles": 61,
+    "distinctScPages": 235,
+    "targetsWithMissingPages": 0,
+    "targetsWithMissingSpans": 0,
+    "targetsWithMissingFontGeometry": 0,
+    "savedSpanConflicts": 0,
+    "printedPageMapping": "all observed SC printed pages equal zero-based PDF index + 1",
+    "triageFlags": {
+      "multiple-column-bands-needs-order-review": 629,
+      "multiple-entry-or-reference-pages-needs-order-review": 217,
+      "table-or-statblock-needs-cell-review": 15
+    },
+    "triageLimits": "Reference and wide-context spans are included; flags do not count actual cross-page/column spell bodies. Geometry band thresholds are triage only. Saved availability is not fresh full-book verification."
+  },
+  "representative": {
+    "completeEntryMappingProposals": 11,
+    "sampleIds": [
+      3531,
+      3855,
+      4726,
+      4546,
+      4072,
+      4784,
+      3866,
+      4088,
+      3958,
+      4443,
+      3857
+    ],
+    "semanticUnits": 156,
+    "sourceMappedUnits": 148,
+    "readerNoteUnits": 7,
+    "tableCells": 87,
+    "freshlyComparedPages": 14,
+    "freshlyComparedSpans": 2781,
+    "directlyReviewedRenderedPdfPages": 13,
+    "samples": [
+      {
+        "targetId": 3531,
+        "printedPages": [
+          121
+        ],
+        "gapKinds": []
+      },
+      {
+        "targetId": 3855,
+        "printedPages": [
+          18
+        ],
+        "gapKinds": []
+      },
+      {
+        "targetId": 4726,
+        "printedPages": [
+          229
+        ],
+        "gapKinds": []
+      },
+      {
+        "targetId": 4546,
+        "printedPages": [
+          139,
+          140
+        ],
+        "gapKinds": []
+      },
+      {
+        "targetId": 4072,
+        "printedPages": [
+          168,
+          169
+        ],
+        "gapKinds": [
+          "nonparallel-sidebar-order"
+        ]
+      },
+      {
+        "targetId": 4784,
+        "printedPages": [
+          242
+        ],
+        "gapKinds": []
+      },
+      {
+        "targetId": 3866,
+        "printedPages": [
+          21
+        ],
+        "gapKinds": []
+      },
+      {
+        "targetId": 4088,
+        "printedPages": [
+          173
+        ],
+        "gapKinds": [
+          "compressed-chinese-reference"
+        ]
+      },
+      {
+        "targetId": 3958,
+        "printedPages": [
+          162
+        ],
+        "gapKinds": [
+          "legacy-table-caption"
+        ]
+      },
+      {
+        "targetId": 4443,
+        "printedPages": [
+          80,
+          81
+        ],
+        "gapKinds": [
+          "discontinuous-source-font"
+        ]
+      },
+      {
+        "targetId": 3857,
+        "printedPages": [
+          18
+        ],
+        "gapKinds": []
+      }
+    ]
+  },
+  "limits": {
+    "remainingUnsampledTargets": 990,
+    "unresolvedRepresentativeFindings": 4,
+    "mainGateSelectedForConsumer": false,
+    "htmlRendered": false,
+    "all1001FormatQaCompleted": false,
+    "acceptedFieldsChanged": false,
+    "canonicalChanged": false,
+    "databasesOpened": 0,
+    "productionWrites": 0,
+    "supplementalPageExtraction": 0
+  },
+  "nextBatchProposal": {
+    "ordinaryCompleteEntriesPerBatch": [
+      30,
+      60
+    ],
+    "complexCompleteEntriesPerBatch": [
+      15,
+      30
+    ],
+    "roughBatchRangeForRemaining990": [
+      17,
+      33
+    ],
+    "complexBatchCountMayIncrease": true,
+    "acceptance": "complete source entry, exact current fields, semantic EN/ZH mapping, structures/notes preserved, unresolved gaps listed, main-gate selection; rendered consumer HTML separately required",
+    "proposedIndependentScopes": 23,
+    "existingTablesAndRetainedChmScopeIds": [
+      3780,
+      4001,
+      4056,
+      4227,
+      4267,
+      4279,
+      4280,
+      4281,
+      4282,
+      4331,
+      4382,
+      4541,
+      4583,
+      4761
+    ],
+    "ordinaryCandidateScopeSizes": [
+      45,
+      45,
+      45,
+      45,
+      45,
+      45,
+      45,
+      45,
+      45,
+      45,
+      45,
+      45,
+      45,
+      45,
+      45,
+      45,
+      45,
+      45,
+      45,
+      45,
+      45,
+      31
+    ],
+    "classificationIsProvisional": true
+  }
+}
