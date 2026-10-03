@@ -128,17 +128,23 @@ explicit readonly handoff; this task does not open those DBs.
 
 Ordinary CLI flags provide no presentation JSON/file channel. The low-level
 renderer map is not source authority; authentication belongs to that maintained
-entry. Current integration retains the original seven representatives and all
-45 accepted [#457 / PR #458](https://github.com/FrankHZ/dnd3.5-spellbook/pull/458)
-entries, then adds only the exact 43 candidates accepted in
-[#459 / PR #460](https://github.com/FrankHZ/dnd3.5-spellbook/pull/460).
-The independent acceptance, complete mappings and amended dispositions are
-required; proposal status alone grants no authority. The resulting set has 95
-selected displays; the other 906 targets retain current display. IDs 3930/3934
-remain current because their content discrepancies require separate decisions.
-Initial 44 candidates and diagnostic 45 presentations are not selection inputs.
-Selection never changes persisted text, HTML or provenance. Private
-refs and commands stay in owned issue-345 usage.
+entry. Current integration replaces the complete 95-item display selection with
+[#463 / PR #464](https://github.com/FrankHZ/dnd3.5-spellbook/pull/464)'s fixed
+corrected-current candidates and complete bilingual emphasis ranges. The accepted
+95 target IDs and their four canonical input fields stay unchanged; 90 display
+outputs repair emphasis positions or complete source-italic labels, and five
+remain unchanged. The other 906 targets retain current display. Prospective
+3930/3934 are excluded; their source migration is a separate workflow.
+
+The private entry binds exact candidates, complete mappings/ranges and independent
+source validation/acceptance. It calls `assertPdfTypographyEmphasis` on both
+languages after candidate generation and again on every selected final sanitized
+body. The helper compares each decoded Unicode character's `em`/`strong` set
+against complete reviewed intervals, including regular characters outside them.
+Four-field guards alone cannot detect shifted emphasis with unchanged text.
+Legacy wrong-emphasis candidates reject at both stages despite identical visible
+text. Selection never changes persisted fields or provenance. Private refs and
+commands stay in owned issue-345 usage.
 
 3970 retains accepted parent3969 flavour without an own-entry SC font claim.
 3943's two supplemental heading spans remain bound to the accepted source refs.
@@ -154,9 +160,11 @@ match the main-gate-completed operator state before output. The 3958 English
 text/HTML consume the source-supported title correction directly; export never
 hides the old title or restores it. The independent checker compares that exact
 current pair along with all bodies and metadata. This preserves the complete
-accepted summary binding. The complete-entry refresh adds the accepted
-43 entries through an explicit `--accepted-pdf-complete-02` private handoff and
-fixed batch revision; 3958 remains outside the 95 selected typography targets.
+accepted summary binding. The emphasis refresh requires an explicit
+`--accepted-inline-emphasis` private handoff and the fixed complete corrected
+selection revision; 3958 remains outside the 95 selected typography targets.
+This handoff binds the existing pre-migration normalized/manifest and completed
+operator state and does not enable the pending source-pairs migration.
 Prior previews/proofs retain their original input bindings and do not certify
 the refreshed output.
 

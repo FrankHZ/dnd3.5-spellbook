@@ -40,16 +40,24 @@ head remote `ci:portable` remains the merge gate on PR #351.
 paragraph/emphasis mapping, representative 8–12 spell comparisons, full 1,001-ID
 format/page/span evidence inventory and a minimal accepted formatting contract.
 DB tags, `pre` newlines, regex splits and existing bold markup cannot replace
-source font/span evidence. Main-gate accepted the original seven representatives,
-45 complete entries in [#457 / PR #458](https://github.com/FrankHZ/dnd3.5-spellbook/pull/458)
-and exactly 43 amended candidates in
-[#459 / PR #460](https://github.com/FrankHZ/dnd3.5-spellbook/pull/460).
-The maintained private entry authenticates each fixed presentation input,
-complete mappings, amendment/dispositions and independent acceptance. It retains
-all previous 52 selections and adds only those 43, yielding 95 selected / 906
-current. Blocked 3930/3934, initial 44 candidates and diagnostic 45 presentations
-are excluded. Other proposals, status fields and counts grant no source authority.
-Whole-book formatting and human rendered HTML acceptance remain incomplete.
+source font/span evidence. Main-gate accepted
+[#463 / PR #464](https://github.com/FrankHZ/dnd3.5-spellbook/pull/464)'s complete
+95 corrected-current presentations: 90 emphasis repairs and five unchanged
+outputs. The accepted IDs, complete four-field inputs and reviewed source
+mappings remain unchanged. The maintained entry loads that exact complete set,
+not a reconstruction from older wrong-emphasis derivatives. Complete bilingual
+intervals and independent source evidence bind the selection; proposal status
+and counts grant no authority. The other 906 displays remain current, with
+prospective 3930/3934 excluded until their separate migration is accepted and
+actually applied. Whole-book and human rendered HTML gates stay open.
+
+`assertPdfTypographyEmphasis` compares every decoded Unicode character's full
+`em`/`strong` set with complete reviewed intervals after candidate generation
+and again on each of 95 final sanitized English/Chinese bodies. Old output can
+pass current text/HTML input guards while emphasizing the wrong characters;
+regression checks require rejection of all 90 affected legacy outputs at both
+stages, while visible text including whitespace remains identical. The complete
+source bindings and frozen semantic checks remain required alongside this audit.
 
 3970's accepted parent3969 flavour remains inherited without an own SC font claim;
 3943's two supplemental heading spans bind their accepted source refs. The exact
@@ -68,8 +76,8 @@ output fails the independent checker. Actual activation and refreshed output
 require main-gate's corresponding completed-state proof; prior actual export
 evidence applies only to its previous input state.
 
-Private fixed-Git real-text validation loads the accepted previous 52 and
-43 accepted complete-entry candidates, verifies their exact mapping and acceptance
+Private fixed-Git real-text validation loads the exact 95 corrected-current
+candidates, verifies their complete mapping/range/source and acceptance
 bindings, then checks all 95 current four-field guards before the actual helper,
 sanitizer and merged output. Every selected stale field or wrong target/book
 must reject. Complete bilingual bodies, emphasis, paragraphs, independent notes
