@@ -1,7 +1,7 @@
 {
   "issue": 459,
   "scope": "remaining-complete-entries-02",
-  "status": "complete-dispositions-with-blocked-content-candidate-awaiting-main-gate-review",
+  "status": "complete-dispositions-with-two-blocked-content-candidates-awaiting-main-gate-review",
   "publicBase": "1e1503b839c245bfc725d0ec105f0ab6a80b0823",
   "privateEvidence": {
     "revision": "c5850fcca96c6856d78e8279111d1772eea29685",
@@ -15,9 +15,6 @@
     "firstBatchMainGateAcceptanceRevision": "a90060e9ca6a10e67f013e15b20db6a34f741e03",
     "mapping": "sample-mappings.json",
     "diagnosticAllTargetPresentations": "presentations.json",
-    "unselectedCandidates": "selection-candidates.json",
-    "blockedContentCandidates": "content-candidates.json",
-    "dispositions": "dispositions.json",
     "authorityDetails": [
       "additional-source-refs.json",
       "inherited-origins.json",
@@ -34,7 +31,12 @@
       "cwd-replay.json",
       "visual-inspection.json",
       "run-settings.json"
-    ]
+    ],
+    "frozenInitialPacket": true,
+    "frozenInitialUnselectedCandidates": "selection-candidates.json",
+    "frozenInitialBlockedContentCandidates": "content-candidates.json",
+    "frozenInitialDispositions": "dispositions.json",
+    "currentCandidateAndDispositionAuthority": "currentPrivateEvidence"
   },
   "targetIds": [
     3871,
@@ -85,14 +87,15 @@
   ],
   "dispositionCounts": {
     "completeEntryDispositions": 45,
-    "completeFormatProposals": 44,
+    "completeFormatProposals": 43,
     "pendingMappings": 0,
-    "blockedMappings": 1,
-    "canonicalCorrectionCandidates": 1,
+    "blockedMappings": 2,
+    "canonicalCorrectionCandidates": 2,
     "mainGateSelected": 0
   },
   "blockedTargetIds": [
-    3930
+    3930,
+    3934
   ],
   "blockedCandidateSelected": false,
   "sourceReview": {
@@ -102,10 +105,10 @@
     "completeOfficialErrataPagesReviewed": 1,
     "errataApplicableIds": [],
     "semanticUnits": 532,
-    "sourceBoundUnits": 518,
+    "sourceBoundUnits": 517,
     "acceptedInheritedUnitsWithoutOwnScFontClaim": 12,
     "acceptedEditorialDescriptorsWithoutScFontClaim": 1,
-    "unresolvedAcceptedContentUnits": 1,
+    "unresolvedAcceptedContentUnits": 2,
     "separatelyReviewedSidebarStatRows": 16,
     "separatelyReviewedListOptions": 3,
     "supplementalFreshHeadingSpanTarget": 3943,
@@ -126,7 +129,14 @@
     "missingTargets": 0,
     "duplicateTargets": 0,
     "freshFontGeometry": true,
-    "countsOrFontFlagsReplaceSemanticReview": false
+    "countsOrFontFlagsReplaceSemanticReview": false,
+    "sourceFontCoverageAmendedTarget": 3934,
+    "amendedEnglishUnit": 0,
+    "insertedArticleHasDirectSourceFontAuthority": false,
+    "allDiagnosticEmCharactersHaveDirectSourceFontAuthority": false,
+    "boundedTraceFoundExplicitArticleRepairAcceptance": false,
+    "freshAmendmentSpans": 3,
+    "wholeAmendedEntryBlocked": true
   },
   "representationChecks": {
     "completeFourFieldBindings": true,
@@ -135,9 +145,48 @@
     "originalPresentationLinksAndStructuresPreserved": true,
     "staleFieldAndIdentityRejections": 270,
     "maintainedSelectorOrComparatorChanged": false,
-    "blockedPairedCandidateVerifiedButUnapplied": true
+    "amendmentStaleFieldAndIdentityRejections": 6,
+    "blockedPairedCandidatesVerifiedButUnapplied": true
   },
-  "consumerRehearsal": {
+  "verifiedRuntime": {
+    "model": "gpt-6.1-sol",
+    "effort": "high",
+    "source": "local rollout turn_context read-only"
+  },
+  "limits": {
+    "mainGateReviewAndSelectionRequired": true,
+    "blockedContentDecisionStillRequired": true,
+    "htmlRendered": false,
+    "htmlHumanVisualAcceptanceOwner": 345,
+    "alternateHtmlRenderingSurfaceUsed": false,
+    "actualPreviewSelectionChanged": false,
+    "canonicalInputsOrDatabasesChanged": false,
+    "oldSamplesFrozenProofsOrCheckersChanged": false,
+    "privatePushOrSourceUpload": false,
+    "fullBookFormattingAccepted": false
+  },
+  "currentPrivateEvidence": {
+    "revision": "552e07a09950c2e7675eab0b494a370fcc5cce70",
+    "directory": "dice-qa/books/86/issue-459/review-3934/",
+    "amendsFrozenProposal": "c5850fcca96c6856d78e8279111d1772eea29685",
+    "amendedTargetIds": [
+      3934
+    ],
+    "unselectedCandidates": "selection-candidates.json",
+    "blockedContentCandidates": "content-candidates.json",
+    "dispositions": "dispositions.json",
+    "mappingAmendment": "mapping-amendment.json",
+    "authorityTrace": "authority-trace.json",
+    "freshSourceCheck": "source-check.json",
+    "checks": [
+      "validation.json",
+      "export-validation.json",
+      "cwd-replay.json"
+    ],
+    "unaffectedProposalsAndDispositionsUnchanged": true,
+    "frozenInitialFilesUnchanged": 46
+  },
+  "frozenInitialConsumerRehearsal": {
     "fixedPublicExporter": "07893995b0fa161d2b5e35002320656047ca12dc",
     "sourceReconstructableMemoryTargets": 45,
     "blockedTargetIncludedForDiagnosisOnly": 3930,
@@ -163,23 +212,44 @@
     "localLinksClosed": 248,
     "persistentDatabasesOpened": 0,
     "consumerCodeOrExistingOutputsModified": false,
-    "syntheticLanguageEnvelopesAuthenticateFinalSourceBinding": false
+    "syntheticLanguageEnvelopesAuthenticateFinalSourceBinding": false,
+    "frozenInitialRehearsal": true,
+    "currentlyBlockedTargetsIncludedForDiagnosisOnly": [
+      3930,
+      3934
+    ]
   },
-  "verifiedRuntime": {
-    "model": "gpt-6.1-sol",
-    "effort": "high",
-    "source": "local rollout turn_context read-only"
-  },
-  "limits": {
-    "mainGateReviewAndSelectionRequired": true,
-    "blockedContentDecisionStillRequired": true,
-    "htmlRendered": false,
-    "htmlHumanVisualAcceptanceOwner": 345,
-    "alternateHtmlRenderingSurfaceUsed": false,
-    "actualPreviewSelectionChanged": false,
-    "canonicalInputsOrDatabasesChanged": false,
-    "oldSamplesFrozenProofsOrCheckersChanged": false,
-    "privatePushOrSourceUpload": false,
-    "fullBookFormattingAccepted": false
+  "consumerRehearsal": {
+    "fixedPublicExporter": "07893995b0fa161d2b5e35002320656047ca12dc",
+    "sourceReconstructableMemoryTargets": 43,
+    "fullDatabaseCopied": false,
+    "rootAndPackageCwdOutputsIdentical": true,
+    "sanitizedCharactersParagraphsAndEmphasisPreserved": true,
+    "preservedNoteContainers": 0,
+    "retainedAndResolvedBodyLinks": 1,
+    "closedBodyLink": {
+      "from": 3970,
+      "to": 3969
+    },
+    "knownOutsideBookDetachedReferences": 1,
+    "outsideBookLink": {
+      "from": 3972,
+      "to": 2612,
+      "sourceBook": 6,
+      "originalPresentationHrefPreserved": true,
+      "exportedAnchorTextPreserved": true,
+      "exportedHrefRemovedByExistingSingleBookPolicy": true
+    },
+    "allBodyHrefsPreserved": false,
+    "localLinksClosed": 244,
+    "persistentDatabasesOpened": 0,
+    "consumerCodeOrExistingOutputsModified": false,
+    "syntheticLanguageEnvelopesAuthenticateFinalSourceBinding": false,
+    "blockedTargetIdsExcluded": [
+      3930,
+      3934
+    ],
+    "rootAndPackageOutputFilesIdentical": 29,
+    "onlyCurrentUnselectedCandidatesIncluded": true
   }
 }
