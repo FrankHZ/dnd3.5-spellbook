@@ -10,6 +10,10 @@ The [source-free inventory](../../data-tools/reports/dice-qa/books/86/pdf-typogr
 records existing evidence coverage and initial representative mapping proposals.
 The [four-entry disposition report](../../data-tools/reports/dice-qa/books/86/pdf-typography-dispositions.json)
 records the bounded follow-up decisions and their remaining acceptance needs.
+The [complete-entry batch report](../../data-tools/reports/dice-qa/books/86/pdf-typography-complete-01.json)
+binds the separate private proposals under `dice-qa/books/86/issue-457/`, including
+complete field guards, fresh source/font checks and a fixed-exporter memory
+rehearsal. It does not select those proposals or certify rendered HTML.
 Actual source pages, span references, complete field guards,
 Chinese ranges and reviewed HTML stay in the configured private data repo under
 `dice-qa/books/86/issue-431/`. They are presentation proposals awaiting main-gate
