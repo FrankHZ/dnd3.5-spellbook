@@ -116,8 +116,9 @@ every summary parser column must match before rendering. All 961 class targets
 must have their 1,922 accepted English/Chinese owner fields; the other 40 scoped
 targets remain body-only. Missing, duplicate, empty or incorrect owner/source
 inputs still fail closed before output. It then uses the existing
-`readExact` Git input helper on the exact selected revision and fixed presentation
-file, validates the explicit selected target set and all four current text/HTML
+`readExact` Git input helper on the two exact selected revisions, fixed
+presentations, complete mappings and main-gate acceptance, validates the explicit
+selected target set and all four current text/HTML
 fields with `selectPdfTypography`, and passes that loaded selection and the same
 read-only DB view to export. Dirty/changed Git inputs, missing/duplicate targets,
 wrong books and stale fields reject before output creation. The independent
@@ -127,10 +128,13 @@ explicit readonly handoff; this task does not open those DBs.
 
 Ordinary CLI flags provide no presentation JSON/file channel. The low-level
 renderer map is not source authority; authentication belongs to that maintained
-entry. Current integration selects only `3531, 3855, 4726, 4546, 4784, 3866, 3857`
-from the main-gate-selected fixed input. The other 994 targets retain current
-display; four withheld proposals and 990 targets outside that reviewed set are
-not automatically selected. Selection never changes persisted text, HTML or
+entry. Current integration selects the original seven representatives
+`3531, 3855, 4726, 4546, 4784, 3866, 3857` plus the exact 45 complete entries
+accepted in [#457 / PR #458](https://github.com/FrankHZ/dnd3.5-spellbook/pull/458).
+The independent acceptance and complete presentation/mapping bindings are required;
+proposal status alone grants no authority. The resulting set has 52 selected
+displays; the other 949 targets retain current display. Other proposals remain
+unselected. Selection never changes persisted text, HTML or
 provenance. Private evidence/ref/command details stay in owned issue-345 usage.
 
 The English-title refresh requires both `--accepted-english-title` and
@@ -139,10 +143,12 @@ includes the accepted #434 pair, and the fixed new normalized artifact must
 match the main-gate-completed operator state before output. The 3958 English
 text/HTML consume the source-supported title correction directly; export never
 hides the old title or restores it. The independent checker compares that exact
-current pair along with all bodies and metadata. This changes neither the
-complete accepted summary binding nor the original seven selected PDF previews;
-3958 remains outside the selected typography set. Prior previews/proofs retain
-their original input bindings and do not certify the refreshed output.
+current pair along with all bodies and metadata. This preserves the complete
+accepted summary binding. The complete-entry refresh adds the accepted
+45 entries through an explicit `--accepted-pdf-complete-01` private handoff and
+fixed batch revision; 3958 remains outside the 52 selected typography targets.
+Prior previews/proofs retain their original input bindings and do not certify
+the refreshed output.
 
 Current normalized raw rule fields, descriptors, separate class/domain levels,
 component flags/additional text and notes remain visible. Body rule headers

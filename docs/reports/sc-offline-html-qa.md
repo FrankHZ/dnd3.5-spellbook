@@ -40,31 +40,33 @@ head remote `ci:portable` remains the merge gate on PR #351.
 paragraph/emphasis mapping, representative 8–12 spell comparisons, full 1,001-ID
 format/page/span evidence inventory and a minimal accepted formatting contract.
 DB tags, `pre` newlines, regex splits and existing bold markup cannot replace
-source font/span evidence. Main-gate accepted the helper and explicitly selected
-seven representatives: `3531, 3855, 4726, 4546, 4784, 3866, 3857`. Their fixed
-private presentations are integrated only through the maintained authenticated
-entry. The other 994 displays remain current, including four proposals not
-selected in this run and 990 targets outside that reviewed set. No automatic
-eleven-row selection, invented summary or full-book format acceptance occurs.
+source font/span evidence. Main-gate accepted the original seven representatives
+`3531, 3855, 4726, 4546, 4784, 3866, 3857` and the exact 45 complete entries in
+[#457 / PR #458](https://github.com/FrankHZ/dnd3.5-spellbook/pull/458).
+The maintained private entry binds both fixed presentation inputs, all 45 complete
+mappings and the independent main-gate acceptance before selecting 52 displays.
+The other 949 displays remain current. Withheld representatives and other batches
+are not selected; proposal status and selection counts grant no source authority.
+Whole-book formatting and human rendered HTML acceptance remain incomplete.
 
 The source-supported #434 correction removes only the duplicate 3958 English
 table title from its canonical text/HTML. The English-title refresh consumes
 that accepted pair through the source-authenticated new normalized input and
-explicit accepted-title/summary handoff; it does not add 3958 to the seven PDF
-previews. Its disposable full-scope Git replay checks the precise old/new
+explicit accepted-title/summary handoff; 3958 remains outside the 52 selected
+PDF previews. Its disposable full-scope Git replay checks the precise old/new
 artifact transition, unchanged Chinese/provenance/notes and complete summaries,
 then all 1,001 entries / 2,002 bodies and local links. Restoring the old title in
 output fails the independent checker. Actual activation and refreshed output
 require main-gate's corresponding completed-state proof; prior actual export
 evidence applies only to its previous input state.
 
-Private fixed-Git real-text validation compared these seven complete four-field
-packet guards and the 14 Chinese name/body fields with accepted inputs, then
-passed all 14 derived bilingual body/structure checks through SQLite memory,
-the actual helper, sanitizer and merged output. These seven samples contain no
-project-note block; note preservation is also exercised by the full synthetic
-corpus. This memory shell opens no real DB and does not run or replace the
-operator source-authentication workflow.
+Private fixed-Git real-text validation loads the accepted original seven and
+45 complete-entry presentations, verifies their exact mapping and acceptance
+bindings, then checks all 52 current four-field guards before the actual helper,
+sanitizer and merged output. Every selected stale field or wrong target/book
+must reject. Complete bilingual bodies, emphasis, paragraphs, independent notes
+and structures are checked by the frozen semantic verifier. This memory replay
+opens no real DB and does not replace operator source authentication.
 
 The maintained summary refresh now consumes the accepted complete 6,837-row
 composition, retaining the strict owner selector. Private fixed-Git replay
@@ -72,7 +74,7 @@ reconstructs disposable memory from accepted normalized records, final fields,
 reader-note amendments and authenticated summaries, then compares all 1,001
 entries / 2,002 bilingual bodies, 961 class targets / 1,922 directory owner
 fields, 40 body-only targets, 40 source-question occurrences and all emitted local
-links. Seven selected display derivatives and 994 current displays stay distinct.
+links. All 52 selected display derivatives and 949 current displays stay distinct.
 This replay copies no database and does not replace original-source authentication
 or the actual operator export. The complete synthetic fixture additionally
 rejects missing/wrong/empty/unaccepted owners, summary source/value drift and
@@ -96,7 +98,8 @@ Synthetic structure/CSS and bounded accepted-input memory checks prepare that
 interface; they do not prove browser marker rendering or full-book source QA.
 The report records selected/current IDs, `formattingComplete: false` and
 `contentCertification: false`; its selection counts confer no authority by
-themselves. Real-DB execution and new-layout visual review remain outstanding.
+themselves. Fresh 52-selection operator execution and new-layout visual review
+remain outstanding.
 
 New-layout visual acceptance is pending. The earlier file-URL browser request
 was rejected by tool security policy with an explicit prohibition on bypass.
