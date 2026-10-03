@@ -1,0 +1,424 @@
+{
+  "schema": "sc-directory-summary-proposal.v1",
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/444",
+  "parentIssue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/435",
+  "rulebookId": 86,
+  "status": "source-reviewed-proposal-awaiting-main-gate",
+  "accepted": false,
+  "publicBase": "04b0500b79a4889c6d6de244717ecdc057f2013e",
+  "privateHandoffAndHelperCommit": "20da4a8ef3d8d54bc7711a642bcb4c548c3cf70c",
+  "privateDirectory": "dice-qa/books/86/issue-444",
+  "fixedInputRevisions": {
+    "gapProof": "84a78b8d9513db883f5cfc6d9e4afe7febd1fbb5",
+    "acceptedSummaries": "0b6fd8b88c1609cfdae50d8943d77eda13750ea8",
+    "finalNameBodyMechanics": "0688739d92a2aa9fb3eceeb444daa7260e711058"
+  },
+  "scope": {
+    "targetIds": [
+      4258,
+      4284,
+      4285,
+      4286,
+      4287,
+      4288,
+      4291,
+      4292,
+      4293,
+      4297,
+      4299,
+      4300,
+      4304,
+      4305,
+      4306,
+      4307,
+      4308,
+      4310,
+      4311,
+      4314,
+      4315,
+      4317,
+      4318,
+      4319,
+      4323,
+      4330,
+      4336,
+      4340,
+      4349,
+      4355,
+      4365,
+      4369,
+      4376,
+      4380,
+      4396,
+      4399,
+      4416,
+      4417,
+      4423,
+      4431,
+      4434,
+      4439,
+      4447,
+      4460,
+      4462
+    ],
+    "targets": 45,
+    "fields": 47,
+    "languages": {
+      "en": 32,
+      "zh": 15
+    },
+    "missingOnly": true
+  },
+  "fieldDispositions": [
+    {
+      "stableKey": "4258:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4284:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4285:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4286:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4287:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4288:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4291:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4292:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4293:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": true
+    },
+    {
+      "stableKey": "4297:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4299:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": true
+    },
+    {
+      "stableKey": "4299:zh:chm",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": true
+    },
+    {
+      "stableKey": "4300:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4304:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4305:zh:chm",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": true
+    },
+    {
+      "stableKey": "4306:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4307:zh:chm",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": true
+    },
+    {
+      "stableKey": "4308:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": true
+    },
+    {
+      "stableKey": "4308:zh:chm",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": true
+    },
+    {
+      "stableKey": "4310:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4311:zh:chm",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": true
+    },
+    {
+      "stableKey": "4314:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4315:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4317:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4318:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4319:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": true
+    },
+    {
+      "stableKey": "4323:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4330:zh:chm",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4336:zh:chm",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4340:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": true
+    },
+    {
+      "stableKey": "4349:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4355:zh:chm",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4365:zh:chm",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": true
+    },
+    {
+      "stableKey": "4369:zh:chm",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": true
+    },
+    {
+      "stableKey": "4376:zh:chm",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4380:zh:chm",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": true
+    },
+    {
+      "stableKey": "4396:zh:chm",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": true
+    },
+    {
+      "stableKey": "4399:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4416:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": true
+    },
+    {
+      "stableKey": "4417:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": true
+    },
+    {
+      "stableKey": "4423:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4431:zh:chm",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4434:zh:chm",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": true
+    },
+    {
+      "stableKey": "4439:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4447:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4460:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    },
+    {
+      "stableKey": "4462:en:imarvin",
+      "status": "reviewed-addition-proposed",
+      "projectPrimaryTextCorrection": false
+    }
+  ],
+  "sourceVerification": {
+    "completeScopedOriginalEntries": 45,
+    "distinctReasons": 45,
+    "listOccurrences": 62,
+    "reusedOriginalListPath": "dice-qa/books/86/issue-259/relation-authority/sc-lists-245-277.jsonl",
+    "entryAndListPagesFreshlyCompared": 54,
+    "printingErrataAndHeadingPages": 3,
+    "originalPagesVisuallyInspected": 57,
+    "replayedSpans": 2266,
+    "projectPrimaryTextCorrectionIds": [
+      4293,
+      4299,
+      4305,
+      4307,
+      4308,
+      4311,
+      4319,
+      4340,
+      4365,
+      4369,
+      4380,
+      4396,
+      4416,
+      4417,
+      4434
+    ],
+    "projectPrimaryTextCorrectionFields": 17,
+    "correctionAuthority": "SC primary spell text; project proposals, not named official table errata",
+    "correctionScopeDecision": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/444#issuecomment-5966770295",
+    "applicableEntrySpecificOfficialErrataIds": [],
+    "directChineseTranslations": 15,
+    "inheritedExternalReferencesNewlyReviewed": false,
+    "additionalCompleteScParentIds": [
+      4368
+    ],
+    "remainingAssignedSourceGaps": 0,
+    "newExtractionBoundaryRepairs": false
+  },
+  "validation": {
+    "sourceNegativeControls": [
+      "missing field",
+      "duplicate field",
+      "extra unassigned field",
+      "cross-book field",
+      "wrong owner",
+      "stale text",
+      "stale Chinese translation",
+      "wrong source authority",
+      "wrong source kind",
+      "wrong table span",
+      "changed final body",
+      "cross-target body evidence",
+      "unaccepted status bypass"
+    ],
+    "importNegativeControls": [
+      "stale persisted predecessor",
+      "existing owner drift",
+      "wrong book identity",
+      "pending candidate refused",
+      "duplicate natural key refused",
+      "existing row deletion refused",
+      "cross-book addition refused"
+    ],
+    "realProposalsRejectAcceptedParser": true,
+    "transientShapeAdaptationIsAcceptance": false,
+    "syntheticExisting": 45,
+    "syntheticAdditions": 47,
+    "syntheticFinal": 92,
+    "syntheticExistingRowsAndTimestampsPreserved": 45,
+    "syntheticOtherTablesProtected": true,
+    "syntheticReadonlyWrites": 0,
+    "syntheticRepeatWrites": 0,
+    "syntheticReadonlyCheck": {
+      "mode": "check",
+      "state": "before",
+      "changed": false,
+      "wouldChange": true
+    },
+    "syntheticApply": {
+      "mode": "apply",
+      "state": "after",
+      "changed": true,
+      "wouldChange": false
+    },
+    "syntheticRepeat": {
+      "mode": "apply",
+      "state": "after",
+      "changed": false,
+      "wouldChange": false
+    },
+    "rootAndPackageReplayRequired": true
+  },
+  "preservation": {
+    "existingCanonicalSummaries": 6572,
+    "existingScopedFields": 43,
+    "previousBatchFieldsChanged": false,
+    "completeSummaryUnionGenerated": false,
+    "operatorDatabaseOpened": false,
+    "appStateOpened": false,
+    "canonicalBodyMechanicsRelationshipsNotesChanged": false,
+    "privatePush": false,
+    "htmlVisualAcceptance": false
+  },
+  "replay": {
+    "helper": "dice-qa/books/86/issue-444/reproduce.py",
+    "parameters": [
+      "--code-root",
+      "--runtime-root",
+      "--private-revision",
+      "--run"
+    ],
+    "sourceChecks": "verification-<run>.json",
+    "syntheticChecks": "importer-<run>.json",
+    "replayEvidence": "replay-<run>.json"
+  }
+}
