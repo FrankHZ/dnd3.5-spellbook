@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import type Database from "better-sqlite3";
 import { finalScRevision, finalScNoteRevision, finalScSummaryRevision,
-  finalScSummaryCandidate, finalScSummaryPath } from "../dice-intake/final-writer";
+  finalScSummaryCandidate, finalScSummaryPath, previousScSummaryRevision,
+  previousScSummaryCandidate } from "../dice-intake/final-writer";
 
 type Row = Record<string, unknown>;
 function keys(value: Row, expected: string[]) {
@@ -67,8 +68,9 @@ export function requireKnownAnnotations(db: Database.Database, meta: Row) {
     const summary = overlay.summaryQa as Row;
     keys(summary, ["schema", "acceptedRevision", "candidateRevision", "path", "scope", "canonicalRows", "scRows"]);
     assert.equal(summary.schema, "sc-final-summary.v1");
-    assert.equal(summary.acceptedRevision, finalScSummaryRevision);
-    assert.equal(summary.candidateRevision, finalScSummaryCandidate);
+    assert(summary.acceptedRevision === finalScSummaryRevision && summary.candidateRevision === finalScSummaryCandidate ||
+      summary.acceptedRevision === previousScSummaryRevision && summary.candidateRevision === previousScSummaryCandidate,
+      'Unknown downstream summary authority pair');
     assert.equal(summary.path, finalScSummaryPath);
     assert.equal(summary.scope, "present-canonical-sc-summaries");
     assert(Number.isInteger(summary.canonicalRows) && Number(summary.canonicalRows) > 0);

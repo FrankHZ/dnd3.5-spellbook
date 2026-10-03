@@ -116,6 +116,13 @@ function prepareInputs(inputPath: string, previousInputPath: string, expectedByt
   return {next, previous, requireInputs};
 }
 
+/** Exact persisted inventory/schema/identity check reused by the source-bound
+ * final writer. It grants no permission to change downstream annotations. */
+export function verifySummaryInventory(db: Database.Database, rows: SummaryRow[]) {
+  requireSchema(db); requireBindings(db, rows);
+  assert(matches(readRows(db), rows), 'Complete accepted summary inventory differs');
+}
+
 function inspectState(db: Database.Database, next: SummaryRow[], previous: SummaryRow[]) {
   const actual = readRows(db);
   const metadata = (db.prepare("SELECT buildMetaJson FROM RulesContentBuild").all() as {buildMetaJson: string}[])

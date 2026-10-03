@@ -178,15 +178,55 @@ command first in dry-run, then with `--apply`, then `--validate`. Import the
 separately accepted full canonical summaries through `summaries:import`. Then
 repeat the final overlay with `--accepted-summaries --apply`, followed by
 `--accepted-summaries --validate`. This explicit gate authenticates the promoted
-canonical at private `0b6fd8b88c1609cfdae50d8943d77eda13750ea8` and the accepted
-#411 candidate at `c4fe0c0a7b14aafed04bc9e733387afb51ae45eb` through fixed Git
-inputs and exact candidate bytes. It compares all 6,572 keys and every persisted
+canonical at private `1e86cf7865f42f15abb7d6629d2d9de54607a13c` and the accepted
+#451 complete candidate at `04dd98490e4ad643eafc8f262bb5af57d3bffcd9` through fixed Git
+inputs and exact candidate bytes. It reconstructs the unchanged 6,572-row baseline
+and 265 additions from all six fixed original packets, full provenance, original
+review locators, composition index and owner acceptance records. It compares all
+6,837 keys and every persisted
 parser column, including protected books, before recording `summaryQa` provenance
 and accepted summary status in the existing overlay metadata. Missing, partial,
 extra or wrong-value rows reject the gate; timestamps remain importer-owned.
 Validation repeats this comparison, including inside the write transaction.
 The recorded semantic scope covers present canonical SC summaries, without
 inventing summaries for missing targets or accepting other books' source QA.
+
+### Upgrade an already accepted annotated summary state
+
+For the precise accepted 6,572-row predecessor, append `--accepted-summaries
+--upgrade-summaries` to the explicit-root command above. The default is a read-only
+check reporting `before` or `after`; `--apply` performs the upgrade and `--validate`
+requires exact `after`. Do not use bare `summaries:import`, remove annotations or
+run a normalized replacement on this accepted predecessor. The generic
+`summaries:step` continues to reject changed annotated predecessors.
+
+This bounded path authenticates old canonical
+`0b6fd8b88c1609cfdae50d8943d77eda13750ea8` and old candidate
+`c4fe0c0a7b14aafed04bc9e733387afb51ae45eb` solely as the prior state. Before writes,
+it requires the complete old inventory, exact final name/body and reader-note
+envelopes, complete accepted overlay metadata and genuine full normalized build.
+Unknown, missing, partial or mismatched annotations and marker/inventory mixtures
+reject. It never repairs an unrelated field while upgrading summaries.
+
+One immediate transaction rechecks those boundaries, inserts exactly the 265
+accepted additions through maintained summary SQL, updates only the existing
+summary acceptance revision/candidate/counts and validates the complete new state.
+Full generation/importer metadata, the original overlay helper revision, all
+existing summary timestamps, every text/note/provenance row and every protected
+table/schema stay exact. Source/helper/normalized input drift or a final validator
+failure rolls back additions and metadata together. Repeat inserts/updates/deletes
+zero rows. A later ordinary `--accepted-summaries --apply` may explicitly refresh
+the overlay helper marker after the upgrade has validated.
+
+After apply, check and rebuild FTS using `content:search:step`, repeat its check,
+and rerun source validation plus real API/default/explicit owner consumers using
+allowlisted read-only rules/content connections. Main-gate executes operator
+activation only after accepting the exact PR, CI and independent rehearsal.
+See the [upgrade rehearsal and handoff](../releases/v1.4/spell-compendium-directory-summary-upgrade.md).
+The #345 exporter must refresh its summary input revision, gap/coverage evidence,
+data/consumer proof and output from this same completed artifact; its fixed older
+handoff remains historical evidence. Source/structure checks do not certify HTML
+visual output or bypass the HTML no-workaround boundary.
 
 After all text and summary imports, run `content:search:rebuild -- --dry-run`,
 then `content:search:rebuild`, and repeat final validation with
