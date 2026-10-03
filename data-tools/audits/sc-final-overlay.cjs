@@ -36,9 +36,17 @@ function main(argv) {
   const options = ['code-root', 'runtime-root', 'data-root', 'rules-db', 'content-db', 'helper-revision', 'accepted-baseline']
     .flatMap(name => ['--' + name, value(name)]);
   if (argv.includes('--accepted-english-title')) options.push('--accepted-english-title');
-  const auth = JSON.parse(execFileSync(path.join(runtime, 'data-tools/pdf-extract/.venv/Scripts/python.exe'),
+  const sourceInputs = argv.includes('--upgrade-english-title')
+    ? require('./sc-final-auth-inputs.cjs').captureFinalAuthInputs(code, data) : undefined;
+  const authenticate = () => JSON.parse(execFileSync(path.join(runtime, 'data-tools/pdf-extract/.venv/Scripts/python.exe'),
     ['-B', '-X', 'utf8', path.join(code, 'data-tools/audits/sc_final_auth.py'), ...options],
     {cwd: code, encoding: 'utf8', maxBuffer: 128 * 1024 * 1024}));
+  const auth = authenticate();
+  sourceInputs?.();
+  // These ignored extraction files remain comparison aids, never authority.
+  // Bind the actual read set from complete authenticated QA, not caller paths.
+  const comparisonInputs = sourceInputs ? require('./sc-final-auth-inputs.cjs').captureSourceFiles(data,
+    auth.report.pdfVerification.frozenOriginalCoverage.ignoredExtractionCaches) : undefined;
   const generated = load('rules-content/cli.ts').readGenerated(inputPath);
   let summaries, summaryInputs;
   if (argv.includes('--accepted-summaries')) {
@@ -64,19 +72,21 @@ function main(argv) {
         'English upgrade requires the actual accepted operator normalized predecessor');
       const patch = require('./sc-final-inputs.cjs').readExact(data, amendment.candidateRevision, amendment.directory + 'rules-patch.jsonl')[0];
       const requireInputs = () => {
+        sourceInputs();
+        comparisonInputs();
         summaryInputs.requireInputs();
         assert.deepEqual(collectCurrent(), current, 'English upgrade generation inputs changed');
         assert.equal(execFileSync('git', ['-C', code, 'rev-parse', 'HEAD'], {encoding: 'utf8'}).trim(), value('helper-revision'));
-        // Re-run the source authenticator inside the transaction to bind helper,
-        // complete original pages, accepted pair and all preserved final fields.
-        const recheck = JSON.parse(execFileSync(path.join(runtime, 'data-tools/pdf-extract/.venv/Scripts/python.exe'),
-          ['-B', '-X', 'utf8', path.join(code, 'data-tools/audits/sc_final_auth.py'), ...options],
-          {cwd: code, encoding: 'utf8', maxBuffer: 128 * 1024 * 1024}));
-        assert.deepEqual(recheck, auth, 'authenticated English upgrade inputs changed');
       };
+      // RESERVED allows the independent complete source replay to read CHM.
+      // After writes/cache spill the same rollback-journal DB may be EXCLUSIVE;
+      // only same-connection content validation and fixed input checks run then.
+      const authenticateBeforeWrite = () =>
+        assert.deepEqual(authenticate(), auth, 'authenticated English upgrade inputs changed');
       const upgrade = load('dice-intake/prismatic-ray-upgrade.ts').prismaticRayUpgrade(db, previous, generated,
         previousPath, inputPath, patch, auth.fields, auth.report, summaries, value('helper-revision'),
-        {currentProvenance: current, importedAt: new Date().toISOString()}, requireInputs, apply ? 'apply' : 'check');
+        {currentProvenance: current, importedAt: new Date().toISOString()}, requireInputs, apply ? 'apply' : 'check',
+        undefined, authenticateBeforeWrite);
       if (validate) assert.equal(upgrade.state, 'after', 'English title upgrade has not been applied');
       console.log(JSON.stringify({mode: apply ? 'apply' : validate ? 'validate' : 'dry-run', ...upgrade,
         helperRevision: value('helper-revision'), acceptedEnglishRevision: amendment.candidateRevision,

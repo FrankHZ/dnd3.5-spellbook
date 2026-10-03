@@ -54,7 +54,7 @@ export function prismaticRayUpgrade(db: Database.Database, previous: NormalizedR
   next: NormalizedRulesContent, previousPath: string, nextPath: string, patch: Patch,
   fields: FinalField[], report: Report, summaries: SummaryRow[], helper: string,
   context: RulesContentImportContext, requireInputs: () => void, mode: 'check' | 'apply' = 'check',
-  afterWrite: () => void = () => {}) {
+  afterWrite: () => void = () => {}, authenticateBeforeWrite: () => void = () => {}) {
   assert(mode === 'check' || mode === 'apply'); assert(!db.inTransaction, 'English title upgrade owns its transaction');
   comparePrismaticArtifacts(previous, next, patch);
   const bytes = [fs.readFileSync(previousPath), fs.readFileSync(nextPath)];
@@ -102,6 +102,10 @@ export function prismaticRayUpgrade(db: Database.Database, previous: NormalizedR
           FROM ${quote(name)} ORDER BY ${cols.join(',')}`).safeIntegers().raw().all()};
       });
     const schema = db.prepare('SELECT * FROM sqlite_schema ORDER BY type,name').all(), protectedBefore = protectedState();
+    // Complete external source QA must read CHM before the first SQL write.
+    // The immediate transaction already prevents a concurrent content writer;
+    // protected tables/schema are compared through this connection afterward.
+    authenticateBeforeWrite(); checkInputs();
     importGenerated(db, next, false, nextPath, context);
     const full = verifyFullNormalized(db, next, nextPath, context.currentProvenance);
     // Reattach the exact accepted predecessor envelope before deriving its new
@@ -113,6 +117,7 @@ export function prismaticRayUpgrade(db: Database.Database, previous: NormalizedR
     afterWrite(); checkInputs(); inspect();
     assert.deepEqual(protectedState(), protectedBefore, 'English title upgrade changed protected tables');
     assert.deepEqual(db.prepare('SELECT * FROM sqlite_schema ORDER BY type,name').all(), schema, 'English title upgrade changed schema');
+    checkInputs();
     return result('after', true);
   }).immediate();
 }
