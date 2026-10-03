@@ -118,6 +118,23 @@ code-point offsets, not JavaScript UTF-16 offsets or copied English offsets.
 They are review navigation, not the consumer's mutation mechanism. Table cells
 are matched by row/column meaning; absent legacy tokens are not invented.
 
+After authoring, independently parse the final HTML and compare all `em`/`strong`
+characters with complete reviewed intervals. Use `assertPdfTypographyEmphasis`
+from the existing selection helper for Unicode code-point ranges, including
+their exact decoded text. It checks nested styles, entities, whitespace and
+runs split by links or line breaks. Missing or extra styled characters reject,
+even when the complete field/text/structure guards pass. Repeat this comparison
+after the consumer's sanitization and link handling. Mapping ranges and PDF
+font checks alone cannot prove that the emitted tags match those ranges.
+Python authors using `HTMLParser` must keep their visible-text position in a
+separate counter: the parser's own `offset` tracks consumed markup and is not a
+decoded-text offset. Neither this output check nor a corrected derivative
+authenticates source mappings, accepts content, or selects a presentation.
+The [emitted-emphasis audit](../../data-tools/reports/dice-qa/books/86/pdf-typography-inline-emphasis.json)
+binds corrected private candidates, individual dispositions and independent
+final-output checks. Its prospective source-pair candidates remain unselected;
+the report does not replace main-gate acceptance or an actual export handoff.
+
 Preserve existing lists, tables, unresolved source statements and project notes.
 Document any source-supported change to existing emphasis individually.
 Discontinuous font runs require an explicit observed-run decision and independent
