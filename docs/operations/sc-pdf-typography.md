@@ -38,7 +38,8 @@ review status does not grant acceptance. The helper checks representation
 integrity; it neither authenticates Git inputs nor verifies human/PDF semantics.
 Keep this selection step outside the helper; there is no new accepted-baseline
 list. Main-gate selected seven initial samples from the frozen private revision
-for bounded #345 preview integration. That selection does not certify rendered
+for bounded #345 preview integration; all other targets retain current display.
+That selection does not certify rendered
 HTML or full-book format QA. The new three-entry disposition proposals use a
 separate path/revision and await their own selection; they do not expand that
 handoff or change its fixed files.
@@ -79,13 +80,15 @@ and numbering for unmarked nested `ul`/`ol`. Do not grant arbitrary class/style
 permissions. A direct-item `::marker` rule can avoid inherited suppression;
 the actual consumer pipeline must prove the intended nesting behavior.
 
-The consumer contract requires this class's explicit
-allowlist/CSS integration and structural checks after sanitization/link handling.
+The #345 sanitizer allows only this exact `ul` class, with fixed CSS restoring
+ordinary markers/numbering on unmarked descendants and suppressing independently
+marked child lists. Structural checks follow sanitization/link handling.
 Preserve table roles/spans/sections/header references, list kind/numbering/nesting
 and destination anchors through that pipeline as well. A standalone helper PASS
 does not prove sanitized/exported HTML retained these semantics.
-No exporter integration is implemented
-here; [#345](https://github.com/FrankHZ/dnd3.5-spellbook/issues/345) owns it.
+Exporter integration belongs to
+[#345](https://github.com/FrankHZ/dnd3.5-spellbook/issues/345); the helper alone
+does not grant acceptance or select private records.
 
 ## Review and authority boundaries
 
