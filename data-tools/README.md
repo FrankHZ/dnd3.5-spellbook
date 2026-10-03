@@ -55,6 +55,7 @@ owning workflow's explicit authorization.
 - [DB handoff and artifact provenance](../docs/operations/db-content-workflow.md)
 - [Offline bilingual HTML / CHM source pages](../docs/operations/offline-html.md)
 - [Explicit-page PDF text/geometry extraction](./pdf-extract/README.md)
+- [SC PDF typography display derivatives](../docs/operations/sc-pdf-typography.md)
 
 The read-only dice TXT intake and field-level QA validation are described at the
 [replacement boundary](../docs/operations/import-workflow.md#dice-text-boundary).
