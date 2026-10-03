@@ -18,6 +18,13 @@ The [second complete-entry batch report](../../data-tools/reports/dice-qa/books/
 binds `dice-qa/books/86/issue-459/` and separates unselected format candidates
 from blocked content decisions. Its fixed-exporter rehearsal records the existing
 single-book policy for outside-book references explicitly.
+The two bounded source corrections for 3930/3934 follow the
+[accepted source-pair migration](./sc-final-source-binding.md#upgrade-the-accepted-bands-of-steel--beast-claws-pairs).
+Their private `issue-461/` format proposals guard the proposed corrected full
+fields and reopen complete original pages/errata. They remain blocked for actual
+selection until migration and independent format acceptance; the frozen
+`issue-459/` proposals and its other entries are unchanged. Actual #345 input and
+build proofs must be refreshed at that migration handoff.
 Actual source pages, span references, complete field guards,
 Chinese ranges and reviewed HTML stay in the configured private data repo under
 `dice-qa/books/86/issue-431/`. They are presentation proposals awaiting main-gate

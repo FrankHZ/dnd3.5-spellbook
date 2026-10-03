@@ -15,6 +15,7 @@ sys.path.insert(0, str(AUDITS))
 import sc_final_binding as final
 import sc_final_auth as auth
 import sc_prismatic_ray as title
+import sc_source_pairs as source_pairs
 from sc_coverage import Evidence
 
 
@@ -68,6 +69,55 @@ class FinalBindingTests(unittest.TestCase):
             elif change == 'wrong-issue': wrong['number'] = 345
             else: wrong['comments'][0]['body'] = 'accepted=true target3958 description descriptionHtml'
             with self.subTest(change=change), self.assertRaises(ValueError): title.validate_acceptance(wrong)
+
+    def test_source_pairs_require_independent_fixed_owner_comment(self):
+        snapshot = {'issue_url': 'https://api.github.com/repos/FrankHZ/dnd3.5-spellbook/issues/461',
+                    'html_url': source_pairs.COMMENT, 'id': 5974178676, 'user': {'login': 'FrankHZ'},
+                    'author_association': 'OWNER', 'body': 'Main-gate SOURCE ACCEPTANCE for the exact candidate revision `' +
+                    source_pairs.CANDIDATE + '` 3930 3934 chineseText chineseHtml description/descriptionHtml'}
+        source_pairs.validate_acceptance(snapshot)
+        for key, value in [('issue_url', 'wrong'), ('html_url', 'wrong'), ('id', 1), ('user', {'login': 'caller'}),
+                           ('author_association', 'NONE'), ('body', 'accepted=true')]:
+            wrong = copy.deepcopy(snapshot); wrong[key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError): source_pairs.validate_acceptance(wrong)
+        with patch.object(source_pairs, 'ACCEPTANCE', None), self.assertRaisesRegex(ValueError, 'acceptance pending'):
+            source_pairs.authenticate(SimpleNamespace(), {})
+
+    def test_source_pairs_reopen_full_pdf_and_bind_complete_prior(self):
+        from pdf_extract import extraction
+        row = {'targetId': 3930, 'field': 'body', 'text': '合成前文', 'html': '<pre>合成前文</pre>',
+               'origin': {'kind': 'native'}, 'review': {'sourceQuestionIds': ['preserved']}}
+        other = {'targetId': 3934, 'field': 'body', 'text': '保留备注', 'html': '<pre>保留备注</pre>'}
+        candidate = {'candidates': [{'targetId': 3930, 'priorBody': row, 'after': {'chineseText': '合成后文', 'chineseHtml': '<pre>合成后文</pre>'}},
+                                    {'targetId': 3934, 'priorBody': other}]}
+        frozen = [{'sourceId': sid, 'pageIndex': pi, 'pageCount': 300, 'printedPage': pi + 1 if sid == 'sc' else None,
+                   'blocks': [{'synthetic': pi}]} for sid, pi in [('sc', 23), ('sc', 24), ('errata', 0)]]
+        class FakeEvidence:
+            def __init__(self, *args): pass
+            def git(self, *args): return ''
+            def text(self, *args): return 'synthetic fixed input'
+            def read(self, name):
+                if name.endswith('fresh-pages.json'): return frozen
+                if name.endswith('candidate.json'): return candidate
+                return {}
+        class FakePdf:
+            def __enter__(self): return self
+            def __exit__(self, *args): pass
+            def __len__(self): return 300
+            def __getitem__(self, pi): return pi
+        result = {'field-dispositions.jsonl': [copy.deepcopy(row), copy.deepcopy(other)], 'report.json': {'sourceRevisions': {'prior': '1' * 40}}}
+        with patch.object(source_pairs, 'Evidence', FakeEvidence), patch.object(source_pairs, 'validate_acceptance'), \
+             patch('pymupdf.open', return_value=FakePdf()), patch.object(extraction, 'extract_page', side_effect=lambda p, _: {'blocks': [{'synthetic': p}]}):
+            after = source_pairs.authenticate(SimpleNamespace(data_root='synthetic'), result)
+            self.assertEqual(after['field-dispositions.jsonl'][1], other)
+            self.assertEqual(after['field-dispositions.jsonl'][0]['sourceCorrection']['prior'], row)
+            self.assertEqual(result['field-dispositions.jsonl'][0], row, 'historical QA mutated')
+            stale = copy.deepcopy(result); stale['field-dispositions.jsonl'][0]['html'] += 'forged'
+            with self.assertRaisesRegex(ValueError, 'stale full prior'): source_pairs.authenticate(SimpleNamespace(data_root='synthetic'), stale)
+            with patch.object(extraction, 'extract_page', return_value={'blocks': []}), self.assertRaisesRegex(ValueError, 'text/geometry differs'):
+                source_pairs.authenticate(SimpleNamespace(data_root='synthetic'), result)
+            with patch('pymupdf.open', side_effect=FileNotFoundError('missing original')), self.assertRaises(FileNotFoundError):
+                source_pairs.authenticate(SimpleNamespace(data_root='synthetic'), result)
 
     def test_reader_note_composition_keeps_independent_prefixes_and_history(self):
         derived, reviews = synthetic()

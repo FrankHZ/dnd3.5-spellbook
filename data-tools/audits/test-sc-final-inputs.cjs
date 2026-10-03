@@ -30,6 +30,43 @@ for (const change of ['caller-accepted', 'before', 'text', 'html', 'extra', 'ide
   assert.throws(() => validatePair(c, p, priorPair), change);
 }
 
+// #461 cannot infer source authority from a caller's changed pair/status.
+const sourcePairs = require('./sc-source-pairs.cjs');
+const sourceBodies = [3930, 3934].map(targetId => ({targetId, field: 'body', text: '合成正文', html: '<pre>合成正文</pre>'}));
+const sourceNormalized = {spells: [3930, 3934].map(legacySpellId => ({legacySpellId, sourceRulebookId: 86,
+  descriptionText: 'Synthetic English', descriptionHtml: '<p>Synthetic English</p>'}))};
+const sourceProposal = [3930, 3934].map(targetId => ({targetId, acceptedInput: {englishText: 'Synthetic English',
+  englishHtml: '<p>Synthetic English</p>', chineseText: '合成正文', chineseHtml: '<pre>合成正文</pre>'},
+  pairedCandidate: {englishText: targetId === 3934 ? 'Synthetic after' : 'Synthetic English',
+    englishHtml: targetId === 3934 ? '<p>Synthetic after</p>' : '<p>Synthetic English</p>',
+    chineseText: targetId === 3930 ? '合成修改' : '合成正文', chineseHtml: targetId === 3930 ? '<pre>合成修改</pre>' : '<pre>合成正文</pre>'}}));
+const sourceCandidate = {issue: 461, status: 'unaccepted-proposal-only',
+  priorProposalRevision: '552e07a09950c2e7675eab0b494a370fcc5cce70',
+  priorProposalPath: 'dice-qa/books/86/issue-459/review-3934/content-candidates.json',
+  previousNormalizedRevision: sourcePairs.previousRevision, completedStateRevision: '8afc1a3db3b3b506a6c833d0e10336fd09bc5422',
+  candidates: sourceProposal.map((row, i) => ({targetId: row.targetId, rulebookId: 86, status: 'unaccepted-proposal-only',
+    before: row.acceptedInput, after: row.pairedCandidate, priorBody: sourceBodies[i]}))};
+const sourcePatch = {op: 'updateSpell', id: 3934, expected: {spell: {description: 'Synthetic English', descriptionHtml: '<p>Synthetic English</p>'}},
+  spell: {description: 'Synthetic after', descriptionHtml: '<p>Synthetic after</p>'}, source: {issue: 461, authority: 'Synthetic source'}};
+sourcePairs.validateCandidate(sourceCandidate, sourceProposal, sourceNormalized, sourceBodies, sourcePatch);
+assert.deepEqual(sourcePairs.maintainedPatch(sourcePatch), {...sourcePatch, source: {provenance: `Issue461 source candidate ${sourcePairs.candidateRevision}; independent source acceptance 5f05fad7df5256a9c3c998d3be77aac238445107`}});
+assert.throws(() => sourcePairs.maintainedPatch({...sourcePatch, source: {issue: 434, authority: 'Synthetic'}}));
+for (const key of ['englishText', 'englishHtml', 'chineseText', 'chineseHtml']) {
+  for (const phase of ['before', 'after']) {
+    const wrong = structuredClone(sourceCandidate); wrong.candidates[0][phase][key] += 'forged';
+    assert.throws(() => sourcePairs.validateCandidate(wrong, sourceProposal, sourceNormalized, sourceBodies, sourcePatch));
+  }
+}
+for (const change of ['scope', 'body', 'extra-patch', 'half-pair', 'accepted']) {
+  const wrong = structuredClone(sourceCandidate), patch = structuredClone(sourcePatch);
+  if (change === 'scope') wrong.candidates.pop();
+  else if (change === 'body') wrong.candidates[0].priorBody.html += 'forged';
+  else if (change === 'extra-patch') patch.spell.range = 'forged';
+  else if (change === 'half-pair') delete patch.spell.descriptionHtml;
+  else wrong.status = 'accepted';
+  assert.throws(() => sourcePairs.validateCandidate(wrong, sourceProposal, sourceNormalized, sourceBodies, patch));
+}
+
 // Full-size synthetic inventories exercise complete-row/provenance comparison,
 // all six concrete acceptance authorities, order and byte-preserved baseline.
 const previous = Array.from({length: 6572}, (_, i) => ({stableKey: `${i + 1}:en:imarvin`, synthetic: true}));

@@ -128,6 +128,24 @@ function mapFinalProvenance(v: Record<string, any>, field: "name" | "body",
   }
   let review: NonNullable<SpellFieldProvenance["review"]> = {disposition: r.disposition,
     acceptedRevision: r.revision, originalEntryReviewed: true, sourceQuestionIds: r.sourceQuestionIds ?? []};
+  if ("sourceCorrection" in v) {
+    const correction = v.sourceCorrection, prior = correction?.prior;
+    if (field !== "body" || target.id !== 3930 || "readerNoteAddendum" in v
+      || !record(correction) || correction.targetId !== 3930
+      || correction.revision !== "ebc3a6615002de6dac1f1c4a636e19757d7b0c8f"
+      || correction.acceptanceRevision !== "5f05fad7df5256a9c3c998d3be77aac238445107"
+      || correction.path !== bookPath + "issue-461/candidate.json"
+      || !record(prior) || prior.targetId !== 3930 || prior.rulebookId !== 86 || prior.field !== "body"
+      || "sourceCorrection" in prior || "readerNoteAddendum" in prior
+      || !isDeepStrictEqual(prior.origin, o) || !isDeepStrictEqual(prior.review, r)
+      || !text(prior.text) || !text(prior.html) || !text(bodyText)) return fail();
+    let start = 0;
+    while (start < bodyText.length && prior.text[start] === bodyText[start]) start++;
+    const removed = prior.text.slice(start, start + 29);
+    if ([...removed].length !== 29 || /\s/.test(removed)
+      || bodyText !== prior.text.slice(0, start) + prior.text.slice(start + 29)) return fail();
+    review = {...review, disposition: "accepted", acceptedRevision: correction.revision};
+  }
   if ("readerNoteAddendum" in v) {
     const a = v.readerNoteAddendum, amendment = a?.amendment, prior = amendment?.prior;
     const before = prior?.acceptedRow, note = amendment?.review;
@@ -177,6 +195,7 @@ export function mapFieldProvenance(raw: string | null, field: "name" | "body",
     || row.spellId !== target.id || row.rulebookId !== target.rulebookId || row.lang !== "zh"
     || !revision(v.acceptedRevision)
     || !record(v.origin) || !record(v.input) || !record(v.evidence)) return fail();
+  if ("sourceCorrection" in v && v.acceptedRevision !== finalRevision) return fail();
   if (v.acceptedRevision === finalRevision || "review" in v) return mapFinalProvenance(v, field, target, row.descriptionText, fail);
   const o = v.origin;
   let input = v.input, evidence = v.evidence;

@@ -202,7 +202,7 @@ function validateFinalRules(DB, data, db, api, schema) {
 }
 
 function derive(options) {
-  const {code, runtime, data, originalRules, rules, content, finalRules, englishTitle} = options;
+  const {code, runtime, data, originalRules, rules, content, finalRules, englishTitle, sourcePairs} = options;
   assert.equal(fs.realpathSync(code), fs.realpathSync(path.resolve(__dirname, '../..')),
     'code root must match the invoking helper checkout');
   process.env.NODE_PATH = path.join(runtime, 'node_modules'); Module._initPaths();
@@ -225,6 +225,19 @@ function derive(options) {
     // every final English/mechanical binding below; this is not caller JSON.
     finalDb = new DB(rules, {readonly: true, fileMustExist: true});
     finalDb.pragma('query_only=ON');
+    if (sourcePairs) {
+      assert(englishTitle, 'source corrections require accepted English title predecessor');
+      const amendment = require('./sc-source-pairs.cjs');
+      const candidate = readExact(data, amendment.candidateRevision, amendment.directory + 'candidate.json');
+      const patch = readExact(data, amendment.candidateRevision, amendment.directory + 'rules-patch.jsonl');
+      assert.equal(patch.length, 1);
+      amendment.validateCandidate(candidate,
+        readExact(data, candidate.priorProposalRevision, candidate.priorProposalPath),
+        readExact(data, amendment.previousRevision, amendment.previousPath),
+        readExact(data, '0688739d92a2aa9fb3eceeb444daa7260e711058', BOOK + 'issue-365/field-dispositions.jsonl'), patch[0]);
+      const memory = amendment.restorePrior(finalDb, DB, patch[0]);
+      finalDb.close(); finalDb = memory;
+    }
     if (englishTitle) {
       const amendment = require('./sc-prismatic-ray.cjs');
       const prior = exact(UNION, 'issue-329/current-inputs.json').inputs.find(row => row.targetId === 3958);
@@ -382,8 +395,8 @@ function derive(options) {
 
 module.exports = {readExact, refreshMissing, derive, rehearseRules, rawRows};
 if (require.main === module) {
-  const [code, runtime, data, originalRules, rules, content, englishTitle] = process.argv.slice(2);
+  const [code, runtime, data, originalRules, rules, content, ...flags] = process.argv.slice(2);
   assert([code, runtime, data, originalRules, rules, content].every(Boolean), 'require explicit code/data/runtime/DB roots');
   process.stdout.write(JSON.stringify(derive({code, runtime, data, originalRules, rules, content,
-    finalRules: originalRules === '--final-rules', englishTitle: englishTitle === '--accepted-english-title'})));
+    finalRules: originalRules === '--final-rules', englishTitle: flags.includes('--accepted-english-title'), sourcePairs: flags.includes('--accepted-source-pairs')})));
 }
