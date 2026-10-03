@@ -14,7 +14,7 @@ const row: PdfTypographyPresentation = {
     englishHtml: input.englishHtml,
     chineseHtml: '<p><strong>等级：</strong>一\n</p><p><em>开场。</em>\n</p>'
       + '<p>参照基础。\n</p><table><tr><th>掷骰\n</th><th>效果\n</th></tr>'
-      + '<tr><td>1\n</td><td>甲与乙\n</td></tr></table><aside>项目备注：未裁决。</aside>',
+      + '<tr><td>1\n</td><td>甲与乙\n</td></tr></table><div><p>项目备注：未裁决。</p></div>',
   },
 };
 assert.deepEqual(selectPdfTypography(90001, 86, input, row), row.output);
@@ -63,4 +63,66 @@ assert.deepEqual(selectPdfTypography(90001, 86, whitespaceInput, { ...row, input
   output: { ...row.output, chineseHtml: "<p>甲\n\n</p><p>乙</p>" } }).chineseHtml,
   "<p>甲\n\n</p><p>乙</p>");
 assert.equal(input.chineseHtml.startsWith("<pre>"), true, "inputs are never mutated");
+
+// Same decoded text can still lose rules-relevant table/list/link semantics.
+const structuralRegressions = [
+  ["ABC", '<table><tr><th colspan="2" scope="col">A</th></tr><tr><td>B</td><td>C</td></tr></table>',
+    '<table><tr><td>A</td></tr><tr><td>B</td><td>C</td></tr></table>'],
+  ["A", '<table><tr><th colspan="2">A</th></tr></table>', '<table><tr><th>A</th></tr></table>'],
+  ["A", '<table><tr><td rowspan="2">A</td></tr></table>', '<table><tr><td>A</td></tr></table>'],
+  ["A", '<table><tr><th scope="row">A</th></tr></table>', '<table><tr><th>A</th></tr></table>'],
+  ["A", '<table><tr><td headers="header-a">A</td></tr></table>', '<table><tr><td>A</td></tr></table>'],
+  ["AB", '<table><tr><th id="header-a">A</th><td headers="header-a">B</td></tr></table>',
+    '<table><tr><th><span id="header-a">A</span></th><td headers="header-a">B</td></tr></table>'],
+  ["AB", '<table><caption>A</caption><tbody><tr><td>B</td></tr></tbody></table>',
+    '<table>A<tbody><tr><td>B</td></tr></tbody></table>'],
+  ["A", '<table><colgroup span="2"><col span="2"></colgroup><thead><tr><th>A</th></tr></thead></table>',
+    '<table><colgroup><col></colgroup><thead><tr><th>A</th></tr></thead></table>'],
+  ["A", '<table><thead><tr><th>A</th></tr></thead></table>', '<table><tbody><tr><th>A</th></tr></tbody></table>'],
+  ["AB", '<ol start="3"><li value="5">A</li><li>B</li></ol>', '<ul><li>A</li><li>B</li></ul>'],
+  ["AB", '<ol start="3"><li>A</li><li>B</li></ol>', '<ol><li>A</li><li>B</li></ol>'],
+  ["AB", '<ol><li value="5">A</li><li>B</li></ol>', '<ol><li>A</li><li>B</li></ol>'],
+  ["AB", '<ol type="A" reversed><li>A</li><li>B</li></ol>', '<ol><li>A</li><li>B</li></ol>'],
+  ["ABC", '<ul><li>A<ul><li>B</li></ul></li><li>C</li></ul>', '<ul><li>A</li><li>B</li><li>C</li></ul>'],
+  ["AB", '<dl><dt>A</dt><dd>B</dd></dl>', '<dl><dd>A</dd><dt>B</dt></dl>'],
+  ["ABC", '<table><tr><td>A<table><tr><td>B</td></tr></table>C</td></tr></table>',
+    '<table><tr><td>A</td></tr></table><table><tr><td>B</td></tr></table>C'],
+  ["AB", '<p id="target">A</p><a href="#target">B</a>', '<p>A</p><a href="#target">B</a>'],
+  ["AB", '<a name="target"></a><p>A</p><a href="#target">B</a>', '<a></a><p>A</p><a href="#target">B</a>'],
+  ["AAB", '<p id="target">A</p><p>A</p><a href="#target">B</a>',
+    '<p>A</p><p id="target">A</p><a href="#target">B</a>'],
+] as const;
+for (const [text, before, after] of structuralRegressions) {
+  for (const language of ["english", "chinese"] as const) {
+    const current = language === "english" ? { ...input, englishHtml: before }
+      : { ...input, chineseText: text, chineseHtml: before };
+    const changed = { ...row, input: current, output: { ...row.output,
+      [language === "english" ? "englishHtml" : "chineseHtml"]: after } };
+    assert.throws(() => selectPdfTypography(90001, 86, current, changed),
+      /typography changes (English links\/tables\/lists|Chinese (tables|lists|anchors))/,
+      `reject ${language} semantic loss: ${before}`);
+  }
+}
+const semanticHtml = '<p id="target">A</p><a href="#target">B</a>'
+  + '<ol start="3" type="A"><li value="5">C<ul><li>D</li></ul></li></ol>'
+  + '<table><caption>E</caption><colgroup><col span="2"></colgroup><thead><tr>'
+  + '<th colspan="2" scope="col">F</th></tr></thead><tbody><tr><td rowspan="2">G</td></tr></tbody></table>';
+const semanticInput = { ...input, englishHtml: semanticHtml, chineseText: "ABCDEFG", chineseHtml: semanticHtml };
+const restyled = semanticHtml.replace('<p id="target">A</p>', '<div id="target"><em>A</em></div>')
+  .replace('>F</th>', '><strong>F</strong></th>');
+assert.deepEqual(selectPdfTypography(90001, 86, semanticInput, { ...row, input: semanticInput,
+  output: { englishHtml: restyled, chineseHtml: restyled } }),
+  { englishHtml: restyled, chineseHtml: restyled }, "reviewed paragraphs/inline styles may change");
+const markedHtml = '<ul class="pdf-typography-marked-list"><li>·A<ul><li>B</li></ul></li><li>·C</li></ul>';
+const markedInput = { ...input, chineseText: "·AB·C", chineseHtml: "<pre>·AB·C</pre>" };
+assert.equal(selectPdfTypography(90001, 86, markedInput, { ...row, input: markedInput,
+  output: { ...row.output, chineseHtml: markedHtml } }).chineseHtml, markedHtml);
+for (const [text, html] of [["·AB", '<ul class="pdf-typography-marked-list"><li>·A</li><li>B</li></ul>'],
+  ["·A", '<ul class="pdf-typography-marked-list"><li><ul><li>·A</li></ul></li></ul>'],
+  ["·A", '<ul class="pdf-typography-marked-list other"><li>·A</li></ul>'],
+  ["·A", '<ol class="pdf-typography-marked-list"><li>·A</li></ol>']] as const) {
+  const current = { ...input, chineseText: text, chineseHtml: `<pre>${text}</pre>` };
+  assert.throws(() => selectPdfTypography(90001, 86, current, { ...row, input: current,
+    output: { ...row.output, chineseHtml: html } }), /literal marker|marked-list class|marked ul/);
+}
 console.log("PDF typography portable tests passed");

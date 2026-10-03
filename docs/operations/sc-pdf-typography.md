@@ -40,16 +40,41 @@ Legacy English text can contain Textile/link syntax, so English output preserves
 the existing HTML's decoded text stream, separately from its complete text guard.
 Chinese output preserves the accepted Chinese text stream exactly, including
 notes. Existing Chinese text/HTML whitespace differences remain guarded as
-separate values. English links, table cells and lists, and existing Chinese
-structures are protected against flattening or changed destinations.
+separate values. Both languages preserve existing links and table/list semantic
+nesting, table sections/captions/columns, header versus data cells, cell spans
+and header associations, list kinds/numbering, and ID/named-anchor locations.
+Inline emphasis and paragraph wrappers may change; these semantic structures
+cannot be flattened, renumbered or silently detached from their destinations.
 
 Apply the consumer's existing sanitization and local-link processing after
 selection. The reviewed HTML uses ordinary paragraphs, `strong` for field
 labels, `em` for source-supported flavour/reference/component labels, tables,
-lists and `aside` for project notes. Entry titles remain headings rather than
-body emphasis. Lists whose accepted text includes literal bullet glyphs use
-`pdf-typography-marked-list`; consumer CSS should set `list-style: none` for that
-class to avoid adding a second bullet. No exporter integration is implemented
+lists and one independent `div` containing the existing project-note title and
+separate note paragraphs at their original location. Do not add an unsupported
+title or merge project commentary into the rules body. This uses the consumer's
+existing `div` allowlist; `aside` is not part of the interface. Entry titles
+remain headings rather than body emphasis.
+
+Lists whose accepted text includes reviewed literal bullet glyphs may use only
+`ul` with the exact class token `pdf-typography-marked-list`. Every directly
+contained `li` must retain its reviewed leading literal marker; mixed marked
+and unmarked items cannot share a marked parent. Nested lists are classified
+independently; a nested item's marker does not count as its parent's marker.
+The current bounded helper supports literal `·`/`•` markers. It rejects a
+marked `ol`, additional class tokens or a
+marked list with an unmarked direct item. All original characters remain exact.
+The consumer must allow only this specific `ul` class token and fixed CSS to
+suppress the generated markers on its direct items, retaining normal markers
+and numbering for unmarked nested `ul`/`ol`. Do not grant arbitrary class/style
+permissions. A direct-item `::marker` rule can avoid inherited suppression;
+the actual consumer pipeline must prove the intended nesting behavior.
+
+The current #345 sanitizer drops this class; the contract requires its explicit
+allowlist/CSS integration and structural checks after sanitization/link handling.
+Preserve table roles/spans/sections/header references, list kind/numbering/nesting
+and destination anchors through that pipeline as well. A standalone helper PASS
+does not prove sanitized/exported HTML retained these semantics.
+No exporter integration is implemented
 here; [#345](https://github.com/FrankHZ/dnd3.5-spellbook/issues/345) owns it.
 
 ## Review and authority boundaries
@@ -86,7 +111,8 @@ localhost or alternate rendering surface after a denied HTML preview.
 ## Validation and remaining delivery
 
 Run `npm run -w data-tools zh:pdf-typography:test` for synthetic exact-field,
-text/note preservation, stale identity, link and table/list protection checks.
+text/note preservation, stale identity, table roles/spans/sections/captions,
+list kinds/numbering/nesting, anchor deletion/movement and marked-list checks.
 It also runs in the portable data-tools suite. The private `prepare.py`,
 `inspect_pdf.py`, `author.py` and `validate.cjs` reproduce the bounded inventory
 and proposal from committed inputs, an explicit code root and the data root
