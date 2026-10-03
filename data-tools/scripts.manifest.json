@@ -584,6 +584,13 @@
       "requiresLocalData": false,
       "requiresSqlite": true,
       "writeCapable": false
+    },
+    "zh:pdf-typography:test": {
+      "module": "zh-parser",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": false,
+      "writeCapable": false
     }
   }
 }
