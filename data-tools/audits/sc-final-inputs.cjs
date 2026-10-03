@@ -20,8 +20,9 @@ function readExact(data, revision, name) {
   assert.match(revision, /^[0-9a-f]{40}$/, 'require exact input revision');
   assert.equal(execFileSync('git', ['-C', data, 'status', '--porcelain', '--', name], {encoding: 'utf8'}).trim(),
     '', `dirty exact input ${name}`);
+  // The accepted operator full normalized predecessor is larger than 64 MiB.
   const committed = execFileSync('git', ['-C', data, 'show', `${revision}:${name}`],
-    {encoding: 'utf8', maxBuffer: 64 * 1024 * 1024});
+    {encoding: 'utf8', maxBuffer: 128 * 1024 * 1024});
   assert.equal(fs.readFileSync(path.join(data, name), 'utf8').replaceAll('\r\n', '\n'),
     committed.replaceAll('\r\n', '\n'), `changed exact input ${name}`);
   return name.endsWith('.jsonl') ? committed.split(/\r?\n/).filter(s => s.trim()).map(JSON.parse)
@@ -201,7 +202,7 @@ function validateFinalRules(DB, data, db, api, schema) {
 }
 
 function derive(options) {
-  const {code, runtime, data, originalRules, rules, content, finalRules} = options;
+  const {code, runtime, data, originalRules, rules, content, finalRules, englishTitle} = options;
   assert.equal(fs.realpathSync(code), fs.realpathSync(path.resolve(__dirname, '../..')),
     'code root must match the invoking helper checkout');
   process.env.NODE_PATH = path.join(runtime, 'node_modules'); Module._initPaths();
@@ -224,6 +225,15 @@ function derive(options) {
     // every final English/mechanical binding below; this is not caller JSON.
     finalDb = new DB(rules, {readonly: true, fileMustExist: true});
     finalDb.pragma('query_only=ON');
+    if (englishTitle) {
+      const amendment = require('./sc-prismatic-ray.cjs');
+      const prior = exact(UNION, 'issue-329/current-inputs.json').inputs.find(row => row.targetId === 3958);
+      const patches = readExact(data, amendment.candidateRevision, amendment.directory + 'rules-patch.jsonl');
+      assert.equal(patches.length, 1, 'English title patch scope differs');
+      const patch = amendment.validatePair(readExact(data, amendment.candidateRevision, amendment.directory + 'candidate.json'), patches[0], prior);
+      const memory = amendment.restorePrior(finalDb, DB, patch);
+      finalDb.close(); finalDb = memory;
+    }
     const english = qa.loadEnglishRecords(finalDb);
     const englishHtml = new Map(finalDb.prepare('SELECT id, CAST(description_html AS BLOB) AS html FROM dnd_spell').all()
       .map(row => [row.id, row.html?.toString('utf8') ?? null]));
@@ -372,8 +382,8 @@ function derive(options) {
 
 module.exports = {readExact, refreshMissing, derive, rehearseRules, rawRows};
 if (require.main === module) {
-  const [code, runtime, data, originalRules, rules, content] = process.argv.slice(2);
+  const [code, runtime, data, originalRules, rules, content, englishTitle] = process.argv.slice(2);
   assert([code, runtime, data, originalRules, rules, content].every(Boolean), 'require explicit code/data/runtime/DB roots');
   process.stdout.write(JSON.stringify(derive({code, runtime, data, originalRules, rules, content,
-    finalRules: originalRules === '--final-rules'})));
+    finalRules: originalRules === '--final-rules', englishTitle: englishTitle === '--accepted-english-title'})));
 }

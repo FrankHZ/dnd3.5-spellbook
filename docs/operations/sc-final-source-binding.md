@@ -228,6 +228,55 @@ data/consumer proof and output from this same completed artifact; its fixed olde
 handoff remains historical evidence. Source/structure checks do not certify HTML
 visual output or bypass the HTML no-workaround boundary.
 
+### Upgrade the accepted Prismatic Ray English pair
+
+The exact [#434 source decision](https://github.com/FrankHZ/dnd3.5-spellbook/issues/434#issuecomment-5972281973)
+accepts only private `790f9ebbd024916d16577d69c01d868155a9ccfd`,
+`dice-qa/books/86/issue-434/candidate.json` and `rules-patch.jsonl`. It removes the
+unsupported table title from 3958's English `description` and `descriptionHtml`.
+The original #365/#407 packages, Chinese fields, reader notes, source ambiguity,
+relationships and accepted 6,837-row summary inventory retain their authority.
+The candidate's original proposal status remains unchanged; the fixed owner
+comment snapshot at private `7f8ea2df1104fe4345141f0712dbb43739e98b7e` supplies the
+independent source acceptance. Caller status/JSON does not replace this check.
+
+Apply the exact paired rules patch through maintained rules patch/step commands
+only after explicit operator authorization. Preserve complete before guards for
+the atomic step. Generate a new owned rules manifest and full normalized artifact
+through the existing commands; do not hand-edit normalized values or fingerprints.
+
+For the already annotated final content predecessor, append
+`--accepted-english-title --accepted-summaries --upgrade-english-title
+--previous-normalized '<absolute-private-data-root>/dice-qa/books/86/issue-414/operator-main-gate-8ca3c48.normalized.generated.json'`
+to `dice:final:write` above, with the new `--normalized` and `--rules-manifest`.
+The previous full artifact is fixed at private
+`307e8b1299e14c456957165b12c46d2c4afe3472`; a helper's static older default is not
+the actual operator predecessor. Default check reports `before`/`after`; `--apply`
+performs one immediate transaction, and `--validate` requires exact `after`.
+
+This bounded transition authenticates the new source decision, reopens complete
+SC162/official errata and replays all historical source QA with only the exact
+pair reversed in memory. Both full normalized artifacts must differ only in the
+two English fields and their normalizer-owned `descriptionHash`/`rawJson`, plus
+new generation timestamp/provenance. It verifies the predecessor's complete final
+fields, notes and accepted summary annotations before reuse. It imports the new
+genuine artifact through the maintained importer and refreshes only the build's
+English source binding/helper marker. All translation/provenance/summary rows,
+timestamps, protected tables and schema remain exact. Unknown/partial mixtures,
+stale fields/source evidence and transaction faults reject or roll back. Exact
+repeat changes no rows or timestamps. The generic normalized step still rejects
+changed annotated predecessors.
+
+Use `--accepted-english-title --accepted-summaries` consistently for subsequent
+ordinary final validation/helper refreshes of this upgraded artifact. The old
+English source path rejects the patched rules input. Rebuild FTS after the
+transition, then rerun final source validation and actual default/explicit-owner
+API consumers. A refreshed private 3958 presentation must guard all four current
+text/HTML fields; the old English fields must be rejected as stale. This does
+not modify the frozen seven-entry or other three-entry presentation proposals,
+select the new display proposal, pass HTML visual review or authorize full export.
+Main-gate owns actual DB writes and later export after implementation acceptance.
+
 After all text and summary imports, run `content:search:rebuild -- --dry-run`,
 then `content:search:rebuild`, and repeat final validation with
 `--accepted-summaries` plus consumer/search checks. Use this flag consistently
