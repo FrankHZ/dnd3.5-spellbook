@@ -106,7 +106,16 @@ decision does not accept #431 source evidence or grant visual acceptance.
 
 The maintained private main-gate entry first runs existing final source
 authentication, the final planner and frozen complete canonical/provenance
-comparison in one read-only content transaction. It then uses the existing
+comparison in one read-only content transaction. Its directory-summary refresh
+uses the maintained complete composition authentication for all 6,837 accepted
+summary rows, including the six source-bound addition packets. It verifies the
+fixed accepted operator normalized artifact and manifest, current full normalized
+values and build metadata; the rehearsal artifact is a separate input and cannot
+stand in for that operator binding. The exact accepted summary annotation and
+every summary parser column must match before rendering. All 961 class targets
+must have their 1,922 accepted English/Chinese owner fields; the other 40 scoped
+targets remain body-only. Missing, duplicate, empty or incorrect owner/source
+inputs still fail closed before output. It then uses the existing
 `readExact` Git input helper on the exact selected revision and fixed presentation
 file, validates the explicit selected target set and all four current text/HTML
 fields with `selectPdfTypography`, and passes that loaded selection and the same

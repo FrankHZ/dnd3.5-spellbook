@@ -55,6 +55,18 @@ project-note block; note preservation is also exercised by the full synthetic
 corpus. This memory shell opens no real DB and does not run or replace the
 operator source-authentication workflow.
 
+The maintained summary refresh now consumes the accepted complete 6,837-row
+composition, retaining the strict owner selector. Private fixed-Git replay
+reconstructs disposable memory from accepted normalized records, final fields,
+reader-note amendments and authenticated summaries, then compares all 1,001
+entries / 2,002 bilingual bodies, 961 class targets / 1,922 directory owner
+fields, 40 body-only targets, 40 source-question occurrences and all emitted local
+links. Seven selected display derivatives and 994 current displays stay distinct.
+This replay copies no database and does not replace original-source authentication
+or the actual operator export. The complete synthetic fixture additionally
+rejects missing/wrong/empty/unaccepted owners, summary source/value drift and
+class-scope drift. Old fixed helpers and proofs are unchanged.
+
 Main-gate must then authorize and verify fresh real-corpus generation against
 the accepted migrated content DB, all directory summaries, merged anchors,
 complete bilingual bodies, rules/tables/lists and reader notes, then a fresh
@@ -63,8 +75,10 @@ checkers reuse the frozen complete canonical/provenance verifier and compare
 all directory summaries, current/selected bodies, notes and structures
 independently. Existing frozen checkers and proofs remain unchanged. No actual
 DB/output or frozen private proof was read or overwritten for this revision.
-Actual directory summary coverage/gap acceptance and output semantic verification
-belong to #345/main-gate; they are not delegated to #431.
+The new private entry binds the main-gate-accepted operator summary state and its
+explicit normalized/manifest inputs, independently of the rehearsal artifact.
+Actual operator output semantic verification and durable delivery belong to
+#345/main-gate; they are not delegated to #431.
 Main-gate's minimal consumer interface permits independent note `div` blocks and
 one exact marked-list class on `ul`, with fixed nested marker/numbering resets.
 Synthetic structure/CSS and bounded accepted-input memory checks prepare that
