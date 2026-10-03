@@ -8,7 +8,8 @@ import {createRulesContentArtifactMetadata, type RulesContentArtifactProvenance}
 import {importGenerated} from '../rules-content/cli';
 import {RULES_CONTENT_GENERATOR_VERSION, type NormalizedRulesContent} from '../rules-content/normalize';
 import {fieldProvenanceMigration} from './effective-writer';
-import {applyFinalOverlay, planFinalOverlay, validateFinalOverlay, verifyFullNormalized, finalScNoteRevision, type FinalField} from './final-writer';
+import {applyFinalOverlay, planFinalOverlay, validateFinalOverlay, verifyFullNormalized, finalScNoteRevision,
+  finalSummaryUpgrade, previousScSummaryRevision, previousScSummaryCandidate, type FinalField} from './final-writer';
 import type {SummaryRow} from '../short-desc/summary-row-schema';
 
 const root = repoRoot(), temp = mkdtempSync(join(tmpdir(), 'sc-final-writer-'));
@@ -26,6 +27,8 @@ const tableKeys = {RulebookContent: 'rulebooks', SpellContent: 'spells', SpellAp
 const arrays = Object.fromEntries(Object.entries(tableKeys).map(([table, key]) => [key,
   fixture.filter(r => r.table === table).map(r => ({...r.data}))])) as Record<string, Array<Record<string, unknown>>>;
 arrays.spells!.forEach((r, i) => {r.sourceRulebookId = i < 2 ? 86 : 9;});
+if (!arrays.rulebooks!.some(row => row.legacyRulebookId === 86)) arrays.rulebooks!.push({...arrays.rulebooks![0],
+  id: 'rulebook:86', legacyRulebookId: 86, slug: 'synthetic-sc', abbr: 'SC', name: 'Synthetic SC'});
 for (const id of [4088, 4111, 4229]) arrays.spells!.push({...arrays.spells![0],
   id: 'spell:' + id, legacySpellId: id, slug: 'synthetic-note-' + id, sourceRulebookId: 86});
 for (const [key, rows] of Object.entries(arrays)) {
@@ -154,6 +157,61 @@ try {
       const summaryAfter = snapshot(db);
       const summaryRepeat = summaryPlan(); assert.equal(summaryRepeat.markBuild, false);
       applyFinalOverlay(db, summaryRepeat); assert.deepEqual(snapshot(db), summaryAfter, 'summary metadata repeat changed timestamps');
+      // The bounded upgrade recognizes the exact accepted annotated predecessor;
+      // arbitrary callers of summaryImportStep still cannot replace annotations.
+      db.prepare('UPDATE RulesContentBuild SET buildMetaJson=?').run(noteRepeat.buildMetaJson);
+      const priorSummaryPlan = planFinalOverlay(db, notes, noteReport, verifyFullNormalized(db, content, inputPath, current),
+        helper, summaries, previousScSummaryRevision, previousScSummaryCandidate);
+      applyFinalOverlay(db, priorSummaryPlan);
+      const added: SummaryRow = {id: 'spell-summary:4088:en:imarvin', spellId: 4088, rulebookId: 86,
+        lang: 'en', variant: 'imarvin', summaryText: 'Synthetic accepted addition', sourceKey: 'synthetic-directory',
+        sourceName: 'Synthetic original', sourceKind: 'original-directory', reviewStatus: 'accepted'};
+      const nextSummaries = [...summaries, added];
+      let inputChanged = false;
+      const upgrade = (mode: 'check' | 'apply' = 'check', fault = () => {}) => finalSummaryUpgrade(db, notes, noteReport,
+        () => verifyFullNormalized(db, content, inputPath, current), summaries, nextSummaries,
+        () => assert(!inputChanged, 'accepted input drift'), mode, fault);
+      const upgradeBefore = snapshot(db);
+      assert.deepEqual(upgrade(), {mode: 'check', state: 'before', changed: false, wouldChange: true, inserted: 0, updated: 0, deleted: 0});
+      assert.deepEqual(snapshot(db), upgradeBefore, 'upgrade check wrote');
+      assert.throws(() => upgrade('apply', () => {throw Error('upgrade fault');}), /upgrade fault/);
+      assert.deepEqual(snapshot(db), upgradeBefore, 'summary + metadata fault rollback failed');
+      assert.throws(() => upgrade('apply', () => {inputChanged = true;}), /input drift/);
+      inputChanged = false; assert.deepEqual(snapshot(db), upgradeBefore, 'input drift rollback failed');
+      assert.throws(() => upgrade('apply', () => db.prepare("UPDATE I18nSpellText SET name='forged' WHERE id='protected-chm'").run()), /protected tables/);
+      assert.deepEqual(snapshot(db), upgradeBefore, 'protected table drift rollback failed');
+      const mutateMeta = (mutate: (value: any) => void) => {
+        const meta = JSON.parse(priorSummaryPlan.buildMetaJson); mutate(meta.overlays.scFinalNameBody);
+        db.prepare('UPDATE RulesContentBuild SET buildMetaJson=?').run(JSON.stringify(meta));
+        const bad = snapshot(db); assert.throws(() => upgrade()); assert.throws(() => upgrade('apply'));
+        assert.deepEqual(snapshot(db), bad, 'invalid annotations wrote');
+        db.prepare('UPDATE RulesContentBuild SET buildMetaJson=?').run(priorSummaryPlan.buildMetaJson);
+      };
+      mutateMeta(value => {value.summaryQa.acceptedRevision = 'f'.repeat(40);});
+      mutateMeta(value => {delete value.readerNoteAddendum;});
+      mutateMeta(value => {value.retained.names.pop();});
+      mutateMeta(value => {value.summaryQa = summaryMeta.summaryQa;}); // New marker, old rows.
+      db.prepare('UPDATE I18nSpellText SET bodyProvenanceJson=? WHERE spellId=? AND lang=? AND variant=?')
+        .run('{}', ids[0], 'zh', 'effective');
+      assert.throws(() => upgrade('apply'), /cannot repair final fields/);
+      applyFinalOverlay(db, {...priorSummaryPlan, rows: priorSummaryPlan.rows.map(row => ({...row, action: 'update'}))});
+      const restored = snapshot(db);
+      const appliedUpgrade = upgrade('apply'); assert.equal(appliedUpgrade.inserted, 1);
+      assert.equal(appliedUpgrade.updated + appliedUpgrade.deleted, 0);
+      const upgradeAfter = snapshot(db);
+      assert.equal(upgrade().state, 'after'); assert.equal(upgrade('apply').changed, false);
+      assert.deepEqual(snapshot(db), upgradeAfter, 'upgrade repeat changed rows/timestamps');
+      const updatedMeta = db.prepare('SELECT buildMetaJson FROM RulesContentBuild').pluck().get();
+      db.prepare('UPDATE RulesContentBuild SET buildMetaJson=?').run(priorSummaryPlan.buildMetaJson);
+      assert.throws(() => upgrade('apply')); // Old marker, new rows.
+      db.prepare('UPDATE RulesContentBuild SET buildMetaJson=?').run(updatedMeta);
+      db.prepare('DELETE FROM I18nSpellSummaryText WHERE id=?').run(added.id);
+      db.prepare('UPDATE RulesContentBuild SET buildMetaJson=?').run(summaryRepeat.buildMetaJson);
+      for (const priorRow of summaries) {
+        const beforeRows = restored.find(value => value.table === 'I18nSpellSummaryText')!.rows as SummaryRow[];
+        assert.deepEqual(db.prepare('SELECT * FROM I18nSpellSummaryText WHERE id=?').get(priorRow.id),
+          beforeRows.find(value => value.id === priorRow.id), 'original summary/timestamp changed');
+      }
       // A corrupted persisted summary cannot validate or be marked accepted.
       db.prepare('UPDATE I18nSpellSummaryText SET summaryText=? WHERE id=?').run('partial import', summaries[0]!.id);
       assert.throws(summaryPlan, /accepted summary column/);

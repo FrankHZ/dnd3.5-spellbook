@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "issue": 453,
+  "publicBase": "47ebca7468dd94dfaa066bf11244b9164feba3c5",
+  "sourceCodeRevision": "eda997973b28e4772db6c3091a8f78117274ec5c",
+  "privateHelperRevision": "a5ca55dc74a351587e66b9f52ea1c5d10ad942dc",
+  "privateRealProofRevision": "1f8193d870a6c9bdb95adb629abb88ebc2be11d8",
+  "acceptance": "https://github.com/FrankHZ/dnd3.5-spellbook/pull/452#issuecomment-5971325814",
+  "inputs": {
+    "canonical": "1e86cf7865f42f15abb7d6629d2d9de54607a13c",
+    "candidate": "04dd98490e4ad643eafc8f262bb5af57d3bffcd9",
+    "previousCanonical": "0b6fd8b88c1609cfdae50d8943d77eda13750ea8",
+    "previousCandidate": "c4fe0c0a7b14aafed04bc9e733387afb51ae45eb",
+    "finalNameBody": "0688739d92a2aa9fb3eceeb444daa7260e711058",
+    "readerNotes": "c61b9dea676cfd89bdfcaa6dcbcccbc99280d7c4",
+    "rehearsalNormalizedAndManifest": "e2c4075c1e20f83ff5b84ac0833b166e2dfca613",
+    "operatorNormalizedAndManifest": "307e8b1299e14c456957165b12c46d2c4afe3472"
+  },
+  "sourceChecks": [
+    "Fixed promoted canonical equals complete candidate",
+    "Byte-preserved 6572-row predecessor",
+    "Six exact original candidate packets and owner acceptance records",
+    "Full-row provenance, original review locators and composition index"
+  ],
+  "upgrade": {
+    "beforeRows": 6572,
+    "afterRows": 6837,
+    "inserted": 265,
+    "updated": 0,
+    "deleted": 0,
+    "insertedEn": 213,
+    "insertedZh": 52,
+    "repeatInserted": 0,
+    "repeatUpdated": 0,
+    "repeatDeleted": 0,
+    "originalRowsAndTimestampsPreserved": true,
+    "protectedTableCount": 24,
+    "allOtherAcceptedTextNotesProvenancePreserved": true,
+    "generationAndImporterPreserved": true,
+    "originalOverlayHelperRevisionPreserved": true,
+    "onlyExistingSummaryAcceptanceFieldsChanged": [
+      "acceptedRevision",
+      "candidateRevision",
+      "canonicalRows",
+      "scRows"
+    ],
+    "rootAndPackageSourceValidation": true
+  },
+  "fts": {
+    "documents": 13061,
+    "fullDocumentValuesChecked": true,
+    "rebuild": true,
+    "repeatChanged": false,
+    "freshConnectionIntegrity": "ok"
+  },
+  "consumers": {
+    "rootRequests": 6201,
+    "packageRequests": 6201,
+    "summaryItems": 6837,
+    "classTargets": 961,
+    "selectedBilingualSummaryFields": 1922,
+    "finalBodyTargets": 1001,
+    "finalBilingualFieldEnvelopes": 2002,
+    "sourceQuestionOccurrences": 40,
+    "sourceQuestionBodyTargets": 38,
+    "sourceQuestionRawIds": 37,
+    "nonScFallbacks": 4096,
+    "nameSearchTargets": 1001,
+    "resolveTargets": 1001,
+    "phraseChecks": 13,
+    "defaultExplicitOwnerSelection": true,
+    "privateDtoRedaction": true,
+    "nativeConnectionsReadOnly": true
+  },
+  "portableChecks": [
+    "Six-authority full-row composition negatives",
+    "Unknown, partial and damaged annotations",
+    "Old marker with new rows and new marker with old rows",
+    "Transaction fault and input drift rollback",
+    "Protected row and timestamp preservation",
+    "Generic annotated predecessor rejection",
+    "Content sequence future bindings and input pinning",
+    "Final binding Python tests and data-tools typecheck"
+  ],
+  "evidenceFiles": [
+    "dice-qa/books/86/issue-453/prepare-root.json",
+    "dice-qa/books/86/issue-453/upgrade-root.json",
+    "dice-qa/books/86/issue-453/consumers-root.json",
+    "dice-qa/books/86/issue-453/consumers-package.json"
+  ],
+  "boundaries": {
+    "sourceDataPrivate": true,
+    "operatorOpened": false,
+    "stableOpened": false,
+    "appStateOpened": false,
+    "rulesContentChanged": false,
+    "privatePushed": false,
+    "wholeBookRelationshipsAccepted": false,
+    "htmlVisualVerified": false,
+    "exporterOldHandoffPreserved": true,
+    "deploymentPerformed": false
+  }
+}
