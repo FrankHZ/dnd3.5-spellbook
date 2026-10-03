@@ -117,14 +117,19 @@ that does not claim a page facsimile. Record these decisions explicitly rather
 than treating legacy HTML as source authority.
 
 The four-entry follow-up proposes those dispositions for 4443, 4088 and 4072.
-3958 remains blocked on separate accepted English text/HTML revision: its legacy
-table title has no separate PDF heading counterpart. Removing its visible text
-violates the existing exact-text guard; retaining, hiding or demoting it cannot
-certify source-faithful heading content. The private request removes only that
-title from paired English representations, preserves the other accepted fields
-and structures, and is not an accepted patch or writer input. Main-gate must
-coordinate its source-bound accepted-input review and final binding/rehearsal
-refresh through #346 before a refreshed proposal can be selected.
+3958's legacy table title has no separate PDF heading counterpart. Removing its
+visible text from the old fields violates the existing exact-text guard;
+retaining, hiding or demoting it cannot certify source-faithful heading content.
+[#434's fixed source decision](https://github.com/FrankHZ/dnd3.5-spellbook/issues/434#issuecomment-5972281973)
+accepts only the exact paired English title removal, through the
+[bounded source-binding upgrade](./sc-final-source-binding.md#upgrade-the-accepted-prismatic-ray-english-pair).
+The original request and frozen presentation files stay unchanged. A separate
+private proposal at `dice-qa/books/86/issue-434/presentation.json` guards all four
+post-revision fields and retains the Chinese text, notes, structures and all
+other English content. This source decision does not select its presentation or
+accept implementation/DB migration. Main-gate must complete those separate gates
+through #346 before the refreshed display proposal can be selected. The old
+English fields must reject as stale; the comparison helper is unchanged.
 
 Presentation derivatives do not change
 accepted fields, canonical inputs, provenance or DBs. A change to persisted

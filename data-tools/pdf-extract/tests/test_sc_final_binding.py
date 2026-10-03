@@ -14,6 +14,7 @@ AUDITS = Path(__file__).resolve().parents[2] / 'audits'
 sys.path.insert(0, str(AUDITS))
 import sc_final_binding as final
 import sc_final_auth as auth
+import sc_prismatic_ray as title
 from sc_coverage import Evidence
 
 
@@ -52,6 +53,22 @@ def synthetic():
 
 
 class FinalBindingTests(unittest.TestCase):
+    def test_english_title_requires_exact_independent_acceptance(self):
+        snapshot = {'number': 434, 'comments': [{'url': title.COMMENT, 'author': {'login': 'FrankHZ'},
+            'authorAssociation': 'OWNER', 'body': 'Main-gate 来源接受决定：接受固定 private ' + title.CANDIDATE +
+            ' target3958 paired description / descriptionHtml'}]}
+        title.validate_acceptance(snapshot)
+        for change in ['missing', 'wrong-url', 'wrong-owner', 'wrong-association', 'wrong-revision', 'wrong-issue', 'caller-status']:
+            wrong = copy.deepcopy(snapshot)
+            if change == 'missing': wrong['comments'] = []
+            elif change == 'wrong-url': wrong['comments'][0]['url'] += 'stale'
+            elif change == 'wrong-owner': wrong['comments'][0]['author']['login'] = 'caller'
+            elif change == 'wrong-association': wrong['comments'][0]['authorAssociation'] = 'NONE'
+            elif change == 'wrong-revision': wrong['comments'][0]['body'] = wrong['comments'][0]['body'].replace(title.CANDIDATE, 'f' * 40)
+            elif change == 'wrong-issue': wrong['number'] = 345
+            else: wrong['comments'][0]['body'] = 'accepted=true target3958 description descriptionHtml'
+            with self.subTest(change=change), self.assertRaises(ValueError): title.validate_acceptance(wrong)
+
     def test_reader_note_composition_keeps_independent_prefixes_and_history(self):
         derived, reviews = synthetic()
         fields = final.bind_fields(derived, reviews)
