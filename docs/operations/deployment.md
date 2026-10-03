@@ -511,6 +511,72 @@ metadata into `VITE_SPELLBOOK_FRONTEND_COMMIT_SHA` and
 `VITE_SPELLBOOK_FRONTEND_REF` with `git` fallbacks for manual rebuilds, and
 sets `VITE_SPELLBOOK_FRONTEND_BUILT_AT` from the build time.
 
+### Build Watch Paths
+
+In the Workers project's **Settings > Build > Build watch paths**, replace the
+default include-all rule with the following repository-relative **Include
+paths** (one entry per path), and leave **Exclude paths** empty:
+
+```text
+web/*
+contracts/*
+package.json
+package-lock.json
+data-tools/package.json
+review-console/package.json
+server/package.json
+scripts/build-production.mjs
+scripts/release-metadata.mjs
+wrangler.jsonc
+```
+
+These paths follow the current repository-root `npm ci` and
+`npm run build:production` inputs:
+
+- `web/*` covers frontend source, static assets/locales, and build configuration;
+  `contracts/*` covers the shared package built before web.
+- Root `package.json` defines workspaces, build scripts, and the release label;
+  `package-lock.json` locks dependencies for all workspaces. Root installation
+  also reads every workspace manifest, including backend and data tooling.
+- The two scripts orchestrate the contracts/web builds and release metadata;
+  `wrangler.jsonc` controls static asset deployment.
+
+The root and workspace manifests currently have no install lifecycle hooks.
+The locked Prisma 7.8 packages check Node support/download engines without
+generating a client from repository schemas; other dependency install hooks
+install their own native binaries. Thus backend schemas/source and data-tool
+source are not current frontend install/build inputs. Review this list when
+dependencies, lifecycle hooks, workspace membership, or build imports change;
+include any newly consumed paths before relying on filtering. Watching the
+whole web/contracts trees intentionally also builds on their documentation or
+test changes.
+
+Cloudflare's [watch-path rules](https://developers.cloudflare.com/workers/ci-cd/builds/build-watch-paths/)
+use `directory/*` wildcards, not GitHub Actions glob assumptions. Excludes are
+evaluated first; a push builds when any remaining changed path matches an
+include. Cloudflare bypasses filtering for an empty push, 3000+ changed files,
+or 20+ commits, so skipping unrelated builds is not an absolute guarantee.
+GitHub Actions path filters cannot control this separate provider check. Keep
+full `ci:portable` on every PR and main push, including backend/data validation,
+and keep backend deployment manual.
+
+This is a proposed operator setting, not configuration applied by merging this
+document. An authorized owner must save it in Cloudflare, read back both lists,
+and observe representative eligible Git pushes in Workers build history:
+
+- Frontend/shared changes such as `web/app/root.tsx`, a locale under
+  `web/public/locales/`, `contracts/src/index.ts`, root lockfile, a workspace
+  manifest, either build helper, or `wrangler.jsonc` should trigger a build.
+- Pushes changing only `docs/*`, root `README.md`, source QA reports under
+  `data-tools/audits/*`, backend `server/src/*`/schemas, or `data-tools/src/*`
+  should skip the frontend build while GitHub CI still runs. Check the entire
+  push's changed paths and bypass thresholds, not only its last commit.
+
+Use ordinary reviewed changes; do not push production changes solely to test
+the filter without deployment authorization. Record the saved/read-back values,
+commit SHAs, and observed build/skip results in the owning issue; keep it open
+until those external checks are complete.
+
 ### Legacy Same-Origin Fallback
 
 The old remote static deploy path still exists only as an emergency/manual
