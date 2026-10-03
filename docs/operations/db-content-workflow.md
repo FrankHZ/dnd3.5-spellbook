@@ -96,6 +96,9 @@ migration's authorization and acceptance.
      files.
 
 2. Apply accepted rules patches only after handoff acceptance.
+   - New batches may use the [atomic spell maintenance step](./rules-db-notes.md#atomic-spell-maintenance-step)
+     for a read-only check and explicit transactional apply/repeat validation.
+     This covers only rules and their derived indexes; partial history is rejected.
    - Validate and dry-run the exact pending file.
    - Apply to a temporary copy before touching the local rules DB.
    - Apply to operator-owned `rules-clean.sqlite` only with explicit DB-write
@@ -107,6 +110,22 @@ migration's authorization and acceptance.
 3. Regenerate the content DB artifact.
    - Use [import-workflow.md](./import-workflow.md) for the canonical local
      command order.
+   - When rules/manifest/generation are already prepared and both full normalized
+     and complete summary pairs are accepted, use the
+     [fixed content sequence](./import-workflow.md#fixed-content-sequence) for
+     readonly preflight, ordered stage commits and DB-derived interruption resume.
+     Changed annotated predecessors remain unsupported; this content-only sequence
+     does not accept source QA, coordinate other DBs or authorize activation.
+   - For an already accepted pair of full normalized artifacts, the
+     [normalized import step](./import-workflow.md#normalized-content-import-step)
+     proves exact before/after and supports atomic apply or a zero-write repeat.
+     An annotated predecessor is refused until later coordination handles
+     downstream acceptance; this stage does not run overlays, summaries or FTS.
+   - For an already accepted pair of complete canonical summary inventories,
+     the [summary import step](./import-workflow.md#summary-import-step) proves
+     exact before/after and applies maintained upserts atomically. Annotated
+     summary predecessors reject; valid exact-after annotations and all build
+     provenance remain unchanged. Search is checked after summary completion.
    - Require canonical publication metadata for the full artifact; use the
      explicit audit-only generator only for limited, non-importable output.
    - Run content generate/import, then dry-run and rebuild the derived search

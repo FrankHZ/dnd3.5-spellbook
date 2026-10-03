@@ -68,7 +68,7 @@ const CONTENT_MIGRATIONS_PATH = path.join(
   "migrations",
 );
 
-const GENERATED_TABLES = [
+export const GENERATED_TABLES = [
   "RulesContentBuild",
   "RulesContentIssue",
   "SpellMechanicFacet",
@@ -79,6 +79,17 @@ const GENERATED_TABLES = [
   "SpellContent",
   "RulebookContent",
 ] as const;
+
+export const GENERATED_CONTENT_TABLES = {
+  RulebookContent: "rulebooks",
+  SpellContent: "spells",
+  SpellAppearance: "appearances",
+  SpellTaxonomyFacet: "taxonomyFacets",
+  SpellListEntry: "listEntries",
+  SpellComponent: "components",
+  SpellMechanicFacet: "mechanicFacets",
+  RulesContentIssue: "issues",
+} as const;
 
 const BASE_COMPONENT_TYPES = [
   "verbal",
@@ -646,11 +657,15 @@ function writeJson(filePath: string, value: unknown) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
-export function readGenerated(filePath: string) {
+export function readGenerated(filePath: string, expectedBytes?: Buffer) {
   if (!fs.existsSync(filePath)) {
     throw new Error(`Generated content file not found: ${filePath}`);
   }
-  const parsed = JSON.parse(fs.readFileSync(filePath, "utf8")) as unknown;
+  const bytes = fs.readFileSync(filePath);
+  if (expectedBytes && !bytes.equals(expectedBytes)) {
+    throw new Error("Accepted artifact input changed while reading generated content");
+  }
+  const parsed = JSON.parse(bytes.toString("utf8")) as unknown;
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
     throw new Error("Generated content must be a JSON object.");
   }
@@ -782,14 +797,9 @@ export function importGenerated(
       ...provenance,
     });
 
-    insertRows(db, "RulebookContent", content.rulebooks);
-    insertRows(db, "SpellContent", content.spells);
-    insertRows(db, "SpellAppearance", content.appearances);
-    insertRows(db, "SpellTaxonomyFacet", content.taxonomyFacets);
-    insertRows(db, "SpellListEntry", content.listEntries);
-    insertRows(db, "SpellComponent", content.components);
-    insertRows(db, "SpellMechanicFacet", content.mechanicFacets);
-    insertRows(db, "RulesContentIssue", content.issues);
+    for (const [table, key] of Object.entries(GENERATED_CONTENT_TABLES)) {
+      insertRows(db, table, content[key]);
+    }
   });
 
   run();
@@ -857,7 +867,7 @@ function collectBuildProvenance(
   };
 }
 
-function collectImportContext(): RulesContentImportContext {
+export function collectImportContext(): RulesContentImportContext {
   return {
     currentProvenance: collectRulesContentArtifactProvenance(
       provenancePaths(),

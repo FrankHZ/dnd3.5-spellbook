@@ -228,7 +228,147 @@ export function validateInsertSpellShape(
   value: InsertSpellOperation,
   line: number,
   errors: string[],
+  strict = false,
 ): InsertSpellShape {
+  if (strict) {
+    rejectUnknown(
+      value as unknown as Record<string, unknown>,
+      ["op", "id", "browseVisible", "source", "spell", "levels", "descriptors"],
+      "insertSpell",
+      line,
+      errors,
+    );
+    const object = (raw: unknown, keys: string[], label: string) => {
+      if (!isObject(raw))
+        errors.push(`line ${line}: ${label} must be an object`);
+      else rejectUnknown(raw, keys, label, line, errors);
+    };
+    object(value.source, ["rulebook", "page", "provenance"], "source");
+    object(
+      value.spell,
+      [
+        "name",
+        "slug",
+        "school",
+        "subschool",
+        "components",
+        "castingTime",
+        "range",
+        "target",
+        "effect",
+        "area",
+        "duration",
+        "savingThrow",
+        "spellResistance",
+        "extraComponents",
+        "description",
+        "descriptionHtml",
+        "corruptLevel",
+        "verified",
+        "added",
+      ],
+      "spell",
+    );
+    if (
+      value.browseVisible !== undefined &&
+      typeof value.browseVisible !== "boolean"
+    )
+      errors.push(`line ${line}: browseVisible must be boolean`);
+    if (isObject(value.source)) {
+      for (const key of ["rulebook", "provenance"] as const)
+        if (key in value.source && typeof value.source[key] !== "string")
+          errors.push(`line ${line}: source.${key} must be string`);
+      const page = value.source.page;
+      if (
+        page !== undefined &&
+        page !== null &&
+        (asInteger(page) === undefined || (page as number) <= 0)
+      )
+        errors.push(
+          `line ${line}: source.page must be positive integer or null`,
+        );
+    }
+    if (isObject(value.spell)) {
+      for (const [key, item] of Object.entries(value.spell)) {
+        if (key === "components") {
+          object(item, Object.keys(COMPONENT_COLUMNS), "spell.components");
+          if (
+            isObject(item) &&
+            Object.values(item).some((flag) => typeof flag !== "boolean")
+          )
+            errors.push(`line ${line}: components must be boolean`);
+        } else if (key === "verified") {
+          if (typeof item !== "boolean")
+            errors.push(`line ${line}: verified must be boolean`);
+        } else if (key === "corruptLevel") {
+          if (
+            item !== null &&
+            (asInteger(item) === undefined || (item as number) < 0)
+          )
+            errors.push(
+              `line ${line}: corruptLevel must be nonnegative integer or null`,
+            );
+        } else if (
+          typeof item !== "string" &&
+          !(
+            item === null &&
+            ![
+              "name",
+              "slug",
+              "school",
+              "description",
+              "descriptionHtml",
+              "added",
+            ].includes(key)
+          )
+        )
+          errors.push(`line ${line}: spell.${key} has invalid text type`);
+      }
+    }
+    if (value.levels !== undefined) {
+      object(value.levels, ["classes", "domains"], "levels");
+      if (isObject(value.levels))
+        for (const [kind, items] of Object.entries(value.levels)) {
+          if (!Array.isArray(items))
+            errors.push(`line ${line}: levels.${kind} must be array`);
+          else
+            for (const item of items) {
+              object(
+                item,
+                [kind === "classes" ? "class" : "domain", "level", "extra"],
+                `levels.${kind}`,
+              );
+              if (
+                isObject(item) &&
+                item.extra !== undefined &&
+                typeof item.extra !== "string"
+              )
+                errors.push(`line ${line}: level extra must be string`);
+            }
+        }
+    }
+    if (
+      value.descriptors !== undefined &&
+      (!Array.isArray(value.descriptors) ||
+        value.descriptors.some(
+          (name) => typeof name !== "string" || !name.trim(),
+        ))
+    )
+      errors.push(`line ${line}: descriptors must be array of names`);
+    if (errors.length)
+      return {
+        spellId: undefined,
+        name: undefined,
+        slug: undefined,
+        rulebook: undefined,
+        school: undefined,
+        subschool: undefined,
+        description: undefined,
+        descriptionHtml: undefined,
+        classLevels: [],
+        domainLevels: [],
+      };
+  }
   const spellId = asInteger(value.id);
   if (spellId === undefined || spellId <= 0) {
     errors.push(`line ${line}: id must be a positive integer`);

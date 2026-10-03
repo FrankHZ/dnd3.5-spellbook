@@ -331,6 +331,20 @@
       "requiresSqlite": true,
       "writeCapable": false
     },
+    "summaries:step": {
+      "module": "short-desc",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "summaries:step:test": {
+      "module": "short-desc",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
     "summaries:import": {
       "module": "short-desc",
       "lifecycle": "maintained-local",
@@ -524,6 +538,62 @@
     },
     "dice:final:write:test": {
       "module": "zh-parser",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
+    "rules:spells:step": {
+      "lifecycle": "maintained-local",
+      "requiresSqlite": true,
+      "module": "rules",
+      "writeCapable": true,
+      "requiresLocalData": true
+    },
+    "rules:spells:step:test": {
+      "lifecycle": "portable",
+      "requiresSqlite": true,
+      "module": "rules",
+      "writeCapable": false,
+      "requiresLocalData": false
+    },
+    "rules:content:step": {
+      "module": "rules-content",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "rules:content:step:test": {
+      "module": "rules-content",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
+    "content:sequence": {
+      "module": "rules-content",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "content:sequence:test": {
+      "module": "rules-content",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": false
+    },
+    "content:search:step": {
+      "module": "rules-content",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "content:search:step:test": {
+      "module": "rules-content",
       "lifecycle": "portable",
       "requiresLocalData": false,
       "requiresSqlite": true,

@@ -92,6 +92,13 @@ npm run -w data-tools rules:spells:apply -- pending/spells/example.jsonl
 ```
 
 Validators read the rules DB; apply dry-runs operate on a temporary copy.
+
+For a new single-DB batch that needs exact before/after and repeat no-op checks,
+use the explicit [atomic spell maintenance step](./rules-db-notes.md#atomic-spell-maintenance-step).
+Its default check uses an in-memory replay; `--apply` requires the same accepted
+inputs and explicit write authorization. It does not resume migrated SC or
+coordinate content/summary/FTS writes.
+
 `insertSpell` creates base and relationship rows and rebuilds derived indexes.
 `updateSpell` supports spell headers, page, an existing subschool ID or null,
 component flags, paired English text/HTML, descriptor replacement, and exact
@@ -201,6 +208,194 @@ document counts; live rebuild replaces only derived `SpellSearchDocument` and
 normalized consistency and artifact provenance. Restart an API after swapping
 DB files before using cached endpoints as evidence.
 
+### Fixed Content Sequence
+
+For a prepared and accepted rules/manifest/generation handoff, `content:sequence`
+runs the maintained normalized import, complete summary import and derived
+search steps in that fixed order. Default mode checks one **explicit existing**
+content DB through a read-only connection. Both accepted full normalized artifacts
+and both complete canonical summary inventories are required on every invocation:
+
+```powershell
+npm run -w data-tools content:sequence -- `
+  --content-db <existing-content.sqlite> `
+  --previous-normalized-input <accepted-previous-full.json> `
+  --normalized-input <accepted-next-full.json> `
+  --previous-summary-input <accepted-previous-full.jsonl> `
+  --summary-input <accepted-next-full.jsonl>
+# Add --apply only within an explicitly authorized content-write workflow.
+npm run -w data-tools content:sequence:test
+```
+
+All explicit paths resolve from this code checkout's root, including from the
+package, an independent caller or another checkout. Source/provenance paths use
+the existing configured data-root and manifest helpers. The command creates no
+database or schema, writes no rules or app-state, and generates no acceptance
+artifact. Flags and syntactically accepted rows establish neither source QA nor
+write authority. It does not run CHM, overlays, rules preparation or generation.
+
+Before any stage writes, preflight checks the role/schema, accepted inputs,
+current source provenance, full normalized predecessor/after and complete summary
+predecessor/after, known annotations, search schema and readonly FTS integrity.
+The shared summary binding rule checks both inventories against accepted **next
+normalized rows**, plus the currently persisted inventory against today's rows.
+The maintained search source guards/builder also validate the future projection,
+including retained localized text and next summaries/mechanics. These checks use
+rows in memory, without a copied database or another importer/search builder.
+An annotated changed predecessor still rejects; valid unchanged annotations are
+preserved only where the existing stage validators permit them.
+
+The JSON `preflight` fields describe today's observed states. `summaryRecheckRequired`
+and `searchRecheckRequired` describe dependencies at preflight: search may currently
+match today's rows while pending content or summary changes require a later recheck.
+Such a check returns `complete=false`; a current initial search observation is
+never evidence of final sequence completion. Inputs are pinned by direct byte
+comparison throughout the invocation, including between dependent stages. The
+same expected byte pairs enter each stage's existing transactional recheck;
+entering a stage cannot acquire a new baseline. The maintained normalized reader
+checks the bytes it actually parses, while summary parsing consumes the captured
+buffer. Expected bytes constrain identity and confer no acceptance. Before the
+first write, all preflight checks repeat on the newly opened connection.
+
+Apply uses each stage's own atomic transaction and transactional recheck.
+Normalized and summary `changed=false` never suppress the search check/apply.
+There is no global transaction: if summary SQL fails after normalized commits,
+the normalized commit remains; if search fails, prior content/summary commits
+remain. Errors include `phase`, `stage` and the invocation result. Each stage's
+`application` is `not-attempted`, `committed`, `no-op` or `failed`; completed calls
+also retain their real `result`. A failure before a stage call leaves that stage
+unattempted. Failure of a final check does not relabel earlier commits as rolled
+back. Only the failing stage's own transactional writes roll back.
+
+Restart with the same accepted pairs to resume. Every invocation derives state
+afresh from the actual DB; previous JSON output is never a resume ledger. Success
+requires fresh complete normalized, summary and search `final` checks in one
+consistent read snapshot. `complete=true` certifies only this content sequence,
+not source QA, whole-book acceptance, cross-DB coordination or activation.
+A fully current apply repeat opens only a readonly connection and preserves
+rows/schema/import/summary/search timestamps without database-data/application
+writes. Normal SQLite readonly WAL coordination may create an empty WAL or
+create/update SHM, as described below; zero filesystem writes are not promised.
+Standalone stage commands and legacy import/rebuild behavior remain available.
+
+### Exact Search Index Step
+
+`content:search:step` checks an existing content DB read-only by default. Use
+`--apply` only within an explicitly authorized content write workflow:
+
+```powershell
+npm run -w data-tools content:search:step -- --content-db <existing-content.sqlite>
+npm run -w data-tools content:search:step -- --content-db <existing-content.sqlite> --apply
+npm run -w data-tools content:search:step:test
+```
+
+Explicit DB paths resolve from this checkout's repository root, including when
+called from `data-tools/` or an independent working directory. Without the flag,
+`CONTENT_DATABASE_URL` uses the existing server-relative `file:` convention.
+Missing targets, rules/app-state targets, incomplete normalized/i18n source
+schemas, invalid source keys/values and incompatible search schemas are rejected.
+This command creates neither databases nor schema. The original
+`content:search:rebuild` retains its unconditional rebuild/count-only dry-run.
+
+The shared check/apply implementation derives expected documents with the
+maintained source reader and document builder in one consistent transaction.
+It compares every stored field and the complete document key multiset, including
+extra, missing and duplicate keys. A current index also requires exactly one
+state row with the maintained schema version, exact document count and a valid
+timestamp shape. Only valid-schema stale derived documents/state are repairable;
+matching counts or an upstream stage's `changed=false` do not imply current search.
+
+Document equality alone does not establish FTS internal integrity. The step uses
+`PRAGMA main.integrity_check(SpellSearchDocument)` in the same transaction and
+requires exactly one `ok` result. SQLite **3.44.0 or newer** is required: its
+[built-in FTS5 xIntegrity](https://sqlite.org/vtab.html#the_xintegrity_method)
+checks internal index structure and, for our ordinary content-bearing FTS table,
+content/index agreement and document-size/totals through the same storage checker
+as the [FTS integrity command](https://sqlite.org/fts5.html#the_integrity_check_command).
+The exact maintained FTS declaration is required; other tokenizers, external or
+contentless tables and alternate indexing options are rejected. Older runtimes,
+unavailable verification and internal corruption fail closed. This command does
+not attempt shadow-table repair or downgrade to document-only verification.
+Partial FTS integrity is not whole-database, freelist or foreign-key validation.
+
+Apply rechecks the current source/index under its content write transaction,
+uses the maintained replacement function, then verifies the complete resulting
+documents/state and internal FTS integrity before commit. It also compares all
+outside-owned tables and the entire schema, preserving exact SQLite blobs,
+64-bit integers, source/build/provenance, i18n, summaries and control records.
+SQL failures, trigger side effects and failed post-write verification roll back
+this derived stage. A current repeat preserves rows/schema/`rebuiltAt` and opens
+only a read-only file connection, with zero target writes or timestamp refresh.
+Here zero writes means zero **database-data/application SQL writes**, not zero
+filesystem writes. Normal [SQLite read-only WAL coordination](https://sqlite.org/wal.html#read_only_databases)
+may create an empty `-wal` and create/update `-shm`. With no concurrent writer,
+the main DB bytes/mtime and any pre-existing WAL content/mtime remain unchanged.
+The step does not checkpoint, change journal mode, clean sidecars or use
+immutable/no-lock access; it preserves the normal consistent-snapshot mechanism.
+
+The JSON result reports `state=current|stale`, `changed`, `wouldChange` and the
+expected document count. Only a committed rebuild returns `changed=true`;
+a successful apply returns current with `wouldChange=false`. This is solely the
+derived search stage. The owning handoff/coordinator must validate and accept
+source inputs before invoking it: deriving from current text does not certify
+arbitrary source text, source-bound QA, whole-book or migration-pipeline completion,
+summary/overlay acceptance, activation or cross-DB rollback. Existing language,
+variant, summary ownership and fallback rules remain in the maintained builder
+and search consumer.
+
+### Normalized Content Import Step
+
+`rules:content:step` checks one existing content DB by default; `--apply` imports
+only an exact accepted predecessor. This is a normalized-stage foundation, not
+the complete migration sequence. **A predecessor carrying downstream overlay or
+summary acceptance annotations is rejected.** Later migration coordination must
+explicitly invalidate/revalidate those annotations; this command cannot activate
+the next QA book against an annotated SC base. Exact-after repeats recognize the
+existing SC final overlay/summary metadata contract and preserve its bytes.
+Recognition does not authenticate downstream source QA or accept the full pipeline.
+
+```powershell
+npm run -w data-tools rules:content:step -- `
+  --previous-input <accepted-previous-full.json> --input <accepted-next-full.json> `
+  --content-db <existing-content.sqlite>
+# The same checks run before an explicitly authorized write:
+npm run -w data-tools rules:content:step -- `
+  --previous-input <accepted-previous-full.json> --input <accepted-next-full.json> `
+  --content-db <existing-content.sqlite> --apply
+npm run -w data-tools rules:content:step:test
+```
+
+Both full artifacts must already be accepted by the owning handoff and are
+required even on repeat. Flags, file paths, generated projections and synthetic
+fixtures grant no source acceptance or operator write permission. No target-DB
+snapshot, hash, count, build ID or report alone supplies the predecessor. The
+previous file must match every generated row/key/value, the single build's
+identity/source SHA and complete generation/source totals. Its generation is
+checked against persisted historical importer provenance; the new file is
+checked against actual current rules/manifest/publication/migration inputs.
+Historical importer commits/dirty flags and valid timestamps are preserved,
+not rewritten to match today's checkout. Unknown metadata extensions, malformed
+known annotations, mixed/drifted rows, wrong roles and incomplete schemas fail.
+
+Artifact paths and explicit `--content-db` paths resolve from this code checkout's
+repository root, including when launched from `data-tools/` or another directory.
+Without `--content-db`, the command uses `CONTENT_DATABASE_URL`; its `file:` path
+retains the existing server-relative convention. Data/provenance paths use the
+existing `DATA_REPO_PATH` and manifest helpers. Targets must exist and be separate
+from configured rules/app-state DBs. This command never creates/migrates DBs.
+
+Check/apply share the same implementation. Apply rechecks inside one content
+write transaction, calls the maintained importer, then verifies the complete
+normalized after/build and unchanged outside-owned tables/schema before commit.
+Importer SQL failures or failed acceptance roll back this stage. A process stopped
+after commit can repeat and recognize after without writes, timestamp refreshes
+or metadata replacement. The JSON result reports `state`, `changed` and
+`wouldChange`: only a committed replacement sets `changed=true`; checks and
+exact-after repeats return false. No cross-DB transaction or FTS completion is
+claimed. All i18n/base text, summaries, search and control tables remain unchanged;
+the later coordinator must verify/rebuild search after required content stages.
+The original `rules:content:import` command retains its replacement/dry-run behavior.
+
 ## Short Descriptions
 
 The import boundary is
@@ -285,6 +480,71 @@ Live import requires explicit content-write authorization. It reads only the
 canonical normalized JSONL and upserts `I18nSpellSummaryText` by
 `spellId + lang + variant`, without deleting full descriptions or existing
 summary rows. Rebuild FTS after this and other content imports finish.
+
+### Summary Import Step
+
+`summaries:step` defaults to a read-only check of an existing content DB;
+`--apply` imports only a complete accepted predecessor. Both files must be
+already accepted **complete canonical inventories**, including on repeat.
+The owning handoff establishes source acceptance and inventory completeness:
+flags, `reviewStatus=accepted`, snapshots captured from the target DB, counts
+and hashes do not confer either. This is a summary-stage foundation, not source
+QA, new-book activation or a cross-DB pipeline.
+
+```powershell
+npm run -w data-tools summaries:step -- `
+  --previous-input <accepted-previous-full.jsonl> --input <accepted-next-full.jsonl> `
+  --content-db <existing-content.sqlite>
+# Only with explicit content-write authorization:
+npm run -w data-tools summaries:step -- `
+  --previous-input <accepted-previous-full.jsonl> --input <accepted-next-full.jsonl> `
+  --content-db <existing-content.sqlite> --apply
+npm run -w data-tools summaries:step:test
+```
+
+The maintained parser and `stableSummaryId` define the persisted fields and
+identity. The step compares every row/key/value/ID with before or after;
+extra, missing, mixed, duplicate, stale or drifted rows reject. Parser errors,
+unsafe numeric IDs, deletions and identity/book reassignment reject before
+mutation. Updates and additions reuse the legacy upsert SQL. Spell/book IDs
+must match normalized legacy identities; a primary source book or an established
+`SpellAppearance` can bind the target book. Donor summary provenance does not
+rebind that identity or establish acceptance.
+
+Valid existing creation/update timestamp shapes are retained on inspection
+and repeat. Apply preserves all creation times and unchanged rows exactly;
+only inserted/changed rows receive the maintained SQL's current timestamp.
+Check/apply share state classification. Apply rereads the accepted inputs and
+state inside an immediate content transaction, runs the maintained SQL, then
+proves complete after, timestamp preservation and unchanged schema/non-summary
+SQLite cells, including blobs and 64-bit integers, before committing. SQL or
+postcondition failures roll back the whole stage.
+
+`RulesContentBuild`, provenance, full descriptions, base content, FTS and control
+data are protected byte-for-byte at the cell level. The existing full annotation
+shape/revision/scope validator recognizes known downstream markers without
+authenticating their source QA. Unknown/malformed extensions reject. A changed
+summary predecessor carrying downstream annotations is refused with guidance
+for later migration coordination to invalidate/revalidate acceptance explicitly;
+the step cannot erase or carry stale acceptance. Exact-after preserves valid
+annotations and their original metadata bytes.
+
+Explicit input and `--content-db` paths resolve from this code checkout's root,
+even from `data-tools/`, an independent caller or another checkout. Without
+`--content-db`, only `CONTENT_DATABASE_URL` supplies the target; `file:` paths
+retain the server-relative convention. Missing/wrong-role DBs, configured
+rules/app-state targets and incompatible schemas reject; no DB/schema creation
+or migration occurs. The connection API takes resolved paths.
+
+The JSON result reports `state`, `changed` and `wouldChange`. Completed repeats
+recognize after without application/database-data writes, reports or timestamp
+refreshes, including after a process interruption following commit. SQLite
+read-only WAL coordination may create an empty WAL or create/update SHM; this
+is not a zero-filesystem-write claim. No immutable/nolock mode, checkpoint or
+manual sidecar cleanup is used. FTS remains untouched and may be stale after
+apply; later coordination must check/rebuild it with the maintained search step.
+The legacy `summaries:import` defaults, reports and no-deletion upsert behavior
+remain available.
 
 ## Dice Text Boundary
 

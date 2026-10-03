@@ -35,12 +35,23 @@ normalization guard checks. Normalization refuses to overwrite existing reviewed
 summary corrections; generate a new candidate file and explicitly review/merge it
 as described in the [short descriptions workflow](../docs/operations/import-workflow.md#short-descriptions).
 
+For an already prepared and accepted full normalized/summary handoff, use the
+[fixed content sequence](../docs/operations/import-workflow.md#fixed-content-sequence)
+to check or explicitly apply normalized content, summaries and derived search.
+Run `npm run -w data-tools content:sequence:test` for its synthetic preflight,
+committed-boundary resume and no-op checks. Operator writes still require the
+owning workflow's explicit authorization.
+
 ## Choose The Relevant Operation
 
 - [CHM parsing and Chinese imports](../docs/operations/import-workflow.md#chm-and-entity-translations)
 - [Rules patches and source candidates](../docs/operations/import-workflow.md#rules-patches)
+- [Atomic spell step and exact repeat checks](../docs/operations/rules-db-notes.md#atomic-spell-maintenance-step)
 - [Normalized content and search index](../docs/operations/import-workflow.md#normalized-content-and-search)
+- [Exact search check, atomic rebuild and repeat](../docs/operations/import-workflow.md#exact-search-index-step)
+- [Exact normalized import check/apply/repeat](../docs/operations/import-workflow.md#normalized-content-import-step)
 - [Short descriptions](../docs/operations/import-workflow.md#short-descriptions)
+- [Exact summary check, atomic apply and repeat](../docs/operations/import-workflow.md#summary-import-step)
 - [DB handoff and artifact provenance](../docs/operations/db-content-workflow.md)
 - [Offline bilingual HTML / CHM source pages](../docs/operations/offline-html.md)
 - [Explicit-page PDF text/geometry extraction](./pdf-extract/README.md)
