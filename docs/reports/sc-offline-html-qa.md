@@ -22,6 +22,7 @@ current evidence, not a milestone ledger.
 | Sorting/anchors | English name then ID; class links, same/cross-letter references, sections and prefixed body anchors checked |
 | Structures/notes | Tables, cell spans, lists, emphasis, long bodies and separate source-question notes retained |
 | Paragraph behavior | Semantic paragraphs spaced; folds inside paragraphs and exact pre/plain whitespace retained |
+| Note/list consumer contract | Real synthetic export/sanitizer/output chain preserves independent note blocks, exact ul class, mixed/nested boundaries, table roles/spans, numbering, anchors and complete text; arbitrary class/style/event/data attributes filtered |
 | Safety/privacy | Active/private content absent; detached references retain text; new-output/repeat/path failures covered |
 | Root/package CWD | Shared runtime; root-relative paths and isolated repeated output checked |
 | Scoped strict TypeScript | Exporter, CLI, portable tests and shared summary helper; strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes |
@@ -50,6 +51,11 @@ individual spell pages need adaptation before use on this layout. No actual
 DB/output or frozen private proof was read or overwritten for this revision.
 Actual directory summary coverage/gap acceptance and output semantic verification
 belong to #345/main-gate; they are not delegated to #431.
+Main-gate's minimal consumer interface permits independent note `div` blocks and
+one exact marked-list class on `ul`, with fixed nested marker/numbering resets.
+Synthetic structure/CSS checks prepare that interface; they do not accept #431
+source mapping or prove browser marker rendering. Real accepted formatting
+inputs and new-layout visual review are still outstanding.
 
 New-layout visual acceptance is pending. The earlier file-URL browser request
 was rejected by tool security policy with an explicit prohibition on bypass.

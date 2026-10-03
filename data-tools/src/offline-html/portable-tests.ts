@@ -50,7 +50,14 @@ try {
   spell(2, "Beta inherited spell", "As Alpha, except the complete inherited difference.", null);
   spell(3, "Gamma fallback", "English fallback body.", null);
   spell(4, "Other book", "DO_NOT_BLEND_NEIGHBOR", null, 87);
-  const paragraphs = '<p id="start">First paragraph\nPDF visual fold remains in this paragraph.</p><p>Second <strong>synthetic label</strong> and <em>emphasis</em>.</p>';
+  const paragraphs = '<p id="start">First paragraph\nPDF visual fold remains in this paragraph.</p><p>Second <strong>synthetic label</strong> and <em>emphasis</em>.</p>'
+    + '<div id="reader-note" class="arbitrary-note" style="display:none" onclick="ignored()"><h3>Synthetic project commentary</h3><p>Separate note paragraph one.</p><p>Separate note paragraph two.</p><a href="#start">Return to rule</a></div>'
+    + '<ul id="marked" class="pdf-typography-marked-list arbitrary-list" style="list-style:circle" data-private="forbidden"><li>• Literal marker one<ul id="ordinary-child"><li>Unmarked nested item</li></ul><ol id="ordered-child" start="4"><li>Fourth item</li><li value="8">Eighth item</li></ol></li><li>◆ Literal marker two<ul id="marked-child" class="pdf-typography-marked-list"><li>◇ Nested literal marker</li></ul></li></ul>'
+    + '<ul id="mixed" class="pdf-typography-marked-list-evil arbitrary-list"><li>• Literal in mixed list</li><li>No literal marker in mixed list</li></ul>'
+    + '<ol id="ordinary-ordered" class="pdf-typography-marked-list" start="3"><li value="7">Seventh item</li></ol>'
+    + '<div id="wrong-tag" class="pdf-typography-marked-list">Class is valid only on ul.</div>'
+    + '<table><tr><th scope="row" rowspan="2">Row header</th><td colspan="2">Spanning cell</td></tr><tr><td>A</td><td>B</td></tr></table>'
+    + '<a name="named-target">Named anchor</a><a href="#named-target">Named return</a>';
   const paragraphText = load(paragraphs, {}, false).root().text();
   spell(5, "Alpha & <fixture>", paragraphText, paragraphs);
   zh(5, "合成段落", paragraphText, paragraphs);
@@ -119,11 +126,50 @@ try {
   assert.deepEqual(report.classlessTargets, [3]); assert.equal(report.classEntriesNeedingStructuralReview, 1);
   assert.equal(report.pdfFormatting, "pending-431-source-mapping");
   // Preserve two semantic paragraphs and a visual line fold within the first. No PDF mapping is inferred.
-  assert.equal($("#spell-5-en + div p").length, 2);
-  assert.equal($("#spell-5-en + div p").first().text(), "First paragraph\nPDF visual fold remains in this paragraph.");
+  assert.equal($("#spell-5-en + div > p").length, 2);
+  assert.equal($("#spell-5-en + div > p").first().text(), "First paragraph\nPDF visual fold remains in this paragraph.");
   assert.equal($("#spell-5-en + div strong").text(), "synthetic label");
   assert.equal($("#spell-5-en + div").text(), paragraphText);
+  // The real export/sanitizer chain consumes a synthetic presentation contract, not PDF evidence.
+  for (const lang of ["en", "zh"]) {
+    const body = $(`#spell-5-${lang} + div`), prefix = `${lang}-5`;
+    assert.equal(body.text(), paragraphText);
+    assert.deepEqual(body.children().slice(0, 4).toArray().map(el => el.tagName), ["p", "p", "div", "ul"]);
+    const note = body.find(`#${prefix}-reader-note`);
+    assert.equal(note.parent().get(0), body.get(0));
+    assert.deepEqual(note.children().toArray().map(el => el.tagName), ["h3", "p", "p", "a"]);
+    assert.equal(note.find('h3').text(), "Synthetic project commentary");
+    assert.deepEqual(note.find('p').toArray().map(el => $(el).text()), ["Separate note paragraph one.", "Separate note paragraph two."]);
+    assert.equal(note.find('a').attr("href"), `#${prefix}-start`);
+    assert.equal(body.find(`#${prefix}-marked`).attr("class"), "pdf-typography-marked-list");
+    assert.equal(body.find(`#${prefix}-marked-child`).attr("class"), "pdf-typography-marked-list");
+    for (const id of ["ordinary-child", "ordered-child", "mixed", "ordinary-ordered", "wrong-tag", "reader-note"]) {
+      assert.equal(body.find(`#${prefix}-${id}`).attr("class"), undefined);
+    }
+    assert.equal(body.find(`#${prefix}-marked > li`).eq(0).clone().children().remove().end().text(), "• Literal marker one");
+    assert.equal(body.find(`#${prefix}-marked > li`).eq(1).clone().children().remove().end().text(), "◆ Literal marker two");
+    assert.equal(body.find(`#${prefix}-marked-child > li`).text(), "◇ Nested literal marker");
+    assert.equal(body.find(`#${prefix}-mixed > li`).eq(1).text(), "No literal marker in mixed list");
+    assert.equal(body.find(`#${prefix}-ordered-child`).attr("start"), "4");
+    assert.equal(body.find(`#${prefix}-ordered-child > li`).last().attr("value"), "8");
+    assert.equal(body.find(`#${prefix}-ordinary-ordered`).attr("start"), "3");
+    assert.equal(body.find(`#${prefix}-ordinary-ordered > li`).attr("value"), "7");
+    assert.equal(body.find('table th').attr("scope"), "row");
+    assert.equal(body.find('table th').attr("rowspan"), "2");
+    assert.equal(body.find('table td').first().attr("colspan"), "2");
+    assert.equal(body.find('a[name]').attr("name"), `${prefix}-named-target`);
+    assert.equal(body.find('a[href]').last().attr("href"), `#${prefix}-named-target`);
+    assert.equal(body.find('[style], [onclick], [data-private]').length, 0);
+    assert.deepEqual(body.find('[class]').toArray().map(el => [el.tagName, $(el).attr("class")]), [
+      ["ul", "pdf-typography-marked-list"], ["ul", "pdf-typography-marked-list"],
+    ]);
+  }
   assert(read("style.css").includes("margin-bottom: 1.65em"));
+  const css = read("style.css");
+  assert(css.includes('.spell-body ul.pdf-typography-marked-list { list-style: none; }'));
+  assert(css.includes('.spell-body ul.pdf-typography-marked-list ul { list-style-type: disc; }'));
+  assert(css.includes('.spell-body ul.pdf-typography-marked-list ol { list-style-type: decimal; }'));
+  assert(css.includes('.spell-body ul.pdf-typography-marked-list ul.pdf-typography-marked-list { list-style: none; }'));
   const menu = load(read("index.html"));
   assert.deepEqual(menu("h2").toArray().map(el => menu(el).attr("id")), ["classes", "letters"]);
   assert.equal(menu('a[href="A.html"]').length, 1); assert(!menu.text().includes("Fixture domain"));
@@ -244,7 +290,7 @@ try {
   assert.throws(() => validatePages(new Map([["index.html", '<a href="missing.html">Missing</a>']])), /missing/);
   assert.throws(() => validatePages(new Map([["index.html", '<a href="#absent">Missing</a>']])), /missing link anchor/);
   assert.throws(() => validatePages(new Map([["index.html", '<a href="https://example.invalid">Network</a>']])), /non-local/);
-  console.log("offline HTML portable tests passed: classes/levels, accepted summaries/gaps, A–Z/1001 targets/2002 bodies, merged anchors, paragraphs, tables, notes, privacy, repeat/failures");
+  console.log("offline HTML portable tests passed: classes/levels, accepted summaries/gaps, A–Z/1001 targets/2002 bodies, merged anchors, paragraphs, note/list consumer contract, tables, privacy, repeat/failures");
 } finally {
   if (db.open) db.close();
   for (const [root, directory] of [[os.tmpdir(), temp], [outputRoot, output]]) {

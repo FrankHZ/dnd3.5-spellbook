@@ -86,6 +86,10 @@ const style = `body { margin: 2em; color: #222; background: #fff; font-family: "
 a { color: #164f91; } .notice { padding: .6em; border: 1px solid #aaa; background: #f5f5f5; }
 .spell-entry { margin-bottom: 3em; } .spell-body p, .spell-body pre, .spell-body ul, .spell-body ol, .spell-body dl, .spell-body table, .spell-body blockquote { margin-top: 0; margin-bottom: 1.65em; }
 .membership-note { display: block; } .spell-body li p, .spell-body td p, .spell-body th p { margin-bottom: .5em; }
+.spell-body ul.pdf-typography-marked-list { list-style: none; }
+.spell-body ul.pdf-typography-marked-list ul { list-style-type: disc; }
+.spell-body ul.pdf-typography-marked-list ol { list-style-type: decimal; }
+.spell-body ul.pdf-typography-marked-list ul.pdf-typography-marked-list { list-style: none; }
 pre, .plain { white-space: pre-wrap; word-wrap: break-word; font-family: inherit; } table { border-collapse: collapse; }
 th, td { border: 1px solid #999; padding: .3em .7em; } .rules th { text-align: left; } .rules td { white-space: pre-wrap; }
 .navigation { font-size: .95em; } li { margin: .2em 0; }\n`;
@@ -102,7 +106,8 @@ function bodyHtml(html: string | null, plain: string, prefix: string, destinatio
       "pre", "ul", "ol", "li", "dl", "dt", "dd", "table", "caption", "colgroup", "col", "thead",
       "tbody", "tfoot", "tr", "td", "th", "blockquote", "hr", "a", "h2", "h3", "h4", "h5", "h6"],
     allowedAttributes: { "*": ["id"], a: ["href", "title", "name"], td: ["colspan", "rowspan"],
-      th: ["colspan", "rowspan", "scope"], ol: ["start"], li: ["value"], col: ["span"] },
+      th: ["colspan", "rowspan", "scope"], ul: ["class"], ol: ["start"], li: ["value"], col: ["span"] },
+    allowedClasses: { ul: ["pdf-typography-marked-list"] },
     allowedSchemes: [], allowProtocolRelative: false, disallowedTagsMode: "discard",
   });
   const $ = load(safe, {}, false);

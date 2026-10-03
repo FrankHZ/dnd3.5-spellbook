@@ -91,6 +91,18 @@ paragraph/font evidence. Accepted source mapping from
 [#431](https://github.com/FrankHZ/dnd3.5-spellbook/issues/431) is required before
 PDF-derived paragraph/emphasis changes can be integrated.
 
+The consumer structure contract uses an existing safe, independent `div` for
+project notes, preserving supplied titles, child paragraphs, position and text.
+It does not add `aside` to the allowlist. Only `ul` may retain the exact class
+`pdf-typography-marked-list`; arbitrary classes, styles, events and data attributes
+remain filtered. Accepted presentation must provide that token only when every
+direct `li` already contains its literal marker. Mixed sibling items and nested
+lists are independently classified by source mapping, never inferred by export.
+Fixed CSS suppresses that list's browser marker, restores ordinary markers and
+numbering on unmarked nested `ul`/`ol`, and suppresses independently marked child
+lists. Literal text, `ol start` and `li value` remain intact. This interface
+decision does not accept #431 source evidence or grant visual acceptance.
+
 Current normalized raw rule fields, descriptors, separate class/domain levels,
 component flags/additional text and notes remain visible. Body rule headers
 remain intact without translation or deduplication against the rules table.
