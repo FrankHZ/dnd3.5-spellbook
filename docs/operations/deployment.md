@@ -541,11 +541,8 @@ These paths follow the current repository-root `npm ci` and
 - The two scripts orchestrate the contracts/web builds and release metadata;
   `wrangler.jsonc` controls static asset deployment.
 
-The root and workspace manifests currently have no install lifecycle hooks.
-The locked Prisma 7.8 packages check Node support/download engines without
-generating a client from repository schemas; other dependency install hooks
-install their own native binaries. Thus backend schemas/source and data-tool
-source are not current frontend install/build inputs. Review this list when
+Current install hooks do not consume repository backend schemas/source, and
+backend/data-tool source is not part of the frontend build. Review this list when
 dependencies, lifecycle hooks, workspace membership, or build imports change;
 include any newly consumed paths before relying on filtering. Watching the
 whole web/contracts trees intentionally also builds on their documentation or
@@ -568,7 +565,7 @@ and observe representative eligible Git pushes in Workers build history:
   `web/public/locales/`, `contracts/src/index.ts`, root lockfile, a workspace
   manifest, either build helper, or `wrangler.jsonc` should trigger a build.
 - Pushes changing only `docs/*`, root `README.md`, source QA reports under
-  `data-tools/audits/*`, backend `server/src/*`/schemas, or `data-tools/src/*`
+  `data-tools/reports/*`, backend `server/src/*`/schemas, or `data-tools/src/*`
   should skip the frontend build while GitHub CI still runs. Check the entire
   push's changed paths and bypass thresholds, not only its last commit.
 
