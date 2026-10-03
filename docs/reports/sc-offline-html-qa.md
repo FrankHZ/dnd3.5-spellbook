@@ -23,6 +23,7 @@ current evidence, not a milestone ledger.
 | Structures/notes | Tables, cell spans, lists, emphasis, long bodies and separate source-question notes retained |
 | Paragraph behavior | Semantic paragraphs spaced; folds inside paragraphs and exact pre/plain whitespace retained |
 | Note/list consumer contract | Real synthetic export/sanitizer/output chain preserves independent note blocks, exact ul class, mixed/nested boundaries, table roles/spans, numbering, anchors and complete text; arbitrary class/style/event/data attributes filtered |
+| Explicit typography selection | Actual helper→sanitizer→merged output; all four stale fields reject before output; unselected pages retain current HTML; shared readonly transaction view and caller JSON/path rejection checked |
 | Safety/privacy | Active/private content absent; detached references retain text; new-output/repeat/path failures covered |
 | Root/package CWD | Shared runtime; root-relative paths and isolated repeated output checked |
 | Scoped strict TypeScript | Exporter, CLI, portable tests and shared summary helper; strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes |
@@ -38,24 +39,39 @@ head remote `ci:portable` remains the merge gate on PR #351.
 [#431](https://github.com/FrankHZ/dnd3.5-spellbook/issues/431) owns PDF-backed
 paragraph/emphasis mapping, representative 8–12 spell comparisons, full 1,001-ID
 format/page/span evidence inventory and a minimal accepted formatting contract.
-DB tags, `pre` newlines, regex splits and existing bold markup cannot replace source font/span
-evidence. The exporter preserves current complete bodies and reports
-`pdfFormatting: pending-431-source-mapping`; it does not apply unaccepted mappings
-or invent summaries. Accepted #431 inputs must come through main-gate.
+DB tags, `pre` newlines, regex splits and existing bold markup cannot replace
+source font/span evidence. Main-gate accepted the helper and explicitly selected
+seven representatives: `3531, 3855, 4726, 4546, 4784, 3866, 3857`. Their fixed
+private presentations are integrated only through the maintained authenticated
+entry. The other 994 displays remain current, including four proposals not
+selected in this run and 990 targets outside that reviewed set. No automatic
+eleven-row selection, invented summary or full-book format acceptance occurs.
+
+Private fixed-Git real-text validation compared these seven complete four-field
+packet guards and the 14 Chinese name/body fields with accepted inputs, then
+passed all 14 derived bilingual body/structure checks through SQLite memory,
+the actual helper, sanitizer and merged output. These seven samples contain no
+project-note block; note preservation is also exercised by the full synthetic
+corpus. This memory shell opens no real DB and does not run or replace the
+operator source-authentication workflow.
 
 Main-gate must then authorize and verify fresh real-corpus generation against
 the accepted migrated content DB, all directory summaries, merged anchors,
 complete bilingual bodies, rules/tables/lists and reader notes, then a fresh
-durable HTML copy and permitted visual review. Previous semantic checkers for
-individual spell pages need adaptation before use on this layout. No actual
+durable HTML copy and permitted visual review. New owned private class/A–Z
+checkers reuse the frozen complete canonical/provenance verifier and compare
+all directory summaries, current/selected bodies, notes and structures
+independently. Existing frozen checkers and proofs remain unchanged. No actual
 DB/output or frozen private proof was read or overwritten for this revision.
 Actual directory summary coverage/gap acceptance and output semantic verification
 belong to #345/main-gate; they are not delegated to #431.
 Main-gate's minimal consumer interface permits independent note `div` blocks and
 one exact marked-list class on `ul`, with fixed nested marker/numbering resets.
-Synthetic structure/CSS checks prepare that interface; they do not accept #431
-source mapping or prove browser marker rendering. Real accepted formatting
-inputs and new-layout visual review are still outstanding.
+Synthetic structure/CSS and bounded accepted-input memory checks prepare that
+interface; they do not prove browser marker rendering or full-book source QA.
+The report records selected/current IDs, `formattingComplete: false` and
+`contentCertification: false`; its selection counts confer no authority by
+themselves. Real-DB execution and new-layout visual review remain outstanding.
 
 New-layout visual acceptance is pending. The earlier file-URL browser request
 was rejected by tool security policy with an explicit prohibition on bypass.

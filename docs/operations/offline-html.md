@@ -88,8 +88,9 @@ blank line of spacing; folds within a paragraph remain inside it. `pre` and plai
 text retain exact whitespace. Labels, lists and tables are not converted into
 body paragraphs. DB tags, newlines, regexes and existing bold markup are not PDF
 paragraph/font evidence. Accepted source mapping from
-[#431](https://github.com/FrankHZ/dnd3.5-spellbook/issues/431) is required before
-PDF-derived paragraph/emphasis changes can be integrated.
+[#431](https://github.com/FrankHZ/dnd3.5-spellbook/issues/431) supplies accepted
+bounded presentation inputs through main-gate; it does not certify full-book
+formatting or rendered HTML.
 
 The consumer structure contract uses an existing safe, independent `div` for
 project notes, preserving supplied titles, child paragraphs, position and text.
@@ -102,6 +103,26 @@ Fixed CSS suppresses that list's browser marker, restores ordinary markers and
 numbering on unmarked nested `ul`/`ol`, and suppresses independently marked child
 lists. Literal text, `ol start` and `li value` remain intact. This interface
 decision does not accept #431 source evidence or grant visual acceptance.
+
+The maintained private main-gate entry first runs existing final source
+authentication, the final planner and frozen complete canonical/provenance
+comparison in one read-only content transaction. It then uses the existing
+`readExact` Git input helper on the exact selected revision and fixed presentation
+file, validates the explicit selected target set and all four current text/HTML
+fields with `selectPdfTypography`, and passes that loaded selection and the same
+read-only DB view to export. Dirty/changed Git inputs, missing/duplicate targets,
+wrong books and stale fields reject before output creation. The independent
+private checker compares directories, exact summary owners and every current or
+selected derived body/structure. Actual operator execution requires main-gate's
+explicit readonly handoff; this task does not open those DBs.
+
+Ordinary CLI flags provide no presentation JSON/file channel. The low-level
+renderer map is not source authority; authentication belongs to that maintained
+entry. Current integration selects only `3531, 3855, 4726, 4546, 4784, 3866, 3857`
+from the main-gate-selected fixed input. The other 994 targets retain current
+display; four withheld proposals and 990 targets outside that reviewed set are
+not automatically selected. Selection never changes persisted text, HTML or
+provenance. Private evidence/ref/command details stay in owned issue-345 usage.
 
 Current normalized raw rule fields, descriptors, separate class/domain levels,
 component flags/additional text and notes remain visible. Body rule headers
@@ -120,15 +141,20 @@ name/page and spell ID are display labels. Generated source text stays local
 and must never enter public Git.
 
 `report.json` contains source-free layout/page/link/fallback, class and summary
-counts, owner variants and classless IDs. HTML/plain representation differences
+counts, owner variants and classless IDs. `typography.reviewedSelectedIds` lists
+this explicit run's selection; `currentDisplayIds` lists all untouched targets.
+These counts confer no source authority. `formattingComplete` and
+`contentCertification` remain false. HTML/plain representation differences
 are counted ignoring whitespace; complete selected HTML remains authoritative
 for rendering, without inventing another body. Output parity does not certify
 input against the English PDF and applicable official errata.
 
-The content-preview notice and `pdfFormatting: pending-431-source-mapping`
-remain until accepted source mapping and reader review. The previous single-spell
+The content-preview notice remains. `pdfFormatting` is
+`partial-main-gate-selected` with an authenticated selection, otherwise
+`pending-431-source-mapping`; neither means whole-book or visual acceptance.
+The previous single-spell
 layout failed the user's visual acceptance; its real export/durable-copy results
-do not verify this layout. New-layout real corpus generation, PDF mapping,
+do not verify this layout. New-layout real corpus generation, remaining PDF mapping,
 permitted visual review and final acceptance remain with main-gate. Unresolved
 #354 relationship source QA is separate and nonblocking for the normal directory,
 but prevents whole-book completion. See the current

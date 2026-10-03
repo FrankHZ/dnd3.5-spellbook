@@ -5,6 +5,7 @@ import { load } from "cheerio";
 import sanitizeHtml from "sanitize-html";
 import { repoRoot } from "../shared/env";
 import { selectedSummaryVariant } from "../db/content-search-documents";
+import { selectPdfTypography, type PdfTypographyPresentation } from "../zh-parser/pdf-typography";
 
 type Spell = {
   id: string; legacySpellId: number; canonicalName: string; sourceRulebookId: number;
@@ -79,7 +80,7 @@ function document(title: string, body: string) {
   return `<!doctype html>\n<html lang="zh"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>${text(title)}</title><link rel="stylesheet" href="style.css"></head><body><div id="content">${body}</div></body></html>\n`;
 }
 const navigation = '<p class="navigation"><a href="index.html#classes">职业目录 / Classes</a> | <a href="index.html#letters">A–Z 正文 / Full spells</a></p>';
-const preview = '<p class="notice">内容预览 / Content preview. PDF 段落与强调映射待验收；当前文本标签不代表原书格式已通过。</p>';
+const preview = '<p class="notice">内容预览 / Content preview. 全书 PDF 格式与视觉验收未完成。 / Full-book PDF formatting and visual acceptance are incomplete.</p>';
 const membershipNotice = '<p class="notice">职业目录保留当前归属与附注；部分外部归属的原书核对仍待完成，目录不构成来源 QA 通过。</p>';
 const style = `body { margin: 2em; color: #222; background: #fff; font-family: "Microsoft YaHei", "SimSun", serif; line-height: 1.65; }
 #content { max-width: 62em; margin: auto; } h1 { font-size: 1.7em; } h2 { border-bottom: 1px solid #bbb; }
@@ -190,14 +191,19 @@ function newOutput(outDir: string, contentDb: string) {
   return out;
 }
 
-export function exportOfflineHtml(options: ExportOptions) {
+/** Presentation selection is caller-authenticated by the maintained main-gate entry, not this renderer. */
+export function exportOfflineHtml(options: ExportOptions,
+  presentations: ReadonlyMap<number, PdfTypographyPresentation> = new Map(), sourceDb?: Database.Database) {
   if (!Number.isSafeInteger(options.book) || options.book <= 0 || !present(options.variant)) {
     throw new Error("A positive book ID and explicit variant are required");
   }
   const contentDb = path.resolve(repoRoot(), options.contentDb);
   const out = newOutput(path.resolve(repoRoot(), options.outDir), contentDb);
-  const db = new Database(contentDb, { readonly: true, fileMustExist: true });
+  const db = sourceDb ?? new Database(contentDb, { readonly: true, fileMustExist: true });
   try {
+    if (!db.readonly || (sourceDb && !db.memory && path.resolve(db.name) !== contentDb)) {
+      throw new Error("Typography export requires the same read-only content DB view");
+    }
     db.pragma("query_only=ON");
     return db.transaction(() => {
       const spells = db.prepare(`SELECT id, legacySpellId, canonicalName, sourceRulebookId, sourcePage,
@@ -216,6 +222,11 @@ export function exportOfflineHtml(options: ExportOptions) {
         if (!letters.includes(letter)) throw new Error(`spell ${s.legacySpellId}: canonical name has no A–Z initial`);
         ids.add(s.legacySpellId); keys.add(s.id);
         destinations.set(s.legacySpellId, `${letter}.html#${spellAnchor(s.legacySpellId)}`);
+      }
+      for (const id of presentations.keys()) {
+        if (!ids.has(id) || options.book !== 86 || options.variant !== "effective") {
+          throw new Error("Selected typography must match a scoped SC effective target");
+        }
       }
       const schema = new Set((db.prepare("PRAGMA table_info(I18nSpellText)").all() as { name: string }[]).map(r => r.name));
       const provenance = ["nameProvenanceJson", "bodyProvenanceJson"].map(col => schema.has(col) ? col : `NULL AS ${col}`).join(", ");
@@ -281,8 +292,12 @@ export function exportOfflineHtml(options: ExportOptions) {
           ["Saving throw / 豁免", s.savingThrowRaw], ["Spell resistance / 法术抗力", s.resistanceRaw],
         ];
         const rules = headers.filter(([, value]) => present(value)).map(([label, value]) => `<tr><th>${text(label)}</th><td>${text(value!)}</td></tr>`).join("");
-        const zh = bodyHtml(t.descriptionHtml, t.descriptionText, `zh-${id}`, destinations, counts);
-        const en = bodyHtml(s.descriptionHtml, s.descriptionText, `en-${id}`, destinations, counts);
+        const display = selectPdfTypography(id, options.book, {
+          englishText: s.descriptionText, englishHtml: s.descriptionHtml ?? "",
+          chineseText: t.descriptionText, chineseHtml: t.descriptionHtml ?? "",
+        }, presentations.get(id));
+        const zh = bodyHtml(display.chineseHtml, t.descriptionText, `zh-${id}`, destinations, counts);
+        const en = bodyHtml(display.englishHtml, s.descriptionText, `en-${id}`, destinations, counts);
         letterEntries.get(s.canonicalName.charAt(0).toUpperCase())!.push(`<div class="spell-entry" id="${spellAnchor(id)}"><h2>${text(t.name)} / ${text(s.canonicalName)}</h2>
           <p>${text(book[0]!.name)}${s.sourcePage === null ? "" : ` · p. ${s.sourcePage}`} · ID ${id}</p>
           ${nameLang === "en" ? '<p class="notice">中文名称缺失：显示英文名称。 / English name fallback.</p>' : ""}
@@ -331,10 +346,13 @@ export function exportOfflineHtml(options: ExportOptions) {
         classListEntries: rowIds.size, classTargets: classTargets.size, classlessTargets: spells.filter(s => !classTargets.has(s.legacySpellId)).map(s => s.legacySpellId),
         classEntriesNeedingStructuralReview: listEntries.filter(row => row.listType === "class" && row.reviewStatus === "review").length,
         selectedSummaries: summaries.size * 2, summaryVariants: { en: selectedSummaryVariant("en", options.variant), zh: selectedSummaryVariant("zh", options.variant) },
-        pdfFormatting: "pending-431-source-mapping", contentCertification: false, relationshipSourceQa: "pending-354",
-        htmlTextPolicy: "Complete sanitized HTML when present; otherwise exact plain text. Input representation differences counted, never repaired." };
+        pdfFormatting: presentations.size ? "partial-main-gate-selected" : "pending-431-source-mapping",
+        typography: { reviewedSelectedIds: [...presentations.keys()].sort((a, b) => a - b),
+          currentDisplayIds: [...ids].filter(id => !presentations.has(id)).sort((a, b) => a - b), formattingComplete: false },
+        contentCertification: false, relationshipSourceQa: "pending-354",
+        htmlTextPolicy: "Explicit caller-authenticated selected display derivatives; otherwise complete current HTML or exact plain text. Canonical fields are never changed; representation differences are counted." };
       fs.writeFileSync(path.join(out, "report.json"), JSON.stringify(report, null, 2) + "\n", { encoding: "utf8", flag: "wx" });
       return report;
     })();
-  } finally { db.close(); }
+  } finally { if (!sourceDb) db.close(); }
 }

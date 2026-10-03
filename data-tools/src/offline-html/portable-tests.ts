@@ -7,6 +7,7 @@ import { load } from "cheerio";
 import { repoRoot } from "../shared/env";
 import { exportOfflineHtml, SummarySelectionError, validatePages } from "./export";
 import { main } from "./cli";
+import type { PdfTypographyPresentation } from "../zh-parser/pdf-typography";
 
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "offline-html-test-"));
 const outputRoot = path.join(repoRoot(), "data-tools/out");
@@ -52,7 +53,7 @@ try {
   spell(4, "Other book", "DO_NOT_BLEND_NEIGHBOR", null, 87);
   const paragraphs = '<p id="start">First paragraph\nPDF visual fold remains in this paragraph.</p><p>Second <strong>synthetic label</strong> and <em>emphasis</em>.</p>'
     + '<div id="reader-note" class="arbitrary-note" style="display:none" onclick="ignored()"><h3>Synthetic project commentary</h3><p>Separate note paragraph one.</p><p>Separate note paragraph two.</p><a href="#start">Return to rule</a></div>'
-    + '<ul id="marked" class="pdf-typography-marked-list arbitrary-list" style="list-style:circle" data-private="forbidden"><li>• Literal marker one<ul id="ordinary-child"><li>Unmarked nested item</li></ul><ol id="ordered-child" start="4"><li>Fourth item</li><li value="8">Eighth item</li></ol></li><li>◆ Literal marker two<ul id="marked-child" class="pdf-typography-marked-list"><li>◇ Nested literal marker</li></ul></li></ul>'
+    + '<ul id="marked" class="pdf-typography-marked-list arbitrary-list" style="list-style:circle" data-private="forbidden"><li>• Literal marker one<ul id="ordinary-child"><li>Unmarked nested item</li></ul><ol id="ordered-child" start="4"><li>Fourth item</li><li value="8">Eighth item</li></ol></li><li>· Literal marker two<ul id="marked-child" class="pdf-typography-marked-list"><li>• Nested literal marker</li></ul></li></ul>'
     + '<ul id="mixed" class="pdf-typography-marked-list-evil arbitrary-list"><li>• Literal in mixed list</li><li>No literal marker in mixed list</li></ul>'
     + '<ol id="ordinary-ordered" class="pdf-typography-marked-list" start="3"><li value="7">Seventh item</li></ol>'
     + '<div id="wrong-tag" class="pdf-typography-marked-list">Class is valid only on ul.</div>'
@@ -147,8 +148,8 @@ try {
       assert.equal(body.find(`#${prefix}-${id}`).attr("class"), undefined);
     }
     assert.equal(body.find(`#${prefix}-marked > li`).eq(0).clone().children().remove().end().text(), "• Literal marker one");
-    assert.equal(body.find(`#${prefix}-marked > li`).eq(1).clone().children().remove().end().text(), "◆ Literal marker two");
-    assert.equal(body.find(`#${prefix}-marked-child > li`).text(), "◇ Nested literal marker");
+    assert.equal(body.find(`#${prefix}-marked > li`).eq(1).clone().children().remove().end().text(), "· Literal marker two");
+    assert.equal(body.find(`#${prefix}-marked-child > li`).text(), "• Nested literal marker");
     assert.equal(body.find(`#${prefix}-mixed > li`).eq(1).text(), "No literal marker in mixed list");
     assert.equal(body.find(`#${prefix}-ordered-child`).attr("start"), "4");
     assert.equal(body.find(`#${prefix}-ordered-child > li`).last().attr("value"), "8");
@@ -190,6 +191,66 @@ try {
       "sourceKey", "ProvenanceJson", "originalInput", "sourcePassage"]) assert.ok(!content.includes(forbidden), name);
     if (name.endsWith(".html")) assert.ok(content.includes("charset=utf-8"));
   }
+  // Explicit synthetic selection through the actual helper, sanitizer and merged-page exporter.
+  const derivative = load(paragraphs, { xml: { xmlMode: false } }, false);
+  derivative('[class]').each((_, el) => {
+    if (["marked", "marked-child"].includes(derivative(el).attr("id") ?? "")) derivative(el).attr("class", "pdf-typography-marked-list");
+    else derivative(el).removeAttr("class");
+  });
+  const displayHtml = derivative.root().html()!.replace('<strong>synthetic label</strong>', '<b>synthetic label</b>');
+  const selected: PdfTypographyPresentation = { targetId: 5, rulebookId: 86,
+    input: { englishText: paragraphText, englishHtml: paragraphs, chineseText: paragraphText, chineseHtml: paragraphs },
+    output: { englishHtml: displayHtml, chineseHtml: displayHtml } };
+  const selectedOut = path.join(output, "selected-typography");
+  const memoryView = new Database(db.serialize(), { readonly: true });
+  try {
+    const partial = memoryView.transaction(() => exportOfflineHtml({ ...options, contentDb: ":memory:", outDir: selectedOut }, new Map([[5, selected]]), memoryView))();
+    assert(memoryView.open && memoryView.readonly); assert.equal(memoryView.pragma("query_only", { simple: true }), 1);
+    assert.equal(partial.pdfFormatting, "partial-main-gate-selected");
+    assert.deepEqual(partial.typography, { reviewedSelectedIds: [5], currentDisplayIds: [1, 2, 3], formattingComplete: false });
+    const page = load(fs.readFileSync(path.join(selectedOut, "A.html"), "utf8"));
+    for (const lang of ["en", "zh"]) {
+      const body = page(`#spell-5-${lang} + div`);
+      assert.equal(body.text(), paragraphText); assert.equal(body.find('b').text(), "synthetic label");
+      assert.equal(body.find(`#${lang}-5-reader-note > p`).length, 2);
+      assert.equal(body.find('table th').attr("rowspan"), "2");
+      assert.equal(body.find('ol').first().attr("start"), "4");
+      assert.equal(body.find('ol > li').eq(1).attr("value"), "8");
+      assert.equal(body.find('ul.pdf-typography-marked-list').length, 2);
+      assert.equal(body.find(`#${lang}-5-reader-note a`).attr("href"), `#${lang}-5-start`);
+      assert.equal(body.find('[style], [onclick], [data-private]').length, 0);
+    }
+    for (const id of [1]) assert.equal(page(`#spell-${id}`).html(), $(`#spell-${id}`).html());
+    assert.equal(fs.readFileSync(path.join(selectedOut, "B.html"), "utf8"), read("B.html"));
+    assert.equal(fs.readFileSync(path.join(selectedOut, "G.html"), "utf8"), read("G.html"));
+  } finally { memoryView.close(); }
+  assert.equal((db.prepare('SELECT descriptionHtml FROM SpellContent WHERE legacySpellId=5').get() as { descriptionHtml: string }).descriptionHtml, paragraphs);
+  let typographyFailure = 0;
+  const rejectTypography = (rows: Map<number, PdfTypographyPresentation>, pattern: RegExp) => {
+    const outDir = path.join(output, `bad-typography-${typographyFailure++}`);
+    assert.throws(() => exportOfflineHtml({ ...options, outDir }, rows), pattern);
+    assert(!fs.existsSync(outDir));
+  };
+  for (const field of Object.keys(selected.input) as (keyof typeof selected.input)[]) {
+    const stale = structuredClone(selected); stale.input[field] += " ";
+    rejectTypography(new Map([[5, stale]]), /stale complete typography fields/);
+  }
+  rejectTypography(new Map([[5, { ...selected, targetId: 1 }]]), /stale typography target/);
+  rejectTypography(new Map([[999, selected]]), /scoped SC effective/);
+  const changedTable = structuredClone(selected); changedTable.output.englishHtml = displayHtml.replace('rowspan="2"', 'rowspan="3"');
+  rejectTypography(new Map([[5, changedTable]]), /links\/tables\/lists\/anchors/);
+  const missingNote = structuredClone(selected); missingNote.output.chineseHtml = displayHtml.replace('Separate note paragraph two.', '');
+  rejectTypography(new Map([[5, missingNote]]), /Chinese text or reader notes/);
+  assert.throws(() => main(['--typography-json', 'caller.json']), /unknown/);
+  const writableOut = path.join(output, "writable-view-rejected");
+  assert.throws(() => exportOfflineHtml({ ...options, outDir: writableOut }, new Map(), db), /same read-only content DB view/);
+  assert(db.open); assert(!fs.existsSync(writableOut));
+  const wrongView = new Database(dbPath, { readonly: true });
+  try {
+    const outDir = path.join(output, "wrong-view-rejected");
+    assert.throws(() => exportOfflineHtml({ ...options, contentDb: path.join(temp, "different.sqlite"), outDir }, new Map(), wrongView), /same read-only content DB view/);
+    assert(wrongView.open); assert(!fs.existsSync(outDir));
+  } finally { wrongView.close(); }
   // Repeating into a new directory is byte stable; an existing directory, even empty, is never reused.
   const second = path.join(output, "second");
   assert.deepEqual(exportOfflineHtml({ ...options, outDir: second }), report);
