@@ -91,7 +91,12 @@ function fileJournalRegression() {
     fs.mkdirSync(path.dirname(file), {recursive: true}); fs.writeFileSync(file, bytes);
   }
   for (const repo of [code, data]) {git(repo, 'add', '.'); git(repo, 'commit', '-m', 'Synthetic inputs');}
-  const requireFiles = guardHelper.captureFinalAuthInputs(code, data);
+  const comparisonPath = 'artifacts/pdf-extract/synthetic-comparison.jsonl';
+  const comparisonFile = path.join(data, comparisonPath);
+  fs.mkdirSync(path.dirname(comparisonFile), {recursive: true}); fs.writeFileSync(comparisonFile, 'synthetic comparison');
+  const requireSources = guardHelper.captureFinalAuthInputs(code, data);
+  const requireComparisons = guardHelper.captureSourceFiles(data, [comparisonPath]);
+  const requireFiles = () => {requireSources(); requireComparisons();};
   const db = new Database(file);
   const externalRead = () => JSON.parse(execFileSync(process.execPath, ['-e', `
     const DB=require(process.argv[1]), db=new DB(process.argv[2],{readonly:true,fileMustExist:true,timeout:0});
@@ -131,7 +136,7 @@ function fileJournalRegression() {
     assert.deepEqual(snapshot(db), before, 'fresh source authentication failure changed the predecessor');
     // The real source guard must catch file drift even after cache spill.
     for (const changedFile of [helperPath, tracked, path.join(data, guardHelper.originals[0]),
-      path.join(data, 'spells-dice-db-by-mo/synthetic.txt')]) {
+      path.join(data, 'spells-dice-db-by-mo/synthetic.txt'), comparisonFile]) {
       const bytes = fs.readFileSync(changedFile);
       assert.throws(() => run(requireFiles, () => fs.appendFileSync(changedFile, 'changed')), /source|original/);
       assert.deepEqual(snapshot(db), before, 'source-file drift did not roll back');

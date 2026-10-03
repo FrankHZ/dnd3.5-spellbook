@@ -15,6 +15,14 @@ const originals = ['artifacts/pdf/spell-compendium/Spell Compendium.pdf',
   'artifacts/pdf/phb3.5/Player Handbook v3.5.pdf', 'artifacts/pdf/phb3.5/PHBErrata02172006.pdf',
   'dice-qa/books/86/issue-349/3729-sample.pdf'];
 
+function captureSourceFiles(data, names) {
+  const raw = new Map(names.map(name => [name, fs.readFileSync(path.join(data, name))]));
+  return () => {
+    for (const [name, bytes] of raw)
+      assert(fs.readFileSync(path.join(data, name)).equals(bytes), 'authenticated original/source bytes changed: ' + name);
+  };
+}
+
 function captureFinalAuthInputs(code, data) {
   const git = (root, ...args) => execFileSync('git', ['-C', root, ...args], {maxBuffer: 128 * 1024 * 1024});
   const state = (root, paths) => [git(root, 'rev-parse', 'HEAD'),
@@ -26,8 +34,7 @@ function captureFinalAuthInputs(code, data) {
   const corpus = path.join(data, 'spells-dice-db-by-mo');
   const names = () => fs.readdirSync(corpus).filter(name => name.endsWith('.txt')).sort();
   const corpusNames = names();
-  const raw = new Map([...originals, ...corpusNames.map(name => 'spells-dice-db-by-mo/' + name)]
-    .map(name => [name, fs.readFileSync(path.join(data, name))]));
+  const requireRaw = captureSourceFiles(data, [...originals, ...corpusNames.map(name => 'spells-dice-db-by-mo/' + name)]);
   return () => {
     for (const [root, paths, before] of [[code, helperPaths, codeState], [data, sourcePaths, dataState]]) {
       const after = state(root, paths);
@@ -35,8 +42,7 @@ function captureFinalAuthInputs(code, data) {
     }
     assert(git(code, 'status', '--porcelain', '--', ...helperPaths).equals(codeStatus), 'source helpers changed');
     assert.deepEqual(names(), corpusNames, 'authenticated source corpus membership changed');
-    for (const [name, bytes] of raw)
-      assert(fs.readFileSync(path.join(data, name)).equals(bytes), 'authenticated original/source bytes changed: ' + name);
+    requireRaw();
   };
 }
-module.exports = {captureFinalAuthInputs, originals};
+module.exports = {captureFinalAuthInputs, captureSourceFiles, originals};

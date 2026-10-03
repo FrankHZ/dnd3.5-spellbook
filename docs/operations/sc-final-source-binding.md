@@ -274,7 +274,8 @@ tables, schema, final fields and the complete new build are checked without an
 external process reopening the destination. This supports rollback-journal
 databases whose write volume causes cache spill and an exclusive lock. Exact
 Git contents/status of source/helper inputs, original PDF/corpus bytes and corpus
-membership, accepted summary inputs, both normalized files and current rules
+membership, the authenticated comparison-only extraction read set, accepted
+summary inputs, both normalized files and current rules
 generation provenance are rechecked throughout the transaction. A mismatch
 rolls back the content transition; journal mode and lock timeouts are unchanged.
 

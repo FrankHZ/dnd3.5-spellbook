@@ -43,6 +43,10 @@ function main(argv) {
     {cwd: code, encoding: 'utf8', maxBuffer: 128 * 1024 * 1024}));
   const auth = authenticate();
   sourceInputs?.();
+  // These ignored extraction files remain comparison aids, never authority.
+  // Bind the actual read set from complete authenticated QA, not caller paths.
+  const comparisonInputs = sourceInputs ? require('./sc-final-auth-inputs.cjs').captureSourceFiles(data,
+    auth.report.pdfVerification.frozenOriginalCoverage.ignoredExtractionCaches) : undefined;
   const generated = load('rules-content/cli.ts').readGenerated(inputPath);
   let summaries, summaryInputs;
   if (argv.includes('--accepted-summaries')) {
@@ -69,6 +73,7 @@ function main(argv) {
       const patch = require('./sc-final-inputs.cjs').readExact(data, amendment.candidateRevision, amendment.directory + 'rules-patch.jsonl')[0];
       const requireInputs = () => {
         sourceInputs();
+        comparisonInputs();
         summaryInputs.requireInputs();
         assert.deepEqual(collectCurrent(), current, 'English upgrade generation inputs changed');
         assert.equal(execFileSync('git', ['-C', code, 'rev-parse', 'HEAD'], {encoding: 'utf8'}).trim(), value('helper-revision'));
