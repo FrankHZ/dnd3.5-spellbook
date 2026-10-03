@@ -9,13 +9,19 @@ const {createRequire, Module} = require('node:module');
 function main(argv) {
   const value = name => {const at = argv.indexOf('--' + name); assert(at >= 0 && argv[at + 1], 'missing --' + name); return argv[at + 1];};
   const allowed = new Set(['code-root', 'runtime-root', 'data-root', 'rules-db', 'content-db', 'normalized', 'rules-manifest',
-    'helper-revision', 'accepted-baseline', 'accepted-summaries', 'upgrade-summaries', 'apply', 'validate']);
+    'helper-revision', 'accepted-baseline', 'accepted-summaries', 'upgrade-summaries', 'accepted-english-title',
+    'upgrade-english-title', 'previous-normalized', 'apply', 'validate']);
   for (let i = 0; i < argv.length; i++) {
     assert(argv[i].startsWith('--') && allowed.has(argv[i].slice(2)), 'unknown argument: ' + argv[i]);
-    if (!['--apply', '--validate', '--accepted-summaries', '--upgrade-summaries'].includes(argv[i])) i++;
+    if (!['--apply', '--validate', '--accepted-summaries', '--upgrade-summaries', '--accepted-english-title', '--upgrade-english-title'].includes(argv[i])) i++;
   }
   assert(!(argv.includes('--apply') && argv.includes('--validate')), 'choose apply or validate');
   assert(!argv.includes('--upgrade-summaries') || argv.includes('--accepted-summaries'), 'upgrade requires accepted summaries');
+  assert(!argv.includes('--upgrade-english-title') || argv.includes('--accepted-english-title') && argv.includes('--accepted-summaries'),
+    'English upgrade requires accepted pair and current summaries');
+  assert(!argv.includes('--accepted-english-title') || argv.includes('--accepted-summaries'), 'English pair requires accepted summaries');
+  assert(!(argv.includes('--upgrade-summaries') && argv.includes('--accepted-english-title')), 'choose one accepted transition');
+  assert(argv.includes('--upgrade-english-title') === argv.includes('--previous-normalized'), 'previous normalized belongs to English upgrade');
   const code = fs.realpathSync(value('code-root')), runtime = fs.realpathSync(value('runtime-root'));
   assert.equal(code, fs.realpathSync(path.join(__dirname, '../..')), 'code root must match invoking checkout');
   const absolute = name => {const p = value(name); assert(path.isAbsolute(p), '--' + name + ' must be absolute'); return fs.realpathSync(p);};
@@ -29,6 +35,7 @@ function main(argv) {
   assert.equal(value('accepted-baseline'), writer.finalScRevision, 'unsupported exact accepted SC baseline');
   const options = ['code-root', 'runtime-root', 'data-root', 'rules-db', 'content-db', 'helper-revision', 'accepted-baseline']
     .flatMap(name => ['--' + name, value(name)]);
+  if (argv.includes('--accepted-english-title')) options.push('--accepted-english-title');
   const auth = JSON.parse(execFileSync(path.join(runtime, 'data-tools/pdf-extract/.venv/Scripts/python.exe'),
     ['-B', '-X', 'utf8', path.join(code, 'data-tools/audits/sc_final_auth.py'), ...options],
     {cwd: code, encoding: 'utf8', maxBuffer: 128 * 1024 * 1024}));
@@ -50,6 +57,32 @@ function main(argv) {
   const db = new DB(contentPath, {readonly: !apply, fileMustExist: true});
   try {
     if (!apply) db.pragma('query_only=ON');
+    if (argv.includes('--upgrade-english-title')) {
+      const amendment = require('./sc-prismatic-ray.cjs');
+      const previousPath = absolute('previous-normalized'), previous = load('rules-content/cli.ts').readGenerated(previousPath);
+      assert.deepEqual(previous, require('./sc-final-inputs.cjs').readExact(data, amendment.previousRevision, amendment.previousPath),
+        'English upgrade requires the actual accepted operator normalized predecessor');
+      const patch = require('./sc-final-inputs.cjs').readExact(data, amendment.candidateRevision, amendment.directory + 'rules-patch.jsonl')[0];
+      const requireInputs = () => {
+        summaryInputs.requireInputs();
+        assert.deepEqual(collectCurrent(), current, 'English upgrade generation inputs changed');
+        assert.equal(execFileSync('git', ['-C', code, 'rev-parse', 'HEAD'], {encoding: 'utf8'}).trim(), value('helper-revision'));
+        // Re-run the source authenticator inside the transaction to bind helper,
+        // complete original pages, accepted pair and all preserved final fields.
+        const recheck = JSON.parse(execFileSync(path.join(runtime, 'data-tools/pdf-extract/.venv/Scripts/python.exe'),
+          ['-B', '-X', 'utf8', path.join(code, 'data-tools/audits/sc_final_auth.py'), ...options],
+          {cwd: code, encoding: 'utf8', maxBuffer: 128 * 1024 * 1024}));
+        assert.deepEqual(recheck, auth, 'authenticated English upgrade inputs changed');
+      };
+      const upgrade = load('dice-intake/prismatic-ray-upgrade.ts').prismaticRayUpgrade(db, previous, generated,
+        previousPath, inputPath, patch, auth.fields, auth.report, summaries, value('helper-revision'),
+        {currentProvenance: current, importedAt: new Date().toISOString()}, requireInputs, apply ? 'apply' : 'check');
+      if (validate) assert.equal(upgrade.state, 'after', 'English title upgrade has not been applied');
+      console.log(JSON.stringify({mode: apply ? 'apply' : validate ? 'validate' : 'dry-run', ...upgrade,
+        helperRevision: value('helper-revision'), acceptedEnglishRevision: amendment.candidateRevision,
+        wholeBookQaComplete: false, activation: false, ftsRefreshed: false}));
+      return;
+    }
     if (argv.includes('--upgrade-summaries')) {
       const verifyFull = () => {
         assert(fs.readFileSync(inputPath).equals(normalizedBytes), 'full normalized input changed during upgrade');

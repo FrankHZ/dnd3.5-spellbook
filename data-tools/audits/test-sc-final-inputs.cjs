@@ -6,6 +6,29 @@ const os = require('node:os');
 const {execFileSync} = require('node:child_process');
 const {readExact, refreshMissing, rawRows, derive} = require('./sc-final-inputs.cjs');
 const {verifyComposition, packets} = require('./sc-final-summaries.cjs');
+const {validatePair, restorePrior} = require('./sc-prismatic-ray.cjs');
+
+const priorPair = {targetId: 3958, english: {rulebookId: 86, description: 'Synthetic\n\nh4. PRISMATIC RAY\n\n| Synthetic |'},
+  englishHtml: '<p>Synthetic</p><h4><span class="caps">PRISMATIC</span> <span class="caps">RAY</span></h4><table><tr><td>Synthetic</td></tr></table>',
+  chinese: {name: '保留名', descriptionText: '保留文', descriptionHtml: '<p>保留文</p>'}};
+const pairedPatch = {op: 'updateSpell', id: 3958, expected: {spell: {description: priorPair.english.description,
+  descriptionHtml: priorPair.englishHtml}}, spell: {description: priorPair.english.description.replace('h4. PRISMATIC RAY\n\n', ''),
+  descriptionHtml: priorPair.englishHtml.replace('<h4><span class="caps">PRISMATIC</span> <span class="caps">RAY</span></h4>', '')},
+  source: {provenance: 'Synthetic'}};
+const pairCandidate = {targetId: 3958, status: 'unaccepted-proposal-only', priorRevision: '296903c61e20ce359812148fc0faa234ca2508e7',
+  prior: priorPair, patch: pairedPatch};
+validatePair(pairCandidate, pairedPatch, priorPair);
+for (const change of ['caller-accepted', 'before', 'text', 'html', 'extra', 'identity', 'chinese']) {
+  const c = structuredClone(pairCandidate), p = c.patch;
+  if (change === 'caller-accepted') c.status = 'accepted';
+  else if (change === 'before') p.expected.spell.description += 'stale';
+  else if (change === 'text') p.spell.description += 'forged';
+  else if (change === 'html') p.spell.descriptionHtml += 'forged';
+  else if (change === 'extra') p.spell.range = 'forged';
+  else if (change === 'identity') c.targetId = 1;
+  else c.prior.chinese.descriptionText += 'forged';
+  assert.throws(() => validatePair(c, p, priorPair), change);
+}
 
 // Full-size synthetic inventories exercise complete-row/provenance comparison,
 // all six concrete acceptance authorities, order and byte-preserved baseline.
@@ -95,6 +118,15 @@ try {
 
   const DB = require('better-sqlite3'), db = new DB(':memory:');
   try {
+    db.exec('CREATE TABLE dnd_spell(id INTEGER PRIMARY KEY,rulebook_id INTEGER,description TEXT,description_html TEXT,protected TEXT)');
+    db.prepare('INSERT INTO dnd_spell VALUES(3958,86,?,?,?)').run(pairedPatch.spell.description, pairedPatch.spell.descriptionHtml, 'Keep');
+    const memory = restorePrior(db, DB, pairedPatch);
+    assert.equal(memory.prepare('SELECT description FROM dnd_spell').pluck().get(), priorPair.english.description);
+    assert.equal(memory.prepare('SELECT protected FROM dnd_spell').pluck().get(), 'Keep');
+    assert.equal(db.prepare('SELECT description FROM dnd_spell').pluck().get(), pairedPatch.spell.description);
+    memory.close();
+    db.prepare('UPDATE dnd_spell SET description=?').run(priorPair.english.description);
+    assert.throws(() => restorePrior(db, DB, pairedPatch), /stale paired/);
     db.exec("CREATE TABLE legacy(id INTEGER PRIMARY KEY, body VARCHAR(30)); INSERT INTO legacy VALUES(1,CAST(x'ff' AS TEXT))");
     const original = rawRows(db, 'legacy');
     db.exec("UPDATE legacy SET body=CAST(x'fe' AS TEXT)");
