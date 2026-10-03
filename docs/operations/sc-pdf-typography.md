@@ -14,6 +14,10 @@ The [complete-entry batch report](../../data-tools/reports/dice-qa/books/86/pdf-
 binds the separate private proposals under `dice-qa/books/86/issue-457/`, including
 complete field guards, fresh source/font checks and a fixed-exporter memory
 rehearsal. It does not select those proposals or certify rendered HTML.
+The [second complete-entry batch report](../../data-tools/reports/dice-qa/books/86/pdf-typography-complete-02.json)
+binds `dice-qa/books/86/issue-459/` and separates unselected format candidates
+from blocked content decisions. Its fixed-exporter rehearsal records the existing
+single-book policy for outside-book references explicitly.
 Actual source pages, span references, complete field guards,
 Chinese ranges and reviewed HTML stay in the configured private data repo under
 `dice-qa/books/86/issue-431/`. They are presentation proposals awaiting main-gate
