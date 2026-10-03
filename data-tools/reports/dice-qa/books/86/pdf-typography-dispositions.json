@@ -1,0 +1,81 @@
+{
+  "issue": 431,
+  "scope": "Four representative typography dispositions; no full-book acceptance",
+  "baseCodeRevision": "43d7569ed90ebabe990e6140f7fc92ae712303cb",
+  "frozenPriorEvidenceRevision": "06d3eea0ec3e0f205358f39977eabbd2f364a20a",
+  "privateEvidenceRevision": "b39711fe64ade5aabc27fd2a4c0a6cc72ba17dc5",
+  "privateEvidencePath": "dice-qa/books/86/issue-431/dispositions/",
+  "presentationPath": "dice-qa/books/86/issue-431/dispositions/presentations.json",
+  "decisionPath": "dice-qa/books/86/issue-431/dispositions/decisions.json",
+  "dispositions": [
+    {
+      "targetId": 4072,
+      "printedPages": [168, 169],
+      "classification": "presentation-proposed",
+      "decision": "Preserve both accepted language orders; map sidebar introduction, constraints and adjacent table independently. Semantic correspondence is complete; page facsimile/order equivalence is not claimed.",
+      "acceptedInputChangeRequired": false
+    },
+    {
+      "targetId": 4088,
+      "printedPages": [173],
+      "classification": "presentation-proposed",
+      "decision": "Retain source-supported explicit English emphasis. Chinese affected-subject reference has no separate spell-name token; retain it as regular text without adding a name. Keep the unresolved reader note exact.",
+      "acceptedInputChangeRequired": false
+    },
+    {
+      "targetId": 3958,
+      "printedPages": [162],
+      "classification": "accepted-input-change-required",
+      "decision": "The inherited English table title has no separate PDF heading counterpart. Removing its visible text is rejected by the unchanged helper; retaining, hiding or demoting it cannot certify source-faithful heading content.",
+      "acceptedInputChangeRequired": true,
+      "requestedFields": ["English description", "English descriptionHtml"],
+      "requestPath": "dice-qa/books/86/issue-431/dispositions/canonical-request-3958.json",
+      "requestStatus": "unaccepted-proposal-only",
+      "requestScope": "Remove only the redundant table title from the paired English representations; preserve Chinese fields, names, mechanics, table semantics, links and reader notes.",
+      "nextAuthority": "Separate source-bound English accepted-input review and final binding/rehearsal refresh through #346; any writer needs explicit authorization.",
+      "includedInNewPresentations": false
+    },
+    {
+      "targetId": 4443,
+      "printedPages": [80, 81],
+      "classification": "presentation-proposed",
+      "decision": "Adopt the observed discontinuous English font boundary and explicitly mapped Chinese semantic components. Do not infer whole-reference italics or author intent; exact adopted language ranges are private. Preserve all accepted characters and unresolved source-rule notes.",
+      "acceptedInputChangeRequired": false
+    }
+  ],
+  "validation": {
+    "freshlyComparedPages": 6,
+    "freshlyComparedSpans": 1181,
+    "officialErrataPagesReviewed": 1,
+    "entrySpecificErrataResolution": false,
+    "sourceMappedUnits": 64,
+    "tableCells": 77,
+    "readerNoteUnits": 7,
+    "exactAcceptedFieldBindings": true,
+    "completeIndependentLanguageUnitCoverage": true,
+    "sourceRefsWithinAcceptedEvidence": true,
+    "sourceRefsAndTableCellsUnchanged": true,
+    "threePresentationTextAndStructureChecks": "passed",
+    "captionRemovalCounterexample": "rejected by existing exact text guard",
+    "rootAndPackageCwdValidation": "passed",
+    "syntheticHelperTests": "passed",
+    "frozenSevenSampleHandoffUnchanged": true
+  },
+  "limits": {
+    "newPresentationProposalIds": [4072, 4088, 4443],
+    "newProposalsMainGateSelected": false,
+    "acceptedInputRequestsPending": [3958],
+    "existingSevenSampleSelection": "bounded #345 preview only, frozen prior evidence; not expanded by this report",
+    "remainingUnsampledTargets": 990,
+    "remainingTargetsDispatched": false,
+    "htmlRendered": false,
+    "all1001FormatQaCompleted": false,
+    "acceptedFieldsChanged": false,
+    "canonicalChanged": false,
+    "databasesOpened": 0,
+    "productionWrites": 0,
+    "privatePush": false,
+    "consumerModified": false,
+    "supplementalExtraction": false
+  }
+}
