@@ -1,104 +1,68 @@
 # SC Offline HTML Export Verification
 
-Source-free evidence for [#345](https://github.com/FrankHZ/dnd3.5-spellbook/issues/345).
-This records main-gate's actual migrated-DB export, source authentication and
-durable copy. The task owner updated this documentation from main-gate's
-acceptance handoff without accessing the DBs, output or private proofs.
-Visual acceptance and the remaining whole-book boundaries belong to
-[#346](https://github.com/FrankHZ/dnd3.5-spellbook/issues/346).
+Current scope: [#345](https://github.com/FrankHZ/dnd3.5-spellbook/issues/345),
+[draft PR #351](https://github.com/FrankHZ/dnd3.5-spellbook/pull/351).
+The user's visual review rejected the previous single-spell-page organization.
+The proposed layout is class directories with levels 0–9 and accepted bilingual
+summaries, followed by 26 A–Z pages with complete bilingual entries. The old real
+DB export and durable copy do not verify this changed layout. Historical fixed
+proof references remain in Git and the owning issue/PR; this report describes
+current evidence, not a milestone ledger.
 
-## Accepted Input Boundary
-
-| Input or evidence | Fixed revision |
-| --- | --- |
-| Exporter used for the actual export | `87f2998c2023a03d3d1f04d74a2eb4cf253aa4e9` |
-| Primary source-authentication code, including accepted #413/#414 integration | `8ca3c489f091f54c4b157dcd449090c4aba596ec` |
-| Accepted final Chinese field candidate | `0688739d92a2aa9fb3eceeb444daa7260e711058` |
-| Accepted reader-note addendum | `c61b9dea676cfd89bdfcaa6dcbcccbc99280d7c4` |
-| Main-gate migrated-data handoff | `307e8b1299e14c456957165b12c46d2c4afe3472` |
-| Private operator verifier with serialized Buffer memory replay | `56209a1549d9d8c681324f1f5e8c08f29b162ea8` |
-| Frozen semantic checker | `d5db22919946caa470755723d5adc7f91482a28e` |
-| Six fixed main-gate proofs | `5d6f8f1c2af35230bd4f232a54e8377bbb55600c` |
-
-Main-gate used the actual migrated operator content DB, strictly read-only with
-SQLite `query_only=ON`, and replayed the maintained source authentication against
-the designated rules/content pair. The private verifier enforces the exact file
-roles and native read-only boundary before access, including source-auth child
-processes. Fresh memory and driver-serialized Buffer inputs remain available
-for the maintained in-memory rules replay; they do not create persistent DB
-copies. Main-gate independently passed that real-driver regression: three memory
-replays, nine invalid inputs and the child-preload check. Existing compatible
-runtime dependencies were reused without installation or filesystem links.
-
-Book `86`, exact Chinese variant `effective`, covers 1,001 existing IDs and
-2,002 accepted Chinese name/body fields. ID `4837` belongs to book `9` and is
-excluded. Source-reviewed CHM retention is accepted ownership, not missing
-translation. There are no English fallback names or bodies. The original 37
-notes and three accepted addendum notes are preserved: 40 target/question
-occurrences in 38 bodies, using 37 distinct raw question IDs. Identity is
-`(targetId, questionId)` because different spells can share a raw ID. The notes
-remain separate project commentary without resolving the original ambiguities.
-
-## Checks
-
-Main-gate performed the actual DB/source, complete rendering and durable-copy
-checks. The synthetic, CWD and TypeScript rows retain the existing exporter
-validation; this documentation update did not rerun source-bearing workflows.
+## Current Portable Evidence
 
 | Check | Result |
 | --- | --- |
-| Scoped spell pages | 1,001, exact IDs and index names; 4837 excluded |
-| Accepted Chinese fields | 2,002 fully compared against maintained source-authenticated fields and persisted envelopes |
-| Complete bilingual bodies | 2,002 checked, zero visible-text failures |
-| Reader source-question notes | 40 occurrences in 38 bodies, 37 raw IDs; original and addendum notes preserved, with text/HTML independently authoritative |
-| Index/CSS/report coverage | 2 indexes, CSS and source-free report; 1,005 total files |
-| Local links and anchors | 7,102 checked, zero failures |
-| Current rule headers | 15,015 field/row checks, including raw school/subschool, descriptors, components and class/domain levels |
-| Semantic structures | 44,044 structure checks plus complete semantic-tree/order and table/list attributes; zero losses |
-| Meaningful pre whitespace | 996 exact checks, zero losses |
-| Private metadata/path and active-content scan | Zero failures |
-| Root/package CWD and repeat isolation | Verified using the existing runtime and root-relative output arguments |
-| Synthetic tests | Full bodies, Unicode, escaping, tables, aliases, long/inherited text, separate source notes, privacy, stale output and rejection paths passed |
-| Operator boundary tests | 32 path/boundary and 22 semantic rejection cases passed; serialized Buffer memory replay independently verified by main-gate |
-| Scoped strict TypeScript and shared path tests | Passed |
-| Durable copy | 1,005 files, 3,434,845 bytes; every file directly compared byte-for-byte with the verified export, no DB copy |
-| Browser visual smoke | Unverified; previous file URL policy rejection prohibits bypass |
+| Navigation | Classes first; 26 letters; empty letters and levels explicit |
+| Class identity/levels | 0–9 sections, owner consistency and invalid-level rejection |
+| Memberships | Duplicate class/spell/level rows grouped with distinct notes; raw rules retained; domains separate |
+| Summary owners | English imarvin, effective Chinese chm, exact other Chinese variant; unrelated variants excluded |
+| Summary failures | All missing/multiple/wrong-book/unaccepted/empty gaps rejected before output; typed source-free inventory |
+| Full-size synthetic scope | 1,001 IDs exactly once; 2,002 complete bodies compared; book 9 ID 4837 excluded |
+| Sorting/anchors | English name then ID; class links, same/cross-letter references, sections and prefixed body anchors checked |
+| Structures/notes | Tables, cell spans, lists, emphasis, long bodies and separate source-question notes retained |
+| Paragraph behavior | Semantic paragraphs spaced; folds inside paragraphs and exact pre/plain whitespace retained |
+| Safety/privacy | Active/private content absent; detached references retain text; new-output/repeat/path failures covered |
+| Root/package CWD | Shared runtime; root-relative paths and isolated repeated output checked |
+| Scoped strict TypeScript | Exporter, CLI, portable tests and shared summary helper; strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes |
+| Data harness | 20 targeted cases passed, including search-summary owners and script classification |
 
-Chinese HTML/plain-text has no visible-text differences. The 981 English raw
-representation differences were investigated rather than accepted by count:
-980 match after diagnostic decoding of existing emphasis/link syntax, semantic
-lists/tables/headings and typographic glyphs. The remaining ID `4345` difference
-is an extra full stop in plain text at a boundary where HTML retains separate
-labeled component/focus paragraphs. Both complete clauses and their separation
-are present. Twenty English rows match without diagnostic decoding. There is
-no demonstrated missing operative prose. These private read-only comparisons
-never feed the formatter or change accepted fields, and do not re-adjudicate
-original PDF authority or accept hyperlink targets from another representation.
-Output retains the complete selected HTML and its semantic structure.
+These are synthetic checks, not actual-corpus, PDF format or browser evidence.
+They use the provided compatible runtime without installs, links, operator DB
+access or real DB copies. Public code contains only synthetic text. Full exact
+head remote `ci:portable` remains the merge gate on PR #351.
 
-Main-gate copied the verified HTML artifacts to a durable local destination
-outside removable worktrees and compared all files directly. The content-preview
-notice is retained. This is a verified export and durable copy, with visual
-acceptance still outstanding. Fixed private checks/proofs and generated source
-text stay out of public Git; private evidence was not pushed. Full exact-head
-remote portable CI remains the merge gate and is recorded on PR #351. Public
-code contains only synthetic text and this source-free report.
+## Outstanding Acceptance
 
-## Unclosed Gates
+[#431](https://github.com/FrankHZ/dnd3.5-spellbook/issues/431) owns PDF-backed
+paragraph/emphasis mapping, representative 8–12 spell comparisons, full 1,001-ID
+summary-gap inventory and a minimal accepted ingestion contract. DB tags, `pre`
+newlines, regex splits and existing bold markup cannot replace source font/span
+evidence. The exporter preserves current complete bodies and reports
+`pdfFormatting: pending-431-source-mapping`; it does not apply unaccepted mappings
+or invent summaries. Accepted #431 inputs must come through main-gate.
 
-Browser visual smoke remains required but unverified. The previous
-`cua.createBrowserTab` request for the file URL was rejected by tool security
-policy (only HTTP/HTTPS permitted, explicit prohibition on workaround,
-indirect execution and alternate surfaces). No retry, localhost server or
-alternative rendering surface was used. Final representative human-review
-pages: long English/multiple notes `4443`, long Chinese `3943`, table/source
-question `3958`, amended body `4736`, and source-reviewed CHM retention `3855`.
+Main-gate must then authorize and verify fresh real-corpus generation against
+the accepted migrated content DB, all directory summaries, merged anchors,
+complete bilingual bodies, rules/tables/lists and reader notes, then a fresh
+durable HTML copy and permitted visual review. Previous semantic checkers for
+individual spell pages need adaptation before use on this layout. No actual
+DB/output or frozen private proof was read or overwritten for this revision.
 
-The 20 external relationship tuples for 17 targets in
-[#354](https://github.com/FrankHZ/dnd3.5-spellbook/issues/354) still lack the
-required original-book sources. That boundary does not invalidate the authenticated
-body text, but `wholeBookComplete` remains false. Existing summaries are not part
-of the HTML feature; #414/main-gate own migration, summary and consumer validation.
-#346 remains open. Main-gate owns eventual permitted visual review and final
-acceptance/merge; this report claims no visual pass or whole-book completion.
-Usage and safety boundaries: [offline HTML](../operations/offline-html.md).
+New-layout visual acceptance is pending. The earlier file-URL browser request
+was rejected by tool security policy with an explicit prohibition on bypass.
+No file retry, localhost server or alternative browser/render surface is used.
+The prior visual rejection is a failed delivery criterion, not merely an
+unperformed smoke test. Main-gate owns eventual permitted human review.
+
+[#354](https://github.com/FrankHZ/dnd3.5-spellbook/issues/354) retains 20 external
+relationship tuples for 17 targets without required original-book confirmation.
+The directory preserves current class rows and a reader notice; internal
+`reviewStatus` is not source QA evidence. This source check does not block the
+normal directory, but whole-book completion stays false. No pending tuple is
+newly injected by this change.
+
+PR #351 stays draft. No source certification, issue acceptance, visual pass,
+operator write or deployment is claimed. Usage and boundaries:
+[offline HTML](../operations/offline-html.md),
+[DB content workflow](../operations/db-content-workflow.md).

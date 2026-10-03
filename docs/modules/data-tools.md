@@ -19,8 +19,8 @@ source-data operations workspace.
 - `rules-content/`: generated content rows derived from the rules DB, including
   publication metadata overlays and conservative normalized mechanics display
   coverage for runtime consumers.
-- `offline-html/`: read-only normalized bilingual content rendering into local
-  static HTML/CHM source pages, without source acceptance or DB writes.
+- `offline-html/`: read-only class/level directories with accepted bilingual
+  summaries and A–Z full-body HTML/CHM pages; no source acceptance or DB writes.
 - `rulebooks/`: rulebook label audits, publication metadata helpers, and the
   local publication metadata seed workflow.
 - `short-desc/`: English/Chinese short-description matching, QA,

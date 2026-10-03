@@ -5,7 +5,7 @@ import path from "node:path";
 import Database from "better-sqlite3";
 import { load } from "cheerio";
 import { repoRoot } from "../shared/env";
-import { exportOfflineHtml, validatePages } from "./export";
+import { exportOfflineHtml, SummarySelectionError, validatePages } from "./export";
 import { main } from "./cli";
 
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "offline-html-test-"));
@@ -39,6 +39,7 @@ function zh(id: number, name: string, plain: string, html: string | null, lang =
 const long = "完整段落 α & <目标>\n\n".repeat(600) + "[原文疑义] 保留说明。";
 const sourceNote = '原文疑义备注（本项目说明，非官方勘误）';
 const html = '<p id="start">Full <em>emphasis</em> &amp; Unicode 雪</p><table><caption>Fixture</caption><tr><th scope="col">Roll</th><th>Result</th></tr><tr><td colspan="2">A &lt; B</td></tr></table><ul><li>Item</li></ul><p><a href="#start">Return</a> <a href="/spells/book--86/beta--2/">Beta</a> <a href="https://example.invalid/private">Outside</a></p><a id="alias-id" name="旧%名">Anchor</a><a href="#%E6%97%A7%25%E5%90%8D">Named return</a>'
+  + '<p><a href="spell-5.html#zh">Same letter Chinese</a> <a href="spell-1.html#rules">Current rules</a> <a href="spell-999.html">Out of scope</a></p>'
   + `<h3>${sourceNote}</h3><p>[fixture-question-one] 原文条件甲和条件乙均保留，未作裁定。</p><p>[fixture-question-two] 第二处独立疑问；此备注不会改写原规则。</p>`;
 const plain = load(html, {}, false).root().text();
 try {
@@ -49,6 +50,10 @@ try {
   spell(2, "Beta inherited spell", "As Alpha, except the complete inherited difference.", null);
   spell(3, "Gamma fallback", "English fallback body.", null);
   spell(4, "Other book", "DO_NOT_BLEND_NEIGHBOR", null, 87);
+  const paragraphs = '<p id="start">First paragraph\nPDF visual fold remains in this paragraph.</p><p>Second <strong>synthetic label</strong> and <em>emphasis</em>.</p>';
+  const paragraphText = load(paragraphs, {}, false).root().text();
+  spell(5, "Alpha & <fixture>", paragraphText, paragraphs);
+  zh(5, "合成段落", paragraphText, paragraphs);
   zh(1, "雪 & <名字>", long, null);
   zh(2, "继承法术", plain, html);
   zh(3, "Gamma fallback", "English  fallback\tbody.\n\nPreserved final line.", '<pre>English  fallback\tbody.\n\nPreserved final line.</pre>', "en");
@@ -57,6 +62,20 @@ try {
     level,sourceTable,note) VALUES ('list:1','spell:1','class',1,'Fixture caster','fixture',3,'fixture','Printed ambiguity note')`).run();
   db.prepare(`INSERT INTO SpellListEntry (id,spellId,listType,ownerLegacyId,ownerName,ownerSlug,
     level,sourceTable,rawExtra,variantLabel) VALUES ('list:2','spell:1','domain',2,'Fixture domain','fixture-domain',4,'fixture','Raw domain qualifier','Printed variant')`).run();
+  db.exec(`INSERT INTO SpellListEntry (id,spellId,listType,ownerLegacyId,ownerName,ownerSlug,level,sourceTable,note,reviewStatus) VALUES
+    ('zero','spell:1','class',1,'Fixture caster','fixture',0,'fixture','Zero qualifier','accepted'),
+    ('zero-again','spell:1','class',1,'Fixture caster','fixture',0,'fixture','Additional qualifier','review'),
+    ('nine','spell:5','class',1,'Fixture caster','fixture',9,'fixture',NULL,'accepted'),
+    ('second','spell:2','class',2,'Second caster','second',4,'fixture',NULL,'accepted')`);
+  const summary = db.prepare(`INSERT INTO I18nSpellSummaryText
+    (id,spellId,rulebookId,lang,variant,summaryText,reviewStatus,sourceKey,sourceKind,updatedAt)
+    VALUES (?,?,86,?,?,?,'accepted',?,'fixture',CURRENT_TIMESTAMP)`);
+  for (const id of [1, 2, 5]) {
+    summary.run(`summary:${id}:zh`, id, "zh", "chm", `已接受短描述 ${id} & <保留>`, privacy);
+    summary.run(`summary:${id}:en`, id, "en", "imarvin", `Accepted short description ${id}.`, privacy);
+    summary.run(`summary:${id}:effective`, id, "zh", "effective", "DO_NOT_BLEND_EFFECTIVE_SUMMARY", privacy);
+    summary.run(`summary:${id}:other`, id, "zh", "other", `Other exact summary ${id}.`, privacy);
+  }
   db.prepare(`INSERT INTO SpellTaxonomyFacet (id,spellId,facetType,facetKey,name,rawText,sourceField)
     VALUES ('facet:1','spell:1','descriptor','fixture','Normalized descriptor','Raw descriptor','fixture')`).run();
   db.prepare(`INSERT INTO SpellComponent (id,spellId,componentType,present,sourceField)
@@ -65,35 +84,63 @@ try {
     savingThrowRaw='Raw saving throw',resistanceRaw='Raw resistance',corruptLevel=2 WHERE legacySpellId=1`).run();
   const options = { contentDb: dbPath, book: 86, variant: "effective", outDir: path.join(output, "first") };
   const report = exportOfflineHtml(options);
-  assert.equal(report.spells, 3); assert.equal(report.englishBodyFallbacks, 1);
-  assert.equal(report.files, 7); assert.equal(report.detachedReferences, 2);
+  assert.equal(report.spells, 4); assert.equal(report.englishBodyFallbacks, 1);
+  assert.equal(report.files, 31); assert.equal(report.detachedReferences, 4);
   assert.equal(report.htmlTextDifferences, 0);
   const read = (name: string) => fs.readFileSync(path.join(options.outDir, name), "utf8");
-  const first = read("spell-1.html"), $ = load(first);
-  assert.equal($("h1").text(), "雪 & <名字> / Alpha & <fixture>");
-  assert.equal($("#zh + div").text(), long);
-  assert.equal($("#en + div").text(), plain);
-  assert.equal($("#en + div table td").attr("colspan"), "2");
-  assert.equal($("#en + div em").text(), "emphasis");
-  assert.equal($("#en + div a").eq(0).attr("href"), "#en-1-start");
-  assert.equal($("#en + div a").eq(1).attr("href"), "spell-2.html");
-  assert.equal($("#en + div a").eq(2).attr("href"), undefined);
-  assert.equal($("#en + div a").eq(4).attr("href"), "#en-1-%E6%97%A7%25%E5%90%8D");
-  assert.equal($("#en + div a").eq(3).attr("id"), "en-1-alias-id");
-  assert.equal($("#en + div a").eq(3).attr("name"), "en-1-旧%名");
-  assert.equal($("#en + div h3").text(), sourceNote);
-  assert.ok(load(read("spell-2.html"))("#zh + div").text().includes('[fixture-question-two] 第二处独立疑问；此备注不会改写原规则。'));
-  assert.ok($("#rules + table").text().includes("Printed ambiguity note"));
-  const ruleText = $("#rules + table").text();
+  const first = read("A.html"), $ = load(first);
+  assert.equal($("#spell-1 > h2").text(), "雪 & <名字> / Alpha & <fixture>");
+  assert.equal($("#spell-1-zh + div").text(), long);
+  assert.equal($("#spell-1-en + div").text(), plain);
+  assert.equal($("#spell-1-en + div table td").attr("colspan"), "2");
+  assert.equal($("#spell-1-en + div em").text(), "emphasis");
+  assert.equal($("#spell-1-en + div a").eq(0).attr("href"), "#en-1-start");
+  assert.equal($("#spell-1-en + div a").eq(1).attr("href"), "B.html#spell-2");
+  assert.equal($("#spell-1-en + div a").eq(2).attr("href"), undefined);
+  assert.equal($("#spell-1-en + div a").eq(4).attr("href"), "#en-1-%E6%97%A7%25%E5%90%8D");
+  assert.equal($("#spell-1-en + div a").eq(5).attr("href"), "A.html#spell-5-zh");
+  assert.equal($("#spell-1-en + div a").eq(6).attr("href"), "A.html#spell-1-rules");
+  assert.equal($("#spell-1-en + div a").eq(7).attr("href"), undefined);
+  assert.equal($("#spell-1-en + div a").eq(3).attr("id"), "en-1-alias-id");
+  assert.equal($("#spell-1-en + div a").eq(3).attr("name"), "en-1-旧%名");
+  assert.equal($("#spell-1-en + div h3").text(), sourceNote);
+  assert.ok(load(read("B.html"))("#spell-2-zh + div").text().includes('[fixture-question-two] 第二处独立疑问；此备注不会改写原规则。'));
+  assert.ok($("#spell-1-rules + table").text().includes("Printed ambiguity note"));
+  const ruleText = $("#spell-1-rules + table").text();
   for (const raw of ["Fixture school", "Raw subschool", "Raw descriptor", "Fixture caster 3", "Fixture domain 4",
     "Raw domain qualifier", "Printed variant", "DF, V", "V, S", "1 action", "Touch", "One creature",
     "Raw effect", "Raw area", "1 round", "Raw saving throw", "Raw resistance"]) assert.ok(ruleText.includes(raw), raw);
-  assert.ok(read("spell-2.html").includes("complete inherited difference"));
-  assert.ok(read("spell-3.html").includes("English body fallback"));
-  assert.equal(load(read("spell-3.html"))("#zh + div pre").text(), "English  fallback\tbody.\n\nPreserved final line.");
+  assert.ok(read("B.html").includes("complete inherited difference"));
+  assert.ok(read("G.html").includes("English body fallback"));
+  assert.equal(load(read("G.html"))("#spell-3-zh + div pre").text(), "English  fallback\tbody.\n\nPreserved final line.");
+  assert.deepEqual($(".spell-entry").toArray().map(el => $(el).attr("id")), ["spell-1", "spell-5"]);
+  assert.equal(report.classPages, 2); assert.equal(report.classMemberships, 4); assert.equal(report.classListEntries, 5);
+  assert.equal(report.selectedSummaries, 6); assert.deepEqual(report.summaryVariants, { en: "imarvin", zh: "chm" });
+  assert.deepEqual(report.classlessTargets, [3]); assert.equal(report.classEntriesNeedingStructuralReview, 1);
+  assert.equal(report.pdfFormatting, "pending-431-source-mapping");
+  // Preserve two semantic paragraphs and a visual line fold within the first. No PDF mapping is inferred.
+  assert.equal($("#spell-5-en + div p").length, 2);
+  assert.equal($("#spell-5-en + div p").first().text(), "First paragraph\nPDF visual fold remains in this paragraph.");
+  assert.equal($("#spell-5-en + div strong").text(), "synthetic label");
+  assert.equal($("#spell-5-en + div").text(), paragraphText);
+  assert(read("style.css").includes("margin-bottom: 1.65em"));
+  const menu = load(read("index.html"));
+  assert.deepEqual(menu("h2").toArray().map(el => menu(el).attr("id")), ["classes", "letters"]);
+  assert.equal(menu('a[href="A.html"]').length, 1); assert(!menu.text().includes("Fixture domain"));
+  const caster = load(read("class-1.html"));
+  assert.deepEqual(caster("h2").toArray().map(el => caster(el).attr("id")), Array.from({ length: 10 }, (_, i) => `level-${i}`));
+  assert.equal(caster('#level-0 + ul > li').length, 1);
+  assert.equal(caster('#level-0 + ul a').attr("href"), "A.html#spell-1");
+  assert.equal(caster('#level-0 + ul [lang="zh"]').text(), "已接受短描述 1 & <保留>");
+  assert.equal(caster('#level-0 + ul [lang="en"]').text(), "Accepted short description 1.");
+  for (const note of ["Zero qualifier", "Additional qualifier"]) assert(caster('#level-0 + ul').text().includes(note));
+  assert.equal(caster('#level-9 + ul a').attr("href"), "A.html#spell-5");
+  assert(caster('#level-1 + .empty').length); assert(load(read("Z.html"))(".empty").length);
+  assert(!fs.readdirSync(options.outDir).some(name => /^spell-\d+\.html$/.test(name)));
+  assert(!fs.existsSync(path.join(options.outDir, "index-en.html")));
   for (const name of fs.readdirSync(options.outDir)) {
     const content = read(name);
-    for (const forbidden of [privacy, "DO_NOT_BLEND_VARIANT", "DO_NOT_BLEND_NEIGHBOR", dbPath,
+    for (const forbidden of [privacy, "DO_NOT_BLEND_VARIANT", "DO_NOT_BLEND_NEIGHBOR", "DO_NOT_BLEND_EFFECTIVE_SUMMARY", dbPath,
       "sourceKey", "ProvenanceJson", "originalInput", "sourcePassage"]) assert.ok(!content.includes(forbidden), name);
     if (name.endsWith(".html")) assert.ok(content.includes("charset=utf-8"));
   }
@@ -114,6 +161,14 @@ try {
   // Bad inputs use independent copies, observed through the actual read-only entry.
   const snapshot = db.serialize();
   const badCases: [string, RegExp][] = [
+    ["UPDATE SpellContent SET canonicalName='3rd invalid initial' WHERE legacySpellId=1", /A–Z initial/],
+    ["UPDATE SpellListEntry SET level=10 WHERE id='nine'", /class membership/],
+    ["UPDATE SpellListEntry SET ownerName='Conflicting owner' WHERE id='nine'", /class owner/],
+    ["DELETE FROM I18nSpellSummaryText WHERE id='summary:1:zh'", /Selected summary gaps/],
+    ["UPDATE I18nSpellSummaryText SET rulebookId=9 WHERE id='summary:1:en'", /wrong-book/],
+    ["UPDATE I18nSpellSummaryText SET reviewStatus='review' WHERE id='summary:2:zh'", /not-accepted/],
+    ["UPDATE I18nSpellSummaryText SET summaryText='' WHERE id='summary:5:en'", /empty/],
+    ["DROP INDEX I18nSpellSummaryText_spellId_lang_variant_key; INSERT INTO I18nSpellSummaryText SELECT 'duplicate-summary',spellId,rulebookId,lang,variant,summaryText,sourceKey,sourceName,sourceKind,createdAt,updatedAt,reviewStatus FROM I18nSpellSummaryText WHERE id='summary:1:zh'", /multiple/],
     ["DELETE FROM I18nSpellText WHERE spellId=2 AND variant='effective'", /spell 2: missing name\/body/],
     ["UPDATE I18nSpellText SET rulebookId=87 WHERE spellId=2 AND variant='effective'", /Conflicting/],
     ["UPDATE I18nSpellText SET bodyProvenanceJson=NULL WHERE spellId=2 AND variant='effective'", /language metadata/],
@@ -131,12 +186,70 @@ try {
     assert.throws(() => exportOfflineHtml({ ...options, contentDb: badDb, outDir }), pattern);
     assert.ok(!fs.existsSync(outDir));
   }
+  const gapDb = path.join(temp, "all-gaps.sqlite"), gapOutput = path.join(output, "all-gaps");
+  fs.writeFileSync(gapDb, snapshot); const gapConnection = new Database(gapDb);
+  gapConnection.exec("DELETE FROM I18nSpellSummaryText WHERE id='summary:1:zh'; UPDATE I18nSpellSummaryText SET rulebookId=9 WHERE id='summary:2:en'");
+  gapConnection.close();
+  assert.throws(() => exportOfflineHtml({ ...options, contentDb: gapDb, outDir: gapOutput }), (error: unknown) => {
+    assert(error instanceof SummarySelectionError);
+    assert.deepEqual(error.gaps, [
+      { spellId: 1, lang: "zh", variant: "chm", reason: "missing" },
+      { spellId: 2, lang: "en", variant: "imarvin", reason: "wrong-book" },
+    ]);
+    assert(!error.message.includes(privacy)); return true;
+  });
+  assert(!fs.existsSync(gapOutput));
+  // Other variants select only their own accepted Chinese summaries; English stays imarvin.
+  for (const id of [1, 2, 3, 5]) zh(id, `Other name ${id}`, `Other body ${id}`, null, "zh", "other");
+  const otherOut = path.join(output, "other-variant");
+  assert.deepEqual(exportOfflineHtml({ ...options, variant: "other", outDir: otherOut }).summaryVariants, { en: "imarvin", zh: "other" });
+  const otherClass = load(fs.readFileSync(path.join(otherOut, "class-1.html"), "utf8"));
+  assert.equal(otherClass('#level-0 + ul [lang="zh"]').text(), "Other exact summary 1.");
+  assert.equal(otherClass('#level-0 + ul [lang="en"]').text(), "Accepted short description 1.");
+  // Full-size synthetic scope: every target has one entry and two complete bodies after consolidation.
+  const expected = new Map<number, { en: string; zh: string }>([
+    [1, { en: plain, zh: long }], [2, { en: "As Alpha, except the complete inherited difference.", zh: plain }],
+    [3, { en: "English fallback body.", zh: "English  fallback\tbody.\n\nPreserved final line." }],
+    [5, { en: paragraphText, zh: paragraphText }],
+  ]);
+  db.transaction(() => {
+    for (let i = 0; i < 997; i++) {
+      const id = 1000 + i, letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".charAt(i % 26);
+      const en = `Complete synthetic ${id}\n\nInherited exception <kept> ${id}.`, chinese = `完整合成正文 ${id}\n\n独立备注 ${id}。`;
+      spell(id, `${letter} synthetic ${String(id).padStart(4, "0")}`, en, null); zh(id, `合成名称 ${id}`, chinese, null);
+      expected.set(id, { en, zh: chinese });
+    }
+    spell(4837, "Excluded neighbor", "Neighbor in book nine", null, 9);
+  })();
+  const fullOut = path.join(output, "full-scope"), full = exportOfflineHtml({ ...options, outDir: fullOut });
+  assert.equal(full.spells, 1001); assert.equal(full.selectedSummaries, 6); assert.equal(full.classTargets, 3);
+  const actual = new Map<number, { en: string; zh: string }>();
+  for (const letter of "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
+    const page = load(fs.readFileSync(path.join(fullOut, `${letter}.html`), "utf8"));
+    const names: string[] = [];
+    page('.spell-entry').each((_, entry) => {
+      const id = Number(page(entry).attr("id")!.slice("spell-".length));
+      assert(!actual.has(id));
+      actual.set(id, { en: page(`#spell-${id}-en + div`).text(), zh: page(`#spell-${id}-zh + div`).text() });
+      const row = db.prepare('SELECT canonicalName FROM SpellContent WHERE legacySpellId=?').get(id) as { canonicalName: string };
+      assert.equal(row.canonicalName.charAt(0).toUpperCase(), letter); names.push(row.canonicalName);
+    });
+    assert.deepEqual(names, [...names].sort((a, b) => a.localeCompare(b, "en")));
+  }
+  assert.deepEqual(actual, new Map([...expected].sort(([a], [b]) => {
+    const name = (id: number) => (db.prepare('SELECT canonicalName FROM SpellContent WHERE legacySpellId=?').get(id) as { canonicalName: string }).canonicalName;
+    return name(a).localeCompare(name(b), "en") || a - b;
+  })));
+  assert(!actual.has(4837)); assert.equal(actual.size * 2, 2002);
   assert.throws(() => validatePages(new Map([["index.html", '<a href="missing.html">Missing</a>']])), /missing/);
   assert.throws(() => validatePages(new Map([["index.html", '<a href="#absent">Missing</a>']])), /missing link anchor/);
   assert.throws(() => validatePages(new Map([["index.html", '<a href="https://example.invalid">Network</a>']])), /non-local/);
-  console.log("offline HTML portable tests passed: full bodies, Unicode, rules, tables, anchors, privacy, repeat isolation, failures");
+  console.log("offline HTML portable tests passed: classes/levels, accepted summaries/gaps, A–Z/1001 targets/2002 bodies, merged anchors, paragraphs, tables, notes, privacy, repeat/failures");
 } finally {
   if (db.open) db.close();
-  fs.rmSync(temp, { recursive: true, force: true });
-  fs.rmSync(output, { recursive: true, force: true });
+  for (const [root, directory] of [[os.tmpdir(), temp], [outputRoot, output]]) {
+    const absolute = path.resolve(directory!), relative = path.relative(path.resolve(root!), absolute);
+    assert(relative.startsWith("offline-html-test-") && !relative.includes(path.sep) && !path.isAbsolute(relative));
+    fs.rmSync(absolute, { recursive: true, force: true });
+  }
 }
