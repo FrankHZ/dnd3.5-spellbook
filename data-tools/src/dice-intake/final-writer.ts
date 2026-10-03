@@ -19,6 +19,7 @@ export const finalScSummaryCandidate = "04dd98490e4ad643eafc8f262bb5af57d3bffcd9
 export const finalScSummaryPath = "short-desc-normalized/summaries.generated.jsonl";
 export type FinalField = { targetId: number; rulebookId: number; field: "name" | "body";
   text: string; html?: string | null; origin: FieldOrigin; review: Record<string, unknown>;
+  sourceCorrection?: {revision: string; acceptanceRevision: string; path: string; targetId: number; prior: FinalField};
   readerNoteAddendum?: {revision: string; path: string; rowRef: string; amendment: Record<string, unknown>} };
 const tables = { RulebookContent: "rulebooks", SpellContent: "spells", SpellAppearance: "appearances",
   SpellTaxonomyFacet: "taxonomyFacets", SpellListEntry: "listEntries", SpellComponent: "components",
@@ -65,6 +66,7 @@ function persistedField(value: FinalField) {
     targetId: value.targetId, field: value.field, language: 'zh', origin: value.origin,
     input: {revision: finalScRevision, path: 'dice-qa/books/86/issue-365/field-dispositions.jsonl',
       targetId: value.targetId, field: value.field}, evidence: value.review, review: value.review,
+    ...(value.sourceCorrection ? {sourceCorrection: value.sourceCorrection} : {}),
     ...(value.readerNoteAddendum ? {readerNoteAddendum: value.readerNoteAddendum} : {})});
 }
 
@@ -105,6 +107,18 @@ export function planFinalOverlay(db: Database.Database, fields: FinalField[], so
   const previous = new Map(existing.map(r => [Number(r.spellId), r]));
   const rows: OverlayRow[] = names.sort((a, b) => a.targetId - b.targetId).map(name => {
     const body = bodies.get(name.targetId)!;
+    for (const field of [name, body]) if (field.sourceCorrection) {
+      const correction = field.sourceCorrection;
+      assert.equal(field.field, 'body'); assert.equal(field.targetId, 3930);
+      assert.equal(correction.targetId, 3930);
+      assert.equal(correction.revision, 'ebc3a6615002de6dac1f1c4a636e19757d7b0c8f');
+      assert.equal(correction.acceptanceRevision, '5f05fad7df5256a9c3c998d3be77aac238445107');
+      assert.equal(correction.path, 'dice-qa/books/86/issue-461/candidate.json');
+      assert(!correction.prior.sourceCorrection, 'nested source correction');
+      const restored = {...field, text: correction.prior.text, html: correction.prior.html};
+      delete restored.sourceCorrection;
+      assert.deepEqual(restored, correction.prior, 'source correction changes original envelope');
+    }
     for (const field of [name, body]) if (field.readerNoteAddendum) {
       assert.equal(field.field, 'body', 'reader note belongs to body');
       assert.equal(field.readerNoteAddendum.revision, finalScNoteRevision, 'unsupported reader-note revision');

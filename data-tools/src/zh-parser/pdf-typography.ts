@@ -24,6 +24,60 @@ function fragment(html: string) {
   return load(html, { xml: { xmlMode: false } }, false);
 }
 
+/** Reviewed decoded-text intervals, in Unicode code points, not UTF-16 units. */
+export interface TypographyEmphasisRange {
+  start: number;
+  end: number;
+  text: string;
+  style: "em" | "strong";
+}
+
+/**
+ * Audit emitted HTML independently of the author against complete reviewed ranges.
+ * Call after generation (and again after sanitization); mapping metadata alone
+ * cannot prove that the actual tags cover the intended characters. This does
+ * not authenticate source mappings or grant presentation selection authority.
+ */
+export function assertPdfTypographyEmphasis(
+  html: string,
+  ranges: readonly TypographyEmphasisRange[],
+): void {
+  const $ = fragment(html);
+  const characters: string[] = [];
+  const actual: Set<string>[] = [];
+  function visit(nodes: AnyNode[], styles: ReadonlySet<string>) {
+    for (const node of nodes) {
+      if (node.type === "text") {
+        for (const character of node.data) {
+          characters.push(character);
+          actual.push(new Set(styles));
+        }
+      }
+      let nested = styles;
+      if (node.type === "tag" && (node.name === "em" || node.name === "strong")) {
+        nested = new Set([...styles, node.name]);
+      }
+      if ("children" in node) visit(node.children, nested);
+    }
+  }
+  const root = $.root().toArray()[0]!;
+  visit("children" in root ? root.children : [], new Set());
+  const expected = characters.map(() => new Set<string>());
+  for (const range of ranges) {
+    assert(Number.isSafeInteger(range.start) && Number.isSafeInteger(range.end)
+      && range.start >= 0 && range.end > range.start && range.end <= characters.length,
+    "invalid typography emphasis range");
+    assert(range.style === "em" || range.style === "strong", "invalid typography emphasis style");
+    assert.equal(characters.slice(range.start, range.end).join(""), range.text,
+      "stale typography emphasis text");
+    for (let index = range.start; index < range.end; index++) {
+      assert(!expected[index]!.has(range.style), "overlapping typography emphasis ranges");
+      expected[index]!.add(range.style);
+    }
+  }
+  assert.deepEqual(actual, expected, "emitted typography emphasis differs from reviewed ranges");
+}
+
 const semanticTags = new Set([
   "a", "table", "caption", "colgroup", "col", "thead", "tbody", "tfoot",
   "tr", "th", "td", "ul", "ol", "li", "dl", "dt", "dd",

@@ -289,6 +289,70 @@ not modify the frozen seven-entry or other three-entry presentation proposals,
 select the new display proposal, pass HTML visual review or authorize full export.
 Main-gate owns actual DB writes and later export after implementation acceptance.
 
+### Upgrade the accepted Bands of Steel / Beast Claws pairs
+
+The fixed [#461 source acceptance](https://github.com/FrankHZ/dnd3.5-spellbook/issues/461#issuecomment-5974178676)
+binds private `ebc3a6615002de6dac1f1c4a636e19757d7b0c8f`,
+`dice-qa/books/86/issue-461/candidate.json`: remove only 3930's unmatched Chinese
+body sentence from text/HTML and only 3934's unmatched English article and
+following space. All four complete before-fields and prior body envelopes are
+fixed. The real owner-comment snapshot is authenticated at
+`5f05fad7df5256a9c3c998d3be77aac238445107`; caller status cannot replace it.
+The original final baseline, reader-note and complete summary authorities remain
+unchanged. Source acceptance does not authorize operator writes or accept code,
+new normalized generation, display selection or HTML visual output.
+
+Use the maintained atomic rules step for 3934, with a full actual predecessor
+guard. The frozen proposal's descriptive `source` keys predate that patch schema;
+`sc-source-pairs.cjs`'s `maintainedPatch` converts only those keys to supported
+`source.provenance`, leaving every expected/after value exact. Do not alter the
+frozen proposal or relax the patch validator. Main-gate's private
+`issue-461/prepare-step.cjs` prepares the guard read-only after implementation
+acceptance. Its output belongs to issue-461; the rules CLI needs the unchanged
+operation under its existing `rules-patches/pending/spells/` path convention.
+Retain that actual guard for repeat checks; a memory fixture guard is not a
+production handoff. Then generate a new owned rules manifest and complete
+normalized artifact through the maintained commands.
+
+For the accepted annotated #434 predecessor, append these options to the
+explicit-root `dice:final:write` invocation:
+
+```powershell
+--accepted-english-title --accepted-summaries --accepted-source-pairs `
+--upgrade-source-pairs `
+--previous-normalized '<absolute-private-data-root>/dice-qa/books/86/issue-434/operator.normalized.generated.json'
+```
+
+Pass the new genuine artifact/manifest through `--normalized` and
+`--rules-manifest`. The predecessor is fixed at private
+`9ee687c380d22308d6f4aac3a3ad3eaa6196c614`, with completed-state evidence
+`8afc1a3db3b3b506a6c833d0e10336fd09bc5422`. Default check reports `before`/`after`;
+`--apply` owns one immediate transaction and `--validate` requires exact `after`.
+The English-title and source-pair transitions cannot be combined.
+
+Full historical QA runs with only the two accepted English amendments reversed
+in memory. Fresh complete SC24/25 and all official errata are compared with the
+fixed source packet. The authenticated final field derivation changes only
+3930's Chinese body pair and adds `sourceCorrection` with exact candidate and
+acceptance revisions plus its complete prior field. The normalizer owns only
+3934's English pair, derived hash/raw JSON and generation provenance. Existing
+names, notes, other body envelopes, all summary columns/timestamps and protected
+tables/schema remain exact. The changed body's timestamp remains overlay-owned.
+Missing/partial authority, stale full fields/normalized inputs and failed
+post-write checks reject or roll back. Exact repeat writes zero rows.
+
+The API validates that bounded persisted supplement and reports the new body
+review revision for 3930 while preserving its original owner and final baseline
+revision. Runtime does not read private Git/PDF inputs or expose private text
+or locators. Use `--accepted-source-pairs --accepted-english-title
+--accepted-summaries` for subsequent ordinary final validation/helper refreshes.
+Rebuild/check FTS and perform actual default/explicit-owner consumer checks after
+main-gate's authorized migration. #345 must then refresh both corrected complete
+four-field typography guards and its actual source/build proof from that artifact;
+the independent format proposals remain unselected until separately accepted.
+Neither this command nor a source-bound memory rehearsal bypasses HTML visual
+review or its no-workaround boundary.
+
 After all text and summary imports, run `content:search:rebuild -- --dry-run`,
 then `content:search:rebuild`, and repeat final validation with
 `--accepted-summaries` plus consumer/search checks. Use this flag consistently

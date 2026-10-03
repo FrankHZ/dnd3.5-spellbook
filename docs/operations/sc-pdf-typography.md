@@ -18,6 +18,13 @@ The [second complete-entry batch report](../../data-tools/reports/dice-qa/books/
 binds `dice-qa/books/86/issue-459/` and separates unselected format candidates
 from blocked content decisions. Its fixed-exporter rehearsal records the existing
 single-book policy for outside-book references explicitly.
+The two bounded source corrections for 3930/3934 follow the
+[accepted source-pair migration](./sc-final-source-binding.md#upgrade-the-accepted-bands-of-steel--beast-claws-pairs).
+Their private `issue-461/` format proposals guard the proposed corrected full
+fields and reopen complete original pages/errata. They remain blocked for actual
+selection until migration and independent format acceptance; the frozen
+`issue-459/` proposals and its other entries are unchanged. Actual #345 input and
+build proofs must be refreshed at that migration handoff.
 Actual source pages, span references, complete field guards,
 Chinese ranges and reviewed HTML stay in the configured private data repo under
 `dice-qa/books/86/issue-431/`. They are presentation proposals awaiting main-gate
@@ -113,6 +120,23 @@ paragraphs and tables in different orders. Private Chinese ranges are Unicode
 code-point offsets, not JavaScript UTF-16 offsets or copied English offsets.
 They are review navigation, not the consumer's mutation mechanism. Table cells
 are matched by row/column meaning; absent legacy tokens are not invented.
+
+After authoring, independently parse the final HTML and compare all `em`/`strong`
+characters with complete reviewed intervals. Use `assertPdfTypographyEmphasis`
+from the existing selection helper for Unicode code-point ranges, including
+their exact decoded text. It checks nested styles, entities, whitespace and
+runs split by links or line breaks. Missing or extra styled characters reject,
+even when the complete field/text/structure guards pass. Repeat this comparison
+after the consumer's sanitization and link handling. Mapping ranges and PDF
+font checks alone cannot prove that the emitted tags match those ranges.
+Python authors using `HTMLParser` must keep their visible-text position in a
+separate counter: the parser's own `offset` tracks consumed markup and is not a
+decoded-text offset. Neither this output check nor a corrected derivative
+authenticates source mappings, accepts content, or selects a presentation.
+The [emitted-emphasis audit](../../data-tools/reports/dice-qa/books/86/pdf-typography-inline-emphasis.json)
+binds corrected private candidates, individual dispositions and independent
+final-output checks. Its prospective source-pair candidates remain unselected;
+the report does not replace main-gate acceptance or an actual export handoff.
 
 Preserve existing lists, tables, unresolved source statements and project notes.
 Document any source-supported change to existing emphasis individually.
