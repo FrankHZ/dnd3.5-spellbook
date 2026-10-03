@@ -116,7 +116,7 @@ every summary parser column must match before rendering. All 961 class targets
 must have their 1,922 accepted English/Chinese owner fields; the other 40 scoped
 targets remain body-only. Missing, duplicate, empty or incorrect owner/source
 inputs still fail closed before output. It then uses the existing
-`readExact` Git input helper on the two exact selected revisions, fixed
+`readExact` Git input helper on each exact selected revision, fixed
 presentations, complete mappings and main-gate acceptance, validates the explicit
 selected target set and all four current text/HTML
 fields with `selectPdfTypography`, and passes that loaded selection and the same
@@ -128,14 +128,24 @@ explicit readonly handoff; this task does not open those DBs.
 
 Ordinary CLI flags provide no presentation JSON/file channel. The low-level
 renderer map is not source authority; authentication belongs to that maintained
-entry. Current integration selects the original seven representatives
-`3531, 3855, 4726, 4546, 4784, 3866, 3857` plus the exact 45 complete entries
-accepted in [#457 / PR #458](https://github.com/FrankHZ/dnd3.5-spellbook/pull/458).
-The independent acceptance and complete presentation/mapping bindings are required;
-proposal status alone grants no authority. The resulting set has 52 selected
-displays; the other 949 targets retain current display. Other proposals remain
-unselected. Selection never changes persisted text, HTML or
-provenance. Private evidence/ref/command details stay in owned issue-345 usage.
+entry. Current integration retains the original seven representatives and all
+45 accepted [#457 / PR #458](https://github.com/FrankHZ/dnd3.5-spellbook/pull/458)
+entries, then adds only the exact 43 candidates accepted in
+[#459 / PR #460](https://github.com/FrankHZ/dnd3.5-spellbook/pull/460).
+The independent acceptance, complete mappings and amended dispositions are
+required; proposal status alone grants no authority. The resulting set has 95
+selected displays; the other 906 targets retain current display. IDs 3930/3934
+remain current because their content discrepancies require separate decisions.
+Initial 44 candidates and diagnostic 45 presentations are not selection inputs.
+Selection never changes persisted text, HTML or provenance. Private
+refs and commands stay in owned issue-345 usage.
+
+3970 retains accepted parent3969 flavour without an own-entry SC font claim.
+3943's two supplemental heading spans remain bound to the accepted source refs.
+The original 3972 presentation still links to PHB2612; the existing single-book
+exporter removes its href and preserves the complete anchor text. Independent
+full-scope checking requires the exact detached-reference count and no invented
+SC destination. This integration does not change that consumer policy.
 
 The English-title refresh requires both `--accepted-english-title` and
 `--accepted-summaries` at the maintained private handoff. Source authentication
@@ -145,8 +155,8 @@ text/HTML consume the source-supported title correction directly; export never
 hides the old title or restores it. The independent checker compares that exact
 current pair along with all bodies and metadata. This preserves the complete
 accepted summary binding. The complete-entry refresh adds the accepted
-45 entries through an explicit `--accepted-pdf-complete-01` private handoff and
-fixed batch revision; 3958 remains outside the 52 selected typography targets.
+43 entries through an explicit `--accepted-pdf-complete-02` private handoff and
+fixed batch revision; 3958 remains outside the 95 selected typography targets.
 Prior previews/proofs retain their original input bindings and do not certify
 the refreshed output.
 
