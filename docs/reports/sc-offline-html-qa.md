@@ -47,6 +47,17 @@ entry. The other 994 displays remain current, including four proposals not
 selected in this run and 990 targets outside that reviewed set. No automatic
 eleven-row selection, invented summary or full-book format acceptance occurs.
 
+The source-supported #434 correction removes only the duplicate 3958 English
+table title from its canonical text/HTML. The English-title refresh consumes
+that accepted pair through the source-authenticated new normalized input and
+explicit accepted-title/summary handoff; it does not add 3958 to the seven PDF
+previews. Its disposable full-scope Git replay checks the precise old/new
+artifact transition, unchanged Chinese/provenance/notes and complete summaries,
+then all 1,001 entries / 2,002 bodies and local links. Restoring the old title in
+output fails the independent checker. Actual activation and refreshed output
+require main-gate's corresponding completed-state proof; prior actual export
+evidence applies only to its previous input state.
+
 Private fixed-Git real-text validation compared these seven complete four-field
 packet guards and the 14 Chinese name/body fields with accepted inputs, then
 passed all 14 derived bilingual body/structure checks through SQLite memory,

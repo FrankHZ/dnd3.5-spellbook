@@ -133,6 +133,17 @@ display; four withheld proposals and 990 targets outside that reviewed set are
 not automatically selected. Selection never changes persisted text, HTML or
 provenance. Private evidence/ref/command details stay in owned issue-345 usage.
 
+The English-title refresh requires both `--accepted-english-title` and
+`--accepted-summaries` at the maintained private handoff. Source authentication
+includes the accepted #434 pair, and the fixed new normalized artifact must
+match the main-gate-completed operator state before output. The 3958 English
+text/HTML consume the source-supported title correction directly; export never
+hides the old title or restores it. The independent checker compares that exact
+current pair along with all bodies and metadata. This changes neither the
+complete accepted summary binding nor the original seven selected PDF previews;
+3958 remains outside the selected typography set. Prior previews/proofs retain
+their original input bindings and do not certify the refreshed output.
+
 Current normalized raw rule fields, descriptors, separate class/domain levels,
 component flags/additional text and notes remain visible. Body rule headers
 remain intact without translation or deduplication against the rules table.
