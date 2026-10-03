@@ -9,7 +9,7 @@ integration. All candidate rows retain `reviewStatus: proposed`.
 
 ## Source and field boundary
 
-Private candidate/helper revision `d5b824b4d4d64491ff95ff82c24df4dc3b5dbeb5`
+Private candidate/helper revision `78f822129b8f885caa769a7ade2d2bb71617dc21`
 owns `dice-qa/books/86/issue-440/`. Gap proof is fixed at
 `84a78b8d9513db883f5cfc6d9e4afe7febd1fbb5`; existing 6,572 summaries at
 `0b6fd8b88c1609cfdae50d8943d77eda13750ea8`; final bilingual name/body and
@@ -46,7 +46,7 @@ sequence-inheritance and close-range ambiguities and notes remain unchanged.
 From public root or `data-tools`, use explicit roots and distinct run labels:
 
 ```powershell
-& "$runtimeRoot/data-tools/pdf-extract/.venv/Scripts/python.exe" -X utf8 "$dataRoot/dice-qa/books/86/issue-440/reproduce.py" --code-root $codeRoot --runtime-root $runtimeRoot --private-revision d5b824b4d4d64491ff95ff82c24df4dc3b5dbeb5 --run review-root
+& "$runtimeRoot/data-tools/pdf-extract/.venv/Scripts/python.exe" -X utf8 "$dataRoot/dice-qa/books/86/issue-440/reproduce.py" --code-root $codeRoot --runtime-root $runtimeRoot --private-revision 78f822129b8f885caa769a7ade2d2bb71617dc21 --run review-root
 ```
 
 Replay checks committed helper/context/proposal text, regenerates deterministically,

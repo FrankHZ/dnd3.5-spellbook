@@ -6,7 +6,7 @@
   "status": "source-reviewed-proposal-awaiting-main-gate",
   "accepted": false,
   "publicBase": "b638851342b8dfdc9edad417d5a799c605397e1c",
-  "privateHandoffAndHelperCommit": "d5b824b4d4d64491ff95ff82c24df4dc3b5dbeb5",
+  "privateHandoffAndHelperCommit": "78f822129b8f885caa769a7ade2d2bb71617dc21",
   "privateDirectory": "dice-qa/books/86/issue-440",
   "fixedInputRevisions": {
     "gapProof": "84a78b8d9513db883f5cfc6d9e4afe7febd1fbb5",
