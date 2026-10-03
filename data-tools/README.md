@@ -138,3 +138,9 @@ by module and lifecycle. Keep that classification when adding a command.
 Maintained workflows need focused helper tests; dormant source reruns and local
 acceptance are conditional operations, not default startup steps. One-time
 investigations do not belong in always-on validation.
+
+The bounded [SC source-pair upgrade](../docs/operations/sc-final-source-binding.md#upgrade-the-accepted-bands-of-steel--beast-claws-pairs)
+uses `dice:final:write -- ... --accepted-source-pairs --upgrade-source-pairs`
+with the existing accepted English-title/summary flags and exact full predecessor.
+It authenticates the fixed source decision and changes only its paired fields;
+operator migration and display selection retain their owning acceptance gates.
