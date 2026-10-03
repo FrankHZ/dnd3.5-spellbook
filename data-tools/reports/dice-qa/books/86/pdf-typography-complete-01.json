@@ -4,7 +4,7 @@
   "status": "complete-source-reviewed-proposals-awaiting-main-gate-selection",
   "publicBase": "3e77d1096b6fa5027963233d658137b2577ae144",
   "privateEvidence": {
-    "revision": "97425fcf8c9f7d7fb95c7e5b35652dbbf7f62578",
+    "revision": "073235bf6c4b08f41dcebeef7185657e86eccafe",
     "directory": "dice-qa/books/86/issue-457/",
     "scopeRevision": "712d96bc24f03bea2f119e00f0b057eadbe0af01",
     "acceptedFieldsRevision": "0688739d92a2aa9fb3eceeb444daa7260e711058",
