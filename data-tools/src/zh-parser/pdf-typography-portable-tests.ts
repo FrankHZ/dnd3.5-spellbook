@@ -1,5 +1,34 @@
 import assert from "node:assert/strict";
-import { selectPdfTypography, type PdfTypographyPresentation } from "./pdf-typography";
+import { assertPdfTypographyEmphasis, selectPdfTypography, type PdfTypographyPresentation } from "./pdf-typography";
+
+// Frozen author failure: identical text/guards can conceal a truncated style run.
+const label = "Material Component:";
+const labelRange = [{ start: 0, end: 19, text: label, style: "em" as const }];
+assertPdfTypographyEmphasis(`<p><em>${label}</em> regular</p>`, labelRange);
+assert.throws(() => assertPdfTypographyEmphasis(
+  '<p><em>Material Com</em>ponent: regular</p>', labelRange), /emitted typography emphasis/);
+assert.throws(() => assertPdfTypographyEmphasis(
+  `<p><em>${label} regular</em></p>`, labelRange), /emitted typography emphasis/);
+assert.throws(() => assertPdfTypographyEmphasis(`<p>${label} regular</p>`, labelRange),
+  /emitted typography emphasis/);
+const nestedRanges = [
+  { start: 1, end: 5, text: "😀&甲\n", style: "em" as const },
+  { start: 3, end: 4, text: "甲", style: "strong" as const },
+  { start: 5, end: 6, text: "乙", style: "strong" as const },
+];
+assertPdfTypographyEmphasis('x<em>😀&amp;<a href="#a"><strong>甲</strong></a>\n<br></em>'
+  + '<strong>乙</strong><a id="a"></a>', nestedRanges);
+assertPdfTypographyEmphasis('<em>A</em><a href="#b"><em>B</em></a><br/><em>C</em>',
+  [{ start: 0, end: 3, text: "ABC", style: "em" }]);
+assert.throws(() => assertPdfTypographyEmphasis('<em>AB</em>',
+  [{ start: 0, end: 2, text: "XY", style: "em" }]), /stale typography emphasis text/);
+assert.throws(() => assertPdfTypographyEmphasis('<em>AB</em>',
+  [{ start: 0, end: 3, text: "AB", style: "em" }]), /invalid typography emphasis range/);
+assert.throws(() => assertPdfTypographyEmphasis('<em>AB</em>',
+  [{ start: 0, end: 2, text: "AB", style: "em" },
+    { start: 1, end: 2, text: "B", style: "em" }]), /overlapping typography emphasis/);
+assert.throws(() => assertPdfTypographyEmphasis('<em><strong>AB</strong></em>',
+  [{ start: 0, end: 2, text: "AB", style: "em" }]), /emitted typography emphasis/);
 
 const input = {
   englishText: '_Opening._\n\n"_base_":spells/example/',
