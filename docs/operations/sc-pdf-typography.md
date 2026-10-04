@@ -206,6 +206,23 @@ content decision under [#476](https://github.com/FrankHZ/dnd3.5-spellbook/issues
 Its checks retain full bilingual current fallback for every
 blocked entry and reject the prior actual authoring/review errors after sanitization.
 
+The [seventh complete-entry packet](../../data-tools/reports/dice-qa/books/86/pdf-typography-complete-07.json)
+reuses its complete original-entry and official-errata review with the current
+post-migration fields. Its current acceptance follows
+[#345's natural formatting standard](https://github.com/FrankHZ/dnd3.5-spellbook/issues/345):
+broadly follow extracted PDF structure and preserve readable complete content,
+paragraphs, tables/lists, notes and links. Retained exact-style audits are
+diagnostics; equivalent glyphs, punctuation emphasis and harmless display
+spacing do not block this slice or require new source replay. The packet retains
+33 unselected candidates and excludes 12 complete bilingual entries with
+unapplied four-field content proposals for
+[#476](https://github.com/FrankHZ/dnd3.5-spellbook/issues/476). A retained compound
+modifier hyphen remains a substantive source-content issue even at a physical
+line end. Historical source-correct and explicit retention decisions remain
+visible as revised source-fidelity proposals, rather than missing-review claims.
+Main-gate owns content acceptance, migration and subsequent readable format
+rebinding; representative rendered acceptance remains with #345.
+
 Individually bound curly/straight apostrophe and paired-quote representations may
 retain existing fields when they preserve the same contraction or possessive,
 or exactly the same quoted words, boundaries and nesting, with unchanged source
