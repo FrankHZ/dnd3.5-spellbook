@@ -47,7 +47,8 @@ outputs. The accepted IDs, complete four-field inputs and reviewed source
 mappings remain unchanged. The maintained entry loads that exact complete set,
 not a reconstruction from older wrong-emphasis derivatives. Complete bilingual
 intervals and independent source evidence bind the selection; proposal status
-and counts grant no authority. The #461 actual source-pair migration and independent complete PDF/errata
+and counts grant no authority. The #461 actual source-pair migration and
+independent complete PDF/errata
 format review now accept corrected 3930/3934 presentations from the same #463
 revision. Their eight input fields bind the migrated after state, giving 97
 selected / 904 current displays. Older #461 formatting outputs and unaccepted
@@ -57,7 +58,8 @@ later batches are excluded. Whole-book and human rendered HTML gates stay open.
 `em`/`strong` set with complete reviewed intervals after candidate generation
 and again on each of 97 final sanitized English/Chinese bodies. Old output can
 pass current text/HTML input guards while emphasizing the wrong characters;
-regression checks require rejection of all 90 affected legacy outputs at both
+regression checks reject all 92 affected legacy outputs, including the two older
+source-pair presentations, at both
 stages, while visible text including whitespace remains identical. The complete
 source bindings and frozen semantic checks remain required alongside this audit.
 
@@ -112,8 +114,9 @@ complete bilingual bodies, rules/tables/lists and reader notes, then a fresh
 durable HTML copy and permitted visual review. New owned private class/A–Z
 checkers reuse the frozen complete canonical/provenance verifier and compare
 all directory summaries, current/selected bodies, notes and structures
-independently. Existing frozen checkers and proofs remain unchanged. No actual
-DB/output or frozen private proof was read or overwritten for this revision.
+independently. Existing frozen checkers and proofs remain unchanged. Source-free
+completed-state and acceptance proofs authenticate the handoff; no actual DB or
+output is opened or overwritten by implementation.
 The new private entry binds the main-gate-accepted operator summary state and its
 explicit normalized/manifest inputs, independently of the rehearsal artifact.
 Actual operator output semantic verification and durable delivery belong to
