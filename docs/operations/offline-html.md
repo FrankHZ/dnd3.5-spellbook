@@ -89,7 +89,8 @@ references, tables/lists, notes and links remain complete.
 
 The existing Chinese field vocabulary identifies the leading mechanism block:
 school, level, components, casting time, range, target/effect/area, duration,
-saving throw and spell resistance. Recognized sibling paragraphs or plain lines
+saving throw and spell resistance, including the observed range/duration labels
+`作用距离：` and `时效：`. Recognized sibling paragraphs or plain lines
 have no inter-field paragraph margins. Only blank rows between recognized fields
 collapse visually. The block is separated from flavour/effect text, whose natural
 paragraph spacing remains. Classification stops after the initial field group;

@@ -64,10 +64,14 @@ try {
   zh(5, "合成段落", paragraphText, paragraphs);
   zh(1, "雪 & <名字>", long, null);
   zh(2, "继承法术", plain, html);
-  const natural = "变化系\n\n等级：一\n\n距离：近距\n一个完整段落。\n第二段含 2d6、条件与引用（PH 10）。\n掷骰\n结果\n1–2\n保留单元格\n材料成分：保留 2 金币的材料。\n经验值：100 XP\n效果：正文后的表格行\n";
+  const mechanismLines = ["变化系", "等级：一", "法术成分：V、S", "施法时间：标准动作",
+    "作用距离：近距", "效果：保留 2d6", "时效：1轮", "豁免检定：无", "法术抗力：可"];
+  const natural = mechanismLines.slice(0, 2).join("\n\n") + "\n\n" + mechanismLines.slice(2).join("\n")
+    + "\n一个完整段落。\n第二段含 2d6、条件与引用（PH 10）。\n掷骰\n结果\n1–2\n保留单元格\n材料成分：保留 2 金币的材料。\n经验值：100 XP\n效果：正文后的表格行\n";
   spell(6, "Natural layout", "Physical\nEnglish fold", "<pre>Physical\nEnglish fold</pre>");
   zh(6, "自然段落", natural, `<pre>${natural}</pre>`);
-  const compactHtml = '<p>塑能系\n</p><p><strong>等级：</strong>一\n</p><p>\n</p><p>距离：近距\n</p>'
+  const compactHtml = '<p>变化系\n</p><p><strong>等级：</strong>一\n</p><p>\n</p>'
+    + mechanismLines.slice(2).map(line => `<p>${line}\n</p>`).join('')
     + '<p>普通正文完整保留 2d6 和条件。\n</p><table><tr><td><p>效果：表格内容。</p></td></tr></table>'
     + '<ul><li><p>目标：列表内容。</p></li></ul><p>材料成分：材料不压缩。</p><p>经验值：100 XP。</p>'
     + '<div><h3>原文疑义备注</h3><p>等级：备注内容。</p><p>目标：备注内容。</p></div>';
@@ -185,16 +189,17 @@ try {
   assert.equal(naturalBody.text(), natural);
   assert.deepEqual(naturalBody.find(".plain-paragraph").toArray().map(el => load(el.cloneNode(true)).text()),
     ["一个完整段落。", "第二段含 2d6、条件与引用（PH 10）。"]);
-  assert.deepEqual(naturalBody.find('.mechanism-field').toArray().map(el => load(el.cloneNode(true)).text()), ["变化系", "等级：一", "距离：近距"]);
+  assert.deepEqual(naturalBody.find('.mechanism-field').toArray().map(el => load(el.cloneNode(true)).text()), mechanismLines);
   assert.equal(naturalBody.find('.mechanism-gap').length, 2);
-  assert.equal(naturalBody.find('.mechanism-end').text(), "距离：近距");
+  assert.equal(naturalBody.find('.mechanism-end').text(), "法术抗力：可");
   const mappedBody = load(read('C.html'))('#spell-7-zh');
   assert.equal(mappedBody.text(), compactText);
-  assert.equal(mappedBody.find('.mechanism-field').length, 3);
+  assert.deepEqual(mappedBody.find('.mechanism-field').toArray().map(el => load(el.cloneNode(true)).text()),
+    mechanismLines.map(line => line + '\n'));
   assert.equal(mappedBody.find('.mechanism-gap').length, 1);
   assert.equal(mappedBody.find('table .mechanism-field, li .mechanism-field').length, 0);
   assert.equal(mappedBody.children('div').find('.mechanism-field').length, 0);
-  assert.equal(mappedBody.find('.mechanism-end').text(), "距离：近距\n");
+  assert.equal(mappedBody.find('.mechanism-end').text(), "法术抗力：可\n");
   assert(!mappedBody.find('.mechanism-field').text().includes('材料'));
   assert.equal(naturalBody.find("pre").text(), naturalBody.text());
   assert.equal(load(read("N.html"))("#spell-6-en, [lang='en']").length, 0);
