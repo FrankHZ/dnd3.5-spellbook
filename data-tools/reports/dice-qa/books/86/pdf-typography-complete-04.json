@@ -1,0 +1,433 @@
+{
+  "schemaVersion": 1,
+  "issue": 468,
+  "parentIssues": [
+    431,
+    345
+  ],
+  "status": "unselected-complete-entry-format-proposals",
+  "scope": "remaining-complete-entries-04",
+  "privateEvidence": {
+    "revision": "5d2130bc5b26f3c55a0677a8903bcc44f49c3145",
+    "path": "dice-qa/books/86/issue-468",
+    "fixedInventoryRevision": "712d96bc24f03bea2f119e00f0b057eadbe0af01",
+    "acceptedFieldsRevision": "0688739d92a2aa9fb3eceeb444daa7260e711058",
+    "readerNoteRevision": "c61b9dea676cfd89bdfcaa6dcbcccbc99280d7c4",
+    "currentFullNormalizedRevision": "2336ddf280ff27477a7ec760d745ac42a11d5cf9",
+    "completedMigrationRevision": "cffdedcddf2d28b58a68caa6d94d60253be5f59d",
+    "priorRepairedPacketRevision": "fea8225c59e2bc8df128d8328b09c8cf4a635134",
+    "priorIndependentAcceptanceRevision": "7805a36b9ade460e399bfb3557d7716a054575ce",
+    "mappings": "sample-mappings.json",
+    "candidates": "selection-candidates.json",
+    "dispositions": "dispositions.json",
+    "semanticReview": "semantic-rereview.json",
+    "completeEmphasisRanges": "complete-inline-ranges.json",
+    "sourcePositionComparison": "source-position-comparison.json",
+    "individualRepresentationExceptions": "representation-exceptions.json",
+    "currentFieldAuthorityTrace": "authority-trace.json",
+    "inheritedOrigins": "inherited-origins.json",
+    "reproduction": "reproduction.json",
+    "checks": [
+      "validation.json",
+      "entry-validation.json",
+      "pdf-comparison.json",
+      "visual-inspection.json",
+      "source-position-negative.json",
+      "semantic-output-negatives.json",
+      "export-validation.json",
+      "export-entry-validation.json",
+      "export-link-audit.json",
+      "export-semantic-negatives.json",
+      "cwd-replay.json",
+      "run-settings.json",
+      "resource-budget.json"
+    ]
+  },
+  "targetIds": [
+    4035,
+    4037,
+    4038,
+    4039,
+    4040,
+    4042,
+    4043,
+    4044,
+    4045,
+    4046,
+    4047,
+    4048,
+    4049,
+    4051,
+    4052,
+    4053,
+    4240,
+    4242,
+    4243,
+    4247,
+    4260,
+    4263,
+    4269,
+    4271,
+    4276,
+    4277,
+    4278,
+    4301,
+    4325,
+    4326,
+    4328,
+    4330,
+    4340,
+    4341,
+    4342,
+    4343,
+    4345,
+    4346,
+    4347,
+    4349,
+    4350,
+    4351,
+    4353,
+    4354,
+    4355
+  ],
+  "dispositionCounts": {
+    "completeEntries": 45,
+    "completeFormatProposals": 45,
+    "pending": 0,
+    "blocked": 0,
+    "mainGateSelected": 0
+  },
+  "entries": [
+    {
+      "targetId": 4035,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4037,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4038,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4039,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4040,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4042,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4043,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4044,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4045,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4046,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4047,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4048,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4049,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4051,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4052,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4053,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4240,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4242,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4243,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4247,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4260,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4263,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4269,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4271,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4276,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4277,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4278,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4301,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4325,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4326,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4328,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4330,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4340,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4341,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4342,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4343,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4345,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4346,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4347,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4349,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4350,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4351,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4353,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4354,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4355,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    }
+  ],
+  "blockedTargetIds": [],
+  "sourceReview": {
+    "freshComparedPages": 14,
+    "freshComparedSavedSpans": 2647,
+    "completeOriginalEntryPagesVisuallyReviewed": 13,
+    "completeOfficialErrataPagesReviewed": 1,
+    "errataApplicableIds": [
+      4045
+    ],
+    "sourceBoundUnits": 504,
+    "acceptedExpandedUnitsWithoutOwnOriginalScFontClaim": 36,
+    "independentReaderNoteUnits": 2,
+    "listOptionsIndividuallyReviewed": 8,
+    "chineseCodePointEmphasisRanges": 447,
+    "fullEnglishAndChineseUnitCoverage": true,
+    "completeSourceFontGeometryChecks": true,
+    "fullTextPositionUnits": 147,
+    "sourcePositionBoundCharacters": 27190,
+    "sourcePositionBoundPunctuation": 831,
+    "physicalLineEndHyphenOmissions": 44,
+    "individuallyReviewedExactRepresentationDifferences": 15,
+    "exactRepresentationDifferenceTargetIds": [
+      4243,
+      4247,
+      4269,
+      4345,
+      4354,
+      4355
+    ],
+    "representationDifferencesAreEntrySpecific": true,
+    "sourceIsNotClaimedToBeLiteralAcceptedEnglishTranscription": true,
+    "semanticRereview": {
+      "candidatesIndividuallyReviewed": 45,
+      "correctedInitialOutputIds": [
+        4330,
+        4340,
+        4353
+      ],
+      "completeReferenceContextsAndPositionsRecorded": true,
+      "punctuationOnlySequenceProvesPosition": false,
+      "sourcePositionSwapNegativeDetected": true,
+      "old465FailureCategoriesCovered": [
+        "missing-repeated-reference",
+        "descriptive-term-overstyle",
+        "styled-comma-moved-to-other-occurrence"
+      ],
+      "acceptanceGranted": false
+    }
+  },
+  "representationChecks": {
+    "completeFourFieldBindings": true,
+    "currentFullNormalizedEnglishPairBindings": true,
+    "decodedTextAndWhitespacePreserved": true,
+    "semanticListsTablesLinksAndAnchorsPreserved": true,
+    "staleFieldAndIdentityRejections": 315,
+    "independentCompleteFinalDomEmphasis": true,
+    "outputStyleNegatives": 7,
+    "initialActualSemanticOutputNegatives": 3,
+    "maintainedAuthorMechanismReused": true,
+    "dedicatedVisibleTextCounter": true,
+    "maintainedSelectorOrComparatorChanged": false
+  },
+  "consumerRehearsal": {
+    "fixedPublicExporter": "2be34a1b89a8d6ba092d1c0192334d59f23b20e2",
+    "memoryEntries": 46,
+    "guardedCompleteEntries": 45,
+    "destinationOnlyFixtureIds": [
+      3826
+    ],
+    "eligibleCandidates": 45,
+    "allCompleteEmphasisRecheckedAfterActualSanitization": true,
+    "decodedTextWhitespaceSemanticStructureAndParagraphsPreserved": true,
+    "independentReaderNotesPreserved": true,
+    "resolvedInBookBodyLinks": 2,
+    "detachedOutsideBookOrNonSpellLinks": 13,
+    "anchorTextPreserved": true,
+    "existingSingleBookLinkPolicyUnchanged": true,
+    "staleFourFieldExportRejections": 4,
+    "identityExportRejections": 2,
+    "meaningfulOutputNegativesRejectedAfterSanitization": 10,
+    "unselectedCurrentFallbackPreserved": true,
+    "rootAndPackageOutputFilesIdentical": 29,
+    "persistentDatabasesOpened": 0,
+    "fullDatabaseCopied": false,
+    "syntheticDisplayEnvelopesAuthenticateSourceQa": false,
+    "emptyMembershipFixtureCertifiesClassSummaryBehavior": false
+  },
+  "verifiedRuntime": {
+    "model": "gpt-6.1-sol",
+    "effort": "high",
+    "source": "local rollout turn_context metadata",
+    "versionScope": "v1.4"
+  },
+  "limits": {
+    "mainGateReviewAndSelectionRequired": true,
+    "actualPreviewChanged": false,
+    "canonicalInputsOrDatabasesChanged": false,
+    "oldFrozenPacketsChanged": false,
+    "htmlRendered": false,
+    "alternateHtmlRenderingUsed": false,
+    "humanHtmlVisualAcceptanceOwner": 345,
+    "fullBookFormattingAccepted": false,
+    "formatAcceptanceGranted": false,
+    "privatePushOrSourceUpload": false,
+    "unrelatedStagedDeletionsPreserved": 39
+  }
+}

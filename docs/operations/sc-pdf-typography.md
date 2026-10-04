@@ -159,6 +159,16 @@ also binds individual semantic rereview conclusions and rejects the superseded
 output's three reference/punctuation errors. It does not change the actual
 preview or grant main-gate selection.
 
+The [fourth complete-entry packet](../../data-tools/reports/dice-qa/books/86/pdf-typography-complete-04.json)
+binds separate unselected candidates under `dice-qa/books/86/issue-468/` to
+complete original-page and official-errata review, individual Chinese semantic
+conclusions, full source/output character positions, and complete final-DOM
+emphasis checks after the fixed exporter's sanitizer. Accepted expanded fields
+retain their own origin without borrowing original SC font authority. Its exact
+representation differences are individually scoped; they do not permit new
+blanket exemptions. Selection and human HTML visual acceptance remain with
+main-gate and #345.
+
 The four-entry follow-up proposes those dispositions for 4443, 4088 and 4072.
 3958's legacy table title has no separate PDF heading counterpart. Removing its
 visible text from the old fields violates the existing exact-text guard;
