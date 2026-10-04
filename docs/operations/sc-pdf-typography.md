@@ -126,6 +126,11 @@ runs split by links or line breaks. Missing or extra styled characters reject,
 even when the complete field/text/structure guards pass. Repeat this comparison
 after the consumer's sanitization and link handling. Mapping ranges and PDF
 font checks alone cannot prove that the emitted tags match those ranges.
+When binding source punctuation, retain its surrounding words and exact source
+and output positions. A punctuation-only sequence cannot distinguish two commas
+with different fonts exchanging positions. Independently match each Chinese
+reference by clause meaning, including repeated names used descriptively; correct
+English fonts and complete DOM intervals do not establish Chinese correspondence.
 Python authors using `HTMLParser` must keep their visible-text position in a
 separate counter: the parser's own `offset` tracks consumed markup and is not a
 decoded-text offset. Neither this output check nor a corrected derivative
@@ -150,7 +155,9 @@ binds unselected candidates and individual dispositions to complete final-DOM
 checks before and after the fixed exporter's sanitizer. Its blocked entry stays
 excluded pending a separate content decision; historical retention evidence is
 preserved privately and does not establish original-text authority. This packet
-does not change the actual preview or grant main-gate selection.
+also binds individual semantic rereview conclusions and rejects the superseded
+output's three reference/punctuation errors. It does not change the actual
+preview or grant main-gate selection.
 
 The four-entry follow-up proposes those dispositions for 4443, 4088 and 4072.
 3958's legacy table title has no separate PDF heading counterpart. Removing its

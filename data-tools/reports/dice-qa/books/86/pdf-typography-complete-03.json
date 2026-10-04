@@ -4,7 +4,7 @@
   "status": "complete-dispositions-awaiting-main-gate-review",
   "publicBase": "7b8aa151d6a49c4249861172b5e6a978b3e86d02",
   "privateEvidence": {
-    "revision": "5557b679acb4687b16f81471cd401b5ac79bcc7b",
+    "revision": "fea8225c59e2bc8df128d8328b09c8cf4a635134",
     "directory": "dice-qa/books/86/issue-465/",
     "scopeRevision": "712d96bc24f03bea2f119e00f0b057eadbe0af01",
     "acceptedFieldsRevision": "0688739d92a2aa9fb3eceeb444daa7260e711058",
@@ -26,7 +26,11 @@
       "cwd-replay.json",
       "visual-inspection.json",
       "run-settings.json",
-      "reproduction.json"
+      "reproduction.json",
+      "source-position-comparison.json",
+      "semantic-rereview.json",
+      "semantic-output-negatives.json",
+      "export-semantic-negatives.json"
     ]
   },
   "targetIds": [
@@ -340,7 +344,76 @@
     "alphabeticTextAndStyleComparisonExact": true,
     "punctuationProjectionExceptionExplicitlyReviewed": true,
     "semanticReviewReplacedByFontFlags": false,
-    "countsAloneGrantAcceptance": false
+    "countsAloneGrantAcceptance": false,
+    "semanticRereview": {
+      "candidatesIndividuallyReviewed": 44,
+      "referenceAndLabelBindings": 62,
+      "correctedTargetIds": [
+        3989,
+        3794,
+        4029
+      ],
+      "unchangedPresentations": 42,
+      "fullTextPositionUnitsIncludingBlockedDiagnostic": 138,
+      "sourceBoundCharacters": 25864,
+      "sourceBoundPunctuation": 822,
+      "boundedPhysicalLineEndHyphenOmissions": 43,
+      "punctuationOnlySequenceProvesPosition": false,
+      "acceptanceGranted": false
+    },
+    "exactRepresentationExceptions": {
+      "count": 5,
+      "retainedRegularPeriod": {
+        "targetId": 3986,
+        "englishHtmlUnit": 2,
+        "range": [
+          78,
+          79
+        ],
+        "sourcePrintedPage": 37,
+        "precedingSourceSpan": [
+          12,
+          18,
+          2
+        ],
+        "precedingSourceOffset": 3,
+        "ownOriginalGlyphOrFontClaim": false
+      },
+      "listMarkers": {
+        "targetId": 3989,
+        "englishHtmlUnit": 2,
+        "sourcePrintedPage": 38,
+        "sourceSpanRefs": [
+          [
+            9,
+            0,
+            0
+          ],
+          [
+            9,
+            1,
+            0
+          ],
+          [
+            9,
+            3,
+            0
+          ],
+          [
+            9,
+            7,
+            0
+          ]
+        ],
+        "sourceOffsets": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "representedBy": "existing ul/li"
+      }
+    }
   },
   "representationChecks": {
     "completeFourFieldBindings": true,
@@ -350,7 +423,8 @@
     "staleFieldAndIdentityRejections": 315,
     "independentCompleteFinalDomEmphasis": true,
     "missingExtraTruncatedAndColonOutputNegatives": 4,
-    "maintainedSelectorOrComparatorChanged": false
+    "maintainedSelectorOrComparatorChanged": false,
+    "oldRealSemanticOutputsRejected": 3
   },
   "consumerRehearsal": {
     "fixedPublicExporter": "b8c8dd27cbc9fb61dafbe52916df85b7b69ffa6a",
@@ -370,11 +444,13 @@
     "allAnchorTextPreserved": true,
     "existingSingleBookLinkPolicyUnchanged": true,
     "staleFourFieldExportRejections": 4,
-    "rootAndPackageOutputFilesIdentical": 58,
+    "rootAndPackageOutputFilesIdentical": 87,
     "persistentDatabasesOpened": 0,
     "fullDatabaseCopied": false,
     "syntheticDisplayEnvelopesAuthenticateSourceQa": false,
-    "emptyMembershipFixtureDoesNotCertifyClassSummaryBehavior": true
+    "emptyMembershipFixtureDoesNotCertifyClassSummaryBehavior": true,
+    "oldRealSemanticOutputsRejectedAfterSanitization": 3,
+    "oldRegressionExportGrantsSelection": false
   },
   "blockedContent": {
     "targetId": 4033,
@@ -384,7 +460,11 @@
     "historicalRetentionTreatedAsOriginalText": false,
     "minimalPairedDeletionCandidateUnapplied": true,
     "separateReaderNoteBoundaryAnalyzed": true,
-    "contentOrNoteDecisionStillRequired": true
+    "contentOrNoteDecisionStillRequired": false,
+    "contentFollowupIssue": 467,
+    "followupDecision": "Delete the historically retained translator example without adding a reader note",
+    "followupImplementedHere": false,
+    "earlierAlternativeAnalysisIsHistoricalEvidence": true
   },
   "verifiedRuntime": {
     "model": "gpt-6.1-sol",
