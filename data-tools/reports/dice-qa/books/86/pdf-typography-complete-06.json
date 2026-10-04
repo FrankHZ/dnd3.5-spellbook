@@ -8,7 +8,7 @@
   "status": "unselected-format-proposals-with-whole-entry-content-blockers",
   "scope": "remaining-complete-entries-06",
   "privateEvidence": {
-    "revision": "9c97f143d887648b1cc315fba86a4ae52500488c",
+    "revision": "134cfa06011d0d05bab382541467b60594373465",
     "path": "dice-qa/books/86/issue-474",
     "fixedInventoryRevision": "712d96bc24f03bea2f119e00f0b057eadbe0af01",
     "acceptedFieldsRevision": "0688739d92a2aa9fb3eceeb444daa7260e711058",
@@ -45,10 +45,16 @@
       "export-blocked-fallback.json",
       "cwd-replay.json",
       "resource-budget.json",
-      "run-settings.json"
+      "run-settings.json",
+      "review-rework-01-before.json",
+      "review-rework-01-validation.json",
+      "review-rework-01-root-validation.json",
+      "review-rework-01-package-validation.json",
+      "source-fidelity-history.json"
     ],
     "currentAuthorityTrace": "authority-trace.json",
-    "inheritedOrigins": "inherited-origins.json"
+    "inheritedOrigins": "inherited-origins.json",
+    "initialActualBadOutputRevision": "9c97f143d887648b1cc315fba86a4ae52500488c"
   },
   "targetIds": [
     4492,
@@ -187,7 +193,8 @@
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
       "findingKind": "source-citation-omission",
-      "followupOwner": "main-gate independent content task required"
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
     },
     {
       "targetId": 4448,
@@ -195,7 +202,8 @@
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
       "findingKind": "source-citation-omission",
-      "followupOwner": "main-gate independent content task required"
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
     },
     {
       "targetId": 4449,
@@ -233,7 +241,8 @@
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
       "findingKind": "source-word-or-punctuation-discrepancy",
-      "followupOwner": "main-gate independent content task required"
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
     },
     {
       "targetId": 4461,
@@ -256,7 +265,8 @@
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
       "findingKind": "source-qualifier-omission",
-      "followupOwner": "main-gate independent content task required"
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
     },
     {
       "targetId": 4466,
@@ -264,7 +274,8 @@
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
       "findingKind": "source-citation-omission",
-      "followupOwner": "main-gate independent content task required"
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
     },
     {
       "targetId": 4468,
@@ -282,7 +293,8 @@
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
       "findingKind": "source-citation-omission",
-      "followupOwner": "main-gate independent content task required"
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
     },
     {
       "targetId": 4472,
@@ -290,7 +302,8 @@
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
       "findingKind": "source-citation-omission",
-      "followupOwner": "main-gate independent content task required"
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
     },
     {
       "targetId": 4473,
@@ -303,7 +316,8 @@
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
       "findingKind": "source-word-or-punctuation-discrepancy",
-      "followupOwner": "main-gate independent content task required"
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
     },
     {
       "targetId": 4476,
@@ -311,7 +325,8 @@
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
       "findingKind": "source-word-or-punctuation-discrepancy",
-      "followupOwner": "main-gate independent content task required"
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
     },
     {
       "targetId": 4479,
@@ -339,7 +354,8 @@
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
       "findingKind": "source-word-or-punctuation-discrepancy",
-      "followupOwner": "main-gate independent content task required"
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
     },
     {
       "targetId": 4484,
@@ -357,7 +373,8 @@
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
       "findingKind": "source-word-or-punctuation-discrepancy",
-      "followupOwner": "main-gate independent content task required"
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
     },
     {
       "targetId": 4494,
@@ -389,7 +406,7 @@
     "sourceBoundUnits": 521,
     "acceptedInheritedUnitsWithoutOwnScFontClaim": 0,
     "independentReaderNoteUnits": 4,
-    "chineseCodePointEmphasisRanges": 441,
+    "chineseCodePointEmphasisRanges": 442,
     "fullTextPositionUnits": 151,
     "sourcePositionBoundCharacters": 29261,
     "sourcePositionBoundPunctuation": 924,
@@ -410,12 +427,23 @@
     "completeFinalDomEmphasisBeforeAndAfterActualSanitizer": true,
     "staleFieldAndIdentityRejections": 315,
     "meaningfulConstructedEmphasisNegatives": 10,
-    "observedThisBatchAuthoringErrors": 0,
+    "observedThisBatchAuthoringErrors": 2,
     "inheritedActualErrorNegatives": 2,
     "maintainedAuthorAndComparatorReused": true,
     "dedicatedVisibleTextCounter": true,
     "maintainedPublicHelpersChanged": false,
-    "quoteTypographyPolicy": "Each raw source/output apostrophe or quote position preserves contraction/possessive meaning or exact paired quotation boundaries, words and source-position emphasis. No active normalization, no sentence-dash/word-hyphen/prime/feet/inches or other punctuation exemption. Main-gate must independently review concrete evidence."
+    "quoteTypographyPolicy": "Each raw source/output apostrophe or quote position preserves contraction/possessive meaning or exact paired quotation boundaries, words and source-position emphasis. No active normalization, no sentence-dash/word-hyphen/prime/feet/inches or other punctuation exemption. Main-gate must independently review concrete evidence.",
+    "independentReworkChecks": {
+      "affectedIds": [
+        4440,
+        4472
+      ],
+      "all45FourFieldsAndEnglishOutputsUnchanged": true,
+      "other43PresentationsMappingsRangesDecisionsExact": true,
+      "actualBadOutputsFrozen": true,
+      "actualGeneratedAndSanitizedErrorsRejected": true,
+      "explicitAliasEmphasisAndSemanticPunctuationPositionsChecked": true
+    }
   },
   "consumerRehearsal": {
     "fixedExporter": "9844683e94fbb6fd6b9d0caaad5166f0c86ed087",
@@ -441,7 +469,7 @@
     ],
     "blockedSelectionRejectionsBeforeOutput": 11,
     "blockedWholeEntryFallbacksVerified": 11,
-    "followupOwner": "main-gate independent content task required",
+    "followupOwner": "issue476 independent content task",
     "allFinalEmphasisCheckedAfterActualSanitization": true,
     "allVisibleTextAndWhitespacePreserved": true,
     "maintainedSemanticStructureComparison": true,
@@ -452,18 +480,19 @@
     "exporterStaleFourFieldRejections": 4,
     "exporterIdentityRejections": 2,
     "inheritedActualOutputNegatives": 2,
-    "actualInitialOutputNegatives": 0,
-    "allMeaningfulSanitizedOutputNegatives": 12,
+    "actualInitialOutputNegatives": 2,
+    "allMeaningfulSanitizedOutputNegatives": 14,
     "unselectedFallbackPreserved": true,
     "persistentDatabasesOpened": 0,
     "operatorStableAppStateOpened": 0,
     "limitation": "All45 sanitized styles are diagnostic only. Eligible memory export selects only eligible candidates and preserves full current before bodies for all blocked entries. Synthetic provenance envelopes and empty membership tables prove body sanitizer/link/structure behavior only; no source QA or full class-summary certification.",
-    "rootAndPackageCasesCompared": 15,
-    "rootAndPackageOutputFilesIdentical": 435,
+    "rootAndPackageCasesCompared": 17,
+    "rootAndPackageOutputFilesIdentical": 493,
     "additionalActualRegressionFixtureIds": [
       4394,
       4395
-    ]
+    ],
+    "followupIssue": 476
   },
   "resources": {
     "englishTextCharacters": 36907,
@@ -472,15 +501,17 @@
     "estimatedPeakMemoryBudgetMiB": 512,
     "concurrentReplays": 1,
     "newEnvironments": 0,
-    "measuredPacketBytes": 39604044,
+    "measuredPacketBytes": 39978015,
     "initialBudgetValidated": true,
-    "measuredFinalRootAndPackageOutputBytes": 5238730,
-    "measuredAllTaskOutputBytes": 7380289,
+    "measuredFinalRootAndPackageOutputBytes": 5932818,
+    "measuredAllTaskOutputBytes": 15932472,
     "outputBudgetValidated": true,
-    "rootMemoryReplaySeconds": 2.6583196,
-    "packageMemoryReplaySeconds": 2.557953,
+    "rootMemoryReplaySeconds": 2.740488,
+    "packageMemoryReplaySeconds": 2.7547541,
     "peakMemoryInstrumented": false,
-    "intermediateBudgetAdjustment": "Bound raw punctuation/representation context to existing complete character-position alignment; initial redundant contexts exceeded budget, final packet fits50MiB."
+    "intermediateBudgetAdjustment": "Bound raw punctuation/representation context to existing complete character-position alignment; initial redundant contexts exceeded budget, final packet fits50MiB.",
+    "reworkOutputBudgetBytes": 20971520,
+    "reworkOutputBudgetReason": "Preserve the original frozen rehearsal outputs while adding two actual-error cases and new root/package replays; measured prior7.4MB plus estimated new6MB fits20MiB. No new environment or concurrency."
   },
   "runtime": {
     "model": "gpt-6.1-sol",
@@ -503,5 +534,14 @@
     "contentMigrationAndCompleteTypographyRebindingRequired": true,
     "syntheticProvenanceIsSourceAuthentication": false,
     "productionOrDatabaseMigrationAccepted": false
+  },
+  "sourceFidelityDisposition": {
+    "targetId": 4456,
+    "historicalReview": "review-d/joint-review-results.jsonl:16",
+    "classification": "revised-source-fidelity-proposal",
+    "priorInOnEquivalenceExplicitlyAccepted": true,
+    "priorMissedReviewClaim": false,
+    "proposalApplied": false,
+    "followupIssue": 476
   }
 }

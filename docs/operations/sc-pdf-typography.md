@@ -195,9 +195,15 @@ proposals to complete original entries, full official errata, exact current four
 fields and the fixed exporter's actual sanitizer. Each original reference
 occurrence is classified by meaning and observed font; descriptive repetitions,
 actions and implicit Chinese references stay regular when no named token maps.
+An explicit English alias inside a Chinese parenthetical reference follows the
+same named-spell emphasis as its Chinese name; the surrounding parentheses and
+book/page citation stay regular. A translated separator follows its own source
+counterpart. A later italic comma cannot be moved to an earlier regular connector
+or a structural closing parenthesis in a different sentence construction.
 Source word, qualifier, citation and punctuation discrepancies block a whole
 entry; exact paired corrections remain unapplied for main-gate's independent
-content decision. Its checks retain full bilingual current fallback for every
+content decision under [#476](https://github.com/FrankHZ/dnd3.5-spellbook/issues/476).
+Its checks retain full bilingual current fallback for every
 blocked entry and reject the prior actual authoring/review errors after sanitization.
 
 Individually bound curly/straight apostrophe and paired-quote representations may
