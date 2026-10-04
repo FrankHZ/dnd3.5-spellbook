@@ -287,6 +287,90 @@ class FinalBindingTests(unittest.TestCase):
 
 
 class SourceFidelityAcceptanceTests(unittest.TestCase):
+    def test_punctuation_reopens_original_pages_and_preserves_all_prior_fields(self):
+        import sc_source_fidelity as fidelity
+        from pdf_extract import extraction
+        bodies = [{'targetId': tid, 'field': 'body', 'text': '保留文', 'html': '<pre>保留文</pre>',
+                   'origin': {'kind': 'native'}, 'review': {'protected': True}} for tid in fidelity.PUNCTUATION_IDS]
+        before = {'englishText': 'Synthetic - body', 'englishHtml': '<p>Synthetic - body</p>',
+                  'chineseText': '保留文', 'chineseHtml': '<pre>保留文</pre>'}
+        after = {**before, 'englishText': 'Synthetic — body', 'englishHtml': '<p>Synthetic — body</p>'}
+        candidate = {'candidates': [{'targetId': b['targetId'], 'priorBody': b, 'before': before, 'after': after,
+                     'minimalEdits': [{'field': k, 'start': v.index('-'), 'end': v.index('-') + 1,
+                                      'before': '-', 'after': '—'} for k, v in before.items() if k.startswith('english')]}
+                     for b in bodies]}
+        frozen = [{'sourceId': sid, 'pageIndex': pi, 'pageCount': 300,
+                   'printedPage': pi + 1 if sid == 'sc' else None, 'blocks': [{'synthetic': pi}]}
+                  for sid, pi in [('sc', 73), ('sc', 74), ('sc', 75), ('errata', 0)]]
+        class FakeEvidence:
+            def __init__(self, *args): pass
+            def git(self, *args): return ''
+            def text(self, *args): return 'synthetic fixed input'
+            def read(self, name):
+                if name.endswith('fresh-pages.json'): return frozen
+                if name.endswith('candidate.json'): return candidate
+                return {}
+        class FakePdf:
+            def __enter__(self): return self
+            def __exit__(self, *args): pass
+            def __len__(self): return 300
+            def __getitem__(self, pi): return pi
+        result = {'field-dispositions.jsonl': copy.deepcopy(bodies), 'report.json': {'sourceRevisions': {
+                  'sourceFidelityCandidate': fidelity.CANDIDATE, 'sourceFidelityAcceptance': fidelity.ACCEPTANCE}}}
+        with patch.object(fidelity, 'Evidence', FakeEvidence), patch.object(fidelity, 'validate_punctuation_acceptance'), \
+                patch('pymupdf.open', return_value=FakePdf()), \
+                patch.object(extraction, 'extract_page', side_effect=lambda p, _: {'blocks': [{'synthetic': p}]}):
+            actual = fidelity.authenticate(SimpleNamespace(data_root='synthetic'), result, True)
+            self.assertEqual(actual['field-dispositions.jsonl'], bodies)
+            self.assertEqual(result['field-dispositions.jsonl'], bodies)
+            for change in ['html', 'origin', 'predecessor']:
+                wrong = copy.deepcopy(result)
+                if change == 'html': wrong['field-dispositions.jsonl'][0]['html'] += 'stale'
+                elif change == 'origin': wrong['field-dispositions.jsonl'][0]['origin']['kind'] = 'english'
+                else: del wrong['report.json']['sourceRevisions']['sourceFidelityAcceptance']
+                with self.subTest(change=change), self.assertRaises(ValueError):
+                    fidelity.authenticate(SimpleNamespace(data_root='synthetic'), wrong, True)
+            with patch.object(extraction, 'extract_page', return_value={'blocks': []}), \
+                    self.assertRaisesRegex(ValueError, 'original text/geometry differs'):
+                fidelity.authenticate(SimpleNamespace(data_root='synthetic'), result, True)
+            with patch('pymupdf.open', side_effect=FileNotFoundError('missing original')), self.assertRaises(FileNotFoundError):
+                fidelity.authenticate(SimpleNamespace(data_root='synthetic'), result, True)
+
+    def test_punctuation_receipt_is_fixed_and_predecessor_flags_are_required(self):
+        import copy
+        import sc_source_fidelity as fidelity
+        receipt = {'issue_url': 'https://api.github.com/repos/FrankHZ/dnd3.5-spellbook/issues/473',
+                   'html_url': fidelity.PUNCTUATION_COMMENT, 'id': 5977076936,
+                   'user': {'login': 'FrankHZ'}, 'author_association': 'OWNER',
+                   'body': 'Main-gate SOURCE ACCEPTANCE for exact candidate `' + fidelity.PUNCTUATION_CANDIDATE
+                           + ':' + fidelity.PUNCTUATION_DIRECTORY + 'candidate.json` 4421 4425 4426 '
+                           + 'all four guarded after fields '
+                           + 'All Chinese fields, priorBody, mechanics, summaries and notes remain unchanged '
+                           + "Preserve4425's existing complete official errata sentence"}
+        fidelity.validate_punctuation_acceptance(receipt)
+        for key, value in [('id', 1), ('html_url', 'wrong'), ('issue_url', receipt['issue_url'] + '0'),
+                           ('user', {'login': 'other'}), ('author_association', 'NONE'),
+                           ('body', receipt['body'].replace(fidelity.PUNCTUATION_CANDIDATE, 'forged')),
+                           ('body', receipt['body'].replace('4426', 'forged')),
+                           ('body', receipt['body'].replace('priorBody', 'forged'))]:
+            wrong = copy.deepcopy(receipt); wrong[key] = value
+            with self.assertRaises(ValueError): fidelity.validate_punctuation_acceptance(wrong)
+        with patch.object(fidelity, 'PUNCTUATION_ACCEPTANCE', None):
+            with self.assertRaisesRegex(ValueError, 'acceptance pending'):
+                fidelity.validate_punctuation_acceptance(receipt)
+        argv = ['sc_final_auth.py', '--code-root', 'never-open-code', '--helper-revision', '0' * 40,
+                '--runtime-root', 'never-open-runtime', '--data-root', 'never-open-data',
+                '--rules-db', 'never-open-rules.sqlite', '--content-db', 'never-open-content.sqlite',
+                '--accepted-baseline', final.CANDIDATE, '--accepted-source-punctuation']
+        with patch.object(sys, 'argv', argv), patch.object(auth, 'derive_final') as replay:
+            with self.assertRaisesRegex(ValueError, 'requires accepted #467 predecessor'): auth.main()
+            replay.assert_not_called()
+        with patch.object(fidelity, 'PUNCTUATION_ACCEPTANCE', None), patch.object(sys, 'argv',
+                argv + ['--accepted-source-fidelity', '--accepted-source-pairs', '--accepted-english-title']), \
+                patch.object(auth, 'derive_final') as replay:
+            with self.assertRaisesRegex(ValueError, 'acceptance pending'): auth.main()
+            replay.assert_not_called()
+
     def test_fixed_receipt_and_missing_or_cross_issue_authority(self):
         import copy
         import sc_source_fidelity as fidelity

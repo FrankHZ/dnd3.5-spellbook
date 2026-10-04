@@ -6,6 +6,31 @@ export const fidelityAcceptance = '775005e96a5caa9a83bbf523f716946b2fe890a0';
 export const fidelityDirectory = 'dice-qa/books/86/issue-467/';
 export const fidelityEnglishIds = [4247, 4345, 4354, 4355];
 export const fidelityChineseIds = [4033, 4349];
+// #473 is the fixed English-only successor of the completed #467 state.
+export const punctuationCandidate = 'c78e1f09632570dcc059fc487df61d4259b96316';
+export const punctuationAcceptance = 'a42c772eb0e40c1000e2452e0cbb35e699a7e137';
+export const punctuationEnglishIds = [4421, 4425, 4426];
+export function validatePunctuationEnglish(id: number, before: {description: string; descriptionHtml: string},
+  after: {description: string; descriptionHtml: string}) {
+  assert(punctuationEnglishIds.includes(id), 'unlisted source punctuation target');
+  // Unicode offsets bind only the independently accepted source positions.
+  // Full private candidate authentication supplies the exact surrounding fields.
+  for (const key of ['description', 'descriptionHtml'] as const) {
+    const position = id === 4421 ? key === 'description' ? 513 : 537
+      : id === 4425 ? key === 'description' ? 1536 : 1607
+      : key === 'description' ? 742 : 794;
+    const characters = Array.from(before[key]);
+    if (id === 4426) {
+      assert(/^[a-z]$/.test(characters[position] ?? ''), 'stale source article position');
+      characters.splice(position, 0, 'a', ' ');
+    } else {
+      // The entities share their prefix; replace only the differing digit.
+      assert.equal(characters[position], key === 'description' ? '-' : '1', 'stale source dash position');
+      characters[position] = key === 'description' ? '—' : '2';
+    }
+    assert.equal(after[key], characters.join(''), 'unlisted source punctuation change');
+  }
+}
 export function validateFidelityEnglish(id: number, before: {description: string; descriptionHtml: string},
   after: {description: string; descriptionHtml: string}) {
   assert(fidelityEnglishIds.includes(id), 'unlisted source-fidelity English target');

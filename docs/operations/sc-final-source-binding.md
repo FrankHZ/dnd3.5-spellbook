@@ -403,3 +403,32 @@ No caller projection or new proposal can substitute for these fixed inputs.
 Actual rules/content writes, FTS, consumer checks, complete format selection
 and export remain separate main-gate responsibilities. Unselected typography
 must retain the full current fallback until those gates pass.
+
+## Three-entry English source successor
+
+The fixed [#473 source acceptance](https://github.com/FrankHZ/dnd3.5-spellbook/issues/473#issuecomment-5977076936)
+binds private candidate `c78e1f09632570dcc059fc487df61d4259b96316` and
+receipt `a42c772eb0e40c1000e2452e0cbb35e699a7e137`. Its three English
+pairs are the only permitted changes: sentence em-dash positions in 4421/4425
+and the omitted article in 4426. Existing representation whitespace and
+4425's independently accepted official errata stay exact. Chinese text/HTML,
+the prior 3930/4033/4349 correction envelopes, notes and summaries are preserved.
+
+Use `--accepted-source-punctuation` after all predecessor acceptance flags,
+including `--accepted-source-fidelity`. For an independently authorized migration,
+add `--upgrade-source-punctuation` and provide `--previous-normalized` pointing
+to the actual #467 full operator artifact at
+`3109813da4b49d0e9c47ceeba44857a5a230b1e7`, logical path
+`data/dice-qa/books/86/issue-467/handoff-preparation/operator/operator.normalized.generated.json`.
+The same final-overlay entry authenticates the original pages, complete errata,
+fixed acceptance receipt, exact four-field predecessor and genuine normalized
+generation, then runs the existing guarded check/apply/validate transaction.
+Choose one upgrade per invocation. Unaccepted or stale source values cannot
+substitute for this fixed successor.
+
+The source receipt permits implementation and bounded memory verification;
+it does not authorize operator writes or accept a generated artifact. Actual
+migration, FTS/consumer validation and complete bilingual format selection
+remain separate main-gate gates. Until those pass, all three entries retain
+their complete current fallback. The portable final-writer tests cover this
+successor, predecessor corrections, partial/stale states and rollback.
