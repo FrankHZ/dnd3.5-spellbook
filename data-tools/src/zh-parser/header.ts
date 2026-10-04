@@ -29,7 +29,7 @@ const FIELD_LABELS = [
 
 /** Display only: exclude materials, XP and reader notes from the mechanism block. */
 const MECHANISM_FIELD_RE = new RegExp(`^(?:${[...FIELD_LABELS.slice(0, 10), "学派", "法术等级",
-  "成分", "施法成分", "范围", "作用距离", "作用范围", "影响区域", "作用对象", "作用目标",
+  "成分", "施法成分", "范围", "作用距离", "作用范围", "影响区域", "影响范围", "施展时间", "作用对象", "作用目标",
   "时效", "射程", "持续", "施法动作", "对象", "目标和效果", "效果及区域", "范围或目标",
   "豁免", "豁免投掷", "法术抗性", "抗力"].join("|")})\\s*[：:]`, "u");
 export function isMechanismLine(value: string): boolean {

@@ -91,7 +91,7 @@ The existing Chinese field vocabulary identifies the leading mechanism block:
 school, level, components, casting time, range, target/effect/area, duration,
 saving throw and spell resistance, including the observed range/duration labels
 `作用距离：`, `作用范围：`, `作用对象：`, `作用目标：`, `时效：`, `抗力：`,
-`射程：`, `持续：`, `施法动作：`, `对象：` and the single combined fields
+`射程：`, `持续：`, `施法动作：`, `对象：`, `影响范围：`, `施展时间：` and the single combined fields
 `目标和效果：`, `效果及区域：` and `范围或目标：`,
 and school headings `附魔系`, `魅控系`, `共通` and `变形系`. School descriptors
 also accept the observed full-width `［］` delimiters. The observed line `法术抗力；可`
