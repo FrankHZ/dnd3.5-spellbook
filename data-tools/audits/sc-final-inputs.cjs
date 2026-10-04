@@ -202,7 +202,7 @@ function validateFinalRules(DB, data, db, api, schema) {
 }
 
 function derive(options) {
-  const {code, runtime, data, originalRules, rules, content, finalRules, englishTitle, sourcePairs} = options;
+  const {code, runtime, data, originalRules, rules, content, finalRules, englishTitle, sourcePairs, sourceFidelity} = options;
   assert.equal(fs.realpathSync(code), fs.realpathSync(path.resolve(__dirname, '../..')),
     'code root must match the invoking helper checkout');
   process.env.NODE_PATH = path.join(runtime, 'node_modules'); Module._initPaths();
@@ -225,6 +225,15 @@ function derive(options) {
     // every final English/mechanical binding below; this is not caller JSON.
     finalDb = new DB(rules, {readonly: true, fileMustExist: true});
     finalDb.pragma('query_only=ON');
+    if (sourceFidelity) {
+      assert(sourcePairs, 'source fidelity requires accepted #461 predecessor');
+      const amendment = require('./sc-source-fidelity.cjs');
+      const patches = readExact(data, amendment.candidateRevision, amendment.directory + 'rules-patch.jsonl');
+      amendment.validateCandidate(readExact(data, amendment.candidateRevision, amendment.directory + 'candidate.json'),
+        readExact(data, amendment.previousRevision, amendment.previousPath),
+        readExact(data, '0688739d92a2aa9fb3eceeb444daa7260e711058', BOOK + 'issue-365/field-dispositions.jsonl'), patches);
+      const memory = amendment.restorePrior(finalDb, DB, patches); finalDb.close(); finalDb = memory;
+    }
     if (sourcePairs) {
       assert(englishTitle, 'source corrections require accepted English title predecessor');
       const amendment = require('./sc-source-pairs.cjs');
@@ -398,5 +407,5 @@ if (require.main === module) {
   const [code, runtime, data, originalRules, rules, content, ...flags] = process.argv.slice(2);
   assert([code, runtime, data, originalRules, rules, content].every(Boolean), 'require explicit code/data/runtime/DB roots');
   process.stdout.write(JSON.stringify(derive({code, runtime, data, originalRules, rules, content,
-    finalRules: originalRules === '--final-rules', englishTitle: flags.includes('--accepted-english-title'), sourcePairs: flags.includes('--accepted-source-pairs')})));
+    finalRules: originalRules === '--final-rules', englishTitle: flags.includes('--accepted-english-title'), sourcePairs: flags.includes('--accepted-source-pairs'), sourceFidelity: flags.includes('--accepted-source-fidelity')})));
 }
