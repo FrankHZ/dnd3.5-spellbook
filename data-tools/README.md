@@ -133,6 +133,11 @@ inserting the accepted 265 additions and changing only summary acceptance
 metadata in one transaction. The generic summary step still rejects changed
 annotated predecessors; its accepted paths never grant source QA authority.
 
+For original printed class/domain-list M/F/X annotations, use the independent
+[printed list marker workflow](../docs/operations/spell-list-markers.md).
+Its scanner emits private candidates, not accepted content or full list coverage;
+the selector never falls back to complete component flags.
+
 [scripts.manifest.json](./scripts.manifest.json) classifies every package script
 by module and lifecycle. Keep that classification when adding a command.
 Maintained workflows need focused helper tests; dormant source reruns and local

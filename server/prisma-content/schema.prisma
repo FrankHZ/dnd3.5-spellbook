@@ -318,6 +318,22 @@ model SpellListEntry {
     @@index([rulebookId])
 }
 
+/// Original printed list occurrences, separate from complete spell components.
+/// Unbound/candidate rows never authorize publication; null markers are unknown.
+model SpellListMarker {
+    id           String @id
+    sourceKey    String
+    rulebookId   Int
+    listEntryId  String?
+    markers      String?
+    reviewStatus String @default("candidate")
+    sourceJson   String
+    bindingJson  String?
+
+    @@index([rulebookId, listEntryId])
+    @@unique([sourceKey, listEntryId])
+}
+
 model SpellComponent {
     id            String  @id
     spellId       String
