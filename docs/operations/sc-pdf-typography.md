@@ -131,6 +131,11 @@ cell, complete ordered lists, creature stat rows, prose boundaries and independe
 notes. Frozen complete mechanism expectations also cover combined field labels
 and an observed semicolon resistance line without changing canonical text.
 The eight-body memory fixture retains the same sanitizer and directory contracts.
+The [S structure packet](../../data-tools/reports/dice-qa/books/86/sc-zh-format-s.json)
+binds 167 Chinese bodies to guarded display candidates, including the caster-level
+and size table, complete planar/terrain/round/benefit groups, Summon Undead I–V
+lists and independent reader notes. It preserves all canonical text and whitespace,
+with independently frozen mechanism counts and a fixed eight-body memory fixture.
 Production presentation selection, human visual acceptance and final renderer
 integration remain separate checks owned by #345/main-gate. The fixture does not
 accept the separate spell-table component marker decision.
