@@ -201,18 +201,23 @@ try {
   assert.equal(mappedBody.children('div').find('.mechanism-field').length, 0);
   assert.equal(mappedBody.find('.mechanism-end').text(), "法术抗力：可\n");
   assert(!mappedBody.find('.mechanism-field').text().includes('材料'));
-  // Observed #481 aliases: validate the emitted leading block, not only label recognition.
+  // Observed #481/#482 aliases: validate the emitted leading block, not only label recognition.
   const aliasCases = [
     ["附魔系", "作用距离", "作用对象"],
     ["魅控系", "作用范围", "作用目标"],
     ["共通", "作用范围", "作用对象"],
+    ["变形系", "射程", "对象", "施法动作", "持续"],
+    ["变化系［邪恶］", "射程", "目标和效果"],
+    ["塑能系［光］", "射程", "目标和效果"],
   ];
-  for (const [caseIndex, [school, range, target]] of aliasCases.entries()) {
-    const expectedFields = [school!, "等级：一", "法术成分：V、S", "施法时间：标准动作",
-      `${range}：近距`, `${target}：一个生物`, "时效：1轮", "豁免检定：无", "抗力：可"];
+  for (const [caseIndex, [school, range, target, time = "施法时间", duration = "时效"]] of aliasCases.entries()) {
+    const expectedFields = [school!, "等级：一", "法术成分：V、S", `${time}：标准动作`,
+      `${range}：近距`, `${target}：一个生物`, `${duration}：1轮`, "豁免检定：无", "抗力：可"];
     for (const representation of ["plain", "paragraphs"]) {
-      const tail = ['完整效果正文保留 2d6 与条件。', '材料成分：保留材料。', '经验值：100 XP。',
-        '原文疑义备注', '作用目标：备注中的引用。', '抗力：备注中的引用。'];
+      const tail = ['［光］出现在完整效果正文中，保留 2d6 与条件。', '变形系的法术在正文中被提及。',
+        '材料成分：保留材料。', '经验值：100 XP。', '原文疑义备注',
+        '作用目标：备注中的引用。', '抗力：备注中的引用。', '目标和效果：备注中的引用。',
+        '变化系［邪恶］'];
       const html = representation === "plain"
         ? `<pre>${[...expectedFields, ...tail].join('\n\n')}</pre>`
         : expectedFields.map(line => `<p>${line}\n\n</p>`).join('')
@@ -226,6 +231,8 @@ try {
       assert.equal(body.text(), originalText);
       assert.deepEqual(body.find('.mechanism-field').toArray().map(el => aliasPage(el).text()),
         expectedFields.map(line => line + (representation === "plain" ? '' : '\n\n')));
+      if (target === "目标和效果") assert.equal(body.find('.mechanism-field').filter((_, el) =>
+        aliasPage(el).text().startsWith('目标和效果：')).length, 1);
       assert.equal(body.find('.mechanism-end').text(), '抗力：可' + (representation === "plain" ? '' : '\n\n'));
       if (representation === "plain") assert.equal(body.find('.mechanism-gap').length, 8);
     }
