@@ -111,6 +111,11 @@ The [A–B structure packet](../../data-tools/reports/dice-qa/books/86/sc-zh-for
 records fixed private evidence and bounded validation. Its eight-body memory
 fixture validates the fixed renderer's sanitizer and structural compatibility,
 with candidate HTML installed after the maintained representation validator.
+The [C–E structure packet](../../data-tools/reports/dice-qa/books/86/sc-zh-format-ce.json)
+uses the same guarded handoff for 191 Chinese bodies, including restored tables,
+lists, long-prose boundaries and reader notes. Entries with pending content
+changes stay bound to current accepted fields and require targeted revalidation
+after those changes activate.
 Production presentation selection, human visual acceptance and final renderer
 integration remain separate checks owned by #345/main-gate. The fixture does not
 accept the separate spell-table component marker decision.
