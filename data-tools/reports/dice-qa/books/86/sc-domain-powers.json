@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/504",
+  "phase": "source-reviewed-candidate-awaiting-main-gate",
+  "privateRevision": "e2e4b698eee3c9339303fa1b233c646fd993c702",
+  "privateRootRelativeDirectory": "dice-qa/books/86/issue-504",
+  "handoffPaths": {
+    "content": "candidate/html-domain-powers.zh.json",
+    "sourceInventory": "candidate/source-inventory.json",
+    "ownerDispositions": "candidate/owner-dispositions.json",
+    "translationDecisions": "candidate/translation-decisions.json",
+    "sourceVerification": "candidate/source-verification.json",
+    "validation": "candidate/handoff-validation.json",
+    "replayChecks": "candidate/replay-checks.json",
+    "resources": "candidate/resources.json",
+    "reproduction": "reproduce.py"
+  },
+  "inputs": [
+    {
+      "revision": "3109813da4b49d0e9c47ceeba44857a5a230b1e7",
+      "path": "dice-qa/books/86/issue-259/relation-authority/sc-lists-245-277.jsonl"
+    },
+    {
+      "revision": "cd67b6039331313cf858c646593f1fe9ddde0adb",
+      "path": "dice-qa/books/86/issue-500/domain-pages-278-285.jsonl"
+    },
+    {
+      "revision": "cd67b6039331313cf858c646593f1fe9ddde0adb",
+      "path": "dice-qa/books/86/issue-500/final-handoff/tuple-dispositions.json"
+    },
+    {
+      "revision": "3148d36fb51fd353b097ad911d2e04b33c9c706c",
+      "path": "i18n/domains-zh.json"
+    }
+  ],
+  "coverage": {
+    "printedPages": [271, 285],
+    "sourceDomains": 75,
+    "grantedPowers": 75,
+    "sourceRequirements": 8,
+    "htmlOwners": 42,
+    "sourceOnlyOwners": 33,
+    "htmlPlanarOwners": 7,
+    "sharedPlanarParagraphs": 2,
+    "ordinaryTupleBindings": 117,
+    "excludedSpecialFeatOwnerLegacyId": 28,
+    "excludedSpecialFeatSpellLegacyId": 3921,
+    "scBodySpells": 1001
+  },
+  "chineseDecisions": {
+    "verifiedReuse": 9,
+    "sourceBoundRevision": 12,
+    "directMissingReference": 20,
+    "differentEditionNotReused": 1,
+    "separateReaderNotes": 6,
+    "mainGateAccepted": false
+  },
+  "validation": {
+    "syntheticDomainTestsPassed": 11,
+    "freshPdfSpanComparisons": 3152,
+    "allExtractedLinesUniquelyDisposed": 1670,
+    "powerRequirementSharedLines": 269,
+    "officialErrataPagesReviewed": 1,
+    "appendixErrataChanges": 0,
+    "rootPackageReplayByteEqual": true,
+    "publicCliReplayEqual": true,
+    "unrelated39StagedDeletionsByteEqual": true,
+    "dbAccess": false,
+    "canonicalWrites": false,
+    "rendererWrites": false
+  },
+  "resources": {
+    "measuredReplaySeconds": 0.127,
+    "peakWorkingSetBytes": 39534592,
+    "durableHandoffBytes": 771360,
+    "pythonProcesses": 1,
+    "newEnvironmentInstalls": 0,
+    "ocrCalls": 0,
+    "networkCalls": 0,
+    "paidApiCalls": 0
+  },
+  "ownership": {
+    "acceptance": "main-gate",
+    "rendererIssue": 345,
+    "domainIntegrationIssue": 486,
+    "specialFeatIssue": 354,
+    "databaseConsumption": false
+  }
+}

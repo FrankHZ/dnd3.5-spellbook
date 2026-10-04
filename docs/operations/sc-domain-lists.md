@@ -46,3 +46,36 @@ checks. [Printed marker processing](spell-list-markers.md) and the offline HTML
 renderer consume these handoffs under their own owners. This audit does not
 accept markers or implement HTML output. Operator and production writes remain
 governed by [DB content workflow](db-content-workflow.md).
+
+Granted Power and Requirement content uses the separate
+`data-tools/audits/sc_domain_powers.py` audit with the same explicit input, page
+range and new-output arguments. It retains raw paragraph lines and locators,
+stops at each domain spell table, and separates the shared planar-domain rules.
+Display English is a whitespace-normalized lookup aid; original line-end
+hyphens remain in evidence. Run both synthetic suites with
+`python -m unittest discover -s data-tools/audits -p 'test_sc_domain_*.py' -v`.
+
+The [power handoff report](../../data-tools/reports/dice-qa/books/86/sc-domain-powers.json)
+locates the private candidate content, source inventory, owner dispositions,
+translation decisions and reproduction checks. It inventories all printed
+domains while Chinese HTML content covers only the current regular owners.
+Special feat grants do not acquire a domain page or ability; their relationship
+review remains separate. Same-name domains from different books require an
+explicit source-to-owner binding rather than name-only matching.
+
+The renderer consumes the accepted private JSON directly, without a database
+table or import. Resolve the report's directory relative to the explicitly
+configured data repository root, then its handoff paths relative to that
+directory. Pin the private revision accepted by main-gate; a candidate file's
+presence does not grant acceptance. No path is relative to the shell's working
+directory or a removable code checkout.
+
+Content has `schemaVersion`, `rulebookId`, `language`, `domains`, and
+`sharedRules`. Each domain carries `ownerLegacyId`, `ownerName`, `sourceName`,
+`nameZh`, `entryIds`, `grantedPowerText`, nullable `requirementText` and
+`sharedRulesKey`, plus `readerNotes`. Bind by rulebook and stable owner ID,
+verify the owner snapshot, and escape these plain-text values when rendering.
+Render the requirement, complete ability, and reader notes; planar owners also
+need the paragraphs selected by `sharedRulesKey` from `sharedRules`.
+The separate evidence files retain English source locations and editorial
+decisions. Renderer/CSS changes and acceptance belong to their existing owners.
