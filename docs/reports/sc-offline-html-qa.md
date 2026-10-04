@@ -52,15 +52,18 @@ independent complete PDF/errata
 format review now accept corrected 3930/3934 presentations from the same #463
 revision. Their eight input fields bind the migrated after state, giving 97
 selected displays. The separately accepted #465 / PR #466 packet adds 44
-complete presentations, giving 141 selected / 860 current displays. Its complete
+complete presentations. The separately accepted #468 / PR #469 packet adds 40,
+giving 181 selected / 820 current displays. Its complete
 semantic rereview and source-position evidence bind the corrected outputs;
-4033 remains unselected for the separate #467 content follow-up. Older #461
+Its 45 diagnostic entries cannot become the selected set. 4247, 4345, 4349,
+4354 and 4355 remain wholly unselected alongside 4033 for #467. Their complete
+current English/Chinese fallback stays exact; no proposed after field is applied. Older #461
 formatting outputs and unaccepted later batches are excluded. Whole-book and
 human rendered HTML gates stay open.
 
 `assertPdfTypographyEmphasis` compares every decoded Unicode character's full
 `em`/`strong` set with complete reviewed intervals after candidate generation
-and again on each of 141 final sanitized English/Chinese bodies. Old output can
+and again on each of 181 final sanitized English/Chinese bodies. Old output can
 pass current text/HTML input guards while emphasizing the wrong characters;
 regression checks reject all 92 affected legacy outputs, including the two older
 source-pair presentations, at both
@@ -87,7 +90,7 @@ evidence applies only to its previous input state.
 Private fixed-Git real-text validation loads the exact 95 corrected-current
 candidates and two newly accepted source-pair presentations, verifies complete
 mapping/range/source and both acceptance bindings, then adds the separately
-accepted 44 batch-03 candidates and checks all 141 current
+accepted 44 batch-03 and 40 batch-04 candidates and checks all 181 current
 four-field guards before the actual helper,
 sanitizer and merged output. Every selected stale field or wrong target/book
 must reject. Complete bilingual bodies, emphasis, paragraphs, independent notes
@@ -100,13 +103,16 @@ source-correction envelope, accepted summary and source revision.
 `validateFinalOverlay` compares exact persisted final build metadata with
 the same authenticated plan. Legal but incorrect helper/source revisions and
 changed-name counts reject while complete fields/provenance remain identical.
-A same-input 97-to-141 comparison preserves every visible character and whitespace
-in all 1,001 articles. Only the 44 new selected structures may change; all 97 old
-presentations and the other 957 article structures remain exact. The 44 full
+A same-input 141-to-181 comparison preserves every visible character and whitespace
+in all 1,001 articles. Only the 40 new selected structures may change; all 141 old
+presentations and the other 961 article structures remain exact. The 40 full
 normalized records must be identical between their historical input revision
 and the actual source-pair baseline, with every current Chinese field checked.
-Three prior actual batch-03 outputs with missing, extra or misplaced emphasis
+Three prior actual batch-04 outputs and the three inherited batch-03 failures
 reject both before and after sanitization while their text/inputs remain exact.
+Each blocked selection attempt, including a wholesale diagnostic45 promotion,
+fails before output creation. All six full bilingual fallback bodies are exact
+against the accepted actual141 input state.
 The frozen 622-case source-pair regression, including three valid-shape metadata
 drift cases, remains required. Current source-authentication code and the actual
 persisted migration helper have distinct fixed revisions; relevant runtime files
@@ -118,7 +124,7 @@ reconstructs disposable memory from accepted normalized records, final fields,
 reader-note amendments and authenticated summaries, then compares all 1,001
 entries / 2,002 bilingual bodies, 961 class targets / 1,922 directory owner
 fields, 40 body-only targets, 40 source-question occurrences and all emitted local
-links. All 141 selected display derivatives and 860 current displays stay distinct.
+links. All 181 selected display derivatives and 820 current displays stay distinct.
 This replay copies no database and does not replace original-source authentication
 or the actual operator export. The complete synthetic fixture additionally
 rejects missing/wrong/empty/unaccepted owners, summary source/value drift and
@@ -143,8 +149,8 @@ Synthetic structure/CSS and bounded accepted-input memory checks prepare that
 interface; they do not prove browser marker rendering or full-book source QA.
 The report records selected/current IDs, `formattingComplete: false` and
 `contentCertification: false`; its selection counts confer no authority by
-themselves. The 97-selection actual readonly export and durable preview are
-accepted comparison evidence. Fresh 141-selection actual export/durable delivery
+themselves. The 141-selection actual readonly export and durable preview are
+accepted comparison evidence. Fresh 181-selection actual export/durable delivery
 and new-layout visual review remain main-gate responsibilities.
 
 New-layout visual acceptance is pending. The earlier file-URL browser request
