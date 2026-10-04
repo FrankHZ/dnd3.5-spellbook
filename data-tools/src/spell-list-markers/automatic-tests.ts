@@ -30,7 +30,7 @@ const spells: SpellName[] = [
     .map((name,i)=>({id:`spell:${i+2}`,canonicalName:name,sourceRulebookId:86})),
 ];
 const entry = (id: number, owner = "Bard", level = 1, ownerId = 3): NamedEntry => ({id:`list:${id}:${ownerId}:${level}`,
-  spellId:`spell:${id}`,listType:["Balance","Hades"].includes(owner) ? "domain" : "class",ownerName:owner,ownerLegacyId:ownerId,
+  spellId:`spell:${id}`,listType:["Balance","Hades","Wrath (SpC)"].includes(owner) ? "domain" : "class",ownerName:owner,ownerLegacyId:ownerId,
   level,rulebookId:86,sourceRowId:id,sourceTable:"synthetic",rawExtra:null,variantLabel:null,note:null,reviewStatus:"accepted"});
 const entries = [entry(1),entry(2),entry(3),entry(4),entry(5),entry(6),entry(1,"Sorcerer",2,4),entry(1,"Wizard",2,1),
   entry(7,"Balance",3,127),entry(8,"Balance",5,127),entry(9),entry(10,"Healer",1,62)];
@@ -126,6 +126,17 @@ const footerResult = processAutomaticMarkers([footer],additionalPath,spells,plan
 assert.equal(footerResult.occurrences.length,2); assert.equal(footerResult.machine.length,2);
 assert.equal(footerResult.occurrences[0]!.evidence.locator.nameSpanIndices[0],2);
 assert.equal(displayMembershipMarkers([planeEntries[1]!],86,[],footerResult.machine),"M");
+const wrath = {...footer,blocks:[{number:0,lines:[head("Wrath Domain Spells",10),row("1 Domain Spell†",null,25)]}]};
+const wrathEntry = entry(7,"Wrath (SpC)",1,174);
+const wrathResult = processAutomaticMarkers([wrath],additionalPath,spells,[wrathEntry]);
+assert.equal(wrathResult.machine.length,1);
+assert.equal(wrathResult.machine[0]!.ownerName,"Wrath (SpC)");
+assert.equal(displayMembershipMarkers([wrathEntry],86,[],wrathResult.machine),"");
+const noDagger = {...wrath,blocks:[{number:0,lines:[head("Wrath Domain Spells",10),row("1 Domain Spell",null,25)]}]};
+const noDaggerResult = processAutomaticMarkers([noDagger],additionalPath,spells,[wrathEntry]);
+assert.equal(noDaggerResult.occurrences[0]!.status,"unknown");
+assert.equal(noDaggerResult.relationships[0]!.reason,"source-scope-uncertain");
+assert.equal(displayMembershipMarkers([wrathEntry],86,[],noDaggerResult.machine),null);
 const temp = fs.mkdtempSync(path.join(os.tmpdir(),"automatic-markers-"));
 try {
   fs.writeFileSync(path.join(temp,"existing.json"),"preserved","utf8");

@@ -14,7 +14,7 @@ export type MachineMarker = {
 };
 type Reason = "incomplete-label" | "unknown-marker" | "missing-context" | "unmatched-identity" |
   "ambiguous-identity" | "unaccepted-relationship" | "conflicting-occurrences" |
-  "missing-source-coverage" | "missing-occurrence";
+  "missing-source-coverage" | "missing-occurrence" | "source-scope-uncertain";
 export type OccurrenceResult = {
   evidence: MarkerEvidence; context: Context | null; status: "machine" | "unknown" | "out-of-scope";
   reason: Reason | null; entryIds: string[];
@@ -33,6 +33,10 @@ export type AutomaticMarkers = {
 export function normalizedLabel(name: string) {
   return name.normalize("NFKC").replace(/[‘’]/g, "'").replace(/[‐‑–]/g, "-")
     .replace(/\s+/g, "").toLowerCase();
+}
+// Same explicit edition suffix normalization as the accepted domain inventory.
+function normalizedOwner(name: string, listType: string) {
+  return normalizedLabel(listType === "domain" ? name.replace(/\s+\(SpC\)$/i, "") : name);
 }
 function headingContext(heading: Heading): Context | null {
   const text = heading.text.replace(/\s+/g, " ").trim();
@@ -63,7 +67,7 @@ function planar(context: Context | null) {
     .includes(normalizedLabel(context.ownerNames[0]!));
 }
 function key(type: string, owner: string, level: number | null, name: string) {
-  return [type, normalizedLabel(owner), level, normalizedLabel(name)].join("|");
+  return [type, normalizedOwner(owner, type), level, normalizedLabel(name)].join("|");
 }
 
 /** SC's cached two-column list pages; no PDF, DB, components or model calls. */
@@ -140,7 +144,16 @@ export function processAutomaticMarkers(pages: readonly PdfPage[], extractionPat
       const rowContext: Context = {...context, level: parsed.level, ...(continuation ? {levelSource: levelSource!} : {})}; row.context = rowContext;
       if (domainRow) levelSource = evidence;
       for (const owner of context.ownerNames) covered.add(key(context.listType, owner, parsed.level, ""));
-      if (!parsed.inScope) { row.status = "out-of-scope"; continue; }
+      if (!parsed.inScope) {
+        // A continued label may carry its SC dagger on the next line.
+        // Its first line cannot establish an outside-scope identity.
+        const scoped = rowContext.ownerNames.flatMap(owner => lookup.get(key(rowContext.listType, owner, parsed.level, parsed.name)) ?? []);
+        row.entryIds = scoped.map(entry => entry.id);
+        row.status = complete(evidence) && !scoped.length ? "out-of-scope" : "unknown";
+        row.reason = row.status === "unknown" ? !complete(evidence) ? "incomplete-label" : "source-scope-uncertain" : null;
+        for (const entry of scoped) failures.set(entry.id, {reason: row.reason!, sourceIds: [evidence.id]});
+        continue;
+      }
       let reason: Reason | null = !complete(evidence) ? "incomplete-label" : evidence.markers === null ? "unknown-marker" : null;
       for (const owner of context.ownerNames) {
         const matches = lookup.get(key(context.listType, owner, parsed.level, parsed.name)) ?? [];
@@ -237,7 +250,7 @@ export function selectProcessedMembershipMarkers(entries: readonly ListIdentity[
         assert(/^\d\s+/.test(domainPrefix(prefix) + evidence.printedName), "Machine domain level lacks printed evidence");
       }
       assert(validPrefix(prefix, m.context) && complete(evidence) && parsed.inScope && parsed.level === entry.level && m.context.level === entry.level &&
-        m.context.listType === entry.listType && m.context.ownerNames.some(n => normalizedLabel(n) === normalizedLabel(m.ownerName)) &&
+        m.context.listType === entry.listType && m.context.ownerNames.some(n => normalizedOwner(n,entry.listType) === normalizedOwner(m.ownerName,entry.listType)) &&
         m.spell.id === entry.spellId && m.spell.sourceRulebookId === 86 && entry.rulebookId === 86 &&
         normalizedLabel(parsed.name) === normalizedLabel(m.spell.canonicalName), "Machine source/identity match differs");
     }

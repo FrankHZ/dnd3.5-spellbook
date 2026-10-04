@@ -67,8 +67,10 @@ School prefixes and separately extracted domain level digits are retained in
 source spans. Matching uses owner, level, normalized label, stable identity and
 explicit SC edition. Typography normalization handles ligatures, curly punctuation
 and layout whitespace; it does not rewrite names, combine slash alternatives or
-infer annotations from components. Domain rows without the SC dagger are source
-inventory outside the SC body scope. Shared Sorcerer/Wizard occurrences can bind
+infer annotations from components. A domain label without the SC dagger stays
+unknown when it matches an existing SC relationship; it cannot silently exclude
+that relationship or establish a machine annotation. Other complete labels
+without the dagger remain outside-scope source inventory. Shared Sorcerer/Wizard occurrences can bind
 both existing memberships.
 
 The eight planar domains have two rows per level. Their second row can continue
@@ -92,7 +94,10 @@ Machine bindings wrap ordinary candidate records with an explicit method,
 heading context and spell-name snapshot. Their `reviewStatus` remains `candidate`;
 the wrapper does not grant human acceptance or persistent import authority.
 The [source-free automatic report](../../data-tools/reports/dice-qa/books/86/sc-automatic-marker-results.json)
-locates the frozen private result, exceptions and replay entry.
+locates the frozen private result, exceptions and replay entry. Its accepted
+domain-source denominator and SC/outside-scope partition are separate from the
+automatic marker statuses: outside-scope source rows can still have unknown
+marker evidence. Complete domain source coverage does not make every marker known.
 
 The pass uses O(S log S + R + B) time for per-page ordering and indexed matching,
 and O(S + R + B) memory, where S is spans, R relationships and B emitted bindings.
