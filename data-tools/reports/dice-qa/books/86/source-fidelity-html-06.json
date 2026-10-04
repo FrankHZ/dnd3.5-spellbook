@@ -1,0 +1,57 @@
+{
+  "schema": "sc-source-fidelity-html-selection.v1",
+  "issue": 345,
+  "sourceIssue": 467,
+  "acceptedAdditionalIds": [
+    4033,
+    4247,
+    4345,
+    4349,
+    4354,
+    4355
+  ],
+  "selected": 229,
+  "current": 772,
+  "previousSelected": 223,
+  "currentFallbackIds": [
+    4421,
+    4425,
+    4426
+  ],
+  "fallbackIssue": 473,
+  "original223PresentationsUnchanged": true,
+  "acceptedSourceDifferenceTargets": 6,
+  "completeReviewedMappingUnits": 80,
+  "fullNormalizedSpells": 5097,
+  "scArticles": 1001,
+  "bilingualBodies": 2002,
+  "acceptedSummaryRows": 6837,
+  "classTargets": 961,
+  "directoryOwnerFields": 1922,
+  "emphasis": {
+    "englishBodies": 229,
+    "chineseBodies": 229,
+    "englishRanges": 639,
+    "chineseRanges": 2277
+  },
+  "requiredChecks": [
+    "full original-source authentication including accepted-source-fidelity",
+    "fixed actual normalized/manifest and unchanged generation provenance",
+    "full canonical fields/mechanics/summaries/reader notes/provenance",
+    "exact persisted final build metadata",
+    "single readonly snapshot and post-export fixed input/source rechecks",
+    "old-source/new-format and new-source/old-guard rejection",
+    "only six accepted differences and six new structures; other995article HTML exact",
+    "both complete generated and sanitized emphasis;1001same-AFTER-source visible texts and whitespace exact"
+  ],
+  "productionRuntime": "Maintained merged PR472 source-fidelity code; exporter and typography renderer unchanged",
+  "actualSourceMigrationAlreadyAccepted": true,
+  "implementationOperatorAccess": false,
+  "implementationPersistentDbCopiedOrWritten": false,
+  "implementationDurablePreviewChanged": false,
+  "implementationHtmlRendered": false,
+  "formattingComplete": false,
+  "contentCertification": false,
+  "humanVisualAccepted": false,
+  "laterUnacceptedBatchesSelected": false
+}

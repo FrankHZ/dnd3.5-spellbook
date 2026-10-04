@@ -256,7 +256,8 @@ def derive_final(args):
                            '--final-rules' if getattr(args, 'final_rules', False) else str(Path(args.original_rules).resolve(strict=True)), str(Path(args.rules_db).resolve(strict=True)),
                            str(Path(args.content_db).resolve(strict=True)),
                            *(['--accepted-english-title'] if getattr(args, 'accepted_english_title', False) else []),
-                           *(['--accepted-source-pairs'] if getattr(args, 'accepted_source_pairs', False) else [])], capture_output=True, encoding='utf8')
+                           *(['--accepted-source-pairs'] if getattr(args, 'accepted_source_pairs', False) else []),
+                           *(['--accepted-source-fidelity'] if getattr(args, 'accepted_source_fidelity', False) else [])], capture_output=True, encoding='utf8')
     require(node.returncode == 0, 'complete QA/rules rehearsal failed: ' + node.stderr)
     derived = json.loads(node.stdout)
     evidence = Evidence(data, COVERAGE)

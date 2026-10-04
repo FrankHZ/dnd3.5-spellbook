@@ -40,38 +40,20 @@ head remote `ci:portable` remains the merge gate on PR #351.
 paragraph/emphasis mapping, representative 8–12 spell comparisons, full 1,001-ID
 format/page/span evidence inventory and a minimal accepted formatting contract.
 DB tags, `pre` newlines, regex splits and existing bold markup cannot replace
-source font/span evidence. Main-gate accepted
-[#463 / PR #464](https://github.com/FrankHZ/dnd3.5-spellbook/pull/464)'s complete
-95 corrected-current presentations: 90 emphasis repairs and five unchanged
-outputs. The accepted IDs, complete four-field inputs and reviewed source
-mappings remain unchanged. The maintained entry loads that exact complete set,
-not a reconstruction from older wrong-emphasis derivatives. Complete bilingual
-intervals and independent source evidence bind the selection; proposal status
-and counts grant no authority. The #461 actual source-pair migration and
-independent complete PDF/errata
-format review now accept corrected 3930/3934 presentations from the same #463
-revision. Their eight input fields bind the migrated after state, giving 97
-selected displays. The separately accepted #465 / PR #466 packet adds 44
-complete presentations. The separately accepted #468 / PR #469 packet adds 40,
-giving 181 selected displays. The separately accepted #470 / PR #471 packet adds
-42, giving 223 selected / 778 current displays. Its complete
-semantic rereview and source-position evidence bind the corrected outputs;
-Its 45 diagnostic entries cannot become the selected set. 4247, 4345, 4349,
-4354 and 4355 remain wholly unselected alongside 4033 for #467. New 4421, 4425 and 4426 are likewise wholly unselected for #473. All nine complete
-current English/Chinese fallbacks stay exact; no proposed after field is applied.
-The 4395 repair removes only ordinary-action emphasis and preserves its three
-named references and every character/whitespace. Older #461
-formatting outputs and unaccepted later batches are excluded. Whole-book and
-human rendered HTML gates stay open.
+source font/span evidence. Current integration preserves the 223 accepted
+presentations and adds six complete AFTER presentations from
+[#467 / PR #472](https://github.com/FrankHZ/dnd3.5-spellbook/pull/472), giving
+229 selected / 772 current displays. Main-gate has accepted and actually migrated
+the six source corrections and independently accepted 80 complete mapping units
+and complete emphasis. All four new fields bind that actual corrected state.
+4421, 4425 and 4426 remain wholly current for #473. Diagnostic packets and
+unaccepted later batches stay excluded. The 4395 ordinary-action emphasis repair
+and all old 223 presentations remain exact. Whole-book and human HTML gates stay open.
 
 `assertPdfTypographyEmphasis` compares every decoded Unicode character's full
 `em`/`strong` set with complete reviewed intervals after candidate generation
-and again on each of 223 final sanitized English/Chinese bodies. Old output can
-pass current text/HTML input guards while emphasizing the wrong characters;
-regression checks reject all 92 affected legacy outputs, including the two older
-source-pair presentations, at both
-stages, while visible text including whitespace remains identical. The complete
-source bindings and frozen semantic checks remain required alongside this audit.
+and on each of the 229 sanitized English/Chinese bodies. Frozen old semantic
+regressions remain evidence; field guards alone do not prove complete emphasis.
 
 3970's accepted parent3969 flavour remains inherited without an own SC font claim;
 3943's two supplemental heading spans bind their accepted source refs. The exact
@@ -90,39 +72,27 @@ output fails the independent checker. Actual activation and refreshed output
 require main-gate's corresponding completed-state proof; prior actual export
 evidence applies only to its previous input state.
 
-Private fixed-Git real-text validation loads the exact 95 corrected-current
-candidates and two newly accepted source-pair presentations, verifies complete
-mapping/range/source and both acceptance bindings, then adds the separately
-accepted 44 batch-03, 40 batch-04 and 42 batch-05 candidates and checks all 223 current
-four-field guards before the actual helper,
-sanitizer and merged output. Every selected stale field or wrong target/book
-must reject. Complete bilingual bodies, emphasis, paragraphs, independent notes
-and structures are checked by the frozen semantic verifier. This memory replay
-opens no real DB and does not replace operator source authentication. It replays
-the precise #461 accepted normalized transition and paired Chinese correction
-through the maintained upgrade, including check/apply/zero-write repeat. The
-new readonly snapshot must match every normalized value, Chinese field and
-source-correction envelope, accepted summary and source revision.
-`validateFinalOverlay` compares exact persisted final build metadata with
-the same authenticated plan. Legal but incorrect helper/source revisions and
-changed-name counts reject while complete fields/provenance remain identical.
-A same-input 181-to-223 comparison preserves every visible character and whitespace
-in all 1,001 articles. Only the 42 new selected structures may change; all 181 old
-presentations and the other 959 article structures remain exact. The 42 full
-normalized records must be identical between their historical input revision
-and the actual source-pair baseline, with every current Chinese field checked.
-Two prior actual batch-05 outputs, the three batch-04 outputs and three batch-03 failures
-reject both before and after sanitization while their text/inputs remain exact.
-Each blocked selection attempt, including a wholesale diagnostic45 promotion,
-fails before output creation. All nine full bilingual fallback bodies are exact
-against the accepted actual181 input state.
-The frozen 622-case source-pair regression, including three valid-shape metadata
-drift cases, remains required. Current source-authentication code and the actual
-persisted migration helper have distinct fixed revisions; relevant runtime files
-must be unchanged before using the historical helper in the final metadata plan.
-The completed #461 source-state remains fixed for this format slice. Only PR471's
-report/docs delta enters the exporter checkout; PR472 runtime and #467 migration
-are excluded. Primary auth-code revision remains explicit and unchanged.
+Private fixed-Git validation authenticates the new completed source-fidelity
+receipt, full 5,097 normalized records, exact manifest and generation provenance.
+It reuses the maintained six-entry candidate/minimal-edit validation and fresh
+original page/full-errata authentication. Disposable memory reconstructs both
+accepted source states, preserves the old 223 presentation maps, and compares
+only the six accepted source differences and six newly formatted structures.
+The other 995 complete article HTML must remain exact. A separate same-AFTER-source
+223-to-229 comparison preserves all 1,001 visible texts including whitespace.
+The three remaining blocked entries retain exact four fields and complete
+bilingual fallback. Stale fields/identity, blocked/future selection and mixed
+source/helper/report/normalized authority reject before output creation.
+
+Authentication and persisted migration helper both bind the explicit accepted
+PR472 runtime; the primary checkout remains separate. Full original-source
+authentication, one readonly content transaction, every normalized value,
+canonical body/summary/independent note/source-correction envelope, exact build
+metadata and all post-export input rechecks stay mandatory. Legal-shape metadata
+drift rejects despite unchanged fields/provenance and passing older checks.
+Preparation opens/copies/writes no persistent DB, does not modify durable previews
+and does not render HTML. Actual 223 evidence remains frozen; actual 229 export
+and durable delivery remain main-gate responsibilities.
 
 The maintained summary refresh now consumes the accepted complete 6,837-row
 composition, retaining the strict owner selector. Private fixed-Git replay
@@ -130,7 +100,7 @@ reconstructs disposable memory from accepted normalized records, final fields,
 reader-note amendments and authenticated summaries, then compares all 1,001
 entries / 2,002 bilingual bodies, 961 class targets / 1,922 directory owner
 fields, 40 body-only targets, 40 source-question occurrences and all emitted local
-links. All 223 selected display derivatives and 778 current displays stay distinct.
+links. All 229 selected display derivatives and 772 current displays stay distinct.
 This replay copies no database and does not replace original-source authentication
 or the actual operator export. The complete synthetic fixture additionally
 rejects missing/wrong/empty/unaccepted owners, summary source/value drift and
@@ -155,8 +125,8 @@ Synthetic structure/CSS and bounded accepted-input memory checks prepare that
 interface; they do not prove browser marker rendering or full-book source QA.
 The report records selected/current IDs, `formattingComplete: false` and
 `contentCertification: false`; its selection counts confer no authority by
-themselves. The 181-selection actual readonly export and durable preview are
-accepted comparison evidence. Fresh 223-selection actual export/durable delivery
+themselves. The 223-selection actual readonly export and durable preview are
+accepted comparison evidence. Fresh 229-selection actual export/durable delivery
 and new-layout visual review remain main-gate responsibilities.
 
 New-layout visual acceptance is pending. The earlier file-URL browser request

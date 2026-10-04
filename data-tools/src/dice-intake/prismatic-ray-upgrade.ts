@@ -9,21 +9,36 @@ import {planFinalOverlay, applyFinalOverlay, validateFinalOverlay, verifyFullNor
   finalScSummaryRevision, finalScSummaryCandidate, type FinalField} from './final-writer';
 import type {SummaryRow} from '../short-desc/summary-row-schema';
 
+import {fidelityCandidate, fidelityAcceptance, fidelityEnglishIds, fidelityChineseIds, validateFidelityEnglish, validateFidelityChinese} from './source-fidelity';
+
 type Pair = {description: string; descriptionHtml: string};
 type Patch = {id: number; expected: {spell: Pair}; spell: Pair};
 type Report = Record<string, unknown> & {sourceRevisions: Record<string, string>};
 
 /** The owning entry authenticates the fixed source candidate/acceptance before
  * calling this internal primitive. No general annotated replacement is allowed. The sourcePairs branch supports
- * only the fixed #461 transition from the accepted #434 predecessor. */
-export function comparePrismaticArtifacts(previous: NormalizedRulesContent, next: NormalizedRulesContent, patch: Patch, sourcePairs = false) {
+ * the fixed #461 transition and #467's fixed six-entry successor. */
+export function comparePrismaticArtifacts(previous: NormalizedRulesContent, next: NormalizedRulesContent, patch: Patch | Patch[], sourcePairs: boolean | 'fidelity' = false) {
+  if (sourcePairs === 'fidelity') {
+    assert(Array.isArray(patch)); assert.deepEqual(patch.map(p => p.id), fidelityEnglishIds);
+    const rebound = structuredClone(next);
+    for (const item of patch) {
+      validateFidelityEnglish(item.id, item.expected.spell, item.spell);
+      compareNormalizedPair(previous, next, item);
+      rebound.spells = rebound.spells.map(row => row.legacySpellId === item.id ? previous.spells.find(old => old.legacySpellId === item.id)! : row);
+    }
+    rebound.generatedAt = previous.generatedAt; assert(previous.artifact && rebound.artifact);
+    rebound.artifact.provenance = previous.artifact.provenance;
+    assert.deepEqual(rebound, previous, 'source fidelity changes unrelated normalized fields'); return;
+  }
+  assert(!Array.isArray(patch));
   const target = sourcePairs ? 3934 : 3958;
   assert.equal(patch.id, target);
   assert.deepEqual(Object.keys(patch.spell).sort(), ['description', 'descriptionHtml']);
   assert.deepEqual(Object.keys(patch.expected.spell).sort(), ['description', 'descriptionHtml']);
   if (sourcePairs) {
     for (const key of ['description', 'descriptionHtml'] as const) {
-      const before = patch.expected.spell[key], after = patch.spell[key];
+      const before: string = patch.expected.spell[key], after: string = patch.spell[key];
       const offset = key === 'description' ? 6 : 13;
       assert.equal(before.slice(offset, offset + 2), 'a ');
       assert.equal(after, before.slice(0, offset) + before.slice(offset + 2), 'unlisted source pair change');
@@ -35,11 +50,25 @@ export function comparePrismaticArtifacts(previous: NormalizedRulesContent, next
     assert.equal(patch.expected.spell.descriptionHtml.split(heading).length, 2);
     assert.equal(patch.spell.descriptionHtml, patch.expected.spell.descriptionHtml.replace(heading, ''));
   }
+  compareNormalizedPair(previous, next, patch);
   const old = previous.spells.filter(row => row.legacySpellId === target);
+  const rebound = structuredClone(next);
+  rebound.spells = next.spells.map(row => row.legacySpellId === target ? old[0]! : row);
+  // The new genuine generation owns only its timestamp and provenance changes.
+  rebound.generatedAt = previous.generatedAt;
+  assert(previous.artifact && rebound.artifact);
+  rebound.artifact.provenance = previous.artifact.provenance;
+  assert.deepEqual(rebound, previous, 'source pair upgrade changes unrelated normalized fields');
+}
+
+function compareNormalizedPair(previous: NormalizedRulesContent, next: NormalizedRulesContent, patch: Patch) {
+  assert.deepEqual(Object.keys(patch.spell).sort(), ['description', 'descriptionHtml']);
+  assert.deepEqual(Object.keys(patch.expected.spell).sort(), ['description', 'descriptionHtml']);
+  const old = previous.spells.filter(row => row.legacySpellId === patch.id);
   assert.equal(old.length, 1); assert.equal(old[0]!.sourceRulebookId, 86);
   assert.equal(old[0]!.descriptionText, patch.expected.spell.description);
   assert.equal(old[0]!.descriptionHtml, patch.expected.spell.descriptionHtml);
-  const changed = next.spells.filter(row => row.legacySpellId === target);
+  const changed = next.spells.filter(row => row.legacySpellId === patch.id);
   assert.equal(changed.length, 1);
   const expected = structuredClone(old[0]!);
   expected.descriptionText = patch.spell.description;
@@ -52,31 +81,37 @@ export function comparePrismaticArtifacts(previous: NormalizedRulesContent, next
   // normalizeRulesContent serializes rawJson using sorted top-level keys.
   expected.rawJson = JSON.stringify(Object.fromEntries(Object.entries(raw).sort(([a], [b]) => a.localeCompare(b))));
   assert.deepEqual(changed[0], expected, 'unlisted normalized source pair change');
-  const rebound = structuredClone(next);
-  rebound.spells = next.spells.map(row => row.legacySpellId === target ? old[0]! : row);
-  // The new genuine generation owns only its timestamp and provenance changes.
-  rebound.generatedAt = previous.generatedAt;
-  assert(previous.artifact && rebound.artifact);
-  rebound.artifact.provenance = previous.artifact.provenance;
-  assert.deepEqual(rebound, previous, 'source pair upgrade changes unrelated normalized fields');
 }
 
 export function prismaticRayUpgrade(db: Database.Database, previous: NormalizedRulesContent,
-  next: NormalizedRulesContent, previousPath: string, nextPath: string, patch: Patch,
+  next: NormalizedRulesContent, previousPath: string, nextPath: string, patch: Patch | Patch[],
   fields: FinalField[], report: Report, summaries: SummaryRow[], helper: string,
   context: RulesContentImportContext, requireInputs: () => void, mode: 'check' | 'apply' = 'check',
-  afterWrite: () => void = () => {}, authenticateBeforeWrite: () => void = () => {}, sourcePairs = false) {
+  afterWrite: () => void = () => {}, authenticateBeforeWrite: () => void = () => {}, sourcePairs: boolean | 'fidelity' = false) {
   assert(mode === 'check' || mode === 'apply'); assert(!db.inTransaction, 'English title upgrade owns its transaction');
   comparePrismaticArtifacts(previous, next, patch, sourcePairs);
   const bytes = [fs.readFileSync(previousPath), fs.readFileSync(nextPath)];
   const priorReport = structuredClone(report);
-  const authorityKeys = sourcePairs ? ['sourcePairCandidate', 'sourcePairAcceptance'] : ['englishTitleCandidate', 'englishTitleAcceptance'];
+  const fidelity = sourcePairs === 'fidelity';
+  const chineseIds = fidelity ? fidelityChineseIds : [3930];
+  const authorityKeys = fidelity ? ['sourceFidelityCandidate', 'sourceFidelityAcceptance'] : sourcePairs ? ['sourcePairCandidate', 'sourcePairAcceptance'] : ['englishTitleCandidate', 'englishTitleAcceptance'];
   for (const key of authorityKeys) {
     assert.match(report.sourceRevisions[key] ?? '', /^[a-f0-9]{40}$/, 'missing authenticated source pair authority');
     delete priorReport.sourceRevisions[key];
   }
-  const priorFields = sourcePairs ? fields.map(field => field.sourceCorrection ? field.sourceCorrection.prior : field) : fields;
-  if (sourcePairs) {
+  const priorFields = sourcePairs ? fields.map(field => field.sourceCorrection && (!fidelity || chineseIds.includes(field.targetId)) ? field.sourceCorrection.prior : field) : fields;
+  if (fidelity) {
+    assert.equal(report.sourceRevisions.sourcePairCandidate, 'ebc3a6615002de6dac1f1c4a636e19757d7b0c8f');
+    assert.equal(report.sourceRevisions.sourcePairAcceptance, '5f05fad7df5256a9c3c998d3be77aac238445107');
+    assert.equal(report.sourceRevisions.sourceFidelityCandidate, fidelityCandidate);
+    assert.equal(report.sourceRevisions.sourceFidelityAcceptance, fidelityAcceptance);
+    const corrected = fields.filter(field => field.sourceCorrection?.revision === fidelityCandidate);
+    assert.deepEqual(corrected.map(field => field.targetId).sort((a,b) => a-b), chineseIds);
+    for (const field of corrected) {
+      assert.equal(field.field, 'body');
+      for (const key of ['text','html'] as const) validateFidelityChinese(field.targetId, field.sourceCorrection!.prior[key]!, field[key]!);
+    }
+  } else if (sourcePairs) {
     assert.equal(report.sourceRevisions.englishTitleCandidate, '790f9ebbd024916d16577d69c01d868155a9ccfd', 'accepted title predecessor required');
     assert.equal(report.sourceRevisions.englishTitleAcceptance, '7f8ea2df1104fe4345141f0712dbb43739e98b7e');
     assert.equal(report.sourceRevisions.sourcePairCandidate, 'ebc3a6615002de6dac1f1c4a636e19757d7b0c8f');
@@ -135,18 +170,20 @@ export function prismaticRayUpgrade(db: Database.Database, previous: NormalizedR
       const targetColumns = (db.pragma('table_info(I18nSpellText)') as {name: string}[]).map(row => row.name);
       const state = protectedBefore.find(table => table.name === 'I18nSpellText')!;
       // Keep all other fields and all other rows byte-exact, including CHM/notes.
-      const at = (state.rows as unknown[][]).findIndex((row: unknown[]) => row[targetColumns.indexOf('spellId')] === 3930n &&
-        Buffer.isBuffer(row[targetColumns.indexOf('lang')]) && (row[targetColumns.indexOf('lang')] as Buffer).toString() === 'zh' &&
-        (row[targetColumns.indexOf('variant')] as Buffer).toString() === 'effective');
-      assert(at >= 0, 'missing protected predecessor effective row');
       const planned = planFinalOverlay(db, fields, report, verifyFullNormalized(db, previous, previousPath,
         JSON.parse(String(db.prepare('SELECT buildMetaJson FROM RulesContentBuild').pluck().get())).importer.current), helper, summaries);
-      assert.equal(planned.inserts, 0); assert.equal(planned.updates, 1);
-      const correction = planned.rows.find(row => row.spellId === 3930)!;
-      for (const key of ['descriptionText', 'descriptionHtml', 'bodyProvenanceJson'] as const)
-        (state.rows[at] as unknown[])[targetColumns.indexOf(key)] = Buffer.from(correction[key]!);
-      // The maintained overlay owns the changed body's updatedAt only.
-      (state.rows[at] as unknown[])[targetColumns.indexOf('updatedAt')] = null;
+      assert.equal(planned.inserts, 0); assert.equal(planned.updates, chineseIds.length);
+      for (const targetId of chineseIds) {
+        const at = (state.rows as unknown[][]).findIndex((row: unknown[]) => row[targetColumns.indexOf('spellId')] === BigInt(targetId) &&
+          Buffer.isBuffer(row[targetColumns.indexOf('lang')]) && (row[targetColumns.indexOf('lang')] as Buffer).toString() === 'zh' &&
+          (row[targetColumns.indexOf('variant')] as Buffer).toString() === 'effective');
+        assert(at >= 0, 'missing protected predecessor effective row');
+        const correction = planned.rows.find(row => row.spellId === targetId)!;
+        for (const key of ['descriptionText', 'descriptionHtml', 'bodyProvenanceJson'] as const)
+          (state.rows[at] as unknown[])[targetColumns.indexOf(key)] = Buffer.from(correction[key]!);
+        // The maintained overlay owns the changed body's updatedAt only.
+        (state.rows[at] as unknown[])[targetColumns.indexOf('updatedAt')] = null;
+      }
     }
     // Complete external source QA must read CHM before the first SQL write.
     // The immediate transaction already prevents a concurrent content writer;
@@ -155,20 +192,22 @@ export function prismaticRayUpgrade(db: Database.Database, previous: NormalizedR
     importGenerated(db, next, false, nextPath, context);
     const full = verifyFullNormalized(db, next, nextPath, context.currentProvenance);
     // Reattach the exact accepted predecessor envelope before deriving its new
-    // source binding. Only the bound #461 effective body may change; summaries
+    // source binding. Only the bound effective bodies may change; summaries
     // and every other Chinese field remain exact.
     full.meta.overlays = before.overlays;
     const plan = planFinalOverlay(db, fields, report, full, helper, summaries);
-    assert.equal(plan.inserts, 0); assert.equal(plan.updates, sourcePairs ? 1 : 0); assert.equal(plan.migrate, false);
+    assert.equal(plan.inserts, 0); assert.equal(plan.updates, sourcePairs ? chineseIds.length : 0); assert.equal(plan.migrate, false);
     applyFinalOverlay(db, plan);
     afterWrite(); checkInputs(); inspect();
     const protectedAfter = protectedState();
     if (sourcePairs) {
       const columns = (db.pragma('table_info(I18nSpellText)') as {name: string}[]).map(row => row.name);
       const state = protectedAfter.find(table => table.name === 'I18nSpellText')!;
-      const row = (state.rows as unknown[][]).find((row: unknown[]) => row[columns.indexOf('spellId')] === 3930n &&
-        (row[columns.indexOf('lang')] as Buffer).toString() === 'zh' && (row[columns.indexOf('variant')] as Buffer).toString() === 'effective') as unknown[];
-      row[columns.indexOf('updatedAt')] = null;
+      for (const targetId of chineseIds) {
+        const row = (state.rows as unknown[][]).find((row: unknown[]) => row[columns.indexOf('spellId')] === BigInt(targetId) &&
+          (row[columns.indexOf('lang')] as Buffer).toString() === 'zh' && (row[columns.indexOf('variant')] as Buffer).toString() === 'effective') as unknown[];
+        row[columns.indexOf('updatedAt')] = null;
+      }
     }
     assert.deepEqual(protectedAfter, protectedBefore, 'source upgrade changed protected tables');
     assert.deepEqual(db.prepare('SELECT * FROM sqlite_schema ORDER BY type,name').all(), schema, 'English title upgrade changed schema');

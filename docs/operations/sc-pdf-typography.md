@@ -236,3 +236,20 @@ gaps, and obtain main-gate selection. Address the representative gaps and verify
 the consumer's actual rendered HTML before promoting their display proposals.
 [#431](https://github.com/FrankHZ/dnd3.5-spellbook/issues/431) owns this prerequisite;
 #345/#346 retain responsibility for final coverage and integration.
+
+## Accepted Source-Fidelity AFTER Integration
+
+The six #467 entries (4033, 4247, 4345, 4349, 4354, 4355) have separate accepted
+source corrections, a completed actual migration and independent complete format
+acceptance. The consumer preserves its old 223 presentations and selects only
+these six AFTER presentations, giving 229 selected and 772 current. All four
+inputs bind the completed normalized/canonical state; all 80 reviewed mapping
+units and complete English/Chinese emphasis remain fixed. Proposal flags and an
+empty implementation selection file do not override main-gate acceptance.
+
+The consumer's source-fidelity handoff requires explicit acceptance mode and
+the maintained PR472 source authentication/planner/provenance wiring. Old source
+with new format and new source with an old helper/normalized/report guard reject.
+4421, 4425 and 4426 remain wholly excluded for #473; later unaccepted packets
+remain outside selection. Prior proofs keep their original bindings. See
+[offline HTML](./offline-html.md) for the current readonly execution boundary.

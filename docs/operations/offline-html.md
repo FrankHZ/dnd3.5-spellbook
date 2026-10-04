@@ -132,29 +132,19 @@ explicit readonly handoff; this task does not open those DBs.
 
 Ordinary CLI flags provide no presentation JSON/file channel. The low-level
 renderer map is not source authority; authentication belongs to that maintained
-entry. Current integration uses 223 selected displays: the complete 95 corrected
-[#463 / PR #464](https://github.com/FrankHZ/dnd3.5-spellbook/pull/464) candidates
-plus its corrected 3930/3934 candidates after main-gate accepted and actually
-applied [#461](https://github.com/FrankHZ/dnd3.5-spellbook/issues/461)'s two source
-pairs. All eight new candidate input fields must equal that accepted after state.
-Complete original PDF/errata review and final emphasis acceptance bind both new
-presentations; older #461 formatting outputs are excluded. The additional 44
-[#465 / PR #466](https://github.com/FrankHZ/dnd3.5-spellbook/pull/466) presentations
-bind the separately accepted complete semantic and source-position review.
-Their old normalized input records must equal the actual migrated baseline;
-all four fields must match the current readonly snapshot. The old 97
-presentations remain exact. The separately accepted 40
-[#468 / PR #469](https://github.com/FrankHZ/dnd3.5-spellbook/pull/469) candidates
-extend that complete 141 set. The accepted 42
-[#470 / PR #471](https://github.com/FrankHZ/dnd3.5-spellbook/pull/471) candidates
-extend the complete 181 set. Diagnostic 45-entry packets cannot be promoted
-wholesale: 4247, 4345, 4349, 4354 and 4355 remain wholly excluded alongside 4033.
-Those six entries retain exact current bilingual fallback for #467. New 4421,
-4425 and 4426 remain wholly current for #473; all nine blocked entries are excluded.
-4395's ordinary-action emphasis is removed while its three named references
-remain exact. The other 778 targets retain current display. No unapplied proposal
-supplies accepted after fields.
-Unaccepted later batches are not selected.
+entry. Current integration uses 229 selected displays. It preserves the complete
+223 independently accepted presentations and adds only the six
+[#467 / PR #472](https://github.com/FrankHZ/dnd3.5-spellbook/pull/472) AFTER
+presentations: 4033, 4247, 4345, 4349, 4354 and 4355. Main-gate separately accepted
+and actually migrated their minimal source corrections, then independently
+accepted all 80 complete mapping units and complete bilingual emphasis. Each
+new presentation binds all four corrected fields to that completed state;
+implementation proposal flags or an empty selection-candidates file do not
+replace explicit acceptance. The original 223 presentations remain exact.
+4421, 4425 and 4426 retain complete current bilingual fallback for #473.
+The other 772 targets retain current display. Diagnostic packets and unaccepted
+later batches cannot be selected. The 4395 repair keeps ordinary-action text
+regular while preserving its three named references and every character.
 
 The private entry binds exact candidates, complete mappings/ranges and independent
 source validation/acceptance. It calls `assertPdfTypographyEmphasis` on both
@@ -189,15 +179,20 @@ Full source authentication includes the accepted 3930 Chinese body and 3934
 English pair, with their source-correction provenance and accepted annotations.
 The prior completed state is retained as historical evidence, never substituted
 for the current operator binding. Export performs no migration or content repair.
-The current format slice preserves the completed #461 source-state binding.
-It consumes only PR471 report/docs changes in its exporter checkout; PR472 runtime
-and source-fidelity migration are outside this slice. Primary authentication code
-remains at its explicit handoff revision.
-The current batch handoff separately binds current source-authentication code and
-persisted migration helper revisions. It proves the relevant runtime files
-unchanged between them; the final metadata plan still uses the fixed actual
-migration revision, never a value inferred from the database. Existing valid-shape
-metadata drift regressions remain required.
+The source-fidelity refresh additionally requires `--accepted-source-fidelity`
+and the completed #467 operator receipt, full 5,097-entry normalized artifact
+and exact rules manifest. It consumes the maintained PR472 source authentication,
+planner and provenance implementation, with both authentication and actual
+migration helper fixed to the explicitly accepted source-fidelity runtime.
+The full source authentication includes all six corrected pairs; generation
+provenance remains unchanged. The old #461 state is authenticated as historical
+predecessor evidence and cannot substitute for AFTER. Old-source/new-format,
+new-source/old-helper, old normalized inputs and missing fidelity report authority
+reject. Full canonical bodies, mechanics, summaries, independent notes,
+source-correction provenance and exact persisted metadata remain required in
+one readonly snapshot, followed by all source/input rechecks. The helper never
+infers an accepted migration revision from DB metadata. This entry performs no
+migration, content repair or durable delivery.
 Prior previews/proofs retain their original input bindings and do not certify
 the refreshed output.
 
