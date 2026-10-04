@@ -1,0 +1,441 @@
+{
+  "schemaVersion": 1,
+  "issue": 470,
+  "parentIssues": [
+    431,
+    345
+  ],
+  "status": "unselected-format-proposals-with-whole-entry-content-blockers",
+  "scope": "remaining-complete-entries-05",
+  "privateEvidence": {
+    "revision": "a101e4cf93d4403c8d366a7e2b195d112101107d",
+    "path": "dice-qa/books/86/issue-470",
+    "fixedInventoryRevision": "712d96bc24f03bea2f119e00f0b057eadbe0af01",
+    "acceptedFieldsRevision": "0688739d92a2aa9fb3eceeb444daa7260e711058",
+    "readerNoteRevision": "c61b9dea676cfd89bdfcaa6dcbcccbc99280d7c4",
+    "currentFullNormalizedRevision": "2336ddf280ff27477a7ec760d745ac42a11d5cf9",
+    "completedMigrationRevision": "cffdedcddf2d28b58a68caa6d94d60253be5f59d",
+    "priorRepairedPacketRevision": "9d8b8db470ca0e1444f7eb4db7a70d2bdc229172",
+    "prior40OnlyAcceptanceRevision": "8a3eb4ee9d51a8a74ff56d273ad8e7e2685c04b5",
+    "mappings": "sample-mappings.json",
+    "diagnosticPresentations": "presentations.json",
+    "candidates": "selection-candidates.json",
+    "dispositions": "dispositions.json",
+    "unappliedFourFieldProposals": "content-candidates.json",
+    "semanticReview": "semantic-rereview.json",
+    "completeEmphasisRanges": "complete-inline-ranges.json",
+    "sourcePositionComparison": "source-position-comparison.json",
+    "blockedSourceDifferences": "source-content-differences.json",
+    "individualMinusGlyphCases": "representation-exceptions.json",
+    "separateOfficialErrata": "errata-differences.json",
+    "currentAuthorityTrace": "authority-trace.json",
+    "inheritedOrigins": "inherited-origins.json",
+    "reproduction": "reproduction.json",
+    "checks": [
+      "validation.json",
+      "entry-validation.json",
+      "pdf-comparison.json",
+      "visual-inspection.json",
+      "source-position-negative.json",
+      "semantic-output-negatives.json",
+      "export-root-validation.json",
+      "export-package-validation.json",
+      "export-entry-validation.json",
+      "export-link-audit.json",
+      "export-semantic-negatives.json",
+      "export-blocked-fallback.json",
+      "cwd-replay.json",
+      "run-settings.json",
+      "resource-budget.json"
+    ]
+  },
+  "targetIds": [
+    4356,
+    3536,
+    3776,
+    4357,
+    4358,
+    4359,
+    4361,
+    4362,
+    4375,
+    4378,
+    4386,
+    4387,
+    4389,
+    4493,
+    4393,
+    4394,
+    4395,
+    4396,
+    4398,
+    4399,
+    4400,
+    4401,
+    4402,
+    4403,
+    4404,
+    4405,
+    4407,
+    4408,
+    4409,
+    4410,
+    4411,
+    4413,
+    4414,
+    3967,
+    4418,
+    4419,
+    4421,
+    4422,
+    4423,
+    3778,
+    4425,
+    4245,
+    4426,
+    4427,
+    4428
+  ],
+  "dispositionCounts": {
+    "completeDiagnosticMappings": 45,
+    "completeFormatCandidates": 42,
+    "blockedWholeEntries": 3,
+    "pending": 0,
+    "mainGateSelected": 0,
+    "exactUnappliedContentProposals": 3
+  },
+  "entries": [
+    {
+      "targetId": 4356,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3536,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3776,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4357,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4358,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4359,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4361,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4362,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4375,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4378,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4386,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4387,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4389,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4493,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4393,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4394,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4395,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4396,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4398,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4399,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4400,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4401,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4402,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4403,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4404,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4405,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4407,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4408,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4409,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4410,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4411,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4413,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4414,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3967,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4418,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4419,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4421,
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "findingKind": "unapproved-punctuation-glyph-and-paired-representation",
+      "diagnosticMappingComplete": true,
+      "followupOwner": "main-gate independent content task"
+    },
+    {
+      "targetId": 4422,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4423,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3778,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4425,
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "findingKind": "unapproved-punctuation-glyph-and-paired-representation",
+      "diagnosticMappingComplete": true,
+      "followupOwner": "main-gate independent content task"
+    },
+    {
+      "targetId": 4245,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4426,
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "findingKind": "omitted-original-word",
+      "diagnosticMappingComplete": true,
+      "followupOwner": "main-gate independent content task"
+    },
+    {
+      "targetId": 4427,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4428,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    }
+  ],
+  "blockedTargetIds": [
+    4421,
+    4425,
+    4426
+  ],
+  "sourceReview": {
+    "freshComparedPages": 15,
+    "freshComparedSavedSpans": 2765,
+    "completeOriginalEntryPagesVisuallyReviewed": 14,
+    "completeOfficialErrataPagesReviewed": 1,
+    "errataApplicableIds": [
+      4425
+    ],
+    "sourceBoundUnits": 511,
+    "acceptedInheritedUnitsWithoutOwnScFontClaim": 17,
+    "independentReaderNoteUnits": 4,
+    "chineseCodePointEmphasisRanges": 457,
+    "fullTextPositionUnits": 139,
+    "sourcePositionBoundCharacters": 24963,
+    "sourcePositionBoundPunctuation": 831,
+    "sourcePositionSwapNegativeDetected": true,
+    "rawPunctuationCodePointsAndPairedHtmlEntitiesRetained": true,
+    "physicalLineEndHyphenOmissions": 42,
+    "entrySpecificMinusGlyphRepresentations": 2,
+    "acceptedOfficialErrataAlignmentDifferences": 2,
+    "newSourceContentAccepted": false,
+    "fullDiagnosticEnglishAndChineseUnitCoverage": true,
+    "completeCaseComparisonMismatches": 0
+  },
+  "representationChecks": {
+    "completeFourFieldBindings": true,
+    "currentNormalizedEnglishPairBindings": true,
+    "decodedTextWhitespaceParagraphsAndSemanticStructuresPreserved": true,
+    "completeFinalDomEmphasisBeforeAndAfterActualSanitizer": true,
+    "staleFieldAndIdentityRejections": 315,
+    "meaningfulConstructedEmphasisNegatives": 8,
+    "observedFirstDraftDelimiterErrorNegatives": 1,
+    "maintainedAuthorAndComparatorReused": true,
+    "dedicatedVisibleTextCounter": true,
+    "maintainedPublicHelpersChanged": false
+  },
+  "consumerRehearsal": {
+    "fixedExporter": "383c33ca54dba2b17c267442da9df72eda78f773",
+    "memoryEntries": 46,
+    "completeGuardedEntries": 45,
+    "destinationOnlyFixtureIds": [
+      3826
+    ],
+    "eligibleCandidates": 42,
+    "blockedSelectionRejectionsBeforeOutput": 3,
+    "blockedWholeEntryFallbacksVerified": 3,
+    "allFinalEmphasisCheckedAfterActualSanitization": true,
+    "allVisibleTextAndWhitespacePreserved": true,
+    "maintainedSemanticStructureComparison": true,
+    "paragraphBoundariesPreserved": true,
+    "independentReaderNotesPreserved": true,
+    "resolvedBodyLinks": 3,
+    "detachedBodyLinks": 28,
+    "exporterStaleFourFieldRejections": 4,
+    "exporterIdentityRejections": 2,
+    "allMeaningfulSanitizedOutputNegatives": 9,
+    "persistentDatabasesOpened": 0,
+    "operatorStableAppStateOpened": 0,
+    "limitation": "All45 sanitized styles are diagnostic only. Eligible memory export selects42 and preserves current full before bodies for3 blocked entries. Synthetic provenance envelopes and empty membership tables prove body sanitizer/link/structure behavior only; no source QA or full class-summary certification."
+  },
+  "resources": {
+    "englishTextCharacters": 31905,
+    "chineseTextCharacters": 15460,
+    "initialEvidenceBudgetBytes": 52428800,
+    "measuredPacketBytes": 38025531,
+    "initialBudgetValidated": true,
+    "rootMemoryReplaySeconds": 2.4308826,
+    "packageMemoryReplaySeconds": 2.4972967,
+    "peakMemoryInstrumented": false,
+    "estimatedPeakMemoryBudgetMiB": 512,
+    "concurrentReplays": 1,
+    "newEnvironments": 0
+  },
+  "verifiedRuntime": {
+    "model": "gpt-6.1-sol",
+    "effort": "high",
+    "source": "local rollout turn_context metadata",
+    "versionScope": "v1.4"
+  },
+  "limits": {
+    "mainGateReviewAndSelectionRequired": true,
+    "actualPreviewChanged": false,
+    "canonicalInputsOrDatabasesChanged": false,
+    "oldFrozenPacketsChanged": false,
+    "htmlRendered": false,
+    "alternateHtmlRenderingUsed": false,
+    "humanHtmlVisualAcceptanceOwner": 345,
+    "fullBookFormattingAccepted": false,
+    "formatAcceptanceGranted": false,
+    "privatePushOrSourceUpload": false,
+    "unrelatedStagedDeletionsPreserved": 39,
+    "contentMigrationAndCompleteTypographyRebindingRequired": true
+  }
+}
