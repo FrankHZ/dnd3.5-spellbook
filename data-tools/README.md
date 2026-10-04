@@ -135,8 +135,10 @@ annotated predecessors; its accepted paths never grant source QA authority.
 
 For original printed class/domain-list M/F/X annotations, use the independent
 [printed list marker workflow](../docs/operations/spell-list-markers.md).
-Its scanner emits private candidates, not accepted content or full list coverage;
-the selector never falls back to complete component flags.
+Its candidate scanner and automatic SC processor emit separate private evidence.
+`sc:list-markers:auto` matches complete cached labels to unique SC relationships;
+machine results remain distinct from human acceptance. The display selector omits
+unknown annotations and never falls back to complete component flags.
 
 [scripts.manifest.json](./scripts.manifest.json) classifies every package script
 by module and lifecycle. Keep that classification when adding a command.

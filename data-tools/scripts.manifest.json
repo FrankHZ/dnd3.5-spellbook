@@ -592,6 +592,13 @@
       "requiresSqlite": false,
       "writeCapable": false
     },
+    "sc:list-markers:auto": {
+      "module": "rules-content",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": false,
+      "writeCapable": true
+    },
     "sc:list-markers:candidates": {
       "module": "rules-content",
       "lifecycle": "maintained-local",
