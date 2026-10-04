@@ -132,14 +132,20 @@ explicit readonly handoff; this task does not open those DBs.
 
 Ordinary CLI flags provide no presentation JSON/file channel. The low-level
 renderer map is not source authority; authentication belongs to that maintained
-entry. Current integration uses 97 selected displays: the complete 95 corrected
+entry. Current integration uses 141 selected displays: the complete 95 corrected
 [#463 / PR #464](https://github.com/FrankHZ/dnd3.5-spellbook/pull/464) candidates
 plus its corrected 3930/3934 candidates after main-gate accepted and actually
 applied [#461](https://github.com/FrankHZ/dnd3.5-spellbook/issues/461)'s two source
 pairs. All eight new candidate input fields must equal that accepted after state.
 Complete original PDF/errata review and final emphasis acceptance bind both new
-presentations; older #461 formatting outputs are excluded. The other 904 targets
-retain current display. Unaccepted later batches are not selected.
+presentations; older #461 formatting outputs are excluded. The additional 44
+[#465 / PR #466](https://github.com/FrankHZ/dnd3.5-spellbook/pull/466) presentations
+bind the separately accepted complete semantic and source-position review.
+Their old normalized input records must equal the actual migrated baseline;
+all four fields must match the current readonly snapshot. The old 97
+presentations remain exact. The other 860 targets retain current display,
+including blocked 4033, whose content follow-up belongs to #467.
+Unaccepted later batches are not selected.
 
 The private entry binds exact candidates, complete mappings/ranges and independent
 source validation/acceptance. It calls `assertPdfTypographyEmphasis` on both
@@ -174,6 +180,11 @@ Full source authentication includes the accepted 3930 Chinese body and 3934
 English pair, with their source-correction provenance and accepted annotations.
 The prior completed state is retained as historical evidence, never substituted
 for the current operator binding. Export performs no migration or content repair.
+The batch-03 handoff separately binds current source-authentication code and
+persisted migration helper revisions. It proves the relevant runtime files
+unchanged between them; the final metadata plan still uses the fixed actual
+migration revision, never a value inferred from the database. Existing valid-shape
+metadata drift regressions remain required.
 Prior previews/proofs retain their original input bindings and do not certify
 the refreshed output.
 
