@@ -139,6 +139,15 @@ with independently frozen mechanism counts and a fixed eight-body memory fixture
 Production presentation selection, human visual acceptance and final renderer
 integration remain separate checks owned by #345/main-gate. The fixture does not
 accept the separate spell-table component marker decision.
+The [T–Z structure packet](../../data-tools/reports/dice-qa/books/86/sc-zh-format-tz.json)
+binds 111 reviewed Chinese bodies to 109 new candidates and two unchanged accepted
+presentations. It restores complete vine/deity/weapon lists, separates merged
+flavour and rule sentences, and preserves the existing HD/effect table and five
+independent reader notes. Complete mechanism expectations are frozen before the
+classifier check; the packet retains the earlier alias failures and binds final
+checks to #345's display-only repair. Its eight-body memory fixture checks ordered
+semantic units after sanitization. Canonical fields and all decoded whitespace
+remain exact. Production selection and human visual acceptance remain separate.
 
 ## Review and authority boundaries
 
