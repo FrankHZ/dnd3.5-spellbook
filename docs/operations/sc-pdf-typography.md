@@ -81,7 +81,10 @@ Lists whose accepted text includes reviewed literal bullet glyphs may use only
 contained `li` must retain its reviewed leading literal marker; mixed marked
 and unmarked items cannot share a marked parent. Nested lists are classified
 independently; a nested item's marker does not count as its parent's marker.
-The current bounded helper supports literal `·`/`•` markers. It rejects a
+The current bounded helper supports literal `·`, `•`, `‧`, `◆`, and `．` markers.
+The latter three are observed Chinese list markers, accepted only at the start
+of an explicitly reviewed marked list's direct item. They do not classify
+ordinary prose or trigger automatic list conversion. It rejects a
 marked `ol`, additional class tokens or a
 marked list with an unmarked direct item. All original characters remain exact.
 The consumer must allow only this specific `ul` class token and fixed CSS to
@@ -97,6 +100,20 @@ and destination anchors through that pipeline as well. A standalone helper PASS
 does not prove sanitized/exported HTML retained these semantics.
 No exporter integration is implemented
 here; [#345](https://github.com/FrankHZ/dnd3.5-spellbook/issues/345) owns it.
+
+Chinese natural-structure packets reuse current accepted fields and selected
+presentation evidence, then review Chinese paragraph, mechanism, list/table and
+note boundaries independently. Keep complete four-field guards and compare the
+decoded Chinese text including whitespace exactly; presentation wrappers can
+restore a flattened list/table without editing canonical text. New wrappers and
+candidate rows require main-gate acceptance through the existing selector.
+The [A–B structure packet](../../data-tools/reports/dice-qa/books/86/sc-zh-format-ab.json)
+records fixed private evidence and bounded validation. Its eight-body memory
+fixture validates the fixed renderer's sanitizer and structural compatibility,
+with candidate HTML installed after the maintained representation validator.
+Production presentation selection, human visual acceptance and final renderer
+integration remain separate checks owned by #345/main-gate. The fixture does not
+accept the separate spell-table component marker decision.
 
 ## Review and authority boundaries
 
