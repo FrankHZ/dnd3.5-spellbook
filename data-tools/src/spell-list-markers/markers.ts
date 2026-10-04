@@ -68,6 +68,7 @@ export function inspectOccurrence(pages: readonly PdfPage[], extractionPath: str
     assert(line.spans[n] && isName(line.spans[n]!), "Name span is missing or not a printed label");
   });
   const first = locator.nameSpanIndices[0]!, last = locator.nameSpanIndices.at(-1)!;
+  assert(first === 0 || !isName(line.spans[first - 1]!), "Incomplete printed name span range start");
   assert(!line.spans[last + 1] || !isName(line.spans[last + 1]!), "Incomplete printed name span range");
   const names = locator.nameSpanIndices.map(n => line.spans[n]!.text);
   const printedName = names.join("").replace(/:\s*$/, "").trim();

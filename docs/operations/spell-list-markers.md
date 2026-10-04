@@ -28,7 +28,8 @@ superscripts. It does not prove that every printed row was found or assign spell
 identities, owners, levels, or acceptance. `inspectOccurrence` reads explicitly
 selected name-span indices for reviewed unmarked rows. An incomplete name line
 without a visible colon delimiter stays unknown. A truncated name-span range
-cannot establish absence. Source text, span geometry, extractor
+cannot establish absence: both the start and end must cover the full contiguous
+bold label, including any printed prefix. Source text, span geometry, extractor
 metadata and page/block/line/name-span locators stay in the private output.
 
 The input is small enough for an in-memory scan. Processing is proportional to

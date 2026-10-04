@@ -40,6 +40,22 @@ assert.equal(inspect(11).markers, "MF");
 const incomplete = structuredClone(pages); incomplete[0]!.blocks[0]!.lines[0]!.spans =
   [span("Part of "), span("complete name"), span("M",21,6), span(": summary",4)];
 assert.throws(() => inspectOccurrence(incomplete, extraction,86,locator(0)), /Incomplete printed name/);
+assert.throws(() => inspectOccurrence(incomplete, extraction,86,{...locator(0),nameSpanIndices:[1]}), /span range start/);
+assert.equal(inspectOccurrence(incomplete, extraction,86,{...locator(0),nameSpanIndices:[0,1]}).markers, "M");
+const splitUnmarked = structuredClone(pages); splitUnmarked[0]!.blocks[0]!.lines[7]!.spans =
+  [span("Complete "), span("printed label:"), span(" summary",4)];
+const fullUnmarked = inspectOccurrence(splitUnmarked,extraction,86,{...locator(7),nameSpanIndices:[0,1]});
+assert.equal(fullUnmarked.printedName,"Complete printed label"); assert.equal(fullUnmarked.markers, "");
+assert.throws(() => inspectOccurrence(splitUnmarked,extraction,86,{...locator(7),nameSpanIndices:[1]}), /span range start/);
+const suffixEvidence = {...fullUnmarked, id:"book:86:p244:b4:l7:s1", printedName:"printed label",
+  locator:{...locator(7),nameSpanIndices:[1]}};
+assert.throws(() => reviewedRecord(suffixEvidence,{entry,printedName:"printed label",reviewer:"reviewer",note:"review"},splitUnmarked,"accepted"), /span range start/);
+const splitBinding = {entry,printedName:fullUnmarked.printedName,reviewer:"synthetic reviewer",note:"whole multi-span name inspected"};
+const splitAccepted = reviewedRecord(fullUnmarked,splitBinding,splitUnmarked,"accepted");
+assert.equal(selectPrintedMarkers(entry,86,[splitAccepted]).status,"accepted");
+const suffixStored = {...splitAccepted, id:`${suffixEvidence.id}:entry:${entry.id}`, sourceKey:suffixEvidence.id,
+  sourceJson:JSON.stringify(suffixEvidence), bindingJson:JSON.stringify({...splitBinding,printedName:suffixEvidence.printedName})};
+assert.throws(() => selectPrintedMarkers(entry,86,[suffixStored]), /span range start/);
 const undelimited = structuredClone(pages); undelimited[0]!.blocks[0]!.lines[7]!.spans = [span("Maybe continued"),span("ordinary text",4)];
 assert.equal(inspectOccurrence(undelimited, extraction,86,locator(7)).markers,null);
 assert(candidates.map(candidateRecord).every(row => row.reviewStatus === "candidate" && row.listEntryId === null));
