@@ -91,9 +91,12 @@ opens no real DB and does not replace operator source authentication. It replays
 the precise #461 accepted normalized transition and paired Chinese correction
 through the maintained upgrade, including check/apply/zero-write repeat. The
 new readonly snapshot must match every normalized value, Chinese field and
-source-correction envelope, accepted summary and source revision. A same-input
-95-to-97 comparison isolates the two new display structures with unchanged
-visible text/whitespace. A separate prior-input comparison preserves every
+source-correction envelope, accepted summary and source revision.
+`validateFinalOverlay` compares exact persisted final build metadata with
+the same authenticated plan. Legal but incorrect helper/source revisions and
+changed-name counts reject while complete fields/provenance remain identical.
+A same-input 95-to-97 comparison isolates the two new display structures with
+unchanged visible text/whitespace. A separate prior-input comparison preserves every
 unaffected article and permits only the two accepted source-pair changes.
 
 The maintained summary refresh now consumes the accepted complete 6,837-row

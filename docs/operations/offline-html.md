@@ -112,9 +112,13 @@ summary rows, including the six source-bound addition packets. It verifies the
 fixed accepted operator normalized artifact and manifest, current full normalized
 values and build metadata; the rehearsal artifact is a separate input and cannot
 stand in for that operator binding. The exact accepted summary annotation and
-every summary parser column must match before rendering. All 961 class targets
-must have their 1,922 accepted English/Chinese owner fields; the other 40 scoped
-targets remain body-only. Missing, duplicate, empty or incorrect owner/source
+every summary parser column must match before rendering. The entry also runs
+the maintained `validateFinalOverlay` check against the plan built
+from the same authenticated fields, report, full build, helper revision and
+summaries. This compares exact persisted final build metadata, including source
+revisions and change counts; unchanged bodies cannot mask incorrect annotations.
+All 961 class targets must have their 1,922 accepted English/Chinese owner fields;
+the other 40 scoped targets remain body-only. Missing, duplicate, empty or incorrect owner/source
 inputs still fail closed before output. It then uses the existing
 `readExact` Git input helper on each exact selected revision, fixed
 presentations, complete mappings and main-gate acceptance, validates the explicit
