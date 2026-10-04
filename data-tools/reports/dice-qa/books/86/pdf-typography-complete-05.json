@@ -8,7 +8,7 @@
   "status": "unselected-format-proposals-with-whole-entry-content-blockers",
   "scope": "remaining-complete-entries-05",
   "privateEvidence": {
-    "revision": "95436b458d88850569ee3a726728e9002247436f",
+    "revision": "711a29e2cd38537eab0a28981dcfc29d4270383f",
     "path": "dice-qa/books/86/issue-470",
     "fixedInventoryRevision": "712d96bc24f03bea2f119e00f0b057eadbe0af01",
     "acceptedFieldsRevision": "0688739d92a2aa9fb3eceeb444daa7260e711058",
@@ -46,9 +46,13 @@
       "export-blocked-fallback.json",
       "cwd-replay.json",
       "run-settings.json",
-      "resource-budget.json"
+      "resource-budget.json",
+      "rework-boundary-validation.json",
+      "rework-lexical-audit.json",
+      "rework-style-negative.json"
     ],
-    "initialFreezeRevision": "a101e4cf93d4403c8d366a7e2b195d112101107d"
+    "initialFreezeRevision": "a101e4cf93d4403c8d366a7e2b195d112101107d",
+    "preReworkRevision": "95436b458d88850569ee3a726728e9002247436f"
   },
   "targetIds": [
     4356,
@@ -292,7 +296,8 @@
       "eligibleCandidate": false,
       "findingKind": "unapproved-punctuation-glyph-and-paired-representation",
       "diagnosticMappingComplete": true,
-      "followupOwner": "main-gate independent content task"
+      "followupOwner": "independent content issue #473",
+      "followupIssue": 473
     },
     {
       "targetId": 4422,
@@ -315,7 +320,8 @@
       "eligibleCandidate": false,
       "findingKind": "unapproved-punctuation-glyph-and-paired-representation",
       "diagnosticMappingComplete": true,
-      "followupOwner": "main-gate independent content task"
+      "followupOwner": "independent content issue #473",
+      "followupIssue": 473
     },
     {
       "targetId": 4245,
@@ -328,7 +334,8 @@
       "eligibleCandidate": false,
       "findingKind": "omitted-original-word",
       "diagnosticMappingComplete": true,
-      "followupOwner": "main-gate independent content task"
+      "followupOwner": "independent content issue #473",
+      "followupIssue": 473
     },
     {
       "targetId": 4427,
@@ -357,7 +364,7 @@
     "sourceBoundUnits": 511,
     "acceptedInheritedUnitsWithoutOwnScFontClaim": 17,
     "independentReaderNoteUnits": 4,
-    "chineseCodePointEmphasisRanges": 457,
+    "chineseCodePointEmphasisRanges": 456,
     "fullTextPositionUnits": 139,
     "sourcePositionBoundCharacters": 24963,
     "sourcePositionBoundPunctuation": 831,
@@ -380,7 +387,9 @@
     "observedFirstDraftDelimiterErrorNegatives": 1,
     "maintainedAuthorAndComparatorReused": true,
     "dedicatedVisibleTextCounter": true,
-    "maintainedPublicHelpersChanged": false
+    "maintainedPublicHelpersChanged": false,
+    "observedOrdinaryActionErrorNegatives": 1,
+    "allObservedActualOutputNegatives": 2
   },
   "consumerRehearsal": {
     "fixedExporter": "383c33ca54dba2b17c267442da9df72eda78f773",
@@ -401,21 +410,21 @@
     "detachedBodyLinks": 28,
     "exporterStaleFourFieldRejections": 4,
     "exporterIdentityRejections": 2,
-    "allMeaningfulSanitizedOutputNegatives": 9,
+    "allMeaningfulSanitizedOutputNegatives": 10,
     "persistentDatabasesOpened": 0,
     "operatorStableAppStateOpened": 0,
     "limitation": "All45 sanitized styles are diagnostic only. Eligible memory export selects42 and preserves current full before bodies for3 blocked entries. Synthetic provenance envelopes and empty membership tables prove body sanitizer/link/structure behavior only; no source QA or full class-summary certification.",
-    "rootAndPackageCasesCompared": 12,
-    "rootAndPackageOutputFilesIdentical": 348
+    "rootAndPackageCasesCompared": 13,
+    "rootAndPackageOutputFilesIdentical": 377
   },
   "resources": {
     "englishTextCharacters": 31905,
     "chineseTextCharacters": 15460,
     "initialEvidenceBudgetBytes": 52428800,
-    "measuredPacketBytes": 38025531,
+    "measuredPacketBytes": 38099650.0,
     "initialBudgetValidated": true,
-    "rootMemoryReplaySeconds": 2.4308826,
-    "packageMemoryReplaySeconds": 2.4972967,
+    "rootMemoryReplaySeconds": 2.5046283,
+    "packageMemoryReplaySeconds": 2.4479715,
     "peakMemoryInstrumented": false,
     "estimatedPeakMemoryBudgetMiB": 512,
     "concurrentReplays": 1,
@@ -440,5 +449,36 @@
     "privatePushOrSourceUpload": false,
     "unrelatedStagedDeletionsPreserved": 39,
     "contentMigrationAndCompleteTypographyRebindingRequired": true
-  }
+  },
+  "rework": {
+    "all45EnglishOutputAndRangesUnchanged": true,
+    "other44PresentationRangesMappingsAndAuthorDecisionsUnchanged": true,
+    "selectionAcceptanceGranted": false,
+    "retainedNamedReferenceRanges": [
+      [
+        243,
+        247
+      ],
+      [
+        285,
+        289
+      ],
+      [
+        430,
+        434
+      ]
+    ],
+    "actualSubmittedErrorFrozen": true,
+    "all45FourFieldsTextAndWhitespaceUnchanged": true,
+    "targetId": 4395,
+    "actualErrorRejectedBeforeAndAfterSanitizer": true,
+    "removedChineseEmphasisRange": [
+      348,
+      352
+    ],
+    "other44TargetedLexicalReviewFoundNewErrors": 0,
+    "sourceReextraction": false
+  },
+  "contentFollowupIssue": 473,
+  "contentFollowupUrl": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/473"
 }

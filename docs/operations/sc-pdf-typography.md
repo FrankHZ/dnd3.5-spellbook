@@ -178,7 +178,10 @@ binds the separate `dice-qa/books/86/issue-470/` proposals to all complete origi
 pages, full official errata and the fixed exporter sanitizer. Every scoped entry
 has a disposition; diagnostic mappings remain separate from eligible candidates.
 Blocked entries retain complete current bilingual fallback and exact unapplied
-four-field proposals for an independent content decision. Raw punctuation review
+four-field proposals for the independent content decision in
+[#473](https://github.com/FrankHZ/dnd3.5-spellbook/issues/473). Named-reference
+emphasis follows each occurrence's meaning and source font; ordinary verbs remain
+regular even when their wording also names a spell. Raw punctuation review
 retains source/output code points, HTML entities and surrounding words, so legacy
 normalization cannot silently approve a source discrepancy. Mathematical minus
 representations are reviewed individually; they grant no exemption to word
