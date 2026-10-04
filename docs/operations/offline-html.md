@@ -128,13 +128,14 @@ explicit readonly handoff; this task does not open those DBs.
 
 Ordinary CLI flags provide no presentation JSON/file channel. The low-level
 renderer map is not source authority; authentication belongs to that maintained
-entry. Current integration replaces the complete 95-item display selection with
-[#463 / PR #464](https://github.com/FrankHZ/dnd3.5-spellbook/pull/464)'s fixed
-corrected-current candidates and complete bilingual emphasis ranges. The accepted
-95 target IDs and their four canonical input fields stay unchanged; 90 display
-outputs repair emphasis positions or complete source-italic labels, and five
-remain unchanged. The other 906 targets retain current display. Prospective
-3930/3934 are excluded; their source migration is a separate workflow.
+entry. Current integration uses 97 selected displays: the complete 95 corrected
+[#463 / PR #464](https://github.com/FrankHZ/dnd3.5-spellbook/pull/464) candidates
+plus its corrected 3930/3934 candidates after main-gate accepted and actually
+applied [#461](https://github.com/FrankHZ/dnd3.5-spellbook/issues/461)'s two source
+pairs. All eight new candidate input fields must equal that accepted after state.
+Complete original PDF/errata review and final emphasis acceptance bind both new
+presentations; older #461 formatting outputs are excluded. The other 904 targets
+retain current display. Unaccepted later batches are not selected.
 
 The private entry binds exact candidates, complete mappings/ranges and independent
 source validation/acceptance. It calls `assertPdfTypographyEmphasis` on both
@@ -162,9 +163,13 @@ hides the old title or restores it. The independent checker compares that exact
 current pair along with all bodies and metadata. This preserves the complete
 accepted summary binding. The emphasis refresh requires an explicit
 `--accepted-inline-emphasis` private handoff and the fixed complete corrected
-selection revision; 3958 remains outside the 95 selected typography targets.
-This handoff binds the existing pre-migration normalized/manifest and completed
-operator state and does not enable the pending source-pairs migration.
+selection revision; 3958 remains outside the selected typography targets.
+The source-pair refresh additionally requires `--accepted-source-pairs` and the
+fixed completed #461 operator proof, full normalized artifact and manifest.
+Full source authentication includes the accepted 3930 Chinese body and 3934
+English pair, with their source-correction provenance and accepted annotations.
+The prior completed state is retained as historical evidence, never substituted
+for the current operator binding. Export performs no migration or content repair.
 Prior previews/proofs retain their original input bindings and do not certify
 the refreshed output.
 

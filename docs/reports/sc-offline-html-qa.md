@@ -47,13 +47,15 @@ outputs. The accepted IDs, complete four-field inputs and reviewed source
 mappings remain unchanged. The maintained entry loads that exact complete set,
 not a reconstruction from older wrong-emphasis derivatives. Complete bilingual
 intervals and independent source evidence bind the selection; proposal status
-and counts grant no authority. The other 906 displays remain current, with
-prospective 3930/3934 excluded until their separate migration is accepted and
-actually applied. Whole-book and human rendered HTML gates stay open.
+and counts grant no authority. The #461 actual source-pair migration and independent complete PDF/errata
+format review now accept corrected 3930/3934 presentations from the same #463
+revision. Their eight input fields bind the migrated after state, giving 97
+selected / 904 current displays. Older #461 formatting outputs and unaccepted
+later batches are excluded. Whole-book and human rendered HTML gates stay open.
 
 `assertPdfTypographyEmphasis` compares every decoded Unicode character's full
 `em`/`strong` set with complete reviewed intervals after candidate generation
-and again on each of 95 final sanitized English/Chinese bodies. Old output can
+and again on each of 97 final sanitized English/Chinese bodies. Old output can
 pass current text/HTML input guards while emphasizing the wrong characters;
 regression checks require rejection of all 90 affected legacy outputs at both
 stages, while visible text including whitespace remains identical. The complete
@@ -68,7 +70,7 @@ requires the exact detached counter and rejects restored or invented PHB links.
 The source-supported #434 correction removes only the duplicate 3958 English
 table title from its canonical text/HTML. The English-title refresh consumes
 that accepted pair through the source-authenticated new normalized input and
-explicit accepted-title/summary handoff; 3958 remains outside the 95 selected
+explicit accepted-title/summary handoff; 3958 remains outside the selected
 PDF previews. Its disposable full-scope Git replay checks the precise old/new
 artifact transition, unchanged Chinese/provenance/notes and complete summaries,
 then all 1,001 entries / 2,002 bodies and local links. Restoring the old title in
@@ -77,12 +79,20 @@ require main-gate's corresponding completed-state proof; prior actual export
 evidence applies only to its previous input state.
 
 Private fixed-Git real-text validation loads the exact 95 corrected-current
-candidates, verifies their complete mapping/range/source and acceptance
-bindings, then checks all 95 current four-field guards before the actual helper,
+candidates and two newly accepted source-pair presentations, verifies complete
+mapping/range/source and both acceptance bindings, then checks all 97 current
+four-field guards before the actual helper,
 sanitizer and merged output. Every selected stale field or wrong target/book
 must reject. Complete bilingual bodies, emphasis, paragraphs, independent notes
 and structures are checked by the frozen semantic verifier. This memory replay
-opens no real DB and does not replace operator source authentication.
+opens no real DB and does not replace operator source authentication. It replays
+the precise #461 accepted normalized transition and paired Chinese correction
+through the maintained upgrade, including check/apply/zero-write repeat. The
+new readonly snapshot must match every normalized value, Chinese field and
+source-correction envelope, accepted summary and source revision. A same-input
+95-to-97 comparison isolates the two new display structures with unchanged
+visible text/whitespace. A separate prior-input comparison preserves every
+unaffected article and permits only the two accepted source-pair changes.
 
 The maintained summary refresh now consumes the accepted complete 6,837-row
 composition, retaining the strict owner selector. Private fixed-Git replay
@@ -90,7 +100,7 @@ reconstructs disposable memory from accepted normalized records, final fields,
 reader-note amendments and authenticated summaries, then compares all 1,001
 entries / 2,002 bilingual bodies, 961 class targets / 1,922 directory owner
 fields, 40 body-only targets, 40 source-question occurrences and all emitted local
-links. All 95 selected display derivatives and 906 current displays stay distinct.
+links. All 97 selected display derivatives and 904 current displays stay distinct.
 This replay copies no database and does not replace original-source authentication
 or the actual operator export. The complete synthetic fixture additionally
 rejects missing/wrong/empty/unaccepted owners, summary source/value drift and
@@ -114,7 +124,7 @@ Synthetic structure/CSS and bounded accepted-input memory checks prepare that
 interface; they do not prove browser marker rendering or full-book source QA.
 The report records selected/current IDs, `formattingComplete: false` and
 `contentCertification: false`; its selection counts confer no authority by
-themselves. Fresh 95-selection operator execution and new-layout visual review
+themselves. Fresh 97-selection operator execution and new-layout visual review
 remain outstanding.
 
 New-layout visual acceptance is pending. The earlier file-URL browser request
