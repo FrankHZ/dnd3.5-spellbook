@@ -50,6 +50,24 @@ authorized owner can copy HTML to a fresh durable destination outside removable
 worktrees and compare every file. This neither copies DBs nor grants visual or
 whole-book acceptance.
 
+## Natural Layout Standard
+
+The current [#345 acceptance](https://github.com/FrankHZ/dnd3.5-spellbook/issues/345)
+uses natural, readable layout roughly following available PDF extraction and
+accepted mappings. Full character/span emphasis certification and selected=1,001
+are not delivery gates. Uncertain emphasis may remain plain. Existing accepted
+maps stay usable; no new fine-format queue is required. Complete bilingual words,
+numbers, conditions, references, tables/lists, notes and links remain mandatory.
+Actual output and representative human visual acceptance still belong to main-gate.
+
+Pure-text Chinese `pre` blocks retain every decoded character and existing line
+order. Complete sentence lines receive modest paragraph spacing; field labels,
+short table rows and literal markers stay compact, and blank lines stay visible.
+This does not infer table cells or additional emphasis. English physical folds,
+semantic HTML and pre blocks containing markup retain their existing layout.
+The stored canonical fields and database remain unchanged. Representation checks
+compare complete decoded text and structures, without removing all whitespace.
+
 ## Selection And Content
 
 Scope is `SpellContent.legacySpellId` with the selected `sourceRulebookId`.
@@ -140,21 +158,23 @@ source or DB gate.
 
 Ordinary CLI flags provide no presentation JSON/file channel. The low-level
 renderer map is not source authority; authentication belongs to that maintained
-entry. Current integration uses 263 selected displays. The 229 previously
+entry. The accepted mapping selection has 263 displays; this is diagnostic coverage,
+not the natural-layout acceptance threshold. The 229 previously
 accepted presentations and complete emphasis ranges remain exact, including the
 six [#467 / PR #472](https://github.com/FrankHZ/dnd3.5-spellbook/pull/472) AFTER
 presentations bound to the actually migrated source corrections. It adds only
 the 34 explicitly accepted [#474 / PR #475](https://github.com/FrankHZ/dnd3.5-spellbook/pull/475)
 format candidates, bound to complete mappings, source-position/representation
 review and the independent rework acceptance. Their four canonical fields and
-all visible characters and whitespace remain unchanged. The other 738 targets
-retain current display. The 11 #476 content blockers and 4421, 4425 and 4426 for
-#473 retain complete bilingual fallback; a formatting repair does not make a
+all visible characters and whitespace remain unchanged. The other 738 targets use their current semantic HTML or conservative plain-text
+paragraph spacing. The 11 #476 content blockers and 4421, 4425 and 4426 for
+#473 retain complete canonical bilingual fallback with the same natural display policy; a formatting repair does not make a
 blocked entry selectable. Diagnostic packets and unaccepted later batches cannot
 be selected. The 4395 repair keeps ordinary-action text regular while preserving
 its three named references and every character.
 
-The private entry binds exact candidates, complete mappings/ranges and independent
+The frozen mapping checks preserve accepted evidence; their counts do not impose
+a full-book precision gate. The private entry binds exact candidates, complete mappings/ranges and independent
 source validation/acceptance. It calls `assertPdfTypographyEmphasis` on both
 languages after candidate generation and again on every selected final sanitized
 body. The helper compares each decoded Unicode character's `em`/`strong` set
@@ -234,8 +254,8 @@ The content-preview notice remains. `pdfFormatting` is
 `pending-431-source-mapping`; neither means whole-book or visual acceptance.
 The previous single-spell
 layout failed the user's visual acceptance; its real export/durable-copy results
-do not verify this layout. New-layout real corpus generation, remaining PDF mapping,
-permitted visual review and final acceptance remain with main-gate. Unresolved
+do not verify this layout. New-layout real corpus generation, complete content/structure/link checks,
+representative visual review and final acceptance remain with main-gate. Unresolved
 #354 relationship source QA is separate and nonblocking for the normal directory,
 but prevents whole-book completion. See the current
 [SC verification](../reports/sc-offline-html-qa.md) and

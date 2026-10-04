@@ -64,6 +64,9 @@ try {
   zh(5, "合成段落", paragraphText, paragraphs);
   zh(1, "雪 & <名字>", long, null);
   zh(2, "继承法术", plain, html);
+  const natural = "等级：一\n距离：近距\n一个完整段落。\n第二段含 2d6、条件与引用（PH 10）。\n掷骰\n结果\n1–2\n保留单元格\n";
+  spell(6, "Natural layout", "Physical\nEnglish fold", "<pre>Physical\nEnglish fold</pre>");
+  zh(6, "自然段落", natural, `<pre>${natural}</pre>`);
   zh(3, "Gamma fallback", "English  fallback\tbody.\n\nPreserved final line.", '<pre>English  fallback\tbody.\n\nPreserved final line.</pre>', "en");
   zh(1, "DO_NOT_BLEND_VARIANT", "DO_NOT_BLEND_VARIANT", null, "zh", "chm");
   db.prepare(`INSERT INTO SpellListEntry (id,spellId,listType,ownerLegacyId,ownerName,ownerSlug,
@@ -92,7 +95,7 @@ try {
     savingThrowRaw='Raw saving throw',resistanceRaw='Raw resistance',corruptLevel=2 WHERE legacySpellId=1`).run();
   const options = { contentDb: dbPath, book: 86, variant: "effective", outDir: path.join(output, "first") };
   const report = exportOfflineHtml(options);
-  assert.equal(report.spells, 4); assert.equal(report.englishBodyFallbacks, 1);
+  assert.equal(report.spells, 5); assert.equal(report.englishBodyFallbacks, 1);
   assert.equal(report.files, 31); assert.equal(report.detachedReferences, 4);
   assert.equal(report.htmlTextDifferences, 0);
   const read = (name: string) => fs.readFileSync(path.join(options.outDir, name), "utf8");
@@ -124,7 +127,7 @@ try {
   assert.deepEqual($(".spell-entry").toArray().map(el => $(el).attr("id")), ["spell-1", "spell-5"]);
   assert.equal(report.classPages, 2); assert.equal(report.classMemberships, 4); assert.equal(report.classListEntries, 5);
   assert.equal(report.selectedSummaries, 6); assert.deepEqual(report.summaryVariants, { en: "imarvin", zh: "chm" });
-  assert.deepEqual(report.classlessTargets, [3]); assert.equal(report.classEntriesNeedingStructuralReview, 1);
+  assert.deepEqual(report.classlessTargets, [3, 6]); assert.equal(report.classEntriesNeedingStructuralReview, 1);
   assert.equal(report.pdfFormatting, "pending-431-source-mapping");
   // Preserve two semantic paragraphs and a visual line fold within the first. No PDF mapping is inferred.
   assert.equal($("#spell-5-en + div > p").length, 2);
@@ -166,6 +169,13 @@ try {
     ]);
   }
   assert(read("style.css").includes("margin-bottom: 1.65em"));
+  const naturalBody = load(read("N.html"))("#spell-6-zh + div");
+  assert.equal(naturalBody.text(), "等级：一\n距离：近距\n一个完整段落。\n第二段含 2d6、条件与引用（PH 10）。\n掷骰\n结果\n1–2\n保留单元格\n");
+  assert.deepEqual(naturalBody.find(".plain-paragraph").toArray().map(el => load(el).text()),
+    ["一个完整段落。", "第二段含 2d6、条件与引用（PH 10）。"]);
+  assert.equal(naturalBody.find("pre").text(), naturalBody.text());
+  assert.equal(load(read("N.html"))("#spell-6-en + div pre").html(), "Physical\nEnglish fold");
+  assert(read("style.css").includes("pre.plain-lines > span.plain-paragraph { margin-bottom: .8em; }"));
   const css = read("style.css");
   assert(css.includes('.spell-body ul.pdf-typography-marked-list { list-style: none; }'));
   assert(css.includes('.spell-body ul.pdf-typography-marked-list ul { list-style-type: disc; }'));
@@ -207,7 +217,7 @@ try {
     const partial = memoryView.transaction(() => exportOfflineHtml({ ...options, contentDb: ":memory:", outDir: selectedOut }, new Map([[5, selected]]), memoryView))();
     assert(memoryView.open && memoryView.readonly); assert.equal(memoryView.pragma("query_only", { simple: true }), 1);
     assert.equal(partial.pdfFormatting, "partial-main-gate-selected");
-    assert.deepEqual(partial.typography, { reviewedSelectedIds: [5], currentDisplayIds: [1, 2, 3], formattingComplete: false });
+    assert.deepEqual(partial.typography, { reviewedSelectedIds: [5], currentDisplayIds: [1, 2, 3, 6], formattingComplete: false });
     const page = load(fs.readFileSync(path.join(selectedOut, "A.html"), "utf8"));
     for (const lang of ["en", "zh"]) {
       const body = page(`#spell-5-${lang} + div`);
@@ -307,7 +317,7 @@ try {
   });
   assert(!fs.existsSync(gapOutput));
   // Other variants select only their own accepted Chinese summaries; English stays imarvin.
-  for (const id of [1, 2, 3, 5]) zh(id, `Other name ${id}`, `Other body ${id}`, null, "zh", "other");
+  for (const id of [1, 2, 3, 5, 6]) zh(id, `Other name ${id}`, `Other body ${id}`, null, "zh", "other");
   const otherOut = path.join(output, "other-variant");
   assert.deepEqual(exportOfflineHtml({ ...options, variant: "other", outDir: otherOut }).summaryVariants, { en: "imarvin", zh: "other" });
   const otherClass = load(fs.readFileSync(path.join(otherOut, "class-1.html"), "utf8"));
@@ -318,9 +328,10 @@ try {
     [1, { en: plain, zh: long }], [2, { en: "As Alpha, except the complete inherited difference.", zh: plain }],
     [3, { en: "English fallback body.", zh: "English  fallback\tbody.\n\nPreserved final line." }],
     [5, { en: paragraphText, zh: paragraphText }],
+    [6, { en: "Physical\nEnglish fold", zh: natural }],
   ]);
   db.transaction(() => {
-    for (let i = 0; i < 997; i++) {
+    for (let i = 0; i < 996; i++) {
       const id = 1000 + i, letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".charAt(i % 26);
       const en = `Complete synthetic ${id}\n\nInherited exception <kept> ${id}.`, chinese = `完整合成正文 ${id}\n\n独立备注 ${id}。`;
       spell(id, `${letter} synthetic ${String(id).padStart(4, "0")}`, en, null); zh(id, `合成名称 ${id}`, chinese, null);

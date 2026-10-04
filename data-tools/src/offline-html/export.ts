@@ -80,7 +80,7 @@ function document(title: string, body: string) {
   return `<!doctype html>\n<html lang="zh"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>${text(title)}</title><link rel="stylesheet" href="style.css"></head><body><div id="content">${body}</div></body></html>\n`;
 }
 const navigation = '<p class="navigation"><a href="index.html#classes">职业目录 / Classes</a> | <a href="index.html#letters">A–Z 正文 / Full spells</a></p>';
-const preview = '<p class="notice">内容预览 / Content preview. 全书 PDF 格式与视觉验收未完成。 / Full-book PDF formatting and visual acceptance are incomplete.</p>';
+const preview = '<p class="notice">内容预览 / Content preview. 自然排版待视觉验收。 / Natural layout awaits visual acceptance.</p>';
 const membershipNotice = '<p class="notice">职业目录保留当前归属与附注；部分外部归属的原书核对仍待完成，目录不构成来源 QA 通过。</p>';
 const style = `body { margin: 2em; color: #222; background: #fff; font-family: "Microsoft YaHei", "SimSun", serif; line-height: 1.65; }
 #content { max-width: 62em; margin: auto; } h1 { font-size: 1.7em; } h2 { border-bottom: 1px solid #bbb; }
@@ -91,13 +91,18 @@ a { color: #164f91; } .notice { padding: .6em; border: 1px solid #aaa; backgroun
 .spell-body ul.pdf-typography-marked-list ul { list-style-type: disc; }
 .spell-body ul.pdf-typography-marked-list ol { list-style-type: decimal; }
 .spell-body ul.pdf-typography-marked-list ul.pdf-typography-marked-list { list-style: none; }
-pre, .plain { white-space: pre-wrap; word-wrap: break-word; font-family: inherit; } table { border-collapse: collapse; }
+pre, .plain { white-space: pre-wrap; word-wrap: break-word; font-family: inherit; }
+.spell-body pre.plain-lines { white-space: normal; }
+.spell-body pre.plain-lines > span { display: block; white-space: pre-wrap; }
+.spell-body pre.plain-lines > span.plain-paragraph { margin-bottom: .8em; }
+.spell-body pre.plain-lines > span:empty { min-height: .8em; }
+table { border-collapse: collapse; }
 th, td { border: 1px solid #999; padding: .3em .7em; } .rules th { text-align: left; } .rules td { white-space: pre-wrap; }
 .navigation { font-size: .95em; } li { margin: .2em 0; }\n`;
 
 function bodyHtml(html: string | null, plain: string, prefix: string, destinations: Map<number, string>, counts: {
   detachedReferences: number; htmlTextDifferences: number;
-}) {
+}, naturalChinese = false) {
   if (!present(html)) return `<div class="plain">${text(plain)}</div>`;
   const original = load(html, {}, false);
   if (compact(original.root().text()) !== compact(plain)) counts.htmlTextDifferences++;
@@ -141,6 +146,28 @@ function bodyHtml(html: string | null, plain: string, prefix: string, destinatio
     }
     else { $(el).removeAttr("href"); counts.detachedReferences++; }
   });
+  // Existing Chinese plain-text lines contain complete paragraphs, field rows
+  // and flattened table rows. Space sentence paragraphs without joining lines,
+  // guessing table cells or changing any decoded character. English pre/layout
+  // and pre blocks containing markup retain their existing representation.
+  if (naturalChinese && /[\u3400-\u9fff]/u.test($.root().text())) {
+    $("pre").each((_, element) => {
+      if ($(element).contents().toArray().some(node => node.type !== "text")) return;
+      const value = $(element).text();
+      if (!value.includes("\n")) return;
+      const lines = value.split(/(\r?\n)/u);
+      const spaced = lines.map((line, index) => {
+        if (index % 2) return line;
+        // Labels, markers and short table rows stay compact. A complete Chinese
+        // sentence provides a conservative display boundary, not PDF authority.
+        const paragraph = !/^[^：:\n]{1,12}[：:]/u.test(line.trimStart())
+          && /[。！？][”’」』）)\s]*$/u.test(line) && Boolean(lines[index + 2]?.trim());
+        return `<span${paragraph ? ' class="plain-paragraph"' : ""}>${text(line)}</span>`;
+      }).join("");
+      $(element).attr("class", "plain-lines").html(spaced);
+      if ($(element).text() !== value) throw new Error(`${prefix}: plain layout changed text`);
+    });
+  }
   return $.root().html()!;
 }
 
@@ -296,7 +323,7 @@ export function exportOfflineHtml(options: ExportOptions,
           englishText: s.descriptionText, englishHtml: s.descriptionHtml ?? "",
           chineseText: t.descriptionText, chineseHtml: t.descriptionHtml ?? "",
         }, presentations.get(id));
-        const zh = bodyHtml(display.chineseHtml, t.descriptionText, `zh-${id}`, destinations, counts);
+        const zh = bodyHtml(display.chineseHtml, t.descriptionText, `zh-${id}`, destinations, counts, bodyLang === "zh");
         const en = bodyHtml(display.englishHtml, s.descriptionText, `en-${id}`, destinations, counts);
         letterEntries.get(s.canonicalName.charAt(0).toUpperCase())!.push(`<div class="spell-entry" id="${spellAnchor(id)}"><h2>${text(t.name)} / ${text(s.canonicalName)}</h2>
           <p>${text(book[0]!.name)}${s.sourcePage === null ? "" : ` · p. ${s.sourcePage}`} · ID ${id}</p>
@@ -350,7 +377,7 @@ export function exportOfflineHtml(options: ExportOptions,
         typography: { reviewedSelectedIds: [...presentations.keys()].sort((a, b) => a - b),
           currentDisplayIds: [...ids].filter(id => !presentations.has(id)).sort((a, b) => a - b), formattingComplete: false },
         contentCertification: false, relationshipSourceQa: "pending-354",
-        htmlTextPolicy: "Explicit caller-authenticated selected display derivatives; otherwise complete current HTML or exact plain text. Canonical fields are never changed; representation differences are counted." };
+        htmlTextPolicy: "Authenticated display derivatives and natural paragraph spacing for Chinese plain text; complete decoded characters and source line order preserved. Canonical fields are never changed." };
       fs.writeFileSync(path.join(out, "report.json"), JSON.stringify(report, null, 2) + "\n", { encoding: "utf8", flag: "wx" });
       return report;
     })();
