@@ -286,5 +286,30 @@ class FinalBindingTests(unittest.TestCase):
             self.assertFalse((root / 'never-open-content.sqlite').exists())
 
 
+class SourceFidelityAcceptanceTests(unittest.TestCase):
+    def test_fixed_receipt_and_missing_or_cross_issue_authority(self):
+        import copy
+        import sc_source_fidelity as fidelity
+        receipt = {'issue_url': 'https://api.github.com/repos/FrankHZ/dnd3.5-spellbook/issues/467',
+                   'html_url': fidelity.COMMENT, 'id': 5976286296,
+                   'user': {'login': 'FrankHZ'}, 'author_association': 'OWNER',
+                   'body': 'Main-gate SOURCE ACCEPTANCE for exact candidate revision `' + fidelity.CANDIDATE + '` '
+                           + ' '.join(str(i) for i in fidelity.IDS)
+                           + " all four complete before fields each priorBody 4345's description value is unchanged "
+                           + 'The two Chinese corrections do not enter this rules patch'}
+        fidelity.validate_acceptance(receipt)
+        for key, value in [('id', 1), ('html_url', 'wrong'), ('issue_url', receipt['issue_url'] + '0'),
+                           ('user', {'login': 'other'}), ('body', receipt['body'].replace('4345', 'forged'))]:
+            wrong = copy.deepcopy(receipt)
+            wrong[key] = value
+            with self.assertRaises(ValueError):
+                fidelity.validate_acceptance(wrong)
+        from unittest.mock import patch
+        with patch.object(fidelity, 'ACCEPTANCE', None):
+            with self.assertRaisesRegex(ValueError, 'acceptance pending'):
+                fidelity.validate_acceptance(receipt)
+
+
+
 if __name__ == '__main__':
     unittest.main()
