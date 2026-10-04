@@ -206,6 +206,20 @@ content decision under [#476](https://github.com/FrankHZ/dnd3.5-spellbook/issues
 Its checks retain full bilingual current fallback for every
 blocked entry and reject the prior actual authoring/review errors after sanitization.
 
+The [seventh complete-entry packet](../../data-tools/reports/dice-qa/books/86/pdf-typography-complete-07.json)
+binds separate `dice-qa/books/86/issue-477/` diagnostic mappings and unselected
+candidates to the current post-migration fields, full original entries and
+complete official errata. A translated flavour paragraph can include a clause
+from a regular source rules paragraph; bind that clause independently and keep
+its source-supported style. Preserve source italic whitespace as explicit
+characters rather than extending an adjacent word's style by assumption.
+Whole-entry exclusions retain both current language bodies and exact unapplied
+four-field proposals, including prior complete reviews and explicit retention
+decisions. Revised source-fidelity proposals do not imply a missing historical
+review. Their content follow-up belongs to main-gate; migration and complete
+format rebinding must precede selection. Actual rendered acceptance remains
+with #345.
+
 Individually bound curly/straight apostrophe and paired-quote representations may
 retain existing fields when they preserve the same contraction or possessive,
 or exactly the same quoted words, boundaries and nesting, with unchanged source
