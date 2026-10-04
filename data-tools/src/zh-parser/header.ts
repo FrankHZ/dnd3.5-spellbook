@@ -29,11 +29,12 @@ const FIELD_LABELS = [
 
 /** Display only: exclude materials, XP and reader notes from the mechanism block. */
 const MECHANISM_FIELD_RE = new RegExp(`^(?:${[...FIELD_LABELS.slice(0, 10), "学派", "法术等级",
-  "成分", "施法成分", "范围", "作用距离", "影响区域", "时效", "豁免", "豁免投掷", "法术抗性"].join("|")})\\s*[：:]`, "u");
+  "成分", "施法成分", "范围", "作用距离", "作用范围", "影响区域", "作用对象", "作用目标",
+  "时效", "豁免", "豁免投掷", "法术抗性", "抗力"].join("|")})\\s*[：:]`, "u");
 export function isMechanismLine(value: string): boolean {
   const line = value.trimStart();
   return MECHANISM_FIELD_RE.test(line)
-    || /^(?:防护|咒法|预言|惑控|塑能|幻术|死灵|变化|通用)(?:系|学派)?(?:$|[\s（(\[【])/u.test(line.trimEnd());
+    || /^(?:防护|咒法|预言|惑控|附魔|魅控|塑能|幻术|死灵|变化|通用|共通)(?:系|学派)?(?:$|[\s（(\[【])/u.test(line.trimEnd());
 }
 
 function startsWithFieldLabel(zh: string): boolean {
