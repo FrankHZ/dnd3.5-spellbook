@@ -146,6 +146,38 @@ const markedHtml = '<ul class="pdf-typography-marked-list"><li>·A<ul><li>B</li>
 const markedInput = { ...input, chineseText: "·AB·C", chineseHtml: "<pre>·AB·C</pre>" };
 assert.equal(selectPdfTypography(90001, 86, markedInput, { ...row, input: markedInput,
   output: { ...row.output, chineseHtml: markedHtml } }).chineseHtml, markedHtml);
+// Observed Chinese literal markers. They are accepted only within an explicit
+// reviewed marked list; a punctuation character never classifies ordinary prose.
+for (const marker of ["‧", "◆", "．"]) {
+  const text = `${marker}甲\n${marker}乙`;
+  const current = { ...input, chineseText: text, chineseHtml: `<pre>${text}</pre>` };
+  const html = `<ul class="pdf-typography-marked-list"><li>${marker}甲\n</li><li>${marker}乙</li></ul>`;
+  const presentation = { ...row, input: current, output: { ...row.output, chineseHtml: html } };
+  assert.equal(selectPdfTypography(90001, 86, current, presentation).chineseHtml, html);
+  const ordinary = `<p>${text}</p>`;
+  assert.equal(selectPdfTypography(90001, 86, current, { ...presentation,
+    output: { ...presentation.output, chineseHtml: ordinary } }).chineseHtml, ordinary);
+  for (const bad of [
+    `<ul class="pdf-typography-marked-list"><li>${marker}甲\n</li><li>乙</li></ul>`,
+    `<ul class="pdf-typography-marked-list"><li><ul><li>${marker}甲\n${marker}乙</li></ul></li></ul>`,
+    html.replace('class="pdf-typography-marked-list"', 'class="pdf-typography-marked-list other"'),
+    html.replaceAll("<ul", "<ol").replaceAll("</ul>", "</ol>"),
+  ]) {
+    assert.throws(() => selectPdfTypography(90001, 86, current, { ...presentation,
+      output: { ...presentation.output, chineseHtml: bad } }),
+    /literal marker|marked-list class|marked ul/);
+  }
+  for (const changed of [html.replace("甲", "丙"), html.replace("\n", ""),
+    `<ul class="pdf-typography-marked-list"><li>${marker}乙</li><li>${marker}甲\n</li></ul>`]) {
+    assert.throws(() => selectPdfTypography(90001, 86, current, { ...presentation,
+      output: { ...presentation.output, chineseHtml: changed } }), /Chinese text or reader notes/);
+  }
+}
+assert.throws(() => selectPdfTypography(90001, 86, { ...input,
+  chineseText: "※甲", chineseHtml: "<pre>※甲</pre>" }, { ...row,
+  input: { ...input, chineseText: "※甲", chineseHtml: "<pre>※甲</pre>" },
+  output: { ...row.output, chineseHtml: '<ul class="pdf-typography-marked-list"><li>※甲</li></ul>' } }),
+/literal marker/, "unobserved markers remain unsupported");
 for (const [text, html] of [["·AB", '<ul class="pdf-typography-marked-list"><li>·A</li><li>B</li></ul>'],
   ["·A", '<ul class="pdf-typography-marked-list"><li><ul><li>·A</li></ul></li></ul>'],
   ["·A", '<ul class="pdf-typography-marked-list other"><li>·A</li></ul>'],

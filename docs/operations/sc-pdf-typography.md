@@ -89,7 +89,10 @@ Lists whose accepted text includes reviewed literal bullet glyphs may use only
 contained `li` must retain its reviewed leading literal marker; mixed marked
 and unmarked items cannot share a marked parent. Nested lists are classified
 independently; a nested item's marker does not count as its parent's marker.
-The current bounded helper supports literal `·`/`•` markers. It rejects a
+The current bounded helper supports literal `·`, `•`, `‧`, `◆`, and `．` markers.
+The latter three are observed Chinese list markers, accepted only at the start
+of an explicitly reviewed marked list's direct item. They do not classify
+ordinary prose or trigger automatic list conversion. It rejects a
 marked `ol`, additional class tokens or a
 marked list with an unmarked direct item. All original characters remain exact.
 The consumer must allow only this specific `ul` class token and fixed CSS to
@@ -105,6 +108,54 @@ and destination anchors through that pipeline as well. A standalone helper PASS
 does not prove sanitized/exported HTML retained these semantics.
 No exporter integration is implemented
 here; [#345](https://github.com/FrankHZ/dnd3.5-spellbook/issues/345) owns it.
+
+Chinese natural-structure packets reuse current accepted fields and selected
+presentation evidence, then review Chinese paragraph, mechanism, list/table and
+note boundaries independently. Keep complete four-field guards and compare the
+decoded Chinese text including whitespace exactly; presentation wrappers can
+restore a flattened list/table without editing canonical text. New wrappers and
+candidate rows require main-gate acceptance through the existing selector.
+The [A–B structure packet](../../data-tools/reports/dice-qa/books/86/sc-zh-format-ab.json)
+records fixed private evidence and bounded validation. Its eight-body memory
+fixture validates the fixed renderer's sanitizer and structural compatibility,
+with candidate HTML installed after the maintained representation validator.
+The [C–E structure packet](../../data-tools/reports/dice-qa/books/86/sc-zh-format-ce.json)
+uses the same guarded handoff for 191 Chinese bodies, including restored tables,
+lists, long-prose boundaries and reader notes. Mechanism coverage must match
+independently reviewed per-entry field counts and ordered field text; counting
+only rows recognized by the renderer cannot prove completeness. Entries with
+pending content changes stay bound to current accepted fields and require targeted revalidation
+after those changes activate.
+The [F–L structure packet](../../data-tools/reports/dice-qa/books/86/sc-zh-format-fl.json)
+applies this contract to 204 Chinese bodies. Its fixed private evidence includes
+individual table cells, ordered list items, reader notes and complete mechanism
+expectations, with exact whitespace preservation and an eight-body memory fixture.
+The packet identifies entries awaiting content revalidation and binds the fixture
+to the renderer revision that recognizes the independently reviewed field variants.
+The [M–R structure packet](../../data-tools/reports/dice-qa/books/86/sc-zh-format-mr.json)
+binds 191 individually reviewed Chinese bodies to 190 new guarded candidates and
+one unchanged accepted presentation. Its evidence checks three tables cell by
+cell, complete ordered lists, creature stat rows, prose boundaries and independent
+notes. Frozen complete mechanism expectations also cover combined field labels
+and an observed semicolon resistance line without changing canonical text.
+The eight-body memory fixture retains the same sanitizer and directory contracts.
+The [S structure packet](../../data-tools/reports/dice-qa/books/86/sc-zh-format-s.json)
+binds 167 Chinese bodies to guarded display candidates, including the caster-level
+and size table, complete planar/terrain/round/benefit groups, Summon Undead I–V
+lists and independent reader notes. It preserves all canonical text and whitespace,
+with independently frozen mechanism counts and a fixed eight-body memory fixture.
+Production presentation selection, human visual acceptance and final renderer
+integration remain separate checks owned by #345/main-gate. The fixture does not
+accept the separate spell-table component marker decision.
+The [T–Z structure packet](../../data-tools/reports/dice-qa/books/86/sc-zh-format-tz.json)
+binds 111 reviewed Chinese bodies to 109 new candidates and two unchanged accepted
+presentations. It restores complete vine/deity/weapon lists, separates merged
+flavour and rule sentences, and preserves the existing HD/effect table and five
+independent reader notes. Complete mechanism expectations are frozen before the
+classifier check; the packet retains the earlier alias failures and binds final
+checks to #345's display-only repair. Its eight-body memory fixture checks ordered
+semantic units after sanitization. Canonical fields and all decoded whitespace
+remain exact. Production selection and human visual acceptance remain separate.
 
 ## Review and authority boundaries
 

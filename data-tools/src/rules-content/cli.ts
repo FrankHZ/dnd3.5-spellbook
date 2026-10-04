@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import fs from "node:fs";
+import { assertNoStoredListMarkers } from "../spell-list-markers/storage";
 import path from "node:path";
 
 import {
@@ -740,6 +741,7 @@ export function importGenerated(
   assertImportableRulesContentArtifact(content);
   assertGeneratedTables(db);
   assertMechanicDisplayColumns(db);
+  assertNoStoredListMarkers(db);
   const resolvedImportContext = importContext ?? collectImportContext();
   const counts = content.counts;
   const inputSha256 = sha256File(inputPath);
@@ -751,6 +753,7 @@ export function importGenerated(
   if (dryRun) return { ...counts, inputSha256, provenance };
 
   const run = db.transaction(() => {
+    assertNoStoredListMarkers(db);
     for (const table of GENERATED_TABLES) {
       db.prepare(`DELETE FROM "${table}"`).run();
     }

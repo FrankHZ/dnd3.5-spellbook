@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "issue": 487,
+  "base": "0db7fa7123631f9fa87dfa8f2b1eda538a3d1b76",
+  "privateEvidenceRevision": "9f27bb26c29167bbc7bb7f7c700f0e7736867fcd",
+  "privateEvidencePath": "dice-qa/books/86/issue-487",
+  "inputRevision": "3109813da4b49d0e9c47ceeba44857a5a230b1e7",
+  "candidateScan": {"pages": 33, "markedOccurrences": 179, "accepted": 0, "bytes": 335268, "completeCoverage": false},
+  "slice": {
+    "originalOccurrences": 9,
+    "explicitBindings": 12,
+    "candidate": 12,
+    "accepted": 0,
+    "markerCases": ["M", "F", "X", "MF", "MX", "FX", "explicit-empty", "unknown/unbound"],
+    "listCases": ["class", "domain", "shared-sorcerer/wizard", "repeated-spell"],
+    "changedBindingNegativeCases": 12,
+    "candidateCannotPublish": true,
+    "acceptedSelectionSimulationOnly": true
+  },
+  "boundedSourceComparison": {"pages": 6, "spans": 1205, "textFontSizeFlagsOriginBboxEqual": true, "agentVisualReview": true, "userVisualAcceptance": false},
+  "cwdReplay": ["root", "data-tools", "separate-readonly-checkout"],
+  "passedChecks": ["sc:list-markers:test", "rules:content:step:test", "rules:content:acceptance:portable", "data-tools typecheck", "server build", "content Prisma client generation", "command manifest and documented paths", "git diff --check"],
+  "boundaries": {
+    "persistentDbOpened": false,
+    "persistentDbWritten": false,
+    "sourceOrMaintainedInputChanged": false,
+    "sharedRendererChanged": false,
+    "wholeBookHtml": false,
+    "paidApiCalls": 0,
+    "unrelatedStagedDeletesPreserved": 39,
+    "privatePush": false
+  },
+  "remaining": ["complete marked/unmarked occurrence coverage and binding acceptance", "shared renderer integration", "separately authorized persistent schema/data application"]
+}

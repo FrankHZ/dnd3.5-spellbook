@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "issue": 499,
+  "parentIssue": 487,
+  "status": "complete-input-machine-delivery-pending-main-gate",
+  "privateEvidenceRevision": "22508940d9ccfe6ea25b24c6922cf4bfb6312344",
+  "inputRevision": "3109813da4b49d0e9c47ceeba44857a5a230b1e7",
+  "privateFiles": {
+    "result": "dice-qa/books/86/issue-499/final-accepted-domain-markers.json",
+    "exceptionsAndValidation": "dice-qa/books/86/issue-499/final-validation.json",
+    "readme": "dice-qa/books/86/issue-499/README.md",
+    "replay": "dice-qa/books/86/issue-499/verify-results.cjs"
+  },
+  "scope": "All supplied SC class/domain list input p245–285; accepted complete p271–285 domain appendix; explicit SC edition relationships only",
+  "coverage": {
+    "originalCachedPrintedPages": [
+      245,
+      277
+    ],
+    "originalCachedPageCount": 33,
+    "suppliedPrintedPages": [
+      245,
+      285
+    ],
+    "suppliedPageCount": 41,
+    "inputSpans": 10010,
+    "completeDomainAppendixSourceAccepted": true,
+    "completeBodyOrWholeBookQAClaimed": false,
+    "knownGap": null,
+    "recognizedSourceOccurrences": 2175,
+    "automaticSourceStatuses": {
+      "explicit-empty": 1385,
+      "marked": 137,
+      "unmatched-identity": 12,
+      "out-of-scope": 628,
+      "source-scope-uncertain": 5,
+      "incomplete-label": 8
+    },
+    "targetRelationships": 2108,
+    "relationshipResults": {
+      "explicit-empty": 1853,
+      "missing-source-coverage": 19,
+      "marked": 199,
+      "source-scope-uncertain": 5,
+      "missing-occurrence": 24,
+      "incomplete-label": 7,
+      "unmatched-identity": 1
+    },
+    "knownSuperscriptCandidatesIncluded": 233,
+    "originalCachedSuperscriptCandidatesIncluded": 179,
+    "acceptedDomainSources": {
+      "printedPages": [
+        271,
+        285
+      ],
+      "ordinaryDomains": 67,
+      "planarDomains": 8,
+      "occurrences": 747,
+      "scBody": 117,
+      "outsideScBody": 630,
+      "outsideScopeUnknownMarkerEvidence": 2
+    },
+    "automaticOutsideScopeMeaning": "Only complete visible labels classified outside; two authoritative outside-SC inventory rows retain unknown marker evidence",
+    "missingSourceCoverageMeaning": "Unprinted class owners/variants plus the separate special-feat pending relationship; not missing original domain appendix pages"
+  },
+  "resources": {
+    "pilotPages": 3,
+    "pilotElapsedMs": 269,
+    "pilotPeakRssBytes": 396574720,
+    "pilotEstimatedFullEvidenceBytes": 13338468,
+    "fullElapsedMs": 368,
+    "fullPeakRssBytes": 521236480,
+    "outputBytes": 14772654,
+    "packageReplayElapsedMs": 373,
+    "packageReplayPeakRssBytes": 446435328,
+    "nodeHeapBudgetMiB": 1024,
+    "apiOrModelCalls": 0,
+    "supplementalPages": 8,
+    "supplementalSpans": 3152
+  },
+  "verification": {
+    "consumerRelationshipsChecked": 2108,
+    "machineDisplayResults": 2052,
+    "unknownOmissions": 56,
+    "acceptedPilotBindingsReplayed": 10,
+    "acceptedBalanceSourceDecisionsReplayed": 9,
+    "rootPackageByteIdentical": true,
+    "unrelatedPrivateStagedDeletes": 39,
+    "unrelatedPrivateStagedDiffByteIdenticalBeforeAndAfterCommit": true,
+    "acceptedDomainSourcePositionsChecked": 747,
+    "acceptedDomainRelationshipDispositionsChecked": 118,
+    "actualAmbiguousIdentities": 0,
+    "actualMarkerConflicts": 0
+  },
+  "consumer": {
+    "module": "data-tools/src/spell-list-markers/automatic.ts",
+    "read": "Read machine array from fixed private JSON result",
+    "select": "selectProcessedMembershipMarkers(memberships, printedRulebookId, acceptedRecords, result.machine)",
+    "display": "displayMembershipMarkers returns letters, explicit empty string, or null to omit unknown",
+    "machineReviewStatus": "candidate",
+    "humanAcceptanceChanges": 0,
+    "ordinaryCandidatesEligible": false,
+    "rendererIntegrationOwnerIssue": 345
+  },
+  "completeDomainFollowup": {
+    "ownerIssue": 500,
+    "parentDomainIssue": 486,
+    "finalFullResultPending": false,
+    "acceptedSourceRevision": "cd67b6039331313cf858c646593f1fe9ddde0adb",
+    "acceptedDecisionRevision": "c7d21ef8a573217e54229809219c8fa323f66bab",
+    "existingDomainTargetRelationships": 118,
+    "domainMachineResults": 105,
+    "domainUnknownRelationships": 13,
+    "domainUnknownReasons": {
+      "incompleteLabel": 7,
+      "sourceScopeUncertain": 5,
+      "specialFeatPending354": 1
+    },
+    "summaryOwner": 500,
+    "rerunOwner": 499,
+    "normalizedTuplesChanged": false
+  },
+  "boundaries": {
+    "persistentDbOpened": false,
+    "operatorDbWrites": false,
+    "rendererWrites": false,
+    "maintainedInputsModified": false,
+    "privatePush": false,
+    "fullSourceAuthorityOrHtmlReplay": false,
+    "phbResumed": false,
+    "completeComponentInference": false
+  },
+  "domainSourceRevision": "cd67b6039331313cf858c646593f1fe9ddde0adb",
+  "domainSourceAcceptanceRevision": "c7d21ef8a573217e54229809219c8fa323f66bab"
+}

@@ -81,6 +81,14 @@ async function main() {
   try {
     const before = fixture(db, current), beforePath = path.join(temp, "before.json");
     write(beforePath, before);
+    // Older supported schemas without the new annotation table still import.
+    const oldSchema = new Database(":memory:"); schema(oldSchema);
+    try {
+      oldSchema.exec("DROP TABLE SpellListMarker");
+      importGenerated(oldSchema, readGenerated(beforePath), false, beforePath,
+        {currentProvenance: current, importedAt: "2026-10-02T02:00:00.000Z"});
+      assert.equal((oldSchema.prepare("SELECT COUNT(*) AS n FROM SpellContent").get() as {n: number}).n, before.spells.length);
+    } finally { oldSchema.close(); }
     importGenerated(db, readGenerated(beforePath), false, beforePath, {currentProvenance: current, importedAt: "2026-10-02T02:00:00.000Z"});
     const persisted = snapshot(db);
     requireNormalizedArtifactState(db, before, beforePath);
@@ -180,6 +188,15 @@ async function main() {
       INSERT INTO SpellSearchDocument(spellId,lang,variant,name,body) VALUES('100','zh','chm','原名','原文');
       INSERT INTO SpellSearchIndexState VALUES(1,1,'2026-01-01',1)`);
     const protectedBaseline = snapshot(db);
+    // Refuse both direct and step replacement before deleting any generated row.
+    db.exec("INSERT INTO SpellListMarker(id,sourceKey,rulebookId,markers,sourceJson) VALUES('synthetic-source','synthetic-source',86,'M','{}')");
+    try {
+      const markedState = snapshot(db);
+      for (const dryRun of [true, false]) assert.throws(() => importGenerated(db, readGenerated(afterPath), dryRun, afterPath, context), /SpellListMarker bindings/);
+      for (const mode of ["check", "apply"] as const) assert.throws(() => step(mode), /SpellListMarker bindings/);
+      assert.deepEqual(snapshot(db), markedState, "marker refusal changed content");
+    } finally { db.exec("DELETE FROM SpellListMarker WHERE id='synthetic-source'"); }
+    assert.deepEqual(snapshot(db), protectedBaseline);
     assert.deepEqual(step("check"), {mode: "check", state: "before", changed: false, wouldChange: true});
     assert.deepEqual(snapshot(db), protectedBaseline, "check mutated baseline");
     // Real importer SQL fails after it has replaced the build and inserted books.

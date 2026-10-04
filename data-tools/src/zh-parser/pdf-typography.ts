@@ -147,7 +147,7 @@ function validateMarkedLists(html: string) {
     items.each((_, item) => {
       const directContent = $(item).clone();
       directContent.find("ul,ol,dl").remove();
-      assert(/^[·•]/u.test(directContent.text().trimStart()),
+      assert(/^[·•‧◆．]/u.test(directContent.text().trimStart()),
         "each marked-list direct item must retain its reviewed literal marker");
     });
   });

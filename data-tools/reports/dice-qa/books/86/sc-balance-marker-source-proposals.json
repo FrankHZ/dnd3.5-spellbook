@@ -1,0 +1,467 @@
+{
+  "schemaVersion": 1,
+  "issue": 496,
+  "base": "65319c464e9018daba6799fb981a628dc03d5e2e",
+  "privateEvidenceRevision": "50da45ca2b2bc2dcecc8459140b1a61d1770bc84",
+  "privateEvidencePath": "dice-qa/books/86/issue-496",
+  "inputRevision": "3109813da4b49d0e9c47ceeba44857a5a230b1e7",
+  "foundationRevision": "9f27bb26c29167bbc7bb7f7c700f0e7736867fcd",
+  "scope": {
+    "printedPages": [
+      271
+    ],
+    "originalOccurrences": 9,
+    "sourceMarkers": {
+      "explicitEmpty": 8,
+      "MF": 1,
+      "unknown": 0
+    },
+    "inSCBody": 4,
+    "outsideSCBody": 5,
+    "conflict": 0,
+    "explicitBindings": 4,
+    "candidate": 4,
+    "accepted": 0,
+    "excludedOtherPublicationIdentities": 4,
+    "completeBalancePrintedRowDenominator": true,
+    "completeParentCoverage": false
+  },
+  "dispositions": [
+    {
+      "sourceKey": "book:86:p270:b6:l0:s0",
+      "level": 1,
+      "printedBookId": 86,
+      "markers": "",
+      "markerDisposition": "explicit-empty",
+      "scope": "out-of-SC-body-scope",
+      "sourceDisposition": "verified-proposal-pending-main-gate",
+      "identityDisposition": "PHB-reference-inventory-only",
+      "sourceRulebookId": 6,
+      "relationshipSnapshot": {
+        "id": "spell:2840:list:domain:127:1:6:1126",
+        "spellId": "spell:2840",
+        "listType": "domain",
+        "ownerLegacyId": 127,
+        "level": 1,
+        "rulebookId": 6,
+        "sourceRowId": 1126,
+        "sourceTable": "dnd_spelldomainlevel",
+        "rawExtra": null,
+        "variantLabel": null,
+        "note": null,
+        "reviewStatus": "accepted"
+      },
+      "excludedOtherPublicationIdentities": [],
+      "proposedBinding": false,
+      "priorFoundation": "not-in-marked-foundation"
+    },
+    {
+      "sourceKey": "book:86:p270:b6:l1:s0",
+      "level": 2,
+      "printedBookId": 86,
+      "markers": "",
+      "markerDisposition": "explicit-empty",
+      "scope": "out-of-SC-body-scope",
+      "sourceDisposition": "verified-proposal-pending-main-gate",
+      "identityDisposition": "PHB-reference-inventory-only",
+      "sourceRulebookId": 6,
+      "relationshipSnapshot": {
+        "id": "spell:2531:list:domain:127:2:6:1127",
+        "spellId": "spell:2531",
+        "listType": "domain",
+        "ownerLegacyId": 127,
+        "level": 2,
+        "rulebookId": 6,
+        "sourceRowId": 1127,
+        "sourceTable": "dnd_spelldomainlevel",
+        "rawExtra": null,
+        "variantLabel": null,
+        "note": null,
+        "reviewStatus": "accepted"
+      },
+      "excludedOtherPublicationIdentities": [],
+      "proposedBinding": false,
+      "priorFoundation": "not-in-marked-foundation"
+    },
+    {
+      "sourceKey": "book:86:p270:b6:l3:s0",
+      "level": 3,
+      "printedBookId": 86,
+      "markers": "",
+      "markerDisposition": "explicit-empty",
+      "scope": "in-SC-body-scope",
+      "sourceDisposition": "verified-proposal-pending-main-gate",
+      "identityDisposition": "explicit-SC-binding-proposal",
+      "sourceRulebookId": 86,
+      "relationshipSnapshot": {
+        "id": "spell:4021:list:domain:127:3:86:907",
+        "spellId": "spell:4021",
+        "listType": "domain",
+        "ownerLegacyId": 127,
+        "level": 3,
+        "rulebookId": 86,
+        "sourceRowId": 907,
+        "sourceTable": "dnd_spelldomainlevel",
+        "rawExtra": null,
+        "variantLabel": null,
+        "note": null,
+        "reviewStatus": "accepted"
+      },
+      "excludedOtherPublicationIdentities": [
+        {
+          "id": "spell:3478:list:domain:127:3:34:702",
+          "spellId": "spell:3478",
+          "listType": "domain",
+          "ownerLegacyId": 127,
+          "level": 3,
+          "rulebookId": 34,
+          "sourceRowId": 702,
+          "sourceTable": "dnd_spelldomainlevel",
+          "rawExtra": null,
+          "variantLabel": null,
+          "note": null,
+          "reviewStatus": "accepted"
+        }
+      ],
+      "proposedBinding": true,
+      "priorFoundation": "not-in-marked-foundation"
+    },
+    {
+      "sourceKey": "book:86:p270:b6:l6:s0",
+      "level": 4,
+      "printedBookId": 86,
+      "markers": "",
+      "markerDisposition": "explicit-empty",
+      "scope": "out-of-SC-body-scope",
+      "sourceDisposition": "verified-proposal-pending-main-gate",
+      "identityDisposition": "PHB-reference-inventory-only",
+      "sourceRulebookId": 6,
+      "relationshipSnapshot": {
+        "id": "spell:2310:list:domain:127:4:6:1128",
+        "spellId": "spell:2310",
+        "listType": "domain",
+        "ownerLegacyId": 127,
+        "level": 4,
+        "rulebookId": 6,
+        "sourceRowId": 1128,
+        "sourceTable": "dnd_spelldomainlevel",
+        "rawExtra": null,
+        "variantLabel": null,
+        "note": null,
+        "reviewStatus": "accepted"
+      },
+      "excludedOtherPublicationIdentities": [],
+      "proposedBinding": false,
+      "priorFoundation": "not-in-marked-foundation"
+    },
+    {
+      "sourceKey": "book:86:p270:b6:l7:s0",
+      "level": 5,
+      "printedBookId": 86,
+      "markers": "",
+      "markerDisposition": "explicit-empty",
+      "scope": "in-SC-body-scope",
+      "sourceDisposition": "verified-proposal-pending-main-gate",
+      "identityDisposition": "explicit-SC-binding-proposal",
+      "sourceRulebookId": 86,
+      "relationshipSnapshot": {
+        "id": "spell:4123:list:domain:127:5:86:918",
+        "spellId": "spell:4123",
+        "listType": "domain",
+        "ownerLegacyId": 127,
+        "level": 5,
+        "rulebookId": 86,
+        "sourceRowId": 918,
+        "sourceTable": "dnd_spelldomainlevel",
+        "rawExtra": null,
+        "variantLabel": null,
+        "note": null,
+        "reviewStatus": "accepted"
+      },
+      "excludedOtherPublicationIdentities": [
+        {
+          "id": "spell:3481:list:domain:127:5:34:703",
+          "spellId": "spell:3481",
+          "listType": "domain",
+          "ownerLegacyId": 127,
+          "level": 5,
+          "rulebookId": 34,
+          "sourceRowId": 703,
+          "sourceTable": "dnd_spelldomainlevel",
+          "rawExtra": null,
+          "variantLabel": null,
+          "note": null,
+          "reviewStatus": "accepted"
+        }
+      ],
+      "proposedBinding": true,
+      "priorFoundation": "not-in-marked-foundation"
+    },
+    {
+      "sourceKey": "book:86:p270:b6:l9:s0",
+      "level": 6,
+      "printedBookId": 86,
+      "markers": "",
+      "markerDisposition": "explicit-empty",
+      "scope": "out-of-SC-body-scope",
+      "sourceDisposition": "verified-proposal-pending-main-gate",
+      "identityDisposition": "PHB-reference-inventory-only",
+      "sourceRulebookId": 6,
+      "relationshipSnapshot": {
+        "id": "spell:2305:list:domain:127:6:6:1129",
+        "spellId": "spell:2305",
+        "listType": "domain",
+        "ownerLegacyId": 127,
+        "level": 6,
+        "rulebookId": 6,
+        "sourceRowId": 1129,
+        "sourceTable": "dnd_spelldomainlevel",
+        "rawExtra": null,
+        "variantLabel": null,
+        "note": null,
+        "reviewStatus": "accepted"
+      },
+      "excludedOtherPublicationIdentities": [],
+      "proposedBinding": false,
+      "priorFoundation": "not-in-marked-foundation"
+    },
+    {
+      "sourceKey": "book:86:p270:b6:l11:s0",
+      "level": 7,
+      "printedBookId": 86,
+      "markers": "",
+      "markerDisposition": "explicit-empty",
+      "scope": "in-SC-body-scope",
+      "sourceDisposition": "verified-proposal-pending-main-gate",
+      "identityDisposition": "explicit-SC-binding-proposal",
+      "sourceRulebookId": 86,
+      "relationshipSnapshot": {
+        "id": "spell:4784:list:domain:127:7:86:991",
+        "spellId": "spell:4784",
+        "listType": "domain",
+        "ownerLegacyId": 127,
+        "level": 7,
+        "rulebookId": 86,
+        "sourceRowId": 991,
+        "sourceTable": "dnd_spelldomainlevel",
+        "rawExtra": null,
+        "variantLabel": null,
+        "note": null,
+        "reviewStatus": "accepted"
+      },
+      "excludedOtherPublicationIdentities": [
+        {
+          "id": "spell:3496:list:domain:127:7:34:708",
+          "spellId": "spell:3496",
+          "listType": "domain",
+          "ownerLegacyId": 127,
+          "level": 7,
+          "rulebookId": 34,
+          "sourceRowId": 708,
+          "sourceTable": "dnd_spelldomainlevel",
+          "rawExtra": null,
+          "variantLabel": null,
+          "note": null,
+          "reviewStatus": "accepted"
+        }
+      ],
+      "proposedBinding": true,
+      "priorFoundation": "not-in-marked-foundation"
+    },
+    {
+      "sourceKey": "book:86:p270:b6:l13:s0",
+      "level": 8,
+      "printedBookId": 86,
+      "markers": "MF",
+      "markerDisposition": "printed-MF",
+      "scope": "out-of-SC-body-scope",
+      "sourceDisposition": "verified-proposal-pending-main-gate",
+      "identityDisposition": "PHB-reference-inventory-only",
+      "sourceRulebookId": 6,
+      "relationshipSnapshot": {
+        "id": "spell:2351:list:domain:127:8:6:1130",
+        "spellId": "spell:2351",
+        "listType": "domain",
+        "ownerLegacyId": 127,
+        "level": 8,
+        "rulebookId": 6,
+        "sourceRowId": 1130,
+        "sourceTable": "dnd_spelldomainlevel",
+        "rawExtra": null,
+        "variantLabel": null,
+        "note": null,
+        "reviewStatus": "accepted"
+      },
+      "excludedOtherPublicationIdentities": [],
+      "proposedBinding": false,
+      "priorFoundation": "existing-PHB-candidate-remains-outside-SC-body-scope"
+    },
+    {
+      "sourceKey": "book:86:p270:b6:l14:s0",
+      "level": 9,
+      "printedBookId": 86,
+      "markers": "",
+      "markerDisposition": "explicit-empty",
+      "scope": "in-SC-body-scope",
+      "sourceDisposition": "verified-proposal-pending-main-gate",
+      "identityDisposition": "explicit-SC-binding-proposal",
+      "sourceRulebookId": 86,
+      "relationshipSnapshot": {
+        "id": "spell:4767:list:domain:127:9:86:988",
+        "spellId": "spell:4767",
+        "listType": "domain",
+        "ownerLegacyId": 127,
+        "level": 9,
+        "rulebookId": 86,
+        "sourceRowId": 988,
+        "sourceTable": "dnd_spelldomainlevel",
+        "rawExtra": null,
+        "variantLabel": null,
+        "note": null,
+        "reviewStatus": "accepted"
+      },
+      "excludedOtherPublicationIdentities": [
+        {
+          "id": "spell:3501:list:domain:127:9:34:711",
+          "spellId": "spell:3501",
+          "listType": "domain",
+          "ownerLegacyId": 127,
+          "level": 9,
+          "rulebookId": 34,
+          "sourceRowId": 711,
+          "sourceTable": "dnd_spelldomainlevel",
+          "rawExtra": null,
+          "variantLabel": null,
+          "note": null,
+          "reviewStatus": "accepted"
+        }
+      ],
+      "proposedBinding": true,
+      "priorFoundation": "not-in-marked-foundation"
+    }
+  ],
+  "sourceChecks": {
+    "freshPageSpans": 200,
+    "exactTextFontSizeFlagsOriginBbox": true,
+    "completeNameRangeAndColon": true,
+    "appendixDaggerLegendAndOwnerBoundary": true,
+    "rawSourceGlyphsAndWhitespacePreserved": true,
+    "agentVisualReview": true,
+    "officialSCErrataPages": 1,
+    "applicableSCErrataCorrections": 0,
+    "sourcePdfsUntracked": true,
+    "primaryTextOrPHBErrataAcceptance": false,
+    "htmlVisualAcceptance": false
+  },
+  "selectionChecks": {
+    "positiveSCSelectionsMemoryOnly": 4,
+    "crossBookFoundationSelectionMemoryOnly": 1,
+    "negatives": {
+      "unknown-source-acceptance": 9,
+      "unknown-source-release": 9,
+      "name-end-truncation": 9,
+      "name-start-truncation": 9,
+      "changed-source-name": 9,
+      "changed-source-marker": 9,
+      "changed-source-location": 9,
+      "candidate-release": 4,
+      "wrong-printed-book": 4,
+      "changed-binding": 40,
+      "unaccepted-relationship": 4,
+      "stored-marker-forgery": 4,
+      "stored-name-forgery": 4,
+      "stored-locator-forgery": 4,
+      "excluded-other-publication-release": 4,
+      "conflicting-appearances": 4,
+      "cross-book-wrong-print-release": 1
+    },
+    "persistentAcceptedRecordsWritten": false,
+    "cwdReplay": [
+      "root",
+      "data-tools"
+    ]
+  },
+  "passedChecks": [
+    "sc:list-markers:test",
+    "data-tools typecheck",
+    "private nine-source/four-binding replay",
+    "bounded original PDF and SC errata comparison",
+    "source-free report/link/diff validation"
+  ],
+  "resources": {
+    "inputBytes": {
+      "extraction": 2179623,
+      "normalized": 70934769,
+      "candidate": 335268
+    },
+    "textEvidenceBytes": 73545,
+    "textEvidenceBudgetBytes": 100000,
+    "nodeHeapMiB": 1024,
+    "observedReplayMs": 969,
+    "observedPeakRssBytes": 696848384,
+    "paidApiCalls": 0,
+    "newDependencies": 0,
+    "stagedPreservationSnapshotBytes": 18559304,
+    "stagedSnapshotExcludedFromTextBudget": true
+  },
+  "boundaries": {
+    "stagedDeletes": 39,
+    "stagedBinaryDiffEqual": true,
+    "privatePush": false,
+    "operatorDbAccess": false,
+    "rendererWrites": false,
+    "htmlVisualAcceptance": false,
+    "fullExtraction": false
+  },
+  "acceptanceHandoff": {
+    "nineSourceDecisions": "pending-main-gate",
+    "fourSCBindings": "candidate-pending-main-gate",
+    "fivePHBRows": "source-inventory-only-out-of-SC-body-scope",
+    "publicationTuple": "pending-owner-486",
+    "actualSchemaDataApplication": "separate-acceptance-and-explicit-authorization",
+    "markerImporterProvided": false
+  },
+  "runSettings": {
+    "requestedModel": "gpt-6.1-sol",
+    "requestedEffort": "high",
+    "verification": "Actual run metadata unavailable to this task; main-gate dispatch metadata must verify"
+  },
+  "nextFullAutomaticSlice": {
+    "userDirection": "After this pilot passes, process the cached full inventory in one automatic slice; further manual microbatches are not required",
+    "reuse": [
+      "data-tools/src/spell-list-markers/markers.ts:scanMarkerCandidates",
+      "data-tools/src/spell-list-markers/markers.ts:inspectOccurrence",
+      "data-tools/src/spell-list-markers/markers.ts:reviewedRecord",
+      "fixed normalized stable relationships"
+    ],
+    "knownInput": {
+      "pages": 33,
+      "spans": 6858,
+      "markedOccurrences": 179,
+      "unmarkedRows": "enumerate complete bold labels separately; not covered by candidate CLI"
+    },
+    "classification": "Explicit SC edition/owner/level matches may be machine processed; ambiguous, missing-page, incomplete or unmatched occurrences stay unknown with a short exception list",
+    "acceptance": "Machine processing provenance stays distinct from human source acceptance",
+    "runtimeEstimateSeconds": [
+      1,
+      30
+    ],
+    "evidenceEstimateBytes": [
+      1000000,
+      10000000
+    ],
+    "estimateUncertainty": "Measure complete row count, binding count and evidence duplication before run",
+    "complexity": "O(spans + relationships + bindings) with indexed identity lookup",
+    "heapMiB": 1024,
+    "newExtraction": false,
+    "paidApis": false,
+    "minimumConsumerChange": "Renderer owner uses status-aware selection and omits unresolved/pending marker display without blocking the whole HTML; stop using requireAcceptedMembershipMarkers as a whole-HTML gate; retain accepted source/binding checks and other preconditions",
+    "notDispatched": true
+  },
+  "remaining": [
+    "main-gate review of this exact pilot evidence",
+    "owner-486 publication tuple decision",
+    "single full automatic processing slice with explicit unknown exceptions",
+    "owner-managed consumer change and separately authorized persistent application"
+  ]
+}

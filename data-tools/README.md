@@ -56,6 +56,7 @@ owning workflow's explicit authorization.
 - [Offline Chinese class/domain HTML / CHM source pages](../docs/operations/offline-html.md)
 - [Explicit-page PDF text/geometry extraction](./pdf-extract/README.md)
 - [SC PDF typography display derivatives](../docs/operations/sc-pdf-typography.md)
+- [SC domain-list occurrence and summary handoffs](../docs/operations/sc-domain-lists.md)
 
 The read-only dice TXT intake and field-level QA validation are described at the
 [replacement boundary](../docs/operations/import-workflow.md#dice-text-boundary).
@@ -133,6 +134,13 @@ It authenticates both fixed inventories and all final fields/notes before
 inserting the accepted 265 additions and changing only summary acceptance
 metadata in one transaction. The generic summary step still rejects changed
 annotated predecessors; its accepted paths never grant source QA authority.
+
+For original printed class/domain-list M/F/X annotations, use the independent
+[printed list marker workflow](../docs/operations/spell-list-markers.md).
+Its candidate scanner and automatic SC processor emit separate private evidence.
+`sc:list-markers:auto` matches complete cached labels to unique SC relationships;
+machine results remain distinct from human acceptance. The display selector omits
+unknown annotations and never falls back to complete component flags.
 
 [scripts.manifest.json](./scripts.manifest.json) classifies every package script
 by module and lifecycle. Keep that classification when adding a command.
