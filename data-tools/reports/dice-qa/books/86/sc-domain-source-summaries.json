@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/500",
+  "phase": "source-reviewed-proposal-awaiting-main-gate",
+  "privateRevision": "cd67b6039331313cf858c646593f1fe9ddde0adb",
+  "privateRootRelativeDirectory": "dice-qa/books/86/issue-500",
+  "inputs": {
+    "normalizedRevision": "3109813da4b49d0e9c47ceeba44857a5a230b1e7",
+    "normalizedPath": "dice-qa/books/86/issue-467/handoff-preparation/operator/operator.normalized.generated.json",
+    "cacheRevision": "3109813da4b49d0e9c47ceeba44857a5a230b1e7",
+    "cachePath": "dice-qa/books/86/issue-259/relation-authority/sc-lists-245-277.jsonl",
+    "canonicalSummaryRevision": "1e86cf7865f42f15abb7d6629d2d9de54607a13c",
+    "canonicalSummaryPath": "short-desc-normalized/summaries.generated.jsonl"
+  },
+  "handoffPaths": {
+    "appendPdfPageJsonl": "domain-pages-278-285.jsonl",
+    "inventory": "final-handoff/inventory.json",
+    "tuples": "final-handoff/tuple-dispositions.json",
+    "summaryReuse": "final-handoff/summary-reuse.json",
+    "summaryAdditions": "summaries-final/summary-additions.jsonl",
+    "summaryCorrections": "summaries-final/summary-corrections.jsonl",
+    "summaryDecisions": "summaries-final/summary-decisions.jsonl",
+    "fullSummaryCandidate": "summaries-final/summaries.proposed.jsonl",
+    "sourceExceptions": "source-exceptions.json",
+    "sourceVerification": "source-check/source-verification.json",
+    "validation": "validation.json",
+    "summarySchemaValidation": "summary-schema-validation.json",
+    "reproduction": "reproduce.py"
+  },
+  "sourceCoverage": {
+    "printedStartPage": 271,
+    "printedEndPage": 285,
+    "appendPageIndices": [277, 278, 279, 280, 281, 282, 283, 284],
+    "ordinaryDomains": 67,
+    "planarDomains": 8,
+    "sourceOccurrences": 747,
+    "scBodyOccurrences": 117,
+    "outsideScBodyOccurrences": 630,
+    "sourceLinesWithUniqueDisposition": 1670,
+    "freshPdfSpanComparisons": 3152,
+    "completeOfficialErrataPagesChecked": 1,
+    "appendixErrataChanges": 0,
+    "machineInventoryComplete": true,
+    "allAppendixPagesVisuallyReviewed": true,
+    "humanMarkerAcceptance": false
+  },
+  "relations": {
+    "currentTuples": 118,
+    "currentSpellIds": 111,
+    "matchedPrintedTuples": 117,
+    "specialFeatPending354": [{"spellId": 3921, "ownerLegacyId": 28, "level": 1}],
+    "tupleCorrections": 0,
+    "newScPrintedTuples": 0,
+    "retainNormalizedRevision": true
+  },
+  "summaries": {
+    "identity": ["spellId", "rulebookId", "lang", "variant"],
+    "rulebookId": 86,
+    "lang": "zh",
+    "variant": "chm",
+    "baselineRows": 6837,
+    "missingKeys": 29,
+    "additions": 29,
+    "corrections": 1,
+    "correctedSpellIds": [4123],
+    "preservedCanonicalRows": 6836,
+    "candidateRows": 6866,
+    "domainTargetCoverageAfterProposal": 111,
+    "retainedSourceDifferenceSpellIds": [4415, 4746],
+    "mainGateAccepted": false
+  },
+  "validation": {
+    "syntheticTestsPassed": 6,
+    "rootAndPackageReplayEqual": true,
+    "summarySchemaErrors": 0,
+    "unrelatedStagedByteIdentical": true,
+    "persistentDbOpened": false,
+    "canonicalInputsModified": false,
+    "rendererModified": false,
+    "scBodyScope": 1001,
+    "fullSourceAuthenticationReplay": false
+  },
+  "resources": {
+    "pythonProcesses": 1,
+    "measuredReplaySeconds": 0.83,
+    "peakWorkingSetBytes": 297111552,
+    "derivedInventoryBytes": 1817267,
+    "durableHandoffBytes": 18383007,
+    "networkCalls": 0,
+    "ocrCalls": 0,
+    "paidApiOrModelCalls": 0
+  },
+  "ownership": {
+    "markerProcessingIssue": 499,
+    "rendererIssue": 345,
+    "domainIntegrationIssue": 486,
+    "specialFeatIssue": 354,
+    "acceptance": "main-gate"
+  }
+}
