@@ -9,7 +9,8 @@ import {planFinalOverlay, applyFinalOverlay, validateFinalOverlay, verifyFullNor
   finalScSummaryRevision, finalScSummaryCandidate, type FinalField} from './final-writer';
 import type {SummaryRow} from '../short-desc/summary-row-schema';
 
-import {fidelityCandidate, fidelityAcceptance, fidelityEnglishIds, fidelityChineseIds, validateFidelityEnglish, validateFidelityChinese} from './source-fidelity';
+import {fidelityCandidate, fidelityAcceptance, fidelityEnglishIds, fidelityChineseIds, validateFidelityEnglish, validateFidelityChinese,
+  punctuationCandidate, punctuationAcceptance, punctuationEnglishIds, validatePunctuationEnglish} from './source-fidelity';
 
 type Pair = {description: string; descriptionHtml: string};
 type Patch = {id: number; expected: {spell: Pair}; spell: Pair};
@@ -17,13 +18,14 @@ type Report = Record<string, unknown> & {sourceRevisions: Record<string, string>
 
 /** The owning entry authenticates the fixed source candidate/acceptance before
  * calling this internal primitive. No general annotated replacement is allowed. The sourcePairs branch supports
- * the fixed #461 transition and #467's fixed six-entry successor. */
-export function comparePrismaticArtifacts(previous: NormalizedRulesContent, next: NormalizedRulesContent, patch: Patch | Patch[], sourcePairs: boolean | 'fidelity' = false) {
-  if (sourcePairs === 'fidelity') {
-    assert(Array.isArray(patch)); assert.deepEqual(patch.map(p => p.id), fidelityEnglishIds);
+ * the fixed #461, #467 and #473 transitions. */
+export function comparePrismaticArtifacts(previous: NormalizedRulesContent, next: NormalizedRulesContent, patch: Patch | Patch[], sourcePairs: boolean | 'fidelity' | 'punctuation' = false) {
+  if (sourcePairs === 'fidelity' || sourcePairs === 'punctuation') {
+    const punctuation = sourcePairs === 'punctuation';
+    assert(Array.isArray(patch)); assert.deepEqual(patch.map(p => p.id), punctuation ? punctuationEnglishIds : fidelityEnglishIds);
     const rebound = structuredClone(next);
     for (const item of patch) {
-      validateFidelityEnglish(item.id, item.expected.spell, item.spell);
+      (punctuation ? validatePunctuationEnglish : validateFidelityEnglish)(item.id, item.expected.spell, item.spell);
       compareNormalizedPair(previous, next, item);
       rebound.spells = rebound.spells.map(row => row.legacySpellId === item.id ? previous.spells.find(old => old.legacySpellId === item.id)! : row);
     }
@@ -87,20 +89,28 @@ export function prismaticRayUpgrade(db: Database.Database, previous: NormalizedR
   next: NormalizedRulesContent, previousPath: string, nextPath: string, patch: Patch | Patch[],
   fields: FinalField[], report: Report, summaries: SummaryRow[], helper: string,
   context: RulesContentImportContext, requireInputs: () => void, mode: 'check' | 'apply' = 'check',
-  afterWrite: () => void = () => {}, authenticateBeforeWrite: () => void = () => {}, sourcePairs: boolean | 'fidelity' = false) {
+  afterWrite: () => void = () => {}, authenticateBeforeWrite: () => void = () => {}, sourcePairs: boolean | 'fidelity' | 'punctuation' = false) {
   assert(mode === 'check' || mode === 'apply'); assert(!db.inTransaction, 'English title upgrade owns its transaction');
   comparePrismaticArtifacts(previous, next, patch, sourcePairs);
   const bytes = [fs.readFileSync(previousPath), fs.readFileSync(nextPath)];
   const priorReport = structuredClone(report);
   const fidelity = sourcePairs === 'fidelity';
-  const chineseIds = fidelity ? fidelityChineseIds : [3930];
-  const authorityKeys = fidelity ? ['sourceFidelityCandidate', 'sourceFidelityAcceptance'] : sourcePairs ? ['sourcePairCandidate', 'sourcePairAcceptance'] : ['englishTitleCandidate', 'englishTitleAcceptance'];
+  const punctuation = sourcePairs === 'punctuation';
+  const chineseIds = punctuation ? [] : fidelity ? fidelityChineseIds : [3930];
+  const authorityKeys = punctuation ? ['sourcePunctuationCandidate', 'sourcePunctuationAcceptance'] : fidelity ? ['sourceFidelityCandidate', 'sourceFidelityAcceptance'] : sourcePairs ? ['sourcePairCandidate', 'sourcePairAcceptance'] : ['englishTitleCandidate', 'englishTitleAcceptance'];
   for (const key of authorityKeys) {
     assert.match(report.sourceRevisions[key] ?? '', /^[a-f0-9]{40}$/, 'missing authenticated source pair authority');
     delete priorReport.sourceRevisions[key];
   }
-  const priorFields = sourcePairs ? fields.map(field => field.sourceCorrection && (!fidelity || chineseIds.includes(field.targetId)) ? field.sourceCorrection.prior : field) : fields;
-  if (fidelity) {
+  const priorFields = sourcePairs && !punctuation ? fields.map(field => field.sourceCorrection && (!fidelity || chineseIds.includes(field.targetId)) ? field.sourceCorrection.prior : field) : fields;
+  if (punctuation) {
+    assert.equal(report.sourceRevisions.sourceFidelityCandidate, fidelityCandidate, 'accepted #467 predecessor required');
+    assert.equal(report.sourceRevisions.sourceFidelityAcceptance, fidelityAcceptance);
+    assert.equal(report.sourceRevisions.sourcePunctuationCandidate, punctuationCandidate);
+    assert.equal(report.sourceRevisions.sourcePunctuationAcceptance, punctuationAcceptance);
+    assert.deepEqual(fields.filter(field => field.sourceCorrection).map(field => [field.targetId, field.sourceCorrection!.revision]).sort((a,b) => Number(a[0])-Number(b[0])),
+      [[3930, 'ebc3a6615002de6dac1f1c4a636e19757d7b0c8f'], ...fidelityChineseIds.map(id => [id, fidelityCandidate])], 'source punctuation preserves all prior Chinese corrections');
+  } else if (fidelity) {
     assert.equal(report.sourceRevisions.sourcePairCandidate, 'ebc3a6615002de6dac1f1c4a636e19757d7b0c8f');
     assert.equal(report.sourceRevisions.sourcePairAcceptance, '5f05fad7df5256a9c3c998d3be77aac238445107');
     assert.equal(report.sourceRevisions.sourceFidelityCandidate, fidelityCandidate);

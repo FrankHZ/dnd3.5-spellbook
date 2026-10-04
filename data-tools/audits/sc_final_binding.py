@@ -257,7 +257,8 @@ def derive_final(args):
                            str(Path(args.content_db).resolve(strict=True)),
                            *(['--accepted-english-title'] if getattr(args, 'accepted_english_title', False) else []),
                            *(['--accepted-source-pairs'] if getattr(args, 'accepted_source_pairs', False) else []),
-                           *(['--accepted-source-fidelity'] if getattr(args, 'accepted_source_fidelity', False) else [])], capture_output=True, encoding='utf8')
+                           *(['--accepted-source-fidelity'] if getattr(args, 'accepted_source_fidelity', False) else []),
+                           *(['--accepted-source-punctuation'] if getattr(args, 'accepted_source_punctuation', False) else [])], capture_output=True, encoding='utf8')
     require(node.returncode == 0, 'complete QA/rules rehearsal failed: ' + node.stderr)
     derived = json.loads(node.stdout)
     evidence = Evidence(data, COVERAGE)
