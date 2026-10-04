@@ -10,6 +10,7 @@ import { main } from "./cli";
 import type { PdfTypographyPresentation } from "../zh-parser/pdf-typography";
 import { processAutomaticMarkers, type NamedEntry, type SpellName } from "../spell-list-markers/automatic";
 import type { PdfPage, PdfSpan } from "../spell-list-markers/markers";
+import type { DomainPowers } from "./domain-powers";
 
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "offline-html-test-"));
 const outputRoot = path.join(repoRoot(), "data-tools/out");
@@ -324,6 +325,92 @@ try {
       "sourceKey", "ProvenanceJson", "originalInput", "sourcePassage"]) assert.ok(!content.includes(forbidden), name);
     if (name.endsWith(".html")) assert.ok(content.includes("charset=utf-8"));
   }
+  // A standalone data fragment preserves complete text and structure, with local
+  // navigation only; adding it never changes spell bodies or directory summaries.
+  const introduction = '<h2>引言</h2>\n<p>完整  中文\t正文 &amp; 数字 2。<strong>术语</strong>与<i>强调</i>。</p>\n'
+    + '<h3>小节</h3>\n<p>第二段不合并。\n原有换行。</p>\n<ul><li>职业建议一。</li><li>职业建议二。</li></ul>\n';
+  const introOut = path.join(output, 'introduction');
+  const introReport = exportOfflineHtml({ ...options, outDir: introOut }, new Map(), undefined, [], introduction);
+  assert.deepEqual(introReport.introduction, { included: true, sections: 2, paragraphs: 2, listItems: 2 });
+  assert.deepEqual(report.introduction, { included: false, sections: 0, paragraphs: 0, listItems: 0 });
+  assert.equal(introReport.files, report.files + 1);
+  const introPage = load(fs.readFileSync(path.join(introOut, 'introduction.html'), 'utf8'));
+  const sourceIntro = load(introduction, {}, false);
+  assert.equal(introPage('#introduction').text(), sourceIntro.root().text());
+  assert.equal(introPage('#introduction').html(), sourceIntro.root().html());
+  assert.equal(introPage('#introduction h2').text(), '引言');
+  assert.equal(introPage('#introduction p').length, 2);
+  assert.equal(introPage('#introduction li').length, 2);
+  for (const filename of ['index.html', 'A.html', 'class-1.html', 'domain-1.html']) {
+    assert(load(fs.readFileSync(path.join(introOut, filename), 'utf8'))('a[href="introduction.html"]').length > 0);
+  }
+  assert.equal(introPage('.navigation a[href="index.html#classes"]').length, 2);
+  assert.equal(load(fs.readFileSync(path.join(introOut, 'A.html'), 'utf8'))('#spell-1-zh').html(), $('#spell-1-zh').html());
+  assert.equal(load(fs.readFileSync(path.join(introOut, 'class-1.html'), 'utf8'))('.summary').text(), caster('.summary').text());
+  assert(!fs.existsSync(path.join(options.outDir, 'introduction.html')));
+  for (const fragment of ['<h2 onclick="bad()">引言</h2>', '<h2>引言</h2><script>visible</script>', '<p><a href="relative.html">链接</a></p>']) {
+    const badOut = path.join(output, 'unsupported-introduction');
+    assert.throws(() => exportOfflineHtml({ ...options, outDir: badOut }, new Map(), undefined, [], fragment), /unsupported markup/);
+    assert(!fs.existsSync(badOut));
+  }
+  assert.throws(() => exportOfflineHtml({ ...options, book: 87 }, new Map(), undefined, [], introduction), /accepted SC fragment/);
+  assert.throws(() => exportOfflineHtml(options, new Map(), undefined, [], ''), /nonempty/);
+  assert.throws(() => main(['--introduction', '--introduction']), /duplicate/);
+  assert.throws(() => main(['--content-db', dbPath, '--book', '87', '--variant', 'effective', '--out', introOut, '--introduction']), /only for SC/);
+  const powerContent: DomainPowers = { schemaVersion: 1, rulebookId: 86, language: 'zh', sharedRules: {
+    planar: ['共同规则一：两个选择 & <保留条件>。', '共同规则二：不得省略阵营限制。'],
+  }, domains: [
+    { ownerLegacyId: 1, ownerName: 'First domain', entryIds: ['domain-one', 'domain-nine'],
+      grantedPowerText: '神授力量：每天一次，保留 <script>文字</script> 与 2d6。', requirementText: null, sharedRulesKey: null, readerNotes: [] },
+    { ownerLegacyId: 2, ownerName: 'Fixture domain', entryIds: ['list:2'],
+      grantedPowerText: '神授力量：自由动作，持续 5 轮。', requirementText: '前提：指定阵营。', sharedRulesKey: 'planar',
+      readerNotes: ['原文的等级类别未指定；<a>仅为文字。</a>'] },
+    { ownerLegacyId: 174, ownerName: 'Wrath (SpC)', entryIds: ['unselected-source-row'],
+      grantedPowerText: '未选领域能力不可扩张页面范围。', requirementText: null, sharedRulesKey: null, readerNotes: [] },
+  ] };
+  const powerFixture = new Database(db.serialize());
+  powerFixture.exec("UPDATE SpellListEntry SET rulebookId=86 WHERE listType='domain'");
+  const powerView = new Database(powerFixture.serialize(), { readonly: true }); powerFixture.close();
+  try {
+    const before = powerView.serialize(), outDir = path.join(output, 'domain-powers');
+    const powerReport = exportOfflineHtml({ ...options, contentDb: ':memory:', outDir }, new Map(), powerView, [], introduction, powerContent);
+    assert(powerView.serialize().equals(before));
+    assert.equal(powerReport.domainPages, 2); assert(!fs.existsSync(path.join(outDir, 'domain-174.html')));
+    assert.deepEqual(powerReport.domainPowers, { included: true, pages: 2, requirementPages: 1, sharedRulePages: 1, readerNotes: 1 });
+    const ordinary = load(fs.readFileSync(path.join(outDir, 'domain-1.html'), 'utf8'));
+    const planar = load(fs.readFileSync(path.join(outDir, 'domain-2.html'), 'utf8'));
+    assert.equal(ordinary('.granted-power').text(), powerContent.domains[0]!.grantedPowerText);
+    assert.equal(ordinary('.domain-requirement,.shared-domain-rules,.reader-note').length, 0);
+    assert.equal(planar('.granted-power').text(), powerContent.domains[1]!.grantedPowerText);
+    assert.equal(planar('.domain-requirement').text(), powerContent.domains[1]!.requirementText);
+    assert.deepEqual(planar('.shared-domain-rules p').toArray().map(el => planar(el).text()), powerContent.sharedRules.planar);
+    assert.equal(planar('.reader-note p').text(), powerContent.domains[1]!.readerNotes[0]);
+    assert(planar('.reader-note h3').text().includes('非官方勘误'));
+    assert.equal(ordinary('script,img').length + planar('script,img').length, 0);
+    assert.equal(planar('.domain-power a').length, 0);
+    assert.equal(planar('.domain-power .spell-list').length, 0);
+    assert.equal(planar('.domain-power').next('h2').attr('id'), 'level-1');
+    assert.equal(planar('.summary').text(), qualifiedDomain('.summary').text());
+    assert.equal(load(fs.readFileSync(path.join(outDir, 'class-1.html'), 'utf8'))('.domain-power').length, 0);
+    let badPower = 0;
+    const rejectPower = (mutate: (content: DomainPowers) => void, pattern: RegExp) => {
+      const content = structuredClone(powerContent); mutate(content);
+      const badOut = path.join(output, `bad-power-${badPower++}`);
+      assert.throws(() => exportOfflineHtml({ ...options, contentDb: ':memory:', outDir: badOut }, new Map(), powerView, [], undefined, content), pattern);
+      assert(!fs.existsSync(badOut));
+    };
+    rejectPower(content => { content.domains[0]!.ownerName = 'Same ID, different book owner'; }, /stale domain-power binding/);
+    rejectPower(content => { content.domains[0]!.entryIds[0] = 'stale-row'; }, /stale domain-power binding/);
+    rejectPower(content => { content.domains.shift(); }, /Missing/);
+    rejectPower(content => { content.domains.push(content.domains[0]!); }, /duplicate/);
+    rejectPower(content => { content.domains[0]!.grantedPowerText = ''; }, /text/);
+    rejectPower(content => { content.domains[1]!.sharedRulesKey = 'missing'; }, /shared rules/);
+    rejectPower(content => { content.sharedRules.planar = []; }, /Invalid SC/);
+    rejectPower(content => { content.domains[2]!.ownerLegacyId = 28; }, /identity/);
+    assert.throws(() => exportOfflineHtml({ ...options, contentDb: ':memory:', book: 87, outDir: path.join(output, 'wrong-book-power') }, new Map(), powerView, [], undefined, powerContent), /Invalid SC/);
+  } finally { powerView.close(); }
+  assert.throws(() => main(['--domain-powers', '--domain-powers']), /duplicate/);
+  assert.throws(() => main(['--content-db', dbPath, '--book', '87', '--variant', 'effective', '--out', introOut, '--domain-powers']), /only for SC/);
   // Real consumer path: distinct source appearances, explicit machine/accepted/unknown states.
   const markedFixture = new Database(db.serialize());
   markedFixture.exec("UPDATE SpellListEntry SET rulebookId=86,sourceRowId=12; UPDATE SpellListEntry SET ownerName='Bard',ownerSlug='bard' WHERE listType='class' AND ownerLegacyId=1");
@@ -638,7 +725,7 @@ try {
   for (const href of ['https://www.d20spellcodex.com/spells/2', 'https://www.d20spellcodex.com/spells/1?x=1', 'https://www.d20spellcodex.com/spells/1#zh', 'https://www.d20spellcodex.com/spells/01']) {
     assert.throws(() => validatePages(new Map([["A.html", `<div class="spell-entry" id="spell-1"><a class="website-link" href="${href}" title="在网站查看" aria-label="在网站查看">↗</a></div>`]])), /generated website link/);
   }
-  console.log("offline HTML portable tests passed: class/domain Chinese names, Sorcerer/Wizard school groups, extra feat exclusion, domain-only summaries, printed MFX accepted/machine/unknown states, accepted summaries/gaps, Chinese-only bodies, website links, compact mechanism fields, merged anchors, paragraphs, note/list consumer contract, tables, privacy, repeat/failures");
+  console.log("offline HTML portable tests passed: Chinese directories, Sorcerer/Wizard school groups, extra feat exclusion, introduction text/navigation, bound ordinary/planar abilities and reader notes, domain-only summaries, printed MFX states, Chinese-only bodies, website links, compact mechanism fields, anchors, paragraphs, notes/lists/tables, privacy, repeat/failures");
 } finally {
   if (db.open) db.close();
   for (const [root, directory] of [[os.tmpdir(), temp], [outputRoot, output]]) {

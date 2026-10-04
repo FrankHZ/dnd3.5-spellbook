@@ -35,6 +35,20 @@ memberships of one spell, canonical MFX order, stale name/binding rejection,
 read-only views and private-source exclusion. Complete component flags supply no
 labels. Machine and independently accepted results retain separate report counts.
 
+Introduction checks use a source-free synthetic fragment to prove complete
+decoded text and structure retention, local page/navigation links, preserved
+spell bodies and summaries, and rejection of unsupported markup before output.
+The source reader selects the fixed accepted #503 Git file through the existing
+data-root helper. Source-input smoke checks compare its bytes from repository
+and package CWD; no database field or floating data checkout is used.
+
+Domain-ability checks cover ordinary and planar pages, complete escaped powers
+and requirements, both shared paragraphs, separately labeled reader notes,
+stable owner/book/relationship bindings, stale and missing input rejection and
+unchanged spell summaries. Extra source owners cannot create additional pages;
+no source text enters public fixtures or database fields. The small accepted-input
+preview includes one planar domain with a requirement, shared rules and reader note.
+
 A small accepted-input preview is the current user-review stage. It contains
 representative mapped/plain, ordinary/long, inheritance, mechanism, table/list,
 materials/XP and note cases, plus class/domain-directory fragments. Its complete Chinese

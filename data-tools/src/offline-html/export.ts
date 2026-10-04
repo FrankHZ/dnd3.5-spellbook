@@ -11,6 +11,7 @@ import { isMechanismLine } from "../zh-parser/header";
 import { listIdentity, type ListIdentity } from "../spell-list-markers/markers";
 import { selectProcessedMembershipMarkers, type MachineMarker } from "../spell-list-markers/automatic";
 import { readPrintedMarkerRecords } from "../spell-list-markers/storage";
+import type { DomainPower, DomainPowers } from "./domain-powers";
 
 type Spell = {
   id: string; legacySpellId: number; canonicalName: string; sourceRulebookId: number;
@@ -26,6 +27,34 @@ type Text = { spellId: number; rulebookId: number; name: string | null;
 export type ExportOptions = { contentDb: string; book: number; variant: string; outDir: string };
 type ListEntry = ListIdentity & { ownerName: string; ownerSlug: string };
 type ListGroup = { name: string; slug: string; rows: ListEntry[] };
+
+function selectDomainPowers(content: DomainPowers | undefined, book: number, domains: Map<number, ListGroup>) {
+  const selected = new Map<number, DomainPower>();
+  if (content === undefined) return selected;
+  const strings = (value: unknown): value is string[] => Array.isArray(value) && value.every(present);
+  if (!content || content.schemaVersion !== 1 || content.rulebookId !== 86 || book !== 86 || content.language !== "zh"
+    || !Array.isArray(content.domains) || !content.sharedRules || typeof content.sharedRules !== "object" || Array.isArray(content.sharedRules)
+    || Object.values(content.sharedRules).some(value => !strings(value) || !value.length)) throw new Error("Invalid SC domain-power content");
+  const owners = new Map<number, DomainPower>();
+  for (const power of content.domains) {
+    if (!power || !Number.isSafeInteger(power.ownerLegacyId) || power.ownerLegacyId <= 0 || power.ownerLegacyId === 28
+      || owners.has(power.ownerLegacyId) || !present(power.ownerName) || !present(power.grantedPowerText)
+      || !strings(power.entryIds) || !power.entryIds.length || new Set(power.entryIds).size !== power.entryIds.length
+      || !strings(power.readerNotes) || (power.requirementText !== null && !present(power.requirementText))
+      || (power.sharedRulesKey !== null && (!present(power.sharedRulesKey) || !Object.hasOwn(content.sharedRules, power.sharedRulesKey)))) {
+      throw new Error("Invalid/duplicate domain-power identity, text or shared rules");
+    }
+    owners.set(power.ownerLegacyId, power);
+  }
+  for (const [owner, group] of domains) {
+    const power = owners.get(owner);
+    if (!power || power.ownerName !== group.name || group.rows.some(row => row.rulebookId !== content.rulebookId || !power.entryIds.includes(row.id))) {
+      throw new Error(`Missing/stale domain-power binding for owner ${owner}`);
+    }
+    selected.set(owner, power);
+  }
+  return selected;
+}
 type Summary = { spellId: number; rulebookId: number; lang: string; variant: string; summaryText: string; reviewStatus: string };
 export type SummaryGap = { spellId: number; lang: string; variant: string;
   reason: "missing" | "multiple" | "wrong-book" | "not-accepted" | "empty" };
@@ -81,7 +110,7 @@ function language(raw: string | null, id: number, field: string, variant: string
 function document(title: string, body: string) {
   return `<!doctype html>\n<html lang="zh"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>${text(title)}</title><link rel="stylesheet" href="style.css"></head><body><div id="content">${body}</div></body></html>\n`;
 }
-const navigation = '<p class="navigation"><a href="index.html#classes">职业目录</a> | <a href="index.html#domains">领域目录</a> | <a href="index.html#letters">A–Z 正文</a></p>';
+const directoryNavigation = (introduction: boolean) => `<p class="navigation">${introduction ? '<a href="introduction.html">引言</a> | ' : ""}<a href="index.html#classes">职业目录</a> | <a href="index.html#domains">领域目录</a> | <a href="index.html#letters">A–Z 正文</a></p>`;
 const preview = '<p class="notice">中文内容预览，自然排版待视觉验收。</p>';
 const membershipNotice = '<p class="notice">职业目录保留当前归属与附注；部分外部归属的原书核对仍待完成，目录不构成来源 QA 通过。</p>';
 const domainNotice = '<p class="notice">本书收录的领域法术：仅列本书正文范围内的条目，并非原书完整领域法表。</p>';
@@ -281,13 +310,18 @@ function newOutput(outDir: string, contentDb: string) {
   return out;
 }
 
-/** Presentation/machine inputs are caller-authenticated by main-gate; rendering does not grant source acceptance. */
+/** Reader/presentation/machine inputs are caller-authenticated by main-gate; rendering does not grant source acceptance. */
 export function exportOfflineHtml(options: ExportOptions,
   presentations: ReadonlyMap<number, PdfTypographyPresentation> = new Map(), sourceDb?: Database.Database,
-  machine: readonly MachineMarker[] = []) {
+  machine: readonly MachineMarker[] = [], introduction?: string, domainPowerContent?: DomainPowers) {
   if (!Number.isSafeInteger(options.book) || options.book <= 0 || !present(options.variant)) {
     throw new Error("A positive book ID and explicit variant are required");
   }
+  if (introduction !== undefined && (options.book !== 86 || !present(introduction))) {
+    throw new Error("Introduction requires a nonempty accepted SC fragment");
+  }
+  if (domainPowerContent !== undefined && options.book !== 86) throw new Error("Invalid SC domain-power content");
+  const navigation = directoryNavigation(introduction !== undefined);
   const contentDb = path.resolve(repoRoot(), options.contentDb);
   const out = newOutput(path.resolve(repoRoot(), options.outDir), contentDb);
   const db = sourceDb ?? new Database(contentDb, { readonly: true, fileMustExist: true });
@@ -393,11 +427,25 @@ export function exportOfflineHtml(options: ExportOptions,
         FROM I18nSpellSummaryText WHERE spellId IN
         (SELECT legacySpellId FROM SpellContent WHERE sourceRulebookId=?)`).all(options.book) as Summary[];
       const summaries = selectSummaries(summaryRows, new Set([...classTargets, ...domainTargets]), options.book, options.variant, classTargets);
+      const powers = selectDomainPowers(domainPowerContent, options.book, domains);
       const printedRecords = readPrintedMarkerRecords(db, options.book);
       const markerCounts = { acceptedRows: 0, machineRows: 0, unknownRows: 0, markedRows: 0, explicitEmptyRows: 0 };
       const counts = { spells: spells.length, chineseNames: 0, chineseBodies: 0,
         englishNameFallbacks: 0, englishBodyFallbacks: 0, detachedReferences: 0, htmlTextDifferences: 0 };
       const pages = new Map<string, string>([["style.css", style]]);
+      const introductionCounts = { included: introduction !== undefined, sections: 0, paragraphs: 0, listItems: 0 };
+      if (introduction !== undefined) {
+        const source = load(introduction, {}, false);
+        const safe = sanitizeHtml(introduction, { allowedTags: ["h2", "h3", "p", "ul", "li", "strong", "i"], allowedAttributes: {} });
+        const fragment = load(safe, {}, false);
+        // Accepted reader fragments carry no assets, links, attributes or metadata.
+        // Reject changed structure rather than quietly stripping visible content.
+        if (source.root().html() !== fragment.root().html()) throw new Error("Introduction contains unsupported markup");
+        introductionCounts.sections = fragment("h2,h3").length;
+        introductionCounts.paragraphs = fragment("p").length;
+        introductionCounts.listItems = fragment("li").length;
+        pages.set("introduction.html", document(`${book[0]!.name} — 引言`, `${navigation}${preview}<div id="introduction" lang="zh">${safe}</div>${navigation}`));
+      }
       const letterEntries = new Map(letters.map(letter => [letter, [] as string[]]));
       const sortedSpells = [...spells].sort((a, b) => a.canonicalName.localeCompare(b.canonicalName, "en") || a.legacySpellId - b.legacySpellId);
       for (const s of sortedSpells) {
@@ -488,10 +536,18 @@ export function exportOfflineHtml(options: ExportOptions,
           }).join("\n");
           const missingName = !names.has(owner)
             ? `<p class="notice">${kind === "class" ? "职业" : "领域"}中文名称缺失：显示现有英文名称。</p>` : "";
-          pages.set(filename, document(`${book[0]!.name} — ${name}`, `${navigation}<h1>${text(name)}</h1>${kind === "class" ? membershipNotice : domainNotice}${missingName}${sections}${navigation}`));
+          const power = kind === "domain" ? powers.get(owner) : undefined;
+          const powerHtml = power ? `<section class="domain-power" lang="zh"><h2>领域能力</h2>
+            ${power.requirementText === null ? "" : `<p class="domain-requirement">${text(power.requirementText)}</p>`}
+            <p class="granted-power">${text(power.grantedPowerText)}</p>
+            ${power.readerNotes.length ? `<div class="reader-note"><h3>原文疑义备注（本项目说明，非官方勘误）</h3>${power.readerNotes.map(note => `<p>${text(note)}</p>`).join("\n")}</div>` : ""}
+            ${power.sharedRulesKey === null ? "" : `<div class="shared-domain-rules"><h3>位面领域共同规则</h3>${domainPowerContent!.sharedRules[power.sharedRulesKey]!.map(rule => `<p>${text(rule)}</p>`).join("\n")}</div>`}
+            </section>` : "";
+          pages.set(filename, document(`${book[0]!.name} — ${name}`, `${navigation}<h1>${text(name)}</h1>${kind === "class" ? membershipNotice : domainNotice}${missingName}${powerHtml}${sections}${navigation}`));
         }
       }
       pages.set("index.html", document(book[0]!.name, `<h1>${text(book[0]!.name)}</h1>${preview}
+        ${introduction !== undefined ? '<p><a href="introduction.html">引言</a></p>' : ""}
         <h2 id="classes">职业目录</h2>${membershipNotice}${classMenu.length ? `<ul>${classMenu.join("\n")}</ul>` : '<p class="empty">无职业归属。</p>'}
         <h2 id="domains">领域目录</h2>${domainNotice}${domainMenu.length ? `<ul>${domainMenu.join("\n")}</ul>` : '<p class="empty">本书收录范围内，无常规领域条目。</p>'}
         <h2 id="letters">A–Z 正文</h2><p>${letters.map(letter => `<a href="${letter}.html">${letter}</a>`).join(" | ")}</p>`));
@@ -513,6 +569,11 @@ export function exportOfflineHtml(options: ExportOptions,
         excludedMemberships,
         pendingMembershipIssues: excludedMemberships.map(({ issue, listType, ownerLegacyId, spellId, level }) => ({ issue, listType, ownerLegacyId, spellId, level })),
         printedMarkers: { rulebookId: options.book, ...markerCounts },
+        introduction: introductionCounts,
+        domainPowers: { included: domainPowerContent !== undefined, pages: powers.size,
+          requirementPages: [...powers.values()].filter(power => power.requirementText !== null).length,
+          sharedRulePages: [...powers.values()].filter(power => power.sharedRulesKey !== null).length,
+          readerNotes: [...powers.values()].reduce((sum, power) => sum + power.readerNotes.length, 0) },
         classEntriesNeedingStructuralReview: listEntries.filter(row => row.listType === "class" && row.reviewStatus === "review").length,
         selectedSummaries: summaries.size + classTargets.size, selectedChineseSummaries: summaries.size,
         selectedEnglishSummaries: classTargets.size, domainChineseSummaries: domainTargets.size,

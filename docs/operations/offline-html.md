@@ -57,6 +57,55 @@ and letter pages keep only the top directory navigation. Each entry has a small
 `↗` website icon on its ID line, with “在网站查看” as tooltip/accessible name, linking to
 `https://www.d20spellcodex.com/spells/<legacySpellId>`.
 
+## Introduction
+
+For SC, `--introduction` adds `introduction.html` and an introduction link to the
+index and page navigation. It reads the accepted #503 Chinese HTML fragment
+directly from the private repository resolved by the existing `localDataDir`
+helper (`DATA_REPO_PATH` in the environment or this checkout's root `.env`).
+Relative data roots resolve from the repository root, independently of caller CWD.
+No database field, working-copy content or floating private `HEAD` supplies it.
+
+The fixed reader is `dice-qa/books/86/issue-503/introduction.zh-CN.html` at private
+revision `3148d36fb51fd353b097ad911d2e04b33c9c706c`; main-gate acceptance is
+`628c55d63cd71c9ecb711726bdec11717f8a517d`. `readScIntroduction` uses `git show`
+with that exact revision and path. The CLI offers no alternate source/revision
+override. It retains complete Chinese content from printed pages 3–4, including
+the Sources box, paragraphs, lists and emphasis. Reader content supports only
+`h2`, `h3`, `p`, `ul`, `li`, `strong` and `i`, without attributes or resources;
+unsupported markup fails before output creation instead of being silently removed.
+Source text stays in private data and generated output, never public source files.
+
+The exporter library's optional fifth argument accepts the caller-authenticated
+fragment, allowing the main-gate's readonly memory slice to use the same fixed
+reader alongside its selected typography and printed marker inputs. Without this
+argument or CLI flag, no introduction file/link is emitted. The report counts
+introduction sections, paragraphs and list items separately from spell bodies.
+
+## Domain Abilities
+
+For SC, `--domain-powers` reads the accepted #504 plain-text handoff directly from
+the same private data root. The fixed file is
+`dice-qa/books/86/issue-504/candidate/html-domain-powers.zh.json` at revision
+`e2e4b698eee3c9339303fa1b233c646fd993c702`, accepted at
+`769d4292f4710b9d77716d5f66888c70d11e4834`. The path's candidate name does not
+select a floating candidate; `readScDomainPowers` uses the exact accepted commit.
+There is no CLI path/revision override or new database field.
+
+The library's optional sixth argument supplies this caller-authenticated content.
+For every displayed domain, the renderer verifies book 86, stable owner ID,
+English owner-name snapshot and all current relationship IDs against the handoff.
+Missing or stale bindings, duplicate owners, empty powers or unavailable shared
+rules fail before output creation. Extra source owners do not create pages or
+expand the selected spell-body scope. The additional feat owner remains excluded.
+
+Each domain page places a separate ability section before its spell levels,
+retaining the complete power and any requirement. Applicable planar pages also
+display both shared-rule paragraphs. Reader notes have their own labeled block,
+separate from the rule text. All content fields are plain text and are HTML-escaped;
+they cannot supply markup, links or assets. The report counts displayed ability
+pages, requirements, shared-rule pages and reader notes independently.
+
 ## Run
 
 From the repository root:
@@ -65,6 +114,10 @@ From the repository root:
 npm run -w data-tools offline:html -- --content-db data-tools/out/input/content.sqlite --book 86 --variant effective --out data-tools/out/sc-html-preview
 npm run -w data-tools offline:html:test
 ```
+
+Add `--introduction --domain-powers` to the authorized SC export to include both
+accepted data handoffs. These flags neither grant DB access nor activate a
+whole-book export.
 
 From `data-tools/`, run `npm run offline:html --` with the same arguments. Relative
 input/output paths resolve from the current checkout's repository root via the
