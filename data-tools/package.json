@@ -83,7 +83,7 @@
     "dice:effective:test": "tsx src/dice-intake/effective-portable-tests.ts",
     "dice:effective:write": "tsx src/dice-intake/effective-write-cli.ts",
     "dice:final:write": "node audits/sc-final-overlay.cjs",
-    "dice:final:write:test": "tsx src/dice-intake/final-write-portable-tests.ts && tsx src/dice-intake/prismatic-ray-upgrade-portable-tests.ts && tsx src/dice-intake/source-pairs-upgrade-portable-tests.ts && tsx src/dice-intake/source-fidelity-portable-tests.ts",
+    "dice:final:write:test": "tsx src/dice-intake/final-write-portable-tests.ts && tsx src/dice-intake/prismatic-ray-upgrade-portable-tests.ts && tsx src/dice-intake/source-pairs-upgrade-portable-tests.ts && tsx src/dice-intake/source-fidelity-portable-tests.ts && tsx src/dice-intake/source-punctuation-portable-tests.ts",
     "dice:effective:consumers": "node scripts/verify-sc-current-consumers.cjs",
     "dice:effective:write:test": "tsx src/dice-intake/effective-write-portable-tests.ts",
     "rules:spells:step": "tsx src/rules/spells.ts step",

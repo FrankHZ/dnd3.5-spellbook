@@ -67,6 +67,34 @@ for (const change of ['scope', 'body', 'extra-patch', 'half-pair', 'accepted']) 
   assert.throws(() => sourcePairs.validateCandidate(wrong, sourceProposal, sourceNormalized, sourceBodies, patch));
 }
 
+// #473 binds all four fields and restores only three exact English pairs.
+const punctuation = require('./sc-source-fidelity.cjs').punctuation;
+const punctuationBodies = [4421,4425,4426].map(targetId=>({targetId,field:'body',text:'保留文',html:'<pre>保留文</pre>',origin:{kind:'native'}}));
+const punctuationBefore = {englishText:'Synthetic old',englishHtml:'<p>Synthetic old</p>',chineseText:'保留文',chineseHtml:'<pre>保留文</pre>'};
+const punctuationRows = punctuationBodies.map(priorBody=>({targetId:priorBody.targetId,rulebookId:86,status:'unaccepted-proposal-only',priorBody,
+  before:{...punctuationBefore},after:{...punctuationBefore,englishText:'Synthetic new',englishHtml:'<p>Synthetic new</p>'},
+  minimalEdits:[{field:'englishText',start:10,end:13,before:'old',after:'new'}, {field:'englishHtml',start:13,end:16,before:'old',after:'new'}]}));
+const punctuationCandidate = {issue:473,status:'unaccepted-proposal-only',previousNormalizedRevision:punctuation.previousRevision,
+  previousNormalizedPath:punctuation.previousPath,completedStateRevision:'9cffdc0568d4dde97c69fc008f375a91a423dd64',candidates:punctuationRows};
+const punctuationNormalized = {spells:punctuationRows.map(r=>({legacySpellId:r.targetId,sourceRulebookId:86,descriptionText:r.before.englishText,descriptionHtml:r.before.englishHtml}))};
+const punctuationPatches = punctuationRows.map(r=>({op:'updateSpell',id:r.targetId,expected:{spell:{description:r.before.englishText,descriptionHtml:r.before.englishHtml}},spell:{description:r.after.englishText,descriptionHtml:r.after.englishHtml}}));
+punctuation.validateCandidate(punctuationCandidate,punctuationNormalized,punctuationBodies,punctuationPatches);
+for(const change of ['scope','normalized-revision','completion','before','prior-origin','chinese-after','extra-after-field','minimal-offset','half-patch','extra-patch-field','caller-status']){
+  const wrong=structuredClone(punctuationCandidate),patches=structuredClone(punctuationPatches);
+  if(change==='scope')wrong.candidates.pop();
+  else if(change==='normalized-revision')wrong.previousNormalizedRevision='f'.repeat(40);
+  else if(change==='completion')wrong.completedStateRevision='f'.repeat(40);
+  else if(change==='before')wrong.candidates[0].before.englishHtml+='stale';
+  else if(change==='prior-origin')wrong.candidates[0].priorBody.origin.kind='english';
+  else if(change==='chinese-after')wrong.candidates[0].after.chineseText+='forged';
+  else if(change==='extra-after-field')wrong.candidates[0].after.name='forged';
+  else if(change==='minimal-offset')wrong.candidates[0].minimalEdits[0].start++;
+  else if(change==='half-patch')delete patches[0].spell.descriptionHtml;
+  else if(change==='extra-patch-field')patches[0].spell.range='forged';
+  else wrong.status='accepted';
+  assert.throws(()=>punctuation.validateCandidate(wrong,punctuationNormalized,punctuationBodies,patches),change);
+}
+
 // Full-size synthetic inventories exercise complete-row/provenance comparison,
 // all six concrete acceptance authorities, order and byte-preserved baseline.
 const previous = Array.from({length: 6572}, (_, i) => ({stableKey: `${i + 1}:en:imarvin`, synthetic: true}));
@@ -164,6 +192,16 @@ try {
     memory.close();
     db.prepare('UPDATE dnd_spell SET description=?').run(priorPair.english.description);
     assert.throws(() => restorePrior(db, DB, pairedPatch), /stale paired/);
+    for(const p of punctuationPatches)db.prepare('INSERT INTO dnd_spell VALUES(?,86,?,?,?)').run(p.id,p.spell.description,p.spell.descriptionHtml,'Protected');
+    const punctuationMemory=punctuation.restorePrior(db,DB,punctuationPatches);
+    for(const p of punctuationPatches){
+      assert.deepEqual(punctuationMemory.prepare('SELECT description,description_html,protected FROM dnd_spell WHERE id=?').get(p.id),
+        {description:p.expected.spell.description,description_html:p.expected.spell.descriptionHtml,protected:'Protected'});
+      assert.equal(db.prepare('SELECT description FROM dnd_spell WHERE id=?').pluck().get(p.id),p.spell.description);
+    }
+    punctuationMemory.close();
+    db.prepare("UPDATE dnd_spell SET description_html='half' WHERE id=4425").run();
+    assert.throws(()=>punctuation.restorePrior(db,DB,punctuationPatches),/stale complete/);
     db.exec("CREATE TABLE legacy(id INTEGER PRIMARY KEY, body VARCHAR(30)); INSERT INTO legacy VALUES(1,CAST(x'ff' AS TEXT))");
     const original = rawRows(db, 'legacy');
     db.exec("UPDATE legacy SET body=CAST(x'fe' AS TEXT)");

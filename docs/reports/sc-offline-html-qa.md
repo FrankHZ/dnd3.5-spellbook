@@ -65,10 +65,18 @@ no HTML. Frozen prior proofs keep their original bindings.
 
 ## Remaining Delivery
 
-Main-gate verifies fresh actual generation and durable delivery, then provides
-representative class/letter pages for human review: ordinary/long paragraphs,
+Main-gate has accepted the actual readonly export and delivered the durable
+preview. All 1,001 spells / 2,002 decoded bodies, including whitespace, match the
+previous accepted output; full source/normalized/build-metadata and post-input
+checks pass, with database metadata unchanged. All 45 durable files match the
+actual export. The current output uses 296 mappings / 705 current representations
+and applies none of the 26 content proposals. These results do not certify visual
+acceptance or authorize a subsequent content migration.
+
+Representative class/letter pages still require human review: ordinary/long paragraphs,
 tables/lists, inherited entries, materials/XP and source-question notes. PR #351
-is draft pending these real-output/visual gates, not precision coverage counts.
+is draft pending representative human visual acceptance and up-to-date CI,
+not precision coverage counts.
 `formattingComplete` and `contentCertification` remain false; mapping counts do
 not grant content authority. #354's pending external relationships remain a
 separate, nonblocking source task and are not newly injected.

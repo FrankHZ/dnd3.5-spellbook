@@ -58,7 +58,9 @@ accepted mappings. Full character/span emphasis certification and selected=1,001
 are not delivery gates. Uncertain emphasis may remain plain. Existing accepted
 maps stay usable; no new fine-format queue is required. Complete bilingual words,
 numbers, conditions, references, tables/lists, notes and links remain mandatory.
-Actual output and representative human visual acceptance still belong to main-gate.
+Main-gate has verified the actual readonly export and delivered the current
+durable preview; representative human visual acceptance remains pending.
+Subsequent actual export/delivery or content migration remains main-gate-owned.
 
 Pure-text Chinese `pre` blocks retain every decoded character and existing line
 order. Complete sentence lines receive modest paragraph spacing; field labels,

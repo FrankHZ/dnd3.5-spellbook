@@ -10,10 +10,10 @@ function main(argv) {
   const value = name => {const at = argv.indexOf('--' + name); assert(at >= 0 && argv[at + 1], 'missing --' + name); return argv[at + 1];};
   const allowed = new Set(['code-root', 'runtime-root', 'data-root', 'rules-db', 'content-db', 'normalized', 'rules-manifest',
     'helper-revision', 'accepted-baseline', 'accepted-summaries', 'upgrade-summaries', 'accepted-english-title',
-    'upgrade-english-title', 'accepted-source-fidelity', 'upgrade-source-fidelity', 'accepted-source-pairs', 'upgrade-source-pairs', 'previous-normalized', 'apply', 'validate']);
+    'upgrade-english-title', 'accepted-source-punctuation', 'upgrade-source-punctuation', 'accepted-source-fidelity', 'upgrade-source-fidelity', 'accepted-source-pairs', 'upgrade-source-pairs', 'previous-normalized', 'apply', 'validate']);
   for (let i = 0; i < argv.length; i++) {
     assert(argv[i].startsWith('--') && allowed.has(argv[i].slice(2)), 'unknown argument: ' + argv[i]);
-    if (!['--apply', '--validate', '--accepted-source-fidelity', '--upgrade-source-fidelity', '--accepted-summaries', '--upgrade-summaries', '--accepted-english-title', '--upgrade-english-title', '--accepted-source-pairs', '--upgrade-source-pairs'].includes(argv[i])) i++;
+    if (!['--apply', '--validate', '--accepted-source-punctuation', '--upgrade-source-punctuation', '--accepted-source-fidelity', '--upgrade-source-fidelity', '--accepted-summaries', '--upgrade-summaries', '--accepted-english-title', '--upgrade-english-title', '--accepted-source-pairs', '--upgrade-source-pairs'].includes(argv[i])) i++;
   }
   assert(!(argv.includes('--apply') && argv.includes('--validate')), 'choose apply or validate');
   assert(!argv.includes('--upgrade-summaries') || argv.includes('--accepted-summaries'), 'upgrade requires accepted summaries');
@@ -27,7 +27,10 @@ function main(argv) {
   assert(!argv.includes('--accepted-source-fidelity') || argv.includes('--accepted-source-pairs'), 'source fidelity requires #461 predecessor');
   assert(!argv.includes('--upgrade-source-fidelity') || argv.includes('--accepted-source-fidelity'), 'source fidelity upgrade requires accepted package');
   assert(!argv.includes('--accepted-source-fidelity') || !argv.includes('--upgrade-source-pairs') && !argv.includes('--upgrade-english-title') && !argv.includes('--upgrade-summaries'), 'choose one source transition');
-  const sourceUpgrade = argv.includes('--upgrade-english-title') || argv.includes('--upgrade-source-pairs') || argv.includes('--upgrade-source-fidelity');
+  assert(!argv.includes('--accepted-source-punctuation') || argv.includes('--accepted-source-fidelity'), 'source punctuation requires #467 predecessor');
+  assert(!argv.includes('--upgrade-source-punctuation') || argv.includes('--accepted-source-punctuation'), 'source punctuation upgrade requires accepted package');
+  assert(!argv.includes('--accepted-source-punctuation') || !argv.includes('--upgrade-source-fidelity'), 'choose one source transition');
+  const sourceUpgrade = argv.includes('--upgrade-english-title') || argv.includes('--upgrade-source-pairs') || argv.includes('--upgrade-source-fidelity') || argv.includes('--upgrade-source-punctuation');
   assert(sourceUpgrade === argv.includes('--previous-normalized'), 'previous normalized belongs to source upgrade');
   const code = fs.realpathSync(value('code-root')), runtime = fs.realpathSync(value('runtime-root'));
   assert.equal(code, fs.realpathSync(path.join(__dirname, '../..')), 'code root must match invoking checkout');
@@ -45,6 +48,7 @@ function main(argv) {
   if (argv.includes('--accepted-english-title')) options.push('--accepted-english-title');
   if (argv.includes('--accepted-source-pairs')) options.push('--accepted-source-pairs');
   if (argv.includes('--accepted-source-fidelity')) options.push('--accepted-source-fidelity');
+  if (argv.includes('--accepted-source-punctuation')) options.push('--accepted-source-punctuation');
   const sourceInputs = sourceUpgrade
     ? require('./sc-final-auth-inputs.cjs').captureFinalAuthInputs(code, data) : undefined;
   const authenticate = () => JSON.parse(execFileSync(path.join(runtime, 'data-tools/pdf-extract/.venv/Scripts/python.exe'),
@@ -75,13 +79,14 @@ function main(argv) {
   try {
     if (!apply) db.pragma('query_only=ON');
     if (sourceUpgrade) {
-      const sourcePairs = argv.includes('--upgrade-source-fidelity') ? 'fidelity' : argv.includes('--upgrade-source-pairs');
-      const amendment = require(sourcePairs === 'fidelity' ? './sc-source-fidelity.cjs' : sourcePairs ? './sc-source-pairs.cjs' : './sc-prismatic-ray.cjs');
+      const sourcePairs = argv.includes('--upgrade-source-punctuation') ? 'punctuation' : argv.includes('--upgrade-source-fidelity') ? 'fidelity' : argv.includes('--upgrade-source-pairs');
+      const amendment = sourcePairs === 'punctuation' ? require('./sc-source-fidelity.cjs').punctuation
+        : require(sourcePairs === 'fidelity' ? './sc-source-fidelity.cjs' : sourcePairs ? './sc-source-pairs.cjs' : './sc-prismatic-ray.cjs');
       const previousPath = absolute('previous-normalized'), previous = load('rules-content/cli.ts').readGenerated(previousPath);
       assert.deepEqual(previous, require('./sc-final-inputs.cjs').readExact(data, amendment.previousRevision, amendment.previousPath),
         'English upgrade requires the actual accepted operator normalized predecessor');
       const patches = require('./sc-final-inputs.cjs').readExact(data, amendment.candidateRevision, amendment.directory + 'rules-patch.jsonl');
-      const patch = sourcePairs === 'fidelity' ? patches : patches[0];
+      const patch = sourcePairs === 'fidelity' || sourcePairs === 'punctuation' ? patches : patches[0];
       const requireInputs = () => {
         sourceInputs();
         comparisonInputs();
