@@ -129,22 +129,30 @@ wrong books and stale fields reject before output creation. The independent
 private checker compares directories, exact summary owners and every current or
 selected derived body/structure. Actual operator execution requires main-gate's
 explicit readonly handoff; this task does not open those DBs.
+Before the actual source-authentication/read-only export window, main-gate must
+coordinate all private-repository writers to pause writes, staging and commits,
+and confirm no background writer remains. `captureFinalAuthInputs` snapshots
+private HEAD and tracked state, including `dice-qa/books/86`; unrelated private
+commits during the window also reject the snapshot. Keep writers paused through
+the post-export snapshot/input rechecks, then explicitly resume them. Public
+read-only CI inspection can continue. This coordination does not replace any
+source or DB gate.
 
 Ordinary CLI flags provide no presentation JSON/file channel. The low-level
 renderer map is not source authority; authentication belongs to that maintained
-entry. Current integration uses 229 selected displays. It preserves the complete
-223 independently accepted presentations and adds only the six
-[#467 / PR #472](https://github.com/FrankHZ/dnd3.5-spellbook/pull/472) AFTER
-presentations: 4033, 4247, 4345, 4349, 4354 and 4355. Main-gate separately accepted
-and actually migrated their minimal source corrections, then independently
-accepted all 80 complete mapping units and complete bilingual emphasis. Each
-new presentation binds all four corrected fields to that completed state;
-implementation proposal flags or an empty selection-candidates file do not
-replace explicit acceptance. The original 223 presentations remain exact.
-4421, 4425 and 4426 retain complete current bilingual fallback for #473.
-The other 772 targets retain current display. Diagnostic packets and unaccepted
-later batches cannot be selected. The 4395 repair keeps ordinary-action text
-regular while preserving its three named references and every character.
+entry. Current integration uses 263 selected displays. The 229 previously
+accepted presentations and complete emphasis ranges remain exact, including the
+six [#467 / PR #472](https://github.com/FrankHZ/dnd3.5-spellbook/pull/472) AFTER
+presentations bound to the actually migrated source corrections. It adds only
+the 34 explicitly accepted [#474 / PR #475](https://github.com/FrankHZ/dnd3.5-spellbook/pull/475)
+format candidates, bound to complete mappings, source-position/representation
+review and the independent rework acceptance. Their four canonical fields and
+all visible characters and whitespace remain unchanged. The other 738 targets
+retain current display. The 11 #476 content blockers and 4421, 4425 and 4426 for
+#473 retain complete bilingual fallback; a formatting repair does not make a
+blocked entry selectable. Diagnostic packets and unaccepted later batches cannot
+be selected. The 4395 repair keeps ordinary-action text regular while preserving
+its three named references and every character.
 
 The private entry binds exact candidates, complete mappings/ranges and independent
 source validation/acceptance. It calls `assertPdfTypographyEmphasis` on both

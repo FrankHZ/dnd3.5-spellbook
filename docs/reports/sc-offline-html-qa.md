@@ -40,20 +40,21 @@ head remote `ci:portable` remains the merge gate on PR #351.
 paragraph/emphasis mapping, representative 8–12 spell comparisons, full 1,001-ID
 format/page/span evidence inventory and a minimal accepted formatting contract.
 DB tags, `pre` newlines, regex splits and existing bold markup cannot replace
-source font/span evidence. Current integration preserves the 223 accepted
-presentations and adds six complete AFTER presentations from
-[#467 / PR #472](https://github.com/FrankHZ/dnd3.5-spellbook/pull/472), giving
-229 selected / 772 current displays. Main-gate has accepted and actually migrated
-the six source corrections and independently accepted 80 complete mapping units
-and complete emphasis. All four new fields bind that actual corrected state.
-4421, 4425 and 4426 remain wholly current for #473. Diagnostic packets and
-unaccepted later batches stay excluded. The 4395 ordinary-action emphasis repair
-and all old 223 presentations remain exact. Whole-book and human HTML gates stay open.
+source font/span evidence. Current integration preserves all 229 accepted
+presentations and complete ranges and adds only the 34 explicitly accepted
+[#474 / PR #475](https://github.com/FrankHZ/dnd3.5-spellbook/pull/475) format
+candidates, giving 263 selected / 738 current displays. The actual #467 completed
+source state remains the authority; no source correction is introduced here.
+The 11 #476 blockers plus 4421, 4425 and 4426 for #473 remain wholly current.
+Diagnostic packets and unaccepted later batches stay excluded. Whole-book and
+human HTML gates stay open.
 
 `assertPdfTypographyEmphasis` compares every decoded Unicode character's full
 `em`/`strong` set with complete reviewed intervals after candidate generation
-and on each of the 229 sanitized English/Chinese bodies. Frozen old semantic
-regressions remain evidence; field guards alone do not prove complete emphasis.
+and on each of the 263 sanitized English/Chinese bodies. The fixed actual
+4440/4472 rework failures and inherited 4394/4395 failures remain negative
+evidence; 4472 remains excluded despite its formatting repair. Field guards
+alone do not prove complete emphasis.
 
 3970's accepted parent3969 flavour remains inherited without an own SC font claim;
 3943's two supplemental heading spans bind their accepted source refs. The exact
@@ -72,17 +73,19 @@ output fails the independent checker. Actual activation and refreshed output
 require main-gate's corresponding completed-state proof; prior actual export
 evidence applies only to its previous input state.
 
-Private fixed-Git validation authenticates the new completed source-fidelity
+Private fixed-Git validation authenticates the completed #467 source-fidelity
 receipt, full 5,097 normalized records, exact manifest and generation provenance.
-It reuses the maintained six-entry candidate/minimal-edit validation and fresh
-original page/full-errata authentication. Disposable memory reconstructs both
-accepted source states, preserves the old 223 presentation maps, and compares
-only the six accepted source differences and six newly formatted structures.
-The other 995 complete article HTML must remain exact. A separate same-AFTER-source
-223-to-229 comparison preserves all 1,001 visible texts including whitespace.
-The three remaining blocked entries retain exact four fields and complete
-bilingual fallback. Stale fields/identity, blocked/future selection and mixed
-source/helper/report/normalized authority reject before output creation.
+The current bounded replay reconstructs one disposable current-source memory DB
+and compares the 229- and 263-selection exports. Every one of the 1,001 visible
+article texts, including whitespace, must remain exact; only the 34 newly
+accepted article structures may change. All other 967 complete article HTML,
+all old presentation/range inputs and all 14 whole-entry bilingual fallbacks
+remain exact. Complete canonical fields, summaries, notes, source-correction
+provenance and persisted overlay metadata are still checked. Unchanged source
+transition and metadata-negative suites reuse the accepted 229 evidence;
+stale fields/identity, blocked/diagnostic selection and new acceptance/binding
+drift receive targeted checks. Sequential full replays use a 4 GiB Node heap
+and a 6 GiB sampled process/observed-child stop budget.
 
 Authentication and persisted migration helper both bind the explicit accepted
 PR472 runtime; the primary checkout remains separate. Full original-source
@@ -90,9 +93,11 @@ authentication, one readonly content transaction, every normalized value,
 canonical body/summary/independent note/source-correction envelope, exact build
 metadata and all post-export input rechecks stay mandatory. Legal-shape metadata
 drift rejects despite unchanged fields/provenance and passing older checks.
+Main-gate coordinates a pause of private writers through actual source snapshots
+and post-export rechecks, as described in [offline HTML](../operations/offline-html.md).
 Preparation opens/copies/writes no persistent DB, does not modify durable previews
-and does not render HTML. Actual 223 evidence remains frozen; actual 229 export
-and durable delivery remain main-gate responsibilities.
+and does not render HTML. Actual 229 export and durable delivery are accepted frozen comparison evidence;
+fresh actual 263 export and durable delivery remain main-gate responsibilities.
 
 The maintained summary refresh now consumes the accepted complete 6,837-row
 composition, retaining the strict owner selector. Private fixed-Git replay
@@ -100,7 +105,7 @@ reconstructs disposable memory from accepted normalized records, final fields,
 reader-note amendments and authenticated summaries, then compares all 1,001
 entries / 2,002 bilingual bodies, 961 class targets / 1,922 directory owner
 fields, 40 body-only targets, 40 source-question occurrences and all emitted local
-links. All 229 selected display derivatives and 772 current displays stay distinct.
+links. All 263 selected display derivatives and 738 current displays stay distinct.
 This replay copies no database and does not replace original-source authentication
 or the actual operator export. The complete synthetic fixture additionally
 rejects missing/wrong/empty/unaccepted owners, summary source/value drift and
@@ -125,8 +130,8 @@ Synthetic structure/CSS and bounded accepted-input memory checks prepare that
 interface; they do not prove browser marker rendering or full-book source QA.
 The report records selected/current IDs, `formattingComplete: false` and
 `contentCertification: false`; its selection counts confer no authority by
-themselves. The 223-selection actual readonly export and durable preview are
-accepted comparison evidence. Fresh 229-selection actual export/durable delivery
+themselves. The 229-selection actual readonly export and durable preview are
+accepted comparison evidence. Fresh 263-selection actual export/durable delivery
 and new-layout visual review remain main-gate responsibilities.
 
 New-layout visual acceptance is pending. The earlier file-URL browser request
