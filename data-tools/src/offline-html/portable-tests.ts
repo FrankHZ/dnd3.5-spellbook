@@ -8,6 +8,8 @@ import { repoRoot } from "../shared/env";
 import { exportOfflineHtml, SummarySelectionError, validatePages } from "./export";
 import { main } from "./cli";
 import type { PdfTypographyPresentation } from "../zh-parser/pdf-typography";
+import { processAutomaticMarkers, type NamedEntry, type SpellName } from "../spell-list-markers/automatic";
+import type { PdfPage, PdfSpan } from "../spell-list-markers/markers";
 
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "offline-html-test-"));
 const outputRoot = path.join(repoRoot(), "data-tools/out");
@@ -294,11 +296,11 @@ try {
   assert.equal(caster('#level-0 + ul [lang="zh"]').text(), "已接受短描述 1 & <保留>");
   const directoryItem = caster('#level-0 + ul > li');
   assert.equal(directoryItem.find('a').text(), "雪 & <名字>（Alpha & <fixture>）");
-  assert.equal(directoryItem.find('small.component-labels').text().trim(), "V、DF");
-  assert.equal(directoryItem.find('small.component-labels').attr('title'), "法术成分");
+  assert.equal(directoryItem.find('.component-labels').length, 0);
   assert.equal(directoryItem.find('.summary').get(0)?.tagName, 'span');
   assert.equal(directoryItem.find('div.summary').length, 0);
-  assert.ok(directoryItem.text().includes('） V、DF：已接受短描述'));
+  assert.ok(directoryItem.text().includes('）：已接受短描述'));
+  assert.deepEqual(report.printedMarkers, { rulebookId: 86, acceptedRows: 0, machineRows: 0, unknownRows: 7, markedRows: 0, explicitEmptyRows: 0 });
   assert(read('style.css').includes('.component-labels { font-size: .75em; }'));
   assert.equal(caster('[lang="en"]').length, 0);
   assert(!caster.text().includes("Accepted short description"));
@@ -313,6 +315,58 @@ try {
       "sourceKey", "ProvenanceJson", "originalInput", "sourcePassage"]) assert.ok(!content.includes(forbidden), name);
     if (name.endsWith(".html")) assert.ok(content.includes("charset=utf-8"));
   }
+  // Real consumer path: distinct source appearances, explicit machine/accepted/unknown states.
+  const markedFixture = new Database(db.serialize());
+  markedFixture.exec("UPDATE SpellListEntry SET rulebookId=86,sourceRowId=12; UPDATE SpellListEntry SET ownerName='Bard',ownerSlug='bard' WHERE listType='class' AND ownerLegacyId=1");
+  const markSpan = (text: string, y: number, flags = 20, size = 10): PdfSpan =>
+    ({ text, flags, size, font: 'Synthetic', bbox: [60, y, 160, y + 10], origin: [60, y + 9] });
+  const markedLine = (name: string, marker: string, y: number) => ({ spans: marker
+    ? [markSpan(name, y), markSpan(marker, y, 21, 6), markSpan(':', y), markSpan(' short description', y, 4)]
+    : [markSpan(name + ':', y), markSpan(' short description', y, 4)] });
+  const printedPages: PdfPage[] = [
+    { page_index: 244, source: { private: privacy }, extractor: { kind: 'synthetic' }, blocks: [
+      { number: 0, lines: [{ spans: [markSpan('3RD-LEVEL BARD SPELLS', 10, 4, 13)] }, markedLine('Alpha & <fixture>', 'XFM', 25)] },
+      { number: 1, lines: [{ spans: [markSpan('9TH-LEVEL BARD SPELLS', 40, 4, 13)] }, markedLine('Alpha & <fixture>', '', 55)] },
+    ] },
+    { page_index: 270, source: { private: privacy }, extractor: { kind: 'synthetic' }, blocks: [
+      { number: 0, lines: [{ spans: [markSpan('First Domain Domain Spells', 10, 4, 13)] }, markedLine('1 Alpha & <fixture>†', 'F', 25)] },
+    ] },
+  ];
+  const namedEntries = markedFixture.prepare('SELECT * FROM SpellListEntry').all() as NamedEntry[];
+  const markerSpells = markedFixture.prepare('SELECT id,canonicalName,sourceRulebookId FROM SpellContent').all() as SpellName[];
+  const automatic = processAutomaticMarkers(printedPages, 'synthetic/printed-lists.jsonl', markerSpells, namedEntries);
+  const acceptedDomain = automatic.machine.find(row => row.record.listEntryId === 'domain-one')!.record;
+  const candidateClass = automatic.machine.find(row => row.record.listEntryId === 'list:1')!.record;
+  const insertMarker = markedFixture.prepare('INSERT INTO SpellListMarker (id,sourceKey,rulebookId,listEntryId,markers,reviewStatus,sourceJson,bindingJson) VALUES (?,?,?,?,?,?,?,?)');
+  for (const record of [{ ...acceptedDomain, reviewStatus: 'accepted' }, candidateClass]) {
+    insertMarker.run(record.id, record.sourceKey, record.rulebookId, record.listEntryId, record.markers, record.reviewStatus, record.sourceJson, record.bindingJson);
+  }
+  const markerSnapshot = markedFixture.serialize(); markedFixture.close();
+  const markerView = new Database(markerSnapshot, { readonly: true });
+  try {
+    const outDir = path.join(output, 'printed-markers');
+    const markerReport = exportOfflineHtml({ ...options, contentDb: ':memory:', outDir }, new Map(), markerView, automatic.machine);
+    assert(markerView.serialize().equals(markerSnapshot));
+    assert.deepEqual(markerReport.printedMarkers, { rulebookId: 86, acceptedRows: 1, machineRows: 2, unknownRows: 4, markedRows: 2, explicitEmptyRows: 1 });
+    const markedClass = load(fs.readFileSync(path.join(outDir, 'class-1.html'), 'utf8'));
+    assert.equal(markedClass('#level-3 + ul sup.component-labels').text(), 'MFX');
+    assert(markedClass('#level-3 + ul sup').attr('title')!.includes('自动匹配'));
+    assert.equal(markedClass('#level-9 + ul .component-labels, #level-0 + ul .component-labels').length, 0);
+    const markedDomain = load(fs.readFileSync(path.join(outDir, 'domain-1.html'), 'utf8'));
+    assert.equal(markedDomain('#level-1 + ul sup.component-labels').text(), 'F');
+    assert(!markedDomain('#level-1 + ul sup').attr('title')!.includes('自动匹配'));
+    assert(!fs.readFileSync(path.join(outDir, 'report.json'), 'utf8').includes(privacy));
+    const withoutMachine = path.join(output, 'candidate-markers-omitted');
+    const noMachineReport = exportOfflineHtml({ ...options, contentDb: ':memory:', outDir: withoutMachine }, new Map(), markerView);
+    assert.equal(noMachineReport.printedMarkers.machineRows, 0);
+    assert.equal(load(fs.readFileSync(path.join(withoutMachine, 'class-1.html'), 'utf8'))('.component-labels').length, 0);
+    const forged = structuredClone(automatic.machine); forged[0]!.spell.canonicalName = 'Changed source name';
+    assert.throws(() => exportOfflineHtml({ ...options, contentDb: ':memory:', outDir: path.join(output, 'stale-marker-name') }, new Map(), markerView, forged), /Stale machine marker/);
+    const stale = structuredClone(automatic.machine);
+    const binding = JSON.parse(stale[0]!.record.bindingJson!); binding.entry.sourceRowId++;
+    stale[0]!.record.bindingJson = JSON.stringify(binding);
+    assert.throws(() => exportOfflineHtml({ ...options, contentDb: ':memory:', outDir: path.join(output, 'stale-marker-binding') }, new Map(), markerView, stale), /Stale marker relationship/);
+  } finally { markerView.close(); }
   // Explicit synthetic selection through the actual helper, sanitizer and merged-page exporter.
   const derivative = load(paragraphs, { xml: { xmlMode: false } }, false);
   derivative('[class]').each((_, el) => {
@@ -367,7 +421,9 @@ try {
     assert.equal(specialMenu('#special-memberships + .notice + ul a').attr('href'), 'domain-28.html');
     const specialPage = load(fs.readFileSync(path.join(outDir, 'domain-28.html'), 'utf8'));
     assert(specialPage('.notice').text().includes('专长授予法术'));
-    assert(specialPage('.notice').text().includes('#354'));
+    assert(specialPage('.notice').text().includes('专长授予法术，归属来源待核实。'));
+    assert(!specialPage('.notice').text().includes('#354'));
+    assert.deepEqual(specialReport.pendingMembershipIssues, [{ issue: 354, listType: 'domain', ownerLegacyId: 28, spellId: 3921, level: 1 }]);
     assert.equal(specialPage('#level-1 + ul a').attr('href'), 'B.html#spell-3921');
   } finally { specialView.close(); }
   let typographyFailure = 0;
@@ -512,7 +568,7 @@ try {
   for (const href of ['https://www.d20spellcodex.com/spells/2', 'https://www.d20spellcodex.com/spells/1?x=1', 'https://www.d20spellcodex.com/spells/1#zh', 'https://www.d20spellcodex.com/spells/01']) {
     assert.throws(() => validatePages(new Map([["A.html", `<div class="spell-entry" id="spell-1"><a class="website-link" href="${href}" title="在网站查看" aria-label="在网站查看">↗</a></div>`]])), /generated website link/);
   }
-  console.log("offline HTML portable tests passed: class/domain levels and identities, domain-only summaries, pending feat grants, accepted summaries/gaps, Chinese-only bodies, website links, compact mechanism fields, merged anchors, paragraphs, note/list consumer contract, tables, privacy, repeat/failures");
+  console.log("offline HTML portable tests passed: class/domain levels and identities, domain-only summaries, pending feat grants, printed MFX accepted/machine/unknown states, accepted summaries/gaps, Chinese-only bodies, website links, compact mechanism fields, merged anchors, paragraphs, note/list consumer contract, tables, privacy, repeat/failures");
 } finally {
   if (db.open) db.close();
   for (const [root, directory] of [[os.tmpdir(), temp], [outputRoot, output]]) {

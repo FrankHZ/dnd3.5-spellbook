@@ -6,9 +6,9 @@ short descriptions, retaining both Chinese and English spell names. The English
 source, accepted bilingual data and internal QA remain intact.
 
 `index.html` presents classes, domains, then A–Z. Each `class-<owner ID>.html` lists
-levels 0–9 as “Chinese name (English name), small component tags: Chinese summary”
-on one flowing line, linked to full entries. Component tags use the existing
-normalized flags (V, S, M, AF, DF, XP and the additional component labels). The 26
+levels 0–9 as “Chinese name (English name), printed M/F/X superscript: Chinese summary”
+on one flowing line, linked to full entries. Special markers come from the selected
+printed list occurrence; complete spell-component flags never supply them. The 26
 `A.html`–`Z.html` pages order complete Chinese entries by English canonical name,
 then stable ID. Empty letters/levels are explicit. Classless spells remain in
 letter pages. There are no individual spell-ID pages or separate pinyin/English
@@ -83,24 +83,41 @@ skip the full-size display replay:
 npm run -w data-tools offline:html:test -- --focused
 ```
 
-Full 1,001-entry display replay, source authentication, actual export and refreshed
-remote CI remain paused. Full construction requires small-preview confirmation,
+Full 1,001-entry display replay, source authentication and actual export remain
+paused. Exact-head remote portable CI validates code independently of user visual
+acceptance. Full construction requires small-preview confirmation,
 acceptance of the six Chinese-format batches #480–#485, domain delivery #486 and
-special-component marker blocker #487. Small previews
+the accepted special-marker inputs from #487/#499. Small previews
 use fixed accepted fields/summaries in memory, never persistent DB copies, and
 must be labeled as a display preview rather than full source/content acceptance.
 
-## Chinese Natural Layout
+## Printed List Markers
 
-The current preview's complete component tags are provisional and unaccepted:
-they do not match the PDF directory's special M/F/X markers. Existing material,
-focus and XP flags do not distinguish costly materials or focuses outside the
-component pouch. [#487](https://github.com/FrankHZ/dnd3.5-spellbook/issues/487)
-owns directory-marker acceptance. The current agreed policy consumes explicit
-machine results with their source status and omits unresolved markers from HTML;
-unknown does not mean an explicitly empty marker set and cannot be filled from
-complete component flags. The separate marker contract must be accepted before
-renderer integration; this renderer does not investigate its extraction method.
+The renderer uses the accepted [marker consumer contract](spell-list-markers.md).
+It reads independent stored annotations from the same read-only content view and
+optionally consumes caller-authenticated `MachineMarker[]` as the fourth argument
+to `exportOfflineHtml(options, presentations, sourceDb, machine)`. Like typography
+selection, immutable machine input and its acceptance belong to the main-gate
+caller; this argument does not grant source acceptance or DB import authority.
+The CLI reads existing annotations only and does not load an arbitrary machine file.
+
+Every grouped directory row passes all of its complete `ListIdentity` snapshots
+to `selectProcessedMembershipMarkers`, with the printed book ID separate from
+each relationship's book ID. Current spell/owner names and publication identity
+must also match machine snapshots. Stale bindings, conflicting values and forged
+eligible wrappers reject before output creation. Ordinary candidate records remain
+unknown. Accepted and eligible machine results supply canonical M/F/X superscripts;
+the tooltip identifies automatic matches. Unknown and explicit empty sets both
+omit the superscript, while the report counts these states separately, including
+accepted/machine rows. Neither state reads complete component flags as fallback.
+No marker source spans, private paths or binding JSON appear in HTML or reports.
+
+Legacy views without a marker table are read without migration and return unknown
+markers. Stored-record reading, machine validation and exporting perform no DB
+writes. The pending feat notice remains reader-facing; its internal issue trace
+is retained only in `pendingMembershipIssues` in the report.
+
+## Chinese Natural Layout
 
 The current [#345 scope](https://github.com/FrankHZ/dnd3.5-spellbook/issues/345)
 replaces the Chinese CHM. It roughly follows existing PDF extraction and accepted

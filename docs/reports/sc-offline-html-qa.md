@@ -16,12 +16,17 @@ Domain checks cover menu order, class/domain owner-ID collisions, levels 1–9,
 subset-specific empty levels, Chinese-name overlays and explicit fallback,
 domain-only Chinese summaries without unused English-summary requirements,
 qualifiers, pending feat grants, invalid levels and duplicate domain tuples.
-Directory rows use Chinese name (English name), small normalized component tags,
+Directory rows use Chinese name (English name), printed M/F/X superscripts,
 and the accepted Chinese summary on one flowing line. Detail titles are smaller;
 body section headings and bottom letter-page navigation are omitted, while the
 Chinese body anchor remains on the body container.
 The website-link checker accepts only the exact generated route for its own entry;
 arbitrary source/external URLs remain detached or rejected.
+Marker consumer checks cover accepted and explicit machine results, ordinary
+candidate rejection, unknown/empty omission, distinct annotations for different
+memberships of one spell, canonical MFX order, stale name/binding rejection,
+read-only views and private-source exclusion. Complete component flags supply no
+labels. Machine and independently accepted results retain separate report counts.
 
 A small accepted-input preview is the current user-review stage. It contains
 representative mapped/plain, ordinary/long, inheritance, mechanism, table/list,
@@ -32,11 +37,12 @@ opened, copied or written. It is a display preview, not full source authenticati
 or whole-book acceptance. Preview paths and evidence belong to the owning issue/task,
 not a parallel repository status ledger.
 
-Full 1,001-entry display replay and this revision's remote CI remain paused until
-the user confirms the small slice. Full construction additionally requires accepted
+Full 1,001-entry display replay remains paused until the user confirms the small
+slice. Exact-head remote portable CI is the code gate, independently of visual
+acceptance. Full construction additionally requires accepted
 #480–#485 Chinese-format batches, #486 domain delivery and #487 special-component
-markers. The current full-component preview tags are erroneous as PDF directory
-markers and remain unaccepted; their resolution belongs to the user and #487 task.
+markers. Unknown automatic marker residues are omitted and do not individually
+block construction; complete component labels are never a substitute.
 After those gates, require one complete Chinese
 body per target, exact Chinese directory summaries, preserved names/notes/structures,
 all local and generated trusted-site links, and absence of English/rules sections.

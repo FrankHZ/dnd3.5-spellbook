@@ -8,6 +8,9 @@ import { repoRoot } from "../shared/env";
 import { selectedSummaryVariant } from "../db/content-search-documents";
 import { selectPdfTypography, type PdfTypographyPresentation } from "../zh-parser/pdf-typography";
 import { isMechanismLine } from "../zh-parser/header";
+import { listIdentity, type ListIdentity } from "../spell-list-markers/markers";
+import { selectProcessedMembershipMarkers, type MachineMarker } from "../spell-list-markers/automatic";
+import { readPrintedMarkerRecords } from "../spell-list-markers/storage";
 
 type Spell = {
   id: string; legacySpellId: number; canonicalName: string; sourceRulebookId: number;
@@ -21,8 +24,7 @@ type Text = { spellId: number; rulebookId: number; name: string | null;
   descriptionText: string | null; descriptionHtml: string | null;
   nameProvenanceJson: string | null; bodyProvenanceJson: string | null };
 export type ExportOptions = { contentDb: string; book: number; variant: string; outDir: string };
-type ListEntry = { id: string; spellId: string; listType: string; ownerLegacyId: number; ownerName: string;
-  ownerSlug: string; level: number; rawExtra: string | null; variantLabel: string | null; note: string | null; reviewStatus: string };
+type ListEntry = ListIdentity & { ownerName: string; ownerSlug: string };
 type ListGroup = { name: string; slug: string; rows: ListEntry[] };
 type Summary = { spellId: number; rulebookId: number; lang: string; variant: string; summaryText: string; reviewStatus: string };
 export type SummaryGap = { spellId: number; lang: string; variant: string;
@@ -38,10 +40,6 @@ const text = (v: string) => v.replace(/&/g, "&amp;").replace(/</g, "&lt;")
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const spellAnchor = (id: number) => `spell-${id}`;
 const websiteRoot = "https://www.d20spellcodex.com/spells/";
-// Existing normalized component flags, in their conventional display order.
-const componentLabels: Record<string, string> = { verbal: "V", somatic: "S", material: "M",
-  arcane_focus: "AF", divine_focus: "DF", xp: "XP", metabreath: "超息", truename: "真名", corrupt: "腐化" };
-
 function selectSummaries(rows: Summary[], ids: Set<number>, book: number, variant: string, englishTargets: Set<number>) {
   const selected = new Map<number, { en: string; zh: string }>(), gaps: SummaryGap[] = [];
   for (const id of [...ids].sort((a, b) => a - b)) {
@@ -87,7 +85,7 @@ const navigation = '<p class="navigation"><a href="index.html#classes">职业目
 const preview = '<p class="notice">中文内容预览，自然排版待视觉验收。</p>';
 const membershipNotice = '<p class="notice">职业目录保留当前归属与附注；部分外部归属的原书核对仍待完成，目录不构成来源 QA 通过。</p>';
 const domainNotice = '<p class="notice">本书收录的领域法术：仅列本书正文范围内的条目，并非原书完整领域法表。</p>';
-const featNotice = '<p class="notice">专长授予法术：此归属在现有数据中保存为领域关系，来源待核实（#354）；不属于已核实的常规领域。</p>';
+const featNotice = '<p class="notice">专长授予法术，归属来源待核实。</p>';
 const style = `body { margin: 2em; color: #222; background: #fff; font-family: "Microsoft YaHei", "SimSun", serif; line-height: 1.65; }
 #content { max-width: 62em; margin: auto; } h1 { font-size: 1.7em; } h2 { border-bottom: 1px solid #bbb; }
 a { color: #164f91; } .notice { padding: .6em; border: 1px solid #aaa; background: #f5f5f5; }
@@ -284,9 +282,10 @@ function newOutput(outDir: string, contentDb: string) {
   return out;
 }
 
-/** Presentation selection is caller-authenticated by the maintained main-gate entry, not this renderer. */
+/** Presentation/machine inputs are caller-authenticated by main-gate; rendering does not grant source acceptance. */
 export function exportOfflineHtml(options: ExportOptions,
-  presentations: ReadonlyMap<number, PdfTypographyPresentation> = new Map(), sourceDb?: Database.Database) {
+  presentations: ReadonlyMap<number, PdfTypographyPresentation> = new Map(), sourceDb?: Database.Database,
+  machine: readonly MachineMarker[] = []) {
   if (!Number.isSafeInteger(options.book) || options.book <= 0 || !present(options.variant)) {
     throw new Error("A positive book ID and explicit variant are required");
   }
@@ -334,7 +333,7 @@ export function exportOfflineHtml(options: ExportOptions,
       const book = db.prepare("SELECT name FROM RulebookContent WHERE legacyRulebookId=?").all(options.book) as { name: string }[];
       if (book.length !== 1 || !present(book[0]!.name)) throw new Error("Missing/duplicate publication label");
       const listEntries = db.prepare(`SELECT l.id, l.spellId, l.listType, l.ownerLegacyId, l.ownerName, l.ownerSlug,
-        l.level, l.rawExtra, l.variantLabel, l.note, l.reviewStatus FROM SpellListEntry l
+        l.level, l.rulebookId, l.sourceRowId, l.sourceTable, l.rawExtra, l.variantLabel, l.note, l.reviewStatus FROM SpellListEntry l
         JOIN SpellContent s ON s.id=l.spellId WHERE s.sourceRulebookId=?
         ORDER BY l.listType, l.ownerLegacyId, l.level, l.id`).all(options.book) as ListEntry[];
       const classes = new Map<number, ListGroup>(), domains = new Map<number, ListGroup>();
@@ -371,6 +370,8 @@ export function exportOfflineHtml(options: ExportOptions,
         FROM I18nSpellSummaryText WHERE spellId IN
         (SELECT legacySpellId FROM SpellContent WHERE sourceRulebookId=?)`).all(options.book) as Summary[];
       const summaries = selectSummaries(summaryRows, new Set([...classTargets, ...domainTargets]), options.book, options.variant, classTargets);
+      const printedRecords = readPrintedMarkerRecords(db, options.book);
+      const markerCounts = { acceptedRows: 0, machineRows: 0, unknownRows: 0, markedRows: 0, explicitEmptyRows: 0 };
       const counts = { spells: spells.length, chineseNames: 0, chineseBodies: 0,
         englishNameFallbacks: 0, englishBodyFallbacks: 0, detachedReferences: 0, htmlTextDifferences: 0 };
       const pages = new Map<string, string>([["style.css", style]]);
@@ -430,10 +431,20 @@ export function exportOfflineHtml(options: ExportOptions,
               .map(([id, memberships]) => {
                 if (kind === "class") classMemberships++; else domainMemberships++;
                 const spell = byId.get(id)!, translation = translations.get(id)!, summary = summaries.get(id)!;
-                const components = new Set((db.prepare("SELECT componentType FROM SpellComponent WHERE spellId=? AND present=1 AND componentType <> 'other'").all(spell.id) as { componentType: string }[]).map(row => row.componentType));
-                const labels = Object.entries(componentLabels).filter(([key]) => components.has(key)).map(([, label]) => label).join("、");
+                const currentMachine = machine.filter(row => row.record.rulebookId === options.book
+                  && memberships.some(entry => entry.id === row.record.listEntryId));
+                if (currentMachine.some(row => row.spell.id !== spell.id || row.spell.canonicalName !== spell.canonicalName
+                  || row.spell.sourceRulebookId !== spell.sourceRulebookId || row.ownerName !== group.name)) {
+                  throw new Error("Stale machine marker spell/owner name or edition");
+                }
+                const marker = selectProcessedMembershipMarkers(memberships.map(listIdentity), options.book, printedRecords, currentMachine);
+                markerCounts[marker.status === "accepted" ? "acceptedRows" : marker.status === "machine" ? "machineRows" : "unknownRows"]++;
+                const labels = marker.status === "unknown" ? null : marker.markers;
+                if (labels === "") markerCounts.explicitEmptyRows++;
+                else if (labels) markerCounts.markedRows++;
+                const markerTitle = `原书法表标记${marker.status === "machine" ? "（自动匹配）" : ""}：M 昂贵材料；F 成分包外器材；X 施法者支付经验值`;
                 const qualifiers = [...new Set(memberships.map(row => [row.rawExtra, row.variantLabel, row.note].filter(present).join(" — ")).filter(present))];
-                return `<li><a href="${destinations.get(id)}">${text(translation.name!)}（${text(spell.canonicalName)}）</a>${labels ? `<small class="component-labels" title="法术成分"> ${text(labels)}</small>` : ""}：<span lang="zh" class="summary">${text(summary.zh)}</span>
+                return `<li><a href="${destinations.get(id)}">${text(translation.name!)}（${text(spell.canonicalName)}）</a>${labels ? `<sup class="component-labels" title="${markerTitle}">${text(labels)}</sup>` : ""}：<span lang="zh" class="summary">${text(summary.zh)}</span>
                   ${qualifiers.map(value => `<span class="membership-note">${text(value)}</span>`).join("")}</li>`;
               }).join("\n");
             return `<h2 id="level-${level}">${level} 环</h2>${rows ? `<ul class="spell-list">${rows}</ul>` : `<p class="empty">${kind === "class" ? "此环无法术。" : "本书收录范围内，此环暂无条目。"}</p>`}`;
@@ -460,6 +471,8 @@ export function exportOfflineHtml(options: ExportOptions,
         domainOnlyTargets: [...domainTargets].filter(id => !classTargets.has(id)).sort((a, b) => a - b),
         domainNameFallbacks: [...domains.keys()].filter(id => !domainNames.has(id)),
         domainEntriesNeedingStructuralReview: listEntries.filter(row => row.listType === "domain" && row.reviewStatus === "review").length,
+        pendingMembershipIssues: specialMembershipPages ? [{ issue: 354, listType: "domain", ownerLegacyId: 28, spellId: 3921, level: 1 }] : [],
+        printedMarkers: { rulebookId: options.book, ...markerCounts },
         classEntriesNeedingStructuralReview: listEntries.filter(row => row.listType === "class" && row.reviewStatus === "review").length,
         selectedSummaries: summaries.size + classTargets.size, selectedChineseSummaries: summaries.size,
         selectedEnglishSummaries: classTargets.size, domainChineseSummaries: domainTargets.size,
