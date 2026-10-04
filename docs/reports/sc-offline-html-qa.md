@@ -17,11 +17,14 @@ references, tables/lists, notes and links remain mandatory.
 
 The current mapping selection preserves all 229 accepted presentations/ranges
 and adds 34 explicitly accepted [#474 / PR #475](https://github.com/FrankHZ/dnd3.5-spellbook/pull/475)
-formats: 263 mapped displays and 738 current representations. This count is
+formats plus 33 accepted
+[#477 / PR #479](https://github.com/FrankHZ/dnd3.5-spellbook/pull/479) natural
+formats: 296 mapped displays and 705 current representations. This count is
 diagnostic, not the natural-layout acceptance threshold. The actual #467
-completed source state remains authoritative. The 11 #476 content blockers plus
+completed source state remains authoritative. The 23 #476 content blockers plus
 4421, 4425 and 4426 for #473 retain complete canonical bilingual fallback;
-unaccepted #477 packets and #473 migrations are not consumed.
+#477 acceptance consumes only formatting candidates; #473 migrations and
+unaccepted content proposals are not consumed.
 
 Pure-text Chinese `pre` lines now receive conservative paragraph spacing for
 complete sentences. Field labels, short table rows and literal markers stay
@@ -44,9 +47,9 @@ representation. Known inherited references and independent reader notes remain.
 | Paths/safety | Fresh worktree-local output; readonly content snapshot; root/package commands; no persistent DB copy |
 | Merge gate | Exact-head remote ci:portable; results recorded on PR #351 |
 
-Portable tests use synthetic fixtures and a provided runtime. The private
-accepted-input check reconstructs disposable memory from fixed Git inputs and
-checks complete output; it does not replace actual source authentication or
+Portable tests use synthetic fixtures and a provided runtime. The 263 full-scope private check reconstructs disposable memory from fixed Git
+inputs and checks complete output. Its source/structure/link evidence is reused
+for the additional 33 maps, with bounded current-input and emitted-body checks; it does not replace actual source authentication or
 operator export. Unchanged source-transition and metadata-negative evidence is
 reused. Fine-emphasis packets remain frozen evidence. Full replay runs sequentially
 with a 4 GiB Node heap and 6 GiB sampled process/observed-child stop budget.

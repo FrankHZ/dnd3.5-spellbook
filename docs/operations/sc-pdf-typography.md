@@ -265,7 +265,8 @@ The six #467 entries (4033, 4247, 4345, 4349, 4354, 4355) have separate accepted
 source corrections, a completed actual migration and independent complete format
 acceptance. The accepted source-fidelity selection preserves the old 223 presentations and
 adds these six AFTER presentations. Current consumer integration also includes
-the 34 separately accepted #474 formats, giving 263 mapped displays and 738
+the 34 separately accepted #474 and 33 accepted #477 natural formats, giving
+296 mapped displays and 705
 current representations with natural plain-text paragraph spacing. All four
 inputs bind the completed normalized/canonical state; all 80 reviewed mapping
 units and complete English/Chinese emphasis remain fixed. Proposal flags and an
@@ -274,6 +275,7 @@ empty implementation selection file do not override main-gate acceptance.
 The consumer's source-fidelity handoff requires explicit acceptance mode and
 the maintained PR472 source authentication/planner/provenance wiring. Old source
 with new format and new source with an old helper/normalized/report guard reject.
-4421, 4425 and 4426 remain wholly excluded for #473; later unaccepted packets
+The 23 #476 blockers and 4421, 4425 and 4426 for #473 remain wholly excluded;
+later unaccepted packets
 remain outside selection. Prior proofs keep their original bindings. See
 [offline HTML](./offline-html.md) for the current readonly execution boundary.

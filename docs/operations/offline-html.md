@@ -158,7 +158,7 @@ source or DB gate.
 
 Ordinary CLI flags provide no presentation JSON/file channel. The low-level
 renderer map is not source authority; authentication belongs to that maintained
-entry. The accepted mapping selection has 263 displays; this is diagnostic coverage,
+entry. The accepted mapping selection has 296 displays; this is diagnostic coverage,
 not the natural-layout acceptance threshold. The 229 previously
 accepted presentations and complete emphasis ranges remain exact, including the
 six [#467 / PR #472](https://github.com/FrankHZ/dnd3.5-spellbook/pull/472) AFTER
@@ -166,8 +166,14 @@ presentations bound to the actually migrated source corrections. It adds only
 the 34 explicitly accepted [#474 / PR #475](https://github.com/FrankHZ/dnd3.5-spellbook/pull/475)
 format candidates, bound to complete mappings, source-position/representation
 review and the independent rework acceptance. Their four canonical fields and
-all visible characters and whitespace remain unchanged. The other 738 targets use their current semantic HTML or conservative plain-text
-paragraph spacing. The 11 #476 content blockers and 4421, 4425 and 4426 for
+all visible characters and whitespace remain unchanged. The 33 accepted
+[#477 / PR #479](https://github.com/FrankHZ/dnd3.5-spellbook/pull/479) natural
+format candidates reuse the existing source review and keep all four fields.
+Their 12 additional content blockers stay wholly unselected for #476. Existing
+263 full-scope evidence remains valid; this addition checks only affected
+input/body/structure/link behavior and does not repeat original-source or
+precision suites. The other 705 targets use their current semantic HTML or conservative plain-text
+paragraph spacing. The 23 #476 content blockers and 4421, 4425 and 4426 for
 #473 retain complete canonical bilingual fallback with the same natural display policy; a formatting repair does not make a
 blocked entry selectable. Diagnostic packets and unaccepted later batches cannot
 be selected. The 4395 repair keeps ordinary-action text regular while preserving
