@@ -49,8 +49,7 @@ review status does not grant acceptance. The helper checks representation
 integrity; it neither authenticates Git inputs nor verifies human/PDF semantics.
 Keep this selection step outside the helper; there is no new accepted-baseline
 list. Main-gate selected seven initial samples from the frozen private revision
-for bounded #345 preview integration; all other targets retain current display.
-That selection does not certify rendered
+for bounded #345 preview integration. That selection does not certify rendered
 HTML or full-book format QA. The new three-entry disposition proposals use a
 separate path/revision and await their own selection; they do not expand that
 handoff or change its fixed files.
@@ -91,15 +90,13 @@ and numbering for unmarked nested `ul`/`ol`. Do not grant arbitrary class/style
 permissions. A direct-item `::marker` rule can avoid inherited suppression;
 the actual consumer pipeline must prove the intended nesting behavior.
 
-The #345 sanitizer allows only this exact `ul` class, with fixed CSS restoring
-ordinary markers/numbering on unmarked descendants and suppressing independently
-marked child lists. Structural checks follow sanitization/link handling.
+The consumer contract requires this class's explicit
+allowlist/CSS integration and structural checks after sanitization/link handling.
 Preserve table roles/spans/sections/header references, list kind/numbering/nesting
 and destination anchors through that pipeline as well. A standalone helper PASS
 does not prove sanitized/exported HTML retained these semantics.
-Exporter integration belongs to
-[#345](https://github.com/FrankHZ/dnd3.5-spellbook/issues/345); the helper alone
-does not grant acceptance or select private records.
+No exporter integration is implemented
+here; [#345](https://github.com/FrankHZ/dnd3.5-spellbook/issues/345) owns it.
 
 ## Review and authority boundaries
 
@@ -191,6 +188,33 @@ representations are reviewed individually; they grant no exemption to word
 omissions or other punctuation. Official replacement sentences retain separate
 errata authority, while inherited fields and project notes keep their own origin.
 Selection and human HTML visual acceptance remain with main-gate and #345.
+
+The [sixth complete-entry packet](../../data-tools/reports/dice-qa/books/86/pdf-typography-complete-06.json)
+binds separate `dice-qa/books/86/issue-474/` diagnostic mappings and eligible
+proposals to complete original entries, full official errata, exact current four
+fields and the fixed exporter's actual sanitizer. Each original reference
+occurrence is classified by meaning and observed font; descriptive repetitions,
+actions and implicit Chinese references stay regular when no named token maps.
+An explicit English alias inside a Chinese parenthetical reference follows the
+same named-spell emphasis as its Chinese name; the surrounding parentheses and
+book/page citation stay regular. A translated separator follows its own source
+counterpart. A later italic comma cannot be moved to an earlier regular connector
+or a structural closing parenthesis in a different sentence construction.
+Source word, qualifier, citation and punctuation discrepancies block a whole
+entry; exact paired corrections remain unapplied for main-gate's independent
+content decision under [#476](https://github.com/FrankHZ/dnd3.5-spellbook/issues/476).
+Its checks retain full bilingual current fallback for every
+blocked entry and reject the prior actual authoring/review errors after sanitization.
+
+Individually bound curly/straight apostrophe and paired-quote representations may
+retain existing fields when they preserve the same contraction or possessive,
+or exactly the same quoted words, boundaries and nesting, with unchanged source
+emphasis. The packet records raw code points, offsets and context for each case.
+This permits no active normalization or exemption for prime/feet/inches meaning,
+lost or shifted quotes, sentence dashes, word hyphens or other punctuation.
+Numeric-minus and native list-marker representations likewise retain individual
+source-position decisions. Main-gate selection and #345's human HTML visual
+acceptance remain separate.
 
 The four-entry follow-up proposes those dispositions for 4443, 4088 and 4072.
 3958's legacy table title has no separate PDF heading counterpart. Removing its
