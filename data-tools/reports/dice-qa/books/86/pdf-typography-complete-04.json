@@ -5,10 +5,10 @@
     431,
     345
   ],
-  "status": "unselected-complete-entry-format-proposals",
+  "status": "unselected-format-proposals-with-whole-entry-content-blockers",
   "scope": "remaining-complete-entries-04",
   "privateEvidence": {
-    "revision": "5d2130bc5b26f3c55a0677a8903bcc44f49c3145",
+    "revision": "9d8b8db470ca0e1444f7eb4db7a70d2bdc229172",
     "path": "dice-qa/books/86/issue-468",
     "fixedInventoryRevision": "712d96bc24f03bea2f119e00f0b057eadbe0af01",
     "acceptedFieldsRevision": "0688739d92a2aa9fb3eceeb444daa7260e711058",
@@ -40,8 +40,16 @@
       "export-semantic-negatives.json",
       "cwd-replay.json",
       "run-settings.json",
-      "resource-budget.json"
-    ]
+      "resource-budget.json",
+      "rework-review.json",
+      "rework-boundary-validation.json",
+      "export-blocked-fallback.json"
+    ],
+    "priorReviewedPacketRevision": "5d2130bc5b26f3c55a0677a8903bcc44f49c3145",
+    "independentChangesRequestedRevision": "ed7a075f794801c546782fd6eba2bb259b9ab45d",
+    "sourceContentProposals": "content-candidates.json",
+    "fullDiagnosticSourceDifferences": "source-differences.json",
+    "blockedEnglishSourceDifferences": "source-content-differences.json"
   },
   "targetIds": [
     4035,
@@ -92,10 +100,12 @@
   ],
   "dispositionCounts": {
     "completeEntries": 45,
-    "completeFormatProposals": 45,
+    "completeFormatProposals": 40,
     "pending": 0,
-    "blocked": 0,
-    "mainGateSelected": 0
+    "blocked": 5,
+    "mainGateSelected": 0,
+    "completeDiagnosticMappings": 45,
+    "unappliedContentProposals": 5
   },
   "entries": [
     {
@@ -195,8 +205,11 @@
     },
     {
       "targetId": 4247,
-      "disposition": "format-proposal-complete",
-      "eligibleCandidate": true
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "diagnosticMappingComplete": true,
+      "followupIssue": 467,
+      "findingKind": "prior-source-word-judgment-correction"
     },
     {
       "targetId": 4260,
@@ -280,8 +293,11 @@
     },
     {
       "targetId": 4345,
-      "disposition": "format-proposal-complete",
-      "eligibleCandidate": true
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "diagnosticMappingComplete": true,
+      "followupIssue": 467,
+      "findingKind": "html-only-missing-source-terminal-period"
     },
     {
       "targetId": 4346,
@@ -295,8 +311,11 @@
     },
     {
       "targetId": 4349,
-      "disposition": "format-proposal-complete",
-      "eligibleCandidate": true
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "diagnosticMappingComplete": true,
+      "followupIssue": 467,
+      "findingKind": "chinese-missing-original-book-page-citation"
     },
     {
       "targetId": 4350,
@@ -315,16 +334,28 @@
     },
     {
       "targetId": 4354,
-      "disposition": "format-proposal-complete",
-      "eligibleCandidate": true
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "diagnosticMappingComplete": true,
+      "followupIssue": 467,
+      "findingKind": "unapproved-distance-unit-word-substitution"
     },
     {
       "targetId": 4355,
-      "disposition": "format-proposal-complete",
-      "eligibleCandidate": true
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "diagnosticMappingComplete": true,
+      "followupIssue": 467,
+      "findingKind": "missing-original-list-comma"
     }
   ],
-  "blockedTargetIds": [],
+  "blockedTargetIds": [
+    4247,
+    4345,
+    4349,
+    4354,
+    4355
+  ],
   "sourceReview": {
     "freshComparedPages": 14,
     "freshComparedSavedSpans": 2647,
@@ -338,20 +369,16 @@
     "independentReaderNoteUnits": 2,
     "listOptionsIndividuallyReviewed": 8,
     "chineseCodePointEmphasisRanges": 447,
-    "fullEnglishAndChineseUnitCoverage": true,
     "completeSourceFontGeometryChecks": true,
     "fullTextPositionUnits": 147,
     "sourcePositionBoundCharacters": 27190,
     "sourcePositionBoundPunctuation": 831,
     "physicalLineEndHyphenOmissions": 44,
-    "individuallyReviewedExactRepresentationDifferences": 15,
+    "individuallyReviewedExactRepresentationDifferences": 10,
     "exactRepresentationDifferenceTargetIds": [
       4243,
       4247,
-      4269,
-      4345,
-      4354,
-      4355
+      4269
     ],
     "representationDifferencesAreEntrySpecific": true,
     "sourceIsNotClaimedToBeLiteralAcceptedEnglishTranscription": true,
@@ -370,8 +397,20 @@
         "descriptive-term-overstyle",
         "styled-comma-moved-to-other-occurrence"
       ],
-      "acceptanceGranted": false
-    }
+      "acceptanceGranted": false,
+      "wholeEntrySourceContentBlockers": [
+        4247,
+        4345,
+        4349,
+        4354,
+        4355
+      ],
+      "stylePassDoesNotAcceptContent": true
+    },
+    "diagnosticEnglishSourceContentDifferences": 5,
+    "blockedChineseCitationOmissions": 1,
+    "all45SourceContentAccepted": false,
+    "fullDiagnosticEnglishAndChineseUnitCoverage": true
   },
   "representationChecks": {
     "completeFourFieldBindings": true,
@@ -384,7 +423,8 @@
     "initialActualSemanticOutputNegatives": 3,
     "maintainedAuthorMechanismReused": true,
     "dedicatedVisibleTextCounter": true,
-    "maintainedSelectorOrComparatorChanged": false
+    "maintainedSelectorOrComparatorChanged": false,
+    "blockedSelectionRejections": 5
   },
   "consumerRehearsal": {
     "fixedPublicExporter": "2be34a1b89a8d6ba092d1c0192334d59f23b20e2",
@@ -393,7 +433,7 @@
     "destinationOnlyFixtureIds": [
       3826
     ],
-    "eligibleCandidates": 45,
+    "eligibleCandidates": 40,
     "allCompleteEmphasisRecheckedAfterActualSanitization": true,
     "decodedTextWhitespaceSemanticStructureAndParagraphsPreserved": true,
     "independentReaderNotesPreserved": true,
@@ -405,11 +445,25 @@
     "identityExportRejections": 2,
     "meaningfulOutputNegativesRejectedAfterSanitization": 10,
     "unselectedCurrentFallbackPreserved": true,
-    "rootAndPackageOutputFilesIdentical": 29,
+    "rootAndPackageOutputFilesIdentical": 377,
     "persistentDatabasesOpened": 0,
     "fullDatabaseCopied": false,
     "syntheticDisplayEnvelopesAuthenticateSourceQa": false,
-    "emptyMembershipFixtureCertifiesClassSummaryBehavior": false
+    "emptyMembershipFixtureCertifiesClassSummaryBehavior": false,
+    "completeDiagnosticMappings": 45,
+    "blockedExcluded": [
+      4247,
+      4345,
+      4349,
+      4354,
+      4355
+    ],
+    "blockedSelectionRejectionsBeforeOutput": 5,
+    "blockedWholeEntryFallbacksVerified": 5,
+    "all45SanitizedEmphasisChecksAreDiagnostic": true,
+    "eligible40FinalBodiesMatchDiagnostics": true,
+    "rootAndPackageCasesCompared": 13,
+    "linkAuditScope": "45 diagnostic entries; blocked entries retain exact current fallback in eligible export"
   },
   "verifiedRuntime": {
     "model": "gpt-6.1-sol",
@@ -428,6 +482,17 @@
     "fullBookFormattingAccepted": false,
     "formatAcceptanceGranted": false,
     "privatePushOrSourceUpload": false,
-    "unrelatedStagedDeletionsPreserved": 39
+    "unrelatedStagedDeletionsPreserved": 39,
+    "mainGateReReviewRequired": true
+  },
+  "contentFollowup": {
+    "issue": 467,
+    "wholeEntryExclusionRequired": true,
+    "exactMinimalUnappliedFourFieldProposals": 5,
+    "htmlOnlyProposalTargetId": 4345,
+    "allCanonicalBeforeFieldsUnchanged": true,
+    "afterFieldsAccepted": false,
+    "contentMigrationAndCompleteTypographyRebindingRequired": true,
+    "sourceFidelityIncludesWordsPunctuationAndCitation": true
   }
 }
