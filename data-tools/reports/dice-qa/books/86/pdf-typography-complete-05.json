@@ -8,7 +8,7 @@
   "status": "unselected-format-proposals-with-whole-entry-content-blockers",
   "scope": "remaining-complete-entries-05",
   "privateEvidence": {
-    "revision": "a101e4cf93d4403c8d366a7e2b195d112101107d",
+    "revision": "95436b458d88850569ee3a726728e9002247436f",
     "path": "dice-qa/books/86/issue-470",
     "fixedInventoryRevision": "712d96bc24f03bea2f119e00f0b057eadbe0af01",
     "acceptedFieldsRevision": "0688739d92a2aa9fb3eceeb444daa7260e711058",
@@ -47,7 +47,8 @@
       "cwd-replay.json",
       "run-settings.json",
       "resource-budget.json"
-    ]
+    ],
+    "initialFreezeRevision": "a101e4cf93d4403c8d366a7e2b195d112101107d"
   },
   "targetIds": [
     4356,
@@ -363,7 +364,7 @@
     "sourcePositionSwapNegativeDetected": true,
     "rawPunctuationCodePointsAndPairedHtmlEntitiesRetained": true,
     "physicalLineEndHyphenOmissions": 42,
-    "entrySpecificMinusGlyphRepresentations": 2,
+    "entrySpecificMinusGlyphRepresentations": 7,
     "acceptedOfficialErrataAlignmentDifferences": 2,
     "newSourceContentAccepted": false,
     "fullDiagnosticEnglishAndChineseUnitCoverage": true,
@@ -403,7 +404,9 @@
     "allMeaningfulSanitizedOutputNegatives": 9,
     "persistentDatabasesOpened": 0,
     "operatorStableAppStateOpened": 0,
-    "limitation": "All45 sanitized styles are diagnostic only. Eligible memory export selects42 and preserves current full before bodies for3 blocked entries. Synthetic provenance envelopes and empty membership tables prove body sanitizer/link/structure behavior only; no source QA or full class-summary certification."
+    "limitation": "All45 sanitized styles are diagnostic only. Eligible memory export selects42 and preserves current full before bodies for3 blocked entries. Synthetic provenance envelopes and empty membership tables prove body sanitizer/link/structure behavior only; no source QA or full class-summary certification.",
+    "rootAndPackageCasesCompared": 12,
+    "rootAndPackageOutputFilesIdentical": 348
   },
   "resources": {
     "englishTextCharacters": 31905,
