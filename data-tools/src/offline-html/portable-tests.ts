@@ -97,6 +97,9 @@ try {
     INSERT INTO I18nDomainText (id,domainId,lang,variant,name,updatedAt) VALUES
     ('domain-name',1,'zh','default','合成领域','fixture'),
     ('wrong-variant-domain-name',2,'zh','other','不可混入的名称','fixture');`);
+  db.exec(`INSERT INTO I18nCharacterClassText (id,classId,lang,variant,name,updatedAt) VALUES
+    ('class-name',1,'zh','default','合成职业','fixture'),
+    ('wrong-variant-class-name',2,'zh','other','不可混入的职业','fixture');`);
   const summary = db.prepare(`INSERT INTO I18nSpellSummaryText
     (id,spellId,rulebookId,lang,variant,summaryText,reviewStatus,sourceKey,sourceKind,updatedAt)
     VALUES (?,?,86,?,?,?,'accepted',?,'fixture',CURRENT_TIMESTAMP)`);
@@ -276,6 +279,8 @@ try {
   assert.equal(menu('a[href="A.html"]').length, 1);
   assert.equal(menu('a[href="domain-1.html"]').text(), '合成领域（First domain）');
   assert.equal(menu('a[href="domain-2.html"]').text(), 'Fixture domain');
+  assert.equal(menu('a[href="class-1.html"]').text(), '合成职业（Fixture caster）');
+  assert.deepEqual(report.classNameFallbacks, [2]);
   const domain = load(read('domain-1.html'));
   assert.equal(domain('h1').text(), '合成领域（First domain）');
   assert.deepEqual(domain('h2').toArray().map(el => domain(el).attr('id')), Array.from({ length: 9 }, (_, i) => `level-${i + 1}`));
@@ -290,6 +295,10 @@ try {
   assert(!qualifiedDomain.text().includes('不可混入的名称'));
   assert(qualifiedDomain('.membership-note').text().includes('Raw domain qualifier — Printed variant'));
   const caster = load(read("class-1.html"));
+  assert.equal(caster('h1').text(), '合成职业（Fixture caster）');
+  assert(load(read('class-2.html'))('.notice').text().includes('职业中文名称缺失'));
+  assert(!read('class-2.html').includes('不可混入的职业'));
+  assert.equal(caster('.school-heading').length, 0);
   assert.deepEqual(caster("h2").toArray().map(el => caster(el).attr("id")), Array.from({ length: 10 }, (_, i) => `level-${i}`));
   assert.equal(caster('#level-0 + ul > li').length, 1);
   assert.equal(caster('#level-0 + ul a').attr("href"), "A.html#spell-1");
@@ -401,30 +410,91 @@ try {
     assert.equal(fs.readFileSync(path.join(selectedOut, "G.html"), "utf8"), read("G.html"));
   } finally { memoryView.close(); }
   assert.equal((db.prepare('SELECT descriptionHtml FROM SpellContent WHERE legacySpellId=5').get() as { descriptionHtml: string }).descriptionHtml, paragraphs);
-  // A pending feat is distinct even when its stored relationship reviewStatus is accepted.
+  // School groups keep each spell row once, including duplicate relationships,
+  // distinct same-name spells, printed markers, Chinese summaries and qualifiers.
+  const schoolFixture = new Database(db.serialize());
+  schoolFixture.exec(`UPDATE SpellListEntry SET rulebookId=86,sourceRowId=12;
+    UPDATE SpellListEntry SET ownerName='Wizard',ownerSlug='wizard' WHERE listType='class' AND ownerLegacyId=1;
+    UPDATE SpellListEntry SET level=3 WHERE id='nine';
+    UPDATE SpellContent SET schoolRaw='Abjuration' WHERE legacySpellId=1;
+    UPDATE SpellContent SET schoolRaw='Conjuration/Evocation' WHERE legacySpellId=5;
+    INSERT INTO SpellListEntry (id,spellId,listType,ownerLegacyId,ownerName,ownerSlug,level,sourceTable,reviewStatus,rulebookId,sourceRowId)
+    VALUES ('sorcerer','spell:1','class',4,'Sorcerer','sorcerer',3,'fixture','accepted',86,12);
+    INSERT INTO I18nCharacterClassText (id,classId,lang,variant,name,updatedAt) VALUES ('sorcerer-name',4,'zh','default','术士','fixture');
+    UPDATE I18nCharacterClassText SET name='法师' WHERE id='class-name';
+    INSERT INTO SpellTaxonomyFacet (id,spellId,facetType,facetKey,legacyFacetId,name,sourceField) VALUES
+    ('school-abj','spell:1','school','abjuration',101,'Abjuration','fixture'),
+    ('school-conj','spell:5','school','conjuration',102,'Conjuration','fixture'),
+    ('school-evoc','spell:5','school','evocation',103,'Evocation','fixture');
+    INSERT INTO I18nSpellSchoolText (id,schoolId,lang,variant,name,updatedAt) VALUES
+    ('abj-name',101,'zh','default','防护','fixture'), ('conj-name',102,'zh','default','咒法','fixture'),
+    ('evoc-name',103,'zh','default','塑能','fixture'), ('school-wrong-variant',101,'zh','other','不可混入的学派','fixture');`);
+  const schoolPages: PdfPage[] = [{ page_index: 260, source: { private: privacy }, extractor: { kind: 'synthetic' }, blocks: [
+    { number: 0, lines: [{ spans: [markSpan('3RD-LEVEL SORCERER/WIZARD SPELLS', 10, 4, 13)] }, markedLine('Alpha & <fixture>', 'F', 25)] },
+  ] }];
+  // The two synthetic same-name spells cannot share a unique machine binding.
+  // Restrict this source-label fixture to the spell with the printed occurrence.
+  const schoolMachine = processAutomaticMarkers(schoolPages, 'synthetic/school-lists.jsonl',
+    (schoolFixture.prepare('SELECT id,canonicalName,sourceRulebookId FROM SpellContent WHERE legacySpellId=1').all() as SpellName[]),
+    schoolFixture.prepare("SELECT * FROM SpellListEntry WHERE spellId='spell:1'").all() as NamedEntry[]).machine;
+  const schoolView = new Database(schoolFixture.serialize(), { readonly: true }); schoolFixture.close();
+  try {
+    const outDir = path.join(output, 'school-groups'), before = schoolView.serialize();
+    const schoolReport = exportOfflineHtml({ ...options, contentDb: ':memory:', outDir }, new Map(), schoolView, schoolMachine);
+    assert(schoolView.serialize().equals(before));
+    assert.deepEqual(schoolReport.schoolGroupedClassPages, [4, 1]);
+    assert.deepEqual(schoolReport.schoolNameFallbacks, []);
+    const wizard = load(fs.readFileSync(path.join(outDir, 'class-1.html'), 'utf8'));
+    assert.equal(wizard('h1').text(), '法师（Wizard）');
+    const groups = wizard('#level-3').nextUntil('h2');
+    assert.deepEqual(groups.filter('.school-heading').toArray().map(el => wizard(el).text()), ['防护', '咒法／塑能']);
+    assert.deepEqual(groups.filter('ul').find('li > a').toArray().map(el => wizard(el).attr('href')), ['A.html#spell-1', 'A.html#spell-5']);
+    assert.equal(groups.filter('ul').find('.component-labels').text(), 'F');
+    assert.equal(groups.filter('ul').find('.summary').length, 2);
+    const zero = wizard('#level-0').nextUntil('h2');
+    assert.equal(zero.filter('ul').find('li').length, 1);
+    for (const qualifier of ['Zero qualifier', 'Additional qualifier']) assert(zero.text().includes(qualifier));
+    assert.equal(load(fs.readFileSync(path.join(outDir, 'class-4.html'), 'utf8'))('#level-3 + h3 + ul .component-labels').text(), 'F');
+    assert.equal(load(fs.readFileSync(path.join(outDir, 'class-2.html'), 'utf8'))('.school-heading').length, 0);
+    assert.equal(load(fs.readFileSync(path.join(outDir, 'domain-1.html'), 'utf8'))('.school-heading').length, 0);
+    assert(!wizard.text().includes('不可混入的学派'));
+  } finally { schoolView.close(); }
+  // Extra feat relationships remain in the input but outside the book directory.
   const specialFixture = new Database(db.serialize());
   specialFixture.exec(`DELETE FROM SpellListEntry WHERE spellId='spell:2';
     UPDATE SpellContent SET id='spell:3921',legacySpellId=3921 WHERE legacySpellId=2;
     UPDATE I18nSpellText SET spellId=3921 WHERE spellId=2;
     UPDATE I18nSpellSummaryText SET spellId=3921 WHERE spellId=2;
     INSERT INTO SpellListEntry (id,spellId,listType,ownerLegacyId,ownerName,ownerSlug,level,sourceTable,reviewStatus)
-    VALUES ('feat','spell:3921','domain',28,'Fixture feat grant','fixture-feat',1,'fixture','accepted');`);
+    VALUES ('feat','spell:3921','domain',28,'Fixture feat grant','fixture-feat',1,'fixture','accepted'),
+    ('normal-3921','spell:3921','class',2,'Second caster','second',1,'fixture','accepted');`);
   specialFixture.prepare("UPDATE I18nSpellText SET nameProvenanceJson=?,bodyProvenanceJson=? WHERE spellId=3921")
     .run(provenance(3921, 'name'), provenance(3921, 'body'));
   const specialView = new Database(specialFixture.serialize(), { readonly: true }); specialFixture.close();
   try {
     const outDir = path.join(output, 'special-feat');
     const specialReport = exportOfflineHtml({ ...options, contentDb: ':memory:', outDir }, new Map(), specialView);
-    assert.equal(specialReport.domainPages, 3); assert.equal(specialReport.ordinaryDomainPages, 2);
-    assert.equal(specialReport.specialMembershipPages, 1);
+    assert.equal(specialReport.domainPages, 2); assert.equal(specialReport.ordinaryDomainPages, 2);
+    assert.equal(specialReport.specialMembershipPages, 0);
+    assert.equal(specialReport.sourceDomainListEntries, 4); assert.equal(specialReport.domainListEntries, 3);
     const specialMenu = load(fs.readFileSync(path.join(outDir, 'index.html'), 'utf8'));
-    assert.equal(specialMenu('#special-memberships + .notice + ul a').attr('href'), 'domain-28.html');
-    const specialPage = load(fs.readFileSync(path.join(outDir, 'domain-28.html'), 'utf8'));
-    assert(specialPage('.notice').text().includes('专长授予法术'));
-    assert(specialPage('.notice').text().includes('专长授予法术，归属来源待核实。'));
-    assert(!specialPage('.notice').text().includes('#354'));
+    assert.equal(specialMenu('#special-memberships, a[href="domain-28.html"]').length, 0);
+    assert(!specialMenu.text().includes('专长授予'));
+    assert(!fs.existsSync(path.join(outDir, 'domain-28.html')));
     assert.deepEqual(specialReport.pendingMembershipIssues, [{ issue: 354, listType: 'domain', ownerLegacyId: 28, spellId: 3921, level: 1 }]);
-    assert.equal(specialPage('#level-1 + ul a').attr('href'), 'B.html#spell-3921');
+    assert.equal(specialReport.excludedMemberships[0]?.listEntryId, 'feat');
+    assert.equal(load(fs.readFileSync(path.join(outDir, 'class-2.html'), 'utf8'))('#level-1 + ul a').attr('href'), 'B.html#spell-3921');
+    assert.equal(load(fs.readFileSync(path.join(outDir, 'B.html'), 'utf8'))('#spell-3921-zh').text(), plain);
+    assert.equal((specialView.prepare("SELECT COUNT(*) AS n FROM SpellListEntry WHERE id='feat'").get() as { n: number }).n, 1);
+    const onlyFeat = new Database(specialView.serialize());
+    onlyFeat.exec("DELETE FROM SpellListEntry WHERE id='normal-3921'; DELETE FROM I18nSpellSummaryText WHERE spellId=3921");
+    const onlyFeatView = new Database(onlyFeat.serialize(), { readonly: true }); onlyFeat.close();
+    try {
+      const featOnlyOut = path.join(output, 'feat-only-no-summary');
+      const featOnlyReport = exportOfflineHtml({ ...options, contentDb: ':memory:', outDir: featOnlyOut }, new Map(), onlyFeatView);
+      assert.equal(featOnlyReport.domainTargets, report.domainTargets);
+      assert.equal(load(fs.readFileSync(path.join(featOnlyOut, 'B.html'), 'utf8'))('#spell-3921-zh').text(), plain);
+    } finally { onlyFeatView.close(); }
   } finally { specialView.close(); }
   let typographyFailure = 0;
   const rejectTypography = (rows: Map<number, PdfTypographyPresentation>, pattern: RegExp) => {
@@ -568,7 +638,7 @@ try {
   for (const href of ['https://www.d20spellcodex.com/spells/2', 'https://www.d20spellcodex.com/spells/1?x=1', 'https://www.d20spellcodex.com/spells/1#zh', 'https://www.d20spellcodex.com/spells/01']) {
     assert.throws(() => validatePages(new Map([["A.html", `<div class="spell-entry" id="spell-1"><a class="website-link" href="${href}" title="在网站查看" aria-label="在网站查看">↗</a></div>`]])), /generated website link/);
   }
-  console.log("offline HTML portable tests passed: class/domain levels and identities, domain-only summaries, pending feat grants, printed MFX accepted/machine/unknown states, accepted summaries/gaps, Chinese-only bodies, website links, compact mechanism fields, merged anchors, paragraphs, note/list consumer contract, tables, privacy, repeat/failures");
+  console.log("offline HTML portable tests passed: class/domain Chinese names, Sorcerer/Wizard school groups, extra feat exclusion, domain-only summaries, printed MFX accepted/machine/unknown states, accepted summaries/gaps, Chinese-only bodies, website links, compact mechanism fields, merged anchors, paragraphs, note/list consumer contract, tables, privacy, repeat/failures");
 } finally {
   if (db.open) db.close();
   for (const [root, directory] of [[os.tmpdir(), temp], [outputRoot, output]]) {

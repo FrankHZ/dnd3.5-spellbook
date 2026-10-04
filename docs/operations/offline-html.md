@@ -16,6 +16,17 @@ indexes, English body sections, or duplicate Current rules tables. Chinese
 mechanism fields remain in the accepted body; export does not reconstruct them
 from normalized rule columns.
 
+Class directory links and page titles reuse `I18nCharacterClassText` Chinese
+`default` names alongside existing English names; absent Chinese names have an
+explicit English fallback notice. Stable class IDs, filenames and separate
+Sorcerer/Wizard pages remain unchanged. Within each SC Sorcerer/Wizard level,
+rows are grouped by existing `schoolRaw`, in English school-name order as in the
+printed appendix. School headings use the existing accepted taxonomy IDs and
+`I18nSpellSchoolText` Chinese `default` names; missing overlays retain the raw
+school name and are reported. Combined schools retain one group and one row per
+spell, rather than duplicating the spell into multiple school groups. Other
+classes and domains retain their original list layout.
+
 Each `domain-<owner ID>.html` lists levels 1–9 with the same name/summary row and
 local spell anchors. Pages include only relationships for spells whose bodies
 belong to the selected book; empty levels explicitly refer to this book's subset,
@@ -23,9 +34,11 @@ not the original domain's complete spell list. Class and domain pages use distin
 filename prefixes even when owner IDs coincide. Domain names reuse existing
 `I18nDomainText` Chinese `default` overlays; missing names explicitly fall back to
 the stored English owner name. Qualifiers and variant notes remain visible.
-SC owner 28 / spell 3921 / level 1 is the known pending #354 feat grant and appears
-in a separate menu group with a pending-source notice. It remains a stable
-`domain-28.html` page, without being presented as an accepted ordinary domain.
+SC owner 28 / spell 3921 / level 1 is the known pending #354 additional feat grant.
+It is outside the original book directory and emits no menu, page or list row.
+The existing relationship is unchanged; spell 3921's Chinese body and normal
+class memberships remain available. The report separates source domain-row
+counts from displayed rows and records the exclusion with its unresolved issue.
 
 Chinese summaries are required for the union of class and domain targets.
 Class targets retain the existing internal accepted English-summary checks;

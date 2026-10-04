@@ -15,7 +15,14 @@ ordinary paragraphs, tables/lists, materials/XP, independent notes and privacy.
 Domain checks cover menu order, class/domain owner-ID collisions, levels 1–9,
 subset-specific empty levels, Chinese-name overlays and explicit fallback,
 domain-only Chinese summaries without unused English-summary requirements,
-qualifiers, pending feat grants, invalid levels and duplicate domain tuples.
+qualifiers, exclusion of extra feat grants, invalid levels and duplicate domain tuples.
+Class checks cover Chinese `default` names and explicit fallback. SC
+Sorcerer/Wizard checks cover level-specific Chinese school groups, unchanged
+stable pages, combined-school rows, duplicate qualifiers, distinct same-name
+spells and preservation of source-bound printed markers and Chinese summaries.
+Other classes and domains keep their original list layout. Excluded feat
+relationships remain in the read-only input, with the spell body and normal
+class memberships intact; reports distinguish source and displayed domain rows.
 Directory rows use Chinese name (English name), printed M/F/X superscripts,
 and the accepted Chinese summary on one flowing line. Detail titles are smaller;
 body section headings and bottom letter-page navigation are omitted, while the
