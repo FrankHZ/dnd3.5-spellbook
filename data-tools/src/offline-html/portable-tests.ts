@@ -89,15 +89,22 @@ try {
     ('zero-again','spell:1','class',1,'Fixture caster','fixture',0,'fixture','Additional qualifier','review'),
     ('nine','spell:5','class',1,'Fixture caster','fixture',9,'fixture',NULL,'accepted'),
     ('second','spell:2','class',2,'Second caster','second',4,'fixture',NULL,'accepted')`);
+  db.exec(`INSERT INTO SpellListEntry (id,spellId,listType,ownerLegacyId,ownerName,ownerSlug,level,sourceTable,reviewStatus) VALUES
+    ('domain-one','spell:1','domain',1,'First domain','first-domain',1,'fixture','accepted'),
+    ('domain-nine','spell:7','domain',1,'First domain','first-domain',9,'fixture','review');
+    INSERT INTO I18nDomainText (id,domainId,lang,variant,name,updatedAt) VALUES
+    ('domain-name',1,'zh','default','合成领域','fixture'),
+    ('wrong-variant-domain-name',2,'zh','other','不可混入的名称','fixture');`);
   const summary = db.prepare(`INSERT INTO I18nSpellSummaryText
     (id,spellId,rulebookId,lang,variant,summaryText,reviewStatus,sourceKey,sourceKind,updatedAt)
     VALUES (?,?,86,?,?,?,'accepted',?,'fixture',CURRENT_TIMESTAMP)`);
-  for (const id of [1, 2, 5]) {
+  for (const id of [1, 2, 5, 7]) {
     summary.run(`summary:${id}:zh`, id, "zh", "chm", `已接受短描述 ${id} & <保留>`, privacy);
     summary.run(`summary:${id}:en`, id, "en", "imarvin", `Accepted short description ${id}.`, privacy);
     summary.run(`summary:${id}:effective`, id, "zh", "effective", "DO_NOT_BLEND_EFFECTIVE_SUMMARY", privacy);
     summary.run(`summary:${id}:other`, id, "zh", "other", `Other exact summary ${id}.`, privacy);
   }
+  db.exec("DELETE FROM I18nSpellSummaryText WHERE id='summary:7:en'");
   db.prepare(`INSERT INTO SpellTaxonomyFacet (id,spellId,facetType,facetKey,name,rawText,sourceField)
     VALUES ('facet:1','spell:1','descriptor','fixture','Normalized descriptor','Raw descriptor','fixture')`).run();
   db.prepare(`INSERT INTO SpellComponent (id,spellId,componentType,present,sourceField)
@@ -107,7 +114,7 @@ try {
   const options = { contentDb: dbPath, book: 86, variant: "effective", outDir: path.join(output, "first") };
   const report = exportOfflineHtml(options);
   assert.equal(report.spells, 6); assert.equal(report.englishBodyFallbacks, 0);
-  assert.equal(report.files, 31); assert.equal(report.detachedReferences, 2);
+  assert.equal(report.files, 33); assert.equal(report.detachedReferences, 2);
   assert.equal(report.htmlTextDifferences, 0);
   const read = (name: string) => fs.readFileSync(path.join(options.outDir, name), "utf8");
   const first = read("A.html"), $ = load(first);
@@ -142,7 +149,14 @@ try {
   assert.equal(load(read("G.html"))("#spell-3-zh pre").text(), "中文  回退\t保留。\n\n最后一行。");
   assert.deepEqual($(".spell-entry").toArray().map(el => $(el).attr("id")), ["spell-1", "spell-5"]);
   assert.equal(report.classPages, 2); assert.equal(report.classMemberships, 4); assert.equal(report.classListEntries, 5);
-  assert.equal(report.selectedSummaries, 6); assert.deepEqual(report.summaryVariants, { en: "imarvin", zh: "chm" });
+  assert.equal(report.selectedSummaries, 7); assert.deepEqual(report.summaryVariants, { en: "imarvin", zh: "chm" });
+  assert.equal(report.selectedChineseSummaries, 4); assert.equal(report.selectedEnglishSummaries, 3);
+  assert.equal(report.domainChineseSummaries, 2);
+  assert.equal(report.layout, 'classes-domains-then-az');
+  assert.equal(report.domainPages, 2); assert.equal(report.domainListEntries, 3);
+  assert.equal(report.domainMemberships, 3); assert.equal(report.domainTargets, 2);
+  assert.deepEqual(report.domainOnlyTargets, [7]); assert.deepEqual(report.domainNameFallbacks, [2]);
+  assert.equal(report.domainEntriesNeedingStructuralReview, 1);
   assert.deepEqual(report.classlessTargets, [3, 6, 7]); assert.equal(report.classEntriesNeedingStructuralReview, 1);
   assert.equal(report.pdfFormatting, "pending-431-source-mapping");
   // Preserve two semantic paragraphs and a visual line fold within the first. No PDF mapping is inferred.
@@ -256,8 +270,23 @@ try {
   assert(css.includes('.spell-body ul.pdf-typography-marked-list ol { list-style-type: decimal; }'));
   assert(css.includes('.spell-body ul.pdf-typography-marked-list ul.pdf-typography-marked-list { list-style: none; }'));
   const menu = load(read("index.html"));
-  assert.deepEqual(menu("h2").toArray().map(el => menu(el).attr("id")), ["classes", "letters"]);
-  assert.equal(menu('a[href="A.html"]').length, 1); assert(!menu.text().includes("Fixture domain"));
+  assert.deepEqual(menu("h2").toArray().map(el => menu(el).attr("id")), ["classes", "domains", "letters"]);
+  assert.equal(menu('a[href="A.html"]').length, 1);
+  assert.equal(menu('a[href="domain-1.html"]').text(), '合成领域（First domain）');
+  assert.equal(menu('a[href="domain-2.html"]').text(), 'Fixture domain');
+  const domain = load(read('domain-1.html'));
+  assert.equal(domain('h1').text(), '合成领域（First domain）');
+  assert.deepEqual(domain('h2').toArray().map(el => domain(el).attr('id')), Array.from({ length: 9 }, (_, i) => `level-${i + 1}`));
+  assert.equal(domain('#level-0').length, 0);
+  assert.equal(domain('#level-1 + ul a').attr('href'), 'A.html#spell-1');
+  assert.equal(domain('#level-9 + ul a').attr('href'), 'C.html#spell-7');
+  assert.equal(domain('#level-9 + ul .summary').text(), '已接受短描述 7 & <保留>');
+  assert(domain('#level-2 + .empty').text().includes('本书收录范围内'));
+  assert(domain('.notice').text().includes('并非原书完整领域法表'));
+  const qualifiedDomain = load(read('domain-2.html'));
+  assert(qualifiedDomain('.notice').text().includes('中文名称缺失'));
+  assert(!qualifiedDomain.text().includes('不可混入的名称'));
+  assert(qualifiedDomain('.membership-note').text().includes('Raw domain qualifier — Printed variant'));
   const caster = load(read("class-1.html"));
   assert.deepEqual(caster("h2").toArray().map(el => caster(el).attr("id")), Array.from({ length: 10 }, (_, i) => `level-${i}`));
   assert.equal(caster('#level-0 + ul > li').length, 1);
@@ -318,6 +347,29 @@ try {
     assert.equal(fs.readFileSync(path.join(selectedOut, "G.html"), "utf8"), read("G.html"));
   } finally { memoryView.close(); }
   assert.equal((db.prepare('SELECT descriptionHtml FROM SpellContent WHERE legacySpellId=5').get() as { descriptionHtml: string }).descriptionHtml, paragraphs);
+  // A pending feat is distinct even when its stored relationship reviewStatus is accepted.
+  const specialFixture = new Database(db.serialize());
+  specialFixture.exec(`DELETE FROM SpellListEntry WHERE spellId='spell:2';
+    UPDATE SpellContent SET id='spell:3921',legacySpellId=3921 WHERE legacySpellId=2;
+    UPDATE I18nSpellText SET spellId=3921 WHERE spellId=2;
+    UPDATE I18nSpellSummaryText SET spellId=3921 WHERE spellId=2;
+    INSERT INTO SpellListEntry (id,spellId,listType,ownerLegacyId,ownerName,ownerSlug,level,sourceTable,reviewStatus)
+    VALUES ('feat','spell:3921','domain',28,'Fixture feat grant','fixture-feat',1,'fixture','accepted');`);
+  specialFixture.prepare("UPDATE I18nSpellText SET nameProvenanceJson=?,bodyProvenanceJson=? WHERE spellId=3921")
+    .run(provenance(3921, 'name'), provenance(3921, 'body'));
+  const specialView = new Database(specialFixture.serialize(), { readonly: true }); specialFixture.close();
+  try {
+    const outDir = path.join(output, 'special-feat');
+    const specialReport = exportOfflineHtml({ ...options, contentDb: ':memory:', outDir }, new Map(), specialView);
+    assert.equal(specialReport.domainPages, 3); assert.equal(specialReport.ordinaryDomainPages, 2);
+    assert.equal(specialReport.specialMembershipPages, 1);
+    const specialMenu = load(fs.readFileSync(path.join(outDir, 'index.html'), 'utf8'));
+    assert.equal(specialMenu('#special-memberships + .notice + ul a').attr('href'), 'domain-28.html');
+    const specialPage = load(fs.readFileSync(path.join(outDir, 'domain-28.html'), 'utf8'));
+    assert(specialPage('.notice').text().includes('专长授予法术'));
+    assert(specialPage('.notice').text().includes('#354'));
+    assert.equal(specialPage('#level-1 + ul a').attr('href'), 'B.html#spell-3921');
+  } finally { specialView.close(); }
   let typographyFailure = 0;
   const rejectTypography = (rows: Map<number, PdfTypographyPresentation>, pattern: RegExp) => {
     const outDir = path.join(output, `bad-typography-${typographyFailure++}`);
@@ -364,6 +416,11 @@ try {
     ["UPDATE SpellContent SET canonicalName='3rd invalid initial' WHERE legacySpellId=1", /A–Z initial/],
     ["UPDATE SpellListEntry SET level=10 WHERE id='nine'", /class membership/],
     ["UPDATE SpellListEntry SET ownerName='Conflicting owner' WHERE id='nine'", /class owner/],
+    ["UPDATE SpellListEntry SET level=0 WHERE id='domain-one'", /domain membership/],
+    ["UPDATE SpellListEntry SET level=10 WHERE id='domain-nine'", /domain membership/],
+    ["UPDATE SpellListEntry SET ownerName='Conflicting domain' WHERE id='domain-nine'", /domain owner/],
+    ["INSERT INTO SpellListEntry (id,spellId,listType,ownerLegacyId,ownerName,ownerSlug,level,sourceTable,reviewStatus) SELECT 'duplicate-domain',spellId,listType,ownerLegacyId,ownerName,ownerSlug,level,sourceTable,reviewStatus FROM SpellListEntry WHERE id='domain-one'", /Duplicate domain membership tuple/],
+    ["DELETE FROM I18nSpellSummaryText WHERE id='summary:7:zh'", /Selected summary gaps/],
     ["DELETE FROM I18nSpellSummaryText WHERE id='summary:1:zh'", /Selected summary gaps/],
     ["UPDATE I18nSpellSummaryText SET rulebookId=9 WHERE id='summary:1:en'", /wrong-book/],
     ["UPDATE I18nSpellSummaryText SET reviewStatus='review' WHERE id='summary:2:zh'", /not-accepted/],
@@ -383,7 +440,7 @@ try {
   for (const [sql, pattern] of badCases) {
     const badDb = path.join(temp, `bad-${failureIndex}.sqlite`), outDir = path.join(output, `bad-${failureIndex++}`);
     fs.writeFileSync(badDb, snapshot); const connection = new Database(badDb);
-    connection.exec(sql); connection.close();
+    try { connection.exec(sql); } finally { connection.close(); }
     assert.throws(() => exportOfflineHtml({ ...options, contentDb: badDb, outDir }), pattern);
     assert.ok(!fs.existsSync(outDir));
   }
@@ -427,7 +484,7 @@ try {
     spell(4837, "Excluded neighbor", "Neighbor in book nine", null, 9);
   })();
   const fullOut = path.join(output, "full-scope"), full = exportOfflineHtml({ ...options, outDir: fullOut });
-  assert.equal(full.spells, 1001); assert.equal(full.selectedSummaries, 6); assert.equal(full.classTargets, 3);
+  assert.equal(full.spells, 1001); assert.equal(full.selectedSummaries, 7); assert.equal(full.classTargets, 3);
   const actual = new Map<number, { en: string; zh: string }>();
   for (const letter of "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
     const page = load(fs.readFileSync(path.join(fullOut, `${letter}.html`), "utf8"));
@@ -455,7 +512,7 @@ try {
   for (const href of ['https://www.d20spellcodex.com/spells/2', 'https://www.d20spellcodex.com/spells/1?x=1', 'https://www.d20spellcodex.com/spells/1#zh', 'https://www.d20spellcodex.com/spells/01']) {
     assert.throws(() => validatePages(new Map([["A.html", `<div class="spell-entry" id="spell-1"><a class="website-link" href="${href}" title="在网站查看" aria-label="在网站查看">↗</a></div>`]])), /generated website link/);
   }
-  console.log("offline HTML portable tests passed: classes/levels, accepted summaries/gaps, Chinese-only bodies/summaries, website links, compact mechanism fields, merged anchors, paragraphs, note/list consumer contract, tables, privacy, repeat/failures");
+  console.log("offline HTML portable tests passed: class/domain levels and identities, domain-only summaries, pending feat grants, accepted summaries/gaps, Chinese-only bodies, website links, compact mechanism fields, merged anchors, paragraphs, note/list consumer contract, tables, privacy, repeat/failures");
 } finally {
   if (db.open) db.close();
   for (const [root, directory] of [[os.tmpdir(), temp], [outputRoot, output]]) {

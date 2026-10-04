@@ -23,6 +23,7 @@ type Text = { spellId: number; rulebookId: number; name: string | null;
 export type ExportOptions = { contentDb: string; book: number; variant: string; outDir: string };
 type ListEntry = { id: string; spellId: string; listType: string; ownerLegacyId: number; ownerName: string;
   ownerSlug: string; level: number; rawExtra: string | null; variantLabel: string | null; note: string | null; reviewStatus: string };
+type ListGroup = { name: string; slug: string; rows: ListEntry[] };
 type Summary = { spellId: number; rulebookId: number; lang: string; variant: string; summaryText: string; reviewStatus: string };
 export type SummaryGap = { spellId: number; lang: string; variant: string;
   reason: "missing" | "multiple" | "wrong-book" | "not-accepted" | "empty" };
@@ -41,11 +42,12 @@ const websiteRoot = "https://www.d20spellcodex.com/spells/";
 const componentLabels: Record<string, string> = { verbal: "V", somatic: "S", material: "M",
   arcane_focus: "AF", divine_focus: "DF", xp: "XP", metabreath: "超息", truename: "真名", corrupt: "腐化" };
 
-function selectSummaries(rows: Summary[], ids: Set<number>, book: number, variant: string) {
+function selectSummaries(rows: Summary[], ids: Set<number>, book: number, variant: string, englishTargets: Set<number>) {
   const selected = new Map<number, { en: string; zh: string }>(), gaps: SummaryGap[] = [];
   for (const id of [...ids].sort((a, b) => a - b)) {
     const values = { en: "", zh: "" };
     for (const lang of ["en", "zh"] as const) {
+      if (lang === "en" && !englishTargets.has(id)) continue;
       const owner = selectedSummaryVariant(lang, variant);
       const candidates = rows.filter(row => row.spellId === id && row.lang === lang && row.variant === owner);
       const row = candidates[0];
@@ -81,9 +83,11 @@ function language(raw: string | null, id: number, field: string, variant: string
 function document(title: string, body: string) {
   return `<!doctype html>\n<html lang="zh"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>${text(title)}</title><link rel="stylesheet" href="style.css"></head><body><div id="content">${body}</div></body></html>\n`;
 }
-const navigation = '<p class="navigation"><a href="index.html#classes">职业目录</a> | <a href="index.html#letters">A–Z 正文</a></p>';
+const navigation = '<p class="navigation"><a href="index.html#classes">职业目录</a> | <a href="index.html#domains">领域目录</a> | <a href="index.html#letters">A–Z 正文</a></p>';
 const preview = '<p class="notice">中文内容预览，自然排版待视觉验收。</p>';
 const membershipNotice = '<p class="notice">职业目录保留当前归属与附注；部分外部归属的原书核对仍待完成，目录不构成来源 QA 通过。</p>';
+const domainNotice = '<p class="notice">本书收录的领域法术：仅列本书正文范围内的条目，并非原书完整领域法表。</p>';
+const featNotice = '<p class="notice">专长授予法术：此归属在现有数据中保存为领域关系，来源待核实（#354）；不属于已核实的常规领域。</p>';
 const style = `body { margin: 2em; color: #222; background: #fff; font-family: "Microsoft YaHei", "SimSun", serif; line-height: 1.65; }
 #content { max-width: 62em; margin: auto; } h1 { font-size: 1.7em; } h2 { border-bottom: 1px solid #bbb; }
 a { color: #164f91; } .notice { padding: .6em; border: 1px solid #aaa; background: #f5f5f5; }
@@ -333,25 +337,40 @@ export function exportOfflineHtml(options: ExportOptions,
         l.level, l.rawExtra, l.variantLabel, l.note, l.reviewStatus FROM SpellListEntry l
         JOIN SpellContent s ON s.id=l.spellId WHERE s.sourceRulebookId=?
         ORDER BY l.listType, l.ownerLegacyId, l.level, l.id`).all(options.book) as ListEntry[];
-      const classes = new Map<number, { name: string; slug: string; rows: ListEntry[] }>();
-      const classTargets = new Set<number>(), rowIds = new Set<string>();
-      for (const row of listEntries.filter(row => row.listType === "class")) {
+      const classes = new Map<number, ListGroup>(), domains = new Map<number, ListGroup>();
+      const classTargets = new Set<number>(), domainTargets = new Set<number>(), rowIds = new Set<string>();
+      const domainTuples = new Set<string>();
+      for (const row of listEntries.filter(row => row.listType === "class" || row.listType === "domain")) {
+        const kind = row.listType;
         if (!present(row.id) || rowIds.has(row.id) || !Number.isSafeInteger(row.ownerLegacyId) || row.ownerLegacyId <= 0
-          || !Number.isInteger(row.level) || row.level < 0 || row.level > 9 || !present(row.ownerName)
+          || !Number.isInteger(row.level) || row.level < (kind === "domain" ? 1 : 0) || row.level > 9 || !present(row.ownerName)
           || !present(row.ownerSlug) || !["accepted", "review"].includes(row.reviewStatus)) {
-          throw new Error("Invalid/duplicate class membership identity, level or metadata");
+          throw new Error(`Invalid/duplicate ${kind} membership identity, level or metadata`);
         }
         rowIds.add(row.id);
-        const group = classes.get(row.ownerLegacyId);
-        if (group && (group.name !== row.ownerName || group.slug !== row.ownerSlug)) throw new Error("Conflicting class owner identity");
+        if (kind === "domain") {
+          const tuple = JSON.stringify([row.ownerLegacyId, row.level, row.spellId, row.rawExtra, row.variantLabel]);
+          if (domainTuples.has(tuple)) throw new Error("Duplicate domain membership tuple");
+          domainTuples.add(tuple);
+        }
+        const groups = kind === "class" ? classes : domains;
+        const group = groups.get(row.ownerLegacyId);
+        if (group && (group.name !== row.ownerName || group.slug !== row.ownerSlug)) throw new Error(`Conflicting ${kind} owner identity`);
         if (group) group.rows.push(row);
-        else classes.set(row.ownerLegacyId, { name: row.ownerName, slug: row.ownerSlug, rows: [row] });
-        classTargets.add(Number(row.spellId.slice("spell:".length)));
+        else groups.set(row.ownerLegacyId, { name: row.ownerName, slug: row.ownerSlug, rows: [row] });
+        (kind === "class" ? classTargets : domainTargets).add(Number(row.spellId.slice("spell:".length)));
+      }
+      // Reuse the existing entity-name overlay contract; no summary/body fallback invents names.
+      const domainNames = new Map<number, string>();
+      for (const row of db.prepare("SELECT domainId, name FROM I18nDomainText WHERE lang='zh' AND variant='default'").all() as { domainId: number; name: string | null }[]) {
+        if (!domains.has(row.domainId) || !present(row.name)) continue;
+        if (domainNames.has(row.domainId)) throw new Error("Duplicate Chinese domain name");
+        domainNames.set(row.domainId, row.name);
       }
       const summaryRows = db.prepare(`SELECT spellId, rulebookId, lang, variant, summaryText, reviewStatus
         FROM I18nSpellSummaryText WHERE spellId IN
         (SELECT legacySpellId FROM SpellContent WHERE sourceRulebookId=?)`).all(options.book) as Summary[];
-      const summaries = selectSummaries(summaryRows, classTargets, options.book, options.variant);
+      const summaries = selectSummaries(summaryRows, new Set([...classTargets, ...domainTargets]), options.book, options.variant, classTargets);
       const counts = { spells: spells.length, chineseNames: 0, chineseBodies: 0,
         englishNameFallbacks: 0, englishBodyFallbacks: 0, detachedReferences: 0, htmlTextDifferences: 0 };
       const pages = new Map<string, string>([["style.css", style]]);
@@ -385,42 +404,66 @@ export function exportOfflineHtml(options: ExportOptions,
           ${entries.length ? entries.join("\n") : '<p class="empty">此字母无法术。</p>'}`));
       }
       const byId = new Map(spells.map(spell => [spell.legacySpellId, spell]));
-      const classMenu: string[] = []; let classMemberships = 0;
-      for (const [owner, group] of [...classes].sort(([, a], [, b]) => a.name.localeCompare(b.name, "en"))) {
-        const filename = `class-${owner}.html`;
-        classMenu.push(`<li><a href="${filename}">${text(group.name)}</a></li>`);
-        const sections = Array.from({ length: 10 }, (_, level) => {
-          const members = new Map<number, ListEntry[]>();
-          for (const row of group.rows.filter(row => row.level === level)) {
-            const id = Number(row.spellId.slice("spell:".length));
-            members.set(id, [...(members.get(id) ?? []), row]);
+      const classMenu: string[] = [], domainMenu: string[] = [], featMenu: string[] = [];
+      let classMemberships = 0, domainMemberships = 0, specialMembershipPages = 0;
+      for (const [kind, groups] of [["class", classes], ["domain", domains]] as const) {
+        for (const [owner, group] of [...groups].sort(([, a], [, b]) => a.name.localeCompare(b.name, "en"))) {
+          const filename = `${kind}-${owner}.html`;
+          // #354 is a known feat grant stored as a domain, not an accepted ordinary domain.
+          const specialFeat = kind === "domain" && options.book === 86 && owner === 28;
+          if (specialFeat && group.rows.some(row => row.spellId !== "spell:3921" || row.level !== 1)) {
+            throw new Error("Unrecognized pending feat membership");
           }
-          const rows = [...members].sort(([a], [b]) => byId.get(a)!.canonicalName.localeCompare(byId.get(b)!.canonicalName, "en") || a - b)
-            .map(([id, memberships]) => {
-              classMemberships++;
-              const spell = byId.get(id)!, translation = translations.get(id)!, summary = summaries.get(id)!;
-              const components = new Set((db.prepare("SELECT componentType FROM SpellComponent WHERE spellId=? AND present=1 AND componentType <> 'other'").all(spell.id) as { componentType: string }[]).map(row => row.componentType));
-              const labels = Object.entries(componentLabels).filter(([key]) => components.has(key)).map(([, label]) => label).join("、");
-              const qualifiers = [...new Set(memberships.map(row => [row.rawExtra, row.variantLabel, row.note].filter(present).join(" — ")).filter(present))];
-              return `<li><a href="${destinations.get(id)}">${text(translation.name!)}（${text(spell.canonicalName)}）</a>${labels ? `<small class="component-labels" title="法术成分"> ${text(labels)}</small>` : ""}：<span lang="zh" class="summary">${text(summary.zh)}</span>
-                ${qualifiers.map(value => `<span class="membership-note">${text(value)}</span>`).join("")}</li>`;
-            }).join("\n");
-          return `<h2 id="level-${level}">${level} 环</h2>${rows ? `<ul class="spell-list">${rows}</ul>` : '<p class="empty">此环无法术。</p>'}`;
-        }).join("\n");
-        pages.set(filename, document(`${book[0]!.name} — ${group.name}`, `${navigation}<h1>${text(group.name)}</h1>${membershipNotice}${sections}${navigation}`));
+          if (specialFeat) specialMembershipPages++;
+          const name = kind === "domain" && domainNames.has(owner)
+            ? `${domainNames.get(owner)}（${group.name}）` : group.name;
+          (kind === "class" ? classMenu : specialFeat ? featMenu : domainMenu).push(`<li><a href="${filename}">${text(name)}</a></li>`);
+          const firstLevel = kind === "domain" ? 1 : 0;
+          const sections = Array.from({ length: 10 - firstLevel }, (_, index) => {
+            const level = index + firstLevel;
+            const members = new Map<number, ListEntry[]>();
+            for (const row of group.rows.filter(row => row.level === level)) {
+              const id = Number(row.spellId.slice("spell:".length));
+              members.set(id, [...(members.get(id) ?? []), row]);
+            }
+            const rows = [...members].sort(([a], [b]) => byId.get(a)!.canonicalName.localeCompare(byId.get(b)!.canonicalName, "en") || a - b)
+              .map(([id, memberships]) => {
+                if (kind === "class") classMemberships++; else domainMemberships++;
+                const spell = byId.get(id)!, translation = translations.get(id)!, summary = summaries.get(id)!;
+                const components = new Set((db.prepare("SELECT componentType FROM SpellComponent WHERE spellId=? AND present=1 AND componentType <> 'other'").all(spell.id) as { componentType: string }[]).map(row => row.componentType));
+                const labels = Object.entries(componentLabels).filter(([key]) => components.has(key)).map(([, label]) => label).join("、");
+                const qualifiers = [...new Set(memberships.map(row => [row.rawExtra, row.variantLabel, row.note].filter(present).join(" — ")).filter(present))];
+                return `<li><a href="${destinations.get(id)}">${text(translation.name!)}（${text(spell.canonicalName)}）</a>${labels ? `<small class="component-labels" title="法术成分"> ${text(labels)}</small>` : ""}：<span lang="zh" class="summary">${text(summary.zh)}</span>
+                  ${qualifiers.map(value => `<span class="membership-note">${text(value)}</span>`).join("")}</li>`;
+              }).join("\n");
+            return `<h2 id="level-${level}">${level} 环</h2>${rows ? `<ul class="spell-list">${rows}</ul>` : `<p class="empty">${kind === "class" ? "此环无法术。" : "本书收录范围内，此环暂无条目。"}</p>`}`;
+          }).join("\n");
+          const missingName = kind === "domain" && !domainNames.has(owner)
+            ? `<p class="notice">${specialFeat ? "归属" : "领域"}中文名称缺失：显示现有英文名称。</p>` : "";
+          pages.set(filename, document(`${book[0]!.name} — ${name}`, `${navigation}<h1>${text(name)}</h1>${kind === "class" ? membershipNotice : specialFeat ? featNotice : domainNotice}${missingName}${sections}${navigation}`));
+        }
       }
       pages.set("index.html", document(book[0]!.name, `<h1>${text(book[0]!.name)}</h1>${preview}
         <h2 id="classes">职业目录</h2>${membershipNotice}${classMenu.length ? `<ul>${classMenu.join("\n")}</ul>` : '<p class="empty">无职业归属。</p>'}
+        <h2 id="domains">领域目录</h2>${domainNotice}${domainMenu.length ? `<ul>${domainMenu.join("\n")}</ul>` : '<p class="empty">本书收录范围内，无常规领域条目。</p>'}
+        ${featMenu.length ? `<h3 id="special-memberships">专长授予法术（来源待核实）</h3>${featNotice}<ul>${featMenu.join("\n")}</ul>` : ""}
         <h2 id="letters">A–Z 正文</h2><p>${letters.map(letter => `<a href="${letter}.html">${letter}</a>`).join(" | ")}</p>`));
       const links = validatePages(pages);
       fs.mkdirSync(path.dirname(out), { recursive: true });
       fs.mkdirSync(out);
       for (const [name, html] of pages) fs.writeFileSync(path.join(out, name), html, { encoding: "utf8", flag: "wx" });
       const report = { ...counts, files: pages.size + 1, links, book: options.book, variant: options.variant,
-        layout: "classes-then-az", letterPages: letters.length, classPages: classes.size, classMemberships,
-        classListEntries: rowIds.size, classTargets: classTargets.size, classlessTargets: spells.filter(s => !classTargets.has(s.legacySpellId)).map(s => s.legacySpellId),
+        layout: "classes-domains-then-az", letterPages: letters.length, classPages: classes.size, classMemberships,
+        classListEntries: listEntries.filter(row => row.listType === "class").length, classTargets: classTargets.size, classlessTargets: spells.filter(s => !classTargets.has(s.legacySpellId)).map(s => s.legacySpellId),
+        domainPages: domains.size, ordinaryDomainPages: domains.size - specialMembershipPages, specialMembershipPages,
+        domainListEntries: listEntries.filter(row => row.listType === "domain").length, domainMemberships, domainTargets: domainTargets.size,
+        domainOnlyTargets: [...domainTargets].filter(id => !classTargets.has(id)).sort((a, b) => a - b),
+        domainNameFallbacks: [...domains.keys()].filter(id => !domainNames.has(id)),
+        domainEntriesNeedingStructuralReview: listEntries.filter(row => row.listType === "domain" && row.reviewStatus === "review").length,
         classEntriesNeedingStructuralReview: listEntries.filter(row => row.listType === "class" && row.reviewStatus === "review").length,
-        selectedSummaries: summaries.size * 2, summaryVariants: { en: selectedSummaryVariant("en", options.variant), zh: selectedSummaryVariant("zh", options.variant) },
+        selectedSummaries: summaries.size + classTargets.size, selectedChineseSummaries: summaries.size,
+        selectedEnglishSummaries: classTargets.size, domainChineseSummaries: domainTargets.size,
+        summaryVariants: { en: selectedSummaryVariant("en", options.variant), zh: selectedSummaryVariant("zh", options.variant) },
         displayLanguage: "zh", displayedBodies: spells.length, displayedSummaries: summaries.size, websiteLinks: spells.length,
         pdfFormatting: presentations.size ? "partial-main-gate-selected" : "pending-431-source-mapping",
         typography: { reviewedSelectedIds: [...presentations.keys()].sort((a, b) => a - b),

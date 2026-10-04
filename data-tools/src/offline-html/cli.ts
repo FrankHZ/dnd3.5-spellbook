@@ -2,7 +2,7 @@ import { exportOfflineHtml } from "./export";
 
 export function main(args: string[]) {
   if (args.length === 1 && args[0] === "--help") {
-    console.log("offline:html --content-db <path> --book <id> --variant <zh-variant> --out <new-directory>\nClass directories with levels 0–9 and accepted bilingual summaries; 26 A–Z full-body pages. Relative paths resolve from this checkout's repository root. Output must be a new child of data-tools/out; no overwrite. Read-only content DB; PDF formatting awaits accepted source mapping; no content certification.");
+    console.log("offline:html --content-db <path> --book <id> --variant <zh-variant> --out <new-directory>\nClass directories with levels 0–9, domain subsets with levels 1–9 and accepted Chinese summaries; 26 A–Z Chinese-body pages. Relative paths resolve from this checkout's repository root. Output must be a new child of data-tools/out; no overwrite. Read-only content DB; no content certification.");
     return;
   }
   const flags = new Map<string, string>();

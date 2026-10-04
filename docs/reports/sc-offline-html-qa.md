@@ -2,7 +2,7 @@
 
 The current [#345 scope](https://github.com/FrankHZ/dnd3.5-spellbook/issues/345)
 is a Chinese CHM replacement: bilingual spell names, Chinese bodies and accepted
-Chinese class summaries, compact mechanism fields, and a generated website icon on the ID line.
+Chinese class/domain summaries, compact mechanism fields, and a generated website icon on the ID line.
 Independent English bodies and duplicate Current rules tables are omitted. English
 PDF extraction, accepted bilingual inputs, provenance and internal QA are preserved.
 
@@ -12,6 +12,10 @@ Focused synthetic exporter checks cover Chinese-only output, internal bilingual
 summary requirements, English-name retention, removed section links redirected
 to local entries, mechanism spacing in semantic paragraphs and plain fallback,
 ordinary paragraphs, tables/lists, materials/XP, independent notes and privacy.
+Domain checks cover menu order, class/domain owner-ID collisions, levels 1–9,
+subset-specific empty levels, Chinese-name overlays and explicit fallback,
+domain-only Chinese summaries without unused English-summary requirements,
+qualifiers, pending feat grants, invalid levels and duplicate domain tuples.
 Directory rows use Chinese name (English name), small normalized component tags,
 and the accepted Chinese summary on one flowing line. Detail titles are smaller;
 body section headings and bottom letter-page navigation are omitted, while the
@@ -21,7 +25,7 @@ arbitrary source/external URLs remain detached or rejected.
 
 A small accepted-input preview is the current user-review stage. It contains
 representative mapped/plain, ordinary/long, inheritance, mechanism, table/list,
-materials/XP and note cases, plus a class-directory fragment. Its complete Chinese
+materials/XP and note cases, plus class/domain-directory fragments. Its complete Chinese
 text (including whitespace), accepted Chinese summaries, structures and links are
 checked in a readonly memory view. No persistent/operator/stable/app-state DB is
 opened, copied or written. It is a display preview, not full source authentication

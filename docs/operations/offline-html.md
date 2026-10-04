@@ -5,7 +5,7 @@ static HTML/CHM source pages. It supplies Chinese bodies and accepted Chinese
 short descriptions, retaining both Chinese and English spell names. The English
 source, accepted bilingual data and internal QA remain intact.
 
-`index.html` presents classes first, then A–Z. Each `class-<owner ID>.html` lists
+`index.html` presents classes, domains, then A–Z. Each `class-<owner ID>.html` lists
 levels 0–9 as “Chinese name (English name), small component tags: Chinese summary”
 on one flowing line, linked to full entries. Component tags use the existing
 normalized flags (V, S, M, AF, DF, XP and the additional component labels). The 26
@@ -15,6 +15,25 @@ letter pages. There are no individual spell-ID pages or separate pinyin/English
 indexes, English body sections, or duplicate Current rules tables. Chinese
 mechanism fields remain in the accepted body; export does not reconstruct them
 from normalized rule columns.
+
+Each `domain-<owner ID>.html` lists levels 1–9 with the same name/summary row and
+local spell anchors. Pages include only relationships for spells whose bodies
+belong to the selected book; empty levels explicitly refer to this book's subset,
+not the original domain's complete spell list. Class and domain pages use distinct
+filename prefixes even when owner IDs coincide. Domain names reuse existing
+`I18nDomainText` Chinese `default` overlays; missing names explicitly fall back to
+the stored English owner name. Qualifiers and variant notes remain visible.
+SC owner 28 / spell 3921 / level 1 is the known pending #354 feat grant and appears
+in a separate menu group with a pending-source notice. It remains a stable
+`domain-28.html` page, without being presented as an accepted ordinary domain.
+
+Chinese summaries are required for the union of class and domain targets.
+Class targets retain the existing internal accepted English-summary checks;
+domain-only targets do not require an unused English summary. No body-first-line
+or English-summary fallback supplies Chinese summaries. The report counts class
+and domain pages, relationships, distinct targets, domain-only targets and selected
+Chinese/English summaries separately. Invalid levels, owner conflicts and duplicate
+domain tuples reject before output creation.
 
 Entries use `spell-<ID>` and `spell-<ID>-zh` anchors. Existing scoped source links
 to removed `en`/`rules` sections point to the spell entry instead. Chinese section
@@ -77,8 +96,11 @@ The current preview's complete component tags are provisional and unaccepted:
 they do not match the PDF directory's special M/F/X markers. Existing material,
 focus and XP flags do not distinguish costly materials or focuses outside the
 component pouch. [#487](https://github.com/FrankHZ/dnd3.5-spellbook/issues/487)
-blocks directory-marker acceptance. The user and that issue's task determine the
-approach; this renderer task does not investigate or choose its schema/data method.
+owns directory-marker acceptance. The current agreed policy consumes explicit
+machine results with their source status and omits unresolved markers from HTML;
+unknown does not mean an explicitly empty marker set and cannot be filled from
+complete component flags. The separate marker contract must be accepted before
+renderer integration; this renderer does not investigate its extraction method.
 
 The current [#345 scope](https://github.com/FrankHZ/dnd3.5-spellbook/issues/345)
 replaces the Chinese CHM. It roughly follows existing PDF extraction and accepted
