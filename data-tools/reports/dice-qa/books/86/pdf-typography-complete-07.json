@@ -8,7 +8,7 @@
   "status": "unselected-format-proposals-with-whole-entry-content-blockers",
   "scope": "remaining-complete-entries-07",
   "privateEvidence": {
-    "revision": "c7535a5d1f116df4ad8601b5ac8d1ecfbe38cec5",
+    "revision": "90451a50fc25f61d7f4176bbbef31bcac159e103",
     "path": "dice-qa/books/86/issue-477",
     "fixedInventoryRevision": "712d96bc24f03bea2f119e00f0b057eadbe0af01",
     "acceptedFieldsRevision": "0688739d92a2aa9fb3eceeb444daa7260e711058",
@@ -33,25 +33,32 @@
     "currentAuthorityTrace": "authority-trace.json",
     "reproduction": "reproduction.json",
     "checks": [
-      "validation-root.json",
-      "validation-package.json",
+      "rework-01-root-validation.json",
+      "rework-01-package-validation.json",
       "entry-validation.json",
       "pdf-comparison.json",
-      "visual-inspection.json",
+      "source-position-comparison.json",
       "source-position-negative.json",
-      "semantic-output-negatives.json",
-      "lexical-occurrence-audit.json",
-      "visible-whitespace-review.json",
-      "export-validation-root.json",
-      "export-validation-package.json",
-      "export-entry-validation.json",
-      "export-link-audit.json",
-      "export-semantic-negatives.json",
-      "export-blocked-fallback.json",
-      "cwd-replay.json",
+      "rework-01-root-export-validation.json",
+      "rework-01-package-export-validation.json",
+      "rework-01-root-export-entry-validation.json",
+      "rework-01-package-export-entry-validation.json",
+      "rework-01-root-export-link-audit.json",
+      "rework-01-package-export-link-audit.json",
+      "rework-01-root-export-blocked-fallback.json",
+      "rework-01-package-export-blocked-fallback.json",
+      "rework-01-invariants.json",
       "resource-budget.json",
       "run-settings.json"
-    ]
+    ],
+    "rejectedPacketRevision": "c7535a5d1f116df4ad8601b5ac8d1ecfbe38cec5",
+    "reworkInvariants": "rework-01-invariants.json",
+    "originalActualBadOutputs": "initial-style-negative.json",
+    "reusedSanitizedNegativeProof": {
+      "revision": "c7535a5d1f116df4ad8601b5ac8d1ecfbe38cec5",
+      "path": "export-semantic-negatives.json",
+      "checks": 15
+    }
   },
   "targetIds": [
     4496,
@@ -102,11 +109,11 @@
   ],
   "dispositionCounts": {
     "completeDiagnosticMappings": 45,
-    "completeFormatCandidates": 34,
-    "blockedWholeEntries": 11,
+    "completeFormatCandidates": 33,
+    "blockedWholeEntries": 12,
     "pending": 0,
     "mainGateSelected": 0,
-    "exactUnappliedContentProposals": 11
+    "exactUnappliedContentProposals": 12
   },
   "entries": [
     {
@@ -119,8 +126,8 @@
       "disposition": "blocked-source-content-candidate",
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
-      "followupOwner": "main-gate #431/#345 content owner pending assignment",
-      "followupIssue": null,
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476,
       "findingKind": "source-citation-omission"
     },
     {
@@ -128,8 +135,8 @@
       "disposition": "blocked-source-content-candidate",
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
-      "followupOwner": "main-gate #431/#345 content owner pending assignment",
-      "followupIssue": null,
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476,
       "findingKind": "source-range-punctuation-discrepancy"
     },
     {
@@ -167,8 +174,8 @@
       "disposition": "blocked-source-content-candidate",
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
-      "followupOwner": "main-gate #431/#345 content owner pending assignment",
-      "followupIssue": null,
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476,
       "findingKind": "source-word-and-punctuation-discrepancy"
     },
     {
@@ -226,8 +233,8 @@
       "disposition": "blocked-source-content-candidate",
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
-      "followupOwner": "main-gate #431/#345 content owner pending assignment",
-      "followupIssue": null,
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476,
       "findingKind": "source-named-reference-alias-discrepancy"
     },
     {
@@ -240,8 +247,8 @@
       "disposition": "blocked-source-content-candidate",
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
-      "followupOwner": "main-gate #431/#345 content owner pending assignment",
-      "followupIssue": null,
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476,
       "findingKind": "source-word-and-punctuation-discrepancy"
     },
     {
@@ -249,8 +256,8 @@
       "disposition": "blocked-source-content-candidate",
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
-      "followupOwner": "main-gate #431/#345 content owner pending assignment",
-      "followupIssue": null,
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476,
       "findingKind": "unsupported-added-citation"
     },
     {
@@ -263,8 +270,8 @@
       "disposition": "blocked-source-content-candidate",
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
-      "followupOwner": "main-gate #431/#345 content owner pending assignment",
-      "followupIssue": null,
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476,
       "findingKind": "source-qualifier-omission"
     },
     {
@@ -272,8 +279,8 @@
       "disposition": "blocked-source-content-candidate",
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
-      "followupOwner": "main-gate #431/#345 content owner pending assignment",
-      "followupIssue": null,
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476,
       "findingKind": "source-ambiguous-repetition-omission"
     },
     {
@@ -286,8 +293,8 @@
       "disposition": "blocked-source-content-candidate",
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
-      "followupOwner": "main-gate #431/#345 content owner pending assignment",
-      "followupIssue": null,
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476,
       "findingKind": "source-punctuation-omission"
     },
     {
@@ -302,8 +309,12 @@
     },
     {
       "targetId": 3878,
-      "disposition": "format-proposal-complete",
-      "eligibleCandidate": true
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "diagnosticMappingComplete": true,
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476,
+      "findingKind": "retained-source-compound-modifier-hyphen-omission"
     },
     {
       "targetId": 3897,
@@ -325,8 +336,8 @@
       "disposition": "blocked-source-content-candidate",
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
-      "followupOwner": "main-gate #431/#345 content owner pending assignment",
-      "followupIssue": null,
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476,
       "findingKind": "source-qualifier-omission-and-added-examples"
     },
     {
@@ -369,8 +380,8 @@
       "disposition": "blocked-source-content-candidate",
       "eligibleCandidate": false,
       "diagnosticMappingComplete": true,
-      "followupOwner": "main-gate #431/#345 content owner pending assignment",
-      "followupIssue": null,
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476,
       "findingKind": "source-range-punctuation-discrepancy"
     },
     {
@@ -389,6 +400,7 @@
     4564,
     4534,
     4537,
+    3878,
     3901,
     4555
   ],
@@ -404,14 +416,16 @@
     "fullTextPositionUnits": 170,
     "sourcePositionBoundCharacters": 29460,
     "sourcePositionBoundPunctuation": 911,
-    "physicalLineEndHyphenOmissions": 57,
+    "physicalLineEndHyphenOmissions": 56,
     "individuallyReviewedQuoteTypographyPositions": 40,
     "individuallyReviewedNumericMinusPositions": 5,
     "rawPunctuationCodePointsAndPairedHtmlEntitiesRetained": true,
     "fullDiagnosticEnglishAndChineseUnitCoverage": true,
     "completeCaseComparisonMismatches": 0,
     "sourcePositionSwapNegativeDetected": true,
-    "newSourceContentAccepted": false
+    "newSourceContentAccepted": false,
+    "retainedCompoundHyphenContentBlockers": 1,
+    "sourceExtractionReusedFromRejectedPacket": true
   },
   "representationChecks": {
     "completeFourFieldBindings": true,
@@ -420,13 +434,14 @@
     "completeFinalDomEmphasisBeforeAndAfterActualSanitizer": true,
     "staleFieldAndIdentityRejections": 315,
     "meaningfulConstructedEmphasisNegatives": 10,
-    "observedThisBatchAuthoringErrors": 1,
+    "observedThisBatchAuthoringErrors": 2,
     "inheritedActualErrorNegatives": 4,
     "maintainedAuthorAndComparatorReused": true,
     "maintainedPublicHelpersChanged": false,
     "sourceVisibleWhitespaceIndependentlyChecked": true,
     "translatedFlavourBodyClauseSeparatelyBound": true,
-    "quoteTypographyPolicy": "Each raw apostrophe/quote position preserves contraction/possessive meaning or exact paired quotation boundaries, words and source-position emphasis. No active normalization or exemption for range/sentence dashes, word hyphens, prime/feet/inches or other punctuation. Main-gate independently reviews individual evidence."
+    "quoteTypographyPolicy": "Each raw apostrophe/quote position preserves contraction/possessive meaning or exact paired quotation boundaries, words and source-position emphasis. No active normalization or exemption for range/sentence dashes, word hyphens, prime/feet/inches or other punctuation. Main-gate independently reviews individual evidence.",
+    "exactStyleChecksAreDiagnosticUnderCurrentPolicy": true
   },
   "consumerRehearsal": {
     "fixedExporterRevision": "9844683e94fbb6fd6b9d0caaad5166f0c86ed087",
@@ -435,21 +450,22 @@
     "memoryOnly": true,
     "memoryEntries": 51,
     "rootAndPackageRuns": true,
-    "directlyIdenticalOutputFiles": 522,
-    "casesPerRun": 18,
+    "directlyIdenticalOutputFiles": 87,
+    "casesPerRun": 3,
     "allFinalEmphasisCheckedAfterActualSanitization": true,
     "allVisibleTextAndWhitespacePreserved": true,
     "paragraphBoundariesPreserved": true,
     "independentReaderNotesPreserved": true,
-    "blockedWholeEntryFallbacksVerified": 11,
-    "blockedBilingualHtmlChecks": 22,
+    "blockedWholeEntryFallbacksVerified": 12,
+    "blockedBilingualHtmlChecks": 24,
     "resolvedScopedBodyLinks": 0,
     "detachedScopedBodyLinks": 9,
-    "allMeaningfulSanitizedOutputNegatives": 15,
-    "actualInitialOutputNegatives": 1,
-    "inheritedActualOutputNegatives": 4,
-    "constructedOutputNegatives": 10,
-    "limitation": "Synthetic provenance and bounded empty membership tables prove body sanitizer/link/structure behavior only. Destination-only and inherited fixtures do not certify scoped in-book links, source authority, class-summary output, selection or rendered HTML."
+    "limitation": "Synthetic provenance and bounded empty membership tables prove body sanitizer/link/structure behavior only. Destination-only and inherited fixtures do not certify scoped in-book links, source authority, class-summary output, selection or rendered HTML.",
+    "reusedSanitizedOutputNegatives": 15,
+    "reusedSanitizedNegativeRevision": "c7535a5d1f116df4ad8601b5ac8d1ecfbe38cec5",
+    "additionalSanitizedNegativeReplays": 0,
+    "retainedActualBadOutputRows": 2,
+    "followupIssue": 476
   },
   "resources": {
     "inputFourFieldCodePoints": 107271,
@@ -457,15 +473,17 @@
     "initialPeakMemoryBudgetMiB": 512,
     "revisedPrivateEvidenceBudgetMiB": 80,
     "revisedPeakMemoryBudgetMiB": 1024,
-    "measuredPacketBytes": 63637785,
-    "measuredRootAndPackageOutputBytes": 6312136,
+    "measuredRootAndPackageOutputBytes": 1081302,
     "retainedOutputBudgetMiB": 20,
     "measuredNodePeakWorkingSetBytes": 781090816,
     "measuredPackageReplaySeconds": 3.2112603,
     "peakGroupMemoryMeasured": false,
     "concurrentReplays": 1,
     "newEnvironments": 0,
-    "budgetRevisionReason": "Measured Node peak and retained complete source-position/history/negative evidence exceeded initial reference estimates. Serial existing-runtime processing fits revised bounded budgets; no new runtime or concurrency."
+    "budgetRevisionReason": "Measured Node peak and retained complete source-position/history/negative evidence exceeded initial reference estimates. Serial existing-runtime processing fits revised bounded budgets; no new runtime or concurrency.",
+    "measuredOwnedPacketBytesBeforeReworkProof": 45278887,
+    "measuredAllRetainedTaskOutputBytes": 10549506,
+    "peakMeasurementReusedFromSameRuntimeAndNormalizedInput": true
   },
   "runtime": {
     "model": "gpt-6.1-sol",
@@ -494,8 +512,36 @@
     "classification": "revised-source-fidelity-proposals",
     "priorMissedReviewClaim": false,
     "proposalsApplied": false,
-    "followupIssue": null,
-    "followupOwner": "main-gate #431/#345 content owner pending assignment",
+    "followupIssue": 476,
+    "followupOwner": "issue476 independent content task",
     "migrationBeforeFormattingRebindingRequired": true
+  },
+  "formattingPolicy": {
+    "authorityIssue": 345,
+    "authorityUrl": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/345",
+    "standard": "Natural readable formatting broadly following extracted PDF paragraphs, headings, emphasis, lists and tables.",
+    "strictStyleAuditsAreRetainedDiagnostics": true,
+    "exactPunctuationEmphasisEquivalentGlyphsAndHarmlessWhitespaceAreNotRejectionGates": true,
+    "fullBookCertifiedEmphasisCoverageIsNotDeliveryGate": true,
+    "completeContentMeaningStructureNotesAndLinksRemainRequired": true,
+    "canonicalTextUnchanged": true,
+    "newFullSourceReplayRequired": false
+  },
+  "reworkInvariants": {
+    "completeFourFieldsExactForAll45": true,
+    "other44PresentationsAndMappingsExact": true,
+    "all45EnglishOutputHtmlExact": true,
+    "only4502ChineseItalicPeriodBoundaryChanged": true,
+    "cosmetic4502CorrectionRetainedWithoutNewAcceptanceGate": true,
+    "original4551NegativeExact": true,
+    "original11ProposalsExactExceptFollowupOwner": true,
+    "new3878PairedEnglishProposalChineseUnchanged": true,
+    "new3878PriorSourceCorrectHistoryPreserved": true,
+    "all170EnglishPositionsAndUnitsExact": true,
+    "validLineEndOmissions": 56,
+    "completeBilingualContentBlockers": 12,
+    "fullSourceReplayRepeated": false,
+    "existing15SanitizedNegativesReused": true,
+    "mainGateEvidenceUntouched": true
   }
 }
