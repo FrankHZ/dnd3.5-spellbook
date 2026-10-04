@@ -119,3 +119,21 @@ Private small-slice source QA remains separate from portable validation and
 full coverage acceptance. The [source-free candidate slice report](../../data-tools/reports/dice-qa/books/86/sc-list-marker-candidate-slice.json)
 points to its fixed private review evidence. Follow [DB content workflow](db-content-workflow.md)
 for database and activation boundaries.
+
+## Source review handoffs
+
+A source review handoff freezes the exact occurrence keys, complete printed
+labels and markers, owner/level heading context, explicit stable relationship
+snapshots and exclusions for ambiguous same-name identities. Preserve extractor
+ligatures and spacing in evidence; cleaned names assist lookup but do not accept
+an identity. Identify which inputs are fixed Git blobs and which original PDFs
+are local untracked files requiring a fresh bounded source comparison. Review
+applicable official errata and preserve printed annotations independently of
+complete component references.
+
+The [source-free Bard proposal report](../../data-tools/reports/dice-qa/books/86/sc-bard-marker-source-proposals.json)
+locates a frozen private handoff and its targeted replay checks. Main-gate must
+accept that exact evidence revision and the explicit source/binding decisions
+before candidates acquire source acceptance. Passing an in-memory accepted
+selection simulation does not persist acceptance or authorize renderer publication,
+schema application or database writes.

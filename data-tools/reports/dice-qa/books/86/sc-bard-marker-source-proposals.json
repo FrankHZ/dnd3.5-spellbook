@@ -1,0 +1,257 @@
+{
+  "schemaVersion": 1,
+  "issue": 495,
+  "base": "e47623f5d6d10b681ae7d92923c3cd70c8cdc923",
+  "privateEvidenceRevision": "15f84204a99066cc837edcb0bf3f04bc29201e2b",
+  "privateEvidencePath": "dice-qa/books/86/issue-495",
+  "inputRevision": "3109813da4b49d0e9c47ceeba44857a5a230b1e7",
+  "foundationRevision": "9f27bb26c29167bbc7bb7f7c700f0e7736867fcd",
+  "boundaryReceiptRevision": "dc6d006370721216d6216cd983f4e9f81d0a1c3a",
+  "foundationAcceptanceRevision": "ea29dd26174f282326732514a3e4bfdb7478d21a",
+  "scope": {
+    "printedPages": [
+      247,
+      248
+    ],
+    "originalOccurrences": 6,
+    "explicitBindings": 6,
+    "reReviewedExistingBindings": 1,
+    "newBindings": 5,
+    "markers": {
+      "F": 4,
+      "M": 2
+    },
+    "candidate": 6,
+    "accepted": 0,
+    "completeBardCoverage": false,
+    "completeParentCoverage": false
+  },
+  "dispositions": [
+    {
+      "sourceKey": "book:86:p246:b5:l1:s0",
+      "markers": "F",
+      "listEntryId": "spell:3824:list:class:3:2:86:9991",
+      "spellId": "spell:3824",
+      "listType": "class",
+      "ownerLegacyId": 3,
+      "level": 2,
+      "relationshipRulebookId": 86,
+      "qualifiers": {
+        "rawExtra": null,
+        "variantLabel": null,
+        "note": null
+      },
+      "relationshipReviewStatus": "accepted",
+      "sourceDisposition": "verified-proposal-pending-main-gate",
+      "identityDisposition": "explicit-SC-edition-binding-pending-main-gate",
+      "priorReview": "re-reviewed-existing-binding",
+      "excludedOtherPublicationIdentities": []
+    },
+    {
+      "sourceKey": "book:86:p246:b6:l3:s0",
+      "markers": "F",
+      "listEntryId": "spell:3987:list:class:3:2:86:10330",
+      "spellId": "spell:3987",
+      "listType": "class",
+      "ownerLegacyId": 3,
+      "level": 2,
+      "relationshipRulebookId": 86,
+      "qualifiers": {
+        "rawExtra": null,
+        "variantLabel": null,
+        "note": null
+      },
+      "relationshipReviewStatus": "accepted",
+      "sourceDisposition": "verified-proposal-pending-main-gate",
+      "identityDisposition": "explicit-SC-edition-binding-pending-main-gate",
+      "priorReview": "new-binding",
+      "excludedOtherPublicationIdentities": []
+    },
+    {
+      "sourceKey": "book:86:p247:b8:l2:s0",
+      "markers": "F",
+      "listEntryId": "spell:4541:list:class:3:4:86:11405",
+      "spellId": "spell:4541",
+      "listType": "class",
+      "ownerLegacyId": 3,
+      "level": 4,
+      "relationshipRulebookId": 86,
+      "qualifiers": {
+        "rawExtra": null,
+        "variantLabel": null,
+        "note": null
+      },
+      "relationshipReviewStatus": "accepted",
+      "sourceDisposition": "verified-proposal-pending-main-gate",
+      "identityDisposition": "explicit-SC-edition-binding-pending-main-gate",
+      "priorReview": "new-binding",
+      "excludedOtherPublicationIdentities": []
+    },
+    {
+      "sourceKey": "book:86:p247:b21:l1:s0",
+      "markers": "F",
+      "listEntryId": "spell:3981:list:class:3:5:86:10323",
+      "spellId": "spell:3981",
+      "listType": "class",
+      "ownerLegacyId": 3,
+      "level": 5,
+      "relationshipRulebookId": 86,
+      "qualifiers": {
+        "rawExtra": null,
+        "variantLabel": null,
+        "note": null
+      },
+      "relationshipReviewStatus": "accepted",
+      "sourceDisposition": "verified-proposal-pending-main-gate",
+      "identityDisposition": "explicit-SC-edition-binding-pending-main-gate",
+      "priorReview": "new-binding",
+      "excludedOtherPublicationIdentities": []
+    },
+    {
+      "sourceKey": "book:86:p247:b33:l0:s0",
+      "markers": "M",
+      "listEntryId": "spell:4705:list:class:3:6:86:11728",
+      "spellId": "spell:4705",
+      "listType": "class",
+      "ownerLegacyId": 3,
+      "level": 6,
+      "relationshipRulebookId": 86,
+      "qualifiers": {
+        "rawExtra": null,
+        "variantLabel": null,
+        "note": null
+      },
+      "relationshipReviewStatus": "accepted",
+      "sourceDisposition": "verified-proposal-pending-main-gate",
+      "identityDisposition": "explicit-SC-edition-binding-pending-main-gate",
+      "priorReview": "new-binding",
+      "excludedOtherPublicationIdentities": [
+        {
+          "spellId": "spell:376",
+          "listEntryId": "spell:376:list:class:3:6:54:727",
+          "rulebookId": 54,
+          "disposition": "excluded-other-publication"
+        }
+      ]
+    },
+    {
+      "sourceKey": "book:86:p247:b39:l2:s0",
+      "markers": "M",
+      "listEntryId": "spell:4296:list:class:3:6:86:10948",
+      "spellId": "spell:4296",
+      "listType": "class",
+      "ownerLegacyId": 3,
+      "level": 6,
+      "relationshipRulebookId": 86,
+      "qualifiers": {
+        "rawExtra": null,
+        "variantLabel": null,
+        "note": null
+      },
+      "relationshipReviewStatus": "accepted",
+      "sourceDisposition": "verified-proposal-pending-main-gate",
+      "identityDisposition": "explicit-SC-edition-binding-pending-main-gate",
+      "priorReview": "new-binding",
+      "excludedOtherPublicationIdentities": [
+        {
+          "spellId": "spell:278",
+          "listEntryId": "spell:278:list:class:3:6:27:537",
+          "rulebookId": 27,
+          "disposition": "excluded-other-publication"
+        }
+      ]
+    }
+  ],
+  "sourceChecks": {
+    "pageSpanCount": 376,
+    "exactTextFontSizeFlagsOriginBbox": true,
+    "fullNameAndSuperscript": true,
+    "explicitBardHeadingsAndBlackguardBoundary": true,
+    "officialErrataPagesReviewed": 1,
+    "officialErrataApplicableCorrections": 0,
+    "agentVisualReview": true,
+    "userHtmlVisualAcceptance": false,
+    "pdfFilesUntracked": true,
+    "pdfVerification": "Fresh bounded comparison to fixed cached list extraction; errata text compared to separately frozen reviewed text",
+    "rawLabelNormalizationUsedOnlyForLookup": true,
+    "onePrintedMarkerPreservedDespiteDifferentComponentReference": true
+  },
+  "selectionChecks": {
+    "positiveMemoryOnly": 6,
+    "negativeCases": {
+      "candidate-release": 6,
+      "changed-binding": 60,
+      "unaccepted-relationship": 6,
+      "changed-source-marker": 6,
+      "changed-source-location": 6,
+      "stored-marker-forgery": 6,
+      "stored-locator-forgery": 6,
+      "name-end-truncation": 6,
+      "name-start-truncation": 6,
+      "conflicting-appearances": 6
+    },
+    "candidateCannotRelease": true,
+    "persistentAcceptedRecordsWritten": false,
+    "cwdReplay": [
+      "root",
+      "data-tools"
+    ]
+  },
+  "passedChecks": [
+    "sc:list-markers:test",
+    "data-tools typecheck",
+    "private six-occurrence source/binding replay",
+    "bounded original PDF and official errata comparison",
+    "source-free report validation",
+    "git diff --check"
+  ],
+  "resources": {
+    "inputBytes": {
+      "extraction": 2179623,
+      "normalized": 70934769,
+      "candidate": 335268
+    },
+    "reviewInputBytes": 55800,
+    "textEvidenceBudgetBytes": 100000,
+    "nodeHeapMiB": 1024,
+    "observedReplayMs": 612,
+    "observedPeakRssBytes": 700391424,
+    "algorithm": "Linear input read and explicit six-binding checks",
+    "paidApiCalls": 0,
+    "newDependencies": 0,
+    "stagedPreservationSnapshotBytes": 18559304,
+    "stagedSnapshotOutsideQaTextBudget": true
+  },
+  "boundaries": {
+    "unrelatedStagedDeletes": 39,
+    "unrelatedStagedBinaryDiffEqual": true,
+    "privatePush": false,
+    "operatorOrStableOrAppStateDbAccess": false,
+    "maintainedInputWrites": false,
+    "rendererWrites": false,
+    "htmlVisualAcceptance": false,
+    "wholeBookOrSourceAuthRun": false
+  },
+  "acceptanceHandoff": {
+    "required": [
+      "exact private evidence revision",
+      "six source decisions and six relationship snapshots",
+      "main-gate explicit source/binding decision"
+    ],
+    "proposalsRemainCandidate": true,
+    "actualSchemaOrDataApplicationNeedsSeparateAuthorization": true,
+    "markerImporterProvided": false
+  },
+  "remaining": [
+    "main-gate source/binding acceptance of this exact slice",
+    "complete marked and unmarked inventory/binding review",
+    "renderer integration under its owner",
+    "separately authorized persistent schema/data application"
+  ],
+  "nextBatchSuggestion": {
+    "scope": "One independently reviewable class list with roughly 25-40 marked occurrences and a bounded contiguous source-page range; select exact keys in a new issue after this pilot is accepted",
+    "estimatedTextEvidenceBytes": 250000,
+    "normalizedInputReused": true,
+    "notDispatched": true
+  }
+}
