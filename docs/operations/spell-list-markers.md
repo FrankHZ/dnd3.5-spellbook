@@ -52,6 +52,15 @@ no overwrite option. `--input-revision` accepts a full private Git commit; the
 default fixed input revision and both logical paths are recorded in the output.
 Code paths resolve from the owning checkout through the existing root helper.
 
+An accepted supplemental domain extraction can be appended with
+`--domain-input <data-relative JSONL> --domain-revision <full private Git commit>`.
+Both options are required together. The additional input is bounded to p278–285
+and must not duplicate page indices in the original cache. The combined pass
+preserves each occurrence's actual extraction path and both immutable revisions.
+The original cache-only command remains reproducible. Supplied p271–285 page
+coverage clears the cache-gap field; original-book completeness still depends
+on the owning domain source handoff, not this page-index check.
+
 The processor orders the cached two-column geometry, reads printed class/level
 or domain headings, and enumerates bold labels, including unmarked labels.
 School prefixes and separately extracted domain level digits are retained in
@@ -62,6 +71,12 @@ infer annotations from components. Domain rows without the SC dagger are source
 inventory outside the SC body scope. Shared Sorcerer/Wizard occurrences can bind
 both existing memberships.
 
+The eight planar domains have two rows per level. Their second row can continue
+the previous printed level across a page; machine bindings retain and validate
+that numbered row as `context.levelSource`. Unnumbered rows in ordinary domains
+are not treated as additional memberships. A full-width sources footer is
+excluded after both columns, so it does not truncate right-column domain rows.
+
 The output separates `occurrences` (recognized printed source rows),
 `relationships` (all existing SC edition targets), and eligible `machine` bindings.
 Every target gets a result or reason. Complete labels with explicit M/F/X or
@@ -69,8 +84,9 @@ explicit absence can produce machine results; incomplete labels, unmatched or
 ambiguous identities, unaccepted relationships and conflicting occurrences stay
 unknown. Missing source coverage includes owners absent from these printed lists
 as well as appendix pages outside the cache; it is not a count of missing spells.
-The cache covers p245–277, with Oracle only levels 1–5 on p277. Processing all
-cached input does **not** establish original-book appendix completeness.
+The default cache covers p245–277, with Oracle only levels 1–5 on p277.
+Processing all cached input does **not** establish original-book appendix
+completeness; the supplemental domain handoff supplies the remaining pages.
 
 Machine bindings wrap ordinary candidate records with an explicit method,
 heading context and spell-name snapshot. Their `reviewStatus` remains `candidate`;

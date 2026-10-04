@@ -6,7 +6,8 @@ import {inspectOccurrence, listIdentity, reviewedRecord, selectPrintedMarkers, v
 export type SpellName = {id: string; canonicalName: string; sourceRulebookId: number | null};
 export type NamedEntry = ListIdentity & {ownerName: string};
 type Heading = {pageIndex: number; blockIndex: number; text: string; spans: PdfSpan[]};
-type Context = {listType: "class" | "domain"; ownerNames: string[]; level: number | null; heading: Heading};
+type Context = {listType: "class" | "domain"; ownerNames: string[]; level: number | null; heading: Heading;
+  levelSource?: MarkerEvidence};
 export type MachineMarker = {
   schemaVersion: 1; status: "machine"; method: "sc-complete-label-unique-identity-v1";
   record: MarkerRecord; context: Context; spell: SpellName; ownerName: string;
@@ -23,7 +24,7 @@ export type RelationshipResult = {entry: ListIdentity; status: "machine" | "unkn
 export type AutomaticMarkers = {
   schemaVersion: 1; rulebookId: 86; method: MachineMarker["method"];
   coverage: {pageIndices: number[]; printedPages: number[]; scope: "SC-edition-relationships";
-    knownGap: string; sourceOccurrences: number; targetRelationships: number;
+    knownGap: string | null; sourceOccurrences: number; targetRelationships: number;
     occurrences: Record<string, number>; relationships: Record<string, number>};
   occurrences: OccurrenceResult[]; relationships: RelationshipResult[]; machine: MachineMarker[];
 };
@@ -53,19 +54,24 @@ function complete(evidence: MarkerEvidence) {
   return /:\s*$/.test(evidence.spans[end]!.text) || /^\s*:/.test(evidence.spans[after + 1]?.text ?? "");
 }
 function validPrefix(prefix: string, context: Context | null) {
-  return !prefix || (context?.listType === "domain" ? /^\d\s+$/.test(prefix) :
+  return !prefix.trim() || (context?.listType === "domain" ? /^\d\s+$/.test(prefix) :
     context?.ownerNames.includes("Wizard") && /^(?:Abjur|Conj|Div|Ench|Evoc|Illus|Necro|Trans|Univ)\s*$/.test(prefix));
 }
 function domainPrefix(prefix: string) { return /^\d\s+$/.test(prefix) ? prefix : ""; }
+function planar(context: Context | null) {
+  return context?.listType === "domain" && ["abyss", "arborea", "baator", "celestia", "elysium", "hades", "limbo", "mechanus"]
+    .includes(normalizedLabel(context.ownerNames[0]!));
+}
 function key(type: string, owner: string, level: number | null, name: string) {
   return [type, normalizedLabel(owner), level, normalizedLabel(name)].join("|");
 }
 
 /** SC's cached two-column list pages; no PDF, DB, components or model calls. */
 export function processAutomaticMarkers(pages: readonly PdfPage[], extractionPath: string,
-  spells: readonly SpellName[], entries: readonly NamedEntry[]): AutomaticMarkers {
+  spells: readonly SpellName[], entries: readonly NamedEntry[],
+  pageExtractionPaths: ReadonlyMap<number, string> = new Map()): AutomaticMarkers {
   assert.equal(new Set(pages.map(p => p.page_index)).size, pages.length, "Duplicate source page");
-  assert(pages.every(p => p.page_index >= 244 && p.page_index <= 276), "SC cached list pages must be p245–277");
+  assert(pages.every(p => p.page_index >= 244 && p.page_index <= 284), "SC list pages must be p245–285");
   const spellMap = new Map(spells.map(s => [s.id, {id: s.id, canonicalName: s.canonicalName, sourceRulebookId: s.sourceRulebookId}]));
   assert.equal(spellMap.size, spells.length, "Duplicate spell identity");
   const targets = entries.filter(e => e.rulebookId === 86 && spellMap.get(e.spellId)?.sourceRulebookId === 86);
@@ -79,28 +85,39 @@ export function processAutomaticMarkers(pages: readonly PdfPage[], extractionPat
   const occurrences: OccurrenceResult[] = [], machine: MachineMarker[] = [];
   const failures = new Map<string, {reason: Reason; sourceIds: string[]}>();
   let context: Context | null = null, previousPage: number | null = null;
+  let levelSource: MarkerEvidence | undefined;
   for (const page of [...pages].sort((a, b) => a.page_index - b.page_index)) {
     // Never carry a heading through absent pages or across the appendix boundary.
-    if (previousPage === null || page.page_index !== previousPage + 1 || page.page_index === 270) context = null;
+    if (previousPage === null || page.page_index !== previousPage + 1 || page.page_index === 270) {
+      context = null; levelSource = undefined;
+    }
     previousPage = page.page_index;
     // Recto/verso columns shift (right heading x=283.5 or 310.5).
     // 280 is the gutter boundary for both cached page layouts.
     const split = 280;
+    // The full-width sources footer follows both columns, even when extracted
+    // in a left-column block before the remaining right-column list rows.
+    const footerY = Math.min(Infinity, ...page.blocks.flatMap(b => b.lines)
+      .flatMap(l => l.spans.filter(s => s.text === "SOURCES" && s.size >= 11.5).map(s => s.bbox[1]!)));
     const events = page.blocks.flatMap((block, blockIndex) => {
       const headingSpans = block.lines.flatMap(l => l.spans.filter(s => s.size >= 11.5 && s.size < 15));
       const heading: Heading = {pageIndex: page.page_index, blockIndex,
         text: headingSpans.map(s => s.text).join(" "), spans: headingSpans};
       const parsed = headingContext(heading);
+      const boundary = /^(?:[A-Za-z ]+ DOMAIN|SOURCES)$/.test(heading.text.trim());
       const rows = block.lines.map((line, lineIndex) => ({line, lineIndex, blockIndex, blockNumber: block.number,
-        heading: null as Context | null, x: line.spans[0]?.bbox[0] ?? 0, y: line.spans[0]?.bbox[1] ?? 0}));
-      if (parsed) rows.push({line: {spans: []}, lineIndex: -1, blockIndex, blockNumber: block.number,
-        heading: parsed, x: headingSpans[0]!.bbox[0]!, y: headingSpans[0]!.bbox[1]!});
+        heading: null as Context | null, boundary: false, x: line.spans[0]?.bbox[0] ?? 0, y: line.spans[0]?.bbox[1] ?? 0}));
+      if (parsed || boundary) rows.push({line: {spans: []}, lineIndex: -1, blockIndex, blockNumber: block.number,
+        heading: parsed, boundary, x: headingSpans[0]!.bbox[0]!, y: headingSpans[0]!.bbox[1]!});
       return rows;
-    }).sort((a, b) => Number(a.x >= split) - Number(b.x >= split) || a.y - b.y || a.lineIndex - b.lineIndex);
+    }).filter(event => event.y < footerY)
+      .sort((a, b) => Number(a.x >= split) - Number(b.x >= split) || a.y - b.y || a.lineIndex - b.lineIndex);
     for (const event of events) {
-      if (event.heading) { context = event.heading; continue; }
+      if (event.heading || event.boundary) { context = event.heading; levelSource = undefined; continue; }
       const spans = event.line.spans;
-      const first = spans.findIndex(s => Boolean(s.flags & 16) && !(s.flags & 1));
+      let first = spans.findIndex(s => Boolean(s.flags & 16) && !(s.flags & 1));
+      if (context?.listType === "domain" && /^[1-9]$/.test(spans[first]?.text ?? "") &&
+        /^\s+$/.test(spans[first+1]?.text ?? "") && Boolean((spans[first+2]?.flags ?? 0) & 16)) first += 2;
       if (first < 0 || spans[first]!.size < 9 || spans[first]!.size > 10.5) continue;
       const prefix = spans.slice(0, first).map(s => s.text).join("");
       if (!validPrefix(prefix, context)) continue;
@@ -108,15 +125,20 @@ export function processAutomaticMarkers(pages: readonly PdfPage[], extractionPat
       for (let i = first; spans[i] && (spans[i]!.flags & 16) && !(spans[i]!.flags & 1); i++) nameSpanIndices.push(i);
       if (!nameSpanIndices.map(i => spans[i]!.text).join("").replace(/:\s*$/, "").trim()) continue;
       const domainRow = /^\d\s+/.test(prefix + nameSpanIndices.map(i => spans[i]!.text).join(""));
-      if (page.page_index >= 270 && !domainRow) continue;
-      const evidence = inspectOccurrence([page], extractionPath, 86, {pageIndex: page.page_index,
+      const continuation = !domainRow && planar(context) && levelSource !== undefined;
+      if (page.page_index >= 270 && !domainRow && !continuation) continue;
+      const evidence = inspectOccurrence([page], pageExtractionPaths.get(page.page_index) ?? extractionPath, 86, {pageIndex: page.page_index,
         blockIndex: event.blockIndex, blockNumber: event.blockNumber, lineIndex: event.lineIndex, nameSpanIndices});
       const row: OccurrenceResult = {evidence, context, status: "unknown", reason: null, entryIds: []};
       occurrences.push(row);
-      if (!context || (context.listType === "domain") !== domainRow) { row.reason = "missing-context"; continue; }
+      if (!context || (context.listType === "domain") !== (domainRow || continuation)) { row.reason = "missing-context"; continue; }
       // A separately extracted non-bold domain digit is still an explicit level.
-      const parsed = label({...evidence, printedName: domainPrefix(prefix) + evidence.printedName}, context);
-      const rowContext = {...context, level: parsed.level}; row.context = rowContext;
+      const previousLevel = levelSource ? label({...levelSource, printedName:
+        domainPrefix(levelSource.spans.slice(0, levelSource.locator.nameSpanIndices[0]).map(s => s.text).join("")) + levelSource.printedName}, context).level : null;
+      const parsed = label({...evidence, printedName: domainPrefix(prefix) + evidence.printedName},
+        continuation ? {...context, level: previousLevel} : context);
+      const rowContext: Context = {...context, level: parsed.level, ...(continuation ? {levelSource: levelSource!} : {})}; row.context = rowContext;
+      if (domainRow) levelSource = evidence;
       for (const owner of context.ownerNames) covered.add(key(context.listType, owner, parsed.level, ""));
       if (!parsed.inScope) { row.status = "out-of-scope"; continue; }
       let reason: Reason | null = !complete(evidence) ? "incomplete-label" : evidence.markers === null ? "unknown-marker" : null;
@@ -161,7 +183,10 @@ export function processAutomaticMarkers(pages: readonly PdfPage[], extractionPat
   };
   return {schemaVersion: 1, rulebookId: 86, method: "sc-complete-label-unique-identity-v1",
     coverage: {pageIndices: pages.map(p => p.page_index).sort((a,b) => a-b), printedPages: pages.map(p => p.page_index+1).sort((a,b) => a-b),
-      scope: "SC-edition-relationships", knownGap: "Cached p245–277 only; Oracle p277 contains levels 1–5. Remaining domain appendix pages are absent.",
+      scope: "SC-edition-relationships", knownGap: Array.from({length: 15}, (_, i) => i + 270).every(index => pages.some(p => p.page_index === index))
+        ? null : pages.every(p => p.page_index <= 276)
+          ? "Cached p245–277 only; Oracle p277 contains levels 1–5. Remaining domain appendix pages are absent."
+          : "Incomplete p271–285 appendix input.",
       sourceOccurrences: occurrences.length, targetRelationships: targets.length,
       occurrences: count(occurrences.map(o => ({...o, markers: o.evidence.markers}))), relationships: count(relationships)},
     occurrences, relationships, machine: machine.filter(m => !unknown.has(m.record.listEntryId!))};
@@ -191,6 +216,26 @@ export function selectProcessedMembershipMarkers(entries: readonly ListIdentity[
         (heading.level === null || heading.level === m.context.level), "Machine heading/context mismatch");
       const prefix = evidence.spans.slice(0, evidence.locator.nameSpanIndices[0]).map(s => s.text).join("");
       const parsed = label({...evidence, printedName: domainPrefix(prefix) + evidence.printedName}, m.context);
+      if (m.context.levelSource) {
+        const source = m.context.levelSource, loc = source.locator;
+        assert(source.schemaVersion === 1 && source.rulebookId === rulebookId &&
+          [loc.pageIndex,loc.blockIndex,loc.blockNumber,loc.lineIndex].every(i => Number.isSafeInteger(i) && i >= 0) &&
+          source.id === `book:${rulebookId}:p${loc.pageIndex}:b${loc.blockNumber}:l${loc.lineIndex}:s${loc.nameSpanIndices[0]}`,
+        "Machine level source identity differs");
+        const inspected = inspectOccurrence([{page_index: loc.pageIndex, source: source.source, extractor: source.extractor,
+          blocks: [{number: loc.blockNumber, lines: [{spans: source.spans}]}]}], source.extractionPath, rulebookId,
+        {...loc, blockIndex: 0, lineIndex: 0});
+        assert(inspected.printedName === source.printedName && inspected.markers === source.markers,
+          "Machine level source evidence differs");
+        assert.deepEqual(inspected.markerSpanIndices, source.markerSpanIndices, "Machine level source marker indices differ");
+        const numberedName = domainPrefix(source.spans.slice(0, loc.nameSpanIndices[0]).map(s => s.text).join("")) + inspected.printedName;
+        assert(/^\d\s+/.test(numberedName), "Machine level source lacks a printed digit");
+        const level = label({...inspected, printedName: numberedName}, m.context).level;
+        assert(planar(m.context) && level === entry.level && source.locator.pageIndex <= evidence.locator.pageIndex &&
+          source.locator.pageIndex >= m.context.heading.pageIndex, "Machine continued domain level differs");
+      } else if (m.context.listType === "domain") {
+        assert(/^\d\s+/.test(domainPrefix(prefix) + evidence.printedName), "Machine domain level lacks printed evidence");
+      }
       assert(validPrefix(prefix, m.context) && complete(evidence) && parsed.inScope && parsed.level === entry.level && m.context.level === entry.level &&
         m.context.listType === entry.listType && m.context.ownerNames.some(n => normalizedLabel(n) === normalizedLabel(m.ownerName)) &&
         m.spell.id === entry.spellId && m.spell.sourceRulebookId === 86 && entry.rulebookId === 86 &&

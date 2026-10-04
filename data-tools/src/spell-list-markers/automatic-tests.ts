@@ -30,7 +30,7 @@ const spells: SpellName[] = [
     .map((name,i)=>({id:`spell:${i+2}`,canonicalName:name,sourceRulebookId:86})),
 ];
 const entry = (id: number, owner = "Bard", level = 1, ownerId = 3): NamedEntry => ({id:`list:${id}:${ownerId}:${level}`,
-  spellId:`spell:${id}`,listType:owner === "Balance" ? "domain" : "class",ownerName:owner,ownerLegacyId:ownerId,
+  spellId:`spell:${id}`,listType:["Balance","Hades"].includes(owner) ? "domain" : "class",ownerName:owner,ownerLegacyId:ownerId,
   level,rulebookId:86,sourceRowId:id,sourceTable:"synthetic",rawExtra:null,variantLabel:null,note:null,reviewStatus:"accepted"});
 const entries = [entry(1),entry(2),entry(3),entry(4),entry(5),entry(6),entry(1,"Sorcerer",2,4),entry(1,"Wizard",2,1),
   entry(7,"Balance",3,127),entry(8,"Balance",5,127),entry(9),entry(10,"Healer",1,62)];
@@ -96,6 +96,36 @@ const gap: PdfPage = {page_index:246,source:{kind:"synthetic"},extractor:{name:"
   blocks:[{number:0,lines:[row("Fi ligature","M",25)]}]};
 const gapped = processAutomaticMarkers([pages[0]!,gap],"synthetic/sc-lists.jsonl",spells,entries);
 assert.equal(gapped.occurrences.at(-1)!.reason,"missing-context");
+const additionalPath = "synthetic/additional-domains.jsonl";
+const planePages: PdfPage[] = [
+  {page_index:282,source:{kind:"synthetic"},extractor:{name:"synthetic"},blocks:[{number:0,
+    lines:[head("Hades Domain Spells",10),row("1 Domain Spell†",null,25)]}]},
+  {page_index:283,source:{kind:"synthetic"},extractor:{name:"synthetic"},blocks:[{number:0,
+    lines:[row("Separate Digit†","M",25),head("SOURCES",40),row("Bibliography†",null,55)]}]},
+];
+const planeEntries = [entry(7,"Hades",1,139),entry(8,"Hades",1,139)];
+const planes = processAutomaticMarkers(planePages,"synthetic/base.jsonl",spells,planeEntries,
+  new Map(planePages.map(p=>[p.page_index,additionalPath])));
+assert.equal(planes.occurrences.length,2); assert.equal(planes.machine.length,2);
+assert(planes.machine.every(m=>JSON.parse(m.record.sourceJson).extractionPath===additionalPath));
+assert.equal(planes.machine[1]!.context.levelSource!.printedName,"1 Domain Spell†");
+assert.equal(displayMembershipMarkers([planeEntries[1]!],86,[],planes.machine),"M");
+const wrongLevel = structuredClone(planes.machine[1]!);
+wrongLevel.context.levelSource!.spans[0]!.text="2 Domain Spell†:";
+assert.throws(()=>selectProcessedMembershipMarkers([planeEntries[1]!],86,[],[wrongLevel]),/level source evidence/);
+const unsupported = structuredClone(planePages);
+unsupported[0]!.blocks[0]!.lines[0]=head("Balance Domain Spells",10);
+assert.equal(processAutomaticMarkers(unsupported,"synthetic/base.jsonl",spells,planeEntries).occurrences.length,1);
+const footer: PdfPage = {page_index:284,source:{kind:"synthetic"},extractor:{name:"synthetic"},blocks:[
+  {number:0,lines:[head("Hades Domain Spells",10),{spans:[span("1",25),span(" ",25,4,65),
+    span("Domain Spell†:",25,20,70),span(" summary",25,4,170)]}]},
+  {number:1,lines:[row("Separate Digit†","M",25,292.5)]},
+  {number:2,lines:[head("SOURCES",100),row("Bibliography†",null,120)]},
+]};
+const footerResult = processAutomaticMarkers([footer],additionalPath,spells,planeEntries);
+assert.equal(footerResult.occurrences.length,2); assert.equal(footerResult.machine.length,2);
+assert.equal(footerResult.occurrences[0]!.evidence.locator.nameSpanIndices[0],2);
+assert.equal(displayMembershipMarkers([planeEntries[1]!],86,[],footerResult.machine),"M");
 const temp = fs.mkdtempSync(path.join(os.tmpdir(),"automatic-markers-"));
 try {
   fs.writeFileSync(path.join(temp,"existing.json"),"preserved","utf8");
@@ -105,6 +135,9 @@ try {
   assert.throws(()=>main(["--data-root",temp,"--input-revision","main","--output","new.json"]),/full Git commit/);
   assert.throws(()=>main(["--data-root","relative","--output","new.json"]),/must be absolute/);
   assert.throws(()=>main(["--data-root",temp,"--output","new.json","--force","true"]),/Usage/);
+  assert.throws(()=>main(["--data-root",temp,"--output","new.json","--domain-input",additionalPath]),/supplied together/);
+  assert.throws(()=>main(["--data-root",temp,"--output","new.json","--domain-input","../outside.jsonl",
+    "--domain-revision","a".repeat(40)]),/data-root-relative/);
 } finally {
   assert(path.isAbsolute(temp) && path.dirname(temp) === path.resolve(os.tmpdir()));
   fs.rmSync(temp,{recursive:true,force:true});

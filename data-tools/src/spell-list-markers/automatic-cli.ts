@@ -15,8 +15,8 @@ export function main(args: string[]) {
   const started = performance.now(), options = new Map<string, string>();
   for (let i = 0; i < args.length; i += 2) {
     const flag = args[i]!, value = args[i+1];
-    assert(["--data-root", "--input-revision", "--output"].includes(flag) && value && !value.startsWith("--") && !options.has(flag),
-      "Usage: sc:list-markers:auto --output <new data-relative JSON> [--data-root <absolute root>] [--input-revision <Git commit>]");
+    assert(["--data-root", "--input-revision", "--output", "--domain-input", "--domain-revision"].includes(flag) && value && !value.startsWith("--") && !options.has(flag),
+      "Usage: sc:list-markers:auto --output <new data-relative JSON> [--data-root <absolute root>] [--input-revision <Git commit>] [--domain-input <additional JSONL> --domain-revision <Git commit>]");
     options.set(flag, value);
   }
   const rootOption = options.get("--data-root");
@@ -24,18 +24,33 @@ export function main(args: string[]) {
   const dataRoot = fs.realpathSync(rootOption ?? localDataDir(repoRoot()));
   const revision = options.get("--input-revision") ?? SC_MARKER_INPUT_REVISION;
   assert(/^[0-9a-f]{40}$/.test(revision), "Input revision must be a full Git commit");
+  const domainPath = options.get("--domain-input"), domainRevision = options.get("--domain-revision");
+  assert(Boolean(domainPath) === Boolean(domainRevision), "Additional domain input and revision must be supplied together");
+  if (domainPath) {
+    assert(!path.isAbsolute(domainPath) && !domainPath.includes("\\") && !domainPath.split("/").some(p => p === ".." || p === "."),
+      "Domain input must be data-root-relative");
+    assert(/^[0-9a-f]{40}$/.test(domainRevision!), "Domain revision must be a full Git commit");
+  }
   const output = options.get("--output"); assert(output && !path.isAbsolute(output), "Explicit data-relative output required");
   const file = path.resolve(dataRoot, output), relative = path.relative(dataRoot, file);
   assert(relative && !relative.startsWith("..") && !path.isAbsolute(relative), "Output must remain inside data root");
   const parent = fs.realpathSync(path.dirname(file)), parentRelative = path.relative(dataRoot, parent);
   assert(!parentRelative.startsWith("..") && !path.isAbsolute(parentRelative), "Output parent cannot redirect outside data root");
   assert(!fs.existsSync(file), "Output already exists");
-  const fixed = (name: string) => execFileSync("git", ["-C", dataRoot, "show", `${revision}:${name}`],
+  const fixed = (name: string, rev = revision) => execFileSync("git", ["-C", dataRoot, "show", `${rev}:${name}`],
     {encoding: "utf8", maxBuffer: 100 * 1024 * 1024});
   const pages = fixed(extraction).trim().split(/\r?\n/).map(line => JSON.parse(line) as PdfPage);
+  const pagePaths = new Map<number, string>();
+  if (domainPath) {
+    const additional = fixed(domainPath, domainRevision).trim().split(/\r?\n/).map(line => JSON.parse(line) as PdfPage);
+    assert(additional.every(p => p.page_index >= 277 && p.page_index <= 284), "Additional domain pages must be p278–285");
+    for (const page of additional) pagePaths.set(page.page_index, domainPath);
+    pages.push(...additional);
+  }
   const normalized = JSON.parse(fixed(normalizedPath)) as {spells: SpellName[]; listEntries: NamedEntry[]};
-  const result = processAutomaticMarkers(pages, extraction, normalized.spells, normalized.listEntries);
-  const serialized = JSON.stringify({input: {revision, extraction, normalizedPath}, ...result}, null, 2) + "\n";
+  const result = processAutomaticMarkers(pages, extraction, normalized.spells, normalized.listEntries, pagePaths);
+  const serialized = JSON.stringify({input: {revision, extraction, normalizedPath,
+    ...(domainPath ? {additionalDomain: {revision: domainRevision, extraction: domainPath}} : {})}, ...result}, null, 2) + "\n";
   fs.writeFileSync(file, serialized, {encoding: "utf8", flag: "wx"});
   const metrics = {elapsedMs: Math.round(performance.now()-started), peakRssBytes: process.resourceUsage().maxRSS * 1024,
     outputBytes: Buffer.byteLength(serialized), persistentDbOpened: false, humanAcceptedRecordsWritten: 0};
