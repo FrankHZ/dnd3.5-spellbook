@@ -64,10 +64,17 @@ try {
   zh(5, "合成段落", paragraphText, paragraphs);
   zh(1, "雪 & <名字>", long, null);
   zh(2, "继承法术", plain, html);
-  const natural = "等级：一\n距离：近距\n一个完整段落。\n第二段含 2d6、条件与引用（PH 10）。\n掷骰\n结果\n1–2\n保留单元格\n";
+  const natural = "变化系\n\n等级：一\n\n距离：近距\n一个完整段落。\n第二段含 2d6、条件与引用（PH 10）。\n掷骰\n结果\n1–2\n保留单元格\n材料成分：保留 2 金币的材料。\n经验值：100 XP\n效果：正文后的表格行\n";
   spell(6, "Natural layout", "Physical\nEnglish fold", "<pre>Physical\nEnglish fold</pre>");
   zh(6, "自然段落", natural, `<pre>${natural}</pre>`);
-  zh(3, "Gamma fallback", "English  fallback\tbody.\n\nPreserved final line.", '<pre>English  fallback\tbody.\n\nPreserved final line.</pre>', "en");
+  const compactHtml = '<p>塑能系\n</p><p><strong>等级：</strong>一\n</p><p>\n</p><p>距离：近距\n</p>'
+    + '<p>普通正文完整保留 2d6 和条件。\n</p><table><tr><td><p>效果：表格内容。</p></td></tr></table>'
+    + '<ul><li><p>目标：列表内容。</p></li></ul><p>材料成分：材料不压缩。</p><p>经验值：100 XP。</p>'
+    + '<div><h3>原文疑义备注</h3><p>等级：备注内容。</p><p>目标：备注内容。</p></div>';
+  const compactText = load(compactHtml, {}, false).root().text();
+  spell(7, "Compact mapped", "Internal English QA only.", '<p>Internal English QA only.</p>');
+  zh(7, "紧凑映射", compactText, compactHtml);
+  zh(3, "中文回退", "中文  回退\t保留。\n\n最后一行。", '<pre>中文  回退\t保留。\n\n最后一行。</pre>');
   zh(1, "DO_NOT_BLEND_VARIANT", "DO_NOT_BLEND_VARIANT", null, "zh", "chm");
   db.prepare(`INSERT INTO SpellListEntry (id,spellId,listType,ownerLegacyId,ownerName,ownerSlug,
     level,sourceTable,note) VALUES ('list:1','spell:1','class',1,'Fixture caster','fixture',3,'fixture','Printed ambiguity note')`).run();
@@ -95,48 +102,53 @@ try {
     savingThrowRaw='Raw saving throw',resistanceRaw='Raw resistance',corruptLevel=2 WHERE legacySpellId=1`).run();
   const options = { contentDb: dbPath, book: 86, variant: "effective", outDir: path.join(output, "first") };
   const report = exportOfflineHtml(options);
-  assert.equal(report.spells, 5); assert.equal(report.englishBodyFallbacks, 1);
-  assert.equal(report.files, 31); assert.equal(report.detachedReferences, 4);
+  assert.equal(report.spells, 6); assert.equal(report.englishBodyFallbacks, 0);
+  assert.equal(report.files, 31); assert.equal(report.detachedReferences, 2);
   assert.equal(report.htmlTextDifferences, 0);
   const read = (name: string) => fs.readFileSync(path.join(options.outDir, name), "utf8");
   const first = read("A.html"), $ = load(first);
   assert.equal($("#spell-1 > h2").text(), "雪 & <名字> / Alpha & <fixture>");
-  assert.equal($("#spell-1-zh + div").text(), long);
-  assert.equal($("#spell-1-en + div").text(), plain);
-  assert.equal($("#spell-1-en + div table td").attr("colspan"), "2");
-  assert.equal($("#spell-1-en + div em").text(), "emphasis");
-  assert.equal($("#spell-1-en + div a").eq(0).attr("href"), "#en-1-start");
-  assert.equal($("#spell-1-en + div a").eq(1).attr("href"), "B.html#spell-2");
-  assert.equal($("#spell-1-en + div a").eq(2).attr("href"), undefined);
-  assert.equal($("#spell-1-en + div a").eq(4).attr("href"), "#en-1-%E6%97%A7%25%E5%90%8D");
-  assert.equal($("#spell-1-en + div a").eq(5).attr("href"), "A.html#spell-5-zh");
-  assert.equal($("#spell-1-en + div a").eq(6).attr("href"), "A.html#spell-1-rules");
-  assert.equal($("#spell-1-en + div a").eq(7).attr("href"), undefined);
-  assert.equal($("#spell-1-en + div a").eq(3).attr("id"), "en-1-alias-id");
-  assert.equal($("#spell-1-en + div a").eq(3).attr("name"), "en-1-旧%名");
-  assert.equal($("#spell-1-en + div h3").text(), sourceNote);
-  assert.ok(load(read("B.html"))("#spell-2-zh + div").text().includes('[fixture-question-two] 第二处独立疑问；此备注不会改写原规则。'));
-  assert.ok($("#spell-1-rules + table").text().includes("Printed ambiguity note"));
-  const ruleText = $("#spell-1-rules + table").text();
-  for (const raw of ["Fixture school", "Raw subschool", "Raw descriptor", "Fixture caster 3", "Fixture domain 4",
-    "Raw domain qualifier", "Printed variant", "DF, V", "V, S", "1 action", "Touch", "One creature",
-    "Raw effect", "Raw area", "1 round", "Raw saving throw", "Raw resistance"]) assert.ok(ruleText.includes(raw), raw);
-  assert.ok(read("B.html").includes("complete inherited difference"));
-  assert.ok(read("G.html").includes("English body fallback"));
-  assert.equal(load(read("G.html"))("#spell-3-zh + div pre").text(), "English  fallback\tbody.\n\nPreserved final line.");
+  assert.equal($("#spell-1-zh").text(), long);
+  assert.equal($("#spell-1-en, #spell-1-rules, .rules, [lang='en']").length, 0);
+  assert.equal($(".spell-entry .spell-body").length, 2);
+  assert.equal($("#spell-1 a.website-link").attr("href"), "https://www.d20spellcodex.com/spells/1");
+  assert.equal($("#spell-1 a.website-link").text(), "↗");
+  assert.equal($("#spell-1 a.website-link").attr("title"), "在网站查看");
+  assert.equal($("#spell-1 a.website-link").attr("aria-label"), "在网站查看");
+  assert($("#spell-1 a.website-link").parent().text().includes("ID 1"));
+  assert.equal($("#spell-1 > h3, #spell-1 > .navigation").length, 0);
+  assert.equal($(".navigation").length, 1);
+  assert(read("style.css").includes('.spell-entry > h2 { font-size: 1.17em; }'));
+  const inherited = load(read("B.html")), body = inherited("#spell-2-zh");
+  assert.equal(body.text(), plain);
+  assert.equal(body.find("table td").attr("colspan"), "2");
+  assert.equal(body.find("em").text(), "emphasis");
+  assert.equal(body.find("a").eq(0).attr("href"), "#zh-2-start");
+  assert.equal(body.find("a").eq(1).attr("href"), "B.html#spell-2");
+  assert.equal(body.find("a").eq(2).attr("href"), undefined);
+  assert.equal(body.find("a").eq(4).attr("href"), "#zh-2-%E6%97%A7%25%E5%90%8D");
+  assert.equal(body.find("a").eq(5).attr("href"), "A.html#spell-5-zh");
+  assert.equal(body.find("a").eq(6).attr("href"), "A.html#spell-1");
+  assert.equal(body.find("a").eq(7).attr("href"), undefined);
+  assert.equal(body.find("a").eq(3).attr("id"), "zh-2-alias-id");
+  assert.equal(body.find("a").eq(3).attr("name"), "zh-2-旧%名");
+  assert.equal(body.find("h3").text(), sourceNote);
+  assert.ok(body.text().includes('[fixture-question-two] 第二处独立疑问；此备注不会改写原规则。'));
+  assert(!read("B.html").includes("complete inherited difference"));
+  assert.equal(load(read("G.html"))("#spell-3-zh pre").text(), "中文  回退\t保留。\n\n最后一行。");
   assert.deepEqual($(".spell-entry").toArray().map(el => $(el).attr("id")), ["spell-1", "spell-5"]);
   assert.equal(report.classPages, 2); assert.equal(report.classMemberships, 4); assert.equal(report.classListEntries, 5);
   assert.equal(report.selectedSummaries, 6); assert.deepEqual(report.summaryVariants, { en: "imarvin", zh: "chm" });
-  assert.deepEqual(report.classlessTargets, [3, 6]); assert.equal(report.classEntriesNeedingStructuralReview, 1);
+  assert.deepEqual(report.classlessTargets, [3, 6, 7]); assert.equal(report.classEntriesNeedingStructuralReview, 1);
   assert.equal(report.pdfFormatting, "pending-431-source-mapping");
   // Preserve two semantic paragraphs and a visual line fold within the first. No PDF mapping is inferred.
-  assert.equal($("#spell-5-en + div > p").length, 2);
-  assert.equal($("#spell-5-en + div > p").first().text(), "First paragraph\nPDF visual fold remains in this paragraph.");
-  assert.equal($("#spell-5-en + div strong").text(), "synthetic label");
-  assert.equal($("#spell-5-en + div").text(), paragraphText);
+  assert.equal($("#spell-5-zh > p").length, 2);
+  assert.equal($("#spell-5-zh > p").first().text(), "First paragraph\nPDF visual fold remains in this paragraph.");
+  assert.equal($("#spell-5-zh strong").text(), "synthetic label");
+  assert.equal($("#spell-5-zh").text(), paragraphText);
   // The real export/sanitizer chain consumes a synthetic presentation contract, not PDF evidence.
-  for (const lang of ["en", "zh"]) {
-    const body = $(`#spell-5-${lang} + div`), prefix = `${lang}-5`;
+  for (const lang of ["zh"]) {
+    const body = $(`#spell-5-${lang}`), prefix = `${lang}-5`;
     assert.equal(body.text(), paragraphText);
     assert.deepEqual(body.children().slice(0, 4).toArray().map(el => el.tagName), ["p", "p", "div", "ul"]);
     const note = body.find(`#${prefix}-reader-note`);
@@ -169,12 +181,24 @@ try {
     ]);
   }
   assert(read("style.css").includes("margin-bottom: 1.65em"));
-  const naturalBody = load(read("N.html"))("#spell-6-zh + div");
-  assert.equal(naturalBody.text(), "等级：一\n距离：近距\n一个完整段落。\n第二段含 2d6、条件与引用（PH 10）。\n掷骰\n结果\n1–2\n保留单元格\n");
-  assert.deepEqual(naturalBody.find(".plain-paragraph").toArray().map(el => load(el).text()),
+  const naturalBody = load(read("N.html"))("#spell-6-zh");
+  assert.equal(naturalBody.text(), natural);
+  assert.deepEqual(naturalBody.find(".plain-paragraph").toArray().map(el => load(el.cloneNode(true)).text()),
     ["一个完整段落。", "第二段含 2d6、条件与引用（PH 10）。"]);
+  assert.deepEqual(naturalBody.find('.mechanism-field').toArray().map(el => load(el.cloneNode(true)).text()), ["变化系", "等级：一", "距离：近距"]);
+  assert.equal(naturalBody.find('.mechanism-gap').length, 2);
+  assert.equal(naturalBody.find('.mechanism-end').text(), "距离：近距");
+  const mappedBody = load(read('C.html'))('#spell-7-zh');
+  assert.equal(mappedBody.text(), compactText);
+  assert.equal(mappedBody.find('.mechanism-field').length, 3);
+  assert.equal(mappedBody.find('.mechanism-gap').length, 1);
+  assert.equal(mappedBody.find('table .mechanism-field, li .mechanism-field').length, 0);
+  assert.equal(mappedBody.children('div').find('.mechanism-field').length, 0);
+  assert.equal(mappedBody.find('.mechanism-end').text(), "距离：近距\n");
+  assert(!mappedBody.find('.mechanism-field').text().includes('材料'));
   assert.equal(naturalBody.find("pre").text(), naturalBody.text());
-  assert.equal(load(read("N.html"))("#spell-6-en + div pre").html(), "Physical\nEnglish fold");
+  assert.equal(load(read("N.html"))("#spell-6-en, [lang='en']").length, 0);
+  assert(!read("N.html").includes("Physical"));
   assert(read("style.css").includes("pre.plain-lines > span.plain-paragraph { margin-bottom: .8em; }"));
   const css = read("style.css");
   assert(css.includes('.spell-body ul.pdf-typography-marked-list { list-style: none; }'));
@@ -189,7 +213,16 @@ try {
   assert.equal(caster('#level-0 + ul > li').length, 1);
   assert.equal(caster('#level-0 + ul a').attr("href"), "A.html#spell-1");
   assert.equal(caster('#level-0 + ul [lang="zh"]').text(), "已接受短描述 1 & <保留>");
-  assert.equal(caster('#level-0 + ul [lang="en"]').text(), "Accepted short description 1.");
+  const directoryItem = caster('#level-0 + ul > li');
+  assert.equal(directoryItem.find('a').text(), "雪 & <名字>（Alpha & <fixture>）");
+  assert.equal(directoryItem.find('small.component-labels').text().trim(), "V、DF");
+  assert.equal(directoryItem.find('small.component-labels').attr('title'), "法术成分");
+  assert.equal(directoryItem.find('.summary').get(0)?.tagName, 'span');
+  assert.equal(directoryItem.find('div.summary').length, 0);
+  assert.ok(directoryItem.text().includes('） V、DF：已接受短描述'));
+  assert(read('style.css').includes('.component-labels { font-size: .75em; }'));
+  assert.equal(caster('[lang="en"]').length, 0);
+  assert(!caster.text().includes("Accepted short description"));
   for (const note of ["Zero qualifier", "Additional qualifier"]) assert(caster('#level-0 + ul').text().includes(note));
   assert.equal(caster('#level-9 + ul a').attr("href"), "A.html#spell-5");
   assert(caster('#level-1 + .empty').length); assert(load(read("Z.html"))(".empty").length);
@@ -217,10 +250,10 @@ try {
     const partial = memoryView.transaction(() => exportOfflineHtml({ ...options, contentDb: ":memory:", outDir: selectedOut }, new Map([[5, selected]]), memoryView))();
     assert(memoryView.open && memoryView.readonly); assert.equal(memoryView.pragma("query_only", { simple: true }), 1);
     assert.equal(partial.pdfFormatting, "partial-main-gate-selected");
-    assert.deepEqual(partial.typography, { reviewedSelectedIds: [5], currentDisplayIds: [1, 2, 3, 6], formattingComplete: false });
+    assert.deepEqual(partial.typography, { reviewedSelectedIds: [5], currentDisplayIds: [1, 2, 3, 6, 7], formattingComplete: false });
     const page = load(fs.readFileSync(path.join(selectedOut, "A.html"), "utf8"));
-    for (const lang of ["en", "zh"]) {
-      const body = page(`#spell-5-${lang} + div`);
+    for (const lang of ["zh"]) {
+      const body = page(`#spell-5-${lang}`);
       assert.equal(body.text(), paragraphText); assert.equal(body.find('b').text(), "synthetic label");
       assert.equal(body.find(`#${lang}-5-reader-note > p`).length, 2);
       assert.equal(body.find('table th').attr("rowspan"), "2");
@@ -290,6 +323,7 @@ try {
     ["UPDATE I18nSpellText SET rulebookId=87 WHERE spellId=2 AND variant='effective'", /Conflicting/],
     ["UPDATE I18nSpellText SET bodyProvenanceJson=NULL WHERE spellId=2 AND variant='effective'", /language metadata/],
     ["UPDATE SpellContent SET descriptionText='' WHERE legacySpellId=2", /missing English/],
+    ["UPDATE I18nSpellText SET bodyProvenanceJson='" + provenance(2, "body", "en") + "' WHERE spellId=2 AND variant='effective'", /Chinese body required/],
     ["UPDATE SpellContent SET id='spell:999' WHERE legacySpellId=2", /conflicting normalized ID/],
     ["UPDATE SpellContent SET descriptionHtml='<script>operative content</script>' WHERE legacySpellId=2", /remove visible content/],
     ["UPDATE SpellContent SET descriptionHtml='<p id=\"x\">A</p><p id=\"x\">B</p>' WHERE legacySpellId=2", /duplicate body anchor/],
@@ -317,21 +351,24 @@ try {
   });
   assert(!fs.existsSync(gapOutput));
   // Other variants select only their own accepted Chinese summaries; English stays imarvin.
-  for (const id of [1, 2, 3, 5, 6]) zh(id, `Other name ${id}`, `Other body ${id}`, null, "zh", "other");
+  for (const id of [1, 2, 3, 5, 6, 7]) zh(id, `Other name ${id}`, `Other body ${id}`, null, "zh", "other");
   const otherOut = path.join(output, "other-variant");
   assert.deepEqual(exportOfflineHtml({ ...options, variant: "other", outDir: otherOut }).summaryVariants, { en: "imarvin", zh: "other" });
   const otherClass = load(fs.readFileSync(path.join(otherOut, "class-1.html"), "utf8"));
   assert.equal(otherClass('#level-0 + ul [lang="zh"]').text(), "Other exact summary 1.");
-  assert.equal(otherClass('#level-0 + ul [lang="en"]').text(), "Accepted short description 1.");
-  // Full-size synthetic scope: every target has one entry and two complete bodies after consolidation.
+  assert.equal(otherClass('[lang="en"]').length, 0);
+  // The focused preview stage deliberately skips the full-size replay.
+  if (!process.argv.includes("--focused")) {
+  // Full-size synthetic scope: one Chinese body per target; English inputs stay internal.
   const expected = new Map<number, { en: string; zh: string }>([
     [1, { en: plain, zh: long }], [2, { en: "As Alpha, except the complete inherited difference.", zh: plain }],
-    [3, { en: "English fallback body.", zh: "English  fallback\tbody.\n\nPreserved final line." }],
+    [3, { en: "English fallback body.", zh: "中文  回退\t保留。\n\n最后一行。" }],
     [5, { en: paragraphText, zh: paragraphText }],
     [6, { en: "Physical\nEnglish fold", zh: natural }],
+    [7, { en: "Internal English QA only.", zh: compactText }],
   ]);
   db.transaction(() => {
-    for (let i = 0; i < 996; i++) {
+    for (let i = 0; i < 995; i++) {
       const id = 1000 + i, letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".charAt(i % 26);
       const en = `Complete synthetic ${id}\n\nInherited exception <kept> ${id}.`, chinese = `完整合成正文 ${id}\n\n独立备注 ${id}。`;
       spell(id, `${letter} synthetic ${String(id).padStart(4, "0")}`, en, null); zh(id, `合成名称 ${id}`, chinese, null);
@@ -348,7 +385,7 @@ try {
     page('.spell-entry').each((_, entry) => {
       const id = Number(page(entry).attr("id")!.slice("spell-".length));
       assert(!actual.has(id));
-      actual.set(id, { en: page(`#spell-${id}-en + div`).text(), zh: page(`#spell-${id}-zh + div`).text() });
+      actual.set(id, { en: db.prepare('SELECT descriptionText FROM SpellContent WHERE legacySpellId=?').pluck().get(id) as string, zh: page(`#spell-${id}-zh`).text() });
       const row = db.prepare('SELECT canonicalName FROM SpellContent WHERE legacySpellId=?').get(id) as { canonicalName: string };
       assert.equal(row.canonicalName.charAt(0).toUpperCase(), letter); names.push(row.canonicalName);
     });
@@ -358,11 +395,17 @@ try {
     const name = (id: number) => (db.prepare('SELECT canonicalName FROM SpellContent WHERE legacySpellId=?').get(id) as { canonicalName: string }).canonicalName;
     return name(a).localeCompare(name(b), "en") || a - b;
   })));
-  assert(!actual.has(4837)); assert.equal(actual.size * 2, 2002);
+  assert(!actual.has(4837)); assert.equal(actual.size, 1001);
+  assert.equal(full.displayedBodies, 1001);
+  }
   assert.throws(() => validatePages(new Map([["index.html", '<a href="missing.html">Missing</a>']])), /missing/);
   assert.throws(() => validatePages(new Map([["index.html", '<a href="#absent">Missing</a>']])), /missing link anchor/);
   assert.throws(() => validatePages(new Map([["index.html", '<a href="https://example.invalid">Network</a>']])), /non-local/);
-  console.log("offline HTML portable tests passed: classes/levels, accepted summaries/gaps, A–Z/1001 targets/2002 bodies, merged anchors, paragraphs, note/list consumer contract, tables, privacy, repeat/failures");
+  assert.throws(() => validatePages(new Map([["index.html", '<a href="https://www.d20spellcodex.com/spells/1">Source URL</a>']])), /generated website link/);
+  for (const href of ['https://www.d20spellcodex.com/spells/2', 'https://www.d20spellcodex.com/spells/1?x=1', 'https://www.d20spellcodex.com/spells/1#zh', 'https://www.d20spellcodex.com/spells/01']) {
+    assert.throws(() => validatePages(new Map([["A.html", `<div class="spell-entry" id="spell-1"><a class="website-link" href="${href}" title="在网站查看" aria-label="在网站查看">↗</a></div>`]])), /generated website link/);
+  }
+  console.log("offline HTML portable tests passed: classes/levels, accepted summaries/gaps, Chinese-only bodies/summaries, website links, compact mechanism fields, merged anchors, paragraphs, note/list consumer contract, tables, privacy, repeat/failures");
 } finally {
   if (db.open) db.close();
   for (const [root, directory] of [[os.tmpdir(), temp], [outputRoot, output]]) {

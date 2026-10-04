@@ -1,11 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import Database from "better-sqlite3";
-import { load } from "cheerio";
+import { load, type Cheerio } from "cheerio";
+import type { Element } from "domhandler";
 import sanitizeHtml from "sanitize-html";
 import { repoRoot } from "../shared/env";
 import { selectedSummaryVariant } from "../db/content-search-documents";
 import { selectPdfTypography, type PdfTypographyPresentation } from "../zh-parser/pdf-typography";
+import { isMechanismLine } from "../zh-parser/header";
 
 type Spell = {
   id: string; legacySpellId: number; canonicalName: string; sourceRulebookId: number;
@@ -34,10 +36,10 @@ const text = (v: string) => v.replace(/&/g, "&amp;").replace(/</g, "&lt;")
   .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const spellAnchor = (id: number) => `spell-${id}`;
-// Same component vocabulary as the normalized runtime mapper.
+const websiteRoot = "https://www.d20spellcodex.com/spells/";
+// Existing normalized component flags, in their conventional display order.
 const componentLabels: Record<string, string> = { verbal: "V", somatic: "S", material: "M",
-  arcane_focus: "AF", divine_focus: "DF", xp: "XP", metabreath: "Metabreath / 超息",
-  truename: "Truename / 真名", corrupt: "Corrupt / 腐化" };
+  arcane_focus: "AF", divine_focus: "DF", xp: "XP", metabreath: "超息", truename: "真名", corrupt: "腐化" };
 
 function selectSummaries(rows: Summary[], ids: Set<number>, book: number, variant: string) {
   const selected = new Map<number, { en: string; zh: string }>(), gaps: SummaryGap[] = [];
@@ -79,13 +81,16 @@ function language(raw: string | null, id: number, field: string, variant: string
 function document(title: string, body: string) {
   return `<!doctype html>\n<html lang="zh"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>${text(title)}</title><link rel="stylesheet" href="style.css"></head><body><div id="content">${body}</div></body></html>\n`;
 }
-const navigation = '<p class="navigation"><a href="index.html#classes">职业目录 / Classes</a> | <a href="index.html#letters">A–Z 正文 / Full spells</a></p>';
-const preview = '<p class="notice">内容预览 / Content preview. 自然排版待视觉验收。 / Natural layout awaits visual acceptance.</p>';
+const navigation = '<p class="navigation"><a href="index.html#classes">职业目录</a> | <a href="index.html#letters">A–Z 正文</a></p>';
+const preview = '<p class="notice">中文内容预览，自然排版待视觉验收。</p>';
 const membershipNotice = '<p class="notice">职业目录保留当前归属与附注；部分外部归属的原书核对仍待完成，目录不构成来源 QA 通过。</p>';
 const style = `body { margin: 2em; color: #222; background: #fff; font-family: "Microsoft YaHei", "SimSun", serif; line-height: 1.65; }
 #content { max-width: 62em; margin: auto; } h1 { font-size: 1.7em; } h2 { border-bottom: 1px solid #bbb; }
 a { color: #164f91; } .notice { padding: .6em; border: 1px solid #aaa; background: #f5f5f5; }
 .spell-entry { margin-bottom: 3em; } .spell-body p, .spell-body pre, .spell-body ul, .spell-body ol, .spell-body dl, .spell-body table, .spell-body blockquote { margin-top: 0; margin-bottom: 1.65em; }
+.spell-entry > h2 { font-size: 1.17em; }
+.website-link { font-size: .85em; margin-left: .35em; text-decoration: none; }
+.component-labels { font-size: .75em; }
 .membership-note { display: block; } .spell-body li p, .spell-body td p, .spell-body th p { margin-bottom: .5em; }
 .spell-body ul.pdf-typography-marked-list { list-style: none; }
 .spell-body ul.pdf-typography-marked-list ul { list-style-type: disc; }
@@ -96,14 +101,17 @@ pre, .plain { white-space: pre-wrap; word-wrap: break-word; font-family: inherit
 .spell-body pre.plain-lines > span { display: block; white-space: pre-wrap; }
 .spell-body pre.plain-lines > span.plain-paragraph { margin-bottom: .8em; }
 .spell-body pre.plain-lines > span:empty { min-height: .8em; }
+.spell-body .mechanism-field { margin-top: 0; margin-bottom: 0; }
+.spell-body .mechanism-end { margin-bottom: 1.65em; }
+.spell-body pre.plain-lines > span.mechanism-gap, .spell-body p.mechanism-gap { margin: 0; min-height: 0; height: 0; line-height: 0; white-space: normal; }
 table { border-collapse: collapse; }
-th, td { border: 1px solid #999; padding: .3em .7em; } .rules th { text-align: left; } .rules td { white-space: pre-wrap; }
+th, td { border: 1px solid #999; padding: .3em .7em; }
 .navigation { font-size: .95em; } li { margin: .2em 0; }\n`;
 
 function bodyHtml(html: string | null, plain: string, prefix: string, destinations: Map<number, string>, counts: {
   detachedReferences: number; htmlTextDifferences: number;
 }, naturalChinese = false) {
-  if (!present(html)) return `<div class="plain">${text(plain)}</div>`;
+  if (!present(html)) html = `<pre>${text(plain)}</pre>`;
   const original = load(html, {}, false);
   if (compact(original.root().text()) !== compact(plain)) counts.htmlTextDifferences++;
   // Same sanitizer dependency used by CHM intake, with offline semantic/anchor attributes.
@@ -142,7 +150,7 @@ function bodyHtml(html: string | null, plain: string, prefix: string, destinatio
     if (anchor) $(el).attr("href", `#${encodeURIComponent(anchor)}`);
     else if (match && destinations.has(Number(match[1]))) {
       const id = Number(match[1]), destination = destinations.get(id)!;
-      $(el).attr("href", match[2] ? `${destination}-${match[2]}` : destination);
+      $(el).attr("href", match[2] === "zh" ? `${destination}-zh` : destination);
     }
     else { $(el).removeAttr("href"); counts.detachedReferences++; }
   });
@@ -151,6 +159,27 @@ function bodyHtml(html: string | null, plain: string, prefix: string, destinatio
   // guessing table cells or changing any decoded character. English pre/layout
   // and pre blocks containing markup retain their existing representation.
   if (naturalChinese && /[\u3400-\u9fff]/u.test($.root().text())) {
+    // Consecutive recognized fields share one compact block. Only blank display
+    // rows between fields are collapsed; text, tables, lists and notes stay intact.
+    const compactFields = (nodes: Cheerio<Element>) => {
+      const rows = nodes.toArray();
+      let started = false, leading = 0;
+      for (let index = 0; index < rows.length; index++) {
+        const row = $(rows[index]!);
+        if (!isMechanismLine(row.text())) {
+          if (!row.text().trim()) continue;
+          if (started || ++leading > 2) break;
+          continue;
+        }
+        started = true;
+        row.addClass("mechanism-field");
+        let next = index + 1;
+        while (next < rows.length && !$(rows[next]!).text().trim()) next++;
+        if (next < rows.length && isMechanismLine($(rows[next]!).text())) {
+          for (let gap = index + 1; gap < next; gap++) $(rows[gap]!).addClass("mechanism-gap");
+        } else row.addClass("mechanism-end");
+      }
+    };
     $("pre").each((_, element) => {
       if ($(element).contents().toArray().some(node => node.type !== "text")) return;
       const value = $(element).text();
@@ -165,8 +194,29 @@ function bodyHtml(html: string | null, plain: string, prefix: string, destinatio
         return `<span${paragraph ? ' class="plain-paragraph"' : ""}>${text(line)}</span>`;
       }).join("");
       $(element).attr("class", "plain-lines").html(spaced);
+      compactFields($(element).children("span"));
       if ($(element).text() !== value) throw new Error(`${prefix}: plain layout changed text`);
     });
+    // Work only with sibling paragraph rows; never classify table/list cells or
+    // paragraphs inside an independently headed reader-note container.
+    const parents = new Set($("p").toArray().map(node => node.parent));
+    for (const parent of parents) {
+      if (!parent || $(parent).closest("table,ul,ol,dl,blockquote").length
+        || (parent.type !== "root" && $(parent).children("h2,h3,h4,h5,h6").length)) continue;
+      const children = $(parent).children();
+      // Non-paragraph blocks interrupt the group, even when their text is empty.
+      let group: Cheerio<Element> = children.slice(0, 0);
+      let firstGroup = true;
+      for (const node of children.toArray()) {
+        if (node.tagName === "p" && !$(node).find("table,ul,ol,dl").length) group = group.add(node);
+        else {
+          if (firstGroup) compactFields(group);
+          if (group.length) firstGroup = false;
+          group = children.slice(0, 0);
+        }
+      }
+      if (firstGroup) compactFields(group);
+    }
   }
   return $.root().html()!;
 }
@@ -192,6 +242,18 @@ export function validatePages(pages: Map<string, string>) {
     if ($("script, iframe, object, img, [style], [onclick]").length) throw new Error(`${name}: active content`);
     $("a[href], link[href]").each((_, el) => {
       const href = $(el).attr("href")!; links++;
+      if (href.startsWith(websiteRoot)) {
+        const entryId = $(el).closest(".spell-entry").attr("id");
+        const id = entryId?.match(/^spell-([1-9]\d*)$/)?.[1];
+        if (el.tagName !== "a" || !id || !Number.isSafeInteger(Number(id))
+          || $(el).attr("class") !== "website-link" || $(el).text() !== "↗"
+          || $(el).attr("title") !== "在网站查看" || $(el).attr("aria-label") !== "在网站查看"
+          || href !== websiteRoot + id || $(el).closest(".spell-body").length
+          || $(el).closest(".spell-entry").find("a.website-link").length !== 1) {
+          throw new Error(`${name}: invalid generated website link`);
+        }
+        return;
+      }
       const [target, fragment] = href.split("#");
       if (href.includes("\\") || /[:/?]/.test(target!) || !pages.has(target || name)) {
         throw new Error(`${name}: missing or non-local link`);
@@ -300,42 +362,27 @@ export function exportOfflineHtml(options: ExportOptions,
         if (!t || !present(t.name) || !present(t.descriptionText)) throw new Error(`spell ${id}: missing name/body for zh/${options.variant}`);
         const nameLang = language(t.nameProvenanceJson, id, "name", options.variant);
         const bodyLang = language(t.bodyProvenanceJson, id, "body", options.variant);
+        if (bodyLang !== "zh") throw new Error(`spell ${id}: Chinese body required for Chinese-only export`);
         counts[nameLang === "zh" ? "chineseNames" : "englishNameFallbacks"]++;
         counts[bodyLang === "zh" ? "chineseBodies" : "englishBodyFallbacks"]++;
-        const levels = listEntries.filter(row => row.spellId === s.id).sort((a, b) => a.listType.localeCompare(b.listType)
-          || a.ownerName.localeCompare(b.ownerName) || a.level - b.level || a.id.localeCompare(b.id));
-        const levelText = (listType: string) => levels.filter(r => r.listType === listType).map(r => `${r.ownerName} ${r.level}${r.rawExtra ? ` ${r.rawExtra}` : ""}${r.variantLabel ? ` (${r.variantLabel})` : ""}${r.note ? ` — ${r.note}` : ""}`).join("; ");
-        const descriptors = db.prepare("SELECT name, rawText FROM SpellTaxonomyFacet WHERE spellId=? AND facetType='descriptor' ORDER BY sortOrder, name").all(s.id) as { name: string; rawText: string | null }[];
-        const components = db.prepare("SELECT componentType FROM SpellComponent WHERE spellId=? AND present=1 AND componentType <> 'other' ORDER BY componentType").all(s.id) as { componentType: string }[];
-        const componentText = components.map(r => componentLabels[r.componentType] ?? r.componentType).join(", ");
-        const headers: [string, string | null][] = [
-          ["School / 学派", [s.schoolRaw, s.subschoolRaw].filter(present).join(" / ")],
-          ["Descriptors / 描述符", descriptors.map(r => r.rawText ?? r.name).join(", ")],
-          ["Class level / 职业等级", levelText("class")], ["Domain level / 领域等级", levelText("domain")],
-          ["Components / 成分", componentText], ["Additional components / 附加成分", s.componentsRaw],
-          ["Corruption cost / 腐化代价", s.corruptLevel === null ? null : String(s.corruptLevel)], ["Casting time / 施法时间", s.castingTimeRaw],
-          ["Range / 距离", s.rangeRaw], ["Target / 目标", s.targetRaw], ["Effect / 效果", s.effectRaw],
-          ["Area / 区域", s.areaRaw], ["Duration / 持续时间", s.durationRaw],
-          ["Saving throw / 豁免", s.savingThrowRaw], ["Spell resistance / 法术抗力", s.resistanceRaw],
-        ];
-        const rules = headers.filter(([, value]) => present(value)).map(([label, value]) => `<tr><th>${text(label)}</th><td>${text(value!)}</td></tr>`).join("");
         const display = selectPdfTypography(id, options.book, {
           englishText: s.descriptionText, englishHtml: s.descriptionHtml ?? "",
           chineseText: t.descriptionText, chineseHtml: t.descriptionHtml ?? "",
         }, presentations.get(id));
         const zh = bodyHtml(display.chineseHtml, t.descriptionText, `zh-${id}`, destinations, counts, bodyLang === "zh");
-        const en = bodyHtml(display.englishHtml, s.descriptionText, `en-${id}`, destinations, counts);
+        // Retain the existing English input/sanitizer integrity checks internally.
+        // Its body is never included in the Chinese document or output counts.
+        bodyHtml(display.englishHtml, s.descriptionText, `en-${id}`, destinations,
+          { detachedReferences: 0, htmlTextDifferences: 0 });
         letterEntries.get(s.canonicalName.charAt(0).toUpperCase())!.push(`<div class="spell-entry" id="${spellAnchor(id)}"><h2>${text(t.name)} / ${text(s.canonicalName)}</h2>
-          <p>${text(book[0]!.name)}${s.sourcePage === null ? "" : ` · p. ${s.sourcePage}`} · ID ${id}</p>
-          ${nameLang === "en" ? '<p class="notice">中文名称缺失：显示英文名称。 / English name fallback.</p>' : ""}
-          <h3 id="${spellAnchor(id)}-rules">Current rules / 当前规则</h3><table class="rules">${rules}</table>
-          <h3 id="${spellAnchor(id)}-zh">${bodyLang === "zh" ? "中文正文" : "中文正文缺失：英文回退 / English body fallback"}</h3><div class="spell-body" lang="${bodyLang}">${zh}</div>
-          <h3 id="${spellAnchor(id)}-en">English</h3><div class="spell-body" lang="en">${en}</div>${navigation}</div>`);
+          <p>${text(book[0]!.name)}${s.sourcePage === null ? "" : ` · p. ${s.sourcePage}`} · ID ${id}<a class="website-link" href="${websiteRoot}${id}" title="在网站查看" aria-label="在网站查看">↗</a></p>
+          ${nameLang === "en" ? '<p class="notice">中文名称缺失：显示英文名称。</p>' : ""}
+          <div class="spell-body" id="${spellAnchor(id)}-zh" lang="zh">${zh}</div></div>`);
       }
       for (const letter of letters) {
         const entries = letterEntries.get(letter)!;
         pages.set(`${letter}.html`, document(`${book[0]!.name} — ${letter}`, `${navigation}<h1>${letter}</h1>${preview}
-          ${entries.length ? entries.join("\n") : '<p class="empty">此字母无法术 / No spells for this letter.</p>'}${navigation}`));
+          ${entries.length ? entries.join("\n") : '<p class="empty">此字母无法术。</p>'}`));
       }
       const byId = new Map(spells.map(spell => [spell.legacySpellId, spell]));
       const classMenu: string[] = []; let classMemberships = 0;
@@ -352,18 +399,19 @@ export function exportOfflineHtml(options: ExportOptions,
             .map(([id, memberships]) => {
               classMemberships++;
               const spell = byId.get(id)!, translation = translations.get(id)!, summary = summaries.get(id)!;
+              const components = new Set((db.prepare("SELECT componentType FROM SpellComponent WHERE spellId=? AND present=1 AND componentType <> 'other'").all(spell.id) as { componentType: string }[]).map(row => row.componentType));
+              const labels = Object.entries(componentLabels).filter(([key]) => components.has(key)).map(([, label]) => label).join("、");
               const qualifiers = [...new Set(memberships.map(row => [row.rawExtra, row.variantLabel, row.note].filter(present).join(" — ")).filter(present))];
-              return `<li><a href="${destinations.get(id)}">${text(translation.name!)} / ${text(spell.canonicalName)}</a>
-                <div lang="zh" class="summary">${text(summary.zh)}</div><div lang="en" class="summary">${text(summary.en)}</div>
+              return `<li><a href="${destinations.get(id)}">${text(translation.name!)}（${text(spell.canonicalName)}）</a>${labels ? `<small class="component-labels" title="法术成分"> ${text(labels)}</small>` : ""}：<span lang="zh" class="summary">${text(summary.zh)}</span>
                 ${qualifiers.map(value => `<span class="membership-note">${text(value)}</span>`).join("")}</li>`;
             }).join("\n");
-          return `<h2 id="level-${level}">${level} 环 / Level ${level}</h2>${rows ? `<ul class="spell-list">${rows}</ul>` : '<p class="empty">此环无法术 / No spells at this level.</p>'}`;
+          return `<h2 id="level-${level}">${level} 环</h2>${rows ? `<ul class="spell-list">${rows}</ul>` : '<p class="empty">此环无法术。</p>'}`;
         }).join("\n");
         pages.set(filename, document(`${book[0]!.name} — ${group.name}`, `${navigation}<h1>${text(group.name)}</h1>${membershipNotice}${sections}${navigation}`));
       }
       pages.set("index.html", document(book[0]!.name, `<h1>${text(book[0]!.name)}</h1>${preview}
-        <h2 id="classes">职业目录 / Classes</h2>${membershipNotice}${classMenu.length ? `<ul>${classMenu.join("\n")}</ul>` : '<p class="empty">无职业归属 / No class memberships.</p>'}
-        <h2 id="letters">A–Z 正文 / Full spells</h2><p>${letters.map(letter => `<a href="${letter}.html">${letter}</a>`).join(" | ")}</p>`));
+        <h2 id="classes">职业目录</h2>${membershipNotice}${classMenu.length ? `<ul>${classMenu.join("\n")}</ul>` : '<p class="empty">无职业归属。</p>'}
+        <h2 id="letters">A–Z 正文</h2><p>${letters.map(letter => `<a href="${letter}.html">${letter}</a>`).join(" | ")}</p>`));
       const links = validatePages(pages);
       fs.mkdirSync(path.dirname(out), { recursive: true });
       fs.mkdirSync(out);
@@ -373,11 +421,12 @@ export function exportOfflineHtml(options: ExportOptions,
         classListEntries: rowIds.size, classTargets: classTargets.size, classlessTargets: spells.filter(s => !classTargets.has(s.legacySpellId)).map(s => s.legacySpellId),
         classEntriesNeedingStructuralReview: listEntries.filter(row => row.listType === "class" && row.reviewStatus === "review").length,
         selectedSummaries: summaries.size * 2, summaryVariants: { en: selectedSummaryVariant("en", options.variant), zh: selectedSummaryVariant("zh", options.variant) },
+        displayLanguage: "zh", displayedBodies: spells.length, displayedSummaries: summaries.size, websiteLinks: spells.length,
         pdfFormatting: presentations.size ? "partial-main-gate-selected" : "pending-431-source-mapping",
         typography: { reviewedSelectedIds: [...presentations.keys()].sort((a, b) => a - b),
           currentDisplayIds: [...ids].filter(id => !presentations.has(id)).sort((a, b) => a - b), formattingComplete: false },
         contentCertification: false, relationshipSourceQa: "pending-354",
-        htmlTextPolicy: "Authenticated display derivatives and natural paragraph spacing for Chinese plain text; complete decoded characters and source line order preserved. Canonical fields are never changed." };
+        htmlTextPolicy: "Chinese bodies and summaries only, bilingual names. Recognized mechanism fields are compact; complete decoded text and source order stay exact, including whitespace. Canonical bilingual fields are never changed." };
       fs.writeFileSync(path.join(out, "report.json"), JSON.stringify(report, null, 2) + "\n", { encoding: "utf8", flag: "wx" });
       return report;
     })();
