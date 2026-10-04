@@ -377,3 +377,29 @@ The bounded [combined rehearsal report](../releases/v1.4/spell-compendium-final-
 records full summary/FTS/API verification and the separate operator handoff.
 Use fresh native connections for final integrity/search checks after a rebuild;
 FTS handles opened before another connection's index replacement can be stale.
+
+## Six-entry source fidelity transition
+
+The fixed [#467 source acceptance](https://github.com/FrankHZ/dnd3.5-spellbook/issues/467#issuecomment-5976286296)
+binds six complete before/after pairs at private revision
+`996a41671f7cb61e9f7fa6cce48a912695694c7c`, with independent receipt
+`775005e96a5caa9a83bbf523f716946b2fe890a0`. It accepts source values only.
+The maintained final overlay supports `--accepted-source-fidelity` after
+`--accepted-source-pairs --accepted-english-title --accepted-summaries`.
+For an authorized migration, add `--upgrade-source-fidelity` and supply
+`--previous-normalized` pointing to the exact #461 operator artifact at
+`2336ddf280ff27477a7ec760d745ac42a11d5cf9`; its current logical path is
+`data/dice-qa/books/86/issue-461/operator.normalized.generated.json`.
+Use check/apply/validate through the same command and transactional protections
+as the preceding source-pair transition. Choose one upgrade per invocation.
+
+Only English pairs 4247, 4345, 4354 and 4355 enter the fixed rules patch;
+4345 preserves the already-correct text while correcting HTML. The overlay
+changes only Chinese bodies 4033 and 4349 and records their original envelopes.
+Prior source corrections, names, independent notes, summaries, mechanics and
+unrelated table bytes remain guarded. Full original-page/errata authentication,
+accepted source receipt and genuine full normalized provenance are required.
+No caller projection or new proposal can substitute for these fixed inputs.
+Actual rules/content writes, FTS, consumer checks, complete format selection
+and export remain separate main-gate responsibilities. Unselected typography
+must retain the full current fallback until those gates pass.

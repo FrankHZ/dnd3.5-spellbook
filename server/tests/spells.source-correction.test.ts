@@ -22,6 +22,29 @@ function map(v: ReturnType<typeof fixture>) {
   return mapFieldProvenance(JSON.stringify(v.envelope), "body", v.row, {id: 3930, rulebookId: 86});
 }
 describe("bounded source correction provenance", () => {
+  it("maps only the two fixed source-fidelity body corrections", () => {
+    const candidate = "996a41671f7cb61e9f7fa6cce48a912695694c7c";
+    for (const id of [4033, 4349]) {
+      const value = fixture();
+      value.envelope.targetId = value.envelope.input.targetId = value.envelope.sourceCorrection.targetId = value.envelope.sourceCorrection.prior.targetId = value.row.spellId = id;
+      const correction = value.envelope.sourceCorrection;
+      correction.revision = candidate;
+      correction.acceptanceRevision = "775005e96a5caa9a83bbf523f716946b2fe890a0";
+      correction.path = "dice-qa/books/86/issue-467/candidate.json";
+      correction.prior.text = id === 4033 ? "目标" + "合".repeat(17) + "保留" : "与“合成”相同";
+      value.row.descriptionText = id === 4033 ? "目标保留" : "与“合成”（PH 217）相同";
+      const run = (v = value) => mapFieldProvenance(JSON.stringify(v.envelope), "body", v.row, {id, rulebookId: 86});
+      expect(run().review?.acceptedRevision).toBe(candidate);
+      for (const mutate of [
+        (v: typeof value) => {v.row.descriptionText += "forged";},
+        (v: typeof value) => {v.envelope.sourceCorrection.acceptanceRevision = final;},
+        (v: typeof value) => {v.envelope.sourceCorrection.path += "forged";},
+        (v: typeof value) => {v.envelope.sourceCorrection.prior.review.originalEntry.englishDisposition = "forged";},
+      ]) {const wrong = structuredClone(value); mutate(wrong); expect(() => run(wrong)).toThrow();}
+      expect(JSON.stringify(run())).not.toContain("dice-qa/");
+      expect(() => mapFieldProvenance(JSON.stringify(value.envelope), "body", value.row, {id: 4247, rulebookId: 86})).toThrow();
+    }
+  });
   it("reports accepted correction review while preserving original ownership", () => {
     const result = map(fixture());
     expect(result.review).toEqual({disposition: "accepted", acceptedRevision: source, originalEntryReviewed: true, sourceQuestionIds: []});

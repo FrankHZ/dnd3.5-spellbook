@@ -1,3 +1,4 @@
+import {fidelityCandidate, fidelityAcceptance, fidelityDirectory, fidelityChineseIds, validateFidelityChinese} from './source-fidelity';
 import assert from "node:assert/strict";
 import type Database from "better-sqlite3";
 import { applyOverlayRows, overlayColumns, type OverlayRow } from "./effective-writer";
@@ -109,11 +110,18 @@ export function planFinalOverlay(db: Database.Database, fields: FinalField[], so
     const body = bodies.get(name.targetId)!;
     for (const field of [name, body]) if (field.sourceCorrection) {
       const correction = field.sourceCorrection;
+      assert.equal(field.field, 'body');
+      if (correction.revision === fidelityCandidate) {
+        assert(fidelityChineseIds.includes(field.targetId)); assert.equal(correction.targetId, field.targetId);
+        assert.equal(correction.acceptanceRevision, fidelityAcceptance); assert.equal(correction.path, fidelityDirectory + 'candidate.json');
+        for (const key of ['text','html'] as const) validateFidelityChinese(field.targetId, correction.prior[key]!, field[key]!);
+      } else {
       assert.equal(field.field, 'body'); assert.equal(field.targetId, 3930);
       assert.equal(correction.targetId, 3930);
       assert.equal(correction.revision, 'ebc3a6615002de6dac1f1c4a636e19757d7b0c8f');
       assert.equal(correction.acceptanceRevision, '5f05fad7df5256a9c3c998d3be77aac238445107');
       assert.equal(correction.path, 'dice-qa/books/86/issue-461/candidate.json');
+      }
       assert(!correction.prior.sourceCorrection, 'nested source correction');
       const restored = {...field, text: correction.prior.text, html: correction.prior.html};
       delete restored.sourceCorrection;

@@ -130,20 +130,23 @@ function mapFinalProvenance(v: Record<string, any>, field: "name" | "body",
     acceptedRevision: r.revision, originalEntryReviewed: true, sourceQuestionIds: r.sourceQuestionIds ?? []};
   if ("sourceCorrection" in v) {
     const correction = v.sourceCorrection, prior = correction?.prior;
-    if (field !== "body" || target.id !== 3930 || "readerNoteAddendum" in v
-      || !record(correction) || correction.targetId !== 3930
-      || correction.revision !== "ebc3a6615002de6dac1f1c4a636e19757d7b0c8f"
-      || correction.acceptanceRevision !== "5f05fad7df5256a9c3c998d3be77aac238445107"
-      || correction.path !== bookPath + "issue-461/candidate.json"
-      || !record(prior) || prior.targetId !== 3930 || prior.rulebookId !== 86 || prior.field !== "body"
+    if (field !== "body" || ![3930,4033,4349].includes(target.id) || "readerNoteAddendum" in v
+      || !record(correction) || correction.targetId !== target.id
+      || !(target.id === 3930 ? correction.revision === "ebc3a6615002de6dac1f1c4a636e19757d7b0c8f"
+        && correction.acceptanceRevision === "5f05fad7df5256a9c3c998d3be77aac238445107" && correction.path === bookPath + "issue-461/candidate.json"
+        : correction.revision === "996a41671f7cb61e9f7fa6cce48a912695694c7c"
+        && correction.acceptanceRevision === "775005e96a5caa9a83bbf523f716946b2fe890a0" && correction.path === bookPath + "issue-467/candidate.json")
+      || !record(prior) || prior.targetId !== target.id || prior.rulebookId !== 86 || prior.field !== "body"
       || "sourceCorrection" in prior || "readerNoteAddendum" in prior
       || !isDeepStrictEqual(prior.origin, o) || !isDeepStrictEqual(prior.review, r)
       || !text(prior.text) || !text(prior.html) || !text(bodyText)) return fail();
     let start = 0;
     while (start < bodyText.length && prior.text[start] === bodyText[start]) start++;
-    const removed = prior.text.slice(start, start + 29);
-    if ([...removed].length !== 29 || /\s/.test(removed)
-      || bodyText !== prior.text.slice(0, start) + prior.text.slice(start + 29)) return fail();
+    const length = target.id === 3930 ? 29 : 17;
+    const removed = prior.text.slice(start, start + length);
+    if (target.id === 4349 ? prior.text.split("”相同").length !== 2 || bodyText !== prior.text.replace("”相同", "”（PH 217）相同")
+      : [...removed].length !== length || /\s/.test(removed)
+      || bodyText !== prior.text.slice(0, start) + prior.text.slice(start + length)) return fail();
     review = {...review, disposition: "accepted", acceptedRevision: correction.revision};
   }
   if ("readerNoteAddendum" in v) {
