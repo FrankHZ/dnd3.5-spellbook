@@ -1,0 +1,408 @@
+{
+  "issue": 465,
+  "scope": "remaining-complete-entries-03",
+  "status": "complete-dispositions-awaiting-main-gate-review",
+  "publicBase": "7b8aa151d6a49c4249861172b5e6a978b3e86d02",
+  "privateEvidence": {
+    "revision": "c7f57eb9111f2c2c7446bea3010dd1a9a3c21114",
+    "directory": "dice-qa/books/86/issue-465/",
+    "scopeRevision": "712d96bc24f03bea2f119e00f0b057eadbe0af01",
+    "acceptedFieldsRevision": "0688739d92a2aa9fb3eceeb444daa7260e711058",
+    "acceptedNotesRevision": "c61b9dea676cfd89bdfcaa6dcbcccbc99280d7c4",
+    "normalizedAndManifestRevision": "9ee687c380d22308d6f4aac3a3ad3eaa6196c614",
+    "mapping": "sample-mappings.json",
+    "diagnosticPresentations": "presentations.json",
+    "unselectedCandidates": "selection-candidates.json",
+    "dispositions": "dispositions.json",
+    "blockedCandidates": "content-candidates.json",
+    "blockedAuthorityAnalysis": "4033-source-analysis.json",
+    "historicalRetentionTrace": "authority-trace.json",
+    "checks": [
+      "validation.json",
+      "entry-validation.json",
+      "export-validation.json",
+      "export-entry-validation.json",
+      "export-link-audit.json",
+      "cwd-replay.json",
+      "visual-inspection.json",
+      "run-settings.json",
+      "reproduction.json"
+    ]
+  },
+  "targetIds": [
+    3982,
+    3983,
+    3985,
+    3986,
+    3987,
+    3989,
+    3990,
+    3991,
+    3992,
+    3993,
+    3994,
+    3995,
+    3997,
+    3998,
+    3999,
+    4002,
+    4003,
+    4004,
+    4005,
+    4007,
+    4008,
+    4009,
+    3533,
+    4010,
+    4011,
+    4012,
+    4013,
+    4014,
+    4016,
+    3794,
+    4018,
+    4019,
+    4020,
+    4022,
+    4023,
+    4024,
+    4025,
+    3542,
+    4028,
+    4029,
+    4030,
+    4031,
+    4032,
+    4033,
+    4034
+  ],
+  "dispositionCounts": {
+    "completeEntries": 45,
+    "completeFormatProposals": 44,
+    "pending": 0,
+    "blocked": 1,
+    "mainGateSelected": 0
+  },
+  "entries": [
+    {
+      "targetId": 3982,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3983,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3985,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3986,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3987,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3989,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3990,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3991,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3992,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3993,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3994,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3995,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3997,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3998,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3999,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4002,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4003,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4004,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4005,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4007,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4008,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4009,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3533,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4010,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4011,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4012,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4013,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4014,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4016,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3794,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4018,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4019,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4020,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4022,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4023,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4024,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4025,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3542,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4028,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4029,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4030,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4031,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4032,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4033,
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false
+    },
+    {
+      "targetId": 4034,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    }
+  ],
+  "blockedTargetIds": [
+    4033
+  ],
+  "blockedCandidateSelected": false,
+  "sourceReview": {
+    "freshComparedPages": 15,
+    "freshComparedSavedSpans": 2777,
+    "completeEntryPagesVisuallyReviewed": 14,
+    "completeOfficialErrataPagesReviewed": 1,
+    "errataApplicableIds": [],
+    "sourceBoundUnits": 518,
+    "acceptedInheritedUnitsWithoutOwnSourceFontClaim": 9,
+    "actualInheritedParentBindings": [
+      [
+        4003,
+        4002
+      ],
+      [
+        4011,
+        4010
+      ]
+    ],
+    "independentReaderNoteUnits": 0,
+    "separatelyReviewedListOptions": 4,
+    "chineseCodePointEmphasisRanges": 443,
+    "fullEnglishAndChineseCoverage": true,
+    "freshTextFontsAndGeometry": true,
+    "alphabeticTextAndStyleComparisonExact": true,
+    "punctuationProjectionExceptionExplicitlyReviewed": true,
+    "semanticReviewReplacedByFontFlags": false,
+    "countsAloneGrantAcceptance": false
+  },
+  "representationChecks": {
+    "completeFourFieldBindings": true,
+    "normalizedEnglishPairBindings": true,
+    "decodedTextAndWhitespacePreserved": true,
+    "semanticListsTablesAndLinksPreserved": true,
+    "staleFieldAndIdentityRejections": 315,
+    "independentCompleteFinalDomEmphasis": true,
+    "missingExtraTruncatedAndColonOutputNegatives": 4,
+    "maintainedSelectorOrComparatorChanged": false
+  },
+  "consumerRehearsal": {
+    "fixedPublicExporter": "b8c8dd27cbc9fb61dafbe52916df85b7b69ffa6a",
+    "memoryEntries": 46,
+    "guardedCompleteEntries": 45,
+    "destinationOnlyFixtureIds": [
+      3826
+    ],
+    "diagnosticPresentations": 45,
+    "eligibleCandidates": 44,
+    "blockedExcludedAndCurrentFallbackPreserved": true,
+    "allCompleteEmphasisRecheckedAfterActualSanitization": true,
+    "decodedTextWhitespaceAndStructurePreserved": true,
+    "resolvedInBookBodyLinks": 3,
+    "outsideBookDetachedBodyLinks": 8,
+    "nonSpellDetachedBodyLinks": 4,
+    "allAnchorTextPreserved": true,
+    "existingSingleBookLinkPolicyUnchanged": true,
+    "staleFourFieldExportRejections": 4,
+    "rootAndPackageOutputFilesIdentical": 58,
+    "persistentDatabasesOpened": 0,
+    "fullDatabaseCopied": false,
+    "syntheticDisplayEnvelopesAuthenticateSourceQa": false,
+    "emptyMembershipFixtureDoesNotCertifyClassSummaryBehavior": true
+  },
+  "blockedContent": {
+    "targetId": 4033,
+    "wholeEntryBlocked": true,
+    "originalAndFullErrataReviewed": true,
+    "historicalExplicitRetentionFound": true,
+    "historicalRetentionTreatedAsOriginalText": false,
+    "minimalPairedDeletionCandidateUnapplied": true,
+    "separateReaderNoteBoundaryAnalyzed": true,
+    "contentOrNoteDecisionStillRequired": true
+  },
+  "verifiedRuntime": {
+    "model": "gpt-6.1-sol",
+    "effort": "high",
+    "source": "local rollout turn_context metadata"
+  },
+  "limits": {
+    "mainGateReviewAndSelectionRequired": true,
+    "actualPreviewSelected": 95,
+    "actualPreviewCurrent": 906,
+    "actualPreviewChanged": false,
+    "canonicalInputsOrDatabasesChanged": false,
+    "oldFrozenInputsOrCheckersChanged": false,
+    "htmlRendered": false,
+    "alternateHtmlRenderingUsed": false,
+    "humanHtmlVisualAcceptanceOwner": 345,
+    "fullBookFormattingAccepted": false,
+    "privatePushOrSourceUpload": false,
+    "unrelatedStagedDeletionsPreserved": 39
+  }
+}

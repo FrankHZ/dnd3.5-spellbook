@@ -145,6 +145,13 @@ language's existing serial order when complete semantic correspondence is shown;
 that does not claim a page facsimile. Record these decisions explicitly rather
 than treating legacy HTML as source authority.
 
+The [third complete-entry packet](../../data-tools/reports/dice-qa/books/86/pdf-typography-complete-03.json)
+binds unselected candidates and individual dispositions to complete final-DOM
+checks before and after the fixed exporter's sanitizer. Its blocked entry stays
+excluded pending a separate content decision; historical retention evidence is
+preserved privately and does not establish original-text authority. This packet
+does not change the actual preview or grant main-gate selection.
+
 The four-entry follow-up proposes those dispositions for 4443, 4088 and 4072.
 3958's legacy table title has no separate PDF heading counterpart. Removing its
 visible text from the old fields violates the existing exact-text guard;
