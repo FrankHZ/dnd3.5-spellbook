@@ -124,6 +124,13 @@ individual table cells, ordered list items, reader notes and complete mechanism
 expectations, with exact whitespace preservation and an eight-body memory fixture.
 The packet identifies entries awaiting content revalidation and binds the fixture
 to the renderer revision that recognizes the independently reviewed field variants.
+The [M–R structure packet](../../data-tools/reports/dice-qa/books/86/sc-zh-format-mr.json)
+binds 191 individually reviewed Chinese bodies to 190 new guarded candidates and
+one unchanged accepted presentation. Its evidence checks three tables cell by
+cell, complete ordered lists, creature stat rows, prose boundaries and independent
+notes. Frozen complete mechanism expectations also cover combined field labels
+and an observed semicolon resistance line without changing canonical text.
+The eight-body memory fixture retains the same sanitizer and directory contracts.
 Production presentation selection, human visual acceptance and final renderer
 integration remain separate checks owned by #345/main-gate. The fixture does not
 accept the separate spell-table component marker decision.
