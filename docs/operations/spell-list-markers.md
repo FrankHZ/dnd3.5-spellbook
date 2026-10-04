@@ -137,3 +137,12 @@ accept that exact evidence revision and the explicit source/binding decisions
 before candidates acquire source acceptance. Passing an in-memory accepted
 selection simulation does not persist acceptance or authorize renderer publication,
 schema application or database writes.
+
+The [source-free Balance proposal report](../../data-tools/reports/dice-qa/books/86/sc-balance-marker-source-proposals.json)
+illustrates a complete printed-row denominator with explicit empty markers and
+separate SC body scope. Its private evidence preserves out-of-scope publication
+identities as source inventory; only the SC subset has binding proposals.
+A complete printed list does not expand the body scope or accept other editions.
+The report also identifies the existing APIs and resource estimates for a full
+automatic pass, keeping machine processing distinct from human source acceptance
+and unresolved marker display policy under the renderer owner's review.
