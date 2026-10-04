@@ -1,0 +1,547 @@
+{
+  "schemaVersion": 1,
+  "issue": 474,
+  "parentIssues": [
+    431,
+    345
+  ],
+  "status": "unselected-format-proposals-with-whole-entry-content-blockers",
+  "scope": "remaining-complete-entries-06",
+  "privateEvidence": {
+    "revision": "134cfa06011d0d05bab382541467b60594373465",
+    "path": "dice-qa/books/86/issue-474",
+    "fixedInventoryRevision": "712d96bc24f03bea2f119e00f0b057eadbe0af01",
+    "acceptedFieldsRevision": "0688739d92a2aa9fb3eceeb444daa7260e711058",
+    "readerNoteRevision": "c61b9dea676cfd89bdfcaa6dcbcccbc99280d7c4",
+    "currentFullNormalizedRevision": "2336ddf280ff27477a7ec760d745ac42a11d5cf9",
+    "completedMigrationRevision": "cffdedcddf2d28b58a68caa6d94d60253be5f59d",
+    "inheritedRepairedPacketRevision": "711a29e2cd38537eab0a28981dcfc29d4270383f",
+    "inherited42OnlyAcceptanceRevision": "eb6c520ce7d5e294e28531e509286933557a3b79",
+    "mappings": "sample-mappings.json",
+    "diagnosticPresentations": "presentations.json",
+    "candidates": "selection-candidates.json",
+    "dispositions": "dispositions.json",
+    "unappliedFourFieldProposals": "content-candidates.json",
+    "semanticReview": "semantic-rereview.json",
+    "completeEmphasisRanges": "complete-inline-ranges.json",
+    "sourcePositionComparison": "source-position-comparison.json",
+    "rawSourceCharacterAudit": "raw-source-character-audit.json",
+    "individualRepresentations": "representation-exceptions.json",
+    "inheritedActualOutputRegressions": "inherited-style-regressions.json",
+    "reproduction": "reproduction.json",
+    "checks": [
+      "validation.json",
+      "entry-validation.json",
+      "pdf-comparison.json",
+      "visual-inspection.json",
+      "source-position-negative.json",
+      "semantic-output-negatives.json",
+      "lexical-occurrence-audit.json",
+      "export-root-validation.json",
+      "export-package-validation.json",
+      "export-entry-validation.json",
+      "export-link-audit.json",
+      "export-semantic-negatives.json",
+      "export-blocked-fallback.json",
+      "cwd-replay.json",
+      "resource-budget.json",
+      "run-settings.json",
+      "review-rework-01-before.json",
+      "review-rework-01-validation.json",
+      "review-rework-01-root-validation.json",
+      "review-rework-01-package-validation.json",
+      "source-fidelity-history.json"
+    ],
+    "currentAuthorityTrace": "authority-trace.json",
+    "inheritedOrigins": "inherited-origins.json",
+    "initialActualBadOutputRevision": "9c97f143d887648b1cc315fba86a4ae52500488c"
+  },
+  "targetIds": [
+    4492,
+    3544,
+    4430,
+    3535,
+    4432,
+    4433,
+    4434,
+    4436,
+    4437,
+    4440,
+    4441,
+    4442,
+    4444,
+    4445,
+    4446,
+    4447,
+    4448,
+    4449,
+    4450,
+    4453,
+    3937,
+    4454,
+    4455,
+    4456,
+    4461,
+    4463,
+    4464,
+    4465,
+    4466,
+    4468,
+    4469,
+    4471,
+    4472,
+    4473,
+    4475,
+    4476,
+    4479,
+    4480,
+    3863,
+    4481,
+    4483,
+    4484,
+    4485,
+    4486,
+    4494
+  ],
+  "dispositionCounts": {
+    "completeDiagnosticMappings": 45,
+    "completeFormatCandidates": 34,
+    "blockedWholeEntries": 11,
+    "pending": 0,
+    "mainGateSelected": 0,
+    "exactUnappliedContentProposals": 11
+  },
+  "entries": [
+    {
+      "targetId": 4492,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3544,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4430,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3535,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4432,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4433,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4434,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4436,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4437,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4440,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4441,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4442,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4444,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4445,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4446,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4447,
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "diagnosticMappingComplete": true,
+      "findingKind": "source-citation-omission",
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
+    },
+    {
+      "targetId": 4448,
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "diagnosticMappingComplete": true,
+      "findingKind": "source-citation-omission",
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
+    },
+    {
+      "targetId": 4449,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4450,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4453,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3937,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4454,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4455,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4456,
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "diagnosticMappingComplete": true,
+      "findingKind": "source-word-or-punctuation-discrepancy",
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
+    },
+    {
+      "targetId": 4461,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4463,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4464,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4465,
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "diagnosticMappingComplete": true,
+      "findingKind": "source-qualifier-omission",
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
+    },
+    {
+      "targetId": 4466,
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "diagnosticMappingComplete": true,
+      "findingKind": "source-citation-omission",
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
+    },
+    {
+      "targetId": 4468,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4469,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4471,
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "diagnosticMappingComplete": true,
+      "findingKind": "source-citation-omission",
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
+    },
+    {
+      "targetId": 4472,
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "diagnosticMappingComplete": true,
+      "findingKind": "source-citation-omission",
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
+    },
+    {
+      "targetId": 4473,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4475,
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "diagnosticMappingComplete": true,
+      "findingKind": "source-word-or-punctuation-discrepancy",
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
+    },
+    {
+      "targetId": 4476,
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "diagnosticMappingComplete": true,
+      "findingKind": "source-word-or-punctuation-discrepancy",
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
+    },
+    {
+      "targetId": 4479,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4480,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 3863,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4481,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4483,
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "diagnosticMappingComplete": true,
+      "findingKind": "source-word-or-punctuation-discrepancy",
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
+    },
+    {
+      "targetId": 4484,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4485,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    },
+    {
+      "targetId": 4486,
+      "disposition": "blocked-source-content-candidate",
+      "eligibleCandidate": false,
+      "diagnosticMappingComplete": true,
+      "findingKind": "source-word-or-punctuation-discrepancy",
+      "followupOwner": "issue476 independent content task",
+      "followupIssue": 476
+    },
+    {
+      "targetId": 4494,
+      "disposition": "format-proposal-complete",
+      "eligibleCandidate": true
+    }
+  ],
+  "blockedTargetIds": [
+    4447,
+    4448,
+    4456,
+    4465,
+    4466,
+    4471,
+    4472,
+    4475,
+    4476,
+    4483,
+    4486
+  ],
+  "sourceReview": {
+    "freshComparedPages": 16,
+    "freshComparedSavedSpans": 2961,
+    "completeOriginalEntryPagesVisuallyReviewed": 15,
+    "completeOfficialErrataPagesReviewed": 1,
+    "errataApplicableIds": [
+      4449
+    ],
+    "sourceBoundUnits": 521,
+    "acceptedInheritedUnitsWithoutOwnScFontClaim": 0,
+    "independentReaderNoteUnits": 4,
+    "chineseCodePointEmphasisRanges": 442,
+    "fullTextPositionUnits": 151,
+    "sourcePositionBoundCharacters": 29261,
+    "sourcePositionBoundPunctuation": 924,
+    "rawPunctuationCodePointsAndPairedHtmlEntitiesRetained": true,
+    "physicalLineEndHyphenOmissions": 57,
+    "individuallyReviewedQuoteTypographyPositions": 32,
+    "individuallyReviewedNumericMinusPositions": 10,
+    "individuallyReviewedNativeListMarkers": 5,
+    "newSourceContentAccepted": false,
+    "fullDiagnosticEnglishAndChineseUnitCoverage": true,
+    "completeCaseComparisonMismatches": 0,
+    "sourcePositionSwapNegativeDetected": true
+  },
+  "representationChecks": {
+    "completeFourFieldBindings": true,
+    "currentNormalizedEnglishPairBindings": true,
+    "decodedTextWhitespaceParagraphsAndSemanticStructuresPreserved": true,
+    "completeFinalDomEmphasisBeforeAndAfterActualSanitizer": true,
+    "staleFieldAndIdentityRejections": 315,
+    "meaningfulConstructedEmphasisNegatives": 10,
+    "observedThisBatchAuthoringErrors": 2,
+    "inheritedActualErrorNegatives": 2,
+    "maintainedAuthorAndComparatorReused": true,
+    "dedicatedVisibleTextCounter": true,
+    "maintainedPublicHelpersChanged": false,
+    "quoteTypographyPolicy": "Each raw source/output apostrophe or quote position preserves contraction/possessive meaning or exact paired quotation boundaries, words and source-position emphasis. No active normalization, no sentence-dash/word-hyphen/prime/feet/inches or other punctuation exemption. Main-gate must independently review concrete evidence.",
+    "independentReworkChecks": {
+      "affectedIds": [
+        4440,
+        4472
+      ],
+      "all45FourFieldsAndEnglishOutputsUnchanged": true,
+      "other43PresentationsMappingsRangesDecisionsExact": true,
+      "actualBadOutputsFrozen": true,
+      "actualGeneratedAndSanitizedErrorsRejected": true,
+      "explicitAliasEmphasisAndSemanticPunctuationPositionsChecked": true
+    }
+  },
+  "consumerRehearsal": {
+    "fixedExporter": "9844683e94fbb6fd6b9d0caaad5166f0c86ed087",
+    "memoryEntries": 53,
+    "completeGuardedEntries": 45,
+    "completeDiagnosticMappings": 45,
+    "destinationOnlyFixtureIds": [
+      3826
+    ],
+    "eligibleCandidates": 34,
+    "blockedExcluded": [
+      4447,
+      4448,
+      4456,
+      4465,
+      4466,
+      4471,
+      4472,
+      4475,
+      4476,
+      4483,
+      4486
+    ],
+    "blockedSelectionRejectionsBeforeOutput": 11,
+    "blockedWholeEntryFallbacksVerified": 11,
+    "followupOwner": "issue476 independent content task",
+    "allFinalEmphasisCheckedAfterActualSanitization": true,
+    "allVisibleTextAndWhitespacePreserved": true,
+    "maintainedSemanticStructureComparison": true,
+    "paragraphBoundariesPreserved": true,
+    "independentReaderNotesPreserved": true,
+    "resolvedBodyLinks": 6,
+    "detachedBodyLinks": 20,
+    "exporterStaleFourFieldRejections": 4,
+    "exporterIdentityRejections": 2,
+    "inheritedActualOutputNegatives": 2,
+    "actualInitialOutputNegatives": 2,
+    "allMeaningfulSanitizedOutputNegatives": 14,
+    "unselectedFallbackPreserved": true,
+    "persistentDatabasesOpened": 0,
+    "operatorStableAppStateOpened": 0,
+    "limitation": "All45 sanitized styles are diagnostic only. Eligible memory export selects only eligible candidates and preserves full current before bodies for all blocked entries. Synthetic provenance envelopes and empty membership tables prove body sanitizer/link/structure behavior only; no source QA or full class-summary certification.",
+    "rootAndPackageCasesCompared": 17,
+    "rootAndPackageOutputFilesIdentical": 493,
+    "additionalActualRegressionFixtureIds": [
+      4394,
+      4395
+    ],
+    "followupIssue": 476
+  },
+  "resources": {
+    "englishTextCharacters": 36907,
+    "chineseTextCharacters": 15427,
+    "initialEvidenceBudgetBytes": 52428800,
+    "estimatedPeakMemoryBudgetMiB": 512,
+    "concurrentReplays": 1,
+    "newEnvironments": 0,
+    "measuredPacketBytes": 39978015,
+    "initialBudgetValidated": true,
+    "measuredFinalRootAndPackageOutputBytes": 5932818,
+    "measuredAllTaskOutputBytes": 15932472,
+    "outputBudgetValidated": true,
+    "rootMemoryReplaySeconds": 2.740488,
+    "packageMemoryReplaySeconds": 2.7547541,
+    "peakMemoryInstrumented": false,
+    "intermediateBudgetAdjustment": "Bound raw punctuation/representation context to existing complete character-position alignment; initial redundant contexts exceeded budget, final packet fits50MiB.",
+    "reworkOutputBudgetBytes": 20971520,
+    "reworkOutputBudgetReason": "Preserve the original frozen rehearsal outputs while adding two actual-error cases and new root/package replays; measured prior7.4MB plus estimated new6MB fits20MiB. No new environment or concurrency."
+  },
+  "runtime": {
+    "model": "gpt-6.1-sol",
+    "effort": "high",
+    "source": "read-only local rollout turn_context metadata; main-gate verifies dispatch independently",
+    "versionScope": "v1.4"
+  },
+  "limits": {
+    "mainGateReviewAndSelectionRequired": true,
+    "actualPreviewChanged": false,
+    "canonicalInputsOrDatabasesChanged": false,
+    "oldFrozenPacketsChanged": false,
+    "htmlRendered": false,
+    "alternateHtmlRenderingUsed": false,
+    "humanHtmlVisualAcceptanceOwner": 345,
+    "fullBookFormattingAccepted": false,
+    "formatAcceptanceGranted": false,
+    "privatePushOrSourceUpload": false,
+    "unrelatedStagedDeletionsPreserved": 39,
+    "contentMigrationAndCompleteTypographyRebindingRequired": true,
+    "syntheticProvenanceIsSourceAuthentication": false,
+    "productionOrDatabaseMigrationAccepted": false
+  },
+  "sourceFidelityDisposition": {
+    "targetId": 4456,
+    "historicalReview": "review-d/joint-review-results.jsonl:16",
+    "classification": "revised-source-fidelity-proposal",
+    "priorInOnEquivalenceExplicitlyAccepted": true,
+    "priorMissedReviewClaim": false,
+    "proposalApplied": false,
+    "followupIssue": 476
+  }
+}
