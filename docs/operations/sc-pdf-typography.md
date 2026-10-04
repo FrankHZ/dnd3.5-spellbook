@@ -176,6 +176,22 @@ citations even where rule meaning is unchanged. Only its two minus-glyph forms
 and eight existing list markers are scoped representation cases. Selection and
 human HTML visual acceptance remain with main-gate and #345.
 
+The [fifth complete-entry packet](../../data-tools/reports/dice-qa/books/86/pdf-typography-complete-05.json)
+binds the separate `dice-qa/books/86/issue-470/` proposals to all complete original
+pages, full official errata and the fixed exporter sanitizer. Every scoped entry
+has a disposition; diagnostic mappings remain separate from eligible candidates.
+Blocked entries retain complete current bilingual fallback and exact unapplied
+four-field proposals for the independent content decision in
+[#473](https://github.com/FrankHZ/dnd3.5-spellbook/issues/473). Named-reference
+emphasis follows each occurrence's meaning and source font; ordinary verbs remain
+regular even when their wording also names a spell. Raw punctuation review
+retains source/output code points, HTML entities and surrounding words, so legacy
+normalization cannot silently approve a source discrepancy. Mathematical minus
+representations are reviewed individually; they grant no exemption to word
+omissions or other punctuation. Official replacement sentences retain separate
+errata authority, while inherited fields and project notes keep their own origin.
+Selection and human HTML visual acceptance remain with main-gate and #345.
+
 The four-entry follow-up proposes those dispositions for 4443, 4088 and 4072.
 3958's legacy table title has no separate PDF heading counterpart. Removing its
 visible text from the old fields violates the existing exact-text guard;

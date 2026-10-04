@@ -132,7 +132,7 @@ explicit readonly handoff; this task does not open those DBs.
 
 Ordinary CLI flags provide no presentation JSON/file channel. The low-level
 renderer map is not source authority; authentication belongs to that maintained
-entry. Current integration uses 181 selected displays: the complete 95 corrected
+entry. Current integration uses 223 selected displays: the complete 95 corrected
 [#463 / PR #464](https://github.com/FrankHZ/dnd3.5-spellbook/pull/464) candidates
 plus its corrected 3930/3934 candidates after main-gate accepted and actually
 applied [#461](https://github.com/FrankHZ/dnd3.5-spellbook/issues/461)'s two source
@@ -145,11 +145,15 @@ Their old normalized input records must equal the actual migrated baseline;
 all four fields must match the current readonly snapshot. The old 97
 presentations remain exact. The separately accepted 40
 [#468 / PR #469](https://github.com/FrankHZ/dnd3.5-spellbook/pull/469) candidates
-extend that complete 141 set. Its 45 diagnostic mappings cannot be promoted
+extend that complete 141 set. The accepted 42
+[#470 / PR #471](https://github.com/FrankHZ/dnd3.5-spellbook/pull/471) candidates
+extend the complete 181 set. Diagnostic 45-entry packets cannot be promoted
 wholesale: 4247, 4345, 4349, 4354 and 4355 remain wholly excluded alongside 4033.
-All six entries retain exact current bilingual fallback; #467 owns their source
-corrections and later complete typography rebinding. The other 820 targets
-retain current display. No unapplied proposal supplies accepted after fields.
+Those six entries retain exact current bilingual fallback for #467. New 4421,
+4425 and 4426 remain wholly current for #473; all nine blocked entries are excluded.
+4395's ordinary-action emphasis is removed while its three named references
+remain exact. The other 778 targets retain current display. No unapplied proposal
+supplies accepted after fields.
 Unaccepted later batches are not selected.
 
 The private entry binds exact candidates, complete mappings/ranges and independent
@@ -185,6 +189,10 @@ Full source authentication includes the accepted 3930 Chinese body and 3934
 English pair, with their source-correction provenance and accepted annotations.
 The prior completed state is retained as historical evidence, never substituted
 for the current operator binding. Export performs no migration or content repair.
+The current format slice preserves the completed #461 source-state binding.
+It consumes only PR471 report/docs changes in its exporter checkout; PR472 runtime
+and source-fidelity migration are outside this slice. Primary authentication code
+remains at its explicit handoff revision.
 The current batch handoff separately binds current source-authentication code and
 persisted migration helper revisions. It proves the relevant runtime files
 unchanged between them; the final metadata plan still uses the fixed actual
