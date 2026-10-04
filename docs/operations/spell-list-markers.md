@@ -36,6 +36,74 @@ The input is small enough for an in-memory scan. Processing is proportional to
 the input spans and emitted evidence, with memory bounded by the input and candidate output.
 No API or model calls are made.
 
+## Automatic SC processing
+
+After the reviewed pilot, `sc:list-markers:auto` processes all **existing cached**
+SC class/domain list inputs in one pass. It reads immutable extraction and normalized
+Git blobs, never a database or complete component flags:
+
+```powershell
+npm run -w data-tools sc:list-markers:auto -- --data-root G:/spell-book/data --output dice-qa/books/86/issue-499/processed-new.json
+```
+
+From `data-tools`, omit `-w data-tools`. The data root must be absolute;
+output is data-root-relative with an existing parent, and must be new. There is
+no overwrite option. `--input-revision` accepts a full private Git commit; the
+default fixed input revision and both logical paths are recorded in the output.
+Code paths resolve from the owning checkout through the existing root helper.
+
+An accepted supplemental domain extraction can be appended with
+`--domain-input <data-relative JSONL> --domain-revision <full private Git commit>`.
+Both options are required together. The additional input is bounded to p278–285
+and must not duplicate page indices in the original cache. The combined pass
+preserves each occurrence's actual extraction path and both immutable revisions.
+The original cache-only command remains reproducible. Supplied p271–285 page
+coverage clears the cache-gap field; original-book completeness still depends
+on the owning domain source handoff, not this page-index check.
+
+The processor orders the cached two-column geometry, reads printed class/level
+or domain headings, and enumerates bold labels, including unmarked labels.
+School prefixes and separately extracted domain level digits are retained in
+source spans. Matching uses owner, level, normalized label, stable identity and
+explicit SC edition. Typography normalization handles ligatures, curly punctuation
+and layout whitespace; it does not rewrite names, combine slash alternatives or
+infer annotations from components. A domain label without the SC dagger stays
+unknown when it matches an existing SC relationship; it cannot silently exclude
+that relationship or establish a machine annotation. Other complete labels
+without the dagger remain outside-scope source inventory. Shared Sorcerer/Wizard occurrences can bind
+both existing memberships.
+
+The eight planar domains have two rows per level. Their second row can continue
+the previous printed level across a page; machine bindings retain and validate
+that numbered row as `context.levelSource`. Unnumbered rows in ordinary domains
+are not treated as additional memberships. A full-width sources footer is
+excluded after both columns, so it does not truncate right-column domain rows.
+
+The output separates `occurrences` (recognized printed source rows),
+`relationships` (all existing SC edition targets), and eligible `machine` bindings.
+Every target gets a result or reason. Complete labels with explicit M/F/X or
+explicit absence can produce machine results; incomplete labels, unmatched or
+ambiguous identities, unaccepted relationships and conflicting occurrences stay
+unknown. Missing source coverage includes owners absent from these printed lists
+as well as appendix pages outside the cache; it is not a count of missing spells.
+The default cache covers p245–277, with Oracle only levels 1–5 on p277.
+Processing all cached input does **not** establish original-book appendix
+completeness; the supplemental domain handoff supplies the remaining pages.
+
+Machine bindings wrap ordinary candidate records with an explicit method,
+heading context and spell-name snapshot. Their `reviewStatus` remains `candidate`;
+the wrapper does not grant human acceptance or persistent import authority.
+The [source-free automatic report](../../data-tools/reports/dice-qa/books/86/sc-automatic-marker-results.json)
+locates the frozen private result, exceptions and replay entry. Its accepted
+domain-source denominator and SC/outside-scope partition are separate from the
+automatic marker statuses: outside-scope source rows can still have unknown
+marker evidence. Complete domain source coverage does not make every marker known.
+
+The pass uses O(S log S + R + B) time for per-page ordering and indexed matching,
+and O(S + R + B) memory, where S is spans, R relationships and B emitted bindings.
+The normalized JSON is read once; no full corpus OCR, model/API calls or new
+environment is required. Use a serial 1 GiB Node heap for the fixed private input.
+
 ## Storage and review boundary
 
 `SpellListEntry` represents generated class/domain relationships, not PDF rows.
@@ -82,10 +150,20 @@ The independent API lives in
    Only accepted annotations whose embedded spans and current binding agree
    are selected. Conflicting accepted appearances, changed qualifiers/identities,
    or unaccepted relationships throw. Unknown memberships remain unknown.
-4. Release export uses `requireAcceptedMembershipMarkers` to stop on unknown
-   or candidate values. The result is `""` for a confirmed unmarked row, or
-   the original marker letters for a superscript. Preview tooling may show
-   candidates with their pending status; it cannot call them accepted.
+4. For the authorized automatic SC display policy, load the fixed JSON's
+   `machine` array and call `selectProcessedMembershipMarkers` from
+   `automatic.ts` with the same memberships, printed book and independently
+   accepted records. It returns `accepted`, `machine` or `unknown`. Both eligible
+   kinds pass the shared embedded-source and current-binding checks; machine
+   results also validate their method, complete label, heading and SC name/edition.
+   Ordinary candidates have no eligible wrapper and remain unknown. Conflicting
+   accepted/machine values and stale or forged bindings throw.
+5. `displayMembershipMarkers(memberships, printedRulebookId, acceptedRecords,
+   result.machine)` returns marker letters, `""` for known absence, or `null` for
+   unknown. HTML omits the superscript when null; unknown does not block export.
+   `requireAcceptedMembershipMarkers` remains available for strictly human-accepted
+   audits, but must not serve as the whole-HTML gate under this policy. Other
+   publication, source and identity preconditions remain with the renderer owner.
 
 The module does not modify the offline HTML renderer. Renderer owners integrate
 this contract in their own change. It must replace complete-component labels at
@@ -115,8 +193,10 @@ The portable tests use synthetic PDF spans and memory databases. They cover
 single/combined markers, absent/unknown/malformed marks, explicit identities,
 shared and repeated occurrences, independent review, stale/conflicting bindings,
 release blocking, schema constraints, and non-mutating importer refusal.
-Private small-slice source QA remains separate from portable validation and
-full coverage acceptance. The [source-free candidate slice report](../../data-tools/reports/dice-qa/books/86/sc-list-marker-candidate-slice.json)
+Synthetic automatic tests also cover machine/human distinction, unknown omission,
+school prefixes, shifted columns, missing pages, and conflicting appearances.
+Private source QA remains separate from machine processing; machine completeness
+is bounded by the cache. The [source-free candidate slice report](../../data-tools/reports/dice-qa/books/86/sc-list-marker-candidate-slice.json)
 points to its fixed private review evidence. Follow [DB content workflow](db-content-workflow.md)
 for database and activation boundaries.
 
@@ -143,6 +223,5 @@ illustrates a complete printed-row denominator with explicit empty markers and
 separate SC body scope. Its private evidence preserves out-of-scope publication
 identities as source inventory; only the SC subset has binding proposals.
 A complete printed list does not expand the body scope or accept other editions.
-The report also identifies the existing APIs and resource estimates for a full
-automatic pass, keeping machine processing distinct from human source acceptance
-and unresolved marker display policy under the renderer owner's review.
+Automatic processing uses the same APIs and keeps machine results distinct from
+these human source decisions. Renderer integration remains owned separately.

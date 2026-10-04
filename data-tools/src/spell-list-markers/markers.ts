@@ -154,6 +154,33 @@ function assertIdentity(entry: ListIdentity) {
 export type MarkerSelection = { status: "accepted"; markers: PrintedMarkers; sourceIds: string[] } |
   { status: "unknown"; reason: "missing" | "not-accepted" };
 
+/** Shared source/binding checks for independently accepted and explicit machine results. */
+export function validateBoundMarker(row: MarkerRecord, entry: ListIdentity, rulebookId: number) {
+  assertIdentity(entry);
+  assertMarkers(row.markers); assert(row.markers !== null, "Selected marker cannot be unknown");
+  const evidence = JSON.parse(row.sourceJson) as MarkerEvidence;
+  const binding = JSON.parse(row.bindingJson ?? "null") as MarkerBinding | null;
+  assert(evidence.schemaVersion === 1 && evidence.id === row.sourceKey &&
+    row.listEntryId === entry.id && row.rulebookId === rulebookId &&
+    row.id === `${row.sourceKey}:entry:${entry.id}` && evidence.rulebookId === rulebookId &&
+    evidence.markers === row.markers, "Stored marker source identity/value mismatch");
+  const loc = evidence.locator;
+  for (const value of [loc.pageIndex, loc.blockIndex, loc.blockNumber, loc.lineIndex]) index(value);
+  assert.equal(evidence.id, `book:${rulebookId}:p${loc.pageIndex}:b${loc.blockNumber}:l${loc.lineIndex}:s${loc.nameSpanIndices[0]}`,
+    "Stored marker occurrence locator mismatch");
+  const fromSpans = inspectOccurrence([{page_index: loc.pageIndex, source: evidence.source, extractor: evidence.extractor,
+    blocks: [{number: loc.blockNumber, lines: [{spans: evidence.spans}]}]}], evidence.extractionPath, rulebookId,
+  {...loc, blockIndex: 0, lineIndex: 0});
+  assert(fromSpans.printedName === evidence.printedName && fromSpans.markers === row.markers,
+    "Stored marker disagrees with printed spans");
+  assert.deepEqual(fromSpans.markerSpanIndices, evidence.markerSpanIndices, "Stored marker span indices differ");
+  assert(binding && binding.reviewer.trim() && binding.note.trim() && binding.printedName === evidence.printedName,
+    "Selected marker lacks source/binding evidence");
+  assert.deepEqual(binding.entry, listIdentity(entry), "Stale marker relationship binding");
+  assert.equal(entry.reviewStatus, "accepted", "Unaccepted list relationship cannot publish markers");
+  return evidence;
+}
+
 /** Select a printed list's markers, never global spell components. */
 export function selectPrintedMarkers(entry: ListIdentity, rulebookId: number,
   records: readonly MarkerRecord[]): MarkerSelection {
@@ -163,28 +190,7 @@ export function selectPrintedMarkers(entry: ListIdentity, rulebookId: number,
   assert.equal(new Set(rows.map(row => row.id)).size, rows.length, "Duplicate marker occurrence");
   const accepted = rows.filter(row => row.reviewStatus === "accepted");
   if (!accepted.length) return { status: "unknown", reason: "not-accepted" };
-  for (const row of accepted) {
-    assertMarkers(row.markers); assert(row.markers !== null, "Accepted marker cannot be unknown");
-    const evidence = JSON.parse(row.sourceJson) as MarkerEvidence;
-    const binding = JSON.parse(row.bindingJson ?? "null") as MarkerBinding | null;
-    assert(evidence.schemaVersion === 1 && evidence.id === row.sourceKey &&
-      row.id === `${row.sourceKey}:entry:${entry.id}` && evidence.rulebookId === rulebookId &&
-      evidence.markers === row.markers, "Stored marker source identity/value mismatch");
-    const loc = evidence.locator;
-    for (const value of [loc.pageIndex, loc.blockIndex, loc.blockNumber, loc.lineIndex]) index(value);
-    assert.equal(evidence.id, `book:${rulebookId}:p${loc.pageIndex}:b${loc.blockNumber}:l${loc.lineIndex}:s${loc.nameSpanIndices[0]}`,
-      "Stored marker occurrence locator mismatch");
-    const fromSpans = inspectOccurrence([{page_index: loc.pageIndex, source: evidence.source, extractor: evidence.extractor,
-      blocks: [{number: loc.blockNumber, lines: [{spans: evidence.spans}]}]}], evidence.extractionPath, rulebookId,
-    {...loc, blockIndex: 0, lineIndex: 0});
-    assert(fromSpans.printedName === evidence.printedName && fromSpans.markers === row.markers,
-      "Stored marker disagrees with printed spans");
-    assert.deepEqual(fromSpans.markerSpanIndices, evidence.markerSpanIndices, "Stored marker span indices differ");
-    assert(binding && binding.reviewer.trim() && binding.note.trim() && binding.printedName === evidence.printedName,
-      "Accepted marker lacks independent source/binding review");
-    assert.deepEqual(binding.entry, listIdentity(entry), "Stale marker relationship binding");
-    assert.equal(entry.reviewStatus, "accepted", "Unaccepted list relationship cannot publish markers");
-  }
+  for (const row of accepted) validateBoundMarker(row, entry, rulebookId);
   assert.equal(new Set(accepted.map(row => row.markers)).size, 1, "Conflicting accepted printed markers");
   return { status: "accepted", markers: accepted[0]!.markers!, sourceIds: [...new Set(accepted.map(row => row.sourceKey))] };
 }

@@ -93,8 +93,9 @@
     "content:sequence": "tsx src/db/content-sequence-cli.ts",
     "content:sequence:test": "tsx src/db/content-sequence-portable-tests.ts",
     "zh:pdf-typography:test": "tsx src/zh-parser/pdf-typography-portable-tests.ts",
+    "sc:list-markers:auto": "tsx src/spell-list-markers/automatic-cli.ts",
     "sc:list-markers:candidates": "tsx src/spell-list-markers/cli.ts",
-    "sc:list-markers:test": "tsx src/spell-list-markers/portable-tests.ts"
+    "sc:list-markers:test": "tsx src/spell-list-markers/portable-tests.ts && tsx src/spell-list-markers/automatic-tests.ts"
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.3.0",
