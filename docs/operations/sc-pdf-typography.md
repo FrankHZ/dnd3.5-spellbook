@@ -118,6 +118,12 @@ independently reviewed per-entry field counts and ordered field text; counting
 only rows recognized by the renderer cannot prove completeness. Entries with
 pending content changes stay bound to current accepted fields and require targeted revalidation
 after those changes activate.
+The [F–L structure packet](../../data-tools/reports/dice-qa/books/86/sc-zh-format-fl.json)
+applies this contract to 204 Chinese bodies. Its fixed private evidence includes
+individual table cells, ordered list items, reader notes and complete mechanism
+expectations, with exact whitespace preservation and an eight-body memory fixture.
+The packet identifies entries awaiting content revalidation and binds the fixture
+to the renderer revision that recognizes the independently reviewed field variants.
 Production presentation selection, human visual acceptance and final renderer
 integration remain separate checks owned by #345/main-gate. The fixture does not
 accept the separate spell-table component marker decision.
