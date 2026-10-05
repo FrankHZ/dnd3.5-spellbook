@@ -601,17 +601,27 @@ The tracked script in `docs/deployment-scripts/deploy-web.sh` performs:
 
 ## Database Update
 
-Database updates are intentionally separate from code deploy.
-
-This reduces the blast radius and allows database replacement without shipping new application code.
+Database updates normally run separately from code deploy when the running
+backend supports the incoming schema and content-selection behavior. Check
+that compatibility before choosing the activation command below.
 
 ### Upload Local Databases
 
 ```bash
 scp .\server\db\local\rules-clean.sqlite remote:~/data/spellbook.db
 scp .\server\db\local\content.sqlite remote:~/data/content.sqlite
-scp .\server\db\local\app-state.sqlite remote:~/data/app-state.sqlite
 ```
+
+Upload only the accepted DB roles required for the release. The rules DB upload
+is needed when updating the rules read/rollback baseline; ordinary content
+updates must not upload or replace `app-state.sqlite`. App-state replacement
+requires its own explicit authorization and migration procedure.
+
+Both deployment helpers activate every recognized incoming DB file, including
+files left by an earlier upload. Inspect the incoming directory before running
+either helper, or use `SPELLBOOK_INCOMING_DATA_DIR` to select a directory
+containing only this release's accepted files. Do not leave an app-state input
+in that directory during a content release.
 
 Before uploading a content DB intended for default normalized spell reads, run
 the local gates:
@@ -629,9 +639,30 @@ comparison; do not commit it or upload it through GitHub Actions.
 
 ### Activate On Remote
 
+For a compatible running backend:
+
 ```bash
 ssh remote "./update-db.sh"
 ```
+
+If the release also requires new backend readers or schema columns, use the
+existing combined deployment path after uploading the accepted DBs and syncing
+the reviewed `deploy-backend.sh`:
+
+```bash
+ssh remote "bash ~/deploy-backend.sh <accepted-merged-commit-sha>"
+```
+
+The helper verifies and builds that commit, stages and validates the incoming
+DBs, then stops the service before syncing code and activating the DBs together.
+Do not start a new backend against an incompatible old schema, or treat a DB
+swap alone as complete when the old backend cannot select the accepted content.
+
+The helper's failure recovery restores replaced DB files, **not the prior
+backend code**. Before a combined release, identify the previous code commit
+and a compatible DB set so the operator can restore both if needed. A restored
+old DB may not pass smoke checks with the newly installed backend. Keep the
+existing deployment rollback files until release verification completes.
 
 After activation, verify the remote content DB metadata before relying on the
 default normalized read path. In production this endpoint requires the operator
