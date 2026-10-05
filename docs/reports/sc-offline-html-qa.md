@@ -17,7 +17,7 @@ subset-specific empty levels, Chinese-name overlays and explicit fallback,
 domain-only Chinese summaries without unused English-summary requirements,
 qualifiers, exclusion of extra feat grants, invalid levels and duplicate domain tuples.
 Class checks cover Chinese `default` names and explicit fallback. SC
-Sorcerer/Wizard checks cover level-specific Chinese school groups, unchanged
+Sorcerer/Wizard checks cover level-specific Chinese school groups,
 one shared Sorcerer/Wizard page and directory link, combined-school rows,
 duplicate owner relationships and qualifiers, distinct same-name
 spells and preservation of source-bound printed markers and Chinese summaries.
