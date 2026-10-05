@@ -24,7 +24,8 @@ Other classes and domains keep their original list layout. Excluded feat
 relationships remain in the read-only input, with the spell body and normal
 class memberships intact; reports distinguish source and displayed domain rows.
 Directory rows use Chinese name (English name), printed M/F/X superscripts,
-and the accepted Chinese summary on one flowing line. Detail titles are smaller,
+and the accepted Chinese summary on one flowing line. The main content container
+aligns to the left page margin with a maximum reading width. Detail titles are smaller,
 with secondary page/ID/icon metadata in the same heading band; repeated
 publication rows are omitted. Long names and narrow views allow natural wrapping,
 with inline-block fallback for CHM readers lacking flex support. Missing page

@@ -115,7 +115,7 @@ const preview = '<p class="notice">中文内容预览，自然排版待视觉验
 const membershipNotice = '<p class="notice">职业目录保留当前归属与附注；部分外部归属的原书核对仍待完成，目录不构成来源 QA 通过。</p>';
 const domainNotice = '<p class="notice">本书收录的领域法术：仅列本书正文范围内的条目，并非原书完整领域法表。</p>';
 const style = `body { margin: 2em; color: #222; background: #fff; font-family: "Microsoft YaHei", "SimSun", serif; line-height: 1.65; }
-#content { max-width: 62em; margin: auto; } h1 { font-size: 1.7em; } h2 { border-bottom: 1px solid #bbb; }
+#content { max-width: 62em; margin: 0; } h1 { font-size: 1.7em; } h2 { border-bottom: 1px solid #bbb; }
 a { color: #164f91; } .notice { padding: .6em; border: 1px solid #aaa; background: #f5f5f5; }
 .spell-entry { margin-bottom: 3em; } .spell-body p, .spell-body pre, .spell-body ul, .spell-body ol, .spell-body dl, .spell-body table, .spell-body blockquote { margin-top: 0; margin-bottom: 1.65em; }
 .spell-entry > h2 { font-size: 1.17em; display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .2em .8em; }

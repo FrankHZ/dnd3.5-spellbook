@@ -51,7 +51,8 @@ domain tuples reject before output creation.
 Entries use `spell-<ID>` and `spell-<ID>-zh` anchors. Existing scoped source links
 to removed `en`/`rules` sections point to the spell entry instead. Chinese section
 links retain `-zh`; body anchors receive a per-spell `zh-<ID>` prefix. The CHM
-`#content` container remains. Reading requires no JavaScript or network access.
+`#content` container remains left-aligned inside the page margin, with a 62em
+maximum reading width. Reading requires no JavaScript or network access.
 Detail titles are one size smaller, the redundant Chinese-body heading is omitted,
 and letter pages keep only the top directory navigation. Each entry's heading
 places the bilingual name on the left and smaller, normal-weight page/ID metadata
