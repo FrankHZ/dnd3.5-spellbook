@@ -100,12 +100,19 @@ when reassessing them.
   replace, move, or write them without explicit authorization for a write-capable
   workflow. Content import must not mutate app-state. Keep root `.env` local;
   use `.env.example` for non-secret helper keys.
-- English original rulebook PDFs and applicable official errata govern
-  translation and rules content. Existing Chinese CHM, dice database text, and
-  derived English DB text are references, not acceptance authority. Translate
-  missing Chinese directly; correct demonstrated English/Chinese/mechanical
-  discrepancies through source-bound QA. Preserve original ambiguities faithfully
-  with separate reader notes; legacy resemblance alone is not a QA pass.
+- Aim for faithful meaning, intuitive presentation and natural readability,
+  not exact reproduction of an error-prone printed book. Choose sources and
+  verification depth by field, reliability, consequence and cost; reuse already
+  verified database content before reopening source QA. Original PDFs and errata
+  guide rules and translation, but printing errors need not survive in output.
+  Unreviewed CHM/dice/derived text remains reference material. Investigate concrete
+  semantic discrepancies; do not invent mechanical corrections from intuition.
+  Preserve source evidence separately from corrected or normalized presentation.
+- Use the least expensive sufficient method, not the theoretically exhaustive
+  one. M/F/X may reuse printed list marks without rereading every spell body;
+  the SC dagger uses verified database book membership instead of printed marks.
+  Do not expand such tasks into full-text QA merely to chase perfect fidelity.
+  See [source and quality tradeoffs](docs/feature-workflow.md#source-and-quality-tradeoffs).
 - Preserve stable IDs, provenance, fingerprints, safe import order, and fallback
   for untouched or unaccepted content. Source-supported corrections still require
   accepted inputs and explicit write authorization; passing counts/tests or PR

@@ -6,6 +6,21 @@ a costly material, `F` a focus not normally included in a component pouch, and
 establish these printed markers. Neither the scanner nor selector reads those
 component flags.
 
+## Source choice
+
+Apply the repository's [source and quality tradeoffs](../feature-workflow.md#source-and-quality-tradeoffs).
+There is no verified database field for costly-material, special-focus or
+caster-paid-XP list marks. Reusing the printed M/F/X marks is sufficient for this
+display; do not require a new full-text spell audit to reconstruct them. Existing
+unknown omission and identity checks still apply.
+
+The SC dagger answers a different question: whether the bound spell belongs to
+SC. Use verified database book membership for that display, correcting printed
+omissions or false marks. Retain `daggerPrinted` as source evidence, not display
+authority. This policy does not change the existing M/F/X processor's eligibility
+checks or automatically accept ambiguous spell identities; the domain consumer
+implements dagger display separately.
+
 ## Candidate collection
 
 The maintained command reads existing PyMuPDF JSONL spans; it does not extract
@@ -69,7 +84,8 @@ explicit SC edition. Typography normalization handles ligatures, curly punctuati
 and layout whitespace; it does not rewrite names, combine slash alternatives or
 infer annotations from components. A domain label without the SC dagger stays
 unknown when it matches an existing SC relationship; it cannot silently exclude
-that relationship or establish a machine annotation. Other complete labels
+that relationship or establish a machine annotation. This describes the current
+M/F/X parser's eligibility check, not the dagger display rule above. Other complete labels
 without the dagger remain outside-scope source inventory. Shared Sorcerer/Wizard occurrences can bind
 both existing memberships.
 
