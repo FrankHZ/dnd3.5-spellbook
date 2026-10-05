@@ -663,6 +663,57 @@ and writes only the source-free coverage report, including a pending-field count
 Without that flag, pending review rows fail before accepted/fallback files are
 written.
 
+### Accepted DB-English handoff preflight
+
+The maintained `dice:handoff:check` entry checks the exact main-gate accepted
+Cityscape handoff at private revision
+`b8d0dc3f85015533c3e57a293f7a96d5de2d7cb7`, prepared revision
+`6d28f9391273979a35a6bcc86971f0aac5b9f2c8`, under
+`dice-baselines/issue-520/qa/books/53/`. Its scope is targets 355–362, eight names,
+seven fully Chinese bodies and one mixed body with an unresolved English clause
+owned by #160. Acceptance is DB-English review, without original-book verification.
+
+```powershell
+npm run -w data-tools dice:handoff:check -- --data-root <absolute-data-repo> --rules-db <absolute-rules-clean.sqlite> --content-db <absolute-content.sqlite> --report-dir <absolute-data-repo>/dice-handoffs/issue-527/<fresh-directory>
+npm run -w data-tools dice:handoff:test
+```
+
+Explicit paths are caller-cwd-relative; absolute paths work from root, package or
+another checkout. `--accepted-revision` may repeat only the fixed revision above;
+there are no input override or apply options. The entry compares committed Git
+files with current files, checks prepared inputs, runs the existing complete
+all-source and whole-book `validateQaInputs`, and binds formal accepted/fallback
+exports, corrected HTML, every reviewed English line and the unresolved clause.
+Current English, mechanics and CHM baseline drift fail. DB connections require
+read-only/query-only mode, distinct unaliased paths and correct roles.
+
+The fresh output directory must belong to private `dice-handoffs/issue-527/`.
+Input/output overlaps and existing directories fail. `proposal.json` contains
+exact field before/after values, the absent effective predecessor and CHM snapshots,
+locked English/mechanics, accepted row and clause locators, and the retained
+residual. This fixed acceptance establishes eight absent effective rows only:
+any existing target `zh/effective` row fails before proposal output, even when
+its CHM/English baseline remains unchanged. Already-applied/recovery states belong
+to the next writer contract. `report.json` contains source-free
+counts, evidence revisions, protection boundaries and measured resources.
+The entry changes no DB, builds no search index and grants no activation authority.
+
+The next selective writer must recheck these inputs and actual before/after rows
+transactionally, preserve SC and non-target overlays, summaries, relationships
+and full normalized build provenance, and coordinate FTS through the existing
+search builder. `content:sequence` remains normalized → summaries → search;
+its annotated-predecessor rejection remains required. Full normalized/CHM
+reimport is inappropriate for this Chinese-only handoff.
+
+Generic/native field provenance already carries target, field, source key,
+accepted revision and input/evidence locators. `spells.provenance.ts` accepts
+that envelope but emits only native origin and revision; it has no DB-English
+review or mixed-body residual representation. Its SC final review branch
+requires the fixed SC revision and cannot receive this handoff. A subsequent
+consumer contract must expose the accurate review basis and bounded residual,
+with default/explicit variant and FTS validation, before activation. This
+preflight does not construct persisted provenance or change API/DTO contracts.
+
 ### Rulebook QA proposals
 
 Select one book with `--rulebook-id <id>`. For example, run Complete Mage (58)
