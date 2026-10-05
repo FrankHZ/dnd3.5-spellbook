@@ -548,6 +548,12 @@ remain available.
 
 ## Dice Text Boundary
 
+For a new or resumed book, first use
+[rulebook batch preparation](./db-content-workflow.md#preparing-a-rulebook-qa-batch)
+to establish current inputs, source authority, scope and the consumer handoff.
+The commands below enforce structural/evidence contracts; passing them alone
+does not establish original-book fidelity or permission to activate content.
+
 The TXT package at `data/spells-dice-db-by-mo/` is proposed input under
 [intake issue #119](https://github.com/FrankHZ/dnd3.5-spellbook/issues/119).
 Commit the byte-preserved source snapshot and review the private
@@ -562,6 +568,10 @@ The command reads both SQLite files with read-only/query-only connections. It
 requires clean, committed source and map inputs. It writes private source and
 target inventories, candidate records, and representative pilot cases under
 `data/dice-intake/`; commit those in the private data repo for the QA handoff.
+`--report-dir` redirects only the public aggregate. The intake command still
+overwrites its private inventories/candidates/pilot under the shared data root.
+Do not run it concurrently with book writers or rerun it over frozen handoffs
+without an accepted refresh plan that preserves their reproducible inputs.
 The source-free aggregate is `data-tools/out/dice-intake/coverage.json`.
 Every candidate keeps its source revision and line locator, raw body, escaped
 `<pre>` rendering, publication mapping, field-level CHM comparison, and parser
@@ -572,7 +582,7 @@ Chinese names and retained CHM English aliases are review hints. Duplicate
 targets remain review-required, and unsupported or ambiguous publications keep
 their explicit dispositions. No candidate is accepted by this command.
 
-After field-level English-assisted review, keep detailed decisions in private
+After field-level source review, keep detailed decisions in private
 `data/dice-qa/books/<rulebook-id>/`. Each book issue owns its semantic review and
 acceptance; merging QA tooling accepts no corpus text. The existing global
 command remains available for an explicitly authorized complete-corpus handoff:
@@ -593,7 +603,9 @@ Formal QA also requires a full-body audit record for every accepted body,
 bound to the effective replacement and aligned English evidence. The report
 counts accepted bodies still lacking that audit during `--check-incomplete`.
 These English excerpts are checked against the DB and do not verify an external
-PDF. For an explicitly authorized book review using PDF evidence, retain the
+PDF or make legacy CHM/dice agreement source acceptance. Follow the
+[source-of-truth rules](./db-content-workflow.md#source-of-truth); for a book
+review using PDF evidence, retain the
 private page fragments, visual findings and exact effective-field bindings, and
 run the independent [supplemental PDF verifier](../../data-tools/pdf-extract/README.md#supplemental-review-verification)
 in addition to the unchanged dice QA checks.

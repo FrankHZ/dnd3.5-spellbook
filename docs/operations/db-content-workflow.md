@@ -38,8 +38,8 @@ an existing English baseline does not override the original or applicable errata
 Corrections follow the accepted-input and explicit DB-write gates below. This
 authority rule does not resume paused broad PHB extraction or translation work.
 
-- Real source, patch, review, and decision data lives in the private data repo
-  repo.
+- Real source, patch, review, and decision data lives in the configured private
+  data repo, outside removable code worktrees.
 - Runtime SQLite files live under `server/db/local/` and are ignored by the
   parent repo.
 - Public-safe portable fixtures live under `server/db/<db-role>/fixtures/`.
@@ -48,6 +48,62 @@ authority rule does not resume paused broad PHB extraction or translation work.
 
 The parent repo should own schemas, validators, tests, fixtures, and workflow
 docs. It should not own local DB files or source-bearing data.
+
+## Preparing A Rulebook QA Batch
+
+Before dispatch, reconcile the owning issue with the current source rules above
+and [quality tradeoffs](../feature-workflow.md#source-and-quality-tradeoffs).
+Older dice/CHM agreement or English-DB audit labels are historical evidence,
+not certification against the original book. Reuse verified source evidence
+when its identity, inputs and affected fields still match; do not reopen an
+accepted book merely because another book is restarting.
+
+1. **Inventory the complete book.** Include existing targets without dice
+   candidates, duplicate occurrences and unresolved publication ownership.
+   Distinguish source-reviewed fields, references awaiting review, actual
+   source gaps and out-of-scope items. Unperformed review stays pending.
+   A complete disposition list is not a claim that every field passed QA.
+2. **Check the input baseline before semantic work.** Verify source/map and
+   review revisions resolve, source files are committed, and the maintained
+   scoped QA command can validate the actual current inputs. After repository
+   recovery or a baseline change, preserve old evidence and prepare separately
+   reviewed current intake inputs; never bulk-relabel old decisions or extend
+   SC's fixed recovery exception to an unrelated book. Resolve a demonstrated
+   tooling gap before dependent batches begin.
+3. **Choose a small end-to-end pilot.** Establish original/errata availability,
+   complete-entry review and a consumable accepted handoff on a small book or
+   independently reviewable slice. Use original text for missing translations;
+   record substantive English/mechanics corrections separately from Chinese
+   proposals. A QA proposal does not authorize canonical or operator writes.
+   Verify needed pages with the existing extraction tools; render only where
+   layout affects interpretation. Natural paragraphs and useful emphasis suffice.
+4. **Budget and scale from evidence.** Estimate source/output size, text volume,
+   runtime, peak memory, disk and any paid model/API use before a full run.
+   Size slices by complete entries and review effort using
+   [task sizing](../feature-workflow.md#task-size-and-slices); use a whole small
+   book when it fits. Do not create per-spell issues or separate mechanical
+   paperwork stages. Current `dice:qa --rulebook-id` requires book-wide coverage:
+   partial `--check-incomplete` output is progress, not accepted slice evidence.
+   Prove a bounded slice contract before promising independent partial acceptance.
+5. **Prove the next consumer handoff early.** Reuse maintained validation,
+   import and search stages. SC-specific final overlays and a successful generic
+   content sequence do not prove another book can replace an annotated baseline.
+   Bind any necessary extension to the pilot's actual accepted inputs; preserve
+   prior SC content, fallback and provenance. Use one integration writer, the
+   same maintained execution path for rehearsal and operator apply, and explicit
+   authorization for operator/production changes.
+6. **Keep only useful durable evidence.** Private source/review records and
+   acceptance references belong in the data repo; PRs contain source-free
+   results, exact revisions and reproducible commands. Reuse accepted evidence
+   and check changed fields plus affected consumers at integration. Keep progress
+   in issues, and remove owned disposable copies after acceptance and dependency
+   checks. Reuse worktrees and runtime installs; do not copy whole databases or
+   grow issue-specific script chains for every content batch.
+
+The book issue states its included fields, source gaps, completion condition,
+write owner and dependencies. Summaries, relationships, book-wide HTML/CHM and
+production deployment are included only when the issue explicitly needs them;
+SC's complete delivery scope is not an automatic template for every book.
 
 ## DB Roles
 
