@@ -626,6 +626,20 @@
       "requiresLocalData": false,
       "requiresSqlite": true,
       "writeCapable": false
+    },
+    "dice:handoff:check": {
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "module": "zh-parser",
+      "writeCapable": false
+    },
+    "dice:handoff:test": {
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "module": "zh-parser",
+      "writeCapable": false
     }
   }
 }
