@@ -61,6 +61,9 @@ owning workflow's explicit authorization.
 
 The read-only dice TXT intake and field-level QA validation are described at the
 [replacement boundary](../docs/operations/import-workflow.md#dice-text-boundary).
+Both commands accept `--baseline-dir` for an isolated current all-source ledger
+and book QA inputs/outputs in the private data repo, preserving the shared ledger
+and frozen SC handoff. See the replacement boundary for paths and output guards.
 `dice:effective` composes SC's exact accepted native/independent handoff with
 complete current CHM/English after the unchanged formal QA and fresh PDF verifier.
 The source entry derives original bindings and printing/errata authority from

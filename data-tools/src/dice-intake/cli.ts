@@ -4,6 +4,7 @@ import { join, resolve } from "node:path";
 import Database from "better-sqlite3";
 import { parseDiceFile } from "./parse";
 import { reconcile, type PublicationMap, type Rulebook, type Target } from "./reconcile";
+import { dicePaths, isolatedOutputs, within } from "./paths";
 
 function arg(name: string): string {
   const at = process.argv.indexOf(`--${name}`);
@@ -18,21 +19,26 @@ function count(values: string[]): Record<string, number> {
 }
 
 function main(): void {
-  const dataRoot = arg("data-root");
+  const { dataRoot, baselineDir, sourceDir: inputDir, intakeDir: privateDir, mappingPath, aliasesPath } = dicePaths(process.argv);
   const rulesPath = arg("rules-db");
   const contentPath = arg("content-db");
   const reportDir = arg("report-dir");
-  const inputDir = join(dataRoot, "spells-dice-db-by-mo");
-  const privateDir = join(dataRoot, "dice-intake");
+  if (baselineDir) {
+    const ledgers = ["source-inventory.jsonl", "candidates.jsonl", "target-inventory.jsonl", "pilot.jsonl"].map(file => join(privateDir, file));
+    if (ledgers.some(file => within(file, reportDir))) throw new Error("intake report directory collides with a ledger output");
+    isolatedOutputs(dataRoot, privateDir, [privateDir, ...ledgers, reportDir, join(reportDir, "coverage.json")],
+      [inputDir, mappingPath, aliasesPath, rulesPath, contentPath]);
+  }
   const revision = execFileSync("git", ["-C", dataRoot, "log", "-1", "--format=%H", "--", "spells-dice-db-by-mo"], { encoding: "utf8" }).trim();
   const mappingRevision = execFileSync("git", ["-C", dataRoot, "log", "-1", "--format=%H", "--", "dice-intake/publication-map.json"], { encoding: "utf8" }).trim();
   if (!revision || !mappingRevision) throw new Error("source and publication map must be committed before inventory");
   const dirtyInputs = execFileSync("git", ["-C", dataRoot, "status", "--porcelain", "--", "spells-dice-db-by-mo", "dice-intake/publication-map.json"], { encoding: "utf8" }).trim();
   if (dirtyInputs) throw new Error("source or publication map has uncommitted changes");
-  const mappings = JSON.parse(readFileSync(join(privateDir, "publication-map.json"), "utf8")) as PublicationMap[];
-  const aliases = JSON.parse(readFileSync(join(dataRoot, "chm-mapping", "enName-aliases-global.json"), "utf8")) as Record<string, string>;
+  const mappings = JSON.parse(readFileSync(mappingPath, "utf8")) as PublicationMap[];
+  const aliases = JSON.parse(readFileSync(aliasesPath, "utf8")) as Record<string, string>;
   const names = readdirSync(inputDir).filter((name) => name.endsWith(".txt")).sort();
-  if (mappings.length !== names.length || names.some((name) => !mappings.some((row) => row.file === name))) {
+  if (mappings.length !== names.length || new Set(mappings.map(row => row.file)).size !== names.length
+    || names.some((name) => !mappings.some((row) => row.file === name))) {
     throw new Error("publication map must have exactly one row per source file");
   }
   const files = names.map((name) => {

@@ -1,10 +1,11 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";
-import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
+import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";
+import { isAbsolute, join, relative, resolve } from "node:path";
 import Database from "better-sqlite3";
 import { parseDiceFile, type DiceRecord, type ParsedFile } from "./parse";
 import { reconcile, type Candidate, type PublicationMap, type Rulebook } from "./reconcile";
 import { validateSourceBoundFallbackReviews, type SourceBoundFallbackReview } from "./source-bound-fallback";
+import { destination, dicePaths, isolatedOutputs, noAlias, within } from "./paths";
 
 export type Field = "name" | "descriptionHtml";
 export type EnglishMechanics = {
@@ -390,25 +391,19 @@ function arg(name: string, argv: string[]): string {
 
 export function writeQaOutputs(dataRoot: string, reportDir: string,
   result: ReturnType<typeof validateReviews>, checkIncomplete: boolean, rulebookId?: number,
-  sourceBound?: ReturnType<typeof validateSourceBoundFallbackReviews>): void {
+  sourceBound?: ReturnType<typeof validateSourceBoundFallbackReviews>, baselineDir?: string,
+  inputPaths: string[] = []): void {
   assert(!sourceBound || rulebookId !== undefined, "source-bound outputs require a rulebook scope");
-  if (rulebookId !== undefined) {
-    // Resolve existing ancestors too: report directories may not exist yet.
-    // lstat distinguishes a missing path from a dangling link, which must fail.
-    const destination = (path: string): string => {
-      path = resolve(path);
-      try {
-        lstatSync(path);
-      } catch (error) {
-        if ((error as NodeJS.ErrnoException).code !== "ENOENT" || dirname(path) === path) throw error;
-        return join(destination(dirname(path)), basename(path));
-      }
-      return realpathSync(path);
-    };
-    const within = (parent: string, child: string): boolean => {
-      const path = relative(resolve(parent), resolve(child));
-      return path === "" || (!path.startsWith("..") && !isAbsolute(path));
-    };
+  if (baselineDir) {
+    assert(rulebookId !== undefined, "isolated QA requires --rulebook-id");
+    isolatedOutputs(dataRoot, join(baselineDir, "qa", "books", String(rulebookId)),
+      [reportDir, join(reportDir, "coverage.json"),
+        ...(checkIncomplete ? [] : [join(reportDir, "accepted.jsonl"), join(reportDir, "fallback.jsonl")]),
+        ...(sourceBound ? [join(reportDir, "source-bound-fallback-coverage.json"),
+          ...(checkIncomplete ? [] : [join(reportDir, "source-bound-fallback-accepted.jsonl")])] : [])],
+      [join(dataRoot, "spells-dice-db-by-mo"), join(dataRoot, "dice-intake"),
+        join(dataRoot, "dice-qa"), join(dataRoot, "chm-mapping"), join(baselineDir, "intake"), ...inputPaths]);
+  } else if (rulebookId !== undefined) {
     const actualDataRoot = destination(dataRoot);
     const actualBookDir = join(actualDataRoot, "dice-qa", "books", String(rulebookId));
     // A redirected book/QA directory must not redefine the permitted boundary.
@@ -509,7 +504,7 @@ export type QaRecords = {
 
 export function validateQaInputs(argv: string[], loaded?: QaRecords) {
   const inputArg = (name: string): string => arg(name, argv);
-  const dataRoot = inputArg("data-root");
+  const { dataRoot, baselineDir, intakeDir, qaDir, sourceDir: inputDir, mappingPath, aliasesPath } = dicePaths(argv);
   const rulesPath = inputArg("rules-db");
   const contentPath = inputArg("content-db");
   const checkIncomplete = argv.includes("--check-incomplete");
@@ -518,13 +513,18 @@ export function validateQaInputs(argv: string[], loaded?: QaRecords) {
   const rulebookId = rulebookAt < 0 ? undefined : Number(argv[rulebookAt + 1]);
   assert(rulebookId === undefined || (Number.isSafeInteger(rulebookId) && rulebookId > 0),
     "--rulebook-id requires a positive integer");
+  assert(!baselineDir || rulebookId !== undefined, "isolated QA requires --rulebook-id");
+  assert(!baselineDir || restoredAt < 0, "isolated QA cannot use the fixed restored SC baseline");
   assert(restoredAt < 0 || (argv[restoredAt + 1] === "fe089990e2a5eeac69c92e068ca695f10c42ec58"
     && rulebookId === 86 && !checkIncomplete),
     "--restored-sc-baseline requires the #298 fixed baseline and complete SC QA");
   const inputPaths: string[] = [];
-  const readInput = <T>(path: string): T[] => { inputPaths.push(path); return rows<T>(path); };
+  const readInput = <T>(path: string): T[] => {
+    if (baselineDir) noAlias(path);
+    inputPaths.push(path); return rows<T>(path);
+  };
   const bookDir = rulebookId === undefined ? undefined
-    : join(dataRoot, "dice-qa", "books", String(rulebookId));
+    : join(qaDir, "books", String(rulebookId));
   const input = <T>(name: string, file: string, required = false): T[] => {
     if (argv.includes(`--${name}`)) return readInput<T>(inputArg(name));
     const path = bookDir && join(bookDir, file);
@@ -558,18 +558,17 @@ export function validateQaInputs(argv: string[], loaded?: QaRecords) {
   assert(!execFileSync("git", ["-C", dataRoot, "status", "--porcelain", "--",
     "spells-dice-db-by-mo", "dice-intake/publication-map.json"], { encoding: "utf8" }).trim(),
   "source or publication map is dirty");
-  const candidates = readInput<Candidate>(join(dataRoot, "dice-intake", "candidates.jsonl"));
+  const candidates = readInput<Candidate>(join(intakeDir, "candidates.jsonl"));
   const fullBodyAudits = input<FullBodyAudit>("full-body-audit", "full-body-audit.jsonl", !checkIncomplete);
   const boundaries = input<BoundaryDecision>("boundaries", "boundary-decisions.jsonl", bookDir === undefined);
-  const inventory = readInput<SourceInventory>(join(dataRoot, "dice-intake", "source-inventory.jsonl"));
+  const inventory = readInput<SourceInventory>(join(intakeDir, "source-inventory.jsonl"));
   let sourceRevision = execFileSync("git", ["-C", dataRoot, "log", "-1", "--format=%H", "--",
     "spells-dice-db-by-mo"], { encoding: "utf8" }).trim();
   const currentSourceRevision = sourceRevision, currentMappingRevision = mappingRevision;
-  const inputDir = join(dataRoot, "spells-dice-db-by-mo");
   const sourceFiles = readdirSync(inputDir).filter((name) => name.endsWith(".txt")).sort()
     .map((name) => { const path = join(inputDir, name); inputPaths.push(path); const bytes = readFileSync(path);
       return { bytes: bytes.length, parsed: parseDiceFile(name, bytes) }; });
-  inputPaths.push(join(dataRoot, "dice-intake/publication-map.json"), join(dataRoot, "chm-mapping/enName-aliases-global.json"));
+  inputPaths.push(mappingPath, aliasesPath);
   const restoredBinding = restoredAt < 0 ? undefined : bindRestoredScQaInputs(dataRoot, argv[restoredAt + 1]!,
     inputPaths, candidates.map(row => row.sourceKey), [...reviews, ...duplicates, ...boundaries].map(row => row.mappingRevision));
   if (restoredBinding) {
@@ -606,13 +605,20 @@ export function validateQaInputs(argv: string[], loaded?: QaRecords) {
     rulebookId: en.rulebookId, zhName: zh.get(id)?.name ?? null,
     zhBody: zh.get(id)?.descriptionText ?? null,
   }] as const));
-  const mappings = JSON.parse(readFileSync(join(dataRoot, "dice-intake", "publication-map.json"), "utf8")) as PublicationMap[];
-  const aliases = JSON.parse(readFileSync(join(dataRoot, "chm-mapping", "enName-aliases-global.json"), "utf8")) as Record<string, string>;
+  const mappings = JSON.parse(readFileSync(mappingPath, "utf8")) as PublicationMap[];
+  assert(!baselineDir || (mappings.length === sourceFiles.length && new Set(mappings.map(row => row.file)).size === sourceFiles.length
+    && sourceFiles.every(({ parsed }) => mappings.some(row => row.file === parsed.file))),
+  "publication map must have exactly one row per source file");
+  const aliases = JSON.parse(readFileSync(aliasesPath, "utf8")) as Record<string, string>;
   const rulebooks = loaded ? undefined : new Database(rulesPath, { readonly: true, fileMustExist: true });
   rulebooks?.pragma("query_only = ON");
   const books = loaded?.books ?? rulebooks!.prepare("SELECT id, dnd_edition_id AS editionId, name FROM dnd_rulebook")
     .all() as Rulebook[];
   rulebooks?.close();
+  for (const mapping of baselineDir ? mappings : []) for (const id of mapping.rulebookIds) {
+    const book = books.find(row => row.id === id);
+    assert(book && mapping.editionIds.includes(book.editionId), `publication map has unsupported rulebook or edition: ${mapping.file}`);
+  }
   const regenerated = reconcile(records, mappings, books, [...targets].map(([id, target]) => ({
     id, rulebookId: target.rulebookId, enName: english.get(id)!.name,
     zhName: target.zhName, zhBody: target.zhBody,
@@ -641,13 +647,13 @@ export function validateQaInputs(argv: string[], loaded?: QaRecords) {
   return { result, sourceBound, english, englishHtml, reviews,
     chinese: new Map([...zh].map(([id, row]) => [id, { name: row.name,
       descriptionText: row.descriptionText, descriptionHtml: row.descriptionHtml ?? null }])),
-    rulebookId, checkIncomplete };
+    rulebookId, checkIncomplete, dataRoot, baselineDir, inputPaths: [...inputPaths, rulesPath, contentPath] };
 }
 
 function main(): void {
-  const { result, sourceBound, rulebookId, checkIncomplete } = validateQaInputs(process.argv.slice(2));
-  writeQaOutputs(arg("data-root", process.argv), arg("report-dir", process.argv),
-    result, checkIncomplete, rulebookId, sourceBound);
+  const { result, sourceBound, rulebookId, checkIncomplete, dataRoot, baselineDir, inputPaths } = validateQaInputs(process.argv.slice(2));
+  writeQaOutputs(dataRoot, arg("report-dir", process.argv),
+    result, checkIncomplete, rulebookId, sourceBound, baselineDir, inputPaths);
   const { candidateOccurrences, matchedTargets, existingTargets, acceptedTargets,
     pendingFields, pendingFullBodyAudits, decisions } =
     result.summary;

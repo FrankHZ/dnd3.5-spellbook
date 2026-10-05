@@ -573,7 +573,39 @@ target inventories, candidate records, and representative pilot cases under
 overwrites its private inventories/candidates/pilot under the shared data root.
 Do not run it concurrently with book writers or rerun it over frozen handoffs
 without an accepted refresh plan that preserves their reproducible inputs.
-The source-free aggregate is `data-tools/out/dice-intake/coverage.json`.
+For a current baseline that must preserve the shared ledger, pass
+`--baseline-dir <absolute-data-repo>/dice-baselines/<namespace>` to both intake
+and QA. Intake writes all-source `intake/{source-inventory,candidates,target-inventory,pilot}.jsonl`
+there; the source TXT, publication map and alias hints still come from their
+original paths under `--data-root`. Nothing copies old review statuses into the
+new source namespace. Use a new owned directory and commit the inputs/evidence
+in the private repo before handing them to a book reviewer.
+
+```powershell
+npm run -w data-tools dice:intake -- --data-root <absolute-data-repo> --baseline-dir <absolute-data-repo>/dice-baselines/<namespace> --rules-db <absolute-rules-clean.sqlite> --content-db <absolute-content.sqlite> --report-dir <absolute-data-repo>/dice-baselines/<namespace>/intake/out
+npm run -w data-tools dice:qa -- --data-root <absolute-data-repo> --baseline-dir <absolute-data-repo>/dice-baselines/<namespace> --rules-db <absolute-rules-clean.sqlite> --content-db <absolute-content.sqlite> --rulebook-id 53 --report-dir <absolute-data-repo>/dice-baselines/<namespace>/qa/books/53/out --check-incomplete
+```
+
+Isolated QA requires a complete book scope. Its default decision/audit/correction/
+duplicate/boundary inputs live in `<baseline-dir>/qa/books/<rulebook-id>/` with
+the same filenames and schemas as the default book workflow below. Preparation
+rows use `queue:unreviewed`, current aligned DB inputs and deferred fields;
+`--check-incomplete` reports their pending fields and does not accept them.
+All-source parsing/reconciliation runs before book selection, including current
+CHM baselines, file coverage, duplicate ownership and targets without candidates.
+The baseline directory must be inside the private data root and separate from
+the source, mapping/alias and preserved default intake/QA directories. Filesystem
+aliases, foreign-book output directories and source/output collisions fail before
+output writes. Keep private reports in the owned intake directory or the selected
+book's output subdirectory; source-free reports may also go outside the data root.
+The fixed SC `--restored-sc-baseline` contract cannot use an isolated baseline.
+
+All CLI paths are resolved against the caller's working directory. Absolute paths
+work from either repository or package cwd and across worktrees. In isolated mode,
+if `--data-root` is omitted, the existing root `.env`/`DATA_REPO_PATH` helper applies, with its
+repository-relative semantics. These commands never open app-state or write DBs.
+The default shared workflow continues to require explicit `--data-root`.
+The default source-free aggregate is `data-tools/out/dice-intake/coverage.json`.
 Every candidate keeps its source revision and line locator, raw body, escaped
 `<pre>` rendering, publication mapping, field-level CHM comparison, and parser
 problems. Header-shaped lines without a convincing spell signature remain in
