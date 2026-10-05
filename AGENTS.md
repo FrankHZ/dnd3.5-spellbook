@@ -108,6 +108,7 @@ when reassessing them.
   Unreviewed CHM/dice/derived text remains reference material. Investigate concrete
   semantic discrepancies; do not invent mechanical corrections from intuition.
   Preserve source evidence separately from corrected or normalized presentation.
+  Resumed dice QA uses the explicitly bounded DB-English workflow below.
 - Use the least expensive sufficient method, not the theoretically exhaustive
   one. M/F/X may reuse printed list marks without rereading every spell body;
   the SC dagger uses verified database book membership instead of printed marks.
@@ -118,10 +119,15 @@ when reassessing them.
   accepted inputs and explicit write authorization; passing counts/tests or PR
   documentation edits do not authorize writes. For data/DB work, consult
   [db-content-workflow](docs/operations/db-content-workflow.md).
-- Dice TXT is candidate input, not accepted content. Retain existing English,
-  mechanics, summaries, and CHM/English fallback unless source-bound QA accepts
-  a correction or translation. Use the original and applicable errata for
-  substantive Chinese discrepancy QA. Selective replacement must
+- Dice TXT is candidate input, not accepted content. Resumed dice Chinese QA
+  uses the matched database English name/body and mechanics as its comparison
+  baseline. Do not require PDF/errata collection, extraction or verification for
+  this workflow. Correct or translate Chinese against complete aligned DB English;
+  retain fallback and record specific gaps when English is missing or ambiguous.
+  Preserve canonical English, mechanics and summaries unless separately accepted
+  and authorized. Report DB-English QA accurately, without claiming original-book
+  verification. Existing SC source-bound acceptance remains unchanged.
+  Selective replacement must
   prove safe ordering: the existing CHM importer deletes all Chinese spell text.
 - PHB PDF/MinerU/SRD extraction and translation remain suspended pending an
   explicit resumption decision. Preserve implementation, tests, and data; do not

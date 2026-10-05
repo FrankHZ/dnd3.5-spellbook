@@ -24,19 +24,28 @@ It does not cover:
 
 ## Source Of Truth
 
-English original rulebook PDFs and applicable official errata govern translation
-and rules content. Existing Chinese CHM, dice database text, and derived English
-DB text are references, not acceptance authority. Translate missing Chinese
-directly and correct demonstrated English/Chinese/mechanical discrepancies through
-source-bound QA. Retained translations need source-faithfulness evidence; legacy
-resemblance alone is not acceptance. Preserve original ambiguities faithfully
-with separate reader notes.
+For resumed dice Chinese QA, the matched database English name/body and mechanics
+are the agreed comparison baseline. Compare complete Chinese fields against that
+English, correct demonstrated differences, and translate missing Chinese from it.
+PDF/errata preparation, extraction and verification are not prerequisites for
+this workflow. Dice and CHM text remain candidates/references; agreement between
+them alone does not replace the required English comparison.
+
+Missing, contradictory or ambiguous DB English produces a specific unresolved
+item with retained fallback, not invented rules or automatic PDF work. Keep
+canonical English/mechanics unchanged unless a separate correction is accepted
+and authorized. Report the result as DB-English QA, not original-book verification.
+Reuse prior DB-English reviews only when their actual inputs and decisions still
+match; the absence of PDF evidence alone does not invalidate that review.
+
+Existing source-bound SC acceptance and any separately scoped original-book QA
+retain their original PDF/errata authority and evidence contracts. The lower-cost
+dice workflow does not relabel or weaken those completed handoffs.
 
 Keep stable IDs, source evidence/fingerprint checks, and safe import order.
-Preserve existing content and fallback outside accepted corrections/translations;
-an existing English baseline does not override the original or applicable errata.
-Corrections follow the accepted-input and explicit DB-write gates below. This
-authority rule does not resume paused broad PHB extraction or translation work.
+Preserve existing content and fallback outside accepted corrections/translations.
+Corrections follow the accepted-input and explicit DB-write gates below. The
+comparison scope does not resume paused PHB extraction or translation work.
 
 - Real source, patch, review, and decision data lives in the configured private
   data repo, outside removable code worktrees.
@@ -53,15 +62,15 @@ docs. It should not own local DB files or source-bearing data.
 
 Before dispatch, reconcile the owning issue with the current source rules above
 and [quality tradeoffs](../feature-workflow.md#source-and-quality-tradeoffs).
-Older dice/CHM agreement or English-DB audit labels are historical evidence,
-not certification against the original book. Reuse verified source evidence
+Older dice/CHM agreement or English-DB audit labels alone do not prove that a
+current decision is valid. Reuse verified DB-English or source evidence
 when its identity, inputs and affected fields still match; do not reopen an
 accepted book merely because another book is restarting.
 
 1. **Inventory the complete book.** Include existing targets without dice
    candidates, duplicate occurrences and unresolved publication ownership.
-   Distinguish source-reviewed fields, references awaiting review, actual
-   source gaps and out-of-scope items. Unperformed review stays pending.
+   Distinguish DB-English-reviewed fields, references awaiting review, actual
+   English/identity gaps and out-of-scope items. Unperformed review stays pending.
    A complete disposition list is not a claim that every field passed QA.
 2. **Check the input baseline before semantic work.** Verify source/map and
    review revisions resolve, source files are committed, and the maintained
@@ -70,13 +79,13 @@ accepted book merely because another book is restarting.
    reviewed current intake inputs; never bulk-relabel old decisions or extend
    SC's fixed recovery exception to an unrelated book. Resolve a demonstrated
    tooling gap before dependent batches begin.
-3. **Choose a small end-to-end pilot.** Establish original/errata availability,
+3. **Choose a small end-to-end pilot.** Establish usable matched DB English,
    complete-entry review and a consumable accepted handoff on a small book or
-   independently reviewable slice. Use original text for missing translations;
-   record substantive English/mechanics corrections separately from Chinese
-   proposals. A QA proposal does not authorize canonical or operator writes.
-   Verify needed pages with the existing extraction tools; render only where
-   layout affects interpretation. Natural paragraphs and useful emphasis suffice.
+   independently reviewable slice. Use DB English for missing translations;
+   record suspected English/mechanics errors separately without silently fixing
+   them. A QA proposal does not authorize canonical or operator writes. Do not
+   add a PDF preparation or extraction stage. Natural paragraphs and useful
+   emphasis suffice; preserve meaningful tables and lists in the available text.
 4. **Budget and scale from evidence.** Estimate source/output size, text volume,
    runtime, peak memory, disk and any paid model/API use before a full run.
    Size slices by complete entries and review effort using
