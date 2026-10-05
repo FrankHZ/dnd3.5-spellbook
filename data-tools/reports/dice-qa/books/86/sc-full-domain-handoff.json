@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/507",
+  "phase": "source-reviewed-proposal-awaiting-main-gate",
+  "privateRevision": "b18fbf663f605fe9d2f860f6265daf2d998c7533",
+  "privateRootRelativeDirectory": "dice-qa/books/86/issue-507",
+  "handoffPaths": {
+    "content": "html-domain-lists.zh.json",
+    "identitySummaryFootnoteDecisions": "decisions.json",
+    "readOnlyDatabaseSnapshot": "db-snapshot.json",
+    "representativePilot": "pilot.json",
+    "reviewAndValidation": "review-and-validation.json",
+    "resources": "validation.json",
+    "verifiedRunSettings": "run-settings.json",
+    "reproduction": "reproduce.py"
+  },
+  "inputs": [
+    {
+      "revision": "cd67b6039331313cf858c646593f1fe9ddde0adb",
+      "paths": [
+        "dice-qa/books/86/issue-500/final-handoff/inventory.json",
+        "dice-qa/books/86/issue-500/final-handoff/tuple-dispositions.json",
+        "dice-qa/books/86/issue-500/source-exceptions.json",
+        "dice-qa/books/86/issue-500/summaries-final/summaries.proposed.jsonl"
+      ]
+    },
+    {
+      "revision": "e2e4b698eee3c9339303fa1b233c646fd993c702",
+      "paths": [
+        "dice-qa/books/86/issue-504/candidate/html-domain-powers.zh.json"
+      ]
+    },
+    {
+      "revision": "22508940d9ccfe6ea25b24c6922cf4bfb6312344",
+      "paths": [
+        "dice-qa/books/86/issue-499/final-accepted-domain-markers.json"
+      ]
+    }
+  ],
+  "normalizedBaseline": {
+    "revision": "3109813da4b49d0e9c47ceeba44857a5a230b1e7",
+    "path": "dice-qa/books/86/issue-467/handoff-preparation/operator/operator.normalized.generated.json",
+    "reuse": "Inherited through fixed SC tuple evidence; not reopened."
+  },
+  "coverage": {
+    "owners": 42,
+    "ordinaryOwners": 35,
+    "planarOwners": 7,
+    "sourceOccurrences": 441,
+    "scOccurrences": 117,
+    "nonScOccurrences": 324,
+    "stableSpellBindings": 443,
+    "explicitNonScIdentityRows": 9,
+    "alternativeOccurrences": 2,
+    "sourceOnlyRelationshipBindings": 3,
+    "reusedSummaryOccurrences": 437,
+    "directTranslatedSummaryOccurrences": 4,
+    "directTranslatedSpells": 2,
+    "daggerDisplayOccurrences": 117,
+    "daggerPresentationDifferences": 7,
+    "starredOccurrences": 17,
+    "planarChoiceGroups": 63,
+    "unknownMarkersOmitted": 14,
+    "scBodyScope": 1001,
+    "excludedFeatOwner": 28
+  },
+  "qualityPolicy": {
+    "verifiedDatabaseContentReused": true,
+    "fullFieldOrFullTextReaudit": false,
+    "printedMfxReused": true,
+    "daggerUsesVerifiedBookMembership": true,
+    "originalPrintedEvidenceUnchanged": true
+  },
+  "relationshipDisposition": "Two initially missing links and the selected current-edition identity of one same-name row use original-appendix source bindings; no database relationships are created.",
+  "validation": {
+    "domainAuditTestsPassed": 22,
+    "newHandoffTestsPassed": 11,
+    "representativePilotOccurrences": 24,
+    "representativePilotBindings": 26,
+    "rootPackageFixedGitAndCliByteEqual": true,
+    "uniqueSourceKeys": 441,
+    "nonScOnlineAndScLocalLinksChecked": true,
+    "dbOpenedReadOnly": true,
+    "dbSizeMtimeUnchanged": true,
+    "replayDbAccess": false,
+    "unrelatedStagedDeletes": 39,
+    "unrelatedCachedBinaryDiffByteIdentical": true
+  },
+  "resources": {
+    "measuredFixedReplaySeconds": 0.345,
+    "peakWorkingSetBytes": 91934720,
+    "peakBudgetBytes": 1073741824,
+    "durableBytes": 2807835,
+    "textBudgetBytes": 5242880,
+    "newEnvironmentInstalls": 0,
+    "ocrCalls": 0,
+    "paidApiCalls": 0
+  },
+  "ownership": {
+    "acceptance": "main-gate",
+    "rendererIssue": 345,
+    "domainIntegrationIssue": 486,
+    "rendererModified": false,
+    "fullHtmlBuilt": false,
+    "visualHoldContinues": true,
+    "databaseWrites": false,
+    "canonicalPromotion": false,
+    "privatePush": false,
+    "deployment": false
+  }
+}
