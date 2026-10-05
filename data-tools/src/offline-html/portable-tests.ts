@@ -739,6 +739,61 @@ try {
     const partialMarkers = load(fs.readFileSync(pageFile(partialMarkersOut, 'class-1-4.html'), 'utf8'));
     assert.equal(partialMarkers('#level-3').nextUntil('h2').find('.component-labels').length, 0);
   } finally { schoolView.close(); }
+  // Extra class grants do not create SC appendix pages; relations and bodies survive.
+  const extraClassFixture = new Database(db.serialize());
+  const extraOwners = [16, 17, 62, 72, 161, 673, 848];
+  const addExtraClass = extraClassFixture.prepare(`INSERT INTO SpellListEntry
+    (id,spellId,listType,ownerLegacyId,ownerName,ownerSlug,level,sourceTable,reviewStatus)
+    VALUES (?,?,'class',?,?,?,2,'fixture','accepted')`);
+  for (const owner of extraOwners) {
+    for (const id of [1, 6]) addExtraClass.run(`extra:${owner}:${id}`, `spell:${id}`, owner, `Extra ${owner}`, `extra-${owner}`);
+  }
+  const extraClassView = new Database(extraClassFixture.serialize(), { readonly: true }); extraClassFixture.close();
+  try {
+    const before = extraClassView.serialize(), outDir = path.join(output, 'sc-extra-classes');
+    const extraReport = exportOfflineHtml({ ...options, contentDb: ':memory:', outDir }, new Map(), extraClassView);
+    const menu = load(fs.readFileSync(pageFile(outDir, 'index.html'), 'utf8'));
+    for (const owner of extraOwners) {
+      assert.equal(menu(`a[href="职业法表/class-${owner}.html"]`).length, 0);
+      assert(!fs.existsSync(pageFile(outDir, `class-${owner}.html`)));
+    }
+    assert.equal(extraReport.classPages, report.classPages);
+    assert.equal(extraReport.classMemberships, report.classMemberships);
+    assert.equal(extraReport.classListEntries, report.classListEntries + 14);
+    assert.equal(extraReport.selectedSummaries, report.selectedSummaries);
+    assert.deepEqual(extraReport.classlessTargets, report.classlessTargets);
+    assert.equal(extraReport.domainPages, report.domainPages);
+    assert.equal(extraReport.files, report.files);
+    assert.equal(extraReport.excludedMemberships.length, 14);
+    assert.deepEqual([...new Set(extraReport.excludedMemberships.map(row => row.ownerLegacyId))].sort((a,b) => a-b), extraOwners);
+    assert(extraReport.excludedMemberships.every(row => row.issue === 354 && row.listType === 'class' && row.reason === 'outside-original-book-directory'));
+    for (const filename of ['A.html', 'B.html', 'G.html', 'N.html', 'C.html', 'class-1.html', 'class-2.html', 'domain-1.html', 'domain-2.html']) {
+      assert.equal(fs.readFileSync(pageFile(outDir, filename), 'utf8'), read(filename));
+    }
+    assert.equal((extraClassView.prepare("SELECT COUNT(*) AS n FROM SpellListEntry WHERE id LIKE 'extra:%'").get() as { n: number }).n, 14);
+    assert(extraClassView.serialize().equals(before));
+    const otherBook = new Database(extraClassView.serialize());
+    otherBook.exec(`DELETE FROM SpellContent WHERE legacySpellId=4;
+      UPDATE SpellContent SET sourceRulebookId=87 WHERE sourceRulebookId=86;
+      UPDATE RulebookContent SET legacyRulebookId=87,id='book:87' WHERE legacyRulebookId=86;
+      UPDATE I18nSpellText SET rulebookId=87 WHERE rulebookId=86;
+      UPDATE I18nSpellSummaryText SET rulebookId=87 WHERE rulebookId=86;
+      INSERT INTO I18nSpellSummaryText (id,spellId,rulebookId,lang,variant,summaryText,reviewStatus,sourceKey,sourceKind,updatedAt)
+      VALUES ('extra-summary:zh',6,87,'zh','chm','其他书籍保留职业关系','accepted','fixture','fixture','fixture'),
+      ('extra-summary:en',6,87,'en','imarvin','Other book summary.','accepted','fixture','fixture','fixture');`);
+    const otherBookView = new Database(otherBook.serialize(), { readonly: true }); otherBook.close();
+    try {
+      const otherOut = path.join(output, 'other-book-extra-classes');
+      const otherReport = exportOfflineHtml({ ...options, book: 87, contentDb: ':memory:', outDir: otherOut }, new Map(), otherBookView);
+      assert.equal(otherReport.classPages, report.classPages + 7);
+      assert.deepEqual(otherReport.excludedMemberships, []);
+      const otherMenu = load(fs.readFileSync(pageFile(otherOut, 'index.html'), 'utf8'));
+      for (const owner of extraOwners) {
+        assert(otherMenu(`a[href="职业法表/class-${owner}.html"]`).length);
+        assert.equal(load(fs.readFileSync(pageFile(otherOut, `class-${owner}.html`), 'utf8'))('.spell-list li').length, 2);
+      }
+    } finally { otherBookView.close(); }
+  } finally { extraClassView.close(); }
   // Extra feat relationships remain in the input but outside the book directory.
   const specialFixture = new Database(db.serialize());
   specialFixture.exec(`DELETE FROM SpellListEntry WHERE spellId='spell:2';
