@@ -2,7 +2,7 @@
 
 Output uses Chinese category folders following the CHM repository's chapter
 organization: `职业法表/`, `领域法表/` and `法术描述/`. The root retains `index.html`,
-optional `introduction.html`, `style.css` and `report.json`. No category index pages
+optional `introduction.html` and `source-questions.html`, `style.css` and `report.json`. No category index pages
 are added. Generated stylesheet, navigation, body-reference and footnote links
 are relative to their actual page. Validation resolves `../` within the output
 and rejects escaped-root, absolute, missing-file and missing-anchor references.
@@ -150,6 +150,32 @@ fragment, allowing the main-gate's readonly memory slice to use the same fixed
 reader alongside its selected typography and printed marker inputs. Without this
 argument or CLI flag, no introduction file/link is emitted. The report counts
 introduction sections, paragraphs and list items separately from spell bodies.
+
+## Source Questions
+
+For SC/effective content, `--source-questions` adds `source-questions.html`, linked
+from the homepage and directory navigation. It reads the existing #416 / PR #417
+review checklist from `dice-qa/books/86/issue-416/question-bindings.jsonl` at fixed
+private revision `dac21d3e4070e5c1c6c6bc3a01e5e2a095b917b2`, using the same data-root
+and fixed Git reader as other SC reader pages. The checklist has 40 occurrences
+across 38 spells; repeated short IDs stay separate by `(targetId, questionId)`.
+See [source-question handoff](./sc-source-questions.md) for its evidence boundary.
+
+The library's optional ninth argument supplies caller-authenticated question
+bindings. Before creating output, the renderer checks each scoped spell's exact
+English/Chinese name and Chinese body text/HTML, presence of the current note,
+unique question pair, unresolved state and complete statement/context locators.
+Stale, duplicate or unbound rows fail rather than linking notes to another body.
+The page retains exact Chinese notes, affected scope, English statements,
+printed/PDF pages, errata findings and expandable original context. Review
+instructions ask for separate answers and evidence/source type. Content is escaped
+as plain text; private paths, provenance envelopes and source spans do not render.
+Each item links to its local spell body. Project notes remain separate from rules
+and official errata; this page supplies no new QA acceptance or rules judgment.
+
+Without the flag/argument, no page or link is added. The report's `sourceQuestions`
+records inclusion, occurrence and body counts. A complete SC export with this page
+has 88 files; class/domain/body page counts and existing body text remain unchanged.
 
 ## Domain Abilities
 

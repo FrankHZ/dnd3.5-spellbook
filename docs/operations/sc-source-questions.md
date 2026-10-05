@@ -8,6 +8,11 @@ Use this checklist when preparing a user-directed review of the current
 accepted reader notes. Earlier checklist and navigation files remain frozen
 evidence; they do not describe the current final note set.
 
+The [offline HTML exporter](./offline-html.md#source-questions) can include this
+fixed checklist as `source-questions.html` with `--source-questions`. The standalone
+page retains notes, quoted statements, page locators and original context, with
+links to local spell bodies and a homepage/navigation entry for CHM review.
+
 Each question is identified by `(targetId, questionId)`. Repeated short IDs in
 different spells remain separate occurrences, and multiple questions in one
 body have separate reply fields. The private binding index maps each occurrence

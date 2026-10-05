@@ -13,6 +13,7 @@ import { processAutomaticMarkers, type NamedEntry, type SpellName } from "../spe
 import type { PdfPage, PdfSpan } from "../spell-list-markers/markers";
 import type { DomainPowers } from "./domain-powers";
 import type { CompleteDomainLists, DomainListBinding } from "./domain-lists";
+import type { SourceQuestion } from "./source-questions";
 
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "offline-html-test-"));
 const outputRoot = path.join(repoRoot(), "data-tools/out");
@@ -375,6 +376,60 @@ try {
   assert.throws(() => exportOfflineHtml(options, new Map(), undefined, [], ''), /nonempty/);
   assert.throws(() => main(['--introduction', '--introduction']), /duplicate/);
   assert.throws(() => main(['--content-db', dbPath, '--book', '87', '--variant', 'effective', '--out', introOut, '--introduction']), /only for SC/);
+  const question = (id: number, questionId: string, note: string): SourceQuestion => ({
+    targetId: id, questionId, language: 'zh-CN', chineseName: id === 2 ? '继承法术' : '合成段落',
+    englishName: id === 2 ? 'Beta inherited spell' : 'Alpha & <fixture>', state: 'source-unresolved', kind: 'conflict',
+    currentNote: note, bodyText: id === 2 ? plain : paragraphText, bodyHtml: id === 2 ? html : paragraphs,
+    errataFinding: '未见专项修正；<项目意见>不裁定规则。', sourceIssue: { impact: '条件甲如何与条件乙配合。' },
+    statements: [{ sourceId: 'sc', printedPage: 42, physicalPage: 43, sourceQuote: 'Exact <script>quoted text</script>\nA & B.' }],
+    contextPages: [{ sourceId: 'phb', printedPage: 50, physicalPage: 52, readText: 'Full original context.\nUnicode α & <scope>.' }],
+  });
+  const questions = [question(2, 'same:short-id', '[fixture-question-one] 原文条件甲和条件乙均保留，未作裁定。'),
+    question(2, 'second', '[fixture-question-two] 第二处独立疑问；此备注不会改写原规则。'),
+    { ...question(5, 'same:short-id', 'Separate note paragraph one.'), kind: 'missing-explanation' as const }];
+  questions[1]!.statements.push({ sourceId: 'errata', printedPage: null, physicalPage: 1, sourceQuote: 'Exact errata statement.' });
+  const questionOut = path.join(output, 'source-questions');
+  const questionReport = exportOfflineHtml({ ...options, outDir: questionOut }, new Map(), undefined, [], introduction, undefined, undefined, [], questions);
+  assert.deepEqual(questionReport.sourceQuestions, { included: true, questions: 3, bodies: 2 });
+  assert.deepEqual(report.sourceQuestions, { included: false, questions: 0, bodies: 0 });
+  assert.equal(questionReport.files, introReport.files + 1);
+  const questionPage = load(fs.readFileSync(pageFile(questionOut, 'source-questions.html'), 'utf8'));
+  assert.equal(questionPage('.source-question').length, 3);
+  assert.equal(questionPage('.source-question [href="法术描述/B.html#spell-2"]').length, 2);
+  assert.equal(questionPage('.source-question [href="法术描述/A.html#spell-5"]').length, 1);
+  assert.equal(new Set(questionPage('.source-question').map((_, el) => questionPage(el).attr('id')).get()).size, 3);
+  questions.forEach((row, index) => {
+    const entry = questionPage('.source-question').eq(index);
+    assert.equal(entry.find('.current-note').text(), row.currentNote);
+    assert.equal(entry.find('.question-impact').text(), row.sourceIssue.impact);
+    assert.equal(entry.find('.errata-finding').text(), row.errataFinding);
+    assert.equal(entry.find('pre').eq(0).text(), row.statements[0]!.sourceQuote);
+    assert.equal(entry.find('details pre').text(), row.contextPages[0]!.readText);
+    assert(entry.text().includes('PDF 第 43 页'));
+  });
+  assert.equal(questionPage('script, iframe, form, input').length, 0);
+  assert(questionPage.text().includes('官方勘误：未标印刷页码；PDF 第 1 页。'));
+  assert(!questionPage.html().includes(privacy));
+  for (const filename of ['index.html', 'A.html', 'class-1.html', 'domain-1.html', 'introduction.html']) {
+    const page = load(fs.readFileSync(pageFile(questionOut, filename), 'utf8'));
+    assert(page(`a[href="${/^(class-|domain-|[A-Z]\.html)/.test(filename) ? '../' : ''}source-questions.html"]`).length > 0);
+  }
+  assert.equal(load(fs.readFileSync(pageFile(questionOut, 'B.html'), 'utf8'))('#spell-2-zh').html(), load(read('B.html'))('#spell-2-zh').html());
+  assert.equal(validatePages(new Map(outputFiles(questionOut).map(name => [name, fs.readFileSync(path.join(questionOut, name), 'utf8')]))), questionReport.links);
+  assert(!fs.existsSync(pageFile(options.outDir, 'source-questions.html')));
+  const badQuestions = [[], [questions[0]!, questions[0]!], [{ ...questions[0]!, targetId: 999 }],
+    [{ ...questions[0]!, chineseName: 'stale name' }], [{ ...questions[0]!, englishName: 'stale English' }],
+    [{ ...questions[0]!, currentNote: 'absent note' }], [{ ...questions[0]!, bodyText: 'stale text' }],
+    [{ ...questions[0]!, bodyHtml: '<p>stale HTML</p>' }], [{ ...questions[0]!, statements: [] }],
+    [{ ...questions[0]!, contextPages: [] }], [{ ...questions[0]!, statements: [{ ...questions[0]!.statements[0]!, physicalPage: 0 }] }],
+    [{ ...questions[0]!, state: 'resolved' }]];
+  badQuestions.forEach((rows, index) => {
+    const badOut = path.join(output, `bad-questions-${index}`);
+    assert.throws(() => exportOfflineHtml({ ...options, outDir: badOut }, new Map(), undefined, [], undefined, undefined, undefined, [], rows as SourceQuestion[]), /question|checklist/);
+    assert(!fs.existsSync(badOut));
+  });
+  assert.throws(() => main(['--source-questions', '--source-questions']), /duplicate/);
+  assert.throws(() => main(['--content-db', dbPath, '--book', '87', '--variant', 'effective', '--out', questionOut, '--source-questions']), /only for SC effective/);
   const powerContent: DomainPowers = { schemaVersion: 1, rulebookId: 86, language: 'zh', sharedRules: {
     planar: ['共同规则一：两个选择 & <保留条件>。', '共同规则二：不得省略阵营限制。'],
   }, domains: [
@@ -874,7 +929,7 @@ try {
   for (const href of ['https://www.d20spellcodex.com/spells/2', 'https://www.d20spellcodex.com/spells/1?x=1', 'https://www.d20spellcodex.com/spells/1#zh', 'https://www.d20spellcodex.com/spells/01']) {
     assert.throws(() => validatePages(new Map([["A.html", `<div class="spell-entry" id="spell-1"><a class="website-link" href="${href}" title="在网站查看" aria-label="在网站查看">↗</a></div>`]])), /generated website link/);
   }
-  console.log("offline HTML portable tests passed: Chinese directories, Sorcerer/Wizard school groups, extra feat exclusion, introduction text/navigation, bound ordinary/planar abilities and reader notes, domain-only summaries, printed MFX states, Chinese-only bodies, website links, compact mechanism fields, anchors, paragraphs, notes/lists/tables, privacy, repeat/failures");
+  console.log("offline HTML portable tests passed: Chinese directories, source-question checklist/bindings/navigation, Sorcerer/Wizard school groups, extra feat exclusion, introduction text/navigation, bound ordinary/planar abilities and reader notes, domain-only summaries, printed MFX states, Chinese-only bodies, website links, compact mechanism fields, anchors, paragraphs, notes/lists/tables, privacy, repeat/failures");
 } finally {
   if (db.open) db.close();
   for (const [root, directory] of [[os.tmpdir(), temp], [outputRoot, output]]) {

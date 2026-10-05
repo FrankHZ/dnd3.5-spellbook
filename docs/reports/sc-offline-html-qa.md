@@ -125,4 +125,9 @@ Mapping counts do not replace visual acceptance;
 `formattingComplete` and `contentCertification` remain false. #354 is separate and
 nonblocking. The existing HTML browser/file no-workaround restriction remains.
 Usage and current behavior: [offline HTML](../operations/offline-html.md).
+The optional source-question review page uses the fixed #416 / PR #417 checklist;
+check all 40 question pairs across 38 bodies, including repeated short IDs,
+exact Chinese notes/English quotations/context, root-to-body links and stale
+binding rejection. It adds one file to the final export without changing bodies
+or treating unresolved notes as official corrections.
 Write boundaries: [DB content workflow](../operations/db-content-workflow.md).
