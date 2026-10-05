@@ -1,0 +1,113 @@
+{
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/155",
+  "version": "v1.4",
+  "rulebookId": 47,
+  "scope": "Complete 59-target Savage Species DB-English QA",
+  "authority": "Database English names, complete descriptions and locked normalized mechanics; no original-book/PDF verification",
+  "reviewer": {
+    "threadId": "01a10e41-cb76-7053-8a15-8acad7e6e36b",
+    "model": "gpt-6.1-sol",
+    "effort": "high",
+    "verification": "Read-only local rollout turn_context metadata; private reviewer-metadata.json",
+    "humanReview": false
+  },
+  "inputs": {
+    "publicBase": "315847946c7d5437ad5daeeecce06de59f6c8b56",
+    "publicQaToolBlob": "168d1e54c9065111835e69ae3f3fb779b47b708f",
+    "privatePreparedRevision": "6d28f9391273979a35a6bcc86971f0aac5b9f2c8",
+    "privateEvidenceRevision": "5781c0c2cd30c08adb526094a044ff9dcc36c48a",
+    "sourceRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+    "mappingRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+    "baselineDirectory": "dice-baselines/issue-520",
+    "targetInputPath": "dice-baselines/issue-520/qa/books/47/target-inputs.jsonl",
+    "targetIdRange": [3187, 3245],
+    "englishBodyCharacters": 39682,
+    "longestEnglishBodyCharacters": 2198,
+    "candidateBodyCharacters": 17295,
+    "allSourceFilesRevalidated": 105,
+    "allSourceOccurrencesRevalidated": 5606,
+    "ownedOccurrences": 59,
+    "matchedTargets": 58,
+    "unmatchedOccurrences": 1,
+    "targetsWithoutMatchedCandidates": [3204],
+    "duplicates": 0,
+    "unparsedOwnedBoundaries": 0
+  },
+  "dispositions": {
+    "reviewedTargets": 59,
+    "reviewedNames": 59,
+    "completeBodiesReviewed": 59,
+    "alignedSegments": 159,
+    "translatedSegments": 159,
+    "literalEnglishFallbackSegments": 0,
+    "formalProposedTargets": 58,
+    "formalProposedNames": 58,
+    "formalProposedBodies": 58,
+    "fullyChineseFormalBodies": 58,
+    "unactivatedFullyChineseTargets": 1,
+    "unmatchedOccurrencesReviewed": 1,
+    "wholeFieldFallbacks": 2,
+    "pendingFields": 0,
+    "pendingFullBodyAudits": 0,
+    "mainGateAcceptance": "pending",
+    "interpretation": "All 59 targets and owned occurrences received complete review. Formal accepted means validated proposal, not acceptance or write authority. Target 3204 has complete Chinese name/body stored separately but unactivated; both existing English fallback fields remain. Nine further canonical gaps are explicit residuals, not unperformed review."
+  },
+  "unresolved": [
+    {"targetId": 3204, "kind": "Unmatched occurrence identity", "disposition": "Complete reviewed Chinese name/body stored unactivated; current source/map/alias and fallback unchanged"},
+    {"targetId": 3189, "kind": "DB concentration-rule context ambiguity", "disposition": "Preserve determinate clauses and formulas without adding an unstated context"},
+    {"targetId": 3198, "kind": "DB body and duration-header tension", "disposition": "Preserve determinate prose and canonical duration independently"},
+    {"targetId": 3220, "kind": "Malformed normalized mechanics", "disposition": "Translate full determinate body; retain canonical range/casting-time fields"},
+    {"targetId": 3221, "kind": "DB body and saving-throw conflict", "disposition": "Translate explicit body clause; no invented save type or DC"},
+    {"targetId": 3229, "kind": "DB maximum and size-cap ambiguity", "disposition": "Preserve both statements; no invented size exception"},
+    {"targetId": 3231, "kind": "DB name and body self-reference conflict", "disposition": "Complete translation preserves explicit body references; no canonical correction"},
+    {"targetId": 3232, "kind": "DB name/body/component conflict", "disposition": "Complete translation preserves references and component prose; normalized fields unchanged"},
+    {"targetId": 3236, "kind": "DB body and component-field conflict", "disposition": "Translate body component clause; normalized fields unchanged"},
+    {"targetId": 3244, "kind": "Malformed or incomplete normalized mechanics", "disposition": "Translate complete determinate body; no invented range or save outcome"}
+  ],
+  "presentation": {
+    "body": "Natural paragraphs and seven useful list items",
+    "candidateHeaders": "Compared to locked mechanics and omitted from body to avoid duplicate stat blocks",
+    "embeddedCreatureStatistics": "Both embedded creature-stat groups preserved completely",
+    "references": "Spell/book references retained without inventing unavailable referenced content",
+    "tables": "No tables in the complete DB bodies"
+  },
+  "checks": {
+    "formalQa": "passed; validated-proposal; no --check-incomplete",
+    "portableQa": "passed; dice QA portable tests passed",
+    "currentDbEnglishNamesBodiesMechanicsAndFallbacksRevalidated": 59,
+    "candidateInputOccurrencesRevalidated": 59,
+    "fullNonblankEnglishLineCoverage": true,
+    "exactInputAndProposalAfterBindings": true,
+    "htmlBalanced": true,
+    "visiblePlaceholderFindings": 0,
+    "unexpectedLatinResidueFindings": 0,
+    "templatePollutionGroups": 0,
+    "repeatedTranslationGroups": 3,
+    "repeatedTranslationDisposition": "Identical English component or cost clauses only",
+    "numericTokenScan": "Two equivalent rendering differences manually verified; all other numeric tokens preserved, reference URI identifiers excluded",
+    "gameControlPlaceholders": "Not applicable: no such placeholders in these bodies",
+    "fixedByteLimit": "Not applicable: no fixed byte budget",
+    "unrelatedPrivateIndexMetadataEqualBeforeAndAfterCommit": true,
+    "unrelatedPrivateStagedPaths": 39,
+    "unrelatedPrivateStagedChanges": "Deletions only; exact modes/blob IDs/paths/status bind their complete unchanged diff",
+    "unrelatedPrivateUntrackedPathsPreserved": 1431,
+    "largeTemporaryBinaryReceiptCreated": false
+  },
+  "resources": {
+    "budget": {"durablePrivateEvidenceUpperBoundBytes": 5242880, "formalValidationUpperBoundMilliseconds": 60000, "formalValidationPeakWorkerUpperBoundBytes": 536870912, "concurrency": 1},
+    "measured": {"formalCommandWallMilliseconds": 785, "formalQaPeakWorkingSetBytes": 280662016, "formalExitCode": 0, "committedPrivateEvidenceBytes": 1318526, "method": "10ms sampling of direct Node QA worker PeakWorkingSet64 with --import tsx, avoiding launcher-child undercount", "pdfReads": 0, "paidApiCalls": 0, "dbCopies": 0}
+  },
+  "privateEvidenceRoot": "dice-baselines/issue-520/qa/books/47",
+  "privateEvidencePaths": ["README.md", "target-inputs.jsonl", "candidate-inputs.json", "authored-review.jsonl", "semantic-review.json", "clause-review.jsonl", "decisions.jsonl", "corrections.jsonl", "full-body-audit.jsonl", "unactivated-proposals.jsonl", "unresolved.jsonl", "reviewer-metadata.json", "preservation.json", "private-state-before.json", "audit.py", "check-inputs.mjs", "out/accepted.jsonl", "out/fallback.jsonl", "out/coverage.json", "out/qa-checks.json", "out/resources.json"],
+  "reproduce": {
+    "workingDirectory": "Compatible public checkout root with dependency runtime available",
+    "formalCommand": "npm run -w data-tools dice:qa -- --data-root <absolute-private-data-root> --baseline-dir <absolute-private-data-root>/dice-baselines/issue-520 --rules-db <absolute-operator-db-root>/rules-clean.sqlite --content-db <absolute-operator-db-root>/content.sqlite --rulebook-id 47 --report-dir <absolute-private-data-root>/dice-baselines/issue-520/qa/books/47/out",
+    "semanticEvidenceCheck": "python -X utf8 <absolute-private-data-root>/dice-baselines/issue-520/qa/books/47/audit.py --public-root <absolute-public-checkout> --rules-db <absolute-operator-db-root>/rules-clean.sqlite --content-db <absolute-operator-db-root>/content.sqlite",
+    "portableCommand": "npm run -w data-tools dice:qa:test",
+    "mergeGate": "Full remote ci:portable on the exact public PR head; any failure/cancellation/timeout stops work without rerun"
+  },
+  "boundaries": {
+    "operatorDbWrites": false, "appStateAccess": false, "canonicalEnglishChanged": false, "normalizedMechanicsChanged": false, "summariesChanged": false, "sourceMapOrAliasChanged": false, "pdfVerification": false, "privatePush": false, "otherBookEvidenceChanged": false, "consumerRehearsal": false, "deployment": false,
+    "scheduling": "All QA precedes unified separately authorized migration/consumption rehearsal. Paused #529 is not a prerequisite. No self-merge or issue closeout."
+  }
+}
