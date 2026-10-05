@@ -721,6 +721,31 @@ validation complete before the API is stopped, so a bad upload does not disturb
 the running service. Source DBs must be checkpointed before upload; do not copy
 a live SQLite main file while its WAL/SHM sidecars still contain state.
 
+Use a maintained SQLite CLI release verified on the target host and accepted
+DB artifacts. The CLI can differ from the SQLite engine bundled with the
+application. Both the operator and `sudo` must resolve the same verified CLI:
+
+```bash
+command -v sqlite3
+sqlite3 --version
+sudo sh -c 'command -v sqlite3'
+sudo sqlite3 --version
+```
+
+Obtain upgrades from the [official SQLite downloads](https://sqlite.org/download.html)
+and verify the archive against its published SHA3-256 checksum. Check CPU and
+system-library compatibility before installation; a Linux binary may require a
+newer glibc than the host provides. If needed, build the official amalgamation
+using the [SQLite compilation guide](https://sqlite.org/howtocompile.html).
+Keep the distribution-owned `/usr/bin/sqlite3` intact and verify the installed
+CLI under both execution contexts before rerunning the deployment helper.
+
+Do not suppress an integrity failure or change correct content to satisfy an
+old checker. SQLite has had [WITHOUT ROWID check regressions](https://sqlite.org/forum/info/c72b92be1e0bf341).
+Investigate a suspected engine defect with a minimal reproduction and an
+independent current engine, then rerun the original `PRAGMA integrity_check`
+and schema gates with the verified CLI. Cross-checks do not replace those gates.
+
 The script updates these target files when matching incoming files exist:
 
 - `~/data/spellbook.db` -> `/opt/spellbook/data/spellbook.db`
