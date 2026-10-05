@@ -1,0 +1,164 @@
+{
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/160",
+  "version": "v1.4",
+  "rulebookId": 53,
+  "scope": "Complete eight-target Cityscape DB-English QA",
+  "authority": "Matched database English names, complete bodies and normalized mechanics; not original-book/PDF verification",
+  "reviewer": {
+    "threadId": "01a10d7a-48e3-7da2-9fed-ff8514afc2bb",
+    "model": "gpt-6.1-sol",
+    "effort": "high",
+    "verification": "Read-only local rollout turn_context metadata; not task self-report",
+    "portableQaTest": "passed; dice QA portable tests passed",
+    "formalQa": "passed; validated-proposal"
+  },
+  "inputs": {
+    "publicBase": "3c0df3bd8f988133ce29c5dd79dae87f0c93f4b9",
+    "publicToolRevision": "15df8ee758a3f1f519b6f0c68106bbcd0e325b57",
+    "privatePreparedRevision": "6d28f9391273979a35a6bcc86971f0aac5b9f2c8",
+    "privateEvidenceRevision": "b8d0dc3f85015533c3e57a293f7a96d5de2d7cb7",
+    "sourceRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+    "mappingRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+    "baselineDirectory": "dice-baselines/issue-520",
+    "targetInputPath": "dice-baselines/issue-520/qa/books/53/target-inputs.jsonl",
+    "targetIds": [
+      355,
+      356,
+      357,
+      358,
+      359,
+      360,
+      361,
+      362
+    ],
+    "englishBodyCharacters": 6362,
+    "candidateBodyCharacters": 2678,
+    "allSourceFilesRevalidated": 105,
+    "allSourceOccurrencesRevalidated": 5606,
+    "duplicates": 0,
+    "targetsWithoutCandidates": 0,
+    "publicationGaps": 0,
+    "sourceLockedInputRowsUnchanged": 8
+  },
+  "dispositions": {
+    "reviewedTargets": 8,
+    "reviewedNames": 8,
+    "reviewedCompleteBodies": 8,
+    "formalProposedNames": 8,
+    "formalProposedBodies": 8,
+    "fullyChineseBodies": 7,
+    "mixedBodyWithLiteralEnglishFallback": 1,
+    "translatedBodySegments": 63,
+    "literalEnglishFallbackSegments": 1,
+    "wholeFieldFallbacks": 0,
+    "unresolvedClauses": 1,
+    "pendingFields": 0,
+    "pendingFullBodyAudits": 0,
+    "mainGateAcceptance": "pending",
+    "interpretation": "Formal accepted counts mean validated proposal fields. Target 361 contains nine translated segments and one retained DB-English sentence; it is not a fully accepted Chinese translation."
+  },
+  "unresolved": [
+    {
+      "targetId": 361,
+      "field": "descriptionHtml",
+      "englishLine": 10,
+      "kind": "DB body component type contradicts normalized component flags",
+      "disposition": "Preserve the independently bounded sentence verbatim in English while delivering the determinate remainder; no component-type resolution or mechanics change",
+      "privateEvidence": "dice-baselines/issue-520/qa/books/53/unresolved.jsonl"
+    }
+  ],
+  "presentation": {
+    "body": "Natural paragraphs, narrative emphasis and the three-round detection list",
+    "candidateStats": "All candidate headers checked against locked mechanics; remove duplicate stat blocks from prose and retain normalized presentation",
+    "references": "Preserve named spell references and the available external page locator; replace printed same-book layout locators with explicit spell names",
+    "tables": "N/A: no tables in the eight DB-English bodies"
+  },
+  "checks": {
+    "uniqueTargets": 8,
+    "uniqueSourceKeys": 8,
+    "sourceLockedInputRowsUnchanged": 8,
+    "targetInputsByteEquivalentToPreparedRevision": true,
+    "alignedBodySegments": 64,
+    "translatedSegments": 63,
+    "literalEnglishFallbackSegments": 1,
+    "acceptedProposalTargets": 8,
+    "acceptedProposalNames": 8,
+    "proposedBodies": 8,
+    "fullyChineseReviewedBodies": 7,
+    "mixedBodyWithBoundedEnglishFallback": 1,
+    "wholeFieldFallbacks": 0,
+    "unresolvedComponentClauses": 1,
+    "pendingFields": 0,
+    "htmlBalanced": true,
+    "roundInformationListItems": 3,
+    "visiblePlaceholderFindings": 0,
+    "unexpectedLatinResidueFindings": 0,
+    "tokenParity": "N/A: no game/control placeholders in these inputs",
+    "byteBudget": "N/A: no hard reinsertion byte budget",
+    "tables": "N/A: no tables in the eight DB-English bodies",
+    "repeatedTranslationReview": {
+      "groups": 1,
+      "occurrences": 2,
+      "pollutedGroups": 0,
+      "finding": "The identical short manufactured-weapon definition has the identical English source and is legitimate."
+    },
+    "unrelatedPrivateStagedChangesPreserved": 39,
+    "unrelatedPrivateUntrackedFilesPreserved": 1418,
+    "privateIndexBinaryDiffUnchanged": true,
+    "operatorDbWrites": false,
+    "canonicalEnglishOrMechanicsChanges": false,
+    "summariesChanged": false,
+    "pdfVerification": false
+  },
+  "resources": {
+    "budget": {
+      "privateOutputUpperBoundBytes": 5242880,
+      "validationUpperBoundSeconds": 60,
+      "peakWorkingSetEstimateKiB": 270468,
+      "estimateBasis": "Accepted issue-520 all-source pilot; one eight-entry sequential slice"
+    },
+    "measured": {
+      "pdfReads": 0,
+      "paidApiCalls": 0,
+      "peakWorkingSetBytes": 278761472,
+      "command": "node --import tsx data-tools/src/dice-intake/qa.ts (same arguments as maintained npm dice:qa)",
+      "measurement": "One Node process using --import tsx; 20ms polling of OS PeakWorkingSet64",
+      "exitCode": 0,
+      "dbCopies": 0,
+      "wallMilliseconds": 853
+    },
+    "committedBookEvidenceBytes": 176850,
+    "semanticReview": "One AI task, sequential full-text comparison and second-pass correction review; no separately metered API charge"
+  },
+  "privateEvidencePaths": [
+    "dice-baselines/issue-520/qa/books/53/README.md",
+    "dice-baselines/issue-520/qa/books/53/semantic-review.json",
+    "dice-baselines/issue-520/qa/books/53/clause-review.jsonl",
+    "dice-baselines/issue-520/qa/books/53/decisions.jsonl",
+    "dice-baselines/issue-520/qa/books/53/corrections.jsonl",
+    "dice-baselines/issue-520/qa/books/53/full-body-audit.jsonl",
+    "dice-baselines/issue-520/qa/books/53/out/accepted.jsonl",
+    "dice-baselines/issue-520/qa/books/53/out/fallback.jsonl",
+    "dice-baselines/issue-520/qa/books/53/out/qa-checks.json"
+  ],
+  "reproduce": {
+    "workingDirectory": "Compatible public repository root",
+    "command": "npm run -w data-tools dice:qa -- --data-root <absolute-private-data-root> --baseline-dir <absolute-private-data-root>/dice-baselines/issue-520 --rules-db <absolute-operator-db-root>/rules-clean.sqlite --content-db <absolute-operator-db-root>/content.sqlite --rulebook-id 53 --report-dir <absolute-private-data-root>/dice-baselines/issue-520/qa/books/53/out",
+    "portableCheck": "npm run -w data-tools dice:qa:test",
+    "formalResult": "passed; validated-proposal",
+    "portableResult": "passed; dice QA portable tests passed",
+    "mergeGate": "Full remote CI portable validation on the PR head"
+  },
+  "boundaries": {
+    "operatorDbWrites": false,
+    "appStateAccess": false,
+    "deployment": false,
+    "privatePush": false,
+    "canonicalEnglishChanged": false,
+    "normalizedMechanicsChanged": false,
+    "summariesChanged": false,
+    "pdfVerification": false,
+    "otherBookEvidenceChanged": false,
+    "consumerGate": "Main-gate must accept the exact revisions; #121/#420 must separately prove the annotated-predecessor consumption/import sequence before any operator write"
+  }
+}
