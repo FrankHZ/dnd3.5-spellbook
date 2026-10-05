@@ -4,7 +4,7 @@ import "./source-bound-fallback-portable-tests";
 import { escapedFallbackHtml, type SourceBoundFallbackReview } from "./source-bound-fallback";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import Database from "better-sqlite3";
 import { bindRestoredScQaInputs, candidateRulebook, loadEnglishRecords, selectRulebookScope, validateBoundaries, validateFullBodyAudits, validateReviews, validateSourceCoverage, writeQaOutputs, type Correction, type DuplicateResolution, type EnglishMechanics,
   type Review } from "./qa";
@@ -320,6 +320,120 @@ try {
     "--rulebook-id", "10", "--report-dir", reportDir];
   const run = (...extra: string[]) => execFileSync(process.execPath, [...args, ...extra], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
   run();
+  // Current isolated intake/QA shares a new namespace; preserved inputs never move.
+  const isolatedData = join(fixtureRoot, "external-private");
+  const baselineDir = join(isolatedData, "issue-test");
+  const isolatedBook = join(baselineDir, "qa", "books", "10");
+  for (const dir of ["spells-dice-db-by-mo", "dice-intake", "chm-mapping", "dice-qa"]) {
+    mkdirSync(join(isolatedData, dir), { recursive: true });
+  }
+  writeFileSync(join(isolatedData, "spells-dice-db-by-mo", "Test.txt"), sourceBytes);
+  writeFileSync(join(isolatedData, "spells-dice-db-by-mo", "Other.txt"), otherBytes);
+  writeFileSync(join(isolatedData, "dice-intake", "publication-map.json"), JSON.stringify(mappings));
+  writeFileSync(join(isolatedData, "chm-mapping", "enName-aliases-global.json"), "{}");
+  for (const dir of ["dice-intake", "dice-qa"]) writeFileSync(join(isolatedData, dir, "candidates.jsonl"), "preserved sentinel");
+  const isolatedGit = (...options: string[]) => execFileSync("git", ["-C", isolatedData, ...options],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
+  isolatedGit("init"); isolatedGit("add", ".");
+  isolatedGit("-c", "user.name=Portable Test", "-c", "user.email=test@example.invalid", "commit", "-m", "current fixture");
+  const isolatedRevision = isolatedGit("rev-parse", "HEAD");
+  const common = ["--data-root", isolatedData, "--baseline-dir", baselineDir,
+    "--rules-db", rulesPath, "--content-db", contentPath];
+  const intakeScript = join(__dirname, "cli.ts");
+  const qaScript = join(__dirname, "qa.ts");
+  const runIsolated = (script: string, options: string[], cwd = resolve(__dirname, "../../..")) =>
+    execFileSync(process.execPath, ["--import", "tsx", script, ...common, ...options],
+      { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  const intakeOptions = ["--report-dir", join(baselineDir, "intake", "out")];
+  runIsolated(intakeScript, intakeOptions);
+  const isolatedCandidatesPath = join(baselineDir, "intake", "candidates.jsonl");
+  const isolatedBytes = readFileSync(isolatedCandidatesPath, "utf8");
+  const isolatedCandidates: Candidate[] = isolatedBytes.trim().split("\n").map(line => JSON.parse(line));
+  assert.equal(isolatedCandidates.length, 2);
+  assert(isolatedCandidates.every(row => row.sourceKey.startsWith(isolatedRevision + ":")));
+  const isolatedReviews = isolatedCandidates.map(row => ({ ...allReviews.find(review => review.targetId === row.targetId)!,
+    sourceKey: row.sourceKey, mappingRevision: isolatedRevision }));
+  mkdirSync(isolatedBook, { recursive: true });
+  saveRows(join(isolatedBook, "decisions.jsonl"), isolatedReviews.filter(row => row.rulebookId === 10));
+  saveRows(join(isolatedBook, "full-body-audit.jsonl"), [{ ...bookAudits[0],
+    sourceKey: isolatedCandidates.find(row => row.rulebookId === 10)!.sourceKey }]);
+  const qaOptions = ["--rulebook-id", "10", "--report-dir", join(isolatedBook, "out")];
+  runIsolated(qaScript, qaOptions);
+  const isolatedCoverage = JSON.parse(readFileSync(join(isolatedBook, "out", "coverage.json"), "utf8"));
+  assert.deepEqual(isolatedCoverage.sourceCoverage, { files: 2, candidateOccurrences: 2 });
+  assert.equal(isolatedCoverage.existingTargets, 2, "whole book includes a target without dice input");
+  // Absolute paths behave identically from root and package cwd.
+  runIsolated(intakeScript, intakeOptions, resolve(__dirname, "../.."));
+  runIsolated(qaScript, qaOptions, resolve(__dirname, "../.."));
+  execFileSync(process.execPath, ["--import", "tsx", qaScript,
+    "--baseline-dir", baselineDir, "--rules-db", rulesPath, "--content-db", contentPath, ...qaOptions],
+  { cwd: resolve(__dirname, "../.."), env: { ...process.env, DATA_REPO_PATH: isolatedData },
+    encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  assert.equal(readFileSync(isolatedCandidatesPath, "utf8"), isolatedBytes);
+  for (const dir of ["dice-intake", "dice-qa"]) assert.equal(readFileSync(join(isolatedData, dir, "candidates.jsonl"), "utf8"), "preserved sentinel");
+  assert.throws(() => runIsolated(qaScript, qaOptions.concat("--restored-sc-baseline", "fe089990e2a5eeac69c92e068ca695f10c42ec58")), /cannot use the fixed restored SC/);
+  assert.throws(() => runIsolated(qaScript, ["--report-dir", join(isolatedBook, "out")]), /requires --rulebook-id/);
+  saveRows(isolatedCandidatesPath, isolatedCandidates.map(row => ({ ...row, sourceKey: row.sourceKey.replace(isolatedRevision, "9847e70236cd4bcd841347ed1b42b2f478826268") })));
+  assert.throws(() => runIsolated(qaScript, qaOptions), /stale source candidate/);
+  saveRows(isolatedCandidatesPath, [isolatedCandidates[0], isolatedCandidates[0]]);
+  assert.throws(() => runIsolated(qaScript, qaOptions), /missing entire candidate file or occurrence/);
+  saveRows(isolatedCandidatesPath, isolatedCandidates.slice(0, 1));
+  assert.throws(() => runIsolated(qaScript, qaOptions), /missing entire candidate file or occurrence/);
+  saveRows(isolatedCandidatesPath, isolatedCandidates);
+  saveRows(join(isolatedBook, "decisions.jsonl"), isolatedReviews.filter(row => row.rulebookId === 20));
+  assert.throws(() => runIsolated(qaScript, qaOptions), /unknown review source key/);
+  saveRows(join(isolatedBook, "decisions.jsonl"), isolatedReviews.filter(row => row.rulebookId === 10));
+  for (const badOutput of [join(baselineDir, "intake"), join(baselineDir, "qa", "books", "20"), join(isolatedData, "dice-qa")]) {
+    assert.throws(() => runIsolated(qaScript, ["--rulebook-id", "10", "--report-dir", badOutput]), /owned directory/);
+  }
+  for (const badBaseline of [isolatedData, join(isolatedData, "dice-intake"), join(isolatedData, "dice-qa", "books", "10"),
+    join(isolatedData, "spells-dice-db-by-mo"), join(fixtureRoot, "outside-baseline")]) {
+    assert.throws(() => execFileSync(process.execPath, ["--import", "tsx", intakeScript, "--data-root", isolatedData,
+      "--baseline-dir", badBaseline, "--rules-db", rulesPath, "--content-db", contentPath, ...intakeOptions],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }), /separate directory|overlaps/);
+  }
+  assert.throws(() => runIsolated(intakeScript, ["--report-dir", join(isolatedData, "spells-dice-db-by-mo")]), /owned directory/);
+  assert.throws(() => runIsolated(intakeScript, ["--report-dir", isolatedCandidatesPath]), /collides with a ledger output/);
+  // An external output cannot overwrite a database or any explicit review input.
+  const collisionDir = join(fixtureRoot, "collision"); mkdirSync(collisionDir);
+  const collisionInput = join(collisionDir, "coverage.json"); saveRows(collisionInput, isolatedReviews.filter(row => row.rulebookId === 10));
+  assert.throws(() => runIsolated(qaScript, ["--rulebook-id", "10", "--reviews", collisionInput, "--report-dir", collisionDir]), /source\/output collision/);
+  const baselineAlias = join(isolatedData, "baseline-alias");
+  symlinkSync(baselineDir, baselineAlias, process.platform === "win32" ? "junction" : "dir");
+  assert.throws(() => execFileSync(process.execPath, ["--import", "tsx", intakeScript,
+    "--baseline-dir", baselineAlias, ...common, ...intakeOptions],
+  { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }), /filesystem alias/);
+  assert.throws(() => runIsolated(intakeScript, ["--report-dir", baselineAlias]), /filesystem alias/);
+  const qaAlias = join(fixtureRoot, "qa-alias");
+  symlinkSync(isolatedBook, qaAlias, process.platform === "win32" ? "junction" : "dir");
+  assert.throws(() => runIsolated(qaScript, ["--rulebook-id", "10", "--report-dir", qaAlias]), /filesystem alias/);
+  const sourceAlias = join(isolatedData, "spells-dice-db-by-mo", "Alias.txt");
+  symlinkSync(join(isolatedData, "spells-dice-db-by-mo"), sourceAlias, process.platform === "win32" ? "junction" : "dir");
+  assert.throws(() => runIsolated(qaScript, qaOptions), /filesystem alias/);
+  rmSync(sourceAlias, { recursive: true, force: true });
+  // Map changes cannot be hidden by regenerating a ledger while retaining old reviews.
+  writeFileSync(join(isolatedData, "dice-intake", "publication-map.json"), JSON.stringify(mappings.map(row => ({ ...row, basis: "new binding" }))));
+  isolatedGit("add", "dice-intake/publication-map.json");
+  isolatedGit("-c", "user.name=Portable Test", "-c", "user.email=test@example.invalid", "commit", "-m", "changed map");
+  assert.throws(() => runIsolated(qaScript, qaOptions), /stale intake candidate/);
+  runIsolated(intakeScript, intakeOptions);
+  assert.throws(() => runIsolated(qaScript, qaOptions), /stale publication map/);
+  writeFileSync(join(isolatedData, "dice-intake", "publication-map.json"), JSON.stringify(mappings));
+  isolatedGit("add", "dice-intake/publication-map.json");
+  isolatedGit("-c", "user.name=Portable Test", "-c", "user.email=test@example.invalid", "commit", "-m", "restore map content");
+  // Restore review mapping IDs after deliberate fixture changes, without copying statuses to a source namespace.
+  const currentMapRevision = isolatedGit("log", "-1", "--format=%H", "--", "dice-intake/publication-map.json");
+  saveRows(join(isolatedBook, "decisions.jsonl"), isolatedReviews.filter(row => row.rulebookId === 10).map(row => ({ ...row, mappingRevision: currentMapRevision })));
+  runIsolated(intakeScript, intakeOptions);
+  // Committed new text still invalidates the old inventory; a new intake is required.
+  writeFileSync(join(isolatedData, "spells-dice-db-by-mo", "Other.txt"), otherBytes.toString("utf8").replace("正文", "变文"));
+  assert.throws(() => runIsolated(intakeScript, intakeOptions), /uncommitted changes/);
+  assert.throws(() => runIsolated(qaScript, qaOptions), /source or publication map is dirty/);
+  isolatedGit("add", "spells-dice-db-by-mo/Other.txt");
+  isolatedGit("-c", "user.name=Portable Test", "-c", "user.email=test@example.invalid", "commit", "-m", "changed source");
+  assert.throws(() => runIsolated(qaScript, qaOptions), /stale source candidate/);
+  runIsolated(intakeScript, intakeOptions);
+  assert.throws(() => runIsolated(qaScript, qaOptions), /unknown review source key/);
   assert.throws(() => run("--restored-sc-baseline", "fe089990e2a5eeac69c92e068ca695f10c42ec58"),
     /fixed baseline and complete SC QA/);
   assert.throws(() => run("--restored-sc-baseline", revision), /fixed baseline and complete SC QA/);
