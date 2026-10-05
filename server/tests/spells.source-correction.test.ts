@@ -22,6 +22,32 @@ function map(v: ReturnType<typeof fixture>) {
   return mapFieldProvenance(JSON.stringify(v.envelope), "body", v.row, {id: 3930, rulebookId: 86});
 }
 describe("bounded source correction provenance", () => {
+  it("maps the three accepted Chinese clarifications without leaking private evidence", () => {
+    for (const id of [3901,4465,4564]) {
+      const value = fixture();
+      value.envelope.targetId = value.envelope.input.targetId = value.envelope.sourceCorrection.targetId = value.envelope.sourceCorrection.prior.targetId = value.row.spellId = id;
+      const correction = value.envelope.sourceCorrection;
+      correction.revision = "cb2f661ef8935ecbf6bd09bae106e067493d5c67";
+      correction.acceptanceRevision = "10c65744f9b525db0c48115eea6ccefd96f4b4cd";
+      correction.path = "dice-qa/books/86/issue-476/main-gate-source-review/selected-candidates.json";
+      correction.prior.text = "合".repeat(400) + "\n\n保留说明";
+      const chars = Array.from(correction.prior.text);
+      if (id === 4465) chars.splice(257, 0, ..."新".repeat(8));
+      else if (id === 4564) chars.splice(314, 0, ..."新".repeat(7));
+      else {chars.splice(260, 7, "新", "新"); chars.splice(221, 0, ..."新".repeat(8));}
+      value.row.descriptionText = chars.join("");
+      const run = (v = value) => mapFieldProvenance(JSON.stringify(v.envelope), "body", v.row, {id, rulebookId: 86});
+      expect(run().review?.acceptedRevision).toBe(correction.revision);
+      for (const mutate of [
+        (v: typeof value) => {v.row.descriptionText += "forged";},
+        (v: typeof value) => {v.envelope.sourceCorrection.acceptanceRevision = final;},
+        (v: typeof value) => {v.envelope.sourceCorrection.path += "forged";},
+        (v: typeof value) => {v.envelope.sourceCorrection.prior.review.originalEntry.englishDisposition = "forged";},
+        (v: typeof value) => {v.row.descriptionText = v.envelope.sourceCorrection.prior.text;},
+      ]) {const wrong = structuredClone(value); mutate(wrong); expect(() => run(wrong)).toThrow();}
+      for (const secret of ["dice-qa/", "sourceCorrection", "prior", "sourcePages", "保留说明"]) expect(JSON.stringify(run())).not.toContain(secret);
+    }
+  });
   it("maps only the two fixed source-fidelity body corrections", () => {
     const candidate = "996a41671f7cb61e9f7fa6cce48a912695694c7c";
     for (const id of [4033, 4349]) {
