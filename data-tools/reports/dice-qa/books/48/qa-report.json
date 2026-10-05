@@ -1,0 +1,258 @@
+{
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/156",
+  "version": "v1.4",
+  "rulebookId": 48,
+  "scope": "Complete34-target Song and Silence DB-English QA",
+  "authority": "Matched database English names, complete descriptions and locked normalized mechanics; no original-book/PDF verification",
+  "reviewer": {
+    "threadId": "01a10dcc-f9e6-7231-98e9-82d482211c4e",
+    "model": "gpt-6.1-sol",
+    "effort": "high",
+    "verification": "Read-only local rollout turn_context metadata; private reviewer-metadata.json",
+    "humanReview": false
+  },
+  "inputs": {
+    "publicBase": "530fab933365f737c739534a54260841ab8aca2a",
+    "publicQaToolBlob": "168d1e54c9065111835e69ae3f3fb779b47b708f",
+    "privatePreparedRevision": "6d28f9391273979a35a6bcc86971f0aac5b9f2c8",
+    "privateEvidenceRevision": "32ceec070294235a22fab4b00f85246145d846ed",
+    "sourceRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+    "mappingRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+    "baselineDirectory": "dice-baselines/issue-520",
+    "targetInputPath": "dice-baselines/issue-520/qa/books/48/target-inputs.jsonl",
+    "targetIds": [
+      3296,
+      3297,
+      3298,
+      3299,
+      3300,
+      3301,
+      3302,
+      3303,
+      3304,
+      3305,
+      3306,
+      3307,
+      3308,
+      3309,
+      3310,
+      3311,
+      3312,
+      3313,
+      3314,
+      3315,
+      3316,
+      3317,
+      3318,
+      3319,
+      3320,
+      3321,
+      3322,
+      3323,
+      3324,
+      3325,
+      3326,
+      3327,
+      3328,
+      3530
+    ],
+    "englishBodyCharacters": 21170,
+    "candidateBodyCharacters": 9899,
+    "allSourceFilesRevalidated": 105,
+    "allSourceOccurrencesRevalidated": 5606,
+    "ownedOccurrences": 34,
+    "matchedTargets": 33,
+    "unmatchedOccurrences": 1,
+    "targetsWithoutMatchedCandidates": [
+      3313
+    ],
+    "duplicates": 0,
+    "unparsedOwnedBoundaries": 0
+  },
+  "dispositions": {
+    "reviewedTargets": 34,
+    "reviewedNames": 34,
+    "completeBodiesReviewed": 34,
+    "alignedSegments": 195,
+    "translatedSegments": 194,
+    "literalEnglishFallbackSegments": 1,
+    "formalProposedTargets": 33,
+    "formalProposedNames": 33,
+    "formalProposedBodies": 33,
+    "fullyChineseFormalBodies": 32,
+    "mixedFormalBodies": 1,
+    "unactivatedFullyChineseTargets": 1,
+    "unmatchedOccurrencesReviewed": 1,
+    "wholeFieldFallbacks": 2,
+    "pendingFields": 0,
+    "pendingFullBodyAudits": 0,
+    "mainGateAcceptance": "pending",
+    "interpretation": "All34 targets and all34 owned occurrences were reviewed. Formal accepted means validated proposal, not acceptance.33 matched names/bodies proposed;32 bodies fully Chinese and one retains an exact English sentence. Target3313 has a complete reviewed unactivated translation and two unchanged English fallback fields; no forced mapping acceptance."
+  },
+  "unresolved": [
+    {
+      "targetId": 3313,
+      "kind": "DB name encoding and unmatched candidate identity",
+      "disposition": "Complete reviewed Chinese name/body saved separately but unactivated. Current reconciliation/mapping and both English fallback fields unchanged. Raw bytes establish accented name characters, not missing mechanical words."
+    },
+    {
+      "targetId": 3324,
+      "kind": "Malformed DB-English numeric magnitude",
+      "disposition": "One exact English sentence retained in mixed proposed body; four other body segments translated. Candidate-only number does not establish a correction."
+    },
+    {
+      "targetId": 3308,
+      "kind": "DB body and normalized saving-throw conflict",
+      "disposition": "Translate determinate DB prose; retain canonical mechanics; unresolved source conflict recorded."
+    },
+    {
+      "targetId": 3319,
+      "kind": "DB body and normalized saving-throw conflict",
+      "disposition": "Translate determinate DB prose; retain canonical mechanics; unresolved source conflict recorded."
+    }
+  ],
+  "presentation": {
+    "body": "Natural paragraphs and one four-item benefit list",
+    "candidateHeaders": "Compared to locked mechanics, then omitted from body to avoid duplicate stat blocks",
+    "tables": "N/A: no tables in the34DB-English bodies",
+    "references": "Spell/book references retained without inventing unavailable referenced content"
+  },
+  "checks": {
+    "reviewedTargets": 34,
+    "reviewedNames": 34,
+    "completeBodiesReviewed": 34,
+    "alignedSegments": 195,
+    "translatedSegments": 194,
+    "literalEnglishFallbackSegments": 1,
+    "formalProposedTargets": 33,
+    "formalProposedNames": 33,
+    "formalProposedBodies": 33,
+    "fullyChineseFormalBodies": 32,
+    "mixedFormalBodies": 1,
+    "unactivatedFullyChineseTargets": 1,
+    "unmatchedOccurrencesReviewed": 1,
+    "wholeFieldFallbacks": 2,
+    "pendingFields": 0,
+    "pendingFullBodyAudits": 0,
+    "sourceLockedCandidateInputsUnchanged": true,
+    "exactProposalAfterBindings": true,
+    "htmlBalanced": true,
+    "benefitListItems": 4,
+    "visiblePlaceholderFindings": 0,
+    "unexpectedLatinResidueFindings": 0,
+    "repeatedTranslationGroups": [
+      {
+        "occurrences": 13,
+        "targets": [
+          3297,
+          3298,
+          3301,
+          3303,
+          3304,
+          3305,
+          3310,
+          3311,
+          3312,
+          3313,
+          3317,
+          3319,
+          3320
+        ],
+        "sameEnglishSource": true,
+        "longTranslation": false
+      },
+      {
+        "occurrences": 2,
+        "targets": [
+          3314,
+          3326
+        ],
+        "sameEnglishSource": true,
+        "longTranslation": false
+      }
+    ],
+    "templatePollutionGroups": 0,
+    "tokenParity": "N/A: no game/control placeholders",
+    "byteBudget": "N/A: no hard byte budget",
+    "tables": "N/A: no tables in the34DB English bodies",
+    "all34CurrentDbEnglishNamesBodiesAndChineseFallbacksMatch": true,
+    "all34MechanicsBound": true,
+    "rawEncodingEvidenceMatch": true,
+    "privateIndexBinaryDiffUnchanged": true,
+    "unrelatedPrivateStagedPaths": 39,
+    "unrelatedPrivateUntrackedPathsPreserved": 1426,
+    "operatorDbWrites": false,
+    "appStateAccess": false,
+    "canonicalEnglishMechanicsOrSummariesChanged": false,
+    "pdfReads": 0,
+    "paidApiCalls": 0,
+    "dbCopies": 0
+  },
+  "resources": {
+    "budget": {
+      "committedPrivateEvidenceUpperBoundBytes": 5242880,
+      "validationUpperBoundMilliseconds": 60000,
+      "validationPeakWorkingSetUpperBoundBytes": 536870912,
+      "concurrency": 1
+    },
+    "measured": {
+      "formalCommandWallMilliseconds": 801,
+      "formalCommandPeakWorkingSetBytes": 280113152,
+      "formalExitCode": 0,
+      "committedPrivateEvidenceBytes": 826334,
+      "method": "One Node process; OS PeakWorkingSet64 polled every20ms",
+      "pdfReads": 0,
+      "paidApiCalls": 0,
+      "dbCopies": 0
+    },
+    "temporaryReceiptException": {
+      "initialUnrelatedBinaryIndexReceiptBytes": 18559304,
+      "exceededInitialStorageEstimate": true,
+      "resolution": "Exact before/after comparison completed; temporary binary receipt compressed and then removed. Durable preservation result uses existing Git index metadata. Committed book evidence remains below5MiB."
+    }
+  },
+  "privateEvidencePaths": [
+    "README.md",
+    "target-inputs.jsonl",
+    "candidate-inputs.json",
+    "reviewer-metadata.json",
+    "semantic-review.json",
+    "clause-review.jsonl",
+    "decisions.jsonl",
+    "corrections.jsonl",
+    "full-body-audit.jsonl",
+    "unactivated-proposals.jsonl",
+    "encoding-gap.json",
+    "unresolved.jsonl",
+    "out/accepted.jsonl",
+    "out/fallback.jsonl",
+    "out/coverage.json",
+    "out/qa-checks.json",
+    "out/resources.json",
+    "preservation.json",
+    "audit.py"
+  ],
+  "privateEvidenceRoot": "dice-baselines/issue-520/qa/books/48",
+  "reproduce": {
+    "workingDirectory": "Compatible public checkout root with private data and operator DB paths configured",
+    "formalCommand": "npm run -w data-tools dice:qa -- --data-root <absolute-private-data-root> --baseline-dir <absolute-private-data-root>/dice-baselines/issue-520 --rules-db <absolute-operator-db-root>/rules-clean.sqlite --content-db <absolute-operator-db-root>/content.sqlite --rulebook-id 48 --report-dir <absolute-private-data-root>/dice-baselines/issue-520/qa/books/48/out",
+    "semanticEvidenceCheck": "python -X utf8 <absolute-private-data-root>/dice-baselines/issue-520/qa/books/48/audit.py",
+    "portableCommand": "npm run -w data-tools dice:qa:test",
+    "formalResult": "passed; validated-proposal; no--check-incomplete",
+    "portableResult": "passed; dice QA portable tests passed",
+    "mergeGate": "Full remote CI portable validation on the exact PR head"
+  },
+  "boundaries": {
+    "operatorDbWrites": false,
+    "appStateAccess": false,
+    "canonicalEnglishChanged": false,
+    "normalizedMechanicsChanged": false,
+    "summariesChanged": false,
+    "pdfVerification": false,
+    "privatePush": false,
+    "otherBookEvidenceChanged": false,
+    "consumerRehearsal": false,
+    "deployment": false,
+    "scheduling": "All QA precedes unified separately authorized migration/consumption rehearsal. Paused#529 is not a prerequisite. No self-merge or issue closeout."
+  }
+}
