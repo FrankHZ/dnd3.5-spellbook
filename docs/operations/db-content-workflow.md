@@ -81,8 +81,9 @@ migrate/write operator DBs. Full build/search/consumer integration remains separ
 The selected final candidate uses the maintained
 [final overlay and migrated-state validator](./sc-final-source-binding.md#final-overlay-and-migrated-state-validation)
 after genuine full normalized generation/import. It preserves generation
-provenance and records accepted name/body authority while summaries and extra
-relationship QA remain pending. Its validation needs durable final inputs,
+provenance and records accepted name/body and summary authority independently.
+Extra relationship QA remains separately pending under #354; accepted text and
+summaries do not certify those relationships. Its validation needs durable final inputs,
 not removable rehearsal DB snapshots; operator writes still require the owning
 migration's authorization and acceptance.
 

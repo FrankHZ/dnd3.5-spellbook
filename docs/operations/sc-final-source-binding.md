@@ -270,6 +270,8 @@ timestamp is preserved; only its existing importer-owned update timestamp can
 change. Faults roll back summary rows and metadata together; valid repeat writes
 zero rows. Afterward, ordinary final validation/helper refreshes use
 `--accepted-summaries --accepted-domain-summaries` with all current source flags.
+This ordinary path first verifies the complete annotated after-state; it cannot
+manufacture acceptance, repair other fields or bypass the dedicated upgrade.
 Main-gate rebuilds FTS and verifies real API/HTML consumers against this same
 stored state before operator/production closeout.
 

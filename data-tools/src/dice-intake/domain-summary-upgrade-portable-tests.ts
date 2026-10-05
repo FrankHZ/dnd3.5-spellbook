@@ -107,6 +107,7 @@ try {
   mutateMeta(m=>m.summaryQa.acceptedRevision='f'.repeat(40));
   mutateMeta(m=>{m.summaryQa.acceptedRevision=domainScSummaryRevision;m.summaryQa.candidateRevision=domainScSummaryCandidate;m.summaryQa.path=domainScSummaryPath;});
   mutateMeta(m=>delete m.readerNoteAddendum);
+  mutateMeta(m=>{delete m.summaryQa;m.semanticQa.summaries='pending';});
   const wrong=structuredClone(next);wrong[0]!.summaryText='未接受的修正';assert.throws(()=>upgrade('apply',()=>{},previous,wrong));
   const unlisted=structuredClone(next);unlisted[1]!.summaryText='未授权改动';assert.throws(()=>upgrade('apply',()=>{},previous,unlisted));
   assert.throws(()=>upgrade('apply',()=>{},previous,[...next,next[0]!]));
@@ -115,6 +116,13 @@ try {
   db.prepare('DELETE FROM I18nSpellSummaryText WHERE id=?').run(partial.id);
   const applied=upgrade('apply');assert.equal(applied.inserted,29);assert.equal(applied.updated,1);assert.equal(applied.deleted,0);
   const after=snapshot();assert.equal(upgrade().state,'after');assert.equal(upgrade('apply').changed,false);assert.deepEqual(snapshot(),after,'repeat wrote timestamps');
+  const afterMeta=JSON.parse(String(db.prepare('SELECT buildMetaJson FROM RulesContentBuild').pluck().get()));
+  const unannotated=structuredClone(afterMeta);delete unannotated.overlays.scFinalNameBody.summaryQa;
+  unannotated.overlays.scFinalNameBody.semanticQa.summaries='pending';
+  db.prepare('UPDATE RulesContentBuild SET buildMetaJson=?').run(JSON.stringify(unannotated));
+  const unknownAfter=snapshot();assert.throws(()=>upgrade(),/Missing accepted annotated summary predecessor/);
+  assert.deepEqual(snapshot(),unknownAfter,'generic after preflight cannot manufacture acceptance');
+  db.prepare('UPDATE RulesContentBuild SET buildMetaJson=?').run(JSON.stringify(afterMeta));
   const metadata=JSON.parse(String(db.prepare('SELECT buildMetaJson FROM RulesContentBuild').pluck().get()));
   const expected=JSON.parse(plan.buildMetaJson);
   Object.assign(expected.overlays.scFinalNameBody.summaryQa,{acceptedRevision:domainScSummaryRevision,candidateRevision:domainScSummaryCandidate,

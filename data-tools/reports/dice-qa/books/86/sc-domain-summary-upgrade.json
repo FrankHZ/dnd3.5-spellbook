@@ -30,6 +30,7 @@
     "correctionCreatedAtProtected": true,
     "sourceOverlaysAndBuildMetadataProtected": true,
     "genericAnnotatedPredecessorGuardRetained": true,
+    "genericDomainApplyRequiresExactAnnotatedAfter": true,
     "typecheckPassed": true,
     "operatorDbAccess": false,
     "sourceQaRerun": false,

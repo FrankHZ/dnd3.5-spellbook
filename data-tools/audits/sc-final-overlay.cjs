@@ -139,6 +139,17 @@ function main(argv) {
         wholeBookQaComplete: false, activation: false, ftsRefreshed: false}));
       return;
     }
+    if (domainSummaries) {
+      // Generic apply may only refresh an already exact domain after-state.
+      // It cannot create acceptance, repair fields, or bypass the dedicated
+      // summary transaction from an unannotated/partial predecessor.
+      const state = writer.finalSummaryUpgrade(db, auth.fields, auth.report, () => {
+        assert(fs.readFileSync(inputPath).equals(normalizedBytes), 'full normalized input changed');
+        return writer.verifyFullNormalized(db, generated, inputPath, collectCurrent());
+      }, summaryInputs.previous, summaryInputs.next, summaryInputs.requireCanonical,
+      'check', undefined, summaryInputs.correction);
+      assert.equal(state.state, 'after', 'use --upgrade-domain-summaries for the exact annotated predecessor');
+    }
     const full = writer.verifyFullNormalized(db, generated, inputPath, current);
     const plan = writer.planFinalOverlay(db, auth.fields, auth.report, full, value('helper-revision'), summaries,
       domainSummaries ? writer.domainScSummaryRevision : writer.finalScSummaryRevision,
