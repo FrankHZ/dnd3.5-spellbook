@@ -129,6 +129,9 @@ migration's authorization and acceptance.
      The specific accepted SC directory promotion uses the
      [source-bound final summary upgrade](./sc-final-source-binding.md#upgrade-an-already-accepted-annotated-summary-state)
      instead; this authenticated exception does not relax the generic step.
+     The [accepted domain-summary transition](./sc-final-source-binding.md#upgrade-accepted-domain-summaries)
+     additionally binds its one reviewed correction and requires the separately
+     promoted canonical inventory before apply or validation.
    - Require canonical publication metadata for the full artifact; use the
      explicit audit-only generator only for limited, non-importable output.
    - Run content generate/import, then dry-run and rebuild the derived search

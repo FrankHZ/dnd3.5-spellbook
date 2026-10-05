@@ -228,6 +228,51 @@ data/consumer proof and output from this same completed artifact; its fixed olde
 handoff remains historical evidence. Source/structure checks do not certify HTML
 visual output or bypass the HTML no-workaround boundary.
 
+### Upgrade accepted domain summaries
+
+The domain transition uses the same maintained final writer and transaction.
+Append `--accepted-summaries --accepted-domain-summaries
+--upgrade-domain-summaries` to the explicit-root command, retaining every
+accepted source flag needed to reproduce the actual current bodies. Complete
+source transitions before upgrading summaries; combining a source upgrade with
+this summary transition rejects. The existing directory-summary upgrade and
+its precise predecessor remain available independently.
+
+The default checks the exact accepted 6,837-row predecessor or complete
+6,866-row after-state. `--apply` inserts only the 29 accepted Chinese CHM
+summaries, corrects only the source-bound 4123 row, and updates summary acceptance
+metadata in one immediate transaction. `--validate` requires after-state.
+The internal SQL primitive receives an independently authenticated before/after
+correction pair; neither that pair nor arbitrary summaries are CLI projections.
+
+The authority is the actual source acceptance receipt
+`c7d21ef8a573217e54229809219c8fa323f66bab`, binding candidate
+`cd67b6039331313cf858c646593f1fe9ddde0adb` at
+`dice-qa/books/86/issue-500/summaries-final/summaries.proposed.jsonl`.
+Metadata records that receipt, candidate and candidate path explicitly; it does
+not substitute a receipt SHA for a canonical promotion commit. Authentication
+compares the entire candidate to frozen old canonical rows and the accepted
+decisions, including retained correction provenance. The old summary authority
+remains unchanged for predecessor source operations.
+
+Main-gate separately promotes the complete accepted candidate to
+`short-desc-normalized/summaries.generated.jsonl` after source transitions.
+Apply and validation require this real, clean, committed canonical file to equal
+the complete fixed candidate. Before checks can run while canonical is still
+the precise old inventory; partial, unrecognized or dirty canonical files reject.
+No command promotes canonical implicitly. Accepted inputs and canonical bytes
+are rechecked inside writes; helper drift, final-field changes, partial
+inventories and unknown annotations reject rather than being repaired.
+
+All other 6,836 summary rows and timestamps, every text/name/note/source overlay,
+normalized values, schema and build provenance remain exact. The 4123 creation
+timestamp is preserved; only its existing importer-owned update timestamp can
+change. Faults roll back summary rows and metadata together; valid repeat writes
+zero rows. Afterward, ordinary final validation/helper refreshes use
+`--accepted-summaries --accepted-domain-summaries` with all current source flags.
+Main-gate rebuilds FTS and verifies real API/HTML consumers against this same
+stored state before operator/production closeout.
+
 ### Upgrade the accepted Prismatic Ray English pair
 
 The exact [#434 source decision](https://github.com/FrankHZ/dnd3.5-spellbook/issues/434#issuecomment-5972281973)

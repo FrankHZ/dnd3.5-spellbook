@@ -9,14 +9,18 @@ const {createRequire, Module} = require('node:module');
 function main(argv) {
   const value = name => {const at = argv.indexOf('--' + name); assert(at >= 0 && argv[at + 1], 'missing --' + name); return argv[at + 1];};
   const allowed = new Set(['code-root', 'runtime-root', 'data-root', 'rules-db', 'content-db', 'normalized', 'rules-manifest',
-    'helper-revision', 'accepted-baseline', 'accepted-summaries', 'upgrade-summaries', 'accepted-english-title',
+    'helper-revision', 'accepted-baseline', 'accepted-summaries', 'upgrade-summaries', 'accepted-domain-summaries', 'upgrade-domain-summaries', 'accepted-english-title',
     'upgrade-english-title', 'accepted-source-punctuation', 'upgrade-source-punctuation', 'accepted-source-fidelity', 'upgrade-source-fidelity', 'accepted-source-pairs', 'upgrade-source-pairs', 'previous-normalized', 'apply', 'validate']);
   for (let i = 0; i < argv.length; i++) {
     assert(argv[i].startsWith('--') && allowed.has(argv[i].slice(2)), 'unknown argument: ' + argv[i]);
-    if (!['--apply', '--validate', '--accepted-source-punctuation', '--upgrade-source-punctuation', '--accepted-source-fidelity', '--upgrade-source-fidelity', '--accepted-summaries', '--upgrade-summaries', '--accepted-english-title', '--upgrade-english-title', '--accepted-source-pairs', '--upgrade-source-pairs'].includes(argv[i])) i++;
+    if (!['--apply', '--validate', '--accepted-domain-summaries', '--upgrade-domain-summaries', '--accepted-source-punctuation', '--upgrade-source-punctuation', '--accepted-source-fidelity', '--upgrade-source-fidelity', '--accepted-summaries', '--upgrade-summaries', '--accepted-english-title', '--upgrade-english-title', '--accepted-source-pairs', '--upgrade-source-pairs'].includes(argv[i])) i++;
   }
   assert(!(argv.includes('--apply') && argv.includes('--validate')), 'choose apply or validate');
   assert(!argv.includes('--upgrade-summaries') || argv.includes('--accepted-summaries'), 'upgrade requires accepted summaries');
+  const domainSummaries = argv.includes('--accepted-domain-summaries');
+  assert(!domainSummaries || argv.includes('--accepted-summaries'), 'domain summaries require accepted summaries');
+  assert(!argv.includes('--upgrade-domain-summaries') || domainSummaries, 'domain upgrade requires accepted domain summaries');
+  assert(!domainSummaries || !argv.includes('--upgrade-summaries'), 'choose one summary transition');
   assert(!argv.includes('--upgrade-english-title') || argv.includes('--accepted-english-title') && argv.includes('--accepted-summaries'),
     'English upgrade requires accepted pair and current summaries');
   assert(!argv.includes('--accepted-english-title') || argv.includes('--accepted-summaries'), 'English pair requires accepted summaries');
@@ -31,6 +35,7 @@ function main(argv) {
   assert(!argv.includes('--upgrade-source-punctuation') || argv.includes('--accepted-source-punctuation'), 'source punctuation upgrade requires accepted package');
   assert(!argv.includes('--accepted-source-punctuation') || !argv.includes('--upgrade-source-fidelity'), 'choose one source transition');
   const sourceUpgrade = argv.includes('--upgrade-english-title') || argv.includes('--upgrade-source-pairs') || argv.includes('--upgrade-source-fidelity') || argv.includes('--upgrade-source-punctuation');
+  assert(!domainSummaries || !sourceUpgrade, 'complete source transition before domain summaries');
   assert(sourceUpgrade === argv.includes('--previous-normalized'), 'previous normalized belongs to source upgrade');
   const code = fs.realpathSync(value('code-root')), runtime = fs.realpathSync(value('runtime-root'));
   assert.equal(code, fs.realpathSync(path.join(__dirname, '../..')), 'code root must match invoking checkout');
@@ -63,9 +68,11 @@ function main(argv) {
   const generated = load('rules-content/cli.ts').readGenerated(inputPath);
   let summaries, summaryInputs;
   if (argv.includes('--accepted-summaries')) {
-    summaryInputs = require('./sc-final-summaries.cjs').authenticateSummaries(data,
+    summaryInputs = require(domainSummaries ? './sc-domain-summaries.cjs' : './sc-final-summaries.cjs')[domainSummaries ? 'authenticateDomainSummaries' : 'authenticateSummaries'](data,
       load('short-desc/summary-row-schema.ts').readSummaryJsonlText);
     summaries = summaryInputs.next;
+    if (domainSummaries && (argv.includes('--apply') || argv.includes('--validate') || !argv.includes('--upgrade-domain-summaries')))
+      summaryInputs.requireCanonical();
   }
   const collectCurrent = () => artifact.collectRulesContentArtifactProvenance({parentRepoRoot: code, dataRepoRoot: data,
     rulesDbPath: rules, rulesManifestPath: manifest,
@@ -109,35 +116,43 @@ function main(argv) {
         wholeBookQaComplete: false, activation: false, ftsRefreshed: false}));
       return;
     }
-    if (argv.includes('--upgrade-summaries')) {
+    if (argv.includes('--upgrade-summaries') || argv.includes('--upgrade-domain-summaries')) {
       const verifyFull = () => {
         assert(fs.readFileSync(inputPath).equals(normalizedBytes), 'full normalized input changed during upgrade');
         return writer.verifyFullNormalized(db, generated, inputPath, collectCurrent());
       };
       const requireInputs = () => {
         summaryInputs.requireInputs();
+        if (domainSummaries && (apply || validate)) summaryInputs.requireCanonical();
         assert.equal(execFileSync('git', ['-C', code, 'rev-parse', 'HEAD'], {encoding: 'utf8'}).trim(), value('helper-revision'));
         assert.equal(execFileSync('git', ['-C', code, 'status', '--porcelain', '--', 'data-tools/audits',
           'data-tools/src/dice-intake', 'data-tools/src/short-desc', 'data-tools/src/rules-content',
           'server/db/content/migrations'], {encoding: 'utf8'}).trim(), '', 'dirty final upgrade helpers');
       };
       const upgrade = writer.finalSummaryUpgrade(db, auth.fields, auth.report, verifyFull,
-        summaryInputs.previous, summaryInputs.next, requireInputs, apply ? 'apply' : 'check');
+        summaryInputs.previous, summaryInputs.next, requireInputs, apply ? 'apply' : 'check', undefined,
+        domainSummaries ? summaryInputs.correction : undefined);
+      if (domainSummaries && upgrade.state === 'after') summaryInputs.requireCanonical();
       if (validate) assert.equal(upgrade.state, 'after', 'summary upgrade has not been applied');
       console.log(JSON.stringify({mode: apply ? 'apply' : validate ? 'validate' : 'dry-run', ...upgrade,
-        helperRevision: value('helper-revision'), acceptedSummaryRevision: writer.finalScSummaryRevision,
+        helperRevision: value('helper-revision'), acceptedSummaryRevision: domainSummaries ? writer.domainScSummaryRevision : writer.finalScSummaryRevision,
         wholeBookQaComplete: false, activation: false, ftsRefreshed: false}));
       return;
     }
     const full = writer.verifyFullNormalized(db, generated, inputPath, current);
-    const plan = writer.planFinalOverlay(db, auth.fields, auth.report, full, value('helper-revision'), summaries);
-    if (apply) writer.applyFinalOverlay(db, plan, () => writer.verifyFullNormalized(db, generated, inputPath, current));
+    const plan = writer.planFinalOverlay(db, auth.fields, auth.report, full, value('helper-revision'), summaries,
+      domainSummaries ? writer.domainScSummaryRevision : writer.finalScSummaryRevision,
+      domainSummaries ? writer.domainScSummaryCandidate : writer.finalScSummaryCandidate);
+    if (apply) writer.applyFinalOverlay(db, plan, () => {
+      writer.verifyFullNormalized(db, generated, inputPath, current);
+      if (domainSummaries) summaryInputs.requireCanonical();
+    });
     if (validate) writer.validateFinalOverlay(db, plan);
     const {rows: _rows, buildMetaJson: _meta, acceptedSummaries: _summaries, ...report} = plan;
     console.log(JSON.stringify({mode: apply ? 'apply' : validate ? 'validate' : 'dry-run',
       acceptedRevision: writer.finalScRevision, helperRevision: value('helper-revision'), ...report,
       readerNoteRevision: writer.finalScNoteRevision,
-      acceptedSummaryRevision: summaries ? writer.finalScSummaryRevision : null,
+      acceptedSummaryRevision: summaries ? (domainSummaries ? writer.domainScSummaryRevision : writer.finalScSummaryRevision) : null,
       wholeBookQaComplete: false, activation: false, ftsRefreshed: false}));
   } finally {db.close();}
 }
