@@ -61,7 +61,14 @@ text (including whitespace), accepted Chinese summaries, structures and links ar
 checked in a readonly memory view. No persistent/operator/stable/app-state DB is
 opened, copied or written. It is a display preview, not full source authentication
 or whole-book acceptance. Preview paths and evidence belong to the owning issue/task,
-not a parallel repository status ledger.
+not a parallel repository status ledger. Complete-domain consumer checks cover
+mixed-book online/local links, verified-book daggers, complete 1–9 levels,
+planar choices, single-row slash alternatives with individual summaries,
+star footnotes, unknown M/F/X omission, source-only bindings, escaped text,
+source-evidence privacy and pre-output rejection of stale owners, spell/relationship
+bindings and forged links. Existing spell bodies and class rows remain intact.
+The fixed accepted #507 reader preserves its original proposal status rather
+than treating that status as a separate acceptance decision.
 
 Full 1,001-entry display replay remains paused until the user confirms the small
 slice. Exact-head remote portable CI is the code gate, independently of visual

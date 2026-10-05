@@ -12,6 +12,7 @@ import { listIdentity, type ListIdentity } from "../spell-list-markers/markers";
 import { selectProcessedMembershipMarkers, type MachineMarker } from "../spell-list-markers/automatic";
 import { readPrintedMarkerRecords } from "../spell-list-markers/storage";
 import type { DomainPower, DomainPowers } from "./domain-powers";
+import type { CompleteDomainList, CompleteDomainLists } from "./domain-lists";
 
 type Spell = {
   id: string; legacySpellId: number; canonicalName: string; sourceRulebookId: number;
@@ -114,6 +115,7 @@ const directoryNavigation = (introduction: boolean) => `<p class="navigation">${
 const preview = '<p class="notice">中文内容预览，自然排版待视觉验收。</p>';
 const membershipNotice = '<p class="notice">职业目录保留当前归属与附注；部分外部归属的原书核对仍待完成，目录不构成来源 QA 通过。</p>';
 const domainNotice = '<p class="notice">本书收录的领域法术：仅列本书正文范围内的条目，并非原书完整领域法表。</p>';
+const completeDomainNotice = '<p class="notice">† 表示 SC 收录的法术；其他法术可在线查看。</p>';
 const style = `body { margin: 2em; color: #222; background: #fff; font-family: "Microsoft YaHei", "SimSun", serif; line-height: 1.65; }
 #content { max-width: 62em; margin: 0; } h1 { font-size: 1.7em; } h2 { border-bottom: 1px solid #bbb; }
 a { color: #164f91; } .notice { padding: .6em; border: 1px solid #aaa; background: #f5f5f5; }
@@ -123,6 +125,7 @@ a { color: #164f91; } .notice { padding: .6em; border: 1px solid #aaa; backgroun
 .spell-metadata { font-size: .72em; font-weight: normal; color: #555; }
 .website-link { font-size: .85em; margin-left: .35em; text-decoration: none; }
 .component-labels { font-size: .75em; }
+.domain-online-label { font-size: .8em; } .domain-footnotes { font-size: .9em; }
 .membership-note { display: block; } .spell-body li p, .spell-body td p, .spell-body th p { margin-bottom: .5em; }
 .spell-body ul.pdf-typography-marked-list { list-style: none; }
 .spell-body ul.pdf-typography-marked-list ul { list-style-type: disc; }
@@ -139,6 +142,94 @@ pre, .plain { white-space: pre-wrap; word-wrap: break-word; font-family: inherit
 table { border-collapse: collapse; }
 th, td { border: 1px solid #999; padding: .3em .7em; }
 .navigation { font-size: .95em; } li { margin: .2em 0; }\n`;
+
+function selectCompleteDomainLists(content: CompleteDomainLists | undefined, groups: Map<number, ListGroup>,
+  spells: Map<number, Spell>, destinations: Map<number, string>) {
+  const selected = new Map<number, CompleteDomainList>();
+  if (content === undefined) return selected;
+  if (!content || content.schemaVersion !== 1 || content.rulebookId !== 86 || content.language !== "zh"
+    || content.reviewStatus !== "source-reviewed-proposal-awaiting-main-gate"
+    || !Array.isArray(content.domains)) throw new Error("Invalid SC complete domain-list content");
+  const owners = new Map<number, CompleteDomainList>();
+  for (const domain of content.domains) {
+    if (!domain || !Number.isSafeInteger(domain.ownerLegacyId) || domain.ownerLegacyId <= 0
+      || domain.ownerLegacyId === 28 || owners.has(domain.ownerLegacyId)) throw new Error("Invalid/duplicate complete domain-list owner");
+    owners.set(domain.ownerLegacyId, domain);
+  }
+  const sourceKeys = new Set<string>();
+  for (const [owner, group] of groups) {
+    const domain = owners.get(owner);
+    if (!domain || domain.ownerName !== group.name || !present(domain.nameZh)
+      || typeof domain.planar !== "boolean" || domain.levelChoiceCount !== 1
+      || !Array.isArray(domain.occurrences) || !Array.isArray(domain.footnotes)) throw new Error(`Missing/stale complete domain-list owner ${owner}`);
+    const symbols = new Set<string>();
+    for (const note of domain.footnotes) {
+      if (!note || !present(note.symbol) || symbols.has(note.symbol) || !present(note.text)) throw new Error("Invalid domain footnote");
+      symbols.add(note.symbol);
+    }
+    const covered = new Set<string>();
+    for (const row of domain.occurrences) {
+      if (!row || !present(row.sourceKey) || sourceKeys.has(row.sourceKey)
+        || !Number.isInteger(row.level) || row.level < 1 || row.level > 9
+        || row.choiceGroup !== (domain.planar ? `domain:${owner}:level:${row.level}` : null)
+        || ![null, "alignment"].includes(row.alternativePolicy) || !Array.isArray(row.bindings)
+        || row.bindings.length !== (row.alternativePolicy === "alignment" ? 2 : 1) || !present(row.summaryText)
+        || !(row.printedMarkers === null || /^(?:M?F?X?)$/.test(row.printedMarkers))
+        || row.markerStatus !== (row.printedMarkers === null ? "unknown" : "printed")
+        || !Array.isArray(row.footnoteSymbols) || row.footnoteSymbols.some(symbol => !symbols.has(symbol))
+        || !Array.isArray(row.readerNotes) || row.readerNotes.some(note => !present(note))) throw new Error("Invalid complete domain-list occurrence");
+      sourceKeys.add(row.sourceKey);
+      const bindingIds = new Set<number>();
+      for (const binding of row.bindings) {
+        const id = binding.spellLegacyId, local = binding.sourceRulebookId === 86;
+        if (!Number.isSafeInteger(id) || id <= 0 || binding.spellId !== `spell:${id}` || bindingIds.has(id)
+          || !Number.isSafeInteger(binding.sourceRulebookId) || binding.sourceRulebookId <= 0
+          || !present(binding.canonicalName) || !present(binding.nameZh) || !present(binding.summaryText)
+          || binding.daggerDisplay !== local || !Array.isArray(binding.relationshipEntryIds)
+          || binding.relationshipEntryIds.some(entry => !present(entry))
+          || !binding.link || binding.link.kind !== (local ? "local" : "online")
+          || binding.link.href !== (local ? destinations.get(id) : websiteRoot + id)
+          || (local && (!spells.has(id) || spells.get(id)!.canonicalName !== binding.canonicalName))) {
+          throw new Error("Invalid/stale complete domain-list spell binding or link");
+        }
+        bindingIds.add(id);
+        for (const entry of binding.relationshipEntryIds) {
+          const current = group.rows.find(item => item.id === entry);
+          if (current && (current.level !== row.level || current.spellId !== binding.spellId)) throw new Error("Stale complete domain-list relationship");
+          if (current) covered.add(entry);
+        }
+      }
+    }
+    if (group.rows.some(row => !covered.has(row.id))) throw new Error("Missing complete domain-list relationship");
+    for (let level = 1; level <= 9; level++) {
+      if (domain.occurrences.filter(row => row.level === level).length !== (domain.planar ? 2 : 1)) throw new Error("Incomplete domain-list level");
+    }
+    selected.set(owner, domain);
+  }
+  return selected;
+}
+
+function renderCompleteDomainList(domain: CompleteDomainList) {
+  const filename = `domain-${domain.ownerLegacyId}.html`;
+  const noteId = (index: number) => `domain-${domain.ownerLegacyId}-footnote-${index + 1}`;
+  const levels = Array.from({ length: 9 }, (_, index) => {
+    const level = index + 1;
+    const rows = domain.occurrences.filter(row => row.level === level).map(row => {
+      const names = row.bindings.map(binding => {
+        const local = binding.sourceRulebookId === 86;
+        const label = `${text(binding.nameZh)}（${text(binding.canonicalName)}）`;
+        const link = `<a class="${local ? "domain-local-link" : "domain-online-link"}"${local ? "" : ` data-spell-id="${binding.spellLegacyId}" title="在线查看"`} href="${text(binding.link.href)}">${label}</a>`;
+        return `<span class="domain-binding">${link}${local ? '<sup class="domain-dagger" title="SC 收录">†</sup>' : ' <span class="domain-online-label">（在线查看）</span>'}${row.bindings.length > 1 ? `：<span class="summary" lang="zh">${text(binding.summaryText)}</span>` : ""}</span>`;
+      }).join('；或 ');
+      const marks = row.printedMarkers ? `<sup class="component-labels" title="原书法表标记：M 昂贵材料；F 成分包外器材；X 施法者支付经验值">${text(row.printedMarkers)}</sup>` : "";
+      const stars = row.footnoteSymbols.map(symbol => `<sup class="domain-footnote-symbol"><a href="${filename}#${noteId(domain.footnotes.findIndex(note => note.symbol === symbol))}">${text(symbol)}</a></sup>`).join("");
+      return `<li class="domain-occurrence">${names}${stars}${marks}${row.bindings.length === 1 ? `：<span class="summary" lang="zh">${text(row.summaryText)}</span>` : ""}${row.readerNotes.map(note => `<span class="membership-note">${text(note)}</span>`).join("")}</li>`;
+    });
+    return `<h2 id="level-${level}">${level} 环</h2>${domain.planar ? '<p class="domain-choice">每环选择下列两个法术之一。</p>' : ""}<ul class="spell-list">${rows.join("\n")}</ul>`;
+  }).join("\n");
+  const footnotes = domain.footnotes.length ? `<div class="domain-footnotes" lang="zh"><h3>法表附注</h3>${domain.footnotes.map((note, index) => `<p id="${noteId(index)}">${text(note.symbol)} ${text(note.text)}</p>`).join("\n")}</div>` : "";
+  return `<section class="domain-complete">${levels}${footnotes}</section>`;
+}
 
 function bodyHtml(html: string | null, plain: string, prefix: string, destinations: Map<number, string>, counts: {
   detachedReferences: number; htmlTextDifferences: number;
@@ -275,6 +366,12 @@ export function validatePages(pages: Map<string, string>) {
     $("a[href], link[href]").each((_, el) => {
       const href = $(el).attr("href")!; links++;
       if (href.startsWith(websiteRoot)) {
+        const onlineId = $(el).attr("data-spell-id");
+        if (/^domain-[1-9]\d*\.html$/.test(name) && el.tagName === "a"
+          && $(el).attr("class") === "domain-online-link" && /^[1-9]\d*$/.test(onlineId ?? "")
+          && Number.isSafeInteger(Number(onlineId)) && href === websiteRoot + onlineId
+          && $(el).closest(".domain-complete .domain-binding").length
+          && $(el).attr("title") === "在线查看") return;
         const entryId = $(el).closest(".spell-entry").attr("id");
         const id = entryId?.match(/^spell-([1-9]\d*)$/)?.[1];
         if (el.tagName !== "a" || !id || !Number.isSafeInteger(Number(id))
@@ -315,7 +412,8 @@ function newOutput(outDir: string, contentDb: string) {
 /** Reader/presentation/machine inputs are caller-authenticated by main-gate; rendering does not grant source acceptance. */
 export function exportOfflineHtml(options: ExportOptions,
   presentations: ReadonlyMap<number, PdfTypographyPresentation> = new Map(), sourceDb?: Database.Database,
-  machine: readonly MachineMarker[] = [], introduction?: string, domainPowerContent?: DomainPowers) {
+  machine: readonly MachineMarker[] = [], introduction?: string, domainPowerContent?: DomainPowers,
+  domainListContent?: CompleteDomainLists) {
   if (!Number.isSafeInteger(options.book) || options.book <= 0 || !present(options.variant)) {
     throw new Error("A positive book ID and explicit variant are required");
   }
@@ -323,6 +421,7 @@ export function exportOfflineHtml(options: ExportOptions,
     throw new Error("Introduction requires a nonempty accepted SC fragment");
   }
   if (domainPowerContent !== undefined && options.book !== 86) throw new Error("Invalid SC domain-power content");
+  if (domainListContent !== undefined && options.book !== 86) throw new Error("Invalid SC complete domain-list content");
   const navigation = directoryNavigation(introduction !== undefined);
   const contentDb = path.resolve(repoRoot(), options.contentDb);
   const out = newOutput(path.resolve(repoRoot(), options.outDir), contentDb);
@@ -428,8 +527,12 @@ export function exportOfflineHtml(options: ExportOptions,
       const summaryRows = db.prepare(`SELECT spellId, rulebookId, lang, variant, summaryText, reviewStatus
         FROM I18nSpellSummaryText WHERE spellId IN
         (SELECT legacySpellId FROM SpellContent WHERE sourceRulebookId=?)`).all(options.book) as Summary[];
-      const summaries = selectSummaries(summaryRows, new Set([...classTargets, ...domainTargets]), options.book, options.variant, classTargets);
+      const summaries = selectSummaries(summaryRows, domainListContent === undefined
+        ? new Set([...classTargets, ...domainTargets]) : classTargets, options.book, options.variant, classTargets);
+      const byId = new Map(spells.map(spell => [spell.legacySpellId, spell]));
       const powers = selectDomainPowers(domainPowerContent, options.book, domains);
+      const completeLists = selectCompleteDomainLists(domainListContent, domains, byId, destinations);
+      const domainDirectoryNotice = domainListContent === undefined ? domainNotice : completeDomainNotice;
       const printedRecords = readPrintedMarkerRecords(db, options.book);
       const markerCounts = { acceptedRows: 0, machineRows: 0, unknownRows: 0, markedRows: 0, explicitEmptyRows: 0 };
       const counts = { spells: spells.length, chineseNames: 0, chineseBodies: 0,
@@ -476,7 +579,6 @@ export function exportOfflineHtml(options: ExportOptions,
         pages.set(`${letter}.html`, document(`${book[0]!.name} — ${letter}`, `${navigation}<h1>${letter}</h1>${preview}
           ${entries.length ? entries.join("\n") : '<p class="empty">此字母无法术。</p>'}`));
       }
-      const byId = new Map(spells.map(spell => [spell.legacySpellId, spell]));
       const classMenu: string[] = [], domainMenu: string[] = [];
       let classMemberships = 0, domainMemberships = 0;
       const schoolGroupedClassPages: number[] = [], schoolNameFallbacks = new Set<string>();
@@ -490,7 +592,9 @@ export function exportOfflineHtml(options: ExportOptions,
           const bySchool = options.book === 86 && kind === "class" && ["wizard", "sorcerer"].includes(group.slug);
           if (bySchool) schoolGroupedClassPages.push(owner);
           const firstLevel = kind === "domain" ? 1 : 0;
-          const sections = Array.from({ length: 10 - firstLevel }, (_, index) => {
+          const completeList = kind === "domain" ? completeLists.get(owner) : undefined;
+          if (completeList) domainMemberships += completeList.occurrences.length;
+          const sections = completeList ? renderCompleteDomainList(completeList) : Array.from({ length: 10 - firstLevel }, (_, index) => {
             const level = index + firstLevel;
             const members = new Map<number, ListEntry[]>();
             for (const row of group.rows.filter(row => row.level === level)) {
@@ -544,13 +648,13 @@ export function exportOfflineHtml(options: ExportOptions,
             ${power.readerNotes.length ? `<div class="reader-note"><h3>原文疑义备注（本项目说明，非官方勘误）</h3>${power.readerNotes.map(note => `<p>${text(note)}</p>`).join("\n")}</div>` : ""}
             ${power.sharedRulesKey === null ? "" : `<div class="shared-domain-rules"><h3>位面领域共同规则</h3>${domainPowerContent!.sharedRules[power.sharedRulesKey]!.map(rule => `<p>${text(rule)}</p>`).join("\n")}</div>`}
             </section>` : "";
-          pages.set(filename, document(`${book[0]!.name} — ${name}`, `${navigation}<h1>${text(name)}</h1>${kind === "class" ? membershipNotice : domainNotice}${missingName}${powerHtml}${sections}${navigation}`));
+          pages.set(filename, document(`${book[0]!.name} — ${name}`, `${navigation}<h1>${text(name)}</h1>${kind === "class" ? membershipNotice : domainDirectoryNotice}${missingName}${powerHtml}${sections}${navigation}`));
         }
       }
       pages.set("index.html", document(book[0]!.name, `<h1>${text(book[0]!.name)}</h1>${preview}
         ${introduction !== undefined ? '<p><a href="introduction.html">引言</a></p>' : ""}
         <h2 id="classes">职业目录</h2>${membershipNotice}${classMenu.length ? `<ul>${classMenu.join("\n")}</ul>` : '<p class="empty">无职业归属。</p>'}
-        <h2 id="domains">领域目录</h2>${domainNotice}${domainMenu.length ? `<ul>${domainMenu.join("\n")}</ul>` : '<p class="empty">本书收录范围内，无常规领域条目。</p>'}
+        <h2 id="domains">领域目录</h2>${domainDirectoryNotice}${domainMenu.length ? `<ul>${domainMenu.join("\n")}</ul>` : '<p class="empty">本书收录范围内，无常规领域条目。</p>'}
         <h2 id="letters">A–Z 正文</h2><p>${letters.map(letter => `<a href="${letter}.html">${letter}</a>`).join(" | ")}</p>`));
       const links = validatePages(pages);
       fs.mkdirSync(path.dirname(out), { recursive: true });
@@ -570,6 +674,14 @@ export function exportOfflineHtml(options: ExportOptions,
         excludedMemberships,
         pendingMembershipIssues: excludedMemberships.map(({ issue, listType, ownerLegacyId, spellId, level }) => ({ issue, listType, ownerLegacyId, spellId, level })),
         printedMarkers: { rulebookId: options.book, ...markerCounts },
+        completeDomainLists: { included: domainListContent !== undefined, pages: completeLists.size,
+          occurrences: [...completeLists.values()].reduce((sum, domain) => sum + domain.occurrences.length, 0),
+          bindings: [...completeLists.values()].flatMap(domain => domain.occurrences).reduce((sum, row) => sum + row.bindings.length, 0),
+          onlineBindings: [...completeLists.values()].flatMap(domain => domain.occurrences).flatMap(row => row.bindings).filter(binding => binding.sourceRulebookId !== 86).length,
+          daggerBindings: [...completeLists.values()].flatMap(domain => domain.occurrences).flatMap(row => row.bindings).filter(binding => binding.sourceRulebookId === 86).length,
+          markedRows: [...completeLists.values()].flatMap(domain => domain.occurrences).filter(row => !!row.printedMarkers).length,
+          explicitEmptyRows: [...completeLists.values()].flatMap(domain => domain.occurrences).filter(row => row.printedMarkers === "").length,
+          unknownMarkers: [...completeLists.values()].flatMap(domain => domain.occurrences).filter(row => row.printedMarkers === null).length },
         introduction: introductionCounts,
         domainPowers: { included: domainPowerContent !== undefined, pages: powers.size,
           requirementPages: [...powers.values()].filter(power => power.requirementText !== null).length,
@@ -577,7 +689,7 @@ export function exportOfflineHtml(options: ExportOptions,
           readerNotes: [...powers.values()].reduce((sum, power) => sum + power.readerNotes.length, 0) },
         classEntriesNeedingStructuralReview: listEntries.filter(row => row.listType === "class" && row.reviewStatus === "review").length,
         selectedSummaries: summaries.size + classTargets.size, selectedChineseSummaries: summaries.size,
-        selectedEnglishSummaries: classTargets.size, domainChineseSummaries: domainTargets.size,
+        selectedEnglishSummaries: classTargets.size, domainChineseSummaries: domainListContent === undefined ? domainTargets.size : 0,
         summaryVariants: { en: selectedSummaryVariant("en", options.variant), zh: selectedSummaryVariant("zh", options.variant) },
         displayLanguage: "zh", displayedBodies: spells.length, displayedSummaries: summaries.size, websiteLinks: spells.length,
         pdfFormatting: presentations.size ? "partial-main-gate-selected" : "pending-431-source-mapping",

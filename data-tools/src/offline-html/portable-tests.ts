@@ -11,6 +11,7 @@ import type { PdfTypographyPresentation } from "../zh-parser/pdf-typography";
 import { processAutomaticMarkers, type NamedEntry, type SpellName } from "../spell-list-markers/automatic";
 import type { PdfPage, PdfSpan } from "../spell-list-markers/markers";
 import type { DomainPowers } from "./domain-powers";
+import type { CompleteDomainLists, DomainListBinding } from "./domain-lists";
 
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "offline-html-test-"));
 const outputRoot = path.join(repoRoot(), "data-tools/out");
@@ -396,6 +397,67 @@ try {
     assert.equal(planar('.domain-power .spell-list').length, 0);
     assert.equal(planar('.domain-power').next('h2').attr('id'), 'level-1');
     assert.equal(planar('.summary').text(), qualifiedDomain('.summary').text());
+    const binding = (id: number, entryIds: string[] = []): DomainListBinding => {
+      const local = id < 100;
+      const canonicalName = local ? (powerView.prepare('SELECT canonicalName FROM SpellContent WHERE legacySpellId=?').get(id) as { canonicalName: string }).canonicalName : `Foreign ${id}`;
+      return { spellId: `spell:${id}`, spellLegacyId: id, sourceRulebookId: local ? 86 : 6,
+        canonicalName, nameZh: `法术 ${id} & <保留>`, summaryText: `摘要 ${id} & <script>纯文字</script>`,
+        daggerDisplay: local, relationshipEntryIds: entryIds, relationshipDisposition: entryIds.length ? 'existing-accepted' : 'source-bound-handoff-only',
+        link: { kind: local ? 'local' : 'online', href: local ? `${canonicalName[0]!.toUpperCase()}.html#spell-${id}` : `https://www.d20spellcodex.com/spells/${id}` } };
+    };
+    const fullLists: CompleteDomainLists = { schemaVersion: 1, rulebookId: 86, language: 'zh', reviewStatus: 'source-reviewed-proposal-awaiting-main-gate',
+      domains: [1, 2].map(owner => ({ ownerLegacyId: owner, ownerName: owner === 1 ? 'First domain' : 'Fixture domain',
+        nameZh: '合成领域', planar: owner === 2, levelChoiceCount: 1,
+        footnotes: [{ symbol: '*', text: '仅限指定阵营与生物 & <保留>。' }],
+        occurrences: Array.from({ length: owner === 1 ? 9 : 18 }, (_, index) => {
+          const level = owner === 1 ? index + 1 : Math.floor(index / 2) + 1;
+          const local = owner === 1 && level === 1 ? binding(1, ['domain-one'])
+            : owner === 1 && level === 9 ? binding(7, ['domain-nine'])
+            : owner === 2 && index === 6 ? binding(1, ['list:2']) : binding(100 + owner * 20 + index);
+          const alternative = owner === 1 && level === 7;
+          return { sourceKey: `fixture:${owner}:${index}`, level, choiceGroup: owner === 2 ? `domain:${owner}:level:${level}` : null,
+            alternativePolicy: alternative ? 'alignment' as const : null, bindings: alternative ? [local, binding(199)] : [local],
+            summaryText: `目录摘要 ${owner}-${index}`, printedMarkers: owner === 1 && level === 3 ? null : level === 2 ? 'F' : '',
+            markerStatus: owner === 1 && level === 3 ? 'unknown' : 'printed', footnoteSymbols: level === 7 ? ['*'] : [], readerNotes: [] };
+        }) })) };
+    const mixedOut = path.join(output, 'complete-domain-lists');
+    Object.assign(fullLists.domains[0]!.occurrences[0]!, { sourceEvidence: { printedName: 'DO_NOT_RENDER_SOURCE', summaryText: 'DO_NOT_RENDER_SOURCE' } });
+    const mixedReport = exportOfflineHtml({ ...options, contentDb: ':memory:', outDir: mixedOut }, new Map(), powerView, [], introduction, powerContent, fullLists);
+    assert.deepEqual(mixedReport.completeDomainLists, { included: true, pages: 2, occurrences: 27, bindings: 28, onlineBindings: 25, daggerBindings: 3, markedRows: 3, explicitEmptyRows: 23, unknownMarkers: 1 });
+    const mixed = load(fs.readFileSync(path.join(mixedOut, 'domain-1.html'), 'utf8'));
+    const mixedPlanar = load(fs.readFileSync(path.join(mixedOut, 'domain-2.html'), 'utf8'));
+    assert.equal(mixed('.domain-occurrence').length, 9); assert.equal(mixedPlanar('.domain-occurrence').length, 18);
+    assert.equal(mixedPlanar('.domain-choice').length, 9);
+    assert.equal(mixed('#level-7 + ul > li').length, 1);
+    assert.equal(mixed('#level-7 + ul .domain-binding').length, 2);
+    assert.deepEqual(mixed('#level-7 + ul .summary').toArray().map(el => mixed(el).text()), fullLists.domains[0]!.occurrences[6]!.bindings.map(item => item.summaryText));
+    assert.equal(mixed('.domain-dagger').length, 2); assert.equal(mixedPlanar('.domain-dagger').length, 1);
+    assert.equal(mixed('.domain-footnotes p').text(), '* ' + fullLists.domains[0]!.footnotes[0]!.text);
+    assert.equal(mixed('#level-2 + ul .component-labels').text(), 'F');
+    assert.equal(mixed('#level-3 + ul .component-labels').length, 0);
+    assert.equal(mixed('script').length, 0); assert(!mixed.text().includes('fixture:')); assert(!mixed.text().includes('DO_NOT_RENDER_SOURCE'));
+    for (const filename of ['A.html', 'C.html', 'class-1.html', 'introduction.html']) {
+      assert.equal(fs.readFileSync(path.join(mixedOut, filename), 'utf8'), fs.readFileSync(path.join(outDir, filename), 'utf8'));
+    }
+    assert(powerView.serialize().equals(before));
+    let badList = 0;
+    const rejectList = (mutate: (content: CompleteDomainLists) => void, pattern: RegExp) => {
+      const content = structuredClone(fullLists); mutate(content);
+      const badOut = path.join(output, `bad-complete-list-${badList++}`);
+      assert.throws(() => exportOfflineHtml({ ...options, contentDb: ':memory:', outDir: badOut }, new Map(), powerView, [], undefined, powerContent, content), pattern);
+      assert(!fs.existsSync(badOut));
+    };
+    rejectList(content => { content.domains[0]!.ownerName = 'Wrong version'; }, /stale.*owner/);
+    rejectList(content => { content.domains[0]!.occurrences[0]!.bindings[0]!.daggerDisplay = false; }, /binding or link/);
+    rejectList(content => { content.domains[0]!.occurrences[1]!.bindings[0]!.link.href += '?forged'; }, /binding or link/);
+    rejectList(content => { content.domains[0]!.occurrences[0]!.bindings[0]!.canonicalName = 'Same ID, wrong identity'; }, /binding or link/);
+    rejectList(content => { content.domains[0]!.occurrences[0]!.bindings[0]!.relationshipEntryIds = []; }, /Missing.*relationship/);
+    rejectList(content => { content.domains[0]!.occurrences.pop(); }, /relationship|Incomplete/);
+    rejectList(content => { content.domains[0]!.footnotes = []; }, /occurrence/);
+    rejectList(content => { content.domains[0]!.occurrences[1]!.printedMarkers = 'V'; }, /occurrence/);
+    const forgedPages = new Map(fs.readdirSync(mixedOut).filter(name => name.endsWith('.html') || name === 'style.css').map(name => [name, fs.readFileSync(path.join(mixedOut, name), 'utf8')]));
+    forgedPages.set('domain-1.html', forgedPages.get('domain-1.html')!.replace('data-spell-id="121"', 'data-spell-id="999"'));
+    assert.throws(() => validatePages(forgedPages), /invalid generated website link/);
     assert.equal(load(fs.readFileSync(path.join(outDir, 'class-1.html'), 'utf8'))('.domain-power').length, 0);
     let badPower = 0;
     const rejectPower = (mutate: (content: DomainPowers) => void, pattern: RegExp) => {
@@ -415,6 +477,8 @@ try {
     assert.throws(() => exportOfflineHtml({ ...options, contentDb: ':memory:', book: 87, outDir: path.join(output, 'wrong-book-power') }, new Map(), powerView, [], undefined, powerContent), /Invalid SC/);
   } finally { powerView.close(); }
   assert.throws(() => main(['--domain-powers', '--domain-powers']), /duplicate/);
+  assert.throws(() => main(['--domain-lists', '--domain-lists']), /duplicate/);
+  assert.throws(() => main(['--content-db', dbPath, '--book', '87', '--variant', 'effective', '--out', introOut, '--domain-lists']), /only for SC/);
   assert.throws(() => main(['--content-db', dbPath, '--book', '87', '--variant', 'effective', '--out', introOut, '--domain-powers']), /only for SC/);
   // Real consumer path: distinct source appearances, explicit machine/accepted/unknown states.
   const markedFixture = new Database(db.serialize());

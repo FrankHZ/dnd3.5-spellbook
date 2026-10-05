@@ -40,7 +40,8 @@ The existing relationship is unchanged; spell 3921's Chinese body and normal
 class memberships remain available. The report separates source domain-row
 counts from displayed rows and records the exclusion with its unresolved issue.
 
-Chinese summaries are required for the union of class and domain targets.
+Without a complete domain-list handoff, Chinese summaries are required for the
+union of class and domain targets.
 Class targets retain the existing internal accepted English-summary checks;
 domain-only targets do not require an unused English summary. No body-first-line
 or English-summary fallback supplies Chinese summaries. The report counts class
@@ -61,6 +62,38 @@ title in narrow views; inline-block text provides a readable fallback for CHM
 readers without flex layout. Missing page numbers leave only the ID and icon.
 The small `↗` website icon stays beside the ID, with “在网站查看” as tooltip/accessible name, linking to
 `https://www.d20spellcodex.com/spells/<legacySpellId>`.
+
+## Complete Domain Lists
+
+For SC, `--domain-lists` replaces the selected domain pages' SC subsets with
+complete mixed-book lists from accepted #507 content. The fixed private file is
+`dice-qa/books/86/issue-507/html-domain-lists.zh.json` at revision
+`b18fbf663f605fe9d2f860f6265daf2d998c7533`; main-gate acceptance is recorded at
+`770b03df94cb5579a8d719d46cd9eb4351c77480`. The file retains its original proposal
+status; acceptance belongs to the fixed receipt, not a mutated status field.
+The existing data-root helper and `git show` reader provide the same root/package
+CWD behavior as introduction and domain powers. No database fields, import,
+floating revision or arbitrary content path are introduced.
+
+The API's seventh argument supplies this caller-authenticated handoff. Existing
+domain owners select pages; additional handoff owners cannot expand output.
+Validate stable owner names, source occurrence uniqueness, complete levels,
+SC spell identities/local anchors and existing SC relationship coverage before
+creating output. Non-SC identities and source-only relationships retain the
+accepted handoff's bindings without creating database relationships. Domain
+summaries come directly from this handoff; the existing DB summary checks remain
+for class rows. The report's `completeDomainLists` counts displayed occurrences,
+bindings, online/SC targets and marked/empty/unknown rows separately from
+existing normalized relationship counts and stored class-marker consumption.
+
+SC names link to local bodies and display † from verified book membership.
+Non-SC names link to the exact website spell URL and are labeled “在线查看”.
+There are no additional non-SC bodies. Planar pages retain two rows per level
+and explain that one is selected. Slash alternatives retain one source row with
+separate names, summaries and dagger/link decisions. Ordinary slash names stay
+one binding. M/F/X reuse handoff values; unknowns are omitted. Stars link to
+complete domain footnotes, and plain-text names, summaries and notes are escaped.
+Source evidence, English summary evidence and binding metadata never render.
 
 ## Introduction
 
@@ -120,7 +153,7 @@ npm run -w data-tools offline:html -- --content-db data-tools/out/input/content.
 npm run -w data-tools offline:html:test
 ```
 
-Add `--introduction --domain-powers` to the authorized SC export to include both
+Add `--introduction --domain-powers --domain-lists` to the authorized SC export to include
 accepted data handoffs. These flags neither grant DB access nor activate a
 whole-book export.
 
