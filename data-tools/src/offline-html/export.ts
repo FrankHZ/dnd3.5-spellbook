@@ -70,6 +70,8 @@ const compact = (v: string) => v.replace(/\s/gu, "");
 const text = (v: string) => v.replace(/&/g, "&amp;").replace(/</g, "&lt;")
   .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+// Extra database grants are not independent class lists in the SC appendix.
+const scExtraClassOwners = new Set([16, 17, 62, 72, 161, 673, 848]);
 const spellAnchor = (id: number) => `spell-${id}`;
 const websiteRoot = "https://www.d20spellcodex.com/spells/";
 /** Logical page names stay source-bound; only emitted files use CHM category folders. */
@@ -558,6 +560,11 @@ export function exportOfflineHtml(options: ExportOptions,
           throw new Error(`Invalid/duplicate ${kind} membership identity, level or metadata`);
         }
         rowIds.add(row.id);
+        if (options.book === 86 && kind === "class" && scExtraClassOwners.has(row.ownerLegacyId)) {
+          excludedMemberships.push({ issue: 354, listEntryId: row.id, listType: kind, ownerLegacyId: row.ownerLegacyId,
+            spellId: Number(row.spellId.slice("spell:".length)), level: row.level, reason: "outside-original-book-directory" });
+          continue;
+        }
         if (kind === "domain") {
           const tuple = JSON.stringify([row.ownerLegacyId, row.level, row.spellId, row.rawExtra, row.variantLabel]);
           if (domainTuples.has(tuple)) throw new Error("Duplicate domain membership tuple");

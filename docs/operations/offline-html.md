@@ -57,6 +57,15 @@ The existing relationship is unchanged; spell 3921's Chinese body and normal
 class memberships remain available. The report separates source domain-row
 counts from displayed rows and records the exclusion with its unresolved issue.
 
+SC also omits seven extra database class owners from its book directory:
+Warmage (16), Wu Jen (17), Healer (62), Duskblade (72), Vigilante (161),
+Walker in the Waste (673), and Sorcerer/Wizard Variant (848). These are outside
+the original SC class-list appendix. Their pages, menu items and membership rows
+do not render or require display summaries; all spell bodies and database
+relationships remain intact. The existing `excludedMemberships` and
+`pendingMembershipIssues` diagnostics record the omitted rows under #354 without
+accepting or deleting those relationships. Other books keep these class owners.
+
 Without a complete domain-list handoff, Chinese summaries are required for the
 union of class and domain targets.
 Class targets retain the existing internal accepted English-summary checks;
@@ -175,7 +184,9 @@ and official errata; this page supplies no new QA acceptance or rules judgment.
 
 Without the flag/argument, no page or link is added. The report's `sourceQuestions`
 records inclusion, occurrence and body counts. A complete SC export with this page
-has 88 files; class/domain/body page counts and existing body text remain unchanged.
+has 81 files: 8 class pages, 42 domain pages and 26 letter pages, plus the root
+index, introduction, source-question page, stylesheet and report. Existing spell
+body text remains unchanged.
 
 ## Domain Abilities
 
