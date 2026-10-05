@@ -70,6 +70,31 @@ GitHub; create a separate issue when there is a concrete feature to pursue.
 Do not maintain duplicate roadmap, backlog, or task-progress Markdown files.
 Historical release snapshots do not automatically define current scope.
 
+## Source And Quality Tradeoffs
+
+The repository targets useful, intuitive, naturally readable content with
+faithful meaning, not a facsimile of every printed detail. Books contain errors;
+verification also has a cost. For the affected field, choose the least expensive
+source and check that are sufficient for its intended use. Reuse verified data
+and established transformations; investigate demonstrated gaps or consequential
+uncertainty rather than automatically reopening whole-book or full-text QA.
+
+- When a reliable database field already answers the question, check the bound
+  identity and relevant data, then use it. The SC dagger is derived from verified
+  book membership, correcting printed omissions or false marks.
+- When no reliable structured field exists, an adequate printed signal can be
+  enough. M/F/X reuse original list marks; exhaustive interpretation of every
+  spell body is not required to reconstruct a theoretically more accurate set.
+- Natural layout, normalized wording and corrected metadata need not reproduce
+  print quirks. Intuition does not authorize invented changes to damage, levels,
+  targets or other substantive rules. Resolve concrete semantic conflicts with
+  targeted evidence; retain material unresolved ambiguity in a separate note.
+
+State the chosen source, bounded checks and completion condition in the owning
+issue. A source approximation accepted for its intended use is sufficient within
+that scope; do not turn it into an unrequested perfection backlog. Preserve raw
+evidence and describe the actual validation without claiming exhaustive QA.
+
 ## Architecture Correspondence
 
 For changes involving an authoritative source, module, schema, ordering rule,

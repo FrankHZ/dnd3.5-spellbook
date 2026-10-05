@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/503",
+  "phase": "source-reviewed-proposal-awaiting-main-gate",
+  "privateRevision": "3148d36fb51fd353b097ad911d2e04b33c9c706c",
+  "privateRootRelativeDirectory": "dice-qa/books/86/issue-503",
+  "consumer": {
+    "ownerIssue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/345",
+    "root": "Private repository selected by root .env DATA_REPO_PATH; use existing data-root resolution, independent of caller cwd and public-code checkout.",
+    "readerContentPath": "dice-qa/books/86/issue-503/introduction.zh-CN.html",
+    "format": "UTF-8 HTML fragment; one h2, six h3, p, ul/li, strong and i. No outer document, CSS, scripts or attributes. Preserve paragraph/list/emphasis structure; reader content has no internal QA or revision metadata.",
+    "fixedRevisionRead": "Read readerContentPath from privateRevision with git show <revision>:<data-root-relative-path>. Do not depend on private HEAD or copy source-bearing content into the public code repository.",
+    "relativeReferences": "All report paths are relative to DATA_REPO_PATH, except handoffPaths below which are relative to privateRootRelativeDirectory. The HTML fragment contains no href/src or relative resource references. Printed page references remain prose; renderer may wrap the fragment in its own Introduction section.",
+    "databaseRequired": false,
+    "rendererImplementedHere": false,
+    "requiresMainGateAcceptance": true
+  },
+  "handoffPaths": {
+    "readerContent": "introduction.zh-CN.html",
+    "sourceReview": "source-review.json",
+    "sourcePages": "source-pages.json",
+    "reuseSearch": "reuse-search.json",
+    "errataText": "errata.txt",
+    "validation": "validation.json",
+    "visualEvidence": ["page-003.png", "page-004.png", "page-005.png", "errata.png"]
+  },
+  "sourceCoverage": {
+    "printedIntroductionPages": [3, 4],
+    "pdfPageIndices": [2, 3],
+    "adjacentBoundaryPagesExtracted": [5, 6],
+    "visuallyReviewedPrintedPages": [3, 4, 5],
+    "officialErrataPagesVisuallyReviewed": 1,
+    "directIntroductionErrataChanges": 0,
+    "sections": 7,
+    "paragraphs": 21,
+    "classAdviceItems": 13,
+    "completeParagraphComparison": true,
+    "includesBottomSourcesBox": true,
+    "excludesContentsHeadersFootersAndChapter1": true,
+    "existingChineseIntroductionFound": false,
+    "newTranslationFromOriginal": true
+  },
+  "validation": {
+    "allowedBalancedHtmlElements": true,
+    "htmlAttributesOrResourceReferences": false,
+    "sectionAndParagraphInventoryMatches": true,
+    "readerMetadataLeakCheckPassed": true,
+    "unrelatedStagedPatchByteIdenticalBeforeAndAfterPrivateCommit": true,
+    "unrelatedStagedDeletions": 39,
+    "privateCommitPaths": 10,
+    "privateCommitOnlyIssueDirectory": true,
+    "privatePushPerformed": false
+  },
+  "resources": {
+    "sourcePdfBytes": 6991025,
+    "extractedCharactersPages3And4IncludingNonContent": 12115,
+    "readerHtmlBytes": 11352,
+    "threePageImagesBytes": 4003909,
+    "memoryBudgetBytes": 1073741824,
+    "peakMemoryMeasured": false,
+    "ocrUsed": false,
+    "paidApiUsed": false,
+    "newEnvironmentInstalled": false
+  },
+  "boundaries": {
+    "persistentDatabaseReadOrWrite": false,
+    "canonicalOrAcceptedDataChanged": false,
+    "rendererCssOrSharedOutputsChanged": false,
+    "fullHtmlGenerated": false,
+    "phbProcessingResumed": false,
+    "contentAcceptedOrMergedByTask": false
+  }
+}

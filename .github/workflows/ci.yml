@@ -39,8 +39,8 @@ jobs:
       - name: Test PDF extraction with synthetic sources
         run: python -m unittest discover -s data-tools/pdf-extract/tests -v
 
-      - name: Test domain-list inventory with synthetic spans
-        run: python -m unittest discover -s data-tools/audits -p test_sc_domain_lists.py -v
+      - name: Test domain-list and power inventories with synthetic spans
+        run: python -m unittest discover -s data-tools/audits -p 'test_sc_domain_*.py' -v
 
       - name: Run portable validation
         run: npm run ci:portable
