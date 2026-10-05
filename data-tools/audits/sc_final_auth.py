@@ -15,10 +15,12 @@ def main():
     parser.add_argument('--accepted-source-pairs', action='store_true')
     parser.add_argument('--accepted-source-fidelity', action='store_true')
     parser.add_argument('--accepted-source-punctuation', action='store_true')
+    parser.add_argument('--accepted-source-clarifications', action='store_true')
     args = parser.parse_args()
     require(not args.accepted_source_pairs or args.accepted_english_title, 'source corrections require accepted English title predecessor')
     require(not args.accepted_source_fidelity or args.accepted_source_pairs, 'source fidelity requires accepted #461 predecessor')
     require(not args.accepted_source_punctuation or args.accepted_source_fidelity, 'source punctuation requires accepted #467 predecessor')
+    require(not args.accepted_source_clarifications or args.accepted_source_punctuation, 'Chinese clarifications require accepted #473 predecessor')
     if args.accepted_source_punctuation:
         from sc_source_fidelity import PUNCTUATION_ACCEPTANCE, PUNCTUATION_COMMENT
         require(PUNCTUATION_ACCEPTANCE is not None and PUNCTUATION_COMMENT is not None, 'Issue473 independent source acceptance pending')
@@ -50,6 +52,9 @@ def main():
     if args.accepted_source_punctuation:
         from sc_source_fidelity import authenticate
         result = authenticate(args, result, True)
+    if args.accepted_source_clarifications:
+        from sc_source_clarifications import authenticate
+        result = authenticate(args, result)
     print(json.dumps({'fields': result['field-dispositions.jsonl'], 'report': result['report.json']}, ensure_ascii=False))
 
 

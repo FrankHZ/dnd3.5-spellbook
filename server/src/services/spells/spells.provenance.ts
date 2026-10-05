@@ -130,9 +130,13 @@ function mapFinalProvenance(v: Record<string, any>, field: "name" | "body",
     acceptedRevision: r.revision, originalEntryReviewed: true, sourceQuestionIds: r.sourceQuestionIds ?? []};
   if ("sourceCorrection" in v) {
     const correction = v.sourceCorrection, prior = correction?.prior;
-    if (field !== "body" || ![3930,4033,4349].includes(target.id) || "readerNoteAddendum" in v
+    const clarification = [3901,4465,4564].includes(target.id);
+    if (field !== "body" || ![3930,4033,4349,3901,4465,4564].includes(target.id) || "readerNoteAddendum" in v
       || !record(correction) || correction.targetId !== target.id
-      || !(target.id === 3930 ? correction.revision === "ebc3a6615002de6dac1f1c4a636e19757d7b0c8f"
+      || !(clarification ? correction.revision === "cb2f661ef8935ecbf6bd09bae106e067493d5c67"
+        && correction.acceptanceRevision === "10c65744f9b525db0c48115eea6ccefd96f4b4cd"
+        && correction.path === bookPath + "issue-476/main-gate-source-review/selected-candidates.json"
+        : target.id === 3930 ? correction.revision === "ebc3a6615002de6dac1f1c4a636e19757d7b0c8f"
         && correction.acceptanceRevision === "5f05fad7df5256a9c3c998d3be77aac238445107" && correction.path === bookPath + "issue-461/candidate.json"
         : correction.revision === "996a41671f7cb61e9f7fa6cce48a912695694c7c"
         && correction.acceptanceRevision === "775005e96a5caa9a83bbf523f716946b2fe890a0" && correction.path === bookPath + "issue-467/candidate.json")
@@ -140,6 +144,18 @@ function mapFinalProvenance(v: Record<string, any>, field: "name" | "body",
       || "sourceCorrection" in prior || "readerNoteAddendum" in prior
       || !isDeepStrictEqual(prior.origin, o) || !isDeepStrictEqual(prior.review, r)
       || !text(prior.text) || !text(prior.html) || !text(bodyText)) return fail();
+    if (clarification) {
+      // Source-free positional guard; the importer authenticates complete strings.
+      const before = Array.from(prior.text), after = Array.from(bodyText);
+      const edits = target.id === 4465 ? [[257,0,8]] : target.id === 4564 ? [[314,0,7]] : [[221,0,8],[260,7,2]];
+      let delta = 0;
+      for (const [position, removed, inserted] of edits as [number, number, number][]) {
+        const at = position + delta, replacement = after.slice(at, at + inserted);
+        if (before.length < at + removed || replacement.length !== inserted || replacement.some(c => /[\s<>]/u.test(c))) return fail();
+        before.splice(at, removed, ...replacement); delta += inserted - removed;
+      }
+      if (before.join('') !== bodyText) return fail();
+    } else {
     let start = 0;
     while (start < bodyText.length && prior.text[start] === bodyText[start]) start++;
     const length = target.id === 3930 ? 29 : 17;
@@ -147,6 +163,7 @@ function mapFinalProvenance(v: Record<string, any>, field: "name" | "body",
     if (target.id === 4349 ? prior.text.split("”相同").length !== 2 || bodyText !== prior.text.replace("”相同", "”（PH 217）相同")
       : [...removed].length !== length || /\s/.test(removed)
       || bodyText !== prior.text.slice(0, start) + prior.text.slice(start + length)) return fail();
+    }
     review = {...review, disposition: "accepted", acceptedRevision: correction.revision};
   }
   if ("readerNoteAddendum" in v) {
