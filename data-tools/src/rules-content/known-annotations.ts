@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import type Database from "better-sqlite3";
 import { finalScRevision, finalScNoteRevision, finalScSummaryRevision,
   finalScSummaryCandidate, finalScSummaryPath, previousScSummaryRevision,
-  previousScSummaryCandidate } from "../dice-intake/final-writer";
+  previousScSummaryCandidate, domainScSummaryRevision, domainScSummaryCandidate, domainScSummaryPath } from "../dice-intake/final-writer";
 
 type Row = Record<string, unknown>;
 function keys(value: Row, expected: string[]) {
@@ -69,9 +69,10 @@ export function requireKnownAnnotations(db: Database.Database, meta: Row) {
     keys(summary, ["schema", "acceptedRevision", "candidateRevision", "path", "scope", "canonicalRows", "scRows"]);
     assert.equal(summary.schema, "sc-final-summary.v1");
     assert(summary.acceptedRevision === finalScSummaryRevision && summary.candidateRevision === finalScSummaryCandidate ||
-      summary.acceptedRevision === previousScSummaryRevision && summary.candidateRevision === previousScSummaryCandidate,
+      summary.acceptedRevision === previousScSummaryRevision && summary.candidateRevision === previousScSummaryCandidate ||
+      summary.acceptedRevision === domainScSummaryRevision && summary.candidateRevision === domainScSummaryCandidate,
       'Unknown downstream summary authority pair');
-    assert.equal(summary.path, finalScSummaryPath);
+    assert.equal(summary.path, summary.acceptedRevision === domainScSummaryRevision ? domainScSummaryPath : finalScSummaryPath);
     assert.equal(summary.scope, "present-canonical-sc-summaries");
     assert(Number.isInteger(summary.canonicalRows) && Number(summary.canonicalRows) > 0);
     assert(Number.isInteger(summary.scRows) && Number(summary.scRows) >= 0 && Number(summary.scRows) <= Number(summary.canonicalRows));

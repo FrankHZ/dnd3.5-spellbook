@@ -18,6 +18,10 @@ export const previousScSummaryRevision = "0b6fd8b88c1609cfdae50d8943d77eda13750e
 export const previousScSummaryCandidate = "c4fe0c0a7b14aafed04bc9e733387afb51ae45eb";
 export const finalScSummaryRevision = "1e86cf7865f42f15abb7d6629d2d9de54607a13c";
 export const finalScSummaryCandidate = "04dd98490e4ad643eafc8f262bb5af57d3bffcd9";
+// #500 source acceptance receipt, not an invented canonical promotion commit.
+export const domainScSummaryRevision = "c7d21ef8a573217e54229809219c8fa323f66bab";
+export const domainScSummaryCandidate = "cd67b6039331313cf858c646593f1fe9ddde0adb";
+export const domainScSummaryPath = "dice-qa/books/86/issue-500/summaries-final/summaries.proposed.jsonl";
 export const finalScSummaryPath = "short-desc-normalized/summaries.generated.jsonl";
 export type FinalField = { targetId: number; rulebookId: number; field: "name" | "body";
   text: string; html?: string | null; origin: FieldOrigin; review: Record<string, unknown>;
@@ -163,10 +167,12 @@ export function planFinalOverlay(db: Database.Database, fields: FinalField[], so
     }
     verifyAcceptedSummaries(db, acceptedSummaries);
     assert(summaryRevision === finalScSummaryRevision && summaryCandidate === finalScSummaryCandidate ||
-      summaryRevision === previousScSummaryRevision && summaryCandidate === previousScSummaryCandidate,
+      summaryRevision === previousScSummaryRevision && summaryCandidate === previousScSummaryCandidate ||
+      summaryRevision === domainScSummaryRevision && summaryCandidate === domainScSummaryCandidate,
       'unsupported summary authority pair');
     summaryQa = {schema: 'sc-final-summary.v1', acceptedRevision: summaryRevision,
-      candidateRevision: summaryCandidate, path: finalScSummaryPath,
+      candidateRevision: summaryCandidate,
+      path: summaryRevision === domainScSummaryRevision ? domainScSummaryPath : finalScSummaryPath,
       scope: 'present-canonical-sc-summaries', canonicalRows: acceptedSummaries.length,
       scRows: acceptedSummaries.filter(row => row.rulebookId === 86).length};
   }
@@ -210,34 +216,63 @@ export function validateFinalOverlay(db: Database.Database, plan: ReturnType<typ
  * QA. This never relaxes the generic annotated-predecessor import guard. */
 export function finalSummaryUpgrade(db: Database.Database, fields: FinalField[], sourceReport: Record<string, unknown>,
   verifyFull: () => ReturnType<typeof verifyFullNormalized>, previous: SummaryRow[], next: SummaryRow[],
-  requireInputs: () => void, mode: 'check' | 'apply' = 'check', afterWrite: () => void = () => {}) {
+  requireInputs: () => void, mode: 'check' | 'apply' = 'check', afterWrite: () => void = () => {},
+  domainCorrection?: {before: SummaryRow; after: SummaryRow}) {
   assert(mode === 'check' || mode === 'apply');
   assert(!db.inTransaction, 'Final summary upgrade owns its transaction');
+  const domainSummaries = domainCorrection !== undefined;
   const prior = new Map(previous.map(row => [row.id, row]));
+  const following = new Map(next.map(row => [row.id, row]));
   assert.equal(prior.size, previous.length, 'duplicate predecessor summary');
+  assert.equal(following.size, next.length, 'duplicate next summary');
   assert(next.length > previous.length, 'summary upgrade requires additions');
-  for (const row of previous) assert.deepEqual(next.find(value => value.id === row.id), row, 'predecessor summary changed');
+  const correctionId = 'spell-summary:4123:zh:chm';
+  for (const row of previous) {
+    if (domainSummaries && row.id === correctionId) continue;
+    assert.deepEqual(following.get(row.id), row, 'predecessor summary changed');
+  }
+  if (domainSummaries) {
+    const before = prior.get(correctionId), after = following.get(correctionId);
+    assert(before && after, 'missing accepted 4123 correction');
+    assert.deepEqual(before, domainCorrection.before, '4123 predecessor differs from accepted source');
+    assert.deepEqual(after, domainCorrection.after, '4123 correction differs from accepted source');
+    assert.notEqual(after.summaryText, before.summaryText, '4123 correction must change its summary');
+    assert.deepEqual(after, {...before, summaryText: domainCorrection.after.summaryText,
+      sourceKey: 'summary-review:500:4123:zh',
+      sourceName: 'Spell Compendium original domain-list review (#500)', sourceKind: 'reviewed-summary-correction'});
+  }
   const additions = next.filter(row => !prior.has(row.id));
   assert(additions.every(row => row.rulebookId === 86 && row.reviewStatus === 'accepted' &&
     row.variant === (row.lang === 'en' ? 'imarvin' : 'chm')), 'unsupported summary addition');
+  if (domainSummaries) {
+    assert.equal(additions.length, 29, 'domain summary upgrade requires 29 additions');
+    assert.deepEqual(additions.map(row => row.spellId).sort((a,b) => a-b),
+      [3840,3841,3844,3878,3904,3949,4021,4027,4028,4213,4215,4216,4239,4263,4276,
+       4328,4472,4477,4478,4483,4548,4551,4575,4578,4579,4581,4618,4721,4767]);
+    assert(additions.every(row => row.lang === 'zh' && row.variant === 'chm'), 'domain additions must be Chinese CHM summaries');
+  }
+  const oldRevision = domainSummaries ? finalScSummaryRevision : previousScSummaryRevision;
+  const oldCandidate = domainSummaries ? finalScSummaryCandidate : previousScSummaryCandidate;
+  const newRevision = domainSummaries ? domainScSummaryRevision : finalScSummaryRevision;
+  const newCandidate = domainSummaries ? domainScSummaryCandidate : finalScSummaryCandidate;
   const inspect = () => {
     requireInputs();
     const full = verifyFull();
     requireKnownAnnotations(db, full.meta);
     const overlay = full.meta.overlays?.scFinalNameBody;
     assert(overlay?.summaryQa && overlay.readerNoteAddendum, 'Missing accepted annotated summary predecessor');
-    const before = overlay.summaryQa.acceptedRevision === previousScSummaryRevision;
+    const before = overlay.summaryQa.acceptedRevision === oldRevision;
     verifySummaryInventory(db, before ? previous : next);
     const plan = planFinalOverlay(db, fields, sourceReport, full, overlay.helperRevision,
-      before ? previous : next, before ? previousScSummaryRevision : finalScSummaryRevision,
-      before ? previousScSummaryCandidate : finalScSummaryCandidate);
+      before ? previous : next, before ? oldRevision : newRevision,
+      before ? oldCandidate : newCandidate);
     assert.equal(plan.migrate, false, 'summary upgrade cannot migrate text schema');
     assert.equal(plan.inserts + plan.updates, 0, 'summary upgrade cannot repair final fields');
     validateFinalOverlay(db, plan); // Exact entire metadata, fields, notes and inventory.
     return {full, plan, state: before ? 'before' as const : 'after' as const};
   };
-  const result = (state: 'before' | 'after', inserted = 0) => ({mode, state, changed: inserted > 0,
-    wouldChange: state === 'before', inserted, updated: 0, deleted: 0});
+  const result = (state: 'before' | 'after', inserted = 0, updated = 0) => ({mode, state, changed: inserted + updated > 0,
+    wouldChange: state === 'before', inserted, updated, deleted: 0});
   const initial = db.transaction(inspect)();
   if (mode === 'check' || initial.state === 'after') return result(initial.state);
   assert(!db.readonly, 'Apply requires writable content');
@@ -259,10 +294,10 @@ export function finalSummaryUpgrade(db: Database.Database, fields: FinalField[],
     const summariesBefore = db.prepare('SELECT * FROM I18nSpellSummaryText ORDER BY id').all();
     const changes = importSummaryRows(db, next, false);
     assert.equal(changes.inserted, additions.length);
-    assert.equal(changes.updated, 0, 'summary upgrade must only insert');
+    assert.equal(changes.updated, domainSummaries ? 1 : 0, 'summary upgrade changed unlisted existing rows');
     const meta = structuredClone(current.full.meta);
-    Object.assign(meta.overlays.scFinalNameBody.summaryQa, {acceptedRevision: finalScSummaryRevision,
-      candidateRevision: finalScSummaryCandidate, canonicalRows: next.length,
+    Object.assign(meta.overlays.scFinalNameBody.summaryQa, {acceptedRevision: newRevision,
+      candidateRevision: newCandidate, path: domainSummaries ? domainScSummaryPath : finalScSummaryPath, canonicalRows: next.length,
       scRows: next.filter(row => row.rulebookId === 86).length});
     db.prepare('UPDATE RulesContentBuild SET buildMetaJson=? WHERE id=?').run(JSON.stringify(meta), current.plan.buildId);
     afterWrite(); requireInputs();
@@ -271,11 +306,18 @@ export function finalSummaryUpgrade(db: Database.Database, fields: FinalField[],
     assert.deepEqual(db.prepare('SELECT * FROM sqlite_schema ORDER BY type,name').all(), schemaBefore,
       'summary upgrade changed schema');
     const summariesAfter = new Map((db.prepare('SELECT * FROM I18nSpellSummaryText').all() as {id: string}[]).map(row => [row.id, row]));
-    for (const row of summariesBefore as {id: string}[]) assert.deepEqual(summariesAfter.get(row.id), row,
-      'summary upgrade changed original row/timestamp');
+    for (const row of summariesBefore as Array<{id: string; createdAt: unknown}>) {
+      if (domainSummaries && row.id === correctionId) {
+        const after = summariesAfter.get(row.id)! as Record<string, unknown>;
+        assert.equal(after.createdAt, row.createdAt, '4123 correction changed creation timestamp');
+        const {updatedAt: _updated, ...actual} = after;
+        const {updatedAt: _oldUpdated, ...expected} = {...row, ...following.get(correctionId)!} as Record<string, unknown>;
+        assert.deepEqual(actual, expected, '4123 correction changed unlisted columns');
+      } else assert.deepEqual(summariesAfter.get(row.id), row, 'summary upgrade changed original row/timestamp');
+    }
     const {buildMetaJson: _beforeMeta, ...beforeBuild} = current.full.build;
     const {buildMetaJson: _afterMeta, ...afterBuild} = verifyFull().build;
     assert.deepEqual(afterBuild, beforeBuild, 'summary upgrade changed build columns');
-    return result('after', changes.inserted);
+    return result('after', changes.inserted, changes.updated);
   }).immediate();
 }
