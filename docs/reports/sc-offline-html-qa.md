@@ -2,7 +2,7 @@
 
 The current [#345 scope](https://github.com/FrankHZ/dnd3.5-spellbook/issues/345)
 is a Chinese CHM replacement: bilingual spell names, Chinese bodies and accepted
-Chinese class/domain summaries, compact mechanism fields, and a generated website icon on the ID line.
+Chinese class/domain summaries, compact mechanism fields, and a generated website icon beside heading metadata.
 Independent English bodies and duplicate Current rules tables are omitted. English
 PDF extraction, accepted bilingual inputs, provenance and internal QA are preserved.
 
@@ -24,8 +24,12 @@ Other classes and domains keep their original list layout. Excluded feat
 relationships remain in the read-only input, with the spell body and normal
 class memberships intact; reports distinguish source and displayed domain rows.
 Directory rows use Chinese name (English name), printed M/F/X superscripts,
-and the accepted Chinese summary on one flowing line. Detail titles are smaller;
-body section headings and bottom letter-page navigation are omitted, while the
+and the accepted Chinese summary on one flowing line. Detail titles are smaller,
+with secondary page/ID/icon metadata in the same heading band; repeated
+publication rows are omitted. Long names and narrow views allow natural wrapping,
+with inline-block fallback for CHM readers lacking flex support. Missing page
+numbers introduce no leading separator. Redundant body section headings and
+bottom letter-page navigation are omitted, while the
 Chinese body anchor remains on the body container.
 The website-link checker accepts only the exact generated route for its own entry;
 arbitrary source/external URLs remain detached or rejected.

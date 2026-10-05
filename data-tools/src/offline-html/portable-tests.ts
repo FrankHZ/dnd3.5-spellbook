@@ -53,6 +53,7 @@ try {
   spell(1, "Alpha & <fixture>", plain, html);
   spell(2, "Beta inherited spell", "As Alpha, except the complete inherited difference.", null);
   spell(3, "Gamma fallback", "English fallback body.", null);
+  db.exec("UPDATE SpellContent SET sourcePage=NULL WHERE legacySpellId=3");
   spell(4, "Other book", "DO_NOT_BLEND_NEIGHBOR", null, 87);
   const paragraphs = '<p id="start">First paragraph\nPDF visual fold remains in this paragraph.</p><p>Second <strong>synthetic label</strong> and <em>emphasis</em>.</p>'
     + '<div id="reader-note" class="arbitrary-note" style="display:none" onclick="ignored()"><h3>Synthetic project commentary</h3><p>Separate note paragraph one.</p><p>Separate note paragraph two.</p><a href="#start">Return to rule</a></div>'
@@ -124,7 +125,9 @@ try {
   assert.equal(report.htmlTextDifferences, 0);
   const read = (name: string) => fs.readFileSync(path.join(options.outDir, name), "utf8");
   const first = read("A.html"), $ = load(first);
-  assert.equal($("#spell-1 > h2").text(), "雪 & <名字> / Alpha & <fixture>");
+  assert.equal($("#spell-1 > h2 > .spell-name").text(), "雪 & <名字> / Alpha & <fixture>");
+  assert.equal($("#spell-1 > h2 > .spell-metadata").text(), "p. 42 · ID 1↗");
+  assert.equal($("#spell-1 > p").length, 0);
   assert.equal($("#spell-1-zh").text(), long);
   assert.equal($("#spell-1-en, #spell-1-rules, .rules, [lang='en']").length, 0);
   assert.equal($(".spell-entry .spell-body").length, 2);
@@ -133,9 +136,10 @@ try {
   assert.equal($("#spell-1 a.website-link").attr("title"), "在网站查看");
   assert.equal($("#spell-1 a.website-link").attr("aria-label"), "在网站查看");
   assert($("#spell-1 a.website-link").parent().text().includes("ID 1"));
+  assert.equal($("#spell-1 a.website-link").closest('h2').length, 1);
   assert.equal($("#spell-1 > h3, #spell-1 > .navigation").length, 0);
   assert.equal($(".navigation").length, 1);
-  assert(read("style.css").includes('.spell-entry > h2 { font-size: 1.17em; }'));
+  assert(read("style.css").includes('.spell-entry > h2 { font-size: 1.17em;'));
   const inherited = load(read("B.html")), body = inherited("#spell-2-zh");
   assert.equal(body.text(), plain);
   assert.equal(body.find("table td").attr("colspan"), "2");
@@ -153,6 +157,7 @@ try {
   assert.ok(body.text().includes('[fixture-question-two] 第二处独立疑问；此备注不会改写原规则。'));
   assert(!read("B.html").includes("complete inherited difference"));
   assert.equal(load(read("G.html"))("#spell-3-zh pre").text(), "中文  回退\t保留。\n\n最后一行。");
+  assert.equal(load(read("G.html"))("#spell-3 > h2 > .spell-metadata").text(), "ID 3↗");
   assert.deepEqual($(".spell-entry").toArray().map(el => $(el).attr("id")), ["spell-1", "spell-5"]);
   assert.equal(report.classPages, 2); assert.equal(report.classMemberships, 4); assert.equal(report.classListEntries, 5);
   assert.equal(report.selectedSummaries, 7); assert.deepEqual(report.summaryVariants, { en: "imarvin", zh: "chm" });

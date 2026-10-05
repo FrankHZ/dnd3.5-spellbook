@@ -53,8 +53,12 @@ to removed `en`/`rules` sections point to the spell entry instead. Chinese secti
 links retain `-zh`; body anchors receive a per-spell `zh-<ID>` prefix. The CHM
 `#content` container remains. Reading requires no JavaScript or network access.
 Detail titles are one size smaller, the redundant Chinese-body heading is omitted,
-and letter pages keep only the top directory navigation. Each entry has a small
-`↗` website icon on its ID line, with “在网站查看” as tooltip/accessible name, linking to
+and letter pages keep only the top directory navigation. Each entry's heading
+places the bilingual name on the left and smaller, normal-weight page/ID metadata
+on the right, without a repeated publication row. Metadata can wrap below a long
+title in narrow views; inline-block text provides a readable fallback for CHM
+readers without flex layout. Missing page numbers leave only the ID and icon.
+The small `↗` website icon stays beside the ID, with “在网站查看” as tooltip/accessible name, linking to
 `https://www.d20spellcodex.com/spells/<legacySpellId>`.
 
 ## Introduction

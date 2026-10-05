@@ -118,7 +118,9 @@ const style = `body { margin: 2em; color: #222; background: #fff; font-family: "
 #content { max-width: 62em; margin: auto; } h1 { font-size: 1.7em; } h2 { border-bottom: 1px solid #bbb; }
 a { color: #164f91; } .notice { padding: .6em; border: 1px solid #aaa; background: #f5f5f5; }
 .spell-entry { margin-bottom: 3em; } .spell-body p, .spell-body pre, .spell-body ul, .spell-body ol, .spell-body dl, .spell-body table, .spell-body blockquote { margin-top: 0; margin-bottom: 1.65em; }
-.spell-entry > h2 { font-size: 1.17em; }
+.spell-entry > h2 { font-size: 1.17em; display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .2em .8em; }
+.spell-name, .spell-metadata { display: inline-block; max-width: 100%; word-wrap: break-word; overflow-wrap: anywhere; }
+.spell-metadata { font-size: .72em; font-weight: normal; color: #555; }
 .website-link { font-size: .85em; margin-left: .35em; text-decoration: none; }
 .component-labels { font-size: .75em; }
 .membership-note { display: block; } .spell-body li p, .spell-body td p, .spell-body th p { margin-bottom: .5em; }
@@ -465,8 +467,7 @@ export function exportOfflineHtml(options: ExportOptions,
         // Its body is never included in the Chinese document or output counts.
         bodyHtml(display.englishHtml, s.descriptionText, `en-${id}`, destinations,
           { detachedReferences: 0, htmlTextDifferences: 0 });
-        letterEntries.get(s.canonicalName.charAt(0).toUpperCase())!.push(`<div class="spell-entry" id="${spellAnchor(id)}"><h2>${text(t.name)} / ${text(s.canonicalName)}</h2>
-          <p>${text(book[0]!.name)}${s.sourcePage === null ? "" : ` · p. ${s.sourcePage}`} · ID ${id}<a class="website-link" href="${websiteRoot}${id}" title="在网站查看" aria-label="在网站查看">↗</a></p>
+        letterEntries.get(s.canonicalName.charAt(0).toUpperCase())!.push(`<div class="spell-entry" id="${spellAnchor(id)}"><h2><span class="spell-name">${text(t.name)} / ${text(s.canonicalName)}</span> <span class="spell-metadata">${s.sourcePage === null ? "" : `p. ${s.sourcePage} · `}ID ${id}<a class="website-link" href="${websiteRoot}${id}" title="在网站查看" aria-label="在网站查看">↗</a></span></h2>
           ${nameLang === "en" ? '<p class="notice">中文名称缺失：显示英文名称。</p>' : ""}
           <div class="spell-body" id="${spellAnchor(id)}-zh" lang="zh">${zh}</div></div>`);
       }
