@@ -13,6 +13,7 @@ import { selectProcessedMembershipMarkers, type MachineMarker } from "../spell-l
 import { readPrintedMarkerRecords } from "../spell-list-markers/storage";
 import type { DomainPower, DomainPowers } from "./domain-powers";
 import type { CompleteDomainList, CompleteDomainLists } from "./domain-lists";
+import type { SourceQuestion } from "./source-questions";
 
 type Spell = {
   id: string; legacySpellId: number; canonicalName: string; sourceRulebookId: number;
@@ -71,6 +72,30 @@ const text = (v: string) => v.replace(/&/g, "&amp;").replace(/</g, "&lt;")
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const spellAnchor = (id: number) => `spell-${id}`;
 const websiteRoot = "https://www.d20spellcodex.com/spells/";
+/** Logical page names stay source-bound; only emitted files use CHM category folders. */
+export function offlinePagePath(name: string) {
+  if (/^class-[1-9]\d*(?:-[1-9]\d*)?\.html$/.test(name)) return `职业法表/${name}`;
+  if (/^domain-[1-9]\d*\.html$/.test(name)) return `领域法表/${name}`;
+  if (/^[A-Z]\.html$/.test(name)) return `法术描述/${name}`;
+  return name;
+}
+
+function organizePages(pages: Map<string, string>) {
+  return new Map([...pages].map(([name, html]) => {
+    const filename = offlinePagePath(name);
+    if (!name.endsWith(".html")) return [filename, html];
+    const $ = load(html);
+    $("a[href], link[href]").each((_, el) => {
+      const href = $(el).attr("href")!;
+      if (href.startsWith(websiteRoot) || href.startsWith("#")) return;
+      const [target, fragment] = href.split("#");
+      if (!pages.has(target!)) throw new Error(`${name}: missing or non-local logical page link`);
+      const relative = path.posix.relative(path.posix.dirname(filename), offlinePagePath(target!));
+      $(el).attr("href", relative + (fragment === undefined ? "" : `#${fragment}`));
+    });
+    return [filename, $.html()];
+  }));
+}
 function selectSummaries(rows: Summary[], ids: Set<number>, book: number, variant: string, englishTargets: Set<number>) {
   const selected = new Map<number, { en: string; zh: string }>(), gaps: SummaryGap[] = [];
   for (const id of [...ids].sort((a, b) => a - b)) {
@@ -112,7 +137,53 @@ function language(raw: string | null, id: number, field: string, variant: string
 function document(title: string, body: string) {
   return `<!doctype html>\n<html lang="zh"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>${text(title)}</title><link rel="stylesheet" href="style.css"></head><body><div id="content">${body}</div></body></html>\n`;
 }
-const directoryNavigation = (introduction: boolean) => `<p class="navigation">${introduction ? '<a href="introduction.html">引言</a> | ' : ""}<a href="index.html#classes">职业目录</a> | <a href="index.html#domains">领域目录</a> | <a href="index.html#letters">A–Z 正文</a></p>`;
+const directoryNavigation = (introduction: boolean, questions: boolean) => `<p class="navigation">${introduction ? '<a href="introduction.html">引言</a> | ' : ""}<a href="index.html#classes">职业目录</a> | <a href="index.html#domains">领域目录</a> | <a href="index.html#letters">A–Z 正文</a>${questions ? ' | <a href="source-questions.html">原文疑义</a>' : ""}</p>`;
+
+function sourceQuestionPage(rows: readonly SourceQuestion[], spells: Map<number, Spell>, translations: Map<number, Text>, destinations: Map<number, string>) {
+  if (!Array.isArray(rows) || !rows.length) throw new Error("Source questions require a nonempty checklist");
+  const kinds = { conflict: "原述冲突", interpretation: "解释疑问", "missing-explanation": "缺少说明" };
+  const sources: Record<string, string> = { sc: "SC", phb: "PHB", errata: "官方勘误" };
+  const seen = new Set<string>();
+  const anchor = (row: SourceQuestion) => `question-${row.targetId}-${encodeURIComponent(row.questionId)}`;
+  const location = (page: SourceQuestion["statements"][number] | SourceQuestion["contextPages"][number]) => {
+    if (!page || !Object.hasOwn(sources, page.sourceId)
+      || (page.printedPage === null ? page.sourceId !== "errata" : !Number.isSafeInteger(page.printedPage) || page.printedPage < 1)
+      || !Number.isSafeInteger(page.physicalPage) || page.physicalPage < 1) throw new Error("Invalid source-question page locator");
+    return `${sources[page.sourceId]}：${page.printedPage === null ? "未标印刷页码" : `印刷页 ${page.printedPage}`}；PDF 第 ${page.physicalPage} 页。`;
+  };
+  const entries = rows.map((row: SourceQuestion) => {
+    const spell = row && spells.get(row.targetId), translated = row && translations.get(row.targetId);
+    const key = row && JSON.stringify([row.targetId, row.questionId]);
+    if (!row || !spell || !translated || !Number.isSafeInteger(row.targetId) || !present(row.questionId)
+      || row.language !== "zh-CN" || row.state !== "source-unresolved" || !Object.hasOwn(kinds, row.kind)
+      || seen.has(key) || row.chineseName !== translated.name || row.englishName !== spell.canonicalName
+      || !present(row.currentNote) || row.bodyText !== translated.descriptionText || row.bodyHtml !== translated.descriptionHtml
+      || !row.bodyText.includes(row.currentNote) || !present(row.errataFinding) || !present(row.sourceIssue?.impact)
+      || !Array.isArray(row.statements) || !row.statements.length || !Array.isArray(row.contextPages) || !row.contextPages.length) {
+      throw new Error("Invalid, duplicate or stale source-question binding");
+    }
+    seen.add(key);
+    const statements = row.statements.map((statement: SourceQuestion["statements"][number]) => {
+      if (!present(statement.sourceQuote)) throw new Error("Missing source-question statement");
+      return `<p>${text(location(statement))}</p><pre lang="en">${text(statement.sourceQuote)}</pre>`;
+    }).join("\n");
+    const context = row.contextPages.map((page: SourceQuestion["contextPages"][number]) => {
+      if (!present(page.readText)) throw new Error("Missing source-question context");
+      return `<p>${text(location(page))}</p><pre lang="en">${text(page.readText)}</pre>`;
+    }).join("\n");
+    return `<section class="source-question" id="${anchor(row)}"><h2>${text(row.chineseName)}（${text(row.englishName)}）</h2>
+      <p>法术 ID ${row.targetId} · 问题编号 ${text(row.questionId)} · ${kinds[row.kind]} · 尚待解释</p>
+      <p><a href="${destinations.get(row.targetId)!}">查看法术正文</a> | <a href="#questions">返回疑义目录</a></p>
+      <h3>当前中文备注（本项目说明，非官方勘误）</h3><p class="current-note plain">${text(row.currentNote)}</p>
+      <h3>具体待确认范围</h3><p class="question-impact plain">${text(row.sourceIssue.impact)}</p>
+      <h3>英文依据</h3>${statements}<h3>适用勘误结论</h3><p class="errata-finding plain">${text(row.errataFinding)}</p>
+      <details><summary>展开完整原文及对照范围</summary>${context}</details>
+      <h3>复核记录</h3><p>请逐项记录回复、依据／引文／可核查出处、来源类型（官方勘误／印次变化／官方说明／个人解释）、版本／印次及复核人。</p></section>`;
+  });
+  const bodies = new Set(rows.map(row => row.targetId)).size;
+  return `<h1>原文疑义复核清单</h1><p class="notice">共 ${rows.length} 个问题，涉及 ${bodies} 个法术。以下为既有清单中的待解释问题；中文备注属于本项目说明，非官方勘误。译文接受不表示规则疑问已解决，个人解释也不自动成为官方勘误。</p>
+    <h2 id="questions">疑义目录</h2><ol>${rows.map(row => `<li><a href="#${encodeURIComponent(anchor(row))}">${text(row.chineseName)}（${text(row.englishName)}） · ${text(row.questionId)}</a></li>`).join("\n")}</ol>${entries.join("\n")}`;
+}
 const preview = '<p class="notice">中文内容预览，自然排版待视觉验收。</p>';
 const membershipNotice = '<p class="notice">职业目录保留当前归属与附注；部分外部归属的原书核对仍待完成，目录不构成来源 QA 通过。</p>';
 const domainNotice = '<p class="notice">本书收录的领域法术：仅列本书正文范围内的条目，并非原书完整领域法表。</p>';
@@ -368,7 +439,7 @@ export function validatePages(pages: Map<string, string>) {
       const href = $(el).attr("href")!; links++;
       if (href.startsWith(websiteRoot)) {
         const onlineId = $(el).attr("data-spell-id");
-        if (/^domain-[1-9]\d*\.html$/.test(name) && el.tagName === "a"
+        if (/^domain-[1-9]\d*\.html$/.test(path.posix.basename(name)) && el.tagName === "a"
           && $(el).attr("class") === "domain-online-link" && /^[1-9]\d*$/.test(onlineId ?? "")
           && Number.isSafeInteger(Number(onlineId)) && href === websiteRoot + onlineId
           && $(el).closest(".domain-complete .domain-binding").length
@@ -385,10 +456,12 @@ export function validatePages(pages: Map<string, string>) {
         return;
       }
       const [target, fragment] = href.split("#");
-      if (href.includes("\\") || /[:/?]/.test(target!) || !pages.has(target || name)) {
+      const destination = target ? path.posix.normalize(path.posix.join(path.posix.dirname(name), target)) : name;
+      if (href.includes("\\") || /[:?]/.test(target!) || target!.startsWith("/")
+        || destination === ".." || destination.startsWith("../") || !pages.has(destination)) {
         throw new Error(`${name}: missing or non-local link`);
       }
-      if (fragment && !anchors.get(target || name)?.has(decodeURIComponent(fragment))) {
+      if (fragment && !anchors.get(destination)?.has(decodeURIComponent(fragment))) {
         throw new Error(`${name}: missing link anchor`);
       }
     });
@@ -414,7 +487,8 @@ function newOutput(outDir: string, contentDb: string) {
 export function exportOfflineHtml(options: ExportOptions,
   presentations: ReadonlyMap<number, PdfTypographyPresentation> = new Map(), sourceDb?: Database.Database,
   machine: readonly MachineMarker[] = [], introduction?: string, domainPowerContent?: DomainPowers,
-  domainListContent?: CompleteDomainLists, classSummaryReplacements: readonly ClassSummaryReplacement[] = []) {
+  domainListContent?: CompleteDomainLists, classSummaryReplacements: readonly ClassSummaryReplacement[] = [],
+  sourceQuestions?: readonly SourceQuestion[]) {
   if (!Number.isSafeInteger(options.book) || options.book <= 0 || !present(options.variant)) {
     throw new Error("A positive book ID and explicit variant are required");
   }
@@ -423,7 +497,8 @@ export function exportOfflineHtml(options: ExportOptions,
   }
   if (domainPowerContent !== undefined && options.book !== 86) throw new Error("Invalid SC domain-power content");
   if (domainListContent !== undefined && options.book !== 86) throw new Error("Invalid SC complete domain-list content");
-  const navigation = directoryNavigation(introduction !== undefined);
+  if (sourceQuestions !== undefined && (options.book !== 86 || options.variant !== "effective")) throw new Error("Source questions require SC effective content");
+  const navigation = directoryNavigation(introduction !== undefined, sourceQuestions !== undefined);
   const contentDb = path.resolve(repoRoot(), options.contentDb);
   const out = newOutput(path.resolve(repoRoot(), options.outDir), contentDb);
   const db = sourceDb ?? new Database(contentDb, { readonly: true, fileMustExist: true });
@@ -552,6 +627,10 @@ export function exportOfflineHtml(options: ExportOptions,
       const counts = { spells: spells.length, chineseNames: 0, chineseBodies: 0,
         englishNameFallbacks: 0, englishBodyFallbacks: 0, detachedReferences: 0, htmlTextDifferences: 0 };
       const pages = new Map<string, string>([["style.css", style]]);
+      if (sourceQuestions !== undefined) {
+        pages.set("source-questions.html", document(`${book[0]!.name} — 原文疑义`,
+          `${navigation}${sourceQuestionPage(sourceQuestions, byId, translations, destinations)}${navigation}`));
+      }
       const introductionCounts = { included: introduction !== undefined, sections: 0, paragraphs: 0, listItems: 0 };
       if (introduction !== undefined) {
         const source = load(introduction, {}, false);
@@ -687,16 +766,23 @@ export function exportOfflineHtml(options: ExportOptions,
       }
       pages.set("index.html", document(book[0]!.name, `<h1>${text(book[0]!.name)}</h1>${preview}
         ${introduction !== undefined ? '<p><a href="introduction.html">引言</a></p>' : ""}
+        ${sourceQuestions !== undefined ? '<p><a href="source-questions.html">原文疑义复核清单</a></p>' : ""}
         <h2 id="classes">职业目录</h2>${membershipNotice}${classMenu.length ? `<ul>${classMenu.join("\n")}</ul>` : '<p class="empty">无职业归属。</p>'}
         <h2 id="domains">领域目录</h2>${domainDirectoryNotice}${domainMenu.length ? `<ul>${domainMenu.join("\n")}</ul>` : '<p class="empty">本书收录范围内，无常规领域条目。</p>'}
         <h2 id="letters">A–Z 正文</h2><p>${letters.map(letter => `<a href="${letter}.html">${letter}</a>`).join(" | ")}</p>`));
-      const links = validatePages(pages);
+      const outputPages = organizePages(pages);
+      const links = validatePages(outputPages);
       fs.mkdirSync(path.dirname(out), { recursive: true });
       fs.mkdirSync(out);
-      for (const [name, html] of pages) fs.writeFileSync(path.join(out, name), html, { encoding: "utf8", flag: "wx" });
+      for (const [name, html] of outputPages) {
+        const file = path.join(out, name);
+        fs.mkdirSync(path.dirname(file), { recursive: true });
+        fs.writeFileSync(file, html, { encoding: "utf8", flag: "wx" });
+      }
       const report = { ...counts, files: pages.size + 1, links, book: options.book, variant: options.variant,
-        layout: "classes-domains-then-az", letterPages: letters.length, classPages: classPages.size, classMemberships,
-        sharedClassPages: [...classPages.values()].flatMap(group => group.sharedOwnerIds ? [{ filename: "class-1-4.html", ownerIds: group.sharedOwnerIds }] : []),
+        layout: "classes-domains-then-az", outputFolders: { classes: "职业法表", domains: "领域法表", bodies: "法术描述" },
+        letterPages: letters.length, classPages: classPages.size, classMemberships,
+        sharedClassPages: [...classPages.values()].flatMap(group => group.sharedOwnerIds ? [{ filename: offlinePagePath("class-1-4.html"), ownerIds: group.sharedOwnerIds }] : []),
         classListEntries: listEntries.filter(row => row.listType === "class").length, classTargets: classTargets.size, classlessTargets: spells.filter(s => !classTargets.has(s.legacySpellId)).map(s => s.legacySpellId),
         classNameFallbacks: [...classes.keys()].filter(id => !classNames.has(id)),
         schoolGroupedClassPages, schoolNameFallbacks: [...schoolNameFallbacks].sort(),
@@ -718,6 +804,8 @@ export function exportOfflineHtml(options: ExportOptions,
           explicitEmptyRows: [...completeLists.values()].flatMap(domain => domain.occurrences).filter(row => row.printedMarkers === "").length,
           unknownMarkers: [...completeLists.values()].flatMap(domain => domain.occurrences).filter(row => row.printedMarkers === null).length },
         introduction: introductionCounts,
+        sourceQuestions: { included: sourceQuestions !== undefined, questions: sourceQuestions?.length ?? 0,
+          bodies: new Set(sourceQuestions?.map(row => row.targetId)).size },
         domainPowers: { included: domainPowerContent !== undefined, pages: powers.size,
           requirementPages: [...powers.values()].filter(power => power.requirementText !== null).length,
           sharedRulePages: [...powers.values()].filter(power => power.sharedRulesKey !== null).length,
