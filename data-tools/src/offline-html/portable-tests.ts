@@ -6,6 +6,7 @@ import Database from "better-sqlite3";
 import { load } from "cheerio";
 import { repoRoot } from "../shared/env";
 import { exportOfflineHtml, SummarySelectionError, validatePages } from "./export";
+import type { ClassSummaryReplacement } from "./export";
 import { main } from "./cli";
 import type { PdfTypographyPresentation } from "../zh-parser/pdf-typography";
 import { processAutomaticMarkers, type NamedEntry, type SpellName } from "../spell-list-markers/automatic";
@@ -566,6 +567,50 @@ try {
     assert.equal(fs.readFileSync(path.join(selectedOut, "G.html"), "utf8"), read("G.html"));
   } finally { memoryView.close(); }
   assert.equal((db.prepare('SELECT descriptionHtml FROM SpellContent WHERE legacySpellId=5').get() as { descriptionHtml: string }).descriptionHtml, paragraphs);
+  const replacement: ClassSummaryReplacement = { spellId: 1, rulebookId: 86, lang: "zh", variant: "chm",
+    reviewStatus: "accepted", previousSummaryText: "已接受短描述 1 & <保留>", summaryText: "接受后摘要 & <script>纯文字</script>" };
+  const summaryView = new Database(db.serialize(), { readonly: true });
+  try {
+    const before = summaryView.serialize(), replacementOut = path.join(output, "class-summary-replacement");
+    const result = exportOfflineHtml({ ...options, contentDb: ":memory:", outDir: replacementOut },
+      new Map(), summaryView, [], undefined, undefined, undefined, [replacement]);
+    assert.deepEqual(result.classSummaryReplacementIds, [1]);
+    assert.deepEqual(report.classSummaryReplacementIds, []);
+    const classPage = load(fs.readFileSync(path.join(replacementOut, "class-1.html"), "utf8"));
+    assert.deepEqual(classPage('a[href$="#spell-1"]').toArray().map(el => classPage(el).closest('li').find('.summary').text()),
+      [replacement.summaryText, replacement.summaryText]);
+    assert.equal(classPage('.summary script').length, 0);
+    for (const name of ["A.html", "B.html", "class-2.html", "domain-1.html", "domain-2.html"]) {
+      assert.equal(fs.readFileSync(path.join(replacementOut, name), "utf8"), read(name));
+    }
+    const invalid: ClassSummaryReplacement[][] = [
+      [replacement, replacement], [{ ...replacement, spellId: 7 }], [{ ...replacement, spellId: 999 }],
+      [{ ...replacement, spellId: 1.5 }], [{ ...replacement, rulebookId: 87 }], [{ ...replacement, lang: "en" }],
+      [{ ...replacement, variant: "effective" }], [{ ...replacement, reviewStatus: "review" }],
+      [{ ...replacement, summaryText: " " }], [{ ...replacement, previousSummaryText: " " }],
+      [{ ...replacement, previousSummaryText: replacement.previousSummaryText + " " }],
+    ];
+    invalid.forEach((rows, index) => {
+      const badOut = path.join(output, `bad-class-summary-${index}`);
+      assert.throws(() => exportOfflineHtml({ ...options, contentDb: ":memory:", outDir: badOut },
+        new Map(), summaryView, [], undefined, undefined, undefined, rows), /class summary replacement/);
+      assert(!fs.existsSync(badOut));
+    });
+    assert.throws(() => exportOfflineHtml({ ...options, variant: "other", contentDb: ":memory:", outDir: path.join(output, "wrong-replacement-variant") },
+      new Map(), summaryView, [], undefined, undefined, undefined, [replacement]), /class summary replacement/);
+    assert(summaryView.serialize().equals(before));
+  } finally { summaryView.close(); }
+  for (const sql of ["DELETE FROM I18nSpellSummaryText WHERE id='summary:1:zh'",
+    "UPDATE I18nSpellSummaryText SET reviewStatus='review' WHERE id='summary:1:en'"]) {
+    const gapFixture = new Database(db.serialize()); gapFixture.exec(sql);
+    const gapView = new Database(gapFixture.serialize(), { readonly: true }); gapFixture.close();
+    try {
+      const gapOut = path.join(output, sql.startsWith("DELETE") ? "replacement-missing-baseline" : "replacement-bad-english-baseline");
+      assert.throws(() => exportOfflineHtml({ ...options, contentDb: ":memory:", outDir: gapOut },
+        new Map(), gapView, [], undefined, undefined, undefined, [replacement]), SummarySelectionError);
+      assert(!fs.existsSync(gapOut));
+    } finally { gapView.close(); }
+  }
   // School groups keep each spell row once, including duplicate relationships,
   // distinct same-name spells, printed markers, Chinese summaries and qualifiers.
   const schoolFixture = new Database(db.serialize());

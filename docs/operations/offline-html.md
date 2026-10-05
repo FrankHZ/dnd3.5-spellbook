@@ -55,6 +55,20 @@ and domain pages, relationships, distinct targets, domain-only targets and selec
 Chinese/English summaries separately. Invalid levels, owner conflicts and duplicate
 domain tuples reject before output creation.
 
+The library's optional eighth argument accepts caller-authenticated Chinese class
+summary replacements. Each row supplies `spellId`, `rulebookId`, `lang`, `variant`,
+`reviewStatus`, `previousSummaryText` and `summaryText`. The exporter first validates
+the existing DB's complete summary selection, including accepted English class
+summaries. Replacements must bind a selected SC/effective class target, accepted
+Chinese `chm` text and the exact previous Chinese summary. Duplicate IDs, stale
+text, other books/variants and domain-only targets reject before output creation.
+Only class display changes; ordinary/complete domain summaries, English checks,
+DB fields and provenance remain intact. New text is escaped as plain text and
+`classSummaryReplacementIds` records the consumed IDs. Main-gate supplies only
+the fixed accepted #500 correction for spell 4123; its 29 added domain-only
+summaries are not class replacements. This does not change the source-authentication
+workflow's actual 6,837-summary DB baseline or authorize a DB write.
+
 Entries use `spell-<ID>` and `spell-<ID>-zh` anchors. Existing scoped source links
 to removed `en`/`rules` sections point to the spell entry instead. Chinese section
 links retain `-zh`; body anchors receive a per-spell `zh-<ID>` prefix. The CHM

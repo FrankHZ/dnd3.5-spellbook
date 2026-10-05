@@ -16,8 +16,13 @@ Domain checks cover menu order, class/domain owner-ID collisions, levels 1–9,
 subset-specific empty levels, Chinese-name overlays and explicit fallback,
 domain-only Chinese summaries without unused English-summary requirements,
 qualifiers, exclusion of extra feat grants, invalid levels and duplicate domain tuples.
-Class checks cover Chinese `default` names and explicit fallback. SC
-Sorcerer/Wizard checks cover level-specific Chinese school groups,
+Class checks cover Chinese `default` names and explicit fallback. Chinese
+class-summary replacement checks cover exact accepted previous-text bindings,
+duplicate/stale/wrong-book or variant rejection, domain-only target rejection,
+plain-text escaping, unchanged domain/body pages and a byte-identical readonly
+memory snapshot. Missing Chinese or unaccepted English DB summaries still reject
+before a replacement can be consumed; the original source-auth baseline is retained.
+SC Sorcerer/Wizard checks cover level-specific Chinese school groups,
 one shared Sorcerer/Wizard page and directory link, combined-school rows,
 duplicate owner relationships and qualifiers, distinct same-name
 spells and preservation of source-bound printed markers and Chinese summaries.

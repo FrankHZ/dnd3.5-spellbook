@@ -57,6 +57,7 @@ function selectDomainPowers(content: DomainPowers | undefined, book: number, dom
   return selected;
 }
 type Summary = { spellId: number; rulebookId: number; lang: string; variant: string; summaryText: string; reviewStatus: string };
+export type ClassSummaryReplacement = Summary & { previousSummaryText: string };
 export type SummaryGap = { spellId: number; lang: string; variant: string;
   reason: "missing" | "multiple" | "wrong-book" | "not-accepted" | "empty" };
 export class SummarySelectionError extends Error {
@@ -413,7 +414,7 @@ function newOutput(outDir: string, contentDb: string) {
 export function exportOfflineHtml(options: ExportOptions,
   presentations: ReadonlyMap<number, PdfTypographyPresentation> = new Map(), sourceDb?: Database.Database,
   machine: readonly MachineMarker[] = [], introduction?: string, domainPowerContent?: DomainPowers,
-  domainListContent?: CompleteDomainLists) {
+  domainListContent?: CompleteDomainLists, classSummaryReplacements: readonly ClassSummaryReplacement[] = []) {
   if (!Number.isSafeInteger(options.book) || options.book <= 0 || !present(options.variant)) {
     throw new Error("A positive book ID and explicit variant are required");
   }
@@ -529,6 +530,19 @@ export function exportOfflineHtml(options: ExportOptions,
         (SELECT legacySpellId FROM SpellContent WHERE sourceRulebookId=?)`).all(options.book) as Summary[];
       const summaries = selectSummaries(summaryRows, domainListContent === undefined
         ? new Set([...classTargets, ...domainTargets]) : classTargets, options.book, options.variant, classTargets);
+      // Validate the real DB summary baseline first; only class display consumes replacements.
+      const classSummaryOverrides = new Map<number, string>();
+      if (!Array.isArray(classSummaryReplacements)) throw new Error("Invalid class summary replacements");
+      for (const row of classSummaryReplacements) {
+        if (!row || options.book !== 86 || options.variant !== "effective"
+          || !Number.isSafeInteger(row.spellId) || row.spellId <= 0 || !classTargets.has(row.spellId)
+          || row.rulebookId !== options.book || row.lang !== "zh" || row.variant !== "chm"
+          || row.reviewStatus !== "accepted" || !present(row.summaryText) || !present(row.previousSummaryText)
+          || classSummaryOverrides.has(row.spellId) || summaries.get(row.spellId)!.zh !== row.previousSummaryText) {
+          throw new Error("Invalid, duplicate or stale class summary replacement");
+        }
+        classSummaryOverrides.set(row.spellId, row.summaryText);
+      }
       const byId = new Map(spells.map(spell => [spell.legacySpellId, spell]));
       const powers = selectDomainPowers(domainPowerContent, options.book, domains);
       const completeLists = selectCompleteDomainLists(domainListContent, domains, byId, destinations);
@@ -637,7 +651,8 @@ export function exportOfflineHtml(options: ExportOptions,
                 if (group.sharedOwnerIds && group.sharedOwnerIds.some(id => !memberships.some(row => row.ownerLegacyId === id))) {
                   qualifiers.unshift([...new Set(memberships.map(row => names.get(row.ownerLegacyId) ?? row.ownerName))].join("／"));
                 }
-                return `<li><a href="${destinations.get(id)}">${text(translation.name!)}（${text(spell.canonicalName)}）</a>${labels ? `<sup class="component-labels" title="${markerTitle}">${text(labels)}</sup>` : ""}：<span lang="zh" class="summary">${text(summary.zh)}</span>
+                const chineseSummary = kind === "class" ? classSummaryOverrides.get(id) ?? summary.zh : summary.zh;
+                return `<li><a href="${destinations.get(id)}">${text(translation.name!)}（${text(spell.canonicalName)}）</a>${labels ? `<sup class="component-labels" title="${markerTitle}">${text(labels)}</sup>` : ""}：<span lang="zh" class="summary">${text(chineseSummary)}</span>
                   ${qualifiers.map(value => `<span class="membership-note">${text(value)}</span>`).join("")}</li>`;
               };
             let rows: string;
@@ -711,6 +726,7 @@ export function exportOfflineHtml(options: ExportOptions,
         selectedSummaries: summaries.size + classTargets.size, selectedChineseSummaries: summaries.size,
         selectedEnglishSummaries: classTargets.size, domainChineseSummaries: domainListContent === undefined ? domainTargets.size : 0,
         summaryVariants: { en: selectedSummaryVariant("en", options.variant), zh: selectedSummaryVariant("zh", options.variant) },
+        classSummaryReplacementIds: [...classSummaryOverrides.keys()].sort((a, b) => a - b),
         displayLanguage: "zh", displayedBodies: spells.length, displayedSummaries: summaries.size, websiteLinks: spells.length,
         pdfFormatting: presentations.size ? "partial-main-gate-selected" : "pending-431-source-mapping",
         typography: { reviewedSelectedIds: [...presentations.keys()].sort((a, b) => a - b),
