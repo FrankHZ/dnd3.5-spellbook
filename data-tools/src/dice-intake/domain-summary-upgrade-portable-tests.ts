@@ -9,6 +9,8 @@ import {importGenerated} from '../rules-content/cli';
 import {importSummaryRows} from '../short-desc/import';
 import {summaryImportStep} from '../short-desc/import-step';
 import type {SummaryRow} from '../short-desc/summary-row-schema';
+import {clarificationCandidate, clarificationAcceptance, clarificationPath} from './source-clarifications';
+import {punctuationCandidate, punctuationAcceptance} from './source-fidelity';
 import {applyFinalOverlay, planFinalOverlay, finalSummaryUpgrade, verifyFullNormalized,
   finalScNoteRevision, finalScSummaryRevision, domainScSummaryRevision, domainScSummaryCandidate,
   domainScSummaryPath, type FinalField} from './final-writer';
@@ -16,7 +18,7 @@ import {applyFinalOverlay, planFinalOverlay, finalSummaryUpgrade, verifyFullNorm
 const root=path.resolve(__dirname,'../../..'), temp=fs.mkdtempSync(path.join(os.tmpdir(),'sc-domain-summary-'));
 const addedIds=[3840,3841,3844,3878,3904,3949,4021,4027,4028,4213,4215,4216,4239,4263,4276,
   4328,4472,4477,4478,4483,4548,4551,4575,4578,4579,4581,4618,4721,4767];
-const ids=[...addedIds,4088,4111,4123,4229];
+const ids=[...addedIds,4088,4111,4123,4229,3901,4465,4564];
 const source:LegacyRulesContentInput={rulebooks:[{id:86,dndEditionId:5,name:'Synthetic',abbr:'SC',slug:'synthetic',
   publicationCategory:'supplement',publicationFamily:'synthetic',publicationSourceKind:'synthetic',publicationDisplayOrder:1,
   publicationYear:null,publicationDate:null,publicationUrl:null,publicationImage:null,publicationReviewStatus:'accepted'},{id:9,dndEditionId:3,name:'Other',abbr:'OTHER',slug:'other',
@@ -37,7 +39,20 @@ const fields:FinalField[]=ids.flatMap(targetId=>[
   {targetId,rulebookId:86,field:'name',text:'受保护名称',origin:{kind:'chm',sourceKey:'synthetic'},review:{disposition:'source-reviewed-retention'}},
   {targetId,rulebookId:86,field:'body',text:'受保护正文及读者备注',html:'<p>受保护正文及读者备注</p>',
     origin:{kind:'native',sourceKey:'synthetic'},review:{disposition:'source-correct'}}] as FinalField[]);
-const report={sourceRevisions:{sourcePunctuationCandidate:'a'.repeat(40),laterSourceClarifications:'b'.repeat(40)},
+for(const field of fields.filter(f=>f.field==='body'&&[3901,4465,4564].includes(f.targetId))){
+  const text='合'.repeat(400)+'\n\n受保护备注';field.text=text;field.html=`<pre>${text}</pre>`;
+  field.sourceCorrection={revision:clarificationCandidate,acceptanceRevision:clarificationAcceptance,
+    path:clarificationPath,targetId:field.targetId,prior:structuredClone(field)};
+  for(const key of ['text','html'] as const){
+    const chars=Array.from(field[key]!),offset=key==='html'?5:0;
+    if(field.targetId===4465)chars.splice(257+offset,0,...'新'.repeat(8));
+    else if(field.targetId===4564)chars.splice(314+offset,0,...'新'.repeat(7));
+    else {chars.splice(260+offset,7,'新','新');chars.splice(221+offset,0,...'新'.repeat(8));}
+    field[key]=chars.join('');
+  }
+}
+const report={sourceRevisions:{sourcePunctuationCandidate:punctuationCandidate,sourcePunctuationAcceptance:punctuationAcceptance,
+  sourceClarificationCandidate:clarificationCandidate,sourceClarificationAcceptance:clarificationAcceptance},
   changedNames:0,changedBodies:ids.length,retained:{names:ids,bodies:[]},sourceQuestionIds:[],
   readerNoteAddendum:{revision:finalScNoteRevision,targets:[4088,4111,4229]}};
 const row=(spellId:number,summaryText:string):SummaryRow=>({id:`spell-summary:${spellId}:zh:chm`,spellId,rulebookId:86,
@@ -77,6 +92,14 @@ try {
   assert.throws(()=>entry.main(['--upgrade-domain-summaries']),/requires accepted domain summaries/);
   assert.throws(()=>entry.main(['--accepted-summaries','--accepted-domain-summaries','--upgrade-summaries']),/choose one summary transition/);
   assert.throws(()=>entry.main(['--accepted-summaries','--accepted-domain-summaries','--accepted-english-title','--upgrade-english-title']),/complete source transition/);
+  const combined=['--accepted-summaries','--accepted-domain-summaries','--accepted-english-title',
+    '--accepted-source-pairs','--accepted-source-fidelity','--accepted-source-punctuation','--accepted-source-clarifications'];
+  for(const mode of [[],['--apply'],['--validate']])assert.throws(
+    ()=>entry.main([...combined,'--upgrade-domain-summaries',...mode]),/missing --code-root/,
+    'dedicated domain upgrade accepts every completed source state');
+  assert.throws(()=>entry.main([...combined,'--apply']),/writes require a dedicated upgrade/);
+  assert.throws(()=>entry.main([...combined,'--upgrade-domain-summaries','--upgrade-source-clarifications']),/complete source transition/);
+  assert.throws(()=>entry.main([...combined,'--upgrade-domain-summaries','--previous-normalized','synthetic']),/previous normalized belongs/);
   for(const file of fs.readdirSync(path.join(root,'server/db/content/migrations')).sort()) if(file!=='migration_lock.toml')
     db.exec(fs.readFileSync(path.join(root,'server/db/content/migrations',file,'migration.sql'),'utf8'));
   importGenerated(db,normalized,false,input,{currentProvenance:provenance,importedAt:'synthetic'});

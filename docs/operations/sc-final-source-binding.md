@@ -268,10 +268,11 @@ All other 6,836 summary rows and timestamps, every text/name/note/source overlay
 normalized values, schema and build provenance remain exact. The 4123 creation
 timestamp is preserved; only its existing importer-owned update timestamp can
 change. Faults roll back summary rows and metadata together; valid repeat writes
-zero rows. Afterward, ordinary final validation/helper refreshes use
-`--accepted-summaries --accepted-domain-summaries` with all current source flags.
-This ordinary path first verifies the complete annotated after-state; it cannot
-manufacture acceptance, repair other fields or bypass the dedicated upgrade.
+zero rows. Afterward, use the same `--upgrade-domain-summaries` entry with
+`--accepted-summaries --accepted-domain-summaries` and all current source flags
+for check, repeat apply and `--validate`. With `--accepted-source-clarifications`,
+generic apply is rejected; the dedicated domain transition preserves the
+original overlay helper revision and verifies the complete annotated state.
 Main-gate rebuilds FTS and verifies real API/HTML consumers against this same
 stored state before operator/production closeout.
 
@@ -479,3 +480,34 @@ migration, FTS/consumer validation and complete bilingual format selection
 remain separate main-gate gates. Until those pass, all three entries retain
 their complete current fallback. The portable final-writer tests cover this
 successor, predecessor corrections, partial/stale states and rollback.
+
+## Chinese clarification successor
+
+The [#476 source acceptance](https://github.com/FrankHZ/dnd3.5-spellbook/issues/476#issuecomment-5987792514)
+accepts only three Chinese body pairs (3901, 4465, 4564), from private candidate
+`cb2f661ef8935ecbf6bd09bae106e067493d5c67` at
+`dice-qa/books/86/issue-476/main-gate-source-review/selected-candidates.json`, with
+receipt `10c65744f9b525db0c48115eea6ccefd96f4b4cd`. The other twenty proposals
+retain their accepted values under the faithful-meaning and natural-reading
+policy; printed typos, duplicate items and cosmetic differences are not required
+changes.
+
+Use `--accepted-source-clarifications` with every preceding source-acceptance flag
+and `--accepted-summaries`. The authorized content-only transition adds
+`--upgrade-source-clarifications`; omit `--previous-normalized`, because the full
+normalized artifact and rules DB remain unchanged. Run it after the completed
+#473 transition and before a later summary promotion. Check, apply and validate
+use the same maintained final-overlay entry. Its source reader binds the fixed
+receipt and candidate, original PDF spans, complete errata and authenticated
+prior field envelopes. The transaction rejects partial/stale states and preserves
+all other fields, summaries, notes, schema and full generation/importer metadata.
+Only the three body pairs, their correction provenance, their timestamps and the
+accepted source-revision metadata change. Repeating an accepted after state writes
+nothing. Runtime DTOs expose the accepted review revision without private evidence.
+
+Keep `--accepted-source-clarifications` on subsequent final validations and source
+replays. Generic `--apply` with that acceptance flag is rejected; every write
+must use its dedicated upgrade path, including later accepted successors.
+Main-gate owns actual operator migration, FTS and consumer checks;
+accepted formatting must be rebound to the new Chinese inputs before exporting.
+Source acceptance and passing synthetic tests do not activate a database or HTML.

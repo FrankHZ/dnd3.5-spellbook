@@ -10,10 +10,10 @@ function main(argv) {
   const value = name => {const at = argv.indexOf('--' + name); assert(at >= 0 && argv[at + 1], 'missing --' + name); return argv[at + 1];};
   const allowed = new Set(['code-root', 'runtime-root', 'data-root', 'rules-db', 'content-db', 'normalized', 'rules-manifest',
     'helper-revision', 'accepted-baseline', 'accepted-summaries', 'upgrade-summaries', 'accepted-domain-summaries', 'upgrade-domain-summaries', 'accepted-english-title',
-    'upgrade-english-title', 'accepted-source-punctuation', 'upgrade-source-punctuation', 'accepted-source-fidelity', 'upgrade-source-fidelity', 'accepted-source-pairs', 'upgrade-source-pairs', 'previous-normalized', 'apply', 'validate']);
+    'upgrade-english-title', 'accepted-source-clarifications', 'upgrade-source-clarifications', 'accepted-source-punctuation', 'upgrade-source-punctuation', 'accepted-source-fidelity', 'upgrade-source-fidelity', 'accepted-source-pairs', 'upgrade-source-pairs', 'previous-normalized', 'apply', 'validate']);
   for (let i = 0; i < argv.length; i++) {
     assert(argv[i].startsWith('--') && allowed.has(argv[i].slice(2)), 'unknown argument: ' + argv[i]);
-    if (!['--apply', '--validate', '--accepted-domain-summaries', '--upgrade-domain-summaries', '--accepted-source-punctuation', '--upgrade-source-punctuation', '--accepted-source-fidelity', '--upgrade-source-fidelity', '--accepted-summaries', '--upgrade-summaries', '--accepted-english-title', '--upgrade-english-title', '--accepted-source-pairs', '--upgrade-source-pairs'].includes(argv[i])) i++;
+    if (!['--apply', '--validate', '--accepted-domain-summaries', '--upgrade-domain-summaries', '--accepted-source-clarifications', '--upgrade-source-clarifications', '--accepted-source-punctuation', '--upgrade-source-punctuation', '--accepted-source-fidelity', '--upgrade-source-fidelity', '--accepted-summaries', '--upgrade-summaries', '--accepted-english-title', '--upgrade-english-title', '--accepted-source-pairs', '--upgrade-source-pairs'].includes(argv[i])) i++;
   }
   assert(!(argv.includes('--apply') && argv.includes('--validate')), 'choose apply or validate');
   assert(!argv.includes('--upgrade-summaries') || argv.includes('--accepted-summaries'), 'upgrade requires accepted summaries');
@@ -34,8 +34,15 @@ function main(argv) {
   assert(!argv.includes('--accepted-source-punctuation') || argv.includes('--accepted-source-fidelity'), 'source punctuation requires #467 predecessor');
   assert(!argv.includes('--upgrade-source-punctuation') || argv.includes('--accepted-source-punctuation'), 'source punctuation upgrade requires accepted package');
   assert(!argv.includes('--accepted-source-punctuation') || !argv.includes('--upgrade-source-fidelity'), 'choose one source transition');
+  assert(!argv.includes('--accepted-source-clarifications') || argv.includes('--accepted-source-punctuation'), 'Chinese clarifications require #473 predecessor');
+  assert(!argv.includes('--upgrade-source-clarifications') || argv.includes('--accepted-source-clarifications'), 'Chinese clarification upgrade requires accepted package');
+  assert(!argv.includes('--accepted-source-clarifications') || !argv.includes('--upgrade-source-punctuation'), 'choose one source transition');
+  // All option names were validated above. Later dedicated upgrades may carry
+  // this accepted source state; only the generic writer is forbidden here.
+  assert(!argv.includes('--apply') || !argv.includes('--accepted-source-clarifications') ||
+    argv.some(arg => arg.startsWith('--upgrade-')), 'Chinese clarification writes require a dedicated upgrade');
   const sourceUpgrade = argv.includes('--upgrade-english-title') || argv.includes('--upgrade-source-pairs') || argv.includes('--upgrade-source-fidelity') || argv.includes('--upgrade-source-punctuation');
-  assert(!domainSummaries || !sourceUpgrade, 'complete source transition before domain summaries');
+  assert(!domainSummaries || !sourceUpgrade && !argv.includes('--upgrade-source-clarifications'), 'complete source transition before domain summaries');
   assert(sourceUpgrade === argv.includes('--previous-normalized'), 'previous normalized belongs to source upgrade');
   const code = fs.realpathSync(value('code-root')), runtime = fs.realpathSync(value('runtime-root'));
   assert.equal(code, fs.realpathSync(path.join(__dirname, '../..')), 'code root must match invoking checkout');
@@ -54,7 +61,8 @@ function main(argv) {
   if (argv.includes('--accepted-source-pairs')) options.push('--accepted-source-pairs');
   if (argv.includes('--accepted-source-fidelity')) options.push('--accepted-source-fidelity');
   if (argv.includes('--accepted-source-punctuation')) options.push('--accepted-source-punctuation');
-  const sourceInputs = sourceUpgrade
+  if (argv.includes('--accepted-source-clarifications')) options.push('--accepted-source-clarifications');
+  const sourceInputs = sourceUpgrade || argv.includes('--upgrade-source-clarifications')
     ? require('./sc-final-auth-inputs.cjs').captureFinalAuthInputs(code, data) : undefined;
   const authenticate = () => JSON.parse(execFileSync(path.join(runtime, 'data-tools/pdf-extract/.venv/Scripts/python.exe'),
     ['-B', '-X', 'utf8', path.join(code, 'data-tools/audits/sc_final_auth.py'), ...options],
@@ -85,6 +93,24 @@ function main(argv) {
   const db = new DB(contentPath, {readonly: !apply, fileMustExist: true});
   try {
     if (!apply) db.pragma('query_only=ON');
+    if (argv.includes('--upgrade-source-clarifications')) {
+      const verifyFull = () => {
+        assert(fs.readFileSync(inputPath).equals(normalizedBytes), 'Chinese clarification normalized input changed');
+        return writer.verifyFullNormalized(db, generated, inputPath, collectCurrent());
+      };
+      const requireInputs = () => {
+        sourceInputs(); comparisonInputs(); summaryInputs.requireInputs();
+        assert.deepEqual(collectCurrent(), current, 'Chinese clarification generation inputs changed');
+        assert.equal(execFileSync('git', ['-C', code, 'rev-parse', 'HEAD'], {encoding: 'utf8'}).trim(), value('helper-revision'));
+      };
+      const upgrade = load('dice-intake/source-clarifications.ts').finalChineseClarificationUpgrade(
+        db, auth.fields, auth.report, verifyFull, summaries, requireInputs, apply ? 'apply' : 'check', undefined,
+        () => assert.deepEqual(authenticate(), auth, 'authenticated Chinese clarification inputs changed'));
+      if (validate) assert.equal(upgrade.state, 'after', 'Chinese clarifications have not been applied');
+      console.log(JSON.stringify({mode: apply ? 'apply' : validate ? 'validate' : 'dry-run', ...upgrade,
+        helperRevision: value('helper-revision'), wholeBookQaComplete: false, activation: false, ftsRefreshed: false}));
+      return;
+    }
     if (sourceUpgrade) {
       const sourcePairs = argv.includes('--upgrade-source-punctuation') ? 'punctuation' : argv.includes('--upgrade-source-fidelity') ? 'fidelity' : argv.includes('--upgrade-source-pairs');
       const amendment = sourcePairs === 'punctuation' ? require('./sc-source-fidelity.cjs').punctuation
@@ -139,10 +165,11 @@ function main(argv) {
         wholeBookQaComplete: false, activation: false, ftsRefreshed: false}));
       return;
     }
+    assert(!apply || !argv.includes('--accepted-source-clarifications'),
+      'Chinese clarification writes require a dedicated upgrade');
     if (domainSummaries) {
-      // Generic apply may only refresh an already exact domain after-state.
-      // It cannot create acceptance, repair fields, or bypass the dedicated
-      // summary transaction from an unannotated/partial predecessor.
+      // Generic domain paths require the exact annotated after-state.
+      // They cannot create acceptance or repair an unannotated/partial state.
       const state = writer.finalSummaryUpgrade(db, auth.fields, auth.report, () => {
         assert(fs.readFileSync(inputPath).equals(normalizedBytes), 'full normalized input changed');
         return writer.verifyFullNormalized(db, generated, inputPath, collectCurrent());

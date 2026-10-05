@@ -21,6 +21,9 @@
     "variant": "chm"
   },
   "validation": {
+    "privateCorpusProofRevision": "78fbe31edb7ddcdc241279a988a84c2f614f84d4",
+    "privateCorpusProofPath": "dice-qa/books/86/issue-511/corpus-validation.json",
+    "actualCorpusSummaryOnlyMemoryReplayPassed": true,
     "fixedInputCompositionChecked": true,
     "rootAndPackageAuthenticationPassed": true,
     "canonicalPromotionRequiredForApplyAndValidate": true,
@@ -31,6 +34,7 @@
     "sourceOverlaysAndBuildMetadataProtected": true,
     "genericAnnotatedPredecessorGuardRetained": true,
     "genericDomainApplyRequiresExactAnnotatedAfter": true,
+    "genericApplyWithSourceClarificationsRejected": true,
     "typecheckPassed": true,
     "operatorDbAccess": false,
     "sourceQaRerun": false,

@@ -1,4 +1,5 @@
 import {fidelityCandidate, fidelityAcceptance, fidelityDirectory, fidelityChineseIds, validateFidelityChinese} from './source-fidelity';
+import {clarificationCandidate, clarificationAcceptance, clarificationPath, validateClarificationChinese} from './source-clarifications';
 import assert from "node:assert/strict";
 import type Database from "better-sqlite3";
 import { applyOverlayRows, overlayColumns, type OverlayRow } from "./effective-writer";
@@ -115,7 +116,11 @@ export function planFinalOverlay(db: Database.Database, fields: FinalField[], so
     for (const field of [name, body]) if (field.sourceCorrection) {
       const correction = field.sourceCorrection;
       assert.equal(field.field, 'body');
-      if (correction.revision === fidelityCandidate) {
+      if (correction.revision === clarificationCandidate) {
+        assert.equal(correction.targetId, field.targetId);
+        assert.equal(correction.acceptanceRevision, clarificationAcceptance); assert.equal(correction.path, clarificationPath);
+        for (const key of ['text','html'] as const) validateClarificationChinese(field.targetId, key, correction.prior[key]!, field[key]!);
+      } else if (correction.revision === fidelityCandidate) {
         assert(fidelityChineseIds.includes(field.targetId)); assert.equal(correction.targetId, field.targetId);
         assert.equal(correction.acceptanceRevision, fidelityAcceptance); assert.equal(correction.path, fidelityDirectory + 'candidate.json');
         for (const key of ['text','html'] as const) validateFidelityChinese(field.targetId, correction.prior[key]!, field[key]!);
