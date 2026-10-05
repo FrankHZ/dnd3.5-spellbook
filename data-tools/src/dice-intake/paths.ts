@@ -30,8 +30,9 @@ export function noAlias(path: string): void {
 }
 
 export function dicePaths(argv: string[]) {
-  const dataRoot = argv.includes("--data-root") ? pathArg("data-root", argv) : localDataDir();
   const baselineDir = argv.includes("--baseline-dir") ? pathArg("baseline-dir", argv) : undefined;
+  const dataRoot = argv.includes("--data-root") || !baselineDir
+    ? pathArg("data-root", argv) : localDataDir();
   const sourceDir = join(dataRoot, "spells-dice-db-by-mo");
   const mappingPath = join(dataRoot, "dice-intake", "publication-map.json");
   const aliasesPath = join(dataRoot, "chm-mapping", "enName-aliases-global.json");

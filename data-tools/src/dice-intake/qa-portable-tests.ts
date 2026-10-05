@@ -341,6 +341,11 @@ try {
     "--rules-db", rulesPath, "--content-db", contentPath];
   const intakeScript = join(__dirname, "cli.ts");
   const qaScript = join(__dirname, "qa.ts");
+  for (const script of [intakeScript, qaScript]) {
+    assert.throws(() => execFileSync(process.execPath, ["--import", "tsx", script,
+      "--rules-db", rulesPath, "--content-db", contentPath, "--report-dir", reportDir],
+    { env: { ...process.env, DATA_REPO_PATH: isolatedData }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }), /missing --data-root/);
+  }
   const runIsolated = (script: string, options: string[], cwd = resolve(__dirname, "../../..")) =>
     execFileSync(process.execPath, ["--import", "tsx", script, ...common, ...options],
       { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });

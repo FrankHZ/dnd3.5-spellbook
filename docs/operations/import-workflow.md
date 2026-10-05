@@ -601,9 +601,10 @@ book's output subdirectory; source-free reports may also go outside the data roo
 The fixed SC `--restored-sc-baseline` contract cannot use an isolated baseline.
 
 All CLI paths are resolved against the caller's working directory. Absolute paths
-work from either repository or package cwd and across worktrees. If `--data-root`
-is omitted, the existing root `.env`/`DATA_REPO_PATH` helper applies, with its
+work from either repository or package cwd and across worktrees. In isolated mode,
+if `--data-root` is omitted, the existing root `.env`/`DATA_REPO_PATH` helper applies, with its
 repository-relative semantics. These commands never open app-state or write DBs.
+The default shared workflow continues to require explicit `--data-root`.
 The default source-free aggregate is `data-tools/out/dice-intake/coverage.json`.
 Every candidate keeps its source revision and line locator, raw body, escaped
 `<pre>` rendering, publication mapping, field-level CHM comparison, and parser
