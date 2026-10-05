@@ -71,6 +71,30 @@ const text = (v: string) => v.replace(/&/g, "&amp;").replace(/</g, "&lt;")
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const spellAnchor = (id: number) => `spell-${id}`;
 const websiteRoot = "https://www.d20spellcodex.com/spells/";
+/** Logical page names stay source-bound; only emitted files use CHM category folders. */
+export function offlinePagePath(name: string) {
+  if (/^class-[1-9]\d*(?:-[1-9]\d*)?\.html$/.test(name)) return `职业法表/${name}`;
+  if (/^domain-[1-9]\d*\.html$/.test(name)) return `领域法表/${name}`;
+  if (/^[A-Z]\.html$/.test(name)) return `法术描述/${name}`;
+  return name;
+}
+
+function organizePages(pages: Map<string, string>) {
+  return new Map([...pages].map(([name, html]) => {
+    const filename = offlinePagePath(name);
+    if (!name.endsWith(".html")) return [filename, html];
+    const $ = load(html);
+    $("a[href], link[href]").each((_, el) => {
+      const href = $(el).attr("href")!;
+      if (href.startsWith(websiteRoot) || href.startsWith("#")) return;
+      const [target, fragment] = href.split("#");
+      if (!pages.has(target!)) throw new Error(`${name}: missing or non-local logical page link`);
+      const relative = path.posix.relative(path.posix.dirname(filename), offlinePagePath(target!));
+      $(el).attr("href", relative + (fragment === undefined ? "" : `#${fragment}`));
+    });
+    return [filename, $.html()];
+  }));
+}
 function selectSummaries(rows: Summary[], ids: Set<number>, book: number, variant: string, englishTargets: Set<number>) {
   const selected = new Map<number, { en: string; zh: string }>(), gaps: SummaryGap[] = [];
   for (const id of [...ids].sort((a, b) => a - b)) {
@@ -368,7 +392,7 @@ export function validatePages(pages: Map<string, string>) {
       const href = $(el).attr("href")!; links++;
       if (href.startsWith(websiteRoot)) {
         const onlineId = $(el).attr("data-spell-id");
-        if (/^domain-[1-9]\d*\.html$/.test(name) && el.tagName === "a"
+        if (/^domain-[1-9]\d*\.html$/.test(path.posix.basename(name)) && el.tagName === "a"
           && $(el).attr("class") === "domain-online-link" && /^[1-9]\d*$/.test(onlineId ?? "")
           && Number.isSafeInteger(Number(onlineId)) && href === websiteRoot + onlineId
           && $(el).closest(".domain-complete .domain-binding").length
@@ -385,10 +409,12 @@ export function validatePages(pages: Map<string, string>) {
         return;
       }
       const [target, fragment] = href.split("#");
-      if (href.includes("\\") || /[:/?]/.test(target!) || !pages.has(target || name)) {
+      const destination = target ? path.posix.normalize(path.posix.join(path.posix.dirname(name), target)) : name;
+      if (href.includes("\\") || /[:?]/.test(target!) || target!.startsWith("/")
+        || destination === ".." || destination.startsWith("../") || !pages.has(destination)) {
         throw new Error(`${name}: missing or non-local link`);
       }
-      if (fragment && !anchors.get(target || name)?.has(decodeURIComponent(fragment))) {
+      if (fragment && !anchors.get(destination)?.has(decodeURIComponent(fragment))) {
         throw new Error(`${name}: missing link anchor`);
       }
     });
@@ -690,13 +716,19 @@ export function exportOfflineHtml(options: ExportOptions,
         <h2 id="classes">职业目录</h2>${membershipNotice}${classMenu.length ? `<ul>${classMenu.join("\n")}</ul>` : '<p class="empty">无职业归属。</p>'}
         <h2 id="domains">领域目录</h2>${domainDirectoryNotice}${domainMenu.length ? `<ul>${domainMenu.join("\n")}</ul>` : '<p class="empty">本书收录范围内，无常规领域条目。</p>'}
         <h2 id="letters">A–Z 正文</h2><p>${letters.map(letter => `<a href="${letter}.html">${letter}</a>`).join(" | ")}</p>`));
-      const links = validatePages(pages);
+      const outputPages = organizePages(pages);
+      const links = validatePages(outputPages);
       fs.mkdirSync(path.dirname(out), { recursive: true });
       fs.mkdirSync(out);
-      for (const [name, html] of pages) fs.writeFileSync(path.join(out, name), html, { encoding: "utf8", flag: "wx" });
+      for (const [name, html] of outputPages) {
+        const file = path.join(out, name);
+        fs.mkdirSync(path.dirname(file), { recursive: true });
+        fs.writeFileSync(file, html, { encoding: "utf8", flag: "wx" });
+      }
       const report = { ...counts, files: pages.size + 1, links, book: options.book, variant: options.variant,
-        layout: "classes-domains-then-az", letterPages: letters.length, classPages: classPages.size, classMemberships,
-        sharedClassPages: [...classPages.values()].flatMap(group => group.sharedOwnerIds ? [{ filename: "class-1-4.html", ownerIds: group.sharedOwnerIds }] : []),
+        layout: "classes-domains-then-az", outputFolders: { classes: "职业法表", domains: "领域法表", bodies: "法术描述" },
+        letterPages: letters.length, classPages: classPages.size, classMemberships,
+        sharedClassPages: [...classPages.values()].flatMap(group => group.sharedOwnerIds ? [{ filename: offlinePagePath("class-1-4.html"), ownerIds: group.sharedOwnerIds }] : []),
         classListEntries: listEntries.filter(row => row.listType === "class").length, classTargets: classTargets.size, classlessTargets: spells.filter(s => !classTargets.has(s.legacySpellId)).map(s => s.legacySpellId),
         classNameFallbacks: [...classes.keys()].filter(id => !classNames.has(id)),
         schoolGroupedClassPages, schoolNameFallbacks: [...schoolNameFallbacks].sort(),

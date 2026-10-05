@@ -8,6 +8,13 @@ PDF extraction, accepted bilingual inputs, provenance and internal QA are preser
 
 ## Display Checks
 
+Folder checks verify separate `职业法表/`, `领域法表/` and `法术描述/` files with root
+index/introduction/style/report retained. Existing content assertions read the
+emitted paths. Cross-folder body links, parent-relative navigation/stylesheets,
+same-folder body references and domain footnotes resolve against the actual
+page; missing targets, escaped output roots and absolute paths reject. No new
+pages, altered stable anchors or source-handoff edits are required.
+
 Focused synthetic exporter checks cover Chinese-only output, internal bilingual
 summary requirements, English-name retention, removed section links redirected
 to local entries, mechanism spacing in semantic paragraphs and plain fallback,

@@ -1,15 +1,26 @@
 # Offline Chinese HTML
 
+Output uses Chinese category folders following the CHM repository's chapter
+organization: `职业法表/`, `领域法表/` and `法术描述/`. The root retains `index.html`,
+optional `introduction.html`, `style.css` and `report.json`. No category index pages
+are added. Generated stylesheet, navigation, body-reference and footnote links
+are relative to their actual page. Validation resolves `../` within the output
+and rejects escaped-root, absolute, missing-file and missing-anchor references.
+Accepted source handoffs retain their original logical filenames and links;
+folder organization changes only the emitted representation. Packaging and
+delivery consumers must walk the output recursively and retain these paths.
+The report exposes `outputFolders`; `sharedClassPages.filename` is an emitted path.
+
 `offline:html` reads a normalized content DB and an explicit Chinese variant into
 static HTML/CHM source pages. It supplies Chinese bodies and accepted Chinese
 short descriptions, retaining both Chinese and English spell names. The English
 source, accepted bilingual data and internal QA remain intact.
 
-`index.html` presents classes, domains, then A–Z. Each `class-<owner ID>.html` lists
+`index.html` presents classes, domains, then A–Z. Each `职业法表/class-<owner ID>.html` lists
 levels 0–9 as “Chinese name (English name), printed M/F/X superscript: Chinese summary”
 on one flowing line, linked to full entries. Special markers come from the selected
 printed list occurrence; complete spell-component flags never supply them. The 26
-`A.html`–`Z.html` pages order complete Chinese entries by English canonical name,
+`法术描述/A.html`–`法术描述/Z.html` pages order complete Chinese entries by English canonical name,
 then stable ID. Empty letters/levels are explicit. Classless spells remain in
 letter pages. There are no individual spell-ID pages or separate pinyin/English
 indexes, English body sections, or duplicate Current rules tables. Chinese
@@ -18,7 +29,7 @@ from normalized rule columns.
 
 Class directory links and page titles reuse `I18nCharacterClassText` Chinese
 `default` names alongside existing English names; absent Chinese names have an
-explicit English fallback notice. SC Sorcerer/Wizard share `class-1-4.html`
+explicit English fallback notice. SC Sorcerer/Wizard share `职业法表/class-1-4.html`
 and one directory link, matching the original combined list. Within each level,
 rows are grouped by existing `schoolRaw`, in English school-name order as in the
 printed appendix. School headings use the existing accepted taxonomy IDs and
@@ -33,7 +44,7 @@ Qualifiers are retained once. A row with only one current owner gets a small
 profession note rather than inventing another database relationship. Other books
 retain their existing separate class pages.
 
-Each `domain-<owner ID>.html` lists levels 1–9 with the same name/summary row and
+Each `领域法表/domain-<owner ID>.html` lists levels 1–9 with the same name/summary row and
 local spell anchors. Pages include only relationships for spells whose bodies
 belong to the selected book; empty levels explicitly refer to this book's subset,
 not the original domain's complete spell list. Class and domain pages use distinct

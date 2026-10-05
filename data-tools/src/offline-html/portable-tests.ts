@@ -5,7 +5,7 @@ import path from "node:path";
 import Database from "better-sqlite3";
 import { load } from "cheerio";
 import { repoRoot } from "../shared/env";
-import { exportOfflineHtml, SummarySelectionError, validatePages } from "./export";
+import { exportOfflineHtml, offlinePagePath, SummarySelectionError, validatePages } from "./export";
 import type { ClassSummaryReplacement } from "./export";
 import { main } from "./cli";
 import type { PdfTypographyPresentation } from "../zh-parser/pdf-typography";
@@ -18,6 +18,9 @@ const temp = fs.mkdtempSync(path.join(os.tmpdir(), "offline-html-test-"));
 const outputRoot = path.join(repoRoot(), "data-tools/out");
 fs.mkdirSync(outputRoot, { recursive: true });
 const output = fs.mkdtempSync(path.join(outputRoot, "offline-html-test-"));
+const pageFile = (directory: string, name: string) => path.join(directory, offlinePagePath(name));
+const outputFiles = (directory: string): string[] => fs.readdirSync(directory, { withFileTypes: true }).flatMap(entry =>
+  entry.isDirectory() ? outputFiles(path.join(directory, entry.name)).map(name => `${entry.name}/${name}`) : [entry.name]);
 const dbPath = path.join(temp, "fixture.sqlite");
 const db = new Database(dbPath);
 const privacy = "PRIVATE_EVIDENCE_DO_NOT_EXPORT";
@@ -125,7 +128,7 @@ try {
   assert.equal(report.spells, 6); assert.equal(report.englishBodyFallbacks, 0);
   assert.equal(report.files, 33); assert.equal(report.detachedReferences, 2);
   assert.equal(report.htmlTextDifferences, 0);
-  const read = (name: string) => fs.readFileSync(path.join(options.outDir, name), "utf8");
+  const read = (name: string) => fs.readFileSync(pageFile(options.outDir, name), "utf8");
   const first = read("A.html"), $ = load(first);
   assert.equal($("#spell-1 > h2 > .spell-name").text(), "雪 & <名字> / Alpha & <fixture>");
   assert.equal($("#spell-1 > h2 > .spell-metadata").text(), "p. 42 · ID 1↗");
@@ -259,7 +262,7 @@ try {
       db.prepare("UPDATE I18nSpellText SET descriptionText=?, descriptionHtml=? WHERE spellId=7 AND variant='effective'").run(originalText, html);
       const outDir = path.join(output, `observed-alias-${caseIndex}-${representation}`);
       exportOfflineHtml({ ...options, outDir });
-      const aliasPage = load(fs.readFileSync(path.join(outDir, 'C.html'), 'utf8'));
+      const aliasPage = load(fs.readFileSync(pageFile(outDir, 'C.html'), 'utf8'));
       const body = aliasPage('#spell-7-zh');
       assert.equal(body.text(), originalText);
       assert.deepEqual(body.find('.mechanism-field').toArray().map(el => aliasPage(el).text()),
@@ -284,17 +287,25 @@ try {
   assert(css.includes('.spell-body ul.pdf-typography-marked-list ul.pdf-typography-marked-list { list-style: none; }'));
   const menu = load(read("index.html"));
   assert.deepEqual(menu("h2").toArray().map(el => menu(el).attr("id")), ["classes", "domains", "letters"]);
-  assert.equal(menu('a[href="A.html"]').length, 1);
-  assert.equal(menu('a[href="domain-1.html"]').text(), '合成领域（First domain）');
-  assert.equal(menu('a[href="domain-2.html"]').text(), 'Fixture domain');
-  assert.equal(menu('a[href="class-1.html"]').text(), '合成职业（Fixture caster）');
+  assert.equal(menu('a[href="法术描述/A.html"]').length, 1);
+  assert.equal(menu('a[href="领域法表/domain-1.html"]').text(), '合成领域（First domain）');
+  assert.equal(menu('a[href="领域法表/domain-2.html"]').text(), 'Fixture domain');
+  assert.equal(menu('a[href="职业法表/class-1.html"]').text(), '合成职业（Fixture caster）');
+  assert.deepEqual(report.outputFolders, { classes: "职业法表", domains: "领域法表", bodies: "法术描述" });
+  assert.deepEqual(fs.readdirSync(options.outDir).sort(), ["index.html", "report.json", "style.css", "法术描述", "职业法表", "领域法表"].sort());
+  assert.equal(outputFiles(options.outDir).length, report.files);
+  assert.equal(menu('link[rel="stylesheet"]').attr('href'), 'style.css');
+  assert.equal($('link[rel="stylesheet"]').attr('href'), '../style.css');
+  assert.equal($('.navigation a').first().attr('href'), '../index.html#classes');
+  assert.equal(load(read('class-1.html'))('link[rel="stylesheet"]').attr('href'), '../style.css');
+  assert.equal(validatePages(new Map(outputFiles(options.outDir).map(name => [name, read(name)]))), report.links);
   assert.deepEqual(report.classNameFallbacks, [2]);
   const domain = load(read('domain-1.html'));
   assert.equal(domain('h1').text(), '合成领域（First domain）');
   assert.deepEqual(domain('h2').toArray().map(el => domain(el).attr('id')), Array.from({ length: 9 }, (_, i) => `level-${i + 1}`));
   assert.equal(domain('#level-0').length, 0);
-  assert.equal(domain('#level-1 + ul a').attr('href'), 'A.html#spell-1');
-  assert.equal(domain('#level-9 + ul a').attr('href'), 'C.html#spell-7');
+  assert.equal(domain('#level-1 + ul a').attr('href'), '../法术描述/A.html#spell-1');
+  assert.equal(domain('#level-9 + ul a').attr('href'), '../法术描述/C.html#spell-7');
   assert.equal(domain('#level-9 + ul .summary').text(), '已接受短描述 7 & <保留>');
   assert(domain('#level-2 + .empty').text().includes('本书收录范围内'));
   assert(domain('.notice').text().includes('并非原书完整领域法表'));
@@ -309,7 +320,7 @@ try {
   assert.equal(caster('.school-heading').length, 0);
   assert.deepEqual(caster("h2").toArray().map(el => caster(el).attr("id")), Array.from({ length: 10 }, (_, i) => `level-${i}`));
   assert.equal(caster('#level-0 + ul > li').length, 1);
-  assert.equal(caster('#level-0 + ul a').attr("href"), "A.html#spell-1");
+  assert.equal(caster('#level-0 + ul a').attr("href"), "../法术描述/A.html#spell-1");
   assert.equal(caster('#level-0 + ul [lang="zh"]').text(), "已接受短描述 1 & <保留>");
   const directoryItem = caster('#level-0 + ul > li');
   assert.equal(directoryItem.find('a').text(), "雪 & <名字>（Alpha & <fixture>）");
@@ -322,11 +333,11 @@ try {
   assert.equal(caster('[lang="en"]').length, 0);
   assert(!caster.text().includes("Accepted short description"));
   for (const note of ["Zero qualifier", "Additional qualifier"]) assert(caster('#level-0 + ul').text().includes(note));
-  assert.equal(caster('#level-9 + ul a').attr("href"), "A.html#spell-5");
+  assert.equal(caster('#level-9 + ul a').attr("href"), "../法术描述/A.html#spell-5");
   assert(caster('#level-1 + .empty').length); assert(load(read("Z.html"))(".empty").length);
-  assert(!fs.readdirSync(options.outDir).some(name => /^spell-\d+\.html$/.test(name)));
-  assert(!fs.existsSync(path.join(options.outDir, "index-en.html")));
-  for (const name of fs.readdirSync(options.outDir)) {
+  assert(!outputFiles(options.outDir).some(name => /^spell-\d+\.html$/.test(name)));
+  assert(!fs.existsSync(pageFile(options.outDir, "index-en.html")));
+  for (const name of outputFiles(options.outDir)) {
     const content = read(name);
     for (const forbidden of [privacy, "DO_NOT_BLEND_VARIANT", "DO_NOT_BLEND_NEIGHBOR", "DO_NOT_BLEND_EFFECTIVE_SUMMARY", dbPath,
       "sourceKey", "ProvenanceJson", "originalInput", "sourcePassage"]) assert.ok(!content.includes(forbidden), name);
@@ -341,7 +352,7 @@ try {
   assert.deepEqual(introReport.introduction, { included: true, sections: 2, paragraphs: 2, listItems: 2 });
   assert.deepEqual(report.introduction, { included: false, sections: 0, paragraphs: 0, listItems: 0 });
   assert.equal(introReport.files, report.files + 1);
-  const introPage = load(fs.readFileSync(path.join(introOut, 'introduction.html'), 'utf8'));
+  const introPage = load(fs.readFileSync(pageFile(introOut, 'introduction.html'), 'utf8'));
   const sourceIntro = load(introduction, {}, false);
   assert.equal(introPage('#introduction').text(), sourceIntro.root().text());
   assert.equal(introPage('#introduction').html(), sourceIntro.root().html());
@@ -349,12 +360,12 @@ try {
   assert.equal(introPage('#introduction p').length, 2);
   assert.equal(introPage('#introduction li').length, 2);
   for (const filename of ['index.html', 'A.html', 'class-1.html', 'domain-1.html']) {
-    assert(load(fs.readFileSync(path.join(introOut, filename), 'utf8'))('a[href="introduction.html"]').length > 0);
+    assert(load(fs.readFileSync(pageFile(introOut, filename), 'utf8'))(`a[href="${filename === 'index.html' ? '' : '../'}introduction.html"]`).length > 0);
   }
   assert.equal(introPage('.navigation a[href="index.html#classes"]').length, 2);
-  assert.equal(load(fs.readFileSync(path.join(introOut, 'A.html'), 'utf8'))('#spell-1-zh').html(), $('#spell-1-zh').html());
-  assert.equal(load(fs.readFileSync(path.join(introOut, 'class-1.html'), 'utf8'))('.summary').text(), caster('.summary').text());
-  assert(!fs.existsSync(path.join(options.outDir, 'introduction.html')));
+  assert.equal(load(fs.readFileSync(pageFile(introOut, 'A.html'), 'utf8'))('#spell-1-zh').html(), $('#spell-1-zh').html());
+  assert.equal(load(fs.readFileSync(pageFile(introOut, 'class-1.html'), 'utf8'))('.summary').text(), caster('.summary').text());
+  assert(!fs.existsSync(pageFile(options.outDir, 'introduction.html')));
   for (const fragment of ['<h2 onclick="bad()">引言</h2>', '<h2>引言</h2><script>visible</script>', '<p><a href="relative.html">链接</a></p>']) {
     const badOut = path.join(output, 'unsupported-introduction');
     assert.throws(() => exportOfflineHtml({ ...options, outDir: badOut }, new Map(), undefined, [], fragment), /unsupported markup/);
@@ -382,10 +393,10 @@ try {
     const before = powerView.serialize(), outDir = path.join(output, 'domain-powers');
     const powerReport = exportOfflineHtml({ ...options, contentDb: ':memory:', outDir }, new Map(), powerView, [], introduction, powerContent);
     assert(powerView.serialize().equals(before));
-    assert.equal(powerReport.domainPages, 2); assert(!fs.existsSync(path.join(outDir, 'domain-174.html')));
+    assert.equal(powerReport.domainPages, 2); assert(!fs.existsSync(pageFile(outDir, 'domain-174.html')));
     assert.deepEqual(powerReport.domainPowers, { included: true, pages: 2, requirementPages: 1, sharedRulePages: 1, readerNotes: 1 });
-    const ordinary = load(fs.readFileSync(path.join(outDir, 'domain-1.html'), 'utf8'));
-    const planar = load(fs.readFileSync(path.join(outDir, 'domain-2.html'), 'utf8'));
+    const ordinary = load(fs.readFileSync(pageFile(outDir, 'domain-1.html'), 'utf8'));
+    const planar = load(fs.readFileSync(pageFile(outDir, 'domain-2.html'), 'utf8'));
     assert.equal(ordinary('.granted-power').text(), powerContent.domains[0]!.grantedPowerText);
     assert.equal(ordinary('.domain-requirement,.shared-domain-rules,.reader-note').length, 0);
     assert.equal(planar('.granted-power').text(), powerContent.domains[1]!.grantedPowerText);
@@ -425,8 +436,8 @@ try {
     Object.assign(fullLists.domains[0]!.occurrences[0]!, { sourceEvidence: { printedName: 'DO_NOT_RENDER_SOURCE', summaryText: 'DO_NOT_RENDER_SOURCE' } });
     const mixedReport = exportOfflineHtml({ ...options, contentDb: ':memory:', outDir: mixedOut }, new Map(), powerView, [], introduction, powerContent, fullLists);
     assert.deepEqual(mixedReport.completeDomainLists, { included: true, pages: 2, occurrences: 27, bindings: 28, onlineBindings: 25, daggerBindings: 3, markedRows: 3, explicitEmptyRows: 23, unknownMarkers: 1 });
-    const mixed = load(fs.readFileSync(path.join(mixedOut, 'domain-1.html'), 'utf8'));
-    const mixedPlanar = load(fs.readFileSync(path.join(mixedOut, 'domain-2.html'), 'utf8'));
+    const mixed = load(fs.readFileSync(pageFile(mixedOut, 'domain-1.html'), 'utf8'));
+    const mixedPlanar = load(fs.readFileSync(pageFile(mixedOut, 'domain-2.html'), 'utf8'));
     assert.equal(mixed('.domain-occurrence').length, 9); assert.equal(mixedPlanar('.domain-occurrence').length, 18);
     assert.equal(mixedPlanar('.domain-choice').length, 9);
     assert.equal(mixed('#level-7 + ul > li').length, 1);
@@ -434,11 +445,13 @@ try {
     assert.deepEqual(mixed('#level-7 + ul .summary').toArray().map(el => mixed(el).text()), fullLists.domains[0]!.occurrences[6]!.bindings.map(item => item.summaryText));
     assert.equal(mixed('.domain-dagger').length, 2); assert.equal(mixedPlanar('.domain-dagger').length, 1);
     assert.equal(mixed('.domain-footnotes p').text(), '* ' + fullLists.domains[0]!.footnotes[0]!.text);
+    assert.equal(mixed('.domain-local-link').first().attr('href'), '../法术描述/A.html#spell-1');
+    assert.equal(mixed('.domain-footnote-symbol a').first().attr('href'), 'domain-1.html#domain-1-footnote-1');
     assert.equal(mixed('#level-2 + ul .component-labels').text(), 'F');
     assert.equal(mixed('#level-3 + ul .component-labels').length, 0);
     assert.equal(mixed('script').length, 0); assert(!mixed.text().includes('fixture:')); assert(!mixed.text().includes('DO_NOT_RENDER_SOURCE'));
     for (const filename of ['A.html', 'C.html', 'class-1.html', 'introduction.html']) {
-      assert.equal(fs.readFileSync(path.join(mixedOut, filename), 'utf8'), fs.readFileSync(path.join(outDir, filename), 'utf8'));
+      assert.equal(fs.readFileSync(pageFile(mixedOut, filename), 'utf8'), fs.readFileSync(pageFile(outDir, filename), 'utf8'));
     }
     assert(powerView.serialize().equals(before));
     let badList = 0;
@@ -456,10 +469,10 @@ try {
     rejectList(content => { content.domains[0]!.occurrences.pop(); }, /relationship|Incomplete/);
     rejectList(content => { content.domains[0]!.footnotes = []; }, /occurrence/);
     rejectList(content => { content.domains[0]!.occurrences[1]!.printedMarkers = 'V'; }, /occurrence/);
-    const forgedPages = new Map(fs.readdirSync(mixedOut).filter(name => name.endsWith('.html') || name === 'style.css').map(name => [name, fs.readFileSync(path.join(mixedOut, name), 'utf8')]));
-    forgedPages.set('domain-1.html', forgedPages.get('domain-1.html')!.replace('data-spell-id="121"', 'data-spell-id="999"'));
+    const forgedPages = new Map(outputFiles(mixedOut).filter(name => name.endsWith('.html') || name === 'style.css').map(name => [name, fs.readFileSync(pageFile(mixedOut, name), 'utf8')]));
+    forgedPages.set('领域法表/domain-1.html', forgedPages.get('领域法表/domain-1.html')!.replace('data-spell-id="121"', 'data-spell-id="999"'));
     assert.throws(() => validatePages(forgedPages), /invalid generated website link/);
-    assert.equal(load(fs.readFileSync(path.join(outDir, 'class-1.html'), 'utf8'))('.domain-power').length, 0);
+    assert.equal(load(fs.readFileSync(pageFile(outDir, 'class-1.html'), 'utf8'))('.domain-power').length, 0);
     let badPower = 0;
     const rejectPower = (mutate: (content: DomainPowers) => void, pattern: RegExp) => {
       const content = structuredClone(powerContent); mutate(content);
@@ -514,18 +527,18 @@ try {
     const markerReport = exportOfflineHtml({ ...options, contentDb: ':memory:', outDir }, new Map(), markerView, automatic.machine);
     assert(markerView.serialize().equals(markerSnapshot));
     assert.deepEqual(markerReport.printedMarkers, { rulebookId: 86, acceptedRows: 1, machineRows: 2, unknownRows: 4, markedRows: 2, explicitEmptyRows: 1 });
-    const markedClass = load(fs.readFileSync(path.join(outDir, 'class-1.html'), 'utf8'));
+    const markedClass = load(fs.readFileSync(pageFile(outDir, 'class-1.html'), 'utf8'));
     assert.equal(markedClass('#level-3 + ul sup.component-labels').text(), 'MFX');
     assert(markedClass('#level-3 + ul sup').attr('title')!.includes('自动匹配'));
     assert.equal(markedClass('#level-9 + ul .component-labels, #level-0 + ul .component-labels').length, 0);
-    const markedDomain = load(fs.readFileSync(path.join(outDir, 'domain-1.html'), 'utf8'));
+    const markedDomain = load(fs.readFileSync(pageFile(outDir, 'domain-1.html'), 'utf8'));
     assert.equal(markedDomain('#level-1 + ul sup.component-labels').text(), 'F');
     assert(!markedDomain('#level-1 + ul sup').attr('title')!.includes('自动匹配'));
-    assert(!fs.readFileSync(path.join(outDir, 'report.json'), 'utf8').includes(privacy));
+    assert(!fs.readFileSync(pageFile(outDir, 'report.json'), 'utf8').includes(privacy));
     const withoutMachine = path.join(output, 'candidate-markers-omitted');
     const noMachineReport = exportOfflineHtml({ ...options, contentDb: ':memory:', outDir: withoutMachine }, new Map(), markerView);
     assert.equal(noMachineReport.printedMarkers.machineRows, 0);
-    assert.equal(load(fs.readFileSync(path.join(withoutMachine, 'class-1.html'), 'utf8'))('.component-labels').length, 0);
+    assert.equal(load(fs.readFileSync(pageFile(withoutMachine, 'class-1.html'), 'utf8'))('.component-labels').length, 0);
     const forged = structuredClone(automatic.machine); forged[0]!.spell.canonicalName = 'Changed source name';
     assert.throws(() => exportOfflineHtml({ ...options, contentDb: ':memory:', outDir: path.join(output, 'stale-marker-name') }, new Map(), markerView, forged), /Stale machine marker/);
     const stale = structuredClone(automatic.machine);
@@ -550,7 +563,7 @@ try {
     assert(memoryView.open && memoryView.readonly); assert.equal(memoryView.pragma("query_only", { simple: true }), 1);
     assert.equal(partial.pdfFormatting, "partial-main-gate-selected");
     assert.deepEqual(partial.typography, { reviewedSelectedIds: [5], currentDisplayIds: [1, 2, 3, 6, 7], formattingComplete: false });
-    const page = load(fs.readFileSync(path.join(selectedOut, "A.html"), "utf8"));
+    const page = load(fs.readFileSync(pageFile(selectedOut, "A.html"), "utf8"));
     for (const lang of ["zh"]) {
       const body = page(`#spell-5-${lang}`);
       assert.equal(body.text(), paragraphText); assert.equal(body.find('b').text(), "synthetic label");
@@ -563,8 +576,8 @@ try {
       assert.equal(body.find('[style], [onclick], [data-private]').length, 0);
     }
     for (const id of [1]) assert.equal(page(`#spell-${id}`).html(), $(`#spell-${id}`).html());
-    assert.equal(fs.readFileSync(path.join(selectedOut, "B.html"), "utf8"), read("B.html"));
-    assert.equal(fs.readFileSync(path.join(selectedOut, "G.html"), "utf8"), read("G.html"));
+    assert.equal(fs.readFileSync(pageFile(selectedOut, "B.html"), "utf8"), read("B.html"));
+    assert.equal(fs.readFileSync(pageFile(selectedOut, "G.html"), "utf8"), read("G.html"));
   } finally { memoryView.close(); }
   assert.equal((db.prepare('SELECT descriptionHtml FROM SpellContent WHERE legacySpellId=5').get() as { descriptionHtml: string }).descriptionHtml, paragraphs);
   const replacement: ClassSummaryReplacement = { spellId: 1, rulebookId: 86, lang: "zh", variant: "chm",
@@ -576,12 +589,12 @@ try {
       new Map(), summaryView, [], undefined, undefined, undefined, [replacement]);
     assert.deepEqual(result.classSummaryReplacementIds, [1]);
     assert.deepEqual(report.classSummaryReplacementIds, []);
-    const classPage = load(fs.readFileSync(path.join(replacementOut, "class-1.html"), "utf8"));
+    const classPage = load(fs.readFileSync(pageFile(replacementOut, "class-1.html"), "utf8"));
     assert.deepEqual(classPage('a[href$="#spell-1"]').toArray().map(el => classPage(el).closest('li').find('.summary').text()),
       [replacement.summaryText, replacement.summaryText]);
     assert.equal(classPage('.summary script').length, 0);
     for (const name of ["A.html", "B.html", "class-2.html", "domain-1.html", "domain-2.html"]) {
-      assert.equal(fs.readFileSync(path.join(replacementOut, name), "utf8"), read(name));
+      assert.equal(fs.readFileSync(pageFile(replacementOut, name), "utf8"), read(name));
     }
     const invalid: ClassSummaryReplacement[][] = [
       [replacement, replacement], [{ ...replacement, spellId: 7 }], [{ ...replacement, spellId: 999 }],
@@ -644,17 +657,17 @@ try {
     const schoolReport = exportOfflineHtml({ ...options, contentDb: ':memory:', outDir }, new Map(), schoolView, schoolMachine);
     assert(schoolView.serialize().equals(before));
     assert.deepEqual(schoolReport.schoolGroupedClassPages, [1]);
-    assert.deepEqual(schoolReport.sharedClassPages, [{ filename: 'class-1-4.html', ownerIds: [4, 1] }]);
+    assert.deepEqual(schoolReport.sharedClassPages, [{ filename: '职业法表/class-1-4.html', ownerIds: [4, 1] }]);
     assert.equal(schoolReport.classPages, 2);
-    assert(!fs.existsSync(path.join(outDir, 'class-1.html'))); assert(!fs.existsSync(path.join(outDir, 'class-4.html')));
-    const schoolMenu = load(fs.readFileSync(path.join(outDir, 'index.html'), 'utf8'));
-    assert.equal(schoolMenu('a[href="class-1-4.html"]').length, 1);
+    assert(!fs.existsSync(pageFile(outDir, 'class-1.html'))); assert(!fs.existsSync(pageFile(outDir, 'class-4.html')));
+    const schoolMenu = load(fs.readFileSync(pageFile(outDir, 'index.html'), 'utf8'));
+    assert.equal(schoolMenu('a[href="职业法表/class-1-4.html"]').length, 1);
     assert.deepEqual(schoolReport.schoolNameFallbacks, []);
-    const wizard = load(fs.readFileSync(path.join(outDir, 'class-1-4.html'), 'utf8'));
+    const wizard = load(fs.readFileSync(pageFile(outDir, 'class-1-4.html'), 'utf8'));
     assert.equal(wizard('h1').text(), '术士／法师（Sorcerer/Wizard）');
     const groups = wizard('#level-3').nextUntil('h2');
     assert.deepEqual(groups.filter('.school-heading').toArray().map(el => wizard(el).text()), ['防护', '咒法／塑能']);
-    assert.deepEqual(groups.filter('ul').find('li > a').toArray().map(el => wizard(el).attr('href')), ['A.html#spell-1', 'A.html#spell-5']);
+    assert.deepEqual(groups.filter('ul').find('li > a').toArray().map(el => wizard(el).attr('href')), ['../法术描述/A.html#spell-1', '../法术描述/A.html#spell-5']);
     assert.equal(groups.filter('ul').find('.component-labels').text(), 'F');
     assert.equal(groups.filter('ul').find('.summary').length, 2);
     const zero = wizard('#level-0').nextUntil('h2');
@@ -662,13 +675,13 @@ try {
     for (const qualifier of ['Zero qualifier', 'Additional qualifier']) assert(zero.text().includes(qualifier));
     assert(!groups.filter('ul').find('li').first().find('.membership-note').text().includes('术士'));
     assert(groups.filter('ul').find('li').last().find('.membership-note').text().includes('法师'));
-    assert.equal(load(fs.readFileSync(path.join(outDir, 'class-2.html'), 'utf8'))('.school-heading').length, 0);
-    assert.equal(load(fs.readFileSync(path.join(outDir, 'domain-1.html'), 'utf8'))('.school-heading').length, 0);
+    assert.equal(load(fs.readFileSync(pageFile(outDir, 'class-2.html'), 'utf8'))('.school-heading').length, 0);
+    assert.equal(load(fs.readFileSync(pageFile(outDir, 'domain-1.html'), 'utf8'))('.school-heading').length, 0);
     assert(!wizard.text().includes('不可混入的学派'));
     const partialMarkersOut = path.join(output, 'shared-class-partial-markers');
     exportOfflineHtml({ ...options, contentDb: ':memory:', outDir: partialMarkersOut }, new Map(), schoolView,
       schoolMachine.filter(row => row.ownerName !== 'Sorcerer'));
-    const partialMarkers = load(fs.readFileSync(path.join(partialMarkersOut, 'class-1-4.html'), 'utf8'));
+    const partialMarkers = load(fs.readFileSync(pageFile(partialMarkersOut, 'class-1-4.html'), 'utf8'));
     assert.equal(partialMarkers('#level-3').nextUntil('h2').find('.component-labels').length, 0);
   } finally { schoolView.close(); }
   // Extra feat relationships remain in the input but outside the book directory.
@@ -689,14 +702,14 @@ try {
     assert.equal(specialReport.domainPages, 2); assert.equal(specialReport.ordinaryDomainPages, 2);
     assert.equal(specialReport.specialMembershipPages, 0);
     assert.equal(specialReport.sourceDomainListEntries, 4); assert.equal(specialReport.domainListEntries, 3);
-    const specialMenu = load(fs.readFileSync(path.join(outDir, 'index.html'), 'utf8'));
-    assert.equal(specialMenu('#special-memberships, a[href="domain-28.html"]').length, 0);
+    const specialMenu = load(fs.readFileSync(pageFile(outDir, 'index.html'), 'utf8'));
+    assert.equal(specialMenu('#special-memberships, a[href="领域法表/domain-28.html"]').length, 0);
     assert(!specialMenu.text().includes('专长授予'));
-    assert(!fs.existsSync(path.join(outDir, 'domain-28.html')));
+    assert(!fs.existsSync(pageFile(outDir, 'domain-28.html')));
     assert.deepEqual(specialReport.pendingMembershipIssues, [{ issue: 354, listType: 'domain', ownerLegacyId: 28, spellId: 3921, level: 1 }]);
     assert.equal(specialReport.excludedMemberships[0]?.listEntryId, 'feat');
-    assert.equal(load(fs.readFileSync(path.join(outDir, 'class-2.html'), 'utf8'))('#level-1 + ul a').attr('href'), 'B.html#spell-3921');
-    assert.equal(load(fs.readFileSync(path.join(outDir, 'B.html'), 'utf8'))('#spell-3921-zh').text(), plain);
+    assert.equal(load(fs.readFileSync(pageFile(outDir, 'class-2.html'), 'utf8'))('#level-1 + ul a').attr('href'), '../法术描述/B.html#spell-3921');
+    assert.equal(load(fs.readFileSync(pageFile(outDir, 'B.html'), 'utf8'))('#spell-3921-zh').text(), plain);
     assert.equal((specialView.prepare("SELECT COUNT(*) AS n FROM SpellListEntry WHERE id='feat'").get() as { n: number }).n, 1);
     const onlyFeat = new Database(specialView.serialize());
     onlyFeat.exec("DELETE FROM SpellListEntry WHERE id='normal-3921'; DELETE FROM I18nSpellSummaryText WHERE spellId=3921");
@@ -705,7 +718,7 @@ try {
       const featOnlyOut = path.join(output, 'feat-only-no-summary');
       const featOnlyReport = exportOfflineHtml({ ...options, contentDb: ':memory:', outDir: featOnlyOut }, new Map(), onlyFeatView);
       assert.equal(featOnlyReport.domainTargets, report.domainTargets);
-      assert.equal(load(fs.readFileSync(path.join(featOnlyOut, 'B.html'), 'utf8'))('#spell-3921-zh').text(), plain);
+      assert.equal(load(fs.readFileSync(pageFile(featOnlyOut, 'B.html'), 'utf8'))('#spell-3921-zh').text(), plain);
     } finally { onlyFeatView.close(); }
   } finally { specialView.close(); }
   let typographyFailure = 0;
@@ -737,11 +750,11 @@ try {
   // Repeating into a new directory is byte stable; an existing directory, even empty, is never reused.
   const second = path.join(output, "second");
   assert.deepEqual(exportOfflineHtml({ ...options, outDir: second }), report);
-  for (const name of fs.readdirSync(second)) assert.equal(fs.readFileSync(path.join(second, name), "utf8"), read(name));
-  fs.writeFileSync(path.join(options.outDir, "stale.html"), "operator-owned");
+  for (const name of outputFiles(second)) assert.equal(fs.readFileSync(pageFile(second, name), "utf8"), read(name));
+  fs.writeFileSync(pageFile(options.outDir, "stale.html"), "operator-owned");
   assert.throws(() => exportOfflineHtml(options), /already exists/);
   assert.equal(read("stale.html"), "operator-owned");
-  assert.ok(!fs.existsSync(path.join(second, "stale.html")));
+  assert.ok(!fs.existsSync(pageFile(second, "stale.html")));
   assert.throws(() => exportOfflineHtml({ ...options, outDir: repoRoot() }), /new child/);
   assert.throws(() => exportOfflineHtml({ ...options, outDir: outputRoot }), /new child/);
   assert.throws(() => exportOfflineHtml({ ...options, outDir: temp }), /new child/);
@@ -799,7 +812,7 @@ try {
   for (const id of [1, 2, 3, 5, 6, 7]) zh(id, `Other name ${id}`, `Other body ${id}`, null, "zh", "other");
   const otherOut = path.join(output, "other-variant");
   assert.deepEqual(exportOfflineHtml({ ...options, variant: "other", outDir: otherOut }).summaryVariants, { en: "imarvin", zh: "other" });
-  const otherClass = load(fs.readFileSync(path.join(otherOut, "class-1.html"), "utf8"));
+  const otherClass = load(fs.readFileSync(pageFile(otherOut, "class-1.html"), "utf8"));
   assert.equal(otherClass('#level-0 + ul [lang="zh"]').text(), "Other exact summary 1.");
   assert.equal(otherClass('[lang="en"]').length, 0);
   // The focused preview stage deliberately skips the full-size replay.
@@ -825,7 +838,7 @@ try {
   assert.equal(full.spells, 1001); assert.equal(full.selectedSummaries, 7); assert.equal(full.classTargets, 3);
   const actual = new Map<number, { en: string; zh: string }>();
   for (const letter of "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
-    const page = load(fs.readFileSync(path.join(fullOut, `${letter}.html`), "utf8"));
+    const page = load(fs.readFileSync(pageFile(fullOut, `${letter}.html`), "utf8"));
     const names: string[] = [];
     page('.spell-entry').each((_, entry) => {
       const id = Number(page(entry).attr("id")!.slice("spell-".length));
@@ -844,6 +857,17 @@ try {
   assert.equal(full.displayedBodies, 1001);
   }
   assert.throws(() => validatePages(new Map([["index.html", '<a href="missing.html">Missing</a>']])), /missing/);
+  const nestedPages = new Map([
+    ["index.html", '<a href="职业法表/class-1.html">职业</a>'],
+    ["职业法表/class-1.html", '<a href="../法术描述/A.html#spell-1">正文</a><a href="../index.html">首页</a>'],
+    ["法术描述/A.html", '<div id="spell-1"></div><a href="A.html#spell-1">本页</a>'],
+  ]);
+  assert.equal(validatePages(nestedPages), 4);
+  for (const href of ['../../index.html', '/index.html', '../missing.html', '..\\index.html', '../index.html?bad', '../法术描述/A.html#missing']) {
+    const badPages = new Map(nestedPages);
+    badPages.set('职业法表/class-1.html', `<a href="${href}">坏链接</a>`);
+    assert.throws(() => validatePages(badPages), /missing|non-local/);
+  }
   assert.throws(() => validatePages(new Map([["index.html", '<a href="#absent">Missing</a>']])), /missing link anchor/);
   assert.throws(() => validatePages(new Map([["index.html", '<a href="https://example.invalid">Network</a>']])), /non-local/);
   assert.throws(() => validatePages(new Map([["index.html", '<a href="https://www.d20spellcodex.com/spells/1">Source URL</a>']])), /generated website link/);
