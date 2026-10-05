@@ -318,6 +318,23 @@ export function requireHandoffDbRoles(
   );
 }
 
+export function requireMissingEffectiveTargets(content: Database.Database) {
+  assert(
+    content.readonly && content.pragma("query_only", { simple: true }) === 1,
+    "predecessor check requires readonly/query_only",
+  );
+  const existing = content
+    .prepare(
+      `SELECT spellId FROM I18nSpellText
+    WHERE lang='zh' AND variant='effective' AND spellId IN (${cityscapeAcceptance.targets.map(() => "?").join(",")}) LIMIT 1`,
+    )
+    .get(...cityscapeAcceptance.targets) as { spellId: number } | undefined;
+  assert(
+    !existing,
+    `unexpected existing effective target predecessor: ${existing?.spellId}`,
+  );
+}
+
 export function planDbEnglishHandoff(
   content: Database.Database,
   e: HandoffEvidence,
@@ -326,25 +343,17 @@ export function planDbEnglishHandoff(
     content.readonly && content.pragma("query_only", { simple: true }) === 1,
     "proposal requires readonly/query_only",
   );
+  // This accepted pilot authenticates absent target rows only. A later writer
+  // owns already-applied/recovery states; arbitrary current rows grant no before authority.
+  requireMissingEffectiveTargets(content);
   return e.accepted.map((row, index) => {
-    const before = content
-      .prepare(
-        "SELECT * FROM I18nSpellText WHERE spellId=? AND lang='zh' AND variant='effective'",
-      )
-      .all(row.targetId);
-    assert(before.length <= 1, "duplicate effective before row");
-    const current = before[0] as Record<string, unknown> | undefined;
-    assert(
-      !current || current.rulebookId === 53,
-      "cross-book effective before row",
-    );
     return {
       targetId: row.targetId,
       rulebookId: row.rulebookId,
       sourceKey: row.sourceKey,
       destination: { table: "I18nSpellText", lang: "zh", variant: "effective" },
-      action: current ? "update" : "insert",
-      before: current ?? null,
+      action: "insert",
+      before: null,
       baseline: content
         .prepare(
           "SELECT * FROM I18nSpellText WHERE spellId=? AND lang='zh' AND variant='chm'",
@@ -354,13 +363,13 @@ export function planDbEnglishHandoff(
         (input) => input.targetId === row.targetId,
       )!.english,
       fields: {
-        name: { before: current?.name ?? null, after: row.name! },
+        name: { before: null, after: row.name! },
         descriptionHtml: {
-          before: current?.descriptionHtml ?? null,
+          before: null,
           after: row.descriptionHtml!,
         },
         descriptionText: {
-          before: current?.descriptionText ?? null,
+          before: null,
           after: e.semantic.entries
             .find((entry) => entry.targetId === row.targetId)!
             .segments.map((segment) =>
@@ -394,8 +403,7 @@ export function planDbEnglishHandoff(
         unresolved: e.unresolved.filter((r) => r.targetId === row.targetId),
         residualOwnerIssue: row.targetId === 361 ? 160 : null,
       },
-      // Full unchanged-row snapshot is supplied for precise future compare/apply.
-      preserveOtherColumns: true,
+      acceptedPredecessor: "absent-target-effective-row",
       provenanceWriteContract: "pending-writer-and-consumer-slice",
     };
   });

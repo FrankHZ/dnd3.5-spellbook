@@ -10,6 +10,7 @@ import {
   handoffFiles,
   planDbEnglishHandoff,
   requireHandoffDbRoles,
+  requireMissingEffectiveTargets,
   validateHandoffEvidence,
   type HandoffEvidence,
 } from "./db-english-handoff";
@@ -85,35 +86,6 @@ export function runDbEnglishHandoff(argv: string[]) {
     !sameFile(rulesPath, contentPath),
     "rules/content DB paths alias the same file",
   );
-  const evidencePaths = handoffFiles.map((file) => join(book, file));
-  const acceptedBuffers = bindCommittedInputs(
-    dataRoot,
-    a.revision,
-    evidencePaths,
-  );
-  bindCommittedInputs(dataRoot, a.preparedRevision, [
-    join(book, "target-inputs.jsonl"),
-    join(baselineDir, "intake/candidates.jsonl"),
-    join(baselineDir, "intake/source-inventory.jsonl"),
-  ]);
-  const rows = <T>(file: string): T[] =>
-    acceptedBuffers
-      .get(join(book, file))!
-      .toString("utf8")
-      .trim()
-      .split(/\r?\n/)
-      .filter(Boolean)
-      .map((line) => JSON.parse(line) as T);
-  const evidence: HandoffEvidence = {
-    accepted: rows("out/accepted.jsonl"),
-    fallback: rows("out/fallback.jsonl"),
-    targetInputs: rows("target-inputs.jsonl"),
-    clauses: rows("clause-review.jsonl"),
-    unresolved: rows("unresolved.jsonl"),
-    semantic: JSON.parse(
-      acceptedBuffers.get(join(book, "semantic-review.json"))!.toString("utf8"),
-    ),
-  };
   const stamp = (path: string) => {
     const s = statSync(path);
     return [s.dev, s.ino, s.size, s.mtimeMs];
@@ -131,6 +103,38 @@ export function runDbEnglishHandoff(argv: string[]) {
     rules.pragma("query_only=ON");
     content.pragma("query_only=ON");
     requireHandoffDbRoles(rules, content);
+    requireMissingEffectiveTargets(content);
+    const evidencePaths = handoffFiles.map((file) => join(book, file));
+    const acceptedBuffers = bindCommittedInputs(
+      dataRoot,
+      a.revision,
+      evidencePaths,
+    );
+    bindCommittedInputs(dataRoot, a.preparedRevision, [
+      join(book, "target-inputs.jsonl"),
+      join(baselineDir, "intake/candidates.jsonl"),
+      join(baselineDir, "intake/source-inventory.jsonl"),
+    ]);
+    const rows = <T>(file: string): T[] =>
+      acceptedBuffers
+        .get(join(book, file))!
+        .toString("utf8")
+        .trim()
+        .split(/\r?\n/)
+        .filter(Boolean)
+        .map((line) => JSON.parse(line) as T);
+    const evidence: HandoffEvidence = {
+      accepted: rows("out/accepted.jsonl"),
+      fallback: rows("out/fallback.jsonl"),
+      targetInputs: rows("target-inputs.jsonl"),
+      clauses: rows("clause-review.jsonl"),
+      unresolved: rows("unresolved.jsonl"),
+      semantic: JSON.parse(
+        acceptedBuffers
+          .get(join(book, "semantic-review.json"))!
+          .toString("utf8"),
+      ),
+    };
     const qa = validateQaInputs([
       "--data-root",
       dataRoot,

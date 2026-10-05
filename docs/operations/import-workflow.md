@@ -689,10 +689,12 @@ read-only/query-only mode, distinct unaliased paths and correct roles.
 
 The fresh output directory must belong to private `dice-handoffs/issue-527/`.
 Input/output overlaps and existing directories fail. `proposal.json` contains
-exact field before/after values, full current effective-row and CHM snapshots,
+exact field before/after values, the absent effective predecessor and CHM snapshots,
 locked English/mechanics, accepted row and clause locators, and the retained
-residual. Other effective-row columns are preserved by the proposed update;
-an absent row is an insertion proposal. `report.json` contains source-free
+residual. This fixed acceptance establishes eight absent effective rows only:
+any existing target `zh/effective` row fails before proposal output, even when
+its CHM/English baseline remains unchanged. Already-applied/recovery states belong
+to the next writer contract. `report.json` contains source-free
 counts, evidence revisions, protection boundaries and measured resources.
 The entry changes no DB, builds no search index and grants no activation authority.
 

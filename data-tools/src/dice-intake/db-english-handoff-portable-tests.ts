@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -474,6 +475,61 @@ try {
     "--content-db",
     contentPath,
   ];
+  // The fixed acceptance establishes absence only. CHM/English QA still passes
+  // after an independent effective overlay appears, but the real entry must reject.
+  const ownedOutput = join(
+    root,
+    "dice-handoffs/issue-527/unaccepted-predecessor",
+  );
+  db = new Database(contentPath);
+  db.exec(`INSERT INTO I18nSpellText(id,spellId,rulebookId,lang,variant,name,descriptionText,nameProvenanceJson,bodyProvenanceJson)
+    VALUES('other-owner-target',355,53,'zh','effective','unreviewed-newer-text','other body',
+      '{"acceptedRevision":"other-owner"}','{"acceptedRevision":"other-owner"}')`);
+  db.close();
+  for (const state of ["inserted", "changed"]) {
+    if (state === "changed") {
+      db = new Database(contentPath);
+      db.exec(
+        "UPDATE I18nSpellText SET name='changed-effective-only',bodyProvenanceJson='different-owner' WHERE id='other-owner-target'",
+      );
+      db.close();
+    }
+    const protectedBytes = [readFileSync(rulesPath), readFileSync(contentPath)];
+    assert.deepEqual(
+      validateQaInputs(args).result.accepted,
+      e.accepted,
+      "effective-only change leaves CHM/English formal QA unchanged",
+    );
+    const reader = new Database(contentPath, {
+      readonly: true,
+      fileMustExist: true,
+    });
+    reader.pragma("query_only=ON");
+    try {
+      assert.throws(
+        () => planDbEnglishHandoff(reader, e),
+        /unexpected existing effective target predecessor/,
+      );
+    } finally {
+      reader.close();
+    }
+    assert.throws(
+      () => runDbEnglishHandoff([...common, "--report-dir", ownedOutput]),
+      /unexpected existing effective target predecessor/,
+    );
+    assert(
+      !existsSync(ownedOutput),
+      "rejected effective predecessor creates no output",
+    );
+    assert.deepEqual(
+      [readFileSync(rulesPath), readFileSync(contentPath)],
+      protectedBytes,
+      "rejected predecessor preserves complete DB bytes",
+    );
+  }
+  db = new Database(contentPath);
+  db.exec("DELETE FROM I18nSpellText WHERE id='other-owner-target'");
+  db.close();
   assert.throws(
     () => runDbEnglishHandoff([...common, "--report-dir", book]),
     /owned|belong/,

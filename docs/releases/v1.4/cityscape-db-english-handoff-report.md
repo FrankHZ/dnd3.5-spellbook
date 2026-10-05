@@ -26,7 +26,7 @@ connections were read-only/query-only; main DB file metadata stayed unchanged.
 The content DB contains 1,992 SC text rows and 4,236 non-target text rows.
 
 Root, package and existing other-worktree invocations produced byte-identical
-proposals. Each final invocation took about 3.2 seconds, peaked at 368–380 MiB
+proposals. Each revised invocation took about 3.1 seconds, peaked at 359–367 MiB
 RSS and emitted about 49 KB, within the one-minute / 512 MiB / 5 MiB budget.
 No DB copy, operator write, app-state access, PDF task or private push occurred.
 
@@ -38,6 +38,11 @@ uses genuine all-source QA, temporary Git evidence and small SQLite databases.
 It rejects missing/duplicate/cross-book inputs, altered derived text, stale
 source/English/mechanics/Chinese baseline, missing residuals, arbitrary revisions,
 write flags, wrong roles, writable handles, aliases and output collisions.
+Unexpected target effective rows also reject: inserting or altering only an
+effective overlay leaves formal CHM/English QA valid but creates no output and
+changes no DB bytes through the preflight. This fixed acceptance authorizes
+only an absent effective predecessor; already-applied/recovery belongs to the
+next writer contract.
 Complete synthetic DB bytes, including SC provenance, summaries, build metadata
 and relationships, remain unchanged. The existing annotated-predecessor and SC
 acceptance code is unchanged. Remote `ci:portable` remains the PR merge gate.
