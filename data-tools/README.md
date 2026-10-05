@@ -53,6 +53,7 @@ owning workflow's explicit authorization.
 - [Short descriptions](../docs/operations/import-workflow.md#short-descriptions)
 - [Exact summary check, atomic apply and repeat](../docs/operations/import-workflow.md#summary-import-step)
 - [DB handoff and artifact provenance](../docs/operations/db-content-workflow.md)
+- [Prepare or resume a rulebook QA batch](../docs/operations/db-content-workflow.md#preparing-a-rulebook-qa-batch)
 - [Offline Chinese class/domain HTML / CHM source pages](../docs/operations/offline-html.md)
 - [Explicit-page PDF text/geometry extraction](./pdf-extract/README.md)
 - [SC PDF typography display derivatives](../docs/operations/sc-pdf-typography.md)
