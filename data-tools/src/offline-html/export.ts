@@ -27,7 +27,7 @@ type Text = { spellId: number; rulebookId: number; name: string | null;
   nameProvenanceJson: string | null; bodyProvenanceJson: string | null };
 export type ExportOptions = { contentDb: string; book: number; variant: string; outDir: string };
 type ListEntry = ListIdentity & { ownerName: string; ownerSlug: string };
-type ListGroup = { name: string; slug: string; rows: ListEntry[] };
+type ListGroup = { name: string; slug: string; rows: ListEntry[]; sharedOwnerIds?: readonly number[] };
 
 function selectDomainPowers(content: DomainPowers | undefined, book: number, domains: Map<number, ListGroup>) {
   const selected = new Map<number, DomainPower>();
@@ -580,16 +580,24 @@ export function exportOfflineHtml(options: ExportOptions,
           ${entries.length ? entries.join("\n") : '<p class="empty">此字母无法术。</p>'}`));
       }
       const classMenu: string[] = [], domainMenu: string[] = [];
+      const classPages = new Map(classes);
+      if (options.book === 86 && classes.get(1)?.slug === "wizard" && classes.get(4)?.slug === "sorcerer") {
+        classPages.set(1, { name: "Sorcerer/Wizard", slug: "sorcerer-wizard", sharedOwnerIds: [4, 1],
+          rows: [...classes.get(4)!.rows, ...classes.get(1)!.rows] });
+        classPages.delete(4);
+      }
       let classMemberships = 0, domainMemberships = 0;
       const schoolGroupedClassPages: number[] = [], schoolNameFallbacks = new Set<string>();
-      for (const [kind, groups] of [["class", classes], ["domain", domains]] as const) {
+      for (const [kind, groups] of [["class", classPages], ["domain", domains]] as const) {
         for (const [owner, group] of [...groups].sort(([, a], [, b]) => a.name.localeCompare(b.name, "en"))) {
-          const filename = `${kind}-${owner}.html`;
+          const filename = group.sharedOwnerIds ? "class-1-4.html" : `${kind}-${owner}.html`;
           const names = kind === "class" ? classNames : domainNames;
-          const name = names.has(owner) ? `${names.get(owner)}（${group.name}）` : group.name;
+          const name = group.sharedOwnerIds
+            ? `${group.sharedOwnerIds.map(id => names.get(id) ?? classes.get(id)!.name).join("／")}（${group.name}）`
+            : names.has(owner) ? `${names.get(owner)}（${group.name}）` : group.name;
           (kind === "class" ? classMenu : domainMenu).push(`<li><a href="${filename}">${text(name)}</a></li>`);
           // The SC appendix groups only the Sorcerer/Wizard list by school inside each level.
-          const bySchool = options.book === 86 && kind === "class" && ["wizard", "sorcerer"].includes(group.slug);
+          const bySchool = options.book === 86 && kind === "class" && ["wizard", "sorcerer", "sorcerer-wizard"].includes(group.slug);
           if (bySchool) schoolGroupedClassPages.push(owner);
           const firstLevel = kind === "domain" ? 1 : 0;
           const completeList = kind === "domain" ? completeLists.get(owner) : undefined;
@@ -608,16 +616,27 @@ export function exportOfflineHtml(options: ExportOptions,
                 const currentMachine = machine.filter(row => row.record.rulebookId === options.book
                   && memberships.some(entry => entry.id === row.record.listEntryId));
                 if (currentMachine.some(row => row.spell.id !== spell.id || row.spell.canonicalName !== spell.canonicalName
-                  || row.spell.sourceRulebookId !== spell.sourceRulebookId || row.ownerName !== group.name)) {
+                  || row.spell.sourceRulebookId !== spell.sourceRulebookId
+                  || row.ownerName !== memberships.find(entry => entry.id === row.record.listEntryId)!.ownerName)) {
                   throw new Error("Stale machine marker spell/owner name or edition");
                 }
-                const marker = selectProcessedMembershipMarkers(memberships.map(listIdentity), options.book, printedRecords, currentMachine);
+                // Keep each owner's source binding intact before combining a shared display row.
+                const selections = [...new Set(memberships.map(entry => entry.ownerLegacyId))].map(ownerId =>
+                  selectProcessedMembershipMarkers(memberships.filter(entry => entry.ownerLegacyId === ownerId).map(listIdentity),
+                    options.book, printedRecords, currentMachine));
+                const known = selections.filter(selection => selection.status !== "unknown");
+                if (new Set(known.map(selection => selection.markers)).size > 1) throw new Error("Conflicting shared class markers");
+                const marker = selections.find(selection => selection.status === "unknown")
+                  ?? known.find(selection => selection.status === "machine") ?? known[0]!;
                 markerCounts[marker.status === "accepted" ? "acceptedRows" : marker.status === "machine" ? "machineRows" : "unknownRows"]++;
                 const labels = marker.status === "unknown" ? null : marker.markers;
                 if (labels === "") markerCounts.explicitEmptyRows++;
                 else if (labels) markerCounts.markedRows++;
                 const markerTitle = `原书法表标记${marker.status === "machine" ? "（自动匹配）" : ""}：M 昂贵材料；F 成分包外器材；X 施法者支付经验值`;
                 const qualifiers = [...new Set(memberships.map(row => [row.rawExtra, row.variantLabel, row.note].filter(present).join(" — ")).filter(present))];
+                if (group.sharedOwnerIds && group.sharedOwnerIds.some(id => !memberships.some(row => row.ownerLegacyId === id))) {
+                  qualifiers.unshift([...new Set(memberships.map(row => names.get(row.ownerLegacyId) ?? row.ownerName))].join("／"));
+                }
                 return `<li><a href="${destinations.get(id)}">${text(translation.name!)}（${text(spell.canonicalName)}）</a>${labels ? `<sup class="component-labels" title="${markerTitle}">${text(labels)}</sup>` : ""}：<span lang="zh" class="summary">${text(summary.zh)}</span>
                   ${qualifiers.map(value => `<span class="membership-note">${text(value)}</span>`).join("")}</li>`;
               };
@@ -639,7 +658,7 @@ export function exportOfflineHtml(options: ExportOptions,
             } else rows = sortedMembers.length ? `<ul class="spell-list">${sortedMembers.map(renderRow).join("\n")}</ul>` : "";
             return `<h2 id="level-${level}">${level} 环</h2>${rows || `<p class="empty">${kind === "class" ? "此环无法术。" : "本书收录范围内，此环暂无条目。"}</p>`}`;
           }).join("\n");
-          const missingName = !names.has(owner)
+          const missingName = (group.sharedOwnerIds ? group.sharedOwnerIds.some(id => !names.has(id)) : !names.has(owner))
             ? `<p class="notice">${kind === "class" ? "职业" : "领域"}中文名称缺失：显示现有英文名称。</p>` : "";
           const power = kind === "domain" ? powers.get(owner) : undefined;
           const powerHtml = power ? `<section class="domain-power" lang="zh"><h2>领域能力</h2>
@@ -661,7 +680,8 @@ export function exportOfflineHtml(options: ExportOptions,
       fs.mkdirSync(out);
       for (const [name, html] of pages) fs.writeFileSync(path.join(out, name), html, { encoding: "utf8", flag: "wx" });
       const report = { ...counts, files: pages.size + 1, links, book: options.book, variant: options.variant,
-        layout: "classes-domains-then-az", letterPages: letters.length, classPages: classes.size, classMemberships,
+        layout: "classes-domains-then-az", letterPages: letters.length, classPages: classPages.size, classMemberships,
+        sharedClassPages: [...classPages.values()].flatMap(group => group.sharedOwnerIds ? [{ filename: "class-1-4.html", ownerIds: group.sharedOwnerIds }] : []),
         classListEntries: listEntries.filter(row => row.listType === "class").length, classTargets: classTargets.size, classlessTargets: spells.filter(s => !classTargets.has(s.legacySpellId)).map(s => s.legacySpellId),
         classNameFallbacks: [...classes.keys()].filter(id => !classNames.has(id)),
         schoolGroupedClassPages, schoolNameFallbacks: [...schoolNameFallbacks].sort(),

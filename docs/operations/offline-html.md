@@ -18,14 +18,20 @@ from normalized rule columns.
 
 Class directory links and page titles reuse `I18nCharacterClassText` Chinese
 `default` names alongside existing English names; absent Chinese names have an
-explicit English fallback notice. Stable class IDs, filenames and separate
-Sorcerer/Wizard pages remain unchanged. Within each SC Sorcerer/Wizard level,
+explicit English fallback notice. SC Sorcerer/Wizard share `class-1-4.html`
+and one directory link, matching the original combined list. Within each level,
 rows are grouped by existing `schoolRaw`, in English school-name order as in the
 printed appendix. School headings use the existing accepted taxonomy IDs and
 `I18nSpellSchoolText` Chinese `default` names; missing overlays retain the raw
 school name and are reported. Combined schools retain one group and one row per
 spell, rather than duplicating the spell into multiple school groups. Other
-classes and domains retain their original list layout.
+classes and domains retain their original list layout. Shared rows are deduplicated
+by spell ID and level, while original owner IDs and all relationship snapshots
+remain intact. Each owner's printed marker bindings are checked separately;
+conflicting known values reject, and an unknown binding omits the display marker.
+Qualifiers are retained once. A row with only one current owner gets a small
+profession note rather than inventing another database relationship. Other books
+retain their existing separate class pages.
 
 Each `domain-<owner ID>.html` lists levels 1–9 with the same name/summary row and
 local spell anchors. Pages include only relationships for spells whose bodies

@@ -598,10 +598,15 @@ try {
     const outDir = path.join(output, 'school-groups'), before = schoolView.serialize();
     const schoolReport = exportOfflineHtml({ ...options, contentDb: ':memory:', outDir }, new Map(), schoolView, schoolMachine);
     assert(schoolView.serialize().equals(before));
-    assert.deepEqual(schoolReport.schoolGroupedClassPages, [4, 1]);
+    assert.deepEqual(schoolReport.schoolGroupedClassPages, [1]);
+    assert.deepEqual(schoolReport.sharedClassPages, [{ filename: 'class-1-4.html', ownerIds: [4, 1] }]);
+    assert.equal(schoolReport.classPages, 2);
+    assert(!fs.existsSync(path.join(outDir, 'class-1.html'))); assert(!fs.existsSync(path.join(outDir, 'class-4.html')));
+    const schoolMenu = load(fs.readFileSync(path.join(outDir, 'index.html'), 'utf8'));
+    assert.equal(schoolMenu('a[href="class-1-4.html"]').length, 1);
     assert.deepEqual(schoolReport.schoolNameFallbacks, []);
-    const wizard = load(fs.readFileSync(path.join(outDir, 'class-1.html'), 'utf8'));
-    assert.equal(wizard('h1').text(), '法师（Wizard）');
+    const wizard = load(fs.readFileSync(path.join(outDir, 'class-1-4.html'), 'utf8'));
+    assert.equal(wizard('h1').text(), '术士／法师（Sorcerer/Wizard）');
     const groups = wizard('#level-3').nextUntil('h2');
     assert.deepEqual(groups.filter('.school-heading').toArray().map(el => wizard(el).text()), ['防护', '咒法／塑能']);
     assert.deepEqual(groups.filter('ul').find('li > a').toArray().map(el => wizard(el).attr('href')), ['A.html#spell-1', 'A.html#spell-5']);
@@ -610,10 +615,16 @@ try {
     const zero = wizard('#level-0').nextUntil('h2');
     assert.equal(zero.filter('ul').find('li').length, 1);
     for (const qualifier of ['Zero qualifier', 'Additional qualifier']) assert(zero.text().includes(qualifier));
-    assert.equal(load(fs.readFileSync(path.join(outDir, 'class-4.html'), 'utf8'))('#level-3 + h3 + ul .component-labels').text(), 'F');
+    assert(!groups.filter('ul').find('li').first().find('.membership-note').text().includes('术士'));
+    assert(groups.filter('ul').find('li').last().find('.membership-note').text().includes('法师'));
     assert.equal(load(fs.readFileSync(path.join(outDir, 'class-2.html'), 'utf8'))('.school-heading').length, 0);
     assert.equal(load(fs.readFileSync(path.join(outDir, 'domain-1.html'), 'utf8'))('.school-heading').length, 0);
     assert(!wizard.text().includes('不可混入的学派'));
+    const partialMarkersOut = path.join(output, 'shared-class-partial-markers');
+    exportOfflineHtml({ ...options, contentDb: ':memory:', outDir: partialMarkersOut }, new Map(), schoolView,
+      schoolMachine.filter(row => row.ownerName !== 'Sorcerer'));
+    const partialMarkers = load(fs.readFileSync(path.join(partialMarkersOut, 'class-1-4.html'), 'utf8'));
+    assert.equal(partialMarkers('#level-3').nextUntil('h2').find('.component-labels').length, 0);
   } finally { schoolView.close(); }
   // Extra feat relationships remain in the input but outside the book directory.
   const specialFixture = new Database(db.serialize());
