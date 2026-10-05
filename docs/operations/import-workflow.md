@@ -550,9 +550,10 @@ remain available.
 
 For a new or resumed book, first use
 [rulebook batch preparation](./db-content-workflow.md#preparing-a-rulebook-qa-batch)
-to establish current inputs, source authority, scope and the consumer handoff.
-The commands below enforce structural/evidence contracts; passing them alone
-does not establish original-book fidelity or permission to activate content.
+to establish current inputs, the DB-English comparison baseline, scope and the
+consumer handoff. This workflow does not require PDF/errata preparation or
+extraction. The commands below enforce structural/evidence contracts; semantic
+review against complete aligned DB English and separate activation gates remain.
 
 The TXT package at `data/spells-dice-db-by-mo/` is proposed input under
 [intake issue #119](https://github.com/FrankHZ/dnd3.5-spellbook/issues/119).
@@ -582,7 +583,7 @@ Chinese names and retained CHM English aliases are review hints. Duplicate
 targets remain review-required, and unsupported or ambiguous publications keep
 their explicit dispositions. No candidate is accepted by this command.
 
-After field-level source review, keep detailed decisions in private
+After field-level DB-English review, keep detailed decisions in private
 `data/dice-qa/books/<rulebook-id>/`. Each book issue owns its semantic review and
 acceptance; merging QA tooling accepts no corpus text. The existing global
 command remains available for an explicitly authorized complete-corpus handoff:
@@ -602,10 +603,12 @@ text. A corrected candidate must be separately reviewed before acceptance.
 Formal QA also requires a full-body audit record for every accepted body,
 bound to the effective replacement and aligned English evidence. The report
 counts accepted bodies still lacking that audit during `--check-incomplete`.
-These English excerpts are checked against the DB and do not verify an external
-PDF or make legacy CHM/dice agreement source acceptance. Follow the
-[source-of-truth rules](./db-content-workflow.md#source-of-truth); for a book
-review using PDF evidence, retain the
+These English excerpts are checked against the DB, the agreed baseline for
+resumed dice QA; PDF verification is not required. Missing or ambiguous English
+retains fallback with a specific unresolved item. CHM/dice agreement alone is
+not an English audit. Follow the
+[source-of-truth rules](./db-content-workflow.md#source-of-truth).
+Only for a separately scoped original-book review, retain the
 private page fragments, visual findings and exact effective-field bindings, and
 run the independent [supplemental PDF verifier](../../data-tools/pdf-extract/README.md#supplemental-review-verification)
 in addition to the unchanged dice QA checks.
