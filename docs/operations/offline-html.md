@@ -207,8 +207,7 @@ skip the full-size display replay:
 npm run -w data-tools offline:html:test -- --focused
 ```
 
-Full 1,001-entry display replay, source authentication and actual export remain
-paused. Exact-head remote portable CI validates code independently of user visual
+Exact-head remote portable CI validates code independently of user visual
 acceptance. Full construction requires small-preview confirmation,
 acceptance of the six Chinese-format batches #480–#485, domain delivery #486 and
 the accepted special-marker inputs from #487/#499. Small previews
@@ -316,9 +315,12 @@ output. The ordinary CLI exposes no presentation-file selection channel. A
 renderer map is not source authority; main-gate authenticates exact Git inputs,
 complete mappings and independent acceptance before selecting it.
 
-The accepted selection has 296 formats and 705 current representations. These are
-diagnostic coverage counts. Unaccepted later formats and #473/#476 content proposals
-remain excluded. The current source authority stays at actual #467 with its accepted
+For the Chinese delivery, compose the accepted #480–#485 batches: new candidates
+plus each batch's explicitly retained presentations. Use #484's
+`presentations-final.json` and #485's `presentations-reviewed.json` with its two
+accepted reuse entries. These six batches cover the 1,001 SC targets without
+overlap; selection counts describe this input, not a precision-formatting gate.
+#473/#476 content proposals remain excluded. The current source authority stays at actual #467 with its accepted
 normalized/manifest and provenance; display changes do not authorize migration.
 The dedicated authentication/migration checkout remains at its accepted runtime.
 
@@ -348,9 +350,13 @@ and `contentCertification` remain false. The content-preview notice remains unti
 human acceptance. Private locators, source keys, raw JSON, audit histories and
 review envelopes are excluded from output; generated source text stays out of public Git.
 
-Main-gate owns the refreshed actual readonly export, durable delivery and representative
-human visual acceptance. The earlier durable preview is not acceptance of the
-Chinese revision. The browser/file-URL rejection and no-workaround boundary remain:
+Main-gate owns actual readonly export, durable delivery and recording the user's
+representative visual acceptance. The local Chinese delivery lives at
+`G:/spell-book/exports/sc-html`; `G:/spell-book/exports/sc-html-class-az-preview`
+mirrors the same files. Verify delivered bytes and remove only identified obsolete
+export pages when replacing an earlier layout. Delivery evidence and current
+acceptance belong in #345/#346 and private data, rather than a repository status log.
+The browser/file-URL rejection and no-workaround boundary remain:
 no file retry, localhost or alternate renderer. See
 [SC verification](../reports/sc-offline-html-qa.md) and
 [DB content workflow](./db-content-workflow.md) for acceptance/write boundaries.

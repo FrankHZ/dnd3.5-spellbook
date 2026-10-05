@@ -61,7 +61,7 @@ unchanged spell summaries. Extra source owners cannot create additional pages;
 no source text enters public fixtures or database fields. The small accepted-input
 preview includes one planar domain with a requirement, shared rules and reader note.
 
-A small accepted-input preview is the current user-review stage. It contains
+A small accepted-input preview precedes full construction. It contains
 representative mapped/plain, ordinary/long, inheritance, mechanism, table/list,
 materials/XP and note cases, plus class/domain-directory fragments. Its complete Chinese
 text (including whitespace), accepted Chinese summaries, structures and links are
@@ -77,8 +77,8 @@ bindings and forged links. Existing spell bodies and class rows remain intact.
 The fixed accepted #507 reader preserves its original proposal status rather
 than treating that status as a separate acceptance decision.
 
-Full 1,001-entry display replay remains paused until the user confirms the small
-slice. Exact-head remote portable CI is the code gate, independently of visual
+Full 1,001-entry display replay requires the user's small-slice confirmation.
+Exact-head remote portable CI is the code gate, independently of visual
 acceptance. Full construction additionally requires accepted
 #480–#485 Chinese-format batches, #486 domain delivery and #487 special-component
 markers. Unknown automatic marker residues are omitted and do not individually
@@ -91,8 +91,10 @@ Do not hide English text or emit extra bodies to satisfy obsolete output checks.
 ## Source And Delivery Boundaries
 
 Reuse the existing accepted #467 source/normalized/manifest and generation provenance,
-with the dedicated authentication/migration runtime unchanged. The accepted 296
-format maps remain available; the other 705 entries retain accepted current input.
+with the dedicated authentication/migration runtime unchanged. Chinese display
+composes the accepted six batches #480–#485, including each batch's explicit reuse
+decisions and final candidate filenames. Complete four-field bindings are checked
+against the actual DB before selecting any presentation.
 #473/#476 content proposals remain unapplied. Original PDF and official errata retain
 content authority; the natural-layout policy does not accept unresolved corrections.
 No whole-book semantic QA, original extraction or fine-emphasis queue is reopened.
@@ -111,7 +113,8 @@ upload, deployment or self-merge is authorized.
 
 Representative human review must include class pages, ordinary/long paragraphs,
 compact fields, tables/lists, inheritance, materials/XP and independent source notes.
-PR #351 remains draft. Mapping counts do not replace visual acceptance;
+Record the user's confirmation and full-delivery evidence in the owning issue/PR.
+Mapping counts do not replace visual acceptance;
 `formattingComplete` and `contentCertification` remain false. #354 is separate and
 nonblocking. The existing HTML browser/file no-workaround restriction remains.
 Usage and current behavior: [offline HTML](../operations/offline-html.md).
