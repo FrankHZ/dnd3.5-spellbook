@@ -33,6 +33,10 @@ function main(argv) {
   assert(!argv.includes('--accepted-source-clarifications') || argv.includes('--accepted-source-punctuation'), 'Chinese clarifications require #473 predecessor');
   assert(!argv.includes('--upgrade-source-clarifications') || argv.includes('--accepted-source-clarifications'), 'Chinese clarification upgrade requires accepted package');
   assert(!argv.includes('--accepted-source-clarifications') || !argv.includes('--upgrade-source-punctuation'), 'choose one source transition');
+  // All option names were validated above. Later dedicated upgrades may carry
+  // this accepted source state; only the generic writer is forbidden here.
+  assert(!argv.includes('--apply') || !argv.includes('--accepted-source-clarifications') ||
+    argv.some(arg => arg.startsWith('--upgrade-')), 'Chinese clarification writes require a dedicated upgrade');
   const sourceUpgrade = argv.includes('--upgrade-english-title') || argv.includes('--upgrade-source-pairs') || argv.includes('--upgrade-source-fidelity') || argv.includes('--upgrade-source-punctuation');
   assert(sourceUpgrade === argv.includes('--previous-normalized'), 'previous normalized belongs to source upgrade');
   const code = fs.realpathSync(value('code-root')), runtime = fs.realpathSync(value('runtime-root'));
@@ -151,6 +155,8 @@ function main(argv) {
         wholeBookQaComplete: false, activation: false, ftsRefreshed: false}));
       return;
     }
+    assert(!apply || !argv.includes('--accepted-source-clarifications'),
+      'Chinese clarification writes require a dedicated upgrade');
     const full = writer.verifyFullNormalized(db, generated, inputPath, current);
     const plan = writer.planFinalOverlay(db, auth.fields, auth.report, full, value('helper-revision'), summaries);
     if (apply) writer.applyFinalOverlay(db, plan, () => writer.verifyFullNormalized(db, generated, inputPath, current));

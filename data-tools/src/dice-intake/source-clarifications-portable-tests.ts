@@ -53,6 +53,13 @@ try {
   const entry = require(path.join(root, 'data-tools/audits/sc-final-overlay.cjs'));
   assert.throws(() => entry.main(['--accepted-source-clarifications']), /require #473/);
   assert.throws(() => entry.main(['--upgrade-source-clarifications']), /requires accepted package/);
+  const acceptedFlags = ['--accepted-source-clarifications', '--accepted-source-punctuation',
+    '--accepted-source-fidelity', '--accepted-source-pairs', '--accepted-english-title', '--accepted-summaries'];
+  assert.throws(() => entry.main([...acceptedFlags, '--apply']), /writes require a dedicated upgrade/);
+  assert.throws(() => entry.main([...acceptedFlags, '--validate']), /missing --code-root/,
+    'read-only validation remains allowed through argument preflight');
+  assert.throws(() => entry.main([...acceptedFlags, '--upgrade-source-clarifications', '--apply']), /missing --code-root/,
+    'dedicated upgrade remains allowed through argument preflight');
   for (const name of fs.readdirSync(path.join(root, 'server/db/content/migrations')).sort()) if (name !== 'migration_lock.toml') db.exec(fs.readFileSync(path.join(root, 'server/db/content/migrations', name, 'migration.sql'), 'utf8'));
   importGenerated(db, content, false, input, {currentProvenance: provenance, importedAt: 'synthetic'});
   db.exec("CREATE TABLE protected_bytes(id INTEGER,body TEXT); INSERT INTO protected_bytes VALUES(1,CAST(x'ff' AS TEXT));");

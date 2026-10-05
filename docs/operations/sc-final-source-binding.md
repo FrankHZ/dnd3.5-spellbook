@@ -458,6 +458,8 @@ accepted source-revision metadata change. Repeating an accepted after state writ
 nothing. Runtime DTOs expose the accepted review revision without private evidence.
 
 Keep `--accepted-source-clarifications` on subsequent final validations and source
-replays. Main-gate owns actual operator migration, FTS and consumer checks;
+replays. Generic `--apply` with that acceptance flag is rejected; every write
+must use its dedicated upgrade path, including later accepted successors.
+Main-gate owns actual operator migration, FTS and consumer checks;
 accepted formatting must be rebound to the new Chinese inputs before exporting.
 Source acceptance and passing synthetic tests do not activate a database or HTML.
