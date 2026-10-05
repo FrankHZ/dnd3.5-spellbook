@@ -81,8 +81,9 @@ migrate/write operator DBs. Full build/search/consumer integration remains separ
 The selected final candidate uses the maintained
 [final overlay and migrated-state validator](./sc-final-source-binding.md#final-overlay-and-migrated-state-validation)
 after genuine full normalized generation/import. It preserves generation
-provenance and records accepted name/body authority while summaries and extra
-relationship QA remain pending. Its validation needs durable final inputs,
+provenance and records accepted name/body and summary authority independently.
+Extra relationship QA remains separately pending under #354; accepted text and
+summaries do not certify those relationships. Its validation needs durable final inputs,
 not removable rehearsal DB snapshots; operator writes still require the owning
 migration's authorization and acceptance.
 
@@ -129,6 +130,9 @@ migration's authorization and acceptance.
      The specific accepted SC directory promotion uses the
      [source-bound final summary upgrade](./sc-final-source-binding.md#upgrade-an-already-accepted-annotated-summary-state)
      instead; this authenticated exception does not relax the generic step.
+     The [accepted domain-summary transition](./sc-final-source-binding.md#upgrade-accepted-domain-summaries)
+     additionally binds its one reviewed correction and requires the separately
+     promoted canonical inventory before apply or validation.
    - Require canonical publication metadata for the full artifact; use the
      explicit audit-only generator only for limited, non-importable output.
    - Run content generate/import, then dry-run and rebuild the derived search

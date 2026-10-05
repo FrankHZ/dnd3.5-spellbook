@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/511",
+  "inputs": {
+    "previousCanonicalRevision": "1e86cf7865f42f15abb7d6629d2d9de54607a13c",
+    "canonicalPath": "short-desc-normalized/summaries.generated.jsonl",
+    "candidateRevision": "cd67b6039331313cf858c646593f1fe9ddde0adb",
+    "candidatePath": "dice-qa/books/86/issue-500/summaries-final/summaries.proposed.jsonl",
+    "sourceAcceptanceRevision": "c7d21ef8a573217e54229809219c8fa323f66bab",
+    "sourceAcceptancePath": "dice-qa/books/86/issue-500/main-gate/source-summary-acceptance.json"
+  },
+  "delta": {
+    "previousRows": 6837,
+    "nextRows": 6866,
+    "additions": 29,
+    "corrections": 1,
+    "correctedStableKey": "4123:zh:chm",
+    "preservedRows": 6836,
+    "deletedRows": 0,
+    "lang": "zh",
+    "variant": "chm"
+  },
+  "validation": {
+    "privateCorpusProofRevision": "78fbe31edb7ddcdc241279a988a84c2f614f84d4",
+    "privateCorpusProofPath": "dice-qa/books/86/issue-511/corpus-validation.json",
+    "actualCorpusSummaryOnlyMemoryReplayPassed": true,
+    "fixedInputCompositionChecked": true,
+    "rootAndPackageAuthenticationPassed": true,
+    "canonicalPromotionRequiredForApplyAndValidate": true,
+    "syntheticBeforeApplyRepeatRollbackPassed": true,
+    "independentCorrectionPairChecked": true,
+    "unchangedSummaryTimestampsProtected": true,
+    "correctionCreatedAtProtected": true,
+    "sourceOverlaysAndBuildMetadataProtected": true,
+    "genericAnnotatedPredecessorGuardRetained": true,
+    "genericDomainApplyRequiresExactAnnotatedAfter": true,
+    "genericApplyWithSourceClarificationsRejected": true,
+    "typecheckPassed": true,
+    "operatorDbAccess": false,
+    "sourceQaRerun": false,
+    "canonicalPromotion": false,
+    "productionOperations": false
+  },
+  "resources": {
+    "previousInputBytes": 4665402,
+    "candidateInputBytes": 4695479,
+    "measuredRssAfterAuthenticationBytes": 161370112,
+    "pilotNodeHeapLimitMiB": 512,
+    "algorithm": "Indexed complete inventory comparison plus the existing protected-table transaction checks",
+    "additionalDbCopies": 0,
+    "newEnvironments": 0,
+    "ocrCalls": 0,
+    "paidApiCalls": 0
+  },
+  "operatorBoundary": {
+    "sourceTransitionsBeforeSummaries": true,
+    "allCurrentAcceptedSourceFlagsRequired": true,
+    "canonicalPromotionOwner": "main-gate",
+    "actualApplyFtsApiHtmlOwner": "main-gate",
+    "implementationDoesNotCloseOperatorAcceptance": true
+  }
+}
