@@ -1,5 +1,13 @@
 # SC PDF typography display derivatives
 
+Current [#345 natural-layout acceptance](https://github.com/FrankHZ/dnd3.5-spellbook/issues/345)
+supersedes the former full-book fine-format coverage gate. Reuse existing extraction
+and accepted mappings; unavailable emphasis can remain plain. Complete content,
+paragraph readability, tables/lists/notes/links and representative visual review
+remain required. The precise mapping/audit recipes below document existing evidence
+and contracts, not a requirement to certify every character or reach selected=1,001.
+Do not extend old 45-entry queues or rerun full-source checks for pure style details.
+
 SC source-bound name/body acceptance preserves distinct text and HTML values.
 It does not certify PDF paragraph boundaries or visual emphasis. Existing
 `descriptionHtml`, escaped `<pre>` text, and PDF block/line order cannot by
@@ -307,24 +315,35 @@ The existing HTML browser restriction remains in force. Direct PDF page review
 and structural/text checks do not certify rendered HTML. Do not substitute a
 localhost or alternate rendering surface after a denied HTML preview.
 
-## Validation and remaining delivery
+## Validation And Delivery
 
-Run `npm run -w data-tools zh:pdf-typography:test` for synthetic exact-field,
-text/note preservation, stale identity, table roles/spans/sections/captions,
-list kinds/numbering/nesting, anchor deletion/movement and marked-list checks.
-It also runs in the portable data-tools suite. The private `prepare.py`,
-`inspect_pdf.py`, `author.py` and `validate.cjs` reproduce the bounded inventory
-and proposal from committed inputs, an explicit code root and the data root
-resolved from their owned private script directory. They open no
-DBs. Their paths/commands and exact evidence revisions are recorded privately;
-public tests require no corpus. The shared Python environment remains unchanged.
+Use existing portable exporter/typography checks for complete text, structures,
+notes, links and input guards. Fixed accepted precision evidence remains usable;
+new full-source/span replays are unnecessary for punctuation or harmless style
+differences. Check only affected natural-layout behavior with synthetic fixtures
+and the complete accepted-input export. Inspect representative class/letter pages
+in a permitted human review. Substantive source discrepancies stay with their
+content issues; display changes do not modify canonical inputs or authorize
+migration. Main-gate owns actual export and durable delivery. See
+[offline HTML](./offline-html.md) for the current gates and writer coordination.
 
-Remaining complete-entry reviews should be independently accepted in batches of
-30–60 ordinary spells, reducing complex table/sidebar/cross-page batches to
-roughly 15–30. Narrow source context before treating column/page flags as entry
-complexity. Each batch must bind current full fields, inspect complete source
-entries, map both languages, preserve structures and notes, enumerate unresolved
-gaps, and obtain main-gate selection. Address the representative gaps and verify
-the consumer's actual rendered HTML before promoting their display proposals.
-[#431](https://github.com/FrankHZ/dnd3.5-spellbook/issues/431) owns this prerequisite;
-#345/#346 retain responsibility for final coverage and integration.
+## Accepted Source-Fidelity AFTER Integration
+
+The six #467 entries (4033, 4247, 4345, 4349, 4354, 4355) have separate accepted
+source corrections, a completed actual migration and independent complete format
+acceptance. The accepted source-fidelity selection preserves the old 223 presentations and
+adds these six AFTER presentations. Current consumer integration also includes
+the 34 separately accepted #474 and 33 accepted #477 natural formats, giving
+296 mapped displays and 705
+current representations with natural plain-text paragraph spacing. All four
+inputs bind the completed normalized/canonical state; all 80 reviewed mapping
+units and complete English/Chinese emphasis remain fixed. Proposal flags and an
+empty implementation selection file do not override main-gate acceptance.
+
+The consumer's source-fidelity handoff requires explicit acceptance mode and
+the maintained PR472 source authentication/planner/provenance wiring. Old source
+with new format and new source with an old helper/normalized/report guard reject.
+The 23 #476 blockers and 4421, 4425 and 4426 for #473 remain wholly excluded;
+later unaccepted packets
+remain outside selection. Prior proofs keep their original bindings. See
+[offline HTML](./offline-html.md) for the current readonly execution boundary.

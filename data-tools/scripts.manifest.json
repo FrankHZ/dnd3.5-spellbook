@@ -7,6 +7,20 @@
     "dormant-local": "Source-consumed local workflow kept for reruns when source data or parser logic changes; not part of active acceptance."
   },
   "commands": {
+    "offline:html": {
+      "module": "rules-content",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "offline:html:test": {
+      "module": "rules-content",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
     "dice:effective:consumers": {
       "module": "harness",
       "lifecycle": "local-acceptance",

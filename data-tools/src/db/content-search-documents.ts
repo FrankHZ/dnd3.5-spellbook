@@ -2,6 +2,11 @@ import type Database from "better-sqlite3";
 
 export const CONTENT_SEARCH_SCHEMA_VERSION = 2;
 
+/** Match the maintained API summary owner; effective body text has no separate summary owner. */
+export function selectedSummaryVariant(lang: string, variant: string) {
+  return lang === "en" ? "imarvin" : variant === "effective" ? "chm" : variant;
+}
+
 export type ContentSearchSpellRow = {
   spellId: number;
   canonicalName: string;
@@ -121,8 +126,7 @@ export function buildContentSearchDocuments(
 
     for (const draft of drafts.values()) {
       // Match the API's maintained summary owner, without mixing other variants into the document.
-      const summaryVariant = draft.lang === "en" ? "imarvin"
-        : draft.variant === "effective" ? "chm" : draft.variant;
+      const summaryVariant = selectedSummaryVariant(draft.lang, draft.variant);
       const summaryText = summaries.filter(row => row.lang === draft.lang && row.variant === summaryVariant)
         .map(row => row.summaryText);
       documents.push({
