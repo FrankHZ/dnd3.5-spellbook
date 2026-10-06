@@ -1,0 +1,38 @@
+{
+  "acceptedTargets": 0,
+  "byBook": {
+    "43": {
+      "descriptionHtml:English": 28,
+      "name:English": 28
+    }
+  },
+  "candidateOccurrences": 6,
+  "classifications": {
+    "ambiguous-unmatched": 6
+  },
+  "decisions": {
+    "descriptionHtml:deferred": 6,
+    "name:deferred": 6
+  },
+  "existingTargets": 28,
+  "mappingRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+  "matchedTargets": 0,
+  "pendingFields": 0,
+  "pendingFullBodyAudits": 0,
+  "reviewedOccurrences": 6,
+  "scope": {
+    "kind": "rulebook",
+    "rulebookId": 43
+  },
+  "sourceByPublication": {
+    "43": {
+      "ambiguous-unmatched": 6
+    }
+  },
+  "sourceCoverage": {
+    "candidateOccurrences": 5606,
+    "files": 105
+  },
+  "sourceRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+  "validation": "validated-proposal"
+}
