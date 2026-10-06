@@ -17,7 +17,7 @@
     "publicBase": "f3173363d70e55c3070c435ec5a1ede1bec25fca",
     "publicQaToolBlob": "168d1e54c9065111835e69ae3f3fb779b47b708f",
     "privatePreparedRevision": "6d28f9391273979a35a6bcc86971f0aac5b9f2c8",
-    "privateEvidenceRevision": "4fb3144e1264cd8c9750c17ca63793f240693319",
+    "privateEvidenceRevision": "31e1f977841857558e9ffa71ab1d0eb9eca15784",
     "sourceRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
     "mappingRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
     "targetIds": [
@@ -158,7 +158,7 @@
     "bodyFormulaScopeProblems": 1,
     "recipientScopeConflicts": 1,
     "normalizedMechanicsGapRecords": 21,
-    "totalRecords": 23,
+    "totalRecords": 24,
     "missingBodyTables": 0,
     "bodyProblemTargets": [
       3376
@@ -166,8 +166,12 @@
     "recipientConflictTargets": [
       3406
     ],
-    "distinction": "40 absent matches and1 guarded body are activation gaps, separate from the concrete English formula question and normalized mechanics gaps. Ambiguous formula wording is faithfully translated literally; current whole-field fallback remains English.",
-    "nonblockingNotes": 3
+    "distinction": "40 absent matches and1 guarded body are activation gaps. Actual source items comprise1 formula-scope problem,1 recipient-scope conflict,21 normalized mechanics gaps and1 normalized-body-header savingThrow conflict. For3412 the canonical header remains None while the complete body specifies conditional selected-side fear Will and passage Fortitude saves. None is not generalized to every consequence; no canonical or translated after value changes.",
+    "nonblockingNotes": 3,
+    "normalizedBodyHeaderSaveConflicts": 1,
+    "bodyHeaderSaveConflictTargets": [
+      3412
+    ]
   },
   "unresolved": [
     {
@@ -307,6 +311,12 @@
       "kind": "unspecified-intelligent-undead-save-type",
       "field": "savingThrow",
       "canonicalChange": false
+    },
+    {
+      "targetId": 3412,
+      "kind": "normalized-body-header-save-conflict",
+      "field": "savingThrow",
+      "canonicalChange": false
     }
   ],
   "qa": {
@@ -368,8 +378,8 @@
       "timeAndMemoryBasis": "Prior maintained full105-file/5606-occurrence runs approximately0.9seconds/266MiB; no new runtime, DB copy or paid external API"
     },
     "measured": {
-      "committedPrivateEvidenceBytes": 1420428,
-      "committedPrivateEvidenceFiles": 29,
+      "committedPrivateEvidenceBytes": 1430433,
+      "committedPrivateEvidenceFiles": 30,
       "formalSingleNode": {
         "budgetSeconds": 60,
         "elapsedSeconds": 0.7900935,
@@ -408,6 +418,7 @@
     "dice-baselines/issue-520/qa/books/51/out/npm-resources.json",
     "dice-baselines/issue-520/qa/books/51/out/qa-checks.json",
     "dice-baselines/issue-520/qa/books/51/out/resources.json",
+    "dice-baselines/issue-520/qa/books/51/out/spiritwall-save-judgment-binding.json",
     "dice-baselines/issue-520/qa/books/51/ownership.json",
     "dice-baselines/issue-520/qa/books/51/preservation.json",
     "dice-baselines/issue-520/qa/books/51/private-state-before.json",
@@ -453,7 +464,44 @@
       "canonicalChanges": 0,
       "newBookSpecificExecutables": 0
     },
-    "mergeGate": "Full remote ci:portable at exact PR head; stop on failed/cancelled/timed_out with no automatic retry."
+    "mergeGate": "Full remote ci:portable at exact PR head; stop on failed/cancelled/timed_out with no automatic retry.",
+    "spiritwallSaveJudgmentBinding": {
+      "priorEvidenceRevision": "4fb3144e1264cd8c9750c17ca63793f240693319",
+      "evidenceOnlyAddedSaveConflictTarget": 3412,
+      "normalizedHeaderSavingThrow": "None",
+      "conditionalBodySaveScopes": [
+        "selected-side fear: Will",
+        "living creature passing through: Fortitude against negative level"
+      ],
+      "unresolvedRecords": 24,
+      "bodyFormulaProblems": 1,
+      "recipientScopeConflicts": 1,
+      "normalizedMechanicsGapRecords": 21,
+      "normalizedBodyHeaderSaveConflicts": 1,
+      "currentReviewedTargets": 56,
+      "nonblankEnglishLines": 346,
+      "alignedSegments": 341,
+      "all56ExactInputsNamesBodiesAndAfterSegmentsUnchanged": true,
+      "protectedFilesByteIdenticalToPreRevision": [
+        "target-inputs.jsonl",
+        "candidate-inputs.json",
+        "translations.txt",
+        "decisions.jsonl",
+        "corrections.jsonl",
+        "full-body-audit.jsonl",
+        "unactivated-proposals.jsonl",
+        "unmatched-occurrence-review.jsonl",
+        "out/accepted.jsonl",
+        "out/fallback.jsonl",
+        "out/coverage.json"
+      ],
+      "protectedFilesEqualPriorGitRevisionWithOnlyRepositoryLineEndingNormalization": true,
+      "formalProposalsFallbacksDecisionsCorrectionsAuditsUnchanged": true,
+      "allEnglishAndAfterClauseValuesUnchanged": true,
+      "translationChanges": 0,
+      "canonicalChanges": 0,
+      "newBookSpecificExecutables": 0
+    }
   },
   "boundaries": {
     "operatorDbWrites": false,

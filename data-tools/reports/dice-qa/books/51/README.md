@@ -18,8 +18,11 @@ fallbacks remain unchanged. Maps, aliases and writer behavior are unchanged.
 
 Activation gaps are separate from actual source questions: 1 formula-scope problem
 (3376), 1 recipient-scope conflict (3406), 18 incomplete inherited normalized
-headers, 2 specific missing normalized fields and 1 unspecified save type (3405).
-These 23 recorded items preserve
+headers, 2 specific missing normalized fields and 1 unspecified save type (3405),
+plus 1 structured-header/body savingThrow conflict (3412). Its normalized header
+remains None; the body separately requires a conditional selected-side fear Will
+save and a passing-through Fortitude save. None is not a claim that these
+conditional saves do not apply. These 24 recorded items preserve
 canonical English/mechanics and fallback. The ambiguous formula is translated
 literally with its existing example; no arithmetic repair is asserted. There are
 no missing body tables. Three nonblocking notes cover2 context-supported
@@ -36,11 +39,14 @@ clauses. Maintained portable QA tests passed.
 
 Single-Node formal validation used 0.790 seconds and 278568960 bytes peak working set;
 the prescribed npm command used 1.124 seconds. Private committed evidence is
-1420428 bytes in 29 files, below 5 MiB. No new executable stack was committed. Complete
+1430433 bytes in 30 files, below 5 MiB. No new executable stack was committed. Complete
 raw index records prove 39 unrelated staged deletions unchanged; 1441 unrelated
 untracked paths remain. Actual local rollout metadata confirms gpt-6.1-sol/high.
-The final gap note changes no input, translation, formal proposal or fallback;
-its private receipt binds all 56 exact after values to the preceding evidence.
+The final 3412 note changes no input, translation, formal proposal or fallback;
+its private receipt binds all 56 exact inputs and after values to private revision
+4fb3144e1264cd8c9750c17ca63793f240693319. Protected source/input, translation,
+decision, correction, audit, accepted, unactivated and fallback files were checked
+byte-for-byte against their pre-revision working files.
 
 Formal accepted denotes a validated proposal awaiting independent main-gate
 acceptance. This is DB-English QA, with no PDF/original-book or human verification
