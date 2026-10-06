@@ -1,0 +1,158 @@
+{
+  "issue": 545,
+  "dispositionCounts": {
+    "deferred": 22,
+    "excluded": 9,
+    "proposed-handoff": 1,
+    "rejected": 1
+  },
+  "classificationCounts": {
+    "publication-edition-conflict": 11,
+    "no-existing-entity": 9,
+    "same-publication-unique-spelling": 1,
+    "cross-publication-identity-unproven": 10,
+    "homonym-mechanic-mismatch": 1,
+    "publication-reprint-version-gap": 1
+  },
+  "semanticAccepted": 0,
+  "appliedMappingsAliasesParserChanges": 0,
+  "targetCoverage": {
+    "total": 104,
+    "englishNameAndBodyAvailable": 104,
+    "currentChineseAllVariantsAvailable": 0,
+    "currentMatchedCandidates": 0,
+    "englishFallback": 104,
+    "semanticReviewPending": 104
+  },
+  "laterScopes": [
+    {
+      "books": [
+        43,
+        79
+      ],
+      "targets": 103,
+      "candidateOccurrences": 11,
+      "requires": "publication/edition decision on2map rows, fresh global dependency replay then whole-book DB-English semantic QA, including92 targets without these proposed identities"
+    },
+    {
+      "books": [
+        112
+      ],
+      "targets": 1,
+      "candidateOccurrences": 1,
+      "requires": "approve unique samepub spelling handoff and choose narrow attachment mechanism then full book112 DB-English semantic QA"
+    },
+    {
+      "books": [
+        63
+      ],
+      "candidateOccurrences": 9,
+      "requires": "excluded from current-entity intake; no new-entity work authorized; revisit only separately authorized inventory/source gap scope"
+    },
+    {
+      "books": [
+        64,
+        110
+      ],
+      "candidateOccurrences": 11,
+      "requires": "publication identity conflict scope under197/201;10 same-mechanism110 matches plus1 rejected3585 homonym; preserve195 evidence and candidate duplicates"
+    },
+    {
+      "books": [
+        102,
+        37,
+        72
+      ],
+      "candidateOccurrences": 1,
+      "requires": "publication/version evidence gap under197/201; no151/175 acceptance changes"
+    }
+  ],
+  "remainingOutsideSlice": {
+    "candidates": 2280,
+    "targets": 995,
+    "state": "pending/established-suspended;unprocessed"
+  },
+  "model": {
+    "requested": "gpt-6.1-sol",
+    "reasoningEffort": "medium",
+    "verifiedActive": true,
+    "actualModel": "gpt-6.1-sol",
+    "actualEffort": "medium",
+    "evidence": "local rollout turn_context for thread01a10f2c-309a-7b83-b22b-ac241229ef34; read-only metadata query"
+  },
+  "resources": {
+    "elapsedSeconds": 2.9135771999999998,
+    "maxRssKiB": 322332,
+    "privateOutputBytes": 357394,
+    "paidExternalApiCalls": 0
+  },
+  "inputBindings": {
+    "publicBase": "1fdc731b02297ae731d31cef6d5e46bed33c8681",
+    "preparedRevision": "6d28f9391273979a35a6bcc86971f0aac5b9f2c8",
+    "sourceRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+    "mappingRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+    "sourceFiles": 105,
+    "sourceBytes": 5544957,
+    "partition": {
+      "totalCandidates": 5606,
+      "book66Candidates": 3293,
+      "selectedCandidates": 33,
+      "pendingCandidates": 2280,
+      "totalTargets": 5097,
+      "book66Targets": 3998,
+      "selectedTargets": 104,
+      "pendingTargets": 995
+    },
+    "rawHeaderBodyCharacters": 11446,
+    "maxRawHeaderBodyCharacters": 636
+  },
+  "byBook": [
+    {
+      "rulebookId": 43,
+      "editionId": 7,
+      "candidates": 6,
+      "targets": 28
+    },
+    {
+      "rulebookId": 63,
+      "editionId": 5,
+      "candidates": 9,
+      "targets": 0
+    },
+    {
+      "rulebookId": 64,
+      "editionId": 5,
+      "candidates": 11,
+      "targets": 0
+    },
+    {
+      "rulebookId": 79,
+      "editionId": 5,
+      "candidates": 5,
+      "targets": 75
+    },
+    {
+      "rulebookId": 102,
+      "editionId": 5,
+      "candidates": 1,
+      "targets": 0
+    },
+    {
+      "rulebookId": 112,
+      "editionId": 3,
+      "candidates": 1,
+      "targets": 1
+    }
+  ],
+  "privateEvidenceCommit": "58d7e6424f16b31492d495a972506455f7d1a823",
+  "privateStateProtection": {
+    "unrelatedIndexEntriesPreserved": 9255,
+    "unrelatedStatusRecordsPreserved": 849,
+    "unrelatedUntrackedFilesPreserved": 1441,
+    "stagedDeletionsPreserved": 39,
+    "afterCommitVerified": true,
+    "privatePush": false
+  },
+  "deliveryPrivateBytes": 420310,
+  "ignoredTemporaryBytes": 2323780
+}
