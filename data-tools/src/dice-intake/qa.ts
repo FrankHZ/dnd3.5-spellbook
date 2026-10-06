@@ -1,7 +1,8 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";
-import { isAbsolute, join, relative, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import Database from "better-sqlite3";
+import { isDeepStrictEqual } from "node:util";
 import { parseDiceFile, type DiceRecord, type ParsedFile } from "./parse";
 import { reconcile, type Candidate, type PublicationMap, type Rulebook } from "./reconcile";
 import { validateSourceBoundFallbackReviews, type SourceBoundFallbackReview } from "./source-bound-fallback";
@@ -61,6 +62,79 @@ export type FullBodyAudit = { sourceKey: string; targetId: number; effectiveText
 type SourceInventory = { file: string; bytes: number; encoding: string; lineCount: number;
   preamble: string; recordCount: number; unparsedSpans: ParsedFile["unparsedSpans"] };
 type QaTarget = { rulebookId: number; zhName: string | null; zhBody: string | null };
+export type SliceScope = {
+  kind: "slice"; rulebookId: number; targetIds: number[];
+  baselineRevision: string; sourceRevision: string; mappingRevision: string;
+};
+export type QaScope = { kind: "global" } | { kind: "rulebook"; rulebookId: number } | SliceScope;
+type QaEvidence = {
+  reviews: Review[]; corrections: Correction[]; duplicates: DuplicateResolution[];
+  fullBodyAudits: FullBodyAudit[]; boundaries: BoundaryDecision[];
+};
+export type SliceTargetInput = { targetId: number; english: EnglishRecord;
+  englishHtml: string | null; chinese: { name: string | null; descriptionText: string | null; descriptionHtml: string | null } };
+
+/** Exact membership and candidate ownership; no unmatched allocation is inferred. */
+export function selectSliceScope(scope: SliceScope, candidates: Candidate[],
+  targets: Map<number, QaTarget>, inventory: SourceInventory[]) {
+  assert(scope.kind === "slice" && Array.isArray(scope.targetIds) && scope.targetIds.length > 0,
+    "slice requires an exact nonempty target list");
+  const ids = new Set(scope.targetIds);
+  assert(ids.size === scope.targetIds.length, "duplicate slice target ID");
+  for (const id of ids) assert(Number.isSafeInteger(id) && id > 0
+    && targets.get(id)?.rulebookId === scope.rulebookId, `missing or wrong-book slice target ${id}`);
+  for (const revision of [scope.baselineRevision, scope.sourceRevision, scope.mappingRevision]) {
+    assert(typeof revision === "string" && /^[0-9a-f]{40}$/.test(revision), "slice requires exact Git revisions");
+  }
+  const book = selectRulebookScope(scope.rulebookId, candidates, targets, inventory);
+  assert(!book.candidates.some(row => row.targetId === null), "slice cannot allocate unmatched book occurrences");
+  assert(!candidates.some(row => row.targetId === null && row.publicationRulebookIds.includes(scope.rulebookId)),
+    "slice cannot allocate ambiguous publication occurrences");
+  const ownedIds = new Set(book.candidates.map(row => row.targetId));
+  assert([...ids].every(id => ownedIds.has(id)),
+    "slice target without candidates needs explicit field review support");
+  const selected = book.candidates.filter(row => ids.has(row.targetId!));
+  assert(candidates.filter(row => row.targetId !== null && ids.has(row.targetId)).length === selected.length,
+    "slice candidate ownership conflict");
+  return { candidates: selected, targets: new Map([...book.targets].filter(([id]) => ids.has(id))),
+    inventory: book.inventory.map(file => ({ ...file, unparsedSpans: file.unparsedSpans.filter(span =>
+      selected.some(row => row.file === file.file
+        && row.startLine <= span.startLine && span.startLine <= row.endLine)) })) };
+}
+
+/** Authenticate exact evidence files, not generated reports or a floating HEAD. */
+function bindSliceFiles(dataRoot: string, revision: string, paths: string[]): void {
+  assert(/^[0-9a-f]{40}$/.test(revision), "slice requires an exact evidence revision");
+  const commit = execFileSync("git", ["-C", dataRoot, "rev-parse", "--verify", `${revision}^{commit}`],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
+  assert(commit === revision, "slice revision must identify a commit");
+  for (const path of new Set(paths)) {
+    noAlias(path);
+    assert(within(dataRoot, path), "slice evidence must belong to private data root");
+    const file = relative(dataRoot, path).replace(/\\/g, "/");
+    const committed = execFileSync("git", ["-C", dataRoot, "show", `${revision}:${file}`],
+      { maxBuffer: 64 * 1024 * 1024, stdio: ["ignore", "pipe", "pipe"] }).toString("utf8");
+    assert(committed.replace(/\r\n/g, "\n") === readFileSync(path, "utf8").replace(/\r\n/g, "\n"),
+      `stale slice evidence ${file}`);
+  }
+}
+
+export function validateSlicePartition(parentIds: number[], scopes: SliceScope[]): void {
+  assert(scopes.length > 0, "missing slices");
+  const first = scopes[0]!;
+  const parent = new Set(parentIds);
+  const seen = new Set<number>();
+  for (const scope of scopes) {
+    assert(scope.kind === "slice" && scope.rulebookId === first.rulebookId
+      && scope.baselineRevision === first.baselineRevision && scope.sourceRevision === first.sourceRevision
+      && scope.mappingRevision === first.mappingRevision, "slice baseline or parent conflict");
+    for (const id of scope.targetIds) {
+      assert(parent.has(id), `foreign partition target ${id}`);
+      assert(!seen.has(id), `overlapping slice target ${id}`); seen.add(id);
+    }
+  }
+  assert(seen.size === parentIds.length, "slice partition has missing parent targets");
+}
 
 export function candidateRulebook(candidate: Candidate): number | null {
   if (candidate.targetId !== null) return candidate.rulebookId;
@@ -213,7 +287,7 @@ export function validateReviews(candidates: Candidate[], reviews: Review[], mapp
   duplicateResolutions: DuplicateResolution[] = []): {
     accepted: Array<{ targetId: number; rulebookId: number; sourceKey: string; name?: string; descriptionHtml?: string }>;
     fallback: Array<{ targetId: number; rulebookId: number; field: Field; sourceKey: string | null; status: string }>;
-    summary: Record<string, unknown>;
+    summary: Record<string, unknown> & { scope?: QaScope; validation?: "incomplete-check" | "validated-proposal" };
   } {
   const byKey = new Map(candidates.map((row) => [row.sourceKey, row]));
   assert(byKey.size === candidates.length, "duplicate candidate source key");
@@ -394,7 +468,18 @@ export function writeQaOutputs(dataRoot: string, reportDir: string,
   sourceBound?: ReturnType<typeof validateSourceBoundFallbackReviews>, baselineDir?: string,
   inputPaths: string[] = []): void {
   assert(!sourceBound || rulebookId !== undefined, "source-bound outputs require a rulebook scope");
-  if (baselineDir) {
+  const scope = result.summary.scope;
+  const slice = scope?.kind === "slice";
+  if (slice) {
+    assert(baselineDir && rulebookId === scope.rulebookId && !sourceBound, "invalid slice output scope");
+    const scopePath = inputPaths.find(path => basename(path) === "scope.json");
+    assert(scopePath, "missing immutable slice scope input");
+    const owned = dirname(scopePath);
+    assert(!existsSync(reportDir), "slice output directory must be fresh");
+    isolatedOutputs(dataRoot, owned, [reportDir, join(reportDir, "coverage.json"),
+      join(reportDir, "slice-accepted.jsonl"), join(reportDir, "slice-fallback.jsonl")], inputPaths);
+    assert(!within(owned, reportDir) || resolve(reportDir) !== resolve(owned), "slice output collides with input directory");
+  } else if (baselineDir) {
     assert(rulebookId !== undefined, "isolated QA requires --rulebook-id");
     isolatedOutputs(dataRoot, join(baselineDir, "qa", "books", String(rulebookId)),
       [reportDir, join(reportDir, "coverage.json"),
@@ -429,8 +514,8 @@ export function writeQaOutputs(dataRoot: string, reportDir: string,
   if (!checkIncomplete) {
     const outputDir = rulebookId === undefined ? join(dataRoot, "dice-qa") : reportDir;
     mkdirSync(outputDir, { recursive: true });
-    writeFileSync(join(outputDir, "accepted.jsonl"), jsonl(result.accepted));
-    writeFileSync(join(outputDir, "fallback.jsonl"), jsonl(result.fallback));
+    writeFileSync(join(outputDir, slice ? "slice-accepted.jsonl" : "accepted.jsonl"), jsonl(result.accepted));
+    writeFileSync(join(outputDir, slice ? "slice-fallback.jsonl" : "fallback.jsonl"), jsonl(result.fallback));
   }
   if (sourceBound) {
     writeFileSync(join(reportDir, "source-bound-fallback-coverage.json"), JSON.stringify({
@@ -503,6 +588,10 @@ export type QaRecords = {
 };
 
 export function validateQaInputs(argv: string[], loaded?: QaRecords) {
+  return validateInputs(argv, loaded);
+}
+
+function validateInputs(argv: string[], loaded?: QaRecords, merged?: QaEvidence) {
   const inputArg = (name: string): string => arg(name, argv);
   const { dataRoot, baselineDir, intakeDir, qaDir, sourceDir: inputDir, mappingPath, aliasesPath } = dicePaths(argv);
   const rulesPath = inputArg("rules-db");
@@ -515,6 +604,20 @@ export function validateQaInputs(argv: string[], loaded?: QaRecords) {
     "--rulebook-id requires a positive integer");
   assert(!baselineDir || rulebookId !== undefined, "isolated QA requires --rulebook-id");
   assert(!baselineDir || restoredAt < 0, "isolated QA cannot use the fixed restored SC baseline");
+  const slicePath = argv.includes("--slice-scope") ? inputArg("slice-scope") : undefined;
+  assert(!argv.includes("--slice-revision") || slicePath, "--slice-revision requires --slice-scope");
+  assert(!slicePath || (baselineDir && rulebookId !== undefined && restoredAt < 0 && !merged
+    && !argv.includes("--source-bound-fallback-reviews")), "slice requires isolated native book QA");
+  const slice = slicePath ? JSON.parse(readFileSync(slicePath, "utf8")) as SliceScope : undefined;
+  const sliceRevision = slicePath ? argv[argv.indexOf("--slice-revision") + 1] : undefined;
+  assert(!slicePath || (argv.includes("--slice-revision") && sliceRevision), "missing --slice-revision");
+  if (slicePath) {
+    noAlias(slicePath);
+    const slicesDir = join(qaDir, "books", String(rulebookId), "slices");
+    assert(basename(slicePath) === "scope.json" && dirname(dirname(slicePath)) === slicesDir,
+      "slice scope must be books/<id>/slices/<slice>/scope.json");
+    assert(slice!.rulebookId === rulebookId, "wrong slice parent rulebook");
+  }
   assert(restoredAt < 0 || (argv[restoredAt + 1] === "fe089990e2a5eeac69c92e068ca695f10c42ec58"
     && rulebookId === 86 && !checkIncomplete),
     "--restored-sc-baseline requires the #298 fixed baseline and complete SC QA");
@@ -523,12 +626,23 @@ export function validateQaInputs(argv: string[], loaded?: QaRecords) {
     if (baselineDir) noAlias(path);
     inputPaths.push(path); return rows<T>(path);
   };
-  const bookDir = rulebookId === undefined ? undefined
+  const bookDir = slicePath ? dirname(slicePath) : rulebookId === undefined ? undefined
     : join(qaDir, "books", String(rulebookId));
   const input = <T>(name: string, file: string, required = false): T[] => {
-    if (argv.includes(`--${name}`)) return readInput<T>(inputArg(name));
+    if (merged) {
+      const keys: Record<string, keyof QaEvidence> = { reviews: "reviews", corrections: "corrections", duplicates: "duplicates",
+        "full-body-audit": "fullBodyAudits", boundaries: "boundaries" };
+      const key = keys[name]!;
+      return merged[key] as T[];
+    }
+    if (argv.includes(`--${name}`)) {
+      const path = inputArg(name);
+      assert(!slicePath || dirname(path) === bookDir, "slice review inputs must stay in its owned directory");
+      return readInput<T>(path);
+    }
     const path = bookDir && join(bookDir, file);
     if (path && existsSync(path)) return readInput<T>(path);
+    assert(!slicePath, `slice requires explicit ${file}, including empty ledgers`);
     assert(!required, `missing --${name}${path ? ` or ${path}` : ""}`);
     return [];
   };
@@ -592,12 +706,12 @@ export function validateQaInputs(argv: string[], loaded?: QaRecords) {
   const db = loaded ? undefined : new Database(rulesPath, { readonly: true, fileMustExist: true });
   db?.pragma("query_only = ON");
   const english = loaded?.english ?? loadEnglishRecords(db!);
-  const englishHtml = loaded?.englishHtml ?? (sourceBoundEnabled ? new Map((db!.prepare("SELECT id, CAST(description_html AS BLOB) AS html FROM dnd_spell")
+  const englishHtml = loaded?.englishHtml ?? (sourceBoundEnabled || slice ? new Map((db!.prepare("SELECT id, CAST(description_html AS BLOB) AS html FROM dnd_spell")
     .all() as Array<{ id: number; html: Buffer | null }>).map(row => [row.id, row.html?.toString("utf8") ?? null])) : new Map<number, string | null>());
   db?.close();
   const content = loaded ? undefined : new Database(contentPath, { readonly: true, fileMustExist: true });
   content?.pragma("query_only = ON");
-  const zh = loaded?.chinese ?? new Map((content!.prepare(`SELECT spellId, name, descriptionText${sourceBoundEnabled ? ", descriptionHtml" : ""} FROM I18nSpellText WHERE lang='zh' AND variant='chm'`)
+  const zh = loaded?.chinese ?? new Map((content!.prepare(`SELECT spellId, name, descriptionText${sourceBoundEnabled || slice ? ", descriptionHtml" : ""} FROM I18nSpellText WHERE lang='zh' AND variant='chm'`)
     .all() as Array<{ spellId: number; name: string | null; descriptionText: string | null; descriptionHtml?: string | null }>).map((row) =>
     [row.spellId, row] as const));
   content?.close();
@@ -629,13 +743,35 @@ export function validateQaInputs(argv: string[], loaded?: QaRecords) {
       `stale intake candidate ${candidates[index]?.sourceKey}`);
   }
   if (rulebookId !== undefined) assert(books.some((book) => book.id === rulebookId), "unknown rulebook ID");
-  const scope = rulebookId === undefined ? { candidates, targets, inventory }
+  const scope = slice ? selectSliceScope(slice, candidates, targets, inventory) : rulebookId === undefined ? { candidates, targets, inventory }
     : selectRulebookScope(rulebookId, candidates, targets, inventory);
+  if (slice) {
+    assert(slice.sourceRevision === currentSourceRevision && slice.mappingRevision === currentMappingRevision,
+      "stale slice source or mapping revision");
+    bindSliceFiles(dataRoot, slice.baselineRevision, [join(intakeDir, "candidates.jsonl"),
+      join(intakeDir, "source-inventory.jsonl"), mappingPath, aliasesPath]);
+    const targetInputs = readInput<SliceTargetInput>(join(bookDir!, "target-inputs.jsonl"));
+    const selectedIds = new Set(slice.targetIds);
+    assert(targetInputs.length === slice.targetIds.length && new Set(targetInputs.map(row => row.targetId)).size === targetInputs.length,
+      "slice target input coverage mismatch");
+    for (const row of targetInputs) {
+      assert(selectedIds.has(row.targetId) && englishHtml.has(row.targetId), "foreign or missing slice target input");
+      const current = { targetId: row.targetId, english: english.get(row.targetId), englishHtml: englishHtml.get(row.targetId),
+        chinese: zh.get(row.targetId) ? { name: zh.get(row.targetId)!.name,
+          descriptionText: zh.get(row.targetId)!.descriptionText, descriptionHtml: zh.get(row.targetId)!.descriptionHtml ?? null }
+          : { name: null, descriptionText: null, descriptionHtml: null } };
+      assert(isDeepStrictEqual(row, current), `stale slice target input ${row.targetId}`);
+    }
+    inputPaths.push(slicePath!);
+    bindSliceFiles(dataRoot, sliceRevision!, inputPaths.filter(path => !within(inputDir, path)));
+  }
   validateBoundaries(scope.candidates, reviews, scope.inventory, boundaries, sourceRevision, mappingRevision);
   const result = validateReviews(scope.candidates, reviews, mappingRevision, english, scope.targets, corrections,
     checkIncomplete, duplicates);
   result.summary.pendingFullBodyAudits = validateFullBodyAudits(reviews, fullBodyAudits, checkIncomplete);
-  result.summary.scope = rulebookId === undefined ? { kind: "global" } : { kind: "rulebook", rulebookId };
+  const qaScope: QaScope = slice ?? (rulebookId === undefined ? { kind: "global" } : { kind: "rulebook", rulebookId });
+  result.summary.scope = qaScope;
+  if (slice) result.summary.evidenceRevision = sliceRevision;
   result.summary.validation = checkIncomplete ? "incomplete-check" : "validated-proposal";
   result.summary.sourceRevision = currentSourceRevision;
   result.summary.mappingRevision = currentMappingRevision;
@@ -647,11 +783,47 @@ export function validateQaInputs(argv: string[], loaded?: QaRecords) {
   return { result, sourceBound, english, englishHtml, reviews,
     chinese: new Map([...zh].map(([id, row]) => [id, { name: row.name,
       descriptionText: row.descriptionText, descriptionHtml: row.descriptionHtml ?? null }])),
+    scope: qaScope, evidence: { reviews, corrections, duplicates, fullBodyAudits, boundaries },
     rulebookId, checkIncomplete, dataRoot, baselineDir, inputPaths: [...inputPaths, rulesPath, contentPath] };
 }
 
+/** Revalidate exact accepted slice revisions, then replay the unchanged whole-book path.
+ * Acceptance itself belongs to main-gate; this only certifies proposal completeness.
+ */
+export function reconcileQaSlices(argv: string[], loaded?: QaRecords) {
+  for (const name of ["slice-scope", "slice-revision", "check-incomplete", "reviews", "corrections",
+    "duplicates", "boundaries", "full-body-audit", "source-bound-fallback-reviews", "restored-sc-baseline"]) {
+    assert(!argv.includes(`--${name}`), `slice reconciliation cannot use --${name}`);
+  }
+  const manifestPath = arg("reconcile-slices", argv);
+  const refs = JSON.parse(readFileSync(manifestPath, "utf8")) as Array<{ scope: string; revision: string }>;
+  assert(Array.isArray(refs) && refs.length > 0, "missing slice references");
+  const base = argv.filter((_, index) => index !== argv.indexOf("--reconcile-slices")
+    && index !== argv.indexOf("--reconcile-slices") + 1);
+  const slices = refs.map(ref => {
+    assert(typeof ref.scope === "string" && typeof ref.revision === "string", "invalid slice reference");
+    return validateQaInputs([...base, "--slice-scope", resolve(dirname(manifestPath), ref.scope),
+      "--slice-revision", ref.revision], loaded);
+  });
+  const first = slices[0]!;
+  const parentIds = [...first.english].filter(([, row]) => row.rulebookId === first.rulebookId).map(([id]) => id);
+  validateSlicePartition(parentIds, slices.map(qa => qa.scope as SliceScope));
+  const merged: QaEvidence = { reviews: [], corrections: [], duplicates: [], fullBodyAudits: [], boundaries: [] };
+  for (const qa of slices) for (const key of Object.keys(merged) as Array<keyof QaEvidence>) {
+    // Assign each typed ledger separately through its common array operation.
+    (merged[key] as unknown[]).push(...qa.evidence[key]);
+  }
+  const qa = validateInputs(base, loaded, merged);
+  qa.inputPaths.push(manifestPath, ...slices.flatMap(row => row.inputPaths));
+  qa.result.summary.reconciledSlices = slices.map(row => ({ scope: row.scope,
+    evidenceRevision: row.result.summary.evidenceRevision }));
+  return qa;
+}
+
 function main(): void {
-  const { result, sourceBound, rulebookId, checkIncomplete, dataRoot, baselineDir, inputPaths } = validateQaInputs(process.argv.slice(2));
+  const argv = process.argv.slice(2);
+  const { result, sourceBound, rulebookId, checkIncomplete, dataRoot, baselineDir, inputPaths } =
+    argv.includes("--reconcile-slices") ? reconcileQaSlices(argv) : validateQaInputs(argv);
   writeQaOutputs(dataRoot, arg("report-dir", process.argv),
     result, checkIncomplete, rulebookId, sourceBound, baselineDir, inputPaths);
   const { candidateOccurrences, matchedTargets, existingTargets, acceptedTargets,

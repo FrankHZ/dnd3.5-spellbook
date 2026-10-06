@@ -586,7 +586,7 @@ npm run -w data-tools dice:intake -- --data-root <absolute-data-repo> --baseline
 npm run -w data-tools dice:qa -- --data-root <absolute-data-repo> --baseline-dir <absolute-data-repo>/dice-baselines/<namespace> --rules-db <absolute-rules-clean.sqlite> --content-db <absolute-content.sqlite> --rulebook-id 53 --report-dir <absolute-data-repo>/dice-baselines/<namespace>/qa/books/53/out --check-incomplete
 ```
 
-Isolated QA requires a complete book scope. Its default decision/audit/correction/
+Isolated QA uses a complete book scope by default. Its decision/audit/correction/
 duplicate/boundary inputs live in `<baseline-dir>/qa/books/<rulebook-id>/` with
 the same filenames and schemas as the default book workflow below. Preparation
 rows use `queue:unreviewed`, current aligned DB inputs and deferred fields;
@@ -662,6 +662,87 @@ During review, `--check-incomplete` validates the entire current decision file
 and writes only the source-free coverage report, including a pending-field count.
 Without that flag, pending review rows fail before accepted/fallback files are
 written.
+
+### Independently reviewable QA slices
+
+`dice:qa` can validate a precise native slice inside an isolated baseline. It
+replays the complete source ledger before selecting targets and uses the same
+review, correction, duplicate, boundary, audit and fallback validators as book QA.
+Slice proposals remain subject to issue/main-gate semantic acceptance; validation
+does not authorize content writes or claim original-book verification.
+
+Commit `scope.json` and all six evidence ledgers in
+`<baseline-dir>/qa/books/<rulebook-id>/slices/<slice>/`. The scope has this shape
+(the example revisions must be replaced with exact private commit SHAs):
+
+```json
+{
+  "kind": "slice",
+  "rulebookId": 37,
+  "targetIds": [122, 123],
+  "baselineRevision": "<40-character prepared-intake commit>",
+  "sourceRevision": "<40-character source commit>",
+  "mappingRevision": "<40-character map commit>"
+}
+```
+
+`targetIds` is the exact unique existing membership, not a range or discovery
+query. Every candidate occurrence for each selected target stays in scope,
+including duplicates. The committed scope at the explicit evidence revision is
+immutable for that handoff. Source/map revisions must still be current; the
+prepared revision binds the complete candidate/source inventories, map and alias
+inputs by direct Git file comparison. Each evidence revision binds those same
+inputs, scope and all selected evidence. Changed evidence needs a newly reviewed
+revision; a floating HEAD or report is insufficient.
+
+The seven files are `decisions.jsonl`, `corrections.jsonl`,
+`duplicate-resolutions.jsonl`, `boundary-decisions.jsonl`, `full-body-audit.jsonl`,
+and `target-inputs.jsonl` (six JSONL files), plus `scope.json`. Keep an explicit
+empty JSONL file when its schema has no applicable rows. `target-inputs.jsonl`
+contains exactly one row per selected ID with `{targetId, english, englishHtml,
+chinese}`; `english` is the complete current `EnglishRecord` including mechanics,
+and `chinese` contains current CHM `name`, `descriptionText`, `descriptionHtml`,
+using nulls for absent fields. This also rejects HTML-only DB drift. Review input
+overrides must remain in the same slice directory. Foreign rows fail; evidence
+is never filtered to make it pass.
+
+```powershell
+npm run -w data-tools dice:qa -- --data-root <absolute-data-repo> --baseline-dir <absolute-data-repo>/dice-baselines/<namespace> --rules-db <absolute-rules-clean.sqlite> --content-db <absolute-content.sqlite> --rulebook-id 37 --slice-scope <absolute-slice-directory>/scope.json --slice-revision <exact-private-evidence-commit> --report-dir <absolute-slice-directory>/out
+```
+
+The output directory must be fresh, owned by that slice when inside the private
+data root, and disjoint from inputs. A fresh external worktree output directory
+is also supported. Formal outputs are `coverage.json`, `slice-accepted.jsonl` and
+`slice-fallback.jsonl`; unselected entries produce no review or fallback rows.
+The source-free coverage carries `scope`, baseline/source/map revisions and
+`evidenceRevision`. `--check-incomplete` retains those bindings but writes only
+coverage marked `incomplete-check`; it cannot certify a completed slice.
+Whole-book handoff/effective consumers reject a slice, and the book-only export
+filenames are never emitted for partial scope.
+
+Slice selection rejects unmatched or ambiguous occurrences that might belong to
+the parent, and selected targets without candidates. These cases require an
+explicit ownership/field review contract before slicing; no automatic allocation
+or unperformed review placeholders are created. Ordinary full-book/global QA and
+the fixed restored SC handoff retain their existing contracts.
+
+For parent reconciliation, select already accepted evidence revisions in an
+explicit JSON array of `{scope, revision}` references. Relative `scope` paths
+resolve against the reference file's directory. Other CLI paths remain caller-cwd
+relative. Reconciliation formally revalidates every slice against current inputs,
+requires identical parent/baseline/source/map and disjoint exact full parent ID
+coverage, merges the existing evidence ledgers, and reruns the full-book validator.
+It does not repeat translation or accept prior generated exports as authority.
+Progress checks, evidence overrides and SC source-bound inputs are refused.
+
+```powershell
+npm run -w data-tools dice:qa -- --data-root <absolute-data-repo> --baseline-dir <absolute-data-repo>/dice-baselines/<namespace> --rules-db <absolute-rules-clean.sqlite> --content-db <absolute-content.sqlite> --rulebook-id 37 --reconcile-slices <absolute-reference-json> --report-dir <absolute-book-directory>/reconciled-out
+```
+
+The final output has `scope.kind: rulebook`, normal book accepted/fallback files
+and source-free `reconciledSlices` locators/revisions. Semantic main-gate acceptance
+and write authorization remain separate. Run `dice:qa:test` for synthetic slice,
+stale/foreign evidence, duplicate and overlap/gap checks.
 
 ### Accepted DB-English handoff preflight
 

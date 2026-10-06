@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import "./source-bound-fallback-portable-tests";
+import "./qa-slice-portable-tests";
 import { escapedFallbackHtml, type SourceBoundFallbackReview } from "./source-bound-fallback";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
