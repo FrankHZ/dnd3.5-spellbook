@@ -1,0 +1,185 @@
+{
+  "targets": 128,
+  "siblingTargets": 120,
+  "historicalTargets": 8,
+  "historicalLegacyAcceptedBodies": 3,
+  "historicalLegacyDeferredBodies": 5,
+  "proposedNames": 128,
+  "proposedBodies": 128,
+  "fullyReviewedWithoutMaterialResidual": 102,
+  "targetsWithResidual": 26,
+  "residualRecords": 26,
+  "siblingResiduals": 21,
+  "historicalCurrentResiduals": 5,
+  "historicalEnglishCharacters": 11295,
+  "historicalSourceSegments": 126,
+  "historicalSentenceGroups": 127,
+  "historicalAfterCharacters": 3594,
+  "inheritedEnglishCharacters": 3043,
+  "currentBodyCompleteTargets": 111,
+  "activation": false,
+  "originalBookVerification": false,
+  "newTargets": 0,
+  "newNativeAcceptedFields": 0,
+  "nativeMatchedSliceReceipt": false,
+  "globalDiceQaComplete": false,
+  "remainingOutsideBookOwner": 197,
+  "remainingUnreviewedOccurrences": 2237,
+  "remainingOutsideBookTargets": 995,
+  "paidExternalApiCalls": 0,
+  "issue": 561,
+  "rulebookId": 56,
+  "editionId": 5,
+  "privateEvidenceRevision": "5bdeab2366f048ef15bda45dd0bc086a9b844c08",
+  "privateEvidencePath": "dice-baselines/issue-520/qa/books/56/closeout/issue-561/",
+  "acceptedSiblings": [
+    {
+      "issue": 555,
+      "revision": "541d3121c60661cca569c5af2bb3b4e3a0264dfe",
+      "targets": 43,
+      "path": "dice-baselines/issue-520/qa/books/56/slices/issue-555/"
+    },
+    {
+      "issue": 557,
+      "revision": "cf341faed424092642f5e767b53e3237cc8029f3",
+      "targets": 40,
+      "path": "dice-baselines/issue-520/qa/books/56/slices/issue-557/"
+    },
+    {
+      "issue": 558,
+      "revision": "6bc8ad1f84df3bcc30a7ceaeb45792cd4b5adc11",
+      "targets": 37,
+      "path": "dice-baselines/issue-520/qa/books/56/slices/issue-558/"
+    }
+  ],
+  "preparedRevision": "6d28f9391273979a35a6bcc86971f0aac5b9f2c8",
+  "sourceRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+  "mappingRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+  "publicBase": "e38c8fabc1ffe4340d6fec9e1b1bb1659ed4b15c",
+  "reviewBasis": "current-DB-English",
+  "bookReviewCoverage": "128 exact dispositions; main-gate acceptance pending",
+  "nativeQaConsumerReady": false,
+  "checks": {
+    "status": "PASS",
+    "revision": "5bdeab2366f048ef15bda45dd0bc086a9b844c08",
+    "targets": 128,
+    "exactPartitions": [
+      43,
+      40,
+      37,
+      8
+    ],
+    "historicalSegments": 126,
+    "historicalSentenceGroups": 127,
+    "siblingResiduals": 21,
+    "historicalResiduals": 5,
+    "noMaterialResidual": 102,
+    "targetsWithResidual": 26,
+    "bodyComplete": 111,
+    "nativeMatchedSliceReceipt": false,
+    "activation": false,
+    "readonly": true,
+    "elapsedSeconds": 3.3026697000000005,
+    "maxRssKiB": 309772,
+    "privateBytes": 483688,
+    "repeatedShortGroups": 0
+  },
+  "negativeInMemoryProbes": [
+    {
+      "probe": "stale-English",
+      "expectedRejection": true,
+      "exitCode": 1,
+      "writesToInputs": false
+    },
+    {
+      "probe": "duplicate-coverage",
+      "expectedRejection": true,
+      "exitCode": 1,
+      "writesToInputs": false
+    },
+    {
+      "probe": "wrong-residual-owner",
+      "expectedRejection": true,
+      "exitCode": 1,
+      "writesToInputs": false
+    }
+  ],
+  "privateProtectionAfterCommit": {
+    "beforeCounts": {
+      "index": 9417,
+      "status": 1480,
+      "untracked": 1441
+    },
+    "afterCounts": {
+      "index": 9417,
+      "status": 1480,
+      "untracked": 1441
+    },
+    "unrelatedStagedDeletions": 39,
+    "rawAuditLocation": "assigned ignored data-tools/out/issue-561/*-{before,after}.nul",
+    "ownedCommitMode": "explicit owned paths and commit --only",
+    "privatePush": false,
+    "status": "PASS",
+    "temporaryBytes": 3039569
+  },
+  "runtime": {
+    "threadId": "01a10fed-1803-7173-b2fd-3a6f04283bbb",
+    "model": "gpt-6.1-sol",
+    "effort": "high",
+    "verifiedFrom": "local turn_context model/effort",
+    "timestamp": "2026-10-06T06:36:00.076Z"
+  },
+  "budget": {
+    "dataProcessConcurrency": 1,
+    "complexity": "O(5606 intake + 5097 targets + 128 evidence + historical/reference text)",
+    "paidExternalApiCalls": 0,
+    "candidateLedgerBytes": 22292460,
+    "privateLimitBytes": 5242880,
+    "tempLimitBytes": 5242880,
+    "maxRssLimitKiB": 524288
+  },
+  "historicalResiduals": [
+    {
+      "targetId": 657,
+      "fields": [
+        "body.enemyEffect",
+        "mechanics.area"
+      ],
+      "bodyComplete": false,
+      "gap": "Available enemy-effect language has no quantified outcome and conflicts with ally-only structured area."
+    },
+    {
+      "targetId": 690,
+      "fields": [
+        "mechanics.savingThrow"
+      ],
+      "bodyComplete": true,
+      "gap": "Structured save header and explicit damage-on-success body clause differ."
+    },
+    {
+      "targetId": 692,
+      "fields": [
+        "mechanics.descriptors"
+      ],
+      "bodyComplete": true,
+      "gap": "Empty current descriptor list cannot resolve the historical mixed-version Air tag."
+    },
+    {
+      "targetId": 693,
+      "fields": [
+        "mechanics.classLevels"
+      ],
+      "bodyComplete": true,
+      "gap": "Empty current class relationship list does not establish exclusion or another publication level."
+    },
+    {
+      "targetId": 719,
+      "fields": [
+        "body.duration",
+        "mechanics.duration"
+      ],
+      "bodyComplete": false,
+      "gap": "Temporary wording versus permanent structured duration supplies no automatic expiry."
+    }
+  ]
+}
