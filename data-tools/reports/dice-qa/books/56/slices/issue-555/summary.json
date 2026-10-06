@@ -1,0 +1,92 @@
+{
+  "targets": 43,
+  "proposedNames": 43,
+  "retainedNames": 43,
+  "changedNames": 0,
+  "proposedBodies": 43,
+  "completeAvailableBodies": 39,
+  "partialOrAmbiguousBodies": 4,
+  "fullyReviewedWithoutMaterialResidual": 37,
+  "targetsWithResidual": 6,
+  "residualRecords": 6,
+  "englishCharacters": 29093,
+  "physicalNonemptyLines": 215,
+  "exactSourceSegments": 214,
+  "sentenceBindingGroups": 264,
+  "afterCharacters": 9014,
+  "newNativeAcceptedFields": 0,
+  "newTargets": 0,
+  "activation": false,
+  "originalBookVerification": false,
+  "paidExternalApiCalls": 0,
+  "privateEvidenceRevision": "fc6d62eaf3ff6559cbb763af336c0218df31404b",
+  "identityRevision": "5003f08e833f51fa7e12063f40f58adadb20496e",
+  "preparedRevision": "6d28f9391273979a35a6bcc86971f0aac5b9f2c8",
+  "sourceRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+  "mappingRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+  "publicBase": "cb89e0708d55659a006f9a7f5baab4cd80556846",
+  "partition": {
+    "bookTargets": 128,
+    "historicallyReviewedOutside": 8,
+    "noCandidateTargets": 120,
+    "selectedNoCandidateTargets": 43,
+    "noCandidateOutside": 77
+  },
+  "validation": {
+    "status": "PASS",
+    "checks": [
+      "exact43 source/target/name/body/proposal coverage",
+      "committed source/map/alias/intake and#553 input equality",
+      "maintained105-file/5606-candidate/5097-target replay",
+      "128-target partition77+8 untouched and native fallback not semantic acceptance",
+      "43 fresh English/HTML/mechanics/all-Chinese-variant snapshots and4 inherited snapshots",
+      "214 exact source segments/264 actual-after sentence bindings",
+      "HTML nesting/text/link/dice parity",
+      "per-clause numeric meaning and negation/timing/scope/material/SR review",
+      "placeholder/raw residue and repeated-translation heuristic",
+      "six explicit residuals and all43 activation:false",
+      "readonly/query_only and DB size/mtime unchanged"
+    ],
+    "targets": 43,
+    "physicalSourceLines": 215,
+    "sourceSegments": 214,
+    "sentenceBindingGroups": 264,
+    "links": 8,
+    "repeatedShortSentenceGroups": 0,
+    "longTemplateReuseGroups": 0,
+    "elapsedSeconds": 2.7017119,
+    "maxRssKiB": 321284,
+    "privateBytes": 725940,
+    "numericSegments": 214,
+    "numberWordConversions": 17,
+    "sourceNumericTokensEqualAfterAuthorizedWordConversions": true,
+    "repeatedTranslationHeuristic": {
+      "shortRepeatGroups": 0,
+      "longTemplateReuseGroups": 0
+    },
+    "protection": {
+      "beforeCounts": {
+        "index": 9384,
+        "status": 1480,
+        "untracked": 1441
+      },
+      "afterCounts": {
+        "index": 9384,
+        "status": 1480,
+        "untracked": 1441
+      },
+      "unrelatedStagedDeletions": 39,
+      "rawAuditLocation": "assigned ignored data-tools/out/issue-555/*-{before,after}.nul",
+      "ownedCommitMode": "explicit owned paths and commit --only",
+      "privatePush": false,
+      "status": "PASS"
+    }
+  },
+  "runtime": {
+    "threadId": "01a10f93-5ab5-7411-9fd9-b4b50776b9c3",
+    "model": "gpt-6.1-sol",
+    "effort": "high",
+    "verifiedFrom": "local turn_context model/effort",
+    "timestamp": "2026-10-06T04:57:58.757Z"
+  }
+}
