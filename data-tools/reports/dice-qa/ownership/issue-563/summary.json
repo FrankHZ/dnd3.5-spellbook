@@ -1,0 +1,106 @@
+{
+  "issue": 563,
+  "reviewKind": "current-DB-English identity only",
+  "occurrences": 58,
+  "proposedHandoffs": 44,
+  "deferred": 14,
+  "byReasonCode": {
+    "sc-distinctive-rule": 14,
+    "sc-text-lineage": 22,
+    "mixed-publication-metadata": 9,
+    "indistinguishable-reprint": 1,
+    "corrupt-indistinguishable-reprint": 1,
+    "sc-distinctive-metadata": 7,
+    "indistinguishable-inherited-reprint": 1,
+    "sc-positive-identity-absent-alternative": 1,
+    "mixed-spell-contamination": 1,
+    "mislabelled-duplicate-publication-segments": 1
+  },
+  "remainingUnreviewedOccurrences": 2179,
+  "reviewedUnresolvedOccurrences": 14,
+  "outsideBookTargetsUntouched": 995,
+  "totalFrozenCandidates": 5606,
+  "totalExistingTargets": 5097,
+  "newTargets": 0,
+  "newSemanticAcceptedFields": 0,
+  "appliedMappingsAliasesAttachments": 0,
+  "activation": false,
+  "applied": false,
+  "acceptedAdventurerVersionReferences": 57,
+  "acceptedScVersionReferences": 59,
+  "acceptedDivineTargetReferences": 1,
+  "genuineUnreviewedExistingTargetsDiscovered": 0,
+  "fullSemanticQaRepeated": false,
+  "relatedDbRecords": 144,
+  "additionalDbRecords": 1,
+  "inheritedDbRecords": 2,
+  "privateOnlySourceText": true,
+  "privateEvidenceRevision": "5cd456a196772e67eac04fb7c1dafeeb5b0f3e60",
+  "inputRevisions": {
+    "prepared": "6d28f9391273979a35a6bcc86971f0aac5b9f2c8",
+    "source": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+    "publicBase": "c380ef8927d93b02b6126986b8defd09be90459e"
+  },
+  "inputVolumes": {
+    "bodyCharacters": 16544,
+    "headerAndBodyCharacters": 18407,
+    "relatedEnglishBodyCharacters": 87097,
+    "additionalLookup": {
+      "nameHintTargetCount": 116,
+      "directNameExtraTargets": 28,
+      "contaminationTargets": 1,
+      "contaminationEnglishBodyCharacters": 759,
+      "inheritedTargets": 2,
+      "inheritedEnglishBodyCharacters": 2457
+    },
+    "bodyTextCharacters": 16486
+  },
+  "model": {
+    "threadId": "01a11008-6f91-7250-80cf-9eb93c76f1ba",
+    "requestedModel": "gpt-6.1-sol",
+    "verifiedModel": "gpt-6.1-sol",
+    "requestedEffort": "high",
+    "verifiedEffort": "high",
+    "verification": "Read-only actual local rollout turn_context model/effort"
+  },
+  "validation": {
+    "status": "PASS",
+    "checks": [
+      "current committed source/map/alias/prepared binding",
+      "maintained full replay105files/5606candidates/5097targets",
+      "exact58 distinct issue keys/ordinals/line anchors",
+      "147current full English/mechanics/HTML snapshots",
+      "85 peer bindings",
+      "44unapplied existing-version references/14real deferrals",
+      "57exactacceptedCA/59exactacceptedSC/1CDtargetreferences",
+      "public/private dispositions and summary equality",
+      "readonly/query_only and unchanged DB size/mtime",
+      "exact raw NUL nonowned index/status/untracked equality"
+    ],
+    "elapsedSeconds": 3.4308091999999997,
+    "maxRssKiB": 360224,
+    "privateBytes": 3010363,
+    "temporaryBytes": 3594559,
+    "protection": {
+      "beforeCounts": {
+        "index": 9428,
+        "status": 1480,
+        "untracked": 1441
+      },
+      "afterCounts": {
+        "index": 9428,
+        "status": 1480,
+        "untracked": 1441
+      },
+      "unrelatedStagedDeletions": 39,
+      "checks": {
+        "index": "exact raw NUL nonowned entries preserved",
+        "status": "exact raw NUL nonowned entries preserved",
+        "untracked": "exact raw NUL nonowned entries preserved"
+      },
+      "rawAuditLocation": "assigned ignored data-tools/out/issue-563/*-{before,after}.nul",
+      "ownedCommitMode": "explicit paths and commit --only",
+      "privatePush": false
+    }
+  }
+}
