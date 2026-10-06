@@ -1,0 +1,37 @@
+{
+  "issue": 565,
+  "activation": false,
+  "records": 10,
+  "rawHeaderBodyCharacters": 4082,
+  "acceptedPriorRevision": "58d7e6424f16b31492d495a972506455f7d1a823",
+  "localEnglishCandidates": 5,
+  "localEnglishGaps": 5,
+  "webPublicationLocators": 10,
+  "webPublicationConflicts": 9,
+  "futureCanonicalInputDecisionReady": 1,
+  "sourceMetadataDependencies": 4,
+  "reliableCompleteEnglishDependencies": 5,
+  "semanticAccepted": 0,
+  "currentDbEnglishQa": 0,
+  "allocatedIds": 0,
+  "executableImportOperations": 0,
+  "operatorWrites": 0,
+  "privatePush": false,
+  "sourceLimitations": [
+    "Local compilation versions are not authenticated original publications; v6.01 has no Git revision, selected blocks preserved",
+    "Five network references provide OCR/summary leads but no clean complete accepted English",
+    "Nine magazine identities cannot use current Dungeonscape rulebook63",
+    "No PDF/original-book verification claim or mandatory PDF prerequisite",
+    "No web text extraction/import beyond linked summaries; complete local English snapshots remain separate"
+  ],
+  "privateEvidenceCommit": "18f2a2ba97c03d242d9c66d8e68f84d12e4c1c8e",
+  "publicBase": "e666fd707880325daa0a24cf828d560e71466ba0",
+  "validation": {
+    "committedReadonlyReplay": "PASS",
+    "records": 10,
+    "maxRssKiB": 399408,
+    "committedReplaySeconds": 1.6248572,
+    "operatorDbSizeMtimeUnchanged": true,
+    "unrelatedPrivateIndexStatusUnchanged": true
+  }
+}
