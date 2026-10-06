@@ -4,7 +4,7 @@
 43 exact existing book56/edition5 targets, selected from accepted #553 identity
 evidence `5003f08e833f51fa7e12063f40f58adadb20496e`. This is direct translation
 and correction against current DB English, separate from candidate attachment.
-Private evidence revision: `fc6d62eaf3ff6559cbb763af336c0218df31404b` (local only),
+Private evidence revision: `541d3121c60661cca569c5af2bb3b4e3a0264dfe` (local only),
 exclusively under `dice-baselines/issue-520/qa/books/56/slices/issue-555/` in the
 configured private data repo. Complete inputs, actual Chinese after, sentence
 reasoning and residual locators stay private.
@@ -51,9 +51,18 @@ reference is bound read-only with its distinct book/edition catalog identifiers.
 No later-publication plant spell is substituted. Other linked spells and monster
 manual references retain their URLs/references without unrequested full QA.
 
+A bounded explicit spell-reference name check covers all43 entries and binds31
+external references to current read-only English identity/Chinese name rows. One
+wrong-spell identity reference is corrected (target640 must reference2884, not
+2886), and ten existing-name alignments avoid introducing alternate lookup names.
+Only references in targets635,640,679,729 and741 change. The private name audit
+binds source offsets, current catalog names and actual after; its verifier proves
+that rule wording, links, original inputs and the six residuals remain unchanged.
+No referenced spell body, PHB extraction or original-source QA was reopened.
+
 The private review binds29,093 English characters,215 nonempty physical lines,
 214 exact source segments and264 actual-after sentence groups. One wrapped source
-sentence accounts for the line/segment difference. There are9,014 Chinese body
+sentence accounts for the line/segment difference. There are9,006 Chinese body
 characters. Eight original body hyperlinks, exact source-locked fields, source
 offsets, complete after coverage, strict HTML nesting/text parity, dice/numeric
 values,17 number-word conversions, negation, timing, scope, bonus types, materials,
@@ -72,16 +81,16 @@ inputs and the bounded semantic proposals, independently of native fallback.
 Both operator DBs were readonly/query_only; size/mtime were unchanged. No app-state,
 writer/import, FTS, API, consumer rehearsal, PDF/errata, PHB, production or deploy
 workflow ran. Source/map/alias/intake, shared QA/SC, canonical English/mechanics
-and summaries are unchanged. Only10 owned private files were committed with
+and summaries are unchanged. The11 owned private evidence files were committed with
 explicit paths and `commit --only`; the private repo was not pushed. Raw NUL
 protection before and after commit preserves9,384 nonowned index records,1,480
 status records,1,441 untracked paths and39 unrelated staged deletions exactly.
 The difference from #553's earlier index count is its17 committed owned files.
 Raw snapshots remain in this checkout's ignored output for main-gate inspection.
 
-Committed-evidence verification took2.70s and
-321284KiB peak RSS. Private evidence is725940bytes; current
-ignored temporary output is3366176bytes. Complexity is
+Committed-evidence verification took2.91s and
+305300KiB peak RSS. Private evidence is788057bytes; current
+ignored temporary output is4510590bytes. Complexity is
 O(5,606 candidates +5,097 targets +43 semantic entries); one data process,
 existing shared runtime and no installations, database copies or paid external
 APIs were used. No fixed ROM byte cap applies. Runtime `turn_context` metadata
@@ -97,7 +106,7 @@ protection is a separate before/after byte audit, not inferred from this adapter
 ```typescript
 import {readFileSync,readdirSync,statSync,existsSync} from 'node:fs';import {execFileSync} from 'node:child_process';import assert from 'node:assert/strict';import {isDeepStrictEqual as equal} from 'node:util';import Database from 'better-sqlite3';import {load} from 'cheerio';
 import {localDataDir,repoRoot} from '../../src/shared/env';import {loadEnglishRecords,validateSourceCoverage} from '../../src/dice-intake/qa';import {parseDiceFile} from '../../src/dice-intake/parse';import {reconcile} from '../../src/dice-intake/reconcile';
-assert(process.argv[2]==='fc6d62eaf3ff6559cbb763af336c0218df31404b','pass exact private evidence revision');
+assert(process.argv[2]==='541d3121c60661cca569c5af2bb3b4e3a0264dfe','pass exact private evidence revision');
 const started=performance.now(),root=localDataDir(),prefix='dice-baselines/issue-520/qa/books/56/slices/issue-555/',owned=root+'/'+prefix,base=root+'/dice-baselines/issue-520';
 const rows=(p:string)=>readFileSync(p,'utf8').trim().split(/\r?\n/).filter(Boolean).map(l=>JSON.parse(l)),j=(p:string)=>JSON.parse(readFileSync(p,'utf8')),norm=(s:string)=>s.replace(/\r\n/g,'\n'),git=(...a:string[])=>execFileSync('git',['-C',root,...a],{maxBuffer:64*1024*1024});
 const m=j(owned+'/input-manifest.json'),summary=j(owned+'/review-summary.json'),boundary=j(owned+'/coverage-boundary.json');
@@ -133,14 +142,21 @@ for(let k=0;k<43;k++){const t=inputs[k],p=proposals[k],v=reviews[k];assert(p.act
 const repeats=[...repeated].filter(([t,ss])=>ss.size>1).map(([t,ss])=>({afterText:t,distinctSourceSentences:ss.size}));assert(repeats.every(t=>t.afterText.length<45),'long template reuse');
 if(existsSync(owned+'/numeric-checks.jsonl')){const ns=rows(owned+'/numeric-checks.jsonl');assert(ns.length===214);for(const [i,n] of ns.entries()){const x=numericDetails[i];assert(n.targetId===x.targetId&&n.segment===x.segment&&equal(n.sourceNumbers,x.sourceNumbers)&&equal(n.afterNumbers,x.afterNumbers),'numeric actual-after drift');const conversion=n.wordConversion,source=reviews.find(t=>t.targetId===n.targetId).bindings[n.segment].source;if(conversion)assert(source.includes(conversion.needle)&&conversion.reason===n.reason,'numeric source-word binding');const canonical=(a:string[])=>a.map(t=>t.replaceAll('+','')).sort();assert(equal(canonical([...n.sourceNumbers,...(conversion?.added??[])]),canonical(n.afterNumbers)),'numeric values');}assert(ns.filter(t=>t.wordConversion).length===17);}
 assert(equal(residuals.map(t=>t.targetId),[647,699,703,748,752,754])&&residuals.every(t=>t.activation===false&&t.reason.length>100&&t.fallback&&t.locator));assert(summary.exactSourceSegments===segments&&summary.sentenceBindingGroups===sentences&&physical===215&&summary.completeAvailableBodies===39&&summary.partialOrAmbiguousBodies===4&&summary.fullyReviewedWithoutMaterialResidual===37&&summary.newNativeAcceptedFields===0&&summary.activation===false&&boundary.nativeMatchedSliceReceipt===false&&boundary.wholeBookComplete===false);
+const nameAudit=j(owned+'/reference-name-qa.json');assert(equal(nameAudit.reviewedTargetIds,ids)&&nameAudit.activation===false&&nameAudit.canonicalWrites===false&&nameAudit.referenceBodiesRead===false&&nameAudit.externalReferences.length===31&&nameAudit.changes.length===11&&nameAudit.identityGuard.correctReferenceId===2884&&nameAudit.identityGuard.distinctSpellId===2886,'bounded name scope');
+for(const lookup of nameAudit.lookupNames){const current=(r.prepare('SELECT s.id,s.name,s.rulebook_id AS rulebookId,b.dnd_edition_id AS editionId FROM dnd_spell s JOIN dnd_rulebook b ON b.id=s.rulebook_id WHERE lower(s.name)=lower(?) ORDER BY s.rulebook_id,s.id').all(lookup.lookup) as any[]).map(t=>({...t,chineseNames:c.prepare("SELECT variant,name,sourceKey FROM I18nSpellText WHERE spellId=? AND lang='zh' ORDER BY variant").all(t.id)}));assert(equal(current,lookup.rows),'current name-only lookup drift');}
+for(const a of nameAudit.externalReferences){const t=inputs.find(t=>t.targetId===a.targetId),v=reviews.find(t=>t.targetId===a.targetId),b=v.bindings[a.segment],n=nameAudit.lookupNames.flatMap((t:any)=>t.rows).find((t:any)=>t.id===a.referenceId);assert(n&&equal(a.englishIdentity,{id:n.id,name:n.name,rulebookId:n.rulebookId,editionId:n.editionId})&&equal(a.currentChineseNames,n.chineseNames)&&n.chineseNames.some((t:any)=>t.name===a.selectedChineseName)&&b.afterText.includes(a.selectedChineseName)&&a.actualAfter===b.afterText,'named actual-after binding');assert(a.anchors.length>0&&a.anchors.every((p:any)=>t.english.description.slice(p.start,p.end).toLowerCase()===a.sourcePhrase),'named source locator');}
+for(const [i,v] of reviews.entries()){assert(v.explicitSpellReferenceNamesReviewed&&equal(v.referenceNameBindingIds,nameAudit.externalReferences.filter((t:any)=>t.targetId===v.targetId).map((t:any)=>t.referenceId)));assert(equal(nameAudit.coveredTargets[i],{targetId:v.targetId,currentEnglishName:inputs[i].english.name,currentChineseName:inputs[i].chinese[0].name,selfNameRetained:true,completeBodyNameReferencesRead:true,externalBindingCount:v.referenceNameBindingIds.length}));}
+const priorFile=(file:string)=>norm(git('show',nameAudit.previousEvidenceRevision+':'+prefix+file).toString('utf8'));for(const file of ['target-inputs.jsonl','referenced-inputs.jsonl','input-manifest.json','coverage-boundary.json','residuals.jsonl','numeric-checks.jsonl'])assert(norm(readFileSync(owned+'/'+file,'utf8'))===priorFile(file),'frozen owned input '+file);
+for(const [file,current] of [['proposals.jsonl',proposals],['reviews.jsonl',reviews]] as const){const expected=priorFile(file).trim().split(/\r?\n/).map(l=>JSON.parse(l));for(const a of nameAudit.changes){const row=expected.find(t=>t.targetId===a.targetId);if(file==='proposals.jsonl'){row.descriptionHtml=row.descriptionHtml.replaceAll(a.from,a.to);row.descriptionText=row.descriptionText.replaceAll(a.from,a.to);}else{const b=row.bindings[a.segment];b.afterHtml=b.afterHtml.replaceAll(a.from,a.to);b.afterText=plain(b.afterHtml);for(const s of b.sentences){s.afterHtml=s.afterHtml.replaceAll(a.from,a.to);s.afterText=plain(s.afterHtml);}}}if(file==='reviews.jsonl')for(const v of expected){v.explicitSpellReferenceNamesReviewed=true;v.referenceNameBindingIds=nameAudit.externalReferences.filter((t:any)=>t.targetId===v.targetId).map((t:any)=>t.referenceId);}assert(equal(expected,current),'only exact reference names and audit bindings changed');}
+assert(summary.afterCharacters===proposals.reduce((n,t)=>n+[...t.descriptionText].length,0)&&summary.referenceNameCheck.changedTargets===5&&summary.referenceNameCheck.changedReferences===11&&summary.referenceNameCheck.wrongSpellIdentityCorrections===1);
 r.close();c.close();assert(equal(meta(),m.readonly.databases),'DB metadata after');const bytes=(p:string):number=>readdirSync(p,{withFileTypes:true}).reduce((n,f)=>n+(f.isDirectory()?bytes(p+'/'+f.name):statSync(p+'/'+f.name).size),0);assert(bytes(owned)<5*1024*1024&&process.resourceUsage().maxRSS<512*1024,'resources');
-export const result={status:'PASS',checks:['exact43 source/target/name/body/proposal coverage','committed source/map/alias/intake and#553 input equality','maintained105-file/5606-candidate/5097-target replay','128-target partition77+8 untouched and native fallback not semantic acceptance','43 fresh English/HTML/mechanics/all-Chinese-variant snapshots and4 inherited snapshots','214 exact source segments/264 actual-after sentence bindings','HTML nesting/text/link/dice parity','per-clause numeric meaning and negation/timing/scope/material/SR review','placeholder/raw residue and repeated-translation heuristic','six explicit residuals and all43 activation:false','readonly/query_only and DB size/mtime unchanged'],targets:43,physicalSourceLines:physical,sourceSegments:segments,sentenceBindingGroups:sentences,links:proposals.reduce((n,t)=>n+links(t.descriptionHtml).length,0),repeatedShortSentenceGroups:repeats.length,longTemplateReuseGroups:repeats.filter(t=>t.afterText.length>=45).length,elapsedSeconds:(performance.now()-started)/1000,maxRssKiB:process.resourceUsage().maxRSS,privateBytes:bytes(owned)};
+export const result={status:'PASS',checks:['exact43 source/target/name/body/proposal coverage','committed source/map/alias/intake and#553 input equality','maintained105-file/5606-candidate/5097-target replay','128-target partition77+8 untouched and native fallback not semantic acceptance','43 fresh English/HTML/mechanics/all-Chinese-variant snapshots and4 inherited snapshots','214 exact source segments/264 actual-after sentence bindings','HTML nesting/text/link/dice parity','per-clause numeric meaning and negation/timing/scope/material/SR review','placeholder/raw residue and repeated-translation heuristic','six explicit residuals and all43 activation:false','43 bounded explicit spell-reference name checks/31 external bindings/11 corrections','current name catalog identity guard and exact prior-to-after-only-name changes','readonly/query_only and DB size/mtime unchanged'],targets:43,physicalSourceLines:physical,sourceSegments:segments,sentenceBindingGroups:sentences,links:proposals.reduce((n,t)=>n+links(t.descriptionHtml).length,0),repeatedShortSentenceGroups:repeats.length,longTemplateReuseGroups:repeats.filter(t=>t.afterText.length>=45).length,elapsedSeconds:(performance.now()-started)/1000,maxRssKiB:process.resourceUsage().maxRSS,privateBytes:bytes(owned)};
 export const numericLedger=numericDetails;export const repeatLedger=repeats;
 console.log(JSON.stringify(result));
 ```
 
 ```powershell
-& ./node_modules/.bin/tsx.cmd ./data-tools/out/issue-555/replay-public.ts fc6d62eaf3ff6559cbb763af336c0218df31404b
+& ./node_modules/.bin/tsx.cmd ./data-tools/out/issue-555/replay-public.ts 541d3121c60661cca569c5af2bb3b4e3a0264dfe
 git diff --check
 ```
 
