@@ -17,7 +17,7 @@
     "publicBase": "f3173363d70e55c3070c435ec5a1ede1bec25fca",
     "publicQaToolBlob": "168d1e54c9065111835e69ae3f3fb779b47b708f",
     "privatePreparedRevision": "6d28f9391273979a35a6bcc86971f0aac5b9f2c8",
-    "privateEvidenceRevision": "b35350bb95e52a3f8b23cba77156da6fbc067e3f",
+    "privateEvidenceRevision": "4fb3144e1264cd8c9750c17ca63793f240693319",
     "sourceRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
     "mappingRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
     "targetIds": [
@@ -157,8 +157,8 @@
   "sourceGapsAndConflicts": {
     "bodyFormulaScopeProblems": 1,
     "recipientScopeConflicts": 1,
-    "normalizedMechanicsGapRecords": 20,
-    "totalRecords": 22,
+    "normalizedMechanicsGapRecords": 21,
+    "totalRecords": 23,
     "missingBodyTables": 0,
     "bodyProblemTargets": [
       3376
@@ -301,6 +301,12 @@
       "kind": "missing-normalized-field",
       "field": "range",
       "canonicalChange": false
+    },
+    {
+      "targetId": 3405,
+      "kind": "unspecified-intelligent-undead-save-type",
+      "field": "savingThrow",
+      "canonicalChange": false
     }
   ],
   "qa": {
@@ -362,8 +368,8 @@
       "timeAndMemoryBasis": "Prior maintained full105-file/5606-occurrence runs approximately0.9seconds/266MiB; no new runtime, DB copy or paid external API"
     },
     "measured": {
-      "committedPrivateEvidenceBytes": 1416800,
-      "committedPrivateEvidenceFiles": 28,
+      "committedPrivateEvidenceBytes": 1420428,
+      "committedPrivateEvidenceFiles": 29,
       "formalSingleNode": {
         "budgetSeconds": 60,
         "elapsedSeconds": 0.7900935,
@@ -398,6 +404,7 @@
     "dice-baselines/issue-520/qa/books/51/out/coverage.json",
     "dice-baselines/issue-520/qa/books/51/out/current-input-replay.json",
     "dice-baselines/issue-520/qa/books/51/out/fallback.jsonl",
+    "dice-baselines/issue-520/qa/books/51/out/gap-judgment-binding.json",
     "dice-baselines/issue-520/qa/books/51/out/npm-resources.json",
     "dice-baselines/issue-520/qa/books/51/out/qa-checks.json",
     "dice-baselines/issue-520/qa/books/51/out/resources.json",
@@ -432,6 +439,20 @@
     },
     "semanticReplay": "Expand translations.txt convention, compare all input/name/HTML/segments with semantic-review and clause-review; compare exact formal replacements, corrections and full-body audits or unactivated proposals. No per-book executable stack added.",
     "numericReview": "All12 differences individually disposed in private numeric-review.json: English number words/fractions to numeral equivalents. Four repeated groups have identical English clauses.",
+    "gapJudgmentBinding": {
+      "priorEvidenceRevision": "b35350bb95e52a3f8b23cba77156da6fbc067e3f",
+      "evidenceOnlyAddedGapTarget": 3405,
+      "currentReviewedTargets": 56,
+      "unresolvedRecords": 23,
+      "bodyFormulaProblems": 1,
+      "recipientScopeConflicts": 1,
+      "normalizedMechanicsGapRecords": 21,
+      "all56ExactInputsAndAfterValuesUnchanged": true,
+      "formalProposalsFallbacksAndCorrectionsUnchanged": true,
+      "translationChanges": 0,
+      "canonicalChanges": 0,
+      "newBookSpecificExecutables": 0
+    },
     "mergeGate": "Full remote ci:portable at exact PR head; stop on failed/cancelled/timed_out with no automatic retry."
   },
   "boundaries": {
