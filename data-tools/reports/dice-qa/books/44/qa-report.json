@@ -1,0 +1,563 @@
+{
+  "issue": 154,
+  "version": "v1.4",
+  "rulebookId": 44,
+  "authority": "Complete current DB-English name/body/mechanics QA; no PDF or original-book verification",
+  "reviewer": {
+    "model": "gpt-6.1-sol",
+    "effort": "high",
+    "humanReview": false,
+    "threadId": "01a10e69-c1fe-7473-8461-f4446cadb912",
+    "verifiedBy": "Read-only local rollout turn_context model and effort metadata",
+    "reason": "64 complete entries and31 missing-candidate translations require conditional/numeric semantic judgment using mature tooling."
+  },
+  "inputs": {
+    "publicBase": "280ef4ec806d20c76e249c5e142f33a3d829723e",
+    "publicQaToolBlob": "168d1e54c9065111835e69ae3f3fb779b47b708f",
+    "privatePreparedRevision": "6d28f9391273979a35a6bcc86971f0aac5b9f2c8",
+    "privateEvidenceRevision": "e60a658f111c4e38c8c896560513776317593d9d",
+    "sourceRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+    "mappingRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+    "baselineDirectory": "dice-baselines/issue-520",
+    "targetIds": [
+      1874,
+      1875,
+      1876,
+      1877,
+      1878,
+      1879,
+      1880,
+      1881,
+      1882,
+      1883,
+      1884,
+      1885,
+      1886,
+      1887,
+      1888,
+      1889,
+      1890,
+      1891,
+      1892,
+      1893,
+      1894,
+      1895,
+      1896,
+      1897,
+      1898,
+      1899,
+      1900,
+      1901,
+      1902,
+      1903,
+      1904,
+      1905,
+      1906,
+      1907,
+      1908,
+      1909,
+      1910,
+      1911,
+      1912,
+      1913,
+      1914,
+      1915,
+      1916,
+      1917,
+      1918,
+      1919,
+      1920,
+      1921,
+      1922,
+      1923,
+      1924,
+      1925,
+      1926,
+      1927,
+      1928,
+      1929,
+      1930,
+      1931,
+      1932,
+      1933,
+      1934,
+      1935,
+      1936,
+      1937
+    ],
+    "englishBodyCharacters": 45195,
+    "longestEnglishBodyCharacters": 4721,
+    "candidateBodyCharacters": 10115,
+    "ownedOccurrences": 38,
+    "matchedTargets": 33,
+    "targetsWithoutMatchedCandidates": [
+      1874,
+      1875,
+      1878,
+      1879,
+      1887,
+      1888,
+      1889,
+      1890,
+      1897,
+      1898,
+      1899,
+      1900,
+      1901,
+      1902,
+      1906,
+      1907,
+      1908,
+      1911,
+      1916,
+      1917,
+      1918,
+      1919,
+      1920,
+      1921,
+      1924,
+      1927,
+      1928,
+      1929,
+      1930,
+      1932,
+      1936
+    ],
+    "allSourceFilesRevalidated": 105,
+    "allSourceOccurrencesRevalidated": 5606
+  },
+  "dispositions": {
+    "reviewedNames": 64,
+    "completeAvailableBodiesReviewed": 64,
+    "mechanicsReviewed": 64,
+    "ownedOccurrencesReviewed": 38,
+    "formalProposedNames": 33,
+    "formalProposedBodies": 33,
+    "formalFullyChineseBodies": 33,
+    "unmatchedReviewedExcludedOccurrences": 5,
+    "unmatchedIdentityComparisons": [
+      {
+        "sourceLine": 56,
+        "comparisonTargetId": 1920,
+        "reasonKind": "English-spelling-mismatch",
+        "formalTargetId": null,
+        "activation": false
+      },
+      {
+        "sourceLine": 160,
+        "comparisonTargetId": 1899,
+        "reasonKind": "English-name-word-order-mismatch",
+        "formalTargetId": null,
+        "activation": false
+      },
+      {
+        "sourceLine": 244,
+        "comparisonTargetId": 1932,
+        "reasonKind": "English-name-word-order-mismatch",
+        "formalTargetId": null,
+        "activation": false
+      },
+      {
+        "sourceLine": 263,
+        "comparisonTargetId": 1897,
+        "reasonKind": "English-name-word-order-mismatch",
+        "formalTargetId": null,
+        "activation": false
+      },
+      {
+        "sourceLine": 278,
+        "comparisonTargetId": 1898,
+        "reasonKind": "English-name-word-order-mismatch",
+        "formalTargetId": null,
+        "activation": false
+      }
+    ],
+    "duplicateGroups": 0,
+    "unparsedBoundaries": 0,
+    "unactivatedReviewedNamesAndBodies": 31,
+    "unactivatedFullyChineseBodies": 29,
+    "unactivatedMixedBodies": 2,
+    "nonblankEnglishLinesCovered": 416,
+    "translatedSegments": 207,
+    "literalEnglishFallbackSegments": 2,
+    "retainedWholeFieldFallbacks": 62,
+    "pendingFields": 0,
+    "pendingFullBodyAudits": 0,
+    "mainGateAcceptance": "pending",
+    "interpretation": "Every64 target and38 occurrence reviewed. Formal accepted denotes validated proposal.31 full input/after-bound translations remain unactivated because the maintained schema lacks matched candidate keys; they are reviewed work, not unperformed deferred rows. Two specific DB-English gap clauses remain exact English."
+  },
+  "sourceGapsAndConflicts": {
+    "literalEnglishClauseFallbackTargets": [
+      1930,
+      1936
+    ],
+    "literalEnglishClauseFallbackCount": 2,
+    "proseOrComponentConflicts": 1,
+    "preservedOtherEnglishScopeAmbiguities": 1,
+    "normalizedMechanicsGapRecords": 9,
+    "totalRecords": 13,
+    "uniqueTargets": 12,
+    "distinction": "31 missing-candidate activation gaps are separate from2 body clauses with actual missing/ambiguous DB-English data. Preserved normalized gaps and wording conflicts do not imply unperformed Chinese review.",
+    "nonblockingPreservedWordingNotes": 2
+  },
+  "unresolved": [
+    {
+      "targetId": 1930,
+      "kind": "ambiguous-DB-English-strength-penalty-formula",
+      "status": "literal-English-clause-fallback",
+      "field": "descriptionHtml",
+      "englishLines": [
+        2
+      ]
+    },
+    {
+      "targetId": 1936,
+      "kind": "missing-DB-English-wave-capacity-data",
+      "status": "literal-English-clause-fallback",
+      "field": "descriptionHtml",
+      "englishLines": [
+        3
+      ]
+    },
+    {
+      "targetId": 1874,
+      "kind": "DB-component-terminology-conflict",
+      "status": "unresolved-source-conflict",
+      "field": "components",
+      "englishLines": [
+        4
+      ]
+    },
+    {
+      "targetId": 1874,
+      "kind": "malformed-normalized-range",
+      "status": "unresolved-mechanics-gap",
+      "field": "range",
+      "englishLines": []
+    },
+    {
+      "targetId": 1891,
+      "kind": "misplaced-normalized-instantaneous-field",
+      "status": "unresolved-mechanics-gap",
+      "field": "mechanics",
+      "englishLines": []
+    },
+    {
+      "targetId": 1905,
+      "kind": "unspecified-DB-damage-resistance-terminology",
+      "status": "unresolved-English-scope",
+      "field": "descriptionHtml",
+      "englishLines": [
+        9
+      ]
+    },
+    {
+      "targetId": 1916,
+      "kind": "missing-normalized-save-and-SR",
+      "status": "unresolved-mechanics-gap",
+      "field": "mechanics",
+      "englishLines": [
+        2
+      ]
+    },
+    {
+      "targetId": 1881,
+      "kind": "incomplete-normalized-inherited-headers",
+      "status": "unresolved-mechanics-gap",
+      "field": "mechanics",
+      "englishLines": []
+    },
+    {
+      "targetId": 1882,
+      "kind": "incomplete-normalized-inherited-headers",
+      "status": "unresolved-mechanics-gap",
+      "field": "mechanics",
+      "englishLines": []
+    },
+    {
+      "targetId": 1884,
+      "kind": "incomplete-normalized-inherited-headers",
+      "status": "unresolved-mechanics-gap",
+      "field": "mechanics",
+      "englishLines": []
+    },
+    {
+      "targetId": 1886,
+      "kind": "incomplete-normalized-inherited-headers",
+      "status": "unresolved-mechanics-gap",
+      "field": "mechanics",
+      "englishLines": []
+    },
+    {
+      "targetId": 1927,
+      "kind": "incomplete-normalized-inherited-headers",
+      "status": "unresolved-mechanics-gap",
+      "field": "mechanics",
+      "englishLines": []
+    },
+    {
+      "targetId": 1928,
+      "kind": "incomplete-normalized-inherited-headers",
+      "status": "unresolved-mechanics-gap",
+      "field": "mechanics",
+      "englishLines": []
+    }
+  ],
+  "candidateHeaderDiscrepancies": [
+    {
+      "sourceLine": 160,
+      "comparisonTargetId": 1899,
+      "field": "school",
+      "status": "unmatched-excluded; canonical retained"
+    },
+    {
+      "targetId": 1923,
+      "field": "spellResistance",
+      "status": "candidate corrected against locked mechanics; canonical retained"
+    },
+    {
+      "sourceLine": 56,
+      "comparisonTargetId": 1920,
+      "field": "savingThrow/spellResistance",
+      "status": "candidate omitted headers; normalized values retained"
+    }
+  ],
+  "presentation": {
+    "body": "Natural paragraphs and useful round/stat lists; complete creature stat block and four size-change cases retained",
+    "candidateHeaders": "Compared against locked mechanics and omitted from proposed bodies",
+    "tables": "No complete available table was omitted; wave capacity data absent from both DB text and HTML remains an exact dependency fallback",
+    "references": "Spell/book/chapter references retained; no unseen referenced rules invented"
+  },
+  "checks": {
+    "reviewedTargets": 64,
+    "reviewedNames": 64,
+    "completeAvailableBodiesReviewed": 64,
+    "alignedSegments": 209,
+    "translatedSegments": 207,
+    "literalEnglishFallbackSegments": 2,
+    "formalProposedTargets": 33,
+    "formalProposedNames": 33,
+    "formalProposedBodies": 33,
+    "unactivatedReviewedTargets": 31,
+    "unactivatedFullyChineseBodies": 29,
+    "unactivatedMixedBodies": 2,
+    "ownedOccurrences": 38,
+    "unmatchedReviewedExcludedOccurrences": 5,
+    "duplicateGroups": 0,
+    "wholeFieldFallbacks": 62,
+    "pendingFields": 0,
+    "pendingFullBodyAudits": 0,
+    "exactInputAndProposalAfterBindings": true,
+    "htmlBalanced": true,
+    "listItems": 19,
+    "nonblankEnglishLinesCovered": 416,
+    "visiblePlaceholderFindings": 0,
+    "unexpectedLatinResidueFindings": 0,
+    "numericScanFindingCount": 25,
+    "repeatedTranslationGroupCount": 2,
+    "numericSemanticReview": "Values, signs, bonuses/penalties, caps, quantities, duration, negation, limits and references individually reviewed in semantic-review.json; scanner is only a miss finder.",
+    "tokenParity": "N/A: no game/control placeholders",
+    "byteBudget": "N/A: no hard byte budget",
+    "unrelatedRawIndexModesBlobIdsPathsStatusesUnchanged": true,
+    "unrelatedStagedDeletions": 39,
+    "unrelatedUntrackedPathsPreserved": 1434,
+    "indexBackupCreated": false,
+    "numericScanFindingsReviewed": 25,
+    "unresolvedNumericTranslationFindings": 0,
+    "templatePollutionGroups": 0,
+    "repeatedTranslationGroups": [
+      {
+        "targets": [
+          1883,
+          1885
+        ],
+        "sameEnglishSource": false,
+        "characters": 65,
+        "status": "reviewed-equivalent-English-clauses",
+        "reason": "Same nonstacking and equal-level duration extension; English differences only apostrophes, punctuation and singular possessive."
+      },
+      {
+        "targets": [
+          1907,
+          1909
+        ],
+        "sameEnglishSource": true,
+        "characters": 70,
+        "status": "same-English-source",
+        "reason": "Identical seven-disease selection and DMG reference sentence."
+      }
+    ],
+    "finalSemanticClarifications": [
+      {
+        "targetId": 1921,
+        "kind": "explicit-cumulative-dice-wording"
+      },
+      {
+        "targetId": 1900,
+        "kind": "literal-action-translation"
+      }
+    ],
+    "currentInputReplay": {
+      "currentInputsMatch": true,
+      "targetNamesFullBodiesMechanicsEnglishHtmlAndChmBaselines": 64,
+      "ownedOccurrences": 38,
+      "preparedIntakeExact": true,
+      "mode": "readonly query_only"
+    },
+    "finalBindingReplay": {
+      "currentAuthoredNamesBodiesAndExactOutputsMatch": true,
+      "targetCount": 64,
+      "formalTargets": 33,
+      "unactivatedTargets": 31,
+      "clauseSegments": 209,
+      "nonblankEnglishLines": 416,
+      "afterClarifications": true,
+      "unrelatedRawIndexModesBlobIdsPathsStatusesUnchanged": true,
+      "newBookSpecificExecutableFiles": 0
+    },
+    "operatorDbWrites": false,
+    "appStateAccess": false,
+    "canonicalEnglishMechanicsOrSummariesChanged": false,
+    "pdfReads": 0,
+    "paidApiCalls": 0,
+    "dbCopies": 0,
+    "evidenceJudgmentRevision": {
+      "reclassifiedNonblockingTargets": [
+        1879,
+        1904
+      ],
+      "unresolvedRecords": 13,
+      "unresolvedUniqueTargets": 12,
+      "reviewedNamesBodiesAndMechanics": 64,
+      "translationChanges": 0,
+      "canonicalChanges": 0
+    },
+    "evidenceJudgmentBindingReplay": {
+      "priorEvidenceRevision": "adeae1d1e1ebc82e363386b505abe7ec5243dc3d",
+      "judgmentOnlyReclassifiedTargets": [
+        1879,
+        1904
+      ],
+      "translationChanges": 0,
+      "sourceInputChanges": 0,
+      "canonicalChanges": 0,
+      "exactPriorFormalAndUnactivatedAfterRetained": true,
+      "reviewedTargetBindings": 64,
+      "alignedSegments": 209,
+      "nonblankEnglishLines": 416,
+      "formalOccurrences": 38,
+      "unresolvedRecords": 13,
+      "unresolvedUniqueTargets": 12,
+      "nonblockingNotes": 2,
+      "actualBodyGapTargets": [
+        1930,
+        1936
+      ],
+      "current64InputsAnd38CandidatesReplayed": true,
+      "formalCompleteQa": "passed; pending0; no check-incomplete",
+      "unrelatedRawIndexUnchanged": true,
+      "newBookSpecificExecutableFiles": 0
+    }
+  },
+  "resources": {
+    "budget": {
+      "committedPrivateEvidenceUpperBoundBytes": 5242880,
+      "validationUpperBoundMilliseconds": 60000,
+      "validationPeakWorkingSetUpperBoundBytes": 536870912,
+      "concurrency": 1
+    },
+    "estimate": {
+      "englishAndCandidateCharacters": 55310,
+      "privateEvidenceUpperEstimateBytes": 2097152,
+      "method": "Complete-entry text volume and prior59-entry measured batch; no copies or paid external calls"
+    },
+    "measured": {
+      "formalSingleNodeWallMilliseconds": 859,
+      "formalSingleNodePeakWorkingSetBytes": 278327296,
+      "formalExitCode": 0,
+      "method": "Maintained CLI in one Node process; OS PeakWorkingSet64 sampled every 20ms",
+      "formalNpmWallMilliseconds": 1040,
+      "npmExitCode": 0,
+      "committedPrivateEvidenceBytes": 1257773,
+      "committedPrivateEvidenceFiles": 34,
+      "newBookSpecificExecutableFiles": 0,
+      "startupMeasurementNote": "One initial direct-Node invocation stopped before QA at Windows ESM loader path resolution; corrected path used for successful measurement. No input or schema defect."
+    }
+  },
+  "privateEvidenceRoot": "dice-baselines/issue-520/qa/books/44",
+  "privateEvidencePaths": [
+    "dice-baselines/issue-520/qa/books/44/README.md",
+    "dice-baselines/issue-520/qa/books/44/boundary-decisions.jsonl",
+    "dice-baselines/issue-520/qa/books/44/candidate-inputs.json",
+    "dice-baselines/issue-520/qa/books/44/clause-review.jsonl",
+    "dice-baselines/issue-520/qa/books/44/corrections.jsonl",
+    "dice-baselines/issue-520/qa/books/44/decisions.jsonl",
+    "dice-baselines/issue-520/qa/books/44/duplicate-resolutions.jsonl",
+    "dice-baselines/issue-520/qa/books/44/full-body-audit.jsonl",
+    "dice-baselines/issue-520/qa/books/44/nonblocking-review-notes.jsonl",
+    "dice-baselines/issue-520/qa/books/44/out/accepted.jsonl",
+    "dice-baselines/issue-520/qa/books/44/out/coverage.json",
+    "dice-baselines/issue-520/qa/books/44/out/current-input-replay.json",
+    "dice-baselines/issue-520/qa/books/44/out/fallback.jsonl",
+    "dice-baselines/issue-520/qa/books/44/out/final-binding-replay.json",
+    "dice-baselines/issue-520/qa/books/44/out/formal-result.json",
+    "dice-baselines/issue-520/qa/books/44/out/formal-stderr.txt",
+    "dice-baselines/issue-520/qa/books/44/out/npm-resources.json",
+    "dice-baselines/issue-520/qa/books/44/out/numeric-scan.json",
+    "dice-baselines/issue-520/qa/books/44/out/qa-checks.json",
+    "dice-baselines/issue-520/qa/books/44/out/repeated-translation-scan.json",
+    "dice-baselines/issue-520/qa/books/44/out/resources.json",
+    "dice-baselines/issue-520/qa/books/44/out/review-judgment-check.json",
+    "dice-baselines/issue-520/qa/books/44/ownership.json",
+    "dice-baselines/issue-520/qa/books/44/preservation.json",
+    "dice-baselines/issue-520/qa/books/44/private-commit-message.txt",
+    "dice-baselines/issue-520/qa/books/44/private-state-before.json",
+    "dice-baselines/issue-520/qa/books/44/reviewer-metadata.json",
+    "dice-baselines/issue-520/qa/books/44/semantic-findings.json",
+    "dice-baselines/issue-520/qa/books/44/semantic-review.json",
+    "dice-baselines/issue-520/qa/books/44/target-inputs.jsonl",
+    "dice-baselines/issue-520/qa/books/44/translations.txt",
+    "dice-baselines/issue-520/qa/books/44/unactivated-proposals.jsonl",
+    "dice-baselines/issue-520/qa/books/44/unmatched-occurrence-review.jsonl",
+    "dice-baselines/issue-520/qa/books/44/unresolved.jsonl"
+  ],
+  "reproduce": {
+    "workingDirectory": "Compatible public checkout root; use absolute configured paths",
+    "formalCommand": "npm run -w data-tools dice:qa -- --data-root <private-root> --baseline-dir <private-root>/dice-baselines/issue-520 --rules-db <operator-root>/rules-clean.sqlite --content-db <operator-root>/content.sqlite --rulebook-id 44 --report-dir <private-root>/dice-baselines/issue-520/qa/books/44/out",
+    "formalResult": "passed; validated-proposal; no --check-incomplete",
+    "portableCommand": "npm run -w data-tools dice:qa:test",
+    "portableResult": "passed; dice QA portable tests passed",
+    "inputReplayResult": "passed; exact64 current name/full-body/mechanics/EnglishHTML/CHM snapshots,38 occurrences and prepared intake",
+    "semanticEvidenceReplay": "Read the committed translations.txt segment convention, target-inputs.jsonl, semantic-review.json and clause-review.jsonl; expand each authored group and compare exact name/HTML after against formal accepted or unactivated proposal, with matched corrections/full-body audit bindings. No per-book executable added.",
+    "semanticResult": "passed;416 nonblank lines and209 aligned segments, final exact after bindings after two clarity edits",
+    "mergeGate": "Full remote ci:portable on exact PR head; stop on failed/cancelled/timed_out without automatic retry",
+    "judgmentRevisionResult": "passed; all64 current inputs and exact prior afters unchanged;2 nonblocking notes,13 unresolved records, complete formal QA passed again"
+  },
+  "boundaries": {
+    "operatorDbWrites": false,
+    "appStateAccess": false,
+    "canonicalEnglishChanged": false,
+    "normalizedMechanicsChanged": false,
+    "summariesChanged": false,
+    "pdfVerification": false,
+    "privatePush": false,
+    "otherBookEvidenceChanged": false,
+    "consumerRehearsal": false,
+    "deployment": false,
+    "scheduling": "All QA precedes separately authorized unified writer/FTS/API rehearsal. Paused#529 is not a prerequisite. No self-merge or issue closeout."
+  },
+  "nonblockingReviewNotes": [
+    {
+      "targetId": 1879,
+      "kind": "preserved-concealment-grade-terminology",
+      "status": "reviewed-nonblocking-source-wording",
+      "translationChanged": false
+    },
+    {
+      "targetId": 1904,
+      "kind": "preserved-total-sphere-and-center-overlap-counts",
+      "status": "reviewed-nonblocking-source-wording",
+      "translationChanged": false
+    }
+  ]
+}
