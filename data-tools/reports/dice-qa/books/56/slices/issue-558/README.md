@@ -3,7 +3,7 @@
 [Issue #558](https://github.com/FrankHZ/dnd3.5-spellbook/issues/558) owns the exact
 37 existing book56/edition5 targets in [target-dispositions.csv](target-dispositions.csv)
 and [summary.json](summary.json). Private evidence is local revision
-`6607eafc40fbdbf7c7d27741fa68c9a8eb4aaa6e`, exclusively under
+`6bc8ad1f84df3bcc30a7ceaeb45792cd4b5adc11`, exclusively under
 `dice-baselines/issue-520/qa/books/56/slices/issue-558/` in the configured private data
 repo. Complete inputs, proposed Chinese after, individual clause review, numeric
 conversions and reference evidence remain private. This is DB-English QA.
@@ -27,7 +27,7 @@ summaries remain unchanged, including null/empty fields and component flags.
 | --- | --- |
 | 717 | Temperature scale unspecified; exact altitude boundary unassigned. |
 | 722 | Literal disease-cure reference has no current DB identity; no automatic alias. |
-| 740 | Level-dependent maximum object-size mapping absent from text and HTML. |
+| 740 | Level-size mapping absent; successful partial-save outcome undefined in body/HTML. |
 | 746 | Cumulative penalty dice versus level-factor grouping/odd-level rounding unclear. |
 | 747 | Explicit body material requirement conflicts with structured material flag0. |
 | 750 | Level-dependent lifting capacity mapping absent from text and HTML. |
@@ -77,9 +77,9 @@ preserve9,406 nonowned index records,1,480 status records,1,441 untracked paths 
 39 unrelated staged deletions exactly, including after commit. Snapshots remain
 in this checkout's ignored output; adapter replay does not replace that audit.
 
-Measured replay takes about2.74s with
-323192KiB peak RSS; private evidence is769108bytes and
-current temporary output is approximately2872091bytes.
+Measured replay takes about2.72s with
+321844KiB peak RSS; private evidence is769524bytes and
+current temporary output is approximately2892763bytes.
 Private/temp each remain below5MiB; peakRSS remains below512MiB. Complexity is
 O(5,606 intake +5,097 targets +selected/necessary-reference volume), using the
 maintained full-English loader and one data process. The22.3MB (about21.3MiB) intake is read
@@ -95,7 +95,7 @@ It binds all11 private files to the exact revision below and replays current inp
 ~~~typescript
 import {readFileSync,readdirSync,statSync} from 'node:fs';import {execFileSync} from 'node:child_process';import assert from 'node:assert/strict';import {isDeepStrictEqual as equal} from 'node:util';import Database from 'better-sqlite3';import {load} from 'cheerio';
 import {localDataDir,repoRoot} from '../../src/shared/env';import {loadEnglishRecords,validateSourceCoverage} from '../../src/dice-intake/qa';import {parseDiceFile} from '../../src/dice-intake/parse';import {reconcile} from '../../src/dice-intake/reconcile';
-assert(process.argv[2]==='6607eafc40fbdbf7c7d27741fa68c9a8eb4aaa6e','pass exact private evidence revision');
+assert(process.argv[2]==='6bc8ad1f84df3bcc30a7ceaeb45792cd4b5adc11','pass exact private evidence revision');
 const started=performance.now(),root=localDataDir(),prefix='dice-baselines/issue-520/qa/books/56/slices/issue-558/',owned=root+'/'+prefix,base=root+'/dice-baselines/issue-520';
 const rows=(p:string)=>readFileSync(p,'utf8').trim().split(/\r?\n/).filter(Boolean).map(l=>JSON.parse(l)),j=(p:string)=>JSON.parse(readFileSync(p,'utf8')),norm=(s:string)=>s.replace(/\r\n/g,'\n'),git=(...a:string[])=>execFileSync('git',['-C',root,...a],{maxBuffer:64*1024*1024});
 const m=j(owned+'/input-manifest.json'),summary=j(owned+'/review-summary.json'),boundary=j(owned+'/coverage-boundary.json');
@@ -139,11 +139,11 @@ export const result={status:'PASS',checks:['exact37 current English/HTML/mechani
 From the repository root:
 
 ~~~powershell
-node node_modules/tsx/dist/cli.mjs data-tools/out/issue-558/replay-public.ts 6607eafc40fbdbf7c7d27741fa68c9a8eb4aaa6e
+node node_modules/tsx/dist/cli.mjs data-tools/out/issue-558/replay-public.ts 6bc8ad1f84df3bcc30a7ceaeb45792cd4b5adc11
 ~~~
 
 From data-tools:
 
 ~~~powershell
-node ../node_modules/tsx/dist/cli.mjs out/issue-558/replay-public.ts 6607eafc40fbdbf7c7d27741fa68c9a8eb4aaa6e
+node ../node_modules/tsx/dist/cli.mjs out/issue-558/replay-public.ts 6bc8ad1f84df3bcc30a7ceaeb45792cd4b5adc11
 ~~~

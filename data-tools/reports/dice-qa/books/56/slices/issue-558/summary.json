@@ -78,7 +78,7 @@
   ],
   "rulebookId": 56,
   "editionId": 5,
-  "privateEvidenceRevision": "6607eafc40fbdbf7c7d27741fa68c9a8eb4aaa6e",
+  "privateEvidenceRevision": "6bc8ad1f84df3bcc30a7ceaeb45792cd4b5adc11",
   "preparedRevision": "6d28f9391273979a35a6bcc86971f0aac5b9f2c8",
   "sourceRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
   "mappingRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
@@ -114,9 +114,9 @@
     "links": 3,
     "repeatedShortSentenceGroups": 2,
     "longTemplateReuseGroups": 0,
-    "elapsedSeconds": 2.737944,
-    "maxRssKiB": 323192,
-    "privateBytes": 769108,
+    "elapsedSeconds": 2.7238342,
+    "maxRssKiB": 321844,
+    "privateBytes": 769524,
     "protection": {
       "beforeCounts": {
         "index": 9406,
@@ -133,7 +133,7 @@
       "ownedCommitMode": "explicit owned paths and commit --only",
       "privatePush": false,
       "status": "PASS",
-      "temporaryBytes": 2872091
+      "temporaryBytes": 2892763
     }
   },
   "runtime": {
