@@ -93,7 +93,9 @@ accepted book merely because another book is restarting.
    book when it fits. Do not create per-spell issues or separate mechanical
    paperwork stages. Current `dice:qa --rulebook-id` requires book-wide coverage:
    partial `--check-incomplete` output is progress, not accepted slice evidence.
-   Prove a bounded slice contract before promising independent partial acceptance.
+   Use the [explicit committed slice contract](./import-workflow.md#independently-reviewable-qa-slices)
+   for independently reviewed matched-entry batches, then reconcile complete parent
+   coverage through the full-book validator. Unmatched allocation is unsupported.
 5. **Prove the next consumer handoff early.** Reuse maintained validation,
    import and search stages. SC-specific final overlays and a successful generic
    content sequence do not prove another book can replace an annotated baseline.

@@ -295,6 +295,9 @@ try {
   ];
   const qa = validateQaInputs(args);
   e.accepted = qa.result.accepted;
+  assert.throws(() => validateHandoffEvidence({ ...qa, scope: { kind: "slice", rulebookId: 53,
+    targetIds: [355], baselineRevision: revision, sourceRevision: revision, mappingRevision: revision } }, e),
+  /whole-book QA/);
   assert.deepEqual(validateHandoffEvidence(qa, e), {
     segments: 17,
     physicalLines: 17,

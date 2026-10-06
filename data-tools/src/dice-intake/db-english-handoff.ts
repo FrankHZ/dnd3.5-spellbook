@@ -118,6 +118,7 @@ export function validateHandoffEvidence(
   e: HandoffEvidence,
 ) {
   const a = cityscapeAcceptance;
+  assert.equal(qa.scope.kind, "rulebook", "handoff requires whole-book QA, not a slice");
   assert.equal(qa.rulebookId, a.rulebookId, "wrong handoff book");
   assert.equal(
     qa.checkIncomplete,

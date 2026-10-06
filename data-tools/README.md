@@ -64,6 +64,11 @@ The read-only dice TXT intake and field-level QA validation are described at the
 Both commands accept `--baseline-dir` for an isolated current all-source ledger
 and book QA inputs/outputs in the private data repo, preserving the shared ledger
 and frozen SC handoff. See the replacement boundary for paths and output guards.
+`dice:qa --slice-scope ... --slice-revision ...` binds exact committed target and
+evidence selection; `--reconcile-slices ...` revalidates disjoint complete parent
+coverage through the full-book validator. See the
+[slice contract](../docs/operations/import-workflow.md#independently-reviewable-qa-slices).
+Run `dice:qa:test` for the synthetic slice and existing book checks.
 `dice:handoff:check` authenticates the fixed main-gate accepted Cityscape
 DB-English revision against full QA and current read-only DBs, then writes an
 inspection-only selective overlay proposal to a fresh private directory.

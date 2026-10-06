@@ -40,6 +40,9 @@ const present = (value: string | null | undefined): value is string =>
  */
 export function projectEffectiveChinese(input: ProjectionInputs, native: NativeResult,
   nativeAccepted: NativeResult["accepted"], independent: SourceBoundFallbackReview[]) {
+  assert(native.summary.scope?.kind !== "slice",
+    "effective projection requires whole-book QA, not a slice");
+  assert(native.summary.validation !== "incomplete-check", "effective projection requires formal QA");
   assert.deepEqual(nativeAccepted, native.accepted, "native export differs from complete formal QA");
   const { accepted } = validateSourceBoundFallbackReviews(independent, input.rulebookId,
     input.english, input.englishHtml, input.chinese, nativeAccepted);
