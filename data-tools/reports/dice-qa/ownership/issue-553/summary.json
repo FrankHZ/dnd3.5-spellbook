@@ -1,0 +1,128 @@
+{
+  "issue": 553,
+  "dispositionCounts": {
+    "proposed-handoff": 16,
+    "deferred": 27
+  },
+  "classificationCounts": {
+    "sc-text-lineage": 5,
+    "mixed-publication-body": 11,
+    "mixed-publication-metadata": 8,
+    "sc-distinctive-rule": 6,
+    "misattributed-publication-annotation": 1,
+    "mixed-publication-spelling": 1,
+    "sc-distinctive-mechanics": 5,
+    "indistinguishable-reprint": 2,
+    "cross-version-reference-conflict": 1,
+    "unmapped-label-reprint-ambiguity": 1,
+    "indistinguishable-inherited-reprint": 2
+  },
+  "candidateOccurrences": 43,
+  "rawHeaderBodyCharacters": 16033,
+  "relatedTargets": 127,
+  "inheritedTargets": 2,
+  "peerComparisons": 74,
+  "equalRawPeerBodies": 48,
+  "equalBodyTextPeers": 49,
+  "handoffTargets": [
+    3865,
+    3990,
+    4016,
+    4269,
+    4356,
+    4583,
+    4631,
+    3793,
+    4128,
+    4218,
+    4259,
+    4302,
+    4642,
+    4725,
+    4744,
+    4761
+  ],
+  "newTargets": 0,
+  "newSemanticAcceptedFields": 0,
+  "appliedMappingsAliasesAttachments": 0,
+  "acceptedScReuse": {
+    "targets": 43,
+    "englishExact": 42,
+    "englishNonExactTargetIds": [
+      3934
+    ],
+    "nameAndBodyMatchesCurrentEffective": 86,
+    "disclaimer": "Preserve selected source-bound authority and current effective fields; no new original-book verification.3934 opening article differs,mechanics unchanged."
+  },
+  "book56Reference": {
+    "issue": 163,
+    "acceptedPr": 203,
+    "selectedTargets": 43,
+    "matchedHistoricalDecisionRows": 0,
+    "disclaimer": "All selected book56 targets were no-candidate fallbacks,not full-body semantic passes; identity review adds no accepted fields."
+  },
+  "partition": {
+    "totalCandidates": 5606,
+    "previousResidualCandidates": 2280,
+    "selectedCandidates": 43,
+    "pendingCandidates": 2237,
+    "totalTargets": 5097,
+    "outsideBookTargetsUntouched": 995
+  },
+  "model": {
+    "requested": "gpt-6.1-sol",
+    "effort": "high",
+    "actualModel": "gpt-6.1-sol",
+    "actualEffort": "high",
+    "verified": true,
+    "evidence": "read-only local rollout turn_context for01a10f7d-6ce9-7c52-bb9a-19fb410c9080"
+  },
+  "resources": {
+    "elapsedSeconds": 2.5084448999999998,
+    "maxRssKiB": 302896,
+    "paidExternalApiCalls": 0
+  },
+  "privateEvidenceCommit": "5003f08e833f51fa7e12063f40f58adadb20496e",
+  "publicBase": "25730444f6d6df684620d3c8b0efc9d3dde8d476",
+  "preparedRevision": "6d28f9391273979a35a6bcc86971f0aac5b9f2c8",
+  "sourceRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+  "verification": {
+    "status": "PASS",
+    "checks": [
+      "committed current inputs and source map/alias frozen",
+      "maintained parse/source coverage/full reconcile5606/5097",
+      "exact43 source-key coverage and dispositions",
+      "127 complete current DB comparisons+2 inherited",
+      "74 peer bindings and per-row exact line locators",
+      "unapplied proposal impact",
+      "existing QA/current SC envelopes and effective fields",
+      "readonly/query_only DB metadata equality",
+      "raw NUL nonowned index/status/untracked equality"
+    ],
+    "elapsedSeconds": 3.2695663,
+    "maxRssKiB": 380952,
+    "privateBytes": 1954224,
+    "temporaryBytes": 3369928,
+    "protection": {
+      "beforeCounts": {
+        "index": 9367,
+        "status": 1480,
+        "untracked": 1441
+      },
+      "afterCounts": {
+        "index": 9367,
+        "status": 1480,
+        "untracked": 1441
+      },
+      "unrelatedStagedDeletions": 39,
+      "checks": {
+        "index": "exact raw NUL nonowned entries preserved",
+        "status": "exact raw NUL nonowned entries preserved",
+        "untracked": "exact raw NUL nonowned entries preserved"
+      },
+      "rawAuditLocation": "assigned ignored data-tools/out/issue-553/*-{before,after}.nul",
+      "ownedCommitMode": "explicit paths and commit --only",
+      "privatePush": false
+    }
+  }
+}
