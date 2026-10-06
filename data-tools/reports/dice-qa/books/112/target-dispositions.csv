@@ -1,0 +1,2 @@
+targetId,editionId,nameReview,completeBodyReview,htmlReview,mechanicsReview,unactivatedName,unactivatedBody,sourceGap,residualRows,activationStatus,nativeNameFallback,nativeBodyFallback
+4957,3,DB-English-reviewed,DB-English-reviewed,DB-English-reviewed,DB-English-reviewed,true,true,false,0,integration-pending,English,English
