@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "issue": 539,
+  "parentIssue": 151,
+  "scope": {
+    "baselineRevision": "6d28f9391273979a35a6bcc86971f0aac5b9f2c8",
+    "kind": "slice",
+    "mappingRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+    "rulebookId": 37,
+    "sourceRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+    "targetIds": [
+      122,
+      123,
+      124,
+      125,
+      126,
+      127,
+      128,
+      129,
+      130,
+      131,
+      132,
+      133,
+      134,
+      135,
+      136,
+      137,
+      138,
+      139,
+      140,
+      141,
+      142,
+      143,
+      144,
+      145,
+      146,
+      147,
+      148,
+      149,
+      150,
+      151,
+      152,
+      153,
+      154,
+      155,
+      156,
+      157,
+      158,
+      159,
+      160,
+      161,
+      162,
+      163,
+      164,
+      165,
+      166,
+      167,
+      168,
+      169,
+      170,
+      171,
+      172,
+      173,
+      174,
+      175,
+      176,
+      177,
+      178,
+      179,
+      180,
+      181,
+      182,
+      183,
+      184,
+      185,
+      186,
+      187,
+      188,
+      189,
+      190,
+      191
+    ]
+  },
+  "publicBase": "83275f567912c0e0977dbc003a1ffa4d35ba9e3f",
+  "publicBranch": "codex/data-dice-vile-darkness-a",
+  "privateEvidenceRevision": "f9ca820cb86f227e4e3223a3c4fa71c2d8c866f2",
+  "privateOutputRevision": "015132ffa10fe8bbdefa8d1089b435926f1c76e9",
+  "privateEvidenceRoot": "dice-baselines/issue-520/qa/books/37/slices/issue-539/",
+  "authority": "DB-English QA; original-book/PDF verification not performed",
+  "semanticReview": {
+    "names": 70,
+    "completeBodies": 70,
+    "normalizedMechanics": 70,
+    "candidateOccurrences": 70,
+    "nonblankEnglishLines": 407,
+    "englishCharacters": 40447,
+    "candidateCharacters": 17763,
+    "chmChineseBaselinePresent": 0,
+    "duplicateOccurrences": 0,
+    "unreviewedFields": 0,
+    "actualAfterBindingsComplete": true,
+    "proposedNames": 70,
+    "proposedChineseBodies": 66,
+    "retainedEnglishBodies": 4
+  },
+  "heuristicQa": {
+    "numericFlagsReviewed": 10,
+    "intentionalRepeatGroupsReviewed": 12,
+    "templateContamination": 0,
+    "visiblePlaceholders": 0,
+    "htmlVisibleTextMismatches": 0,
+    "englishInputLinks": 0,
+    "englishInputTables": 0
+  },
+  "bodyFallbacks": [
+    {
+      "targetId": 130,
+      "category": "missing-outcome-table"
+    },
+    {
+      "targetId": 140,
+      "category": "missing-material-drug-table"
+    },
+    {
+      "targetId": 158,
+      "category": "undefined-caster-level-5"
+    },
+    {
+      "targetId": 189,
+      "category": "missing-lycanthropy-table"
+    }
+  ],
+  "unchangedResiduals": {
+    "normalizedCorruptLevelAbsent": [
+      131,
+      137,
+      139,
+      151,
+      162,
+      167,
+      184
+    ],
+    "externalReferencesNotSupplied": [
+      125,
+      139
+    ],
+    "bodyHeadersNotNormalized": [
+      145
+    ],
+    "materialDetailNotSupplied": [
+      152
+    ]
+  },
+  "formalValidation": {
+    "result": "validated-proposal",
+    "pendingFields": 0,
+    "pendingFullBodyAudits": 0,
+    "sourceCoverage": {
+      "candidateOccurrences": 5606,
+      "files": 105
+    },
+    "nativeSliceContract": true
+  },
+  "resources": {
+    "formalElapsedMs": 1256,
+    "formalPeakRssMiB": 398.45703125,
+    "privateBytes": 1677073,
+    "fullCandidateLedgerBytes": 22292460,
+    "processConcurrency": 1,
+    "paidExternalApiCalls": 0,
+    "privateBudgetBytes": 8388608,
+    "formalBudgetMs": 60000,
+    "formalBudgetRssMiB": 512
+  },
+  "statePreservation": {
+    "initialPrivateHead": "eacdf9eb3137b31c819399bfc6349bad726fe344",
+    "unrelatedRawIndexModeBlobStagePathEntries": 9198,
+    "unrelatedRawIndexExactlyEqual": true,
+    "unrelatedStatusEntries": 1480,
+    "unrelatedStatusExactlyEqual": true,
+    "unrelatedUntrackedPaths": 1441,
+    "unrelatedUntrackedExactlyEqual": true,
+    "stagedUnrelatedDeletionsPreserved": 39,
+    "privatePushPerformed": false,
+    "ownedPrivateCommitPathsOnly": true
+  },
+  "modelVerification": {
+    "source": "local session turn_context metadata",
+    "model": "gpt-6.1-sol",
+    "effort": "high"
+  },
+  "activation": false,
+  "operatorWrites": false,
+  "canonicalEnglishMechanicsSummariesChanged": false,
+  "parentReconciliationPerformed": false,
+  "pausedIssue529Resumed": false,
+  "mainGateSemanticAcceptance": "pending"
+}
