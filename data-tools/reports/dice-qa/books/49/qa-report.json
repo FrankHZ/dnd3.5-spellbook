@@ -1,0 +1,114 @@
+{
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/157",
+  "parentIssue": 120,
+  "version": "v1.4",
+  "rulebookId": 49,
+  "publicBase": "f40e51169ff8f09dfc04e90245748e30e04b6ec5",
+  "authority": "Complete current matched DB English name/body/HTML and normalized mechanics; DB-English QA only",
+  "privateEvidence": {
+    "revision": "eacdf9eb3137b31c819399bfc6349bad726fe344",
+    "path": "dice-baselines/issue-520/qa/books/49/",
+    "preparedRevision": "6d28f9391273979a35a6bcc86971f0aac5b9f2c8",
+    "sourceMappingRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+    "localCommitOnly": true
+  },
+  "coverage": {
+    "targetIds": [
+      3374,
+      3375
+    ],
+    "targets": 2,
+    "ownedOccurrences": 2,
+    "matchedTargets": 2,
+    "reviewedNames": 2,
+    "completeBodyProposals": 2,
+    "formalNameProposals": 2,
+    "formalBodyProposals": 2,
+    "existingChmNames": 0,
+    "existingChmBodies": 0,
+    "englishCharacters": 654,
+    "candidateCharacters": 449,
+    "englishNonblankLines": 6,
+    "actualAfterSegments": 6,
+    "pendingSemanticReviews": 0,
+    "unactivatedProposals": 0,
+    "unparsedBoundaries": 0,
+    "duplicateGroups": 0
+  },
+  "residuals": [],
+  "verification": {
+    "formalCommandComplete": true,
+    "checkIncompleteUsed": false,
+    "sourceFilesRevalidated": 105,
+    "globalOccurrencesRevalidated": 5606,
+    "currentInputAfterChecks": {
+      "currentEnglishMechanicsHtmlChmReplay": true,
+      "targets": 2,
+      "names": 2,
+      "fullBodies": 2,
+      "nonblankEnglishLines": 6,
+      "exactAfterSegments": 6,
+      "formalCorrectionAuditAfterEqual": true,
+      "htmlPlaceholderReferencesPassed": true,
+      "repeatedSegments": 0,
+      "numericalConditionalNegativeScope": "individually reviewed; see semantic-review.json",
+      "passed": true
+    },
+    "portableTests": "npm run -w data-tools dice:qa:test passed",
+    "numericalConditionalNegativeScopeReview": "All clauses and normalized headers individually reviewed; no numerical conflict. Object unattended-save benefit and own spell save are different scopes.",
+    "preparedIntakeExactReplay": true
+  },
+  "resources": {
+    "samples": 20,
+    "privateByteCap": 5242880,
+    "processes": 1,
+    "sampledPeakWorkingSetBytes": 277196800,
+    "elapsedSeconds": 0.8867716,
+    "paidExternalApiCalls": 0,
+    "exitCode": 0,
+    "budgetSeconds": 60,
+    "pollingMs": 20,
+    "budgetMemoryBytes": 536870912,
+    "privateEvidenceBytes": 1134318,
+    "privateEvidenceFiles": 19,
+    "initialPrivateEstimateBytes": 2097152,
+    "complexity": "O(full ledger + book text)",
+    "newEnvironments": 0,
+    "databaseCopies": 0
+  },
+  "privatePreservation": {
+    "unrelatedIndexEntriesEqual": true,
+    "unrelatedRawStagedRecordsEqual": true,
+    "unrelatedStatusesEqual": true,
+    "unrelatedStagedDeletions": 39,
+    "originalUntrackedPathsPreserved": 1441,
+    "commitBoundary": "dice-baselines/issue-520/qa/books/49/",
+    "method": "Complete original index mode/blob ID/path, raw staged record and status comparison outside owned directory"
+  },
+  "reviewer": {
+    "threadId": "01a10ed3-2591-7a30-90c4-556a6923e3c2",
+    "model": "gpt-6.1-sol",
+    "reasoningEffort": "medium",
+    "verification": "Read-only local rollout turn_context",
+    "humanReview": false
+  },
+  "boundaries": {
+    "operatorDatabaseAccess": "readonly/query_only",
+    "canonicalEnglishMechanicsSummaryChanged": false,
+    "appStateAccess": false,
+    "sharedSourceMapAliasIntakeChanged": false,
+    "otherBookWrites": false,
+    "writerChanged": false,
+    "consumerRehearsal": false,
+    "paused529Resumed": false,
+    "pdfOriginalBookVerification": false,
+    "privatePush": false,
+    "deployment": false,
+    "selfMergeOrClose": false
+  },
+  "reproduce": {
+    "formal": "npm run -w data-tools dice:qa -- --data-root G:/spell-book/data --baseline-dir G:/spell-book/data/dice-baselines/issue-520 --rules-db G:/spell-book/dnd3.5-spellbook/server/db/local/rules-clean.sqlite --content-db G:/spell-book/dnd3.5-spellbook/server/db/local/content.sqlite --rulebook-id 49 --report-dir G:/spell-book/data/dice-baselines/issue-520/qa/books/49/out",
+    "portable": "npm run -w data-tools dice:qa:test"
+  },
+  "acceptance": "Validated proposal awaiting independent main-gate acceptance; remote ci:portable at final exact public head is the merge gate. Refs #157; no self merge/close."
+}
