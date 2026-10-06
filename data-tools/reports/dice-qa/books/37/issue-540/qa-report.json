@@ -1,0 +1,267 @@
+{
+  "issue": 540,
+  "parentIssue": 151,
+  "codeBase": "0e3a72daa2696d40bb6ae0d8c51ed03b6f00a2c2",
+  "privateEvidenceRevision": "c6c3de2b12a080731e34f6eafe5faa6fb4161944",
+  "privateExportRevision": "68a42e52547bcd3f7713005ed24ed74901bb490b",
+  "privateRootLocator": "dice-baselines/issue-520/qa/books/37/slices/issue-540/",
+  "review": {
+    "issue": 540,
+    "authority": "DB English name, complete body/HTML and normalized mechanics; no PDF/original-book validation",
+    "scopeTargets": 71,
+    "candidateOccurrences": 71,
+    "duplicateOccurrences": 0,
+    "chmChinesePresent": 0,
+    "nonblankEnglishLines": 395,
+    "lineInputEquality": true,
+    "allActualAftersBound": true,
+    "reviewedNames": 71,
+    "reviewedBodies": 71,
+    "reviewedMechanics": 71,
+    "proposedNames": 71,
+    "proposedChineseBodies": 65,
+    "retainedEnglishBodies": [
+      219,
+      227,
+      232,
+      233,
+      243,
+      246
+    ],
+    "pendingSemanticReview": 0,
+    "missingOrExtraIds": 0,
+    "numericFlagsReviewed": 31,
+    "repeatGroupsReviewed": 6,
+    "templateContamination": 0,
+    "visiblePlaceholders": 0,
+    "englishHtmlVisibleTextMismatches": 0,
+    "htmlListMarkerOnlyDifference": [
+      228
+    ],
+    "englishLinks": 0,
+    "englishTables": 0,
+    "format": "Natural paragraphs and bullet options; source-wrapped sentences joined; candidate-only headers excluded",
+    "byteBudget": "No HTML byte ceiling; private evidence cap8MiB",
+    "activation": false,
+    "operatorWrites": false,
+    "paidExternalApiCalls": 0,
+    "processConcurrency": 1,
+    "modelVerification": {
+      "source": "Local session turn_context metadata",
+      "threadId": "01a10f08-7999-75a0-a383-a20f0945c17e",
+      "model": "gpt-6.1-sol",
+      "effort": "high"
+    }
+  },
+  "resources": {
+    "evidenceRevision": "c6c3de2b12a080731e34f6eafe5faa6fb4161944",
+    "elapsedMs": 1300,
+    "peakRssMiB": 397.5234375,
+    "privateBytes": 1633610,
+    "sourceLedgerBytes": 22292460,
+    "processes": 1,
+    "paidExternalApiCalls": 0
+  },
+  "resourcePlanning": {
+    "expectedPrivateMiB": [
+      3,
+      5
+    ],
+    "maxPrivateMiB": 8,
+    "maxSeconds": 60,
+    "maxRssMiB": 512,
+    "algorithm": "O(full source ledger plus selected slice text)",
+    "fullCandidateLedgerBytes": 22292460,
+    "selectedEnglishChars": 39422,
+    "selectedCandidateChars": 17083,
+    "pilotLongestTargets": [
+      220,
+      246,
+      203,
+      228,
+      248
+    ],
+    "pilotPeakRssMiB": 166.8984375,
+    "reuse": "Existing Node/tsx/Python and shared installed runtime; no new environment or DB copy",
+    "paidExternalApiCalls": 0
+  },
+  "blockingBodyResiduals": [
+    {
+      "targetId": 219,
+      "category": "dead-body-versus-living-target",
+      "reviewPerformed": true,
+      "actualAfter": "Complete current English and HTML retained"
+    },
+    {
+      "targetId": 227,
+      "category": "undefined-exactly-20-times-dilution",
+      "reviewPerformed": true,
+      "actualAfter": "Complete current English and HTML retained"
+    },
+    {
+      "targetId": 232,
+      "category": "missing-size-damage-table",
+      "reviewPerformed": true,
+      "actualAfter": "Complete current English and HTML retained"
+    },
+    {
+      "targetId": 233,
+      "category": "missing-new-claw-damage-values",
+      "reviewPerformed": true,
+      "actualAfter": "Complete current English and HTML retained"
+    },
+    {
+      "targetId": 243,
+      "category": "missing-random-eye-outcome-map",
+      "reviewPerformed": true,
+      "actualAfter": "Complete current English and HTML retained"
+    },
+    {
+      "targetId": 246,
+      "category": "missing-hand-control-radius",
+      "reviewPerformed": true,
+      "actualAfter": "Complete current English and HTML retained"
+    }
+  ],
+  "nonblockingResiduals": [
+    {
+      "targetId": 197,
+      "category": "missing-normalized-corrupt-level",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 203,
+      "category": "missing-normalized-corrupt-level",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 213,
+      "category": "missing-normalized-corrupt-level",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 216,
+      "category": "missing-normalized-corrupt-level",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 232,
+      "category": "missing-normalized-corrupt-level",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 244,
+      "category": "missing-normalized-corrupt-level",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 248,
+      "category": "missing-normalized-corrupt-level",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 250,
+      "category": "missing-normalized-corrupt-level",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 252,
+      "category": "missing-normalized-corrupt-level",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 253,
+      "category": "missing-normalized-corrupt-level",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 254,
+      "category": "missing-normalized-corrupt-level",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 262,
+      "category": "missing-normalized-corrupt-level",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 193,
+      "category": "missing-component-detail",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 258,
+      "category": "missing-component-detail",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 208,
+      "category": "explicit-external-inheritance-or-reference",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 211,
+      "category": "explicit-external-inheritance-or-reference",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 228,
+      "category": "explicit-external-inheritance-or-reference",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 230,
+      "category": "explicit-external-inheritance-or-reference",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 234,
+      "category": "explicit-external-inheritance-or-reference",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 257,
+      "category": "explicit-external-inheritance-or-reference",
+      "reviewPerformed": true
+    },
+    {
+      "targetId": 260,
+      "category": "explicit-external-inheritance-or-reference",
+      "reviewPerformed": true
+    }
+  ],
+  "privateStateProtection": {
+    "initialHead": "015132ffa10fe8bbdefa8d1089b435926f1c76e9",
+    "currentPrivateHead": "68a42e52547bcd3f7713005ed24ed74901bb490b",
+    "rawModeBlobStagePathComparison": true,
+    "index": {
+      "unrelatedEntries": 9222,
+      "exactlyEqual": true
+    },
+    "status": {
+      "unrelatedEntries": 1480,
+      "exactlyEqual": true
+    },
+    "untracked": {
+      "unrelatedEntries": 1441,
+      "exactlyEqual": true
+    },
+    "stagedUnrelatedDeletions": 39,
+    "privatePushPerformed": false
+  },
+  "formalExportsEqualActualAfters": true,
+  "ownedPrivateCommitPathsOnly": true,
+  "boundaries": {
+    "canonicalEnglishChanged": false,
+    "normalizedMechanicsChanged": false,
+    "summariesChanged": false,
+    "operatorWrites": false,
+    "consumerRehearsal": false,
+    "parentReconciliation": false,
+    "privatePush": false,
+    "PDFWork": false,
+    "issue529Resumed": false
+  },
+  "acceptance": "Validated proposal; independent main-gate review and explicit future activation remain separate",
+  "remoteMergeGate": "Full ci:portable on final exact public PR head; stop on failure/cancellation/timeout without retry"
+}
