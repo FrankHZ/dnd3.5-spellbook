@@ -1,0 +1,148 @@
+{
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/551",
+  "version": "v1.4",
+  "rulebookId": 112,
+  "editionId": 3,
+  "storedBookName": "Dragons of Ebberon",
+  "targetIds": [
+    4957
+  ],
+  "wholeCurrentBook": true,
+  "publicBase": "249d8aab7b1eac8c9b55f4217cb9f7e1120ddf1c",
+  "privateRevision": "42e04906674fa115a69ad960613e71775e8b7e99",
+  "privateEvidencePath": "dice-baselines/issue-520/qa/books/112",
+  "preparedRevision": "6d28f9391273979a35a6bcc86971f0aac5b9f2c8",
+  "sourceRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+  "mappingRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+  "identityEvidenceRevision": "58d7e6424f16b31492d495a972506455f7d1a823",
+  "authority": "Complete current DB-English name/body/HTML/mechanics;unmatched native occurrence is reference only",
+  "humanReview": false,
+  "originalBookVerified": false,
+  "model": {
+    "threadId": "01a10f68-fb56-7591-8319-c66a754a3f15",
+    "requestedModel": "gpt-6.1-sol",
+    "verifiedModel": "gpt-6.1-sol",
+    "requestedEffort": "medium",
+    "verifiedEffort": "medium",
+    "verification": "Read-only rollout turn_context 2026-10-06T04:11:42.119Z; payload.model,effort and collaboration settings",
+    "humanReview": false,
+    "originalBookVerified": false
+  },
+  "semantic": {
+    "currentChineseVariants": 0,
+    "englishBodyCharacters": 751,
+    "reviewedNames": 1,
+    "reviewedCompleteBodies": 1,
+    "reviewedHtml": 1,
+    "reviewedMechanics": 1,
+    "actualProposedNames": 1,
+    "actualProposedBodies": 1,
+    "englishParagraphs": 4,
+    "actualAfterParagraphs": 4,
+    "reviewedClauseRows": 9,
+    "bodyLists": 0,
+    "bodyTables": 0,
+    "bodyLinks": 0,
+    "allNamedComparisonCategoriesReviewed": 3,
+    "eligibilityCurrentOriginalMaximumNegativesSilentExceptionAndFinalClauseReviewed": true,
+    "inputResiduals": 0,
+    "unresolvedRows": 0,
+    "activationPendingTargets": 1,
+    "activationPendingFields": 2,
+    "activation": false,
+    "disposition": "reviewed-proposal-awaiting-independent-main-gate",
+    "candidateDifferenceReview": "Complete candidate inspected;demonstrated flavor omission/addition not copied into direct DB-English translation;proper-name English locator retained"
+  },
+  "formal": {
+    "scope": "rulebook",
+    "candidateOccurrences": 1,
+    "reviewedNativeUnmatchedDefers": 1,
+    "matchedTargets": 0,
+    "existingTargets": 1,
+    "acceptedNativeFields": 0,
+    "englishFallbackFields": 2,
+    "pendingFields": 0,
+    "pendingFullBodyAudits": 0,
+    "validation": "validated-proposal",
+    "matchedOnlySlice": false,
+    "checkIncomplete": false,
+    "certifiesSemanticProposal": false,
+    "attachmentApplied": false,
+    "outputDestinationsVerifiedBeforeWrite": true,
+    "outputPath": "dice-baselines/issue-520/qa/books/112/out",
+    "directWriteQaOutputsCall": false
+  },
+  "checks": {
+    "maintainedReadOnlyPreflight": "passed",
+    "maintainedFormalFullBookCli": "passed",
+    "committedExactInputRootReplay": "passed",
+    "committedExactInputPackageCwdReplay": "passed",
+    "wholeBookNoGapNoOverlapOwnership": "one current DB target and one proposal4957;one independent unmatched native defer",
+    "exactAfterClauseBindings": "passed",
+    "queryOnly": [
+      1,
+      1
+    ],
+    "dbMetadataUnchanged": true,
+    "nonownedRawStateBeforeAfterOwnedOnlyCommit": "exact",
+    "publicDiffCheck": "passed"
+  },
+  "resources": {
+    "estimate": "O(5606ledger+5097targets+1semantic);22.3MiBledger;751selectedENchars;one data process;replay<60s/<512MiB;private<2MiB/temp<1MiB",
+    "ledgerBytes": 22292460,
+    "fullTargets": 5097,
+    "committedInputBindings": 111,
+    "privateCommittedFiles": 26,
+    "privateCommittedBytes": 1163022,
+    "temporaryBytesAtMeasurement": 14451,
+    "privateBudgetBytes": 2097152,
+    "temporaryBudgetBytes": 1048576,
+    "readOnlyPreflight": {
+      "seconds": 0.5669677,
+      "maxRssKiB": 271600
+    },
+    "committedExactReplayRoot": {
+      "seconds": 3.1785795,
+      "maxRssKiB": 382620
+    },
+    "committedExactReplayPackage": {
+      "seconds": 3.1800529,
+      "maxRssKiB": 383628
+    },
+    "newEnvironments": 0,
+    "copiedDatabases": 0,
+    "paidExternalApiCalls": 0
+  },
+  "preservation": {
+    "privateHeadBefore": "7ef5bfb12471c465d9187784e13546b57a59563c",
+    "onlyOwnedPathPrefix": "dice-baselines/issue-520/qa/books/112/",
+    "snapshotFormat": "raw NUL index mode/blob/stage/path,porcelain status,untracked",
+    "nonownedIndexRecords": 9341,
+    "nonownedStatusRecords": 1480,
+    "untrackedPaths": 1441,
+    "stagedDeletions": 39,
+    "beforeAfterExact": true,
+    "ownedAddAndCommitOnly": true,
+    "privatePush": false,
+    "sharedOutputIncident": false
+  },
+  "boundaries": {
+    "operatorWrites": false,
+    "appStateAccess": false,
+    "canonicalEnglishMechanicsSummaryChanges": false,
+    "sharedSourceMapAliasHeaderParserIntakeChanges": false,
+    "otherBooksOrAcceptedScChanges": false,
+    "consumerRehearsal": false,
+    "writerImportFtsApi": false,
+    "deployment": false,
+    "pdfErrataPhbOr201Work": false,
+    "paused529Consumed": false,
+    "selfMergeOrIssueClose": false
+  },
+  "commands": {
+    "readOnlyExactInputs": "node --import tsx <private-root>/dice-baselines/issue-520/qa/books/112/check-inputs.mjs --public-root <public-checkout> --rules-db <operator-root>/rules-clean.sqlite --content-db <operator-root>/content.sqlite --evidence-revision 42e04906674fa115a69ad960613e71775e8b7e99",
+    "formalExecuted": "npm run -w data-tools dice:qa -- --data-root <private-root> --baseline-dir <private-root>/dice-baselines/issue-520 --rulebook-id 112 --rules-db <operator-root>/rules-clean.sqlite --content-db <operator-root>/content.sqlite --report-dir <private-root>/dice-baselines/issue-520/qa/books/112/out",
+    "independentSemanticReview": "Read exact target4957 input,actual proposed name/body HTML/text,nine clause rows,all normalized mechanics and empty residual ledger;activation-pending separate. Formal fallback does not certify proposal."
+  },
+  "acceptanceStatus": "reviewed-proposal-awaiting-independent-main-gate"
+}
