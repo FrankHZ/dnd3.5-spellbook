@@ -60,6 +60,23 @@ docs. It should not own local DB files or source-bearing data.
 
 ## Preparing A Rulebook QA Batch
 
+The resumed dice milestone uses **High** rigor: multi-publication identity,
+historical evidence reuse and destructive importer ordering can silently lose
+content. The current deliverable is reviewed, unactivated Chinese name/body
+evidence against current DB-English, with complete coverage dispositions and
+explicit unresolved input gaps. Fixed slices may execute with Light ceremony
+within this agreement; reassess rigor at QA and integration boundaries.
+
+QA completes before unified local writer, FTS, API or consumer rehearsal. Release
+requires separately accepted integration, preservation of prior SC content,
+fallback and provenance, a concrete recovery plan, and explicit operator and
+production authorization. Main-gate owns scope/priority changes and staged
+acceptance. Owning issues record exact batches, dependencies and residuals;
+#120, #197, #121 and #420 own QA, identity, activation and engineering integration.
+PHB/PDF work, new entities, summaries, relations, HTML expansion and canonical
+corrections remain excluded unless separately authorized. The Scope and Source
+Of Truth sections above retain authority.
+
 Before dispatch, reconcile the owning issue with the current source rules above
 and [quality tradeoffs](../feature-workflow.md#source-and-quality-tradeoffs).
 Older dice/CHM agreement or English-DB audit labels alone do not prove that a
@@ -96,13 +113,15 @@ accepted book merely because another book is restarting.
    Use the [explicit committed slice contract](./import-workflow.md#independently-reviewable-qa-slices)
    for independently reviewed matched-entry batches, then reconcile complete parent
    coverage through the full-book validator. Unmatched allocation is unsupported.
-5. **Prove the next consumer handoff early.** Reuse maintained validation,
-   import and search stages. SC-specific final overlays and a successful generic
-   content sequence do not prove another book can replace an annotated baseline.
-   Bind any necessary extension to the pilot's actual accepted inputs; preserve
-   prior SC content, fallback and provenance. Use one integration writer, the
-   same maintained execution path for rehearsal and operator apply, and explicit
-   authorization for operator/production changes.
+5. **Prove the consumer handoff after QA acceptance.** Reuse maintained
+   validation, import and search stages in the separately scoped integration
+   milestone. Consumer rehearsal is not a prerequisite for the current QA-first
+   stage. SC-specific final overlays and a successful generic content sequence
+   do not prove another book can replace an annotated baseline. Bind any
+   necessary extension to actual accepted inputs; preserve prior SC content,
+   fallback and provenance. Use one integration writer and the same maintained
+   execution path for rehearsal and operator apply, with a concrete recovery
+   plan and explicit authorization for operator/production changes.
 6. **Keep only useful durable evidence.** Private source/review records and
    acceptance references belong in the data repo; PRs contain source-free
    results, exact revisions and reproducible commands. Reuse accepted evidence
