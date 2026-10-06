@@ -16,15 +16,19 @@ unactivated translations:29 fully Chinese bodies and2 mixed bodies.1930 retains
 its ambiguous penalty-formula sentence;1936 retains a capacity dependency whose
 data is absent in both DB text and HTML. These2 actual DB-English body gaps are
 separate from31 activation gaps. All62 current whole-field English fallbacks
-remain unchanged. Additional source wording conflicts and incomplete normalized
-headers are recorded without canonical repair.
+remain unchanged. The13 remaining unresolved records include the2 body gaps, a component
+terminology conflict, a damage-resistance terminology question and9 incomplete
+normalized-header records. Two preserved wording notes,1879 and1904, are
+nonblocking: concealment grade and miss chance are different concepts, as are
+total sphere count and center-overlap count. Their faithful translations remain
+unchanged; no independent contradiction is asserted.
 
 Private evidence binds416 nonblank English lines to209 exact after segments.
 Formal QA revalidated105 source files and5606 occurrences; pending fields and
 body audits are zero. Strict bindings, HTML, references, numeric/negation/limit
 review, placeholder and repeated-translation checks passed. Single-Node formal
 validation used0.859seconds and278327296bytes peak working set; committed private
-evidence is1252632bytes.39 unrelated staged deletions and1434 unrelated untracked
+evidence is1257773bytes.39 unrelated staged deletions and1434 unrelated untracked
 paths were preserved, verified using complete raw index records.
 
 Formal accepted means validated proposal pending independent main-gate acceptance.

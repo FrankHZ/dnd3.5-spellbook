@@ -15,7 +15,7 @@
     "publicBase": "280ef4ec806d20c76e249c5e142f33a3d829723e",
     "publicQaToolBlob": "168d1e54c9065111835e69ae3f3fb779b47b708f",
     "privatePreparedRevision": "6d28f9391273979a35a6bcc86971f0aac5b9f2c8",
-    "privateEvidenceRevision": "adeae1d1e1ebc82e363386b505abe7ec5243dc3d",
+    "privateEvidenceRevision": "e60a658f111c4e38c8c896560513776317593d9d",
     "sourceRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
     "mappingRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
     "baselineDirectory": "dice-baselines/issue-520",
@@ -192,12 +192,13 @@
       1936
     ],
     "literalEnglishClauseFallbackCount": 2,
-    "proseOrComponentConflicts": 2,
-    "preservedOtherEnglishScopeAmbiguities": 2,
+    "proseOrComponentConflicts": 1,
+    "preservedOtherEnglishScopeAmbiguities": 1,
     "normalizedMechanicsGapRecords": 9,
-    "totalRecords": 15,
-    "uniqueTargets": 14,
-    "distinction": "31 missing-candidate activation gaps are separate from2 body clauses with actual missing/ambiguous DB-English data. Preserved normalized gaps and wording conflicts do not imply unperformed Chinese review."
+    "totalRecords": 13,
+    "uniqueTargets": 12,
+    "distinction": "31 missing-candidate activation gaps are separate from2 body clauses with actual missing/ambiguous DB-English data. Preserved normalized gaps and wording conflicts do not imply unperformed Chinese review.",
+    "nonblockingPreservedWordingNotes": 2
   },
   "unresolved": [
     {
@@ -235,31 +236,11 @@
       "englishLines": []
     },
     {
-      "targetId": 1879,
-      "kind": "DB-concealment-fraction-percent-conflict",
-      "status": "unresolved-source-conflict",
-      "field": "descriptionHtml",
-      "englishLines": [
-        13,
-        14
-      ]
-    },
-    {
       "targetId": 1891,
       "kind": "misplaced-normalized-instantaneous-field",
       "status": "unresolved-mechanics-gap",
       "field": "mechanics",
       "englishLines": []
-    },
-    {
-      "targetId": 1904,
-      "kind": "DB-small-sphere-overlap-wording-ambiguity",
-      "status": "unresolved-English-scope",
-      "field": "descriptionHtml",
-      "englishLines": [
-        2,
-        16
-      ]
     },
     {
       "targetId": 1905,
@@ -439,7 +420,44 @@
     "canonicalEnglishMechanicsOrSummariesChanged": false,
     "pdfReads": 0,
     "paidApiCalls": 0,
-    "dbCopies": 0
+    "dbCopies": 0,
+    "evidenceJudgmentRevision": {
+      "reclassifiedNonblockingTargets": [
+        1879,
+        1904
+      ],
+      "unresolvedRecords": 13,
+      "unresolvedUniqueTargets": 12,
+      "reviewedNamesBodiesAndMechanics": 64,
+      "translationChanges": 0,
+      "canonicalChanges": 0
+    },
+    "evidenceJudgmentBindingReplay": {
+      "priorEvidenceRevision": "adeae1d1e1ebc82e363386b505abe7ec5243dc3d",
+      "judgmentOnlyReclassifiedTargets": [
+        1879,
+        1904
+      ],
+      "translationChanges": 0,
+      "sourceInputChanges": 0,
+      "canonicalChanges": 0,
+      "exactPriorFormalAndUnactivatedAfterRetained": true,
+      "reviewedTargetBindings": 64,
+      "alignedSegments": 209,
+      "nonblankEnglishLines": 416,
+      "formalOccurrences": 38,
+      "unresolvedRecords": 13,
+      "unresolvedUniqueTargets": 12,
+      "nonblockingNotes": 2,
+      "actualBodyGapTargets": [
+        1930,
+        1936
+      ],
+      "current64InputsAnd38CandidatesReplayed": true,
+      "formalCompleteQa": "passed; pending0; no check-incomplete",
+      "unrelatedRawIndexUnchanged": true,
+      "newBookSpecificExecutableFiles": 0
+    }
   },
   "resources": {
     "budget": {
@@ -460,8 +478,8 @@
       "method": "Maintained CLI in one Node process; OS PeakWorkingSet64 sampled every 20ms",
       "formalNpmWallMilliseconds": 1040,
       "npmExitCode": 0,
-      "committedPrivateEvidenceBytes": 1252632,
-      "committedPrivateEvidenceFiles": 32,
+      "committedPrivateEvidenceBytes": 1257773,
+      "committedPrivateEvidenceFiles": 34,
       "newBookSpecificExecutableFiles": 0,
       "startupMeasurementNote": "One initial direct-Node invocation stopped before QA at Windows ESM loader path resolution; corrected path used for successful measurement. No input or schema defect."
     }
@@ -476,6 +494,7 @@
     "dice-baselines/issue-520/qa/books/44/decisions.jsonl",
     "dice-baselines/issue-520/qa/books/44/duplicate-resolutions.jsonl",
     "dice-baselines/issue-520/qa/books/44/full-body-audit.jsonl",
+    "dice-baselines/issue-520/qa/books/44/nonblocking-review-notes.jsonl",
     "dice-baselines/issue-520/qa/books/44/out/accepted.jsonl",
     "dice-baselines/issue-520/qa/books/44/out/coverage.json",
     "dice-baselines/issue-520/qa/books/44/out/current-input-replay.json",
@@ -488,6 +507,7 @@
     "dice-baselines/issue-520/qa/books/44/out/qa-checks.json",
     "dice-baselines/issue-520/qa/books/44/out/repeated-translation-scan.json",
     "dice-baselines/issue-520/qa/books/44/out/resources.json",
+    "dice-baselines/issue-520/qa/books/44/out/review-judgment-check.json",
     "dice-baselines/issue-520/qa/books/44/ownership.json",
     "dice-baselines/issue-520/qa/books/44/preservation.json",
     "dice-baselines/issue-520/qa/books/44/private-commit-message.txt",
@@ -510,7 +530,8 @@
     "inputReplayResult": "passed; exact64 current name/full-body/mechanics/EnglishHTML/CHM snapshots,38 occurrences and prepared intake",
     "semanticEvidenceReplay": "Read the committed translations.txt segment convention, target-inputs.jsonl, semantic-review.json and clause-review.jsonl; expand each authored group and compare exact name/HTML after against formal accepted or unactivated proposal, with matched corrections/full-body audit bindings. No per-book executable added.",
     "semanticResult": "passed;416 nonblank lines and209 aligned segments, final exact after bindings after two clarity edits",
-    "mergeGate": "Full remote ci:portable on exact PR head; stop on failed/cancelled/timed_out without automatic retry"
+    "mergeGate": "Full remote ci:portable on exact PR head; stop on failed/cancelled/timed_out without automatic retry",
+    "judgmentRevisionResult": "passed; all64 current inputs and exact prior afters unchanged;2 nonblocking notes,13 unresolved records, complete formal QA passed again"
   },
   "boundaries": {
     "operatorDbWrites": false,
@@ -524,5 +545,19 @@
     "consumerRehearsal": false,
     "deployment": false,
     "scheduling": "All QA precedes separately authorized unified writer/FTS/API rehearsal. Paused#529 is not a prerequisite. No self-merge or issue closeout."
-  }
+  },
+  "nonblockingReviewNotes": [
+    {
+      "targetId": 1879,
+      "kind": "preserved-concealment-grade-terminology",
+      "status": "reviewed-nonblocking-source-wording",
+      "translationChanged": false
+    },
+    {
+      "targetId": 1904,
+      "kind": "preserved-total-sphere-and-center-overlap-counts",
+      "status": "reviewed-nonblocking-source-wording",
+      "translationChanged": false
+    }
+  ]
 }
