@@ -1,0 +1,163 @@
+{
+  "issue": "https://github.com/FrankHZ/dnd3.5-spellbook/issues/153",
+  "parentIssue": 120,
+  "version": "v1.4",
+  "rulebookId": 39,
+  "authority": "Current matched database English name, available full description/HTML and normalized mechanics; DB-English QA only",
+  "publicBase": "8a60a6fc5a877948931248ccb9c288b0cde94b7a",
+  "privateEvidence": {
+    "revision": "305c5e0a9fea8e0a5ea4243ff76301e33d0eb7ac",
+    "path": "dice-baselines/issue-520/qa/books/39/",
+    "preparedRevision": "6d28f9391273979a35a6bcc86971f0aac5b9f2c8",
+    "sourceMappingRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+    "localCommitOnly": true
+  },
+  "coverage": {
+    "targetIds": [
+      980,
+      981,
+      982,
+      983,
+      984,
+      985,
+      986,
+      987,
+      988,
+      989,
+      990,
+      991,
+      992
+    ],
+    "targets": 13,
+    "ownedOccurrences": 14,
+    "matchedTargets": 13,
+    "unmatchedOwnedOccurrences": 0,
+    "existingChmNames": 0,
+    "existingChmBodies": 0,
+    "reviewedNames": 13,
+    "reviewedAvailableBodies": 13,
+    "completeBodyProposals": 12,
+    "formalNameProposals": 13,
+    "formalBodyProposals": 12,
+    "reviewedUnactivatedAvailableBodies": 1,
+    "englishNonblankLines": 86,
+    "actualAfterSegments": 84,
+    "pendingSemanticReviews": 0,
+    "englishDamageTableGaps": 1,
+    "unparsedBoundaries": 0
+  },
+  "duplicateResolution": {
+    "targetId": 982,
+    "occurrencesComparedCompletely": 2,
+    "selectedOccurrence": {
+      "ordinal": 6,
+      "startLine": 79
+    },
+    "excludedOccurrence": {
+      "ordinal": 55,
+      "startLine": 763
+    },
+    "basis": "Same identity and body mechanics; selected occurrence contains the DB English supersession note omitted by the other. Both full inputs and comparisons retained privately; explicit maintained duplicate resolution. No filename/publication filtering."
+  },
+  "residuals": [
+    {
+      "targetId": 989,
+      "kind": "missing-English-damage-table",
+      "affectedScope": [
+        "complete body damage categories, dice and caps"
+      ],
+      "disposition": "Both current English text and HTML lack table rows. All available clauses translated and bound; body not accepted, no candidate table injected; retain English body fallback."
+    },
+    {
+      "targetId": 982,
+      "kind": "normalized-domain-level-missing",
+      "affectedScope": [
+        "normalized class/domain level"
+      ],
+      "disposition": "Both current normalized level arrays empty; candidate-only level not inserted. Complete body remains supported; canonical mechanics unchanged."
+    }
+  ],
+  "fallback": {
+    "targetId": 989,
+    "field": "descriptionHtml",
+    "status": "English",
+    "activation": false
+  },
+  "verification": {
+    "formalCommandComplete": true,
+    "checkIncompleteUsed": false,
+    "sourceFilesRevalidated": 105,
+    "globalOccurrencesRevalidated": 5606,
+    "inputAfterSegmentBinding": {
+      "targets": 13,
+      "occurrences": 14,
+      "englishLines": 86,
+      "afterSegments": 84,
+      "passed": true
+    },
+    "currentEnglishMechanicsHtmlChmReplay": true,
+    "preparedIntakeExactReplay": true,
+    "htmlReferenceAndPlaceholderChecks": "passed",
+    "numericalConditionalNegativeScopeReview": "all targets individually reviewed",
+    "digitOnlyDifferences": 3,
+    "digitOnlyDifferencesDisposed": 3,
+    "repeatedAfterGroups": 0,
+    "unexpectedLatinResidue": 0,
+    "portableTests": "npm run -w data-tools dice:qa:test passed",
+    "diffChecks": "private owned directory and public diff passed"
+  },
+  "resources": {
+    "command": "node --import tsx data-tools/src/dice-intake/qa.ts (same complete formal arguments as npm script)",
+    "processes": 1,
+    "elapsedSeconds": 0.8767234,
+    "sampledPeakWorkingSetBytes": 277340160,
+    "pollingMs": 20,
+    "samples": 26,
+    "exitCode": 0,
+    "budgetSeconds": 60,
+    "budgetMemoryBytes": 536870912,
+    "privateByteCap": 5242880,
+    "paidExternalApiCalls": 0,
+    "privateEvidenceBytes": 1658643,
+    "privateEvidenceFiles": 27,
+    "initialPrivateEstimateBytes": 2097152,
+    "complexity": "O(full ledger + book text)",
+    "newEnvironments": 0,
+    "databaseCopies": 0
+  },
+  "privatePreservation": {
+    "unrelatedIndexEntriesEqual": true,
+    "unrelatedRawStagedRecordsEqual": true,
+    "unrelatedStatusesEqual": true,
+    "unrelatedStagedDeletions": 39,
+    "originalUntrackedPathsPreserved": 1441,
+    "commitBoundary": "dice-baselines/issue-520/qa/books/39/",
+    "method": "Full raw index modes/blob IDs/path records and status equality outside owned directory; full old untracked path set equality"
+  },
+  "reviewer": {
+    "threadId": "01a10ec2-f229-7d23-8fb7-201543799182",
+    "model": "gpt-6.1-sol",
+    "reasoningEffort": "high",
+    "verification": "Read-only local rollout turn_context",
+    "humanReview": false
+  },
+  "boundaries": {
+    "operatorDatabaseAccess": "readonly/query_only",
+    "canonicalEnglishMechanicsSummaryChanged": false,
+    "appStateAccess": false,
+    "sharedSourceMapAliasIntakeChanged": false,
+    "otherBookWrites": false,
+    "writerChanged": false,
+    "consumerRehearsal": false,
+    "paused529Resumed": false,
+    "pdfOriginalBookVerification": false,
+    "privatePush": false,
+    "deployment": false,
+    "selfMergeOrClose": false
+  },
+  "reproduce": {
+    "formal": "npm run -w data-tools dice:qa -- --data-root G:/spell-book/data --baseline-dir G:/spell-book/data/dice-baselines/issue-520 --rules-db G:/spell-book/dnd3.5-spellbook/server/db/local/rules-clean.sqlite --content-db G:/spell-book/dnd3.5-spellbook/server/db/local/content.sqlite --rulebook-id 39 --report-dir G:/spell-book/data/dice-baselines/issue-520/qa/books/39/out",
+    "portable": "npm run -w data-tools dice:qa:test"
+  },
+  "acceptance": "Validated proposal awaiting independent main-gate review; full remote ci:portable must pass at final exact public head. Residuals mean Refs #153, not Closes."
+}
