@@ -1,0 +1,11 @@
+row,priorOwner,localEnglishAvailable,disposition,webPublicationConflict,activation
+1,63,true,publication-version-dependency,true,false
+2,63,false,web-reference-text-dependency,true,false
+3,63,true,publication-version-dependency,true,false
+4,63,false,web-reference-text-dependency,true,false
+5,63,false,web-reference-text-dependency,true,false
+6,63,false,web-reference-text-dependency,true,false
+7,63,false,web-reference-text-dependency,true,false
+8,63,true,publication-version-dependency,true,false
+9,63,true,publication-version-dependency,true,false
+10,64,true,proposed-baseline-awaiting-acceptance,false,false
