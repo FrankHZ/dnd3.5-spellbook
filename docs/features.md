@@ -2,9 +2,9 @@
 
 This document describes the current user-facing feature surface.
 
-Use it as the stable functional map for maintenance and harness work. For final
-v3.3 release details and intentional deviations from earlier plans, use
-`docs/mvp/v3.3/FREEZE.md`.
+Use it as the stable functional map for maintenance and harness work. The
+[v1.4 content acceptance](releases/v1.4/ACCEPTANCE.md) records the delivered data
+scope and its exclusions; historical release snapshots do not override this map.
 
 ## Data Backing Boundary
 
@@ -374,6 +374,11 @@ Current behavior:
 - backend requests receive language query parameters
 - spell endpoints may also receive a Chinese variant query parameter
 - Chinese entity names and spell text are supplied by app-owned overlay data
+- default Chinese spell reads use accepted effective fields, with retained CHM
+  or English fallback where a field was not accepted; explicit `chm` requests
+  remain available
+- SC keeps its source-bound acceptance; other accepted Chinese names/bodies may
+  be reviewed against database English, which is not original-book verification
 - English remains the fallback baseline
 
 Key code:
@@ -476,6 +481,18 @@ Key code:
 - `web/app/components/ui/sonner.tsx`
 - `web/app/components/ui/navigation-menu.tsx`
 - `web/app/components/ui/sheet.tsx`
+
+## Offline SC HTML
+
+The local exporter produces Chinese pages suitable for replacing the SC section
+of a CHM: class lists grouped by spell level, complete accepted domain lists and
+powers, and A–Z body pages with stable spell anchors. Spell titles retain English
+names and links to the website. These are grouped pages, not one page per spell.
+
+Cross-book domain entries retain their accepted version bindings; they do not
+extend full-body QA to those books. Generated source-bearing HTML remains outside
+the public code repository. Export usage and inputs belong in
+[offline HTML operations](operations/offline-html.md).
 
 ## Non-Goals
 

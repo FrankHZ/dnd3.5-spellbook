@@ -33,6 +33,8 @@ npm run -w web dev
   scope, acceptance, dependencies and unresolved decisions. PRs and checks own
   implementation evidence; Git records actual files and history.
 - [Documentation](docs/README.md) links current behavior and operations by task.
+- [v1.4 content acceptance](docs/releases/v1.4/ACCEPTANCE.md) defines the shipped
+  SC and DB-English QA boundary, retained fallback, and release-label caveat.
 - Workspace setup and usage: [server](server/README.md), [web](web/README.md),
   [contracts](contracts/README.md), [data-tools](data-tools/README.md).
 - The [review console](review-console/README.md) is a private localhost workspace
