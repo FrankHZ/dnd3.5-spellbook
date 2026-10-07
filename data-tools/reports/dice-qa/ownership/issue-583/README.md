@@ -3,14 +3,14 @@
 [Issue #583](https://github.com/FrankHZ/dnd3.5-spellbook/issues/583) selects all
 36 original ordinal occurrences in the assigned Warcraft RPG file, currently
 without an owner. Every complete header/body and boundary was read, alongside
-40 current DB-English bodies, mechanics and HTML versions across 11 publications,
-47 complete outside peer contexts and one peer within the selected slice.
+44 current DB-English bodies, mechanics and HTML versions across 12 publications,
+51 complete outside peer contexts and one peer within the selected slice.
 
 | Outcome | Occurrences |
 | --- | ---: |
 | Current DB homonym with no equivalent whole envelope | 4 |
-| Concrete related versions with materially different mechanics | 21 |
-| No current identity lead after bounded lookup | 11 |
+| Concrete related versions with materially different mechanics | 24 |
+| No current identity lead after bounded lookup | 8 |
 | Supported existing-version reference or actual identity deferral | 0 |
 
 All 36 are bounded current-inventory missing findings. This does not claim
@@ -23,13 +23,21 @@ not alone prove identity. No Chinese semantic field is accepted.
 Lookup covers all 5,097 current English names using nonempty normalization,
 maintained global aliases and intake hints, exact nonempty Chinese names across
 stored variants, and normalized peer names across 5,606 frozen candidates.
-Specific word-boundary body signatures supplement 15 entries still unlinked
-after the first concrete expansion; their two hits were read and compared. Concrete lexical/body leads and
-inherited parents expand the initial seven versions / 5,777 English characters
+Specific word-boundary signatures, including stun/daze inflections, supplement
+15 entries. Four body-query comparison inputs were read; one broad transformation
+false positive remains a main-gate reference. Equipment/light and slot-loss
+borrowing supply additional complete comparisons. Concrete lexical/body leads
+and inherited parents expand the initial seven versions / 5,777 English characters
 and 12 outside peers / 4,707 raw characters. Final related English volume is
-33,553 characters; selected raw headers/bodies total 12,312 and outside peers
-17,839. This is a bounded identity search, not an exhaustive semantic comparison
+39,185 characters; selected raw headers/bodies total 12,312 and outside peers
+19,950. This is a bounded identity search, not an exhaustive semantic comparison
 of every differently named spell. Peer coverage and acceptance remain unchanged.
+
+Condition evidence for ordinals 32/33 preserves inability to act while normal
+defense is retained, without assigning a canonical condition. Ordinals 21/29/33
+have concrete existing-version leads with materially different whole envelopes.
+All unaffected previously reviewed rows and earlier input envelopes are bound
+unchanged.
 
 Source internal targeting/formula/component ambiguities, one absent header book
 label, an edition comment, and a related DB damage-table gap remain private,
@@ -64,13 +72,14 @@ Raw before/after NUL index mode/blob/stage/path, status and untracked records
 preserve all nonowned bytes, including 39 staged deletions and 1,441 untracked
 paths. All 21 original NUL audit files from #571/#573/#575/#577/#579/#581 were
 directly retained in memory and compared byte-for-byte without backups; their
-size and exact nanosecond mtime remain bound. Existing ignored configuration and
-runtime match retained #577 evidence. Only the assigned new private directory
+size and exact nanosecond mtime remain bound. The six original #583 NUL
+snapshots are also retained byte-for-byte, making 27 protected audit files.
+Existing ignored configuration and runtime match retained #577 evidence. Only the assigned new private directory
 is committed with explicit owned staging and `commit --only`; no private push.
 
 Replay uses the existing runtime, one data process, no corpus/DB copy, installs,
 external collection or paid API. A small temporary protection observer held
-prior audit bytes in memory only. Measured replay is about 3.4 seconds / 382 MiB
+prior audit bytes in memory only. Measured replay is about 3.8 seconds / 372 MiB
 peak RSS, private evidence below 1 MiB and ignored output below 3 MiB, within
 60 seconds / 512 MiB / respective 3 MiB budgets. Actual local rollout metadata
 reports GPT-6.1 Sol/high; independent main-gate verification remains required.

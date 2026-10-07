@@ -72,13 +72,13 @@ for(const boundary of boundaries){const f=files.find(f=>f.parsed.file===boundary
  assert(same(boundary.selected,selected.filter(t=>t.file===boundary.file).map(t=>({sourceKey:t.sourceKey,ordinal:t.ordinal,startLine:t.startLine,endLine:t.endLine,suspectedBoundaryLines:t.suspectedBoundaryLines}))));
 }
 const inputs=rows(owned+'/related-db-inputs.jsonl'),lookups=rows(owned+'/identity-lookups.jsonl'),canon=(s:string)=>s?.toLowerCase().replace(/[^a-z]/g,'')??'';
-assert.equal(inputs.length,40);assert.equal(inputs.reduce((n,t)=>n+t.english.description.length,0),33553);
-assert.equal(new Set(inputs.map(d=>d.book.id)).size,11);
+assert.equal(inputs.length,44);assert.equal(inputs.reduce((n,t)=>n+t.english.description.length,0),39185);
+assert.equal(new Set(inputs.map(d=>d.book.id)).size,12);
 assert(same(m.publications.books,books.filter(b=>inputs.some(t=>t.book.id===b.id))));
 assert(same(m.publications.editions,(rules.prepare('SELECT * FROM dnd_dndedition').all() as any[]).filter(e=>inputs.some(t=>t.book.editionId===e.id))));
 for(const d of inputs){assert(same(d.english,english.get(d.targetId))&&same(d.book,books.find(b=>b.id===d.book.id))&&same(d.chinese,zh.filter(t=>t.spellId===d.targetId)));const h:any=rules.prepare('SELECT CAST(description_html AS BLOB) AS html FROM dnd_spell WHERE id=?').get(d.targetId);assert.equal(d.englishHtml,h.html?.toString('utf8')??null);}
 // These IDs encode only the manually inspected concrete lexical/body leads.
-const extraIds:Record<number,number[]>={1:[2305,2809],3:[2624],4:[1741],5:[4087],7:[2873,2755],8:[2748],9:[2750],10:[2745],12:[2807,2854],13:[2831],14:[2831],15:[1311,2405],16:[2612],19:[2610],22:[1205],23:[2624],24:[665,667],26:[720,1444],27:[2475],34:[572],35:[660],36:[2823]};
+const extraIds:Record<number,number[]>={1:[2305,2809],3:[2624],4:[1741],5:[4087],7:[2873,2755],8:[2748],9:[2750],10:[2745],12:[2807,2854],13:[2831],14:[2831],15:[1311,2405],16:[2612],19:[2610],21:[2733],22:[1205],23:[2624],24:[665,667],26:[720,1444],27:[2475],29:[2676],33:[4791,4793],34:[572],35:[660],36:[2823]};
 const aliasMap=JSON.parse(bound('chm-mapping/enName-aliases-global.json',m.sourceRevision));
 for(const [i,l] of lookups.entries()){
  const s=selected[i],aliasNames=Object.entries(aliasMap).filter(([from])=>canon(from)&&canon(from)===canon(s.enName)).map(([,to])=>to),leadNames=(extraIds[i+1]??[]).map(id=>english.get(id)!.name),names=[...new Set([s.enName,...aliasNames,...leadNames].filter(n=>canon(n)))];
@@ -88,13 +88,16 @@ for(const [i,l] of lookups.entries()){
  assert(same(l.relatedTargetIds,ids));assert(same(l.peerSourceKeys,candidates.filter(t=>t.sourceKey!==s.sourceKey&&names.some(n=>canon(n)&&canon(n)===canon(t.enName))).map(t=>t.sourceKey)));
 }
 const signatures=rows(owned+'/body-signature-lookups.jsonl');assert(same(signatures.map(t=>t.row),[5,6,7,12,17,18,20,21,25,28,29,31,32,33,36]));
-for(const q of signatures){assert(q.terms.length>=2&&q.terms.every((t:string)=>t.length>0));const hits=[...english].filter(([,e])=>q.terms.every((t:string)=>new RegExp('\\b'+t+'\\b','i').test(e.description))).map(([targetId,e])=>({targetId,name:e.name}));assert(same(q.hits,hits));assert(q.hits.every((t:any)=>lookups[q.row-1].relatedTargetIds.includes(t.targetId)));}
+for(const q of signatures.filter(t=>[32,33].includes(t.row)))assert(same(q.terms,[q.row===33?'hammer':'totem','(?:stun|daz)']));
+for(const q of signatures){assert(q.terms.length>=2&&q.terms.every((t:string)=>t.length>0));const hits=[...english].filter(([,e])=>q.terms.every((t:string)=>new RegExp('\\b'+t+([32,33].includes(q.row)?'':'\\b'),'i').test(e.description))).map(([targetId,e])=>({targetId,name:e.name}));assert(same(q.hits,hits));const excluded=q.excludedFalsePositiveTargetIds??[];assert(same(excluded,q.row===33?[3983]:[]));assert(q.hits.every((t:any)=>lookups[q.row-1].relatedTargetIds.includes(t.targetId)||excluded.includes(t.targetId)));}
 
-assert(same([...new Set(lookups.flatMap(l=>l.relatedTargetIds))],inputs.map(t=>t.targetId)));
+assert(same([...new Set(lookups.flatMap(l=>l.relatedTargetIds))].sort((a,b)=>a-b),inputs.map(t=>t.targetId).sort((a,b)=>a-b)));
 const selectedKeys=new Set(selected.map(t=>t.sourceKey)),peers=rows(owned+'/duplicate-peers.jsonl'),comparisons=rows(owned+'/duplicate-comparison.jsonl');
-assert.equal(peers.length,47);assert.equal(peers.reduce((n,t)=>n+t.rawHeader.length+t.rawBody.length,0),17839);
-assert(same(peers,candidates.filter(t=>!selectedKeys.has(t.sourceKey)&&lookups.some(l=>l.peerSourceKeys.includes(t.sourceKey)))));
-assert(same(comparisons.map(t=>[t.row,t.peerSourceKey]),lookups.flatMap(l=>l.peerSourceKeys.map((k:string)=>[l.row,k]))));
+assert.equal(peers.length,51);assert.equal(peers.reduce((n,t)=>n+t.rawHeader.length+t.rawBody.length,0),19950);
+const byKey=(a:any,b:any)=>a.sourceKey.localeCompare(b.sourceKey);
+assert(same([...peers].sort(byKey),candidates.filter(t=>!selectedKeys.has(t.sourceKey)&&lookups.some(l=>l.peerSourceKeys.includes(t.sourceKey))).sort(byKey)));
+const byPair=(a:any[],b:any[])=>a[0]-b[0]||a[1].localeCompare(b[1]);
+assert(same(comparisons.map(t=>[t.row,t.peerSourceKey]).sort(byPair),lookups.flatMap(l=>l.peerSourceKeys.map((k:string)=>[l.row,k])).sort(byPair)));
 assert.equal(comparisons.filter(d=>d.withinSelection).length,1);
 for(const d of comparisons){const a=selected[d.row-1],b=[...peers,...selected].find(t=>t.sourceKey===d.peerSourceKey)!;assert(b&&a.sourceKey===d.sourceKey&&d.rawBodyEqual===(a.rawBody===b.rawBody)&&d.bodyTextEqual===(a.bodyText===b.bodyText));assert.equal(d.withinSelection,selectedKeys.has(b.sourceKey));const prior=[...selected,...peers.slice(0,peers.indexOf(b))].find(t=>t.rawBody===b.rawBody);assert.equal(d.exactPeerBodyReuseSourceKey,prior?.sourceKey??null);assert(d.completeRawHeaderRead&&d.fullDifferingBodyRead&&d.peerDispositionUnchanged&&d.comparison.trim().length>0);}
 
@@ -107,8 +110,8 @@ for(const ref of inherited){if(!cache.has(ref.path))cache.set(ref.path,bound(ref
 const ds=rows(owned+'/dispositions.jsonl'),homonyms=[2,3,11,30];
 assert.equal(ds.length,36);assert(ds.every(d=>d.intendedVersion===null));
 assert.equal(ds.filter(d=>d.reasonCode==='homonym-no-counterpart').length,4);
-assert.equal(ds.filter(d=>d.reasonCode==='distinct-mechanics-no-counterpart').length,21);
-assert.equal(ds.filter(d=>d.reasonCode==='no-current-identity-lead').length,11);
+assert.equal(ds.filter(d=>d.reasonCode==='distinct-mechanics-no-counterpart').length,24);
+assert.equal(ds.filter(d=>d.reasonCode==='no-current-identity-lead').length,8);
 for(const [i,d] of ds.entries()){
  const s=selected[i],l=lookups[i];assert.equal(d.row,i+1);for(const k of ['sourceKey','file','ordinal','startLine','endLine'])assert.equal(d[k],s[k]);
  assert.equal(d.status,'bounded-current-inventory-missing');assert.equal(d.reasonCode,homonyms.includes(i+1)?'homonym-no-counterpart':l.relatedTargetIds.length?'distinct-mechanics-no-counterpart':'no-current-identity-lead');
@@ -117,21 +120,32 @@ for(const [i,d] of ds.entries()){
  assert(same(d.sourcePublication.labels,s.sourceBookLabels)&&same(d.sourcePublication.mappedClaims,s.publicationRulebookIds)&&d.sourcePublication.nativeRulebook===null&&!d.sourcePublication.exactPublicationAuthenticated);
  assert(d.lookupCoverage.existingTargets===5097&&d.lookupCoverage.frozenCandidates===5606&&d.lookupCoverage.limitations.length>180&&same(d.lookupCoverage.searchNames,l.searchNames));
  assert(same(d.parentSourceKeys,[9,10].includes(i+1)?[selected[7].sourceKey]:i+1===14?[selected[12].sourceKey]:[]));
+ if([32,33].includes(i+1)){assert(d.sourceConditionInterpretation.behavior.length>0&&d.sourceConditionInterpretation.canonicalConditionAssigned===null&&!d.sourceConditionInterpretation.candidateLabelAuthenticated);}
  for(const a of d.locators){assert(a.file===s.file&&a.line>s.startLine&&a.line<=s.endLine&&a.text===s.rawBody.split('\n')[a.line-s.startLine-1]&&a.text.includes(a.needle));}
 }
+// Preserve the independently reviewed inputs and every unaffected decision.
+const previous='1ce1d9be1c46c4a82972f4f8e81355af21943fc1';
+const previousRows=(name:string)=>git('show',previous+':'+rel+'/'+name+'.jsonl').toString('utf8').trim().split(/\r?\n/).map(JSON.parse);
+assert.equal(m.reviewCorrection.previousEvidenceRevision,previous);
+assert(same(m.reviewCorrection.affectedRows,[21,29,32,33])&&same(m.reviewCorrection.addedTargetIds,[2733,2676,4791,4793]));
+assert(same(m.reviewCorrection.mainGateExcludedFalsePositiveReferences.map((t:any)=>t.targetId),[3983,1863,4142,3908]));
+assert(same(previousRows('related-db-inputs'),inputs.slice(0,40))&&same(previousRows('duplicate-peers'),peers.slice(0,47))&&same(previousRows('duplicate-comparison'),comparisons.slice(0,52)));
+for(const [i,d] of previousRows('dispositions').entries())if(![21,29,32,33].includes(i+1))assert(same(d,ds[i]));
+for(const [i,l] of previousRows('identity-lookups').entries())if(![21,29,33].includes(i+1))assert(same(l,lookups[i]));
+for(const n of ['occurrences','accepted-sc-references','inherited-input-bindings','input-gaps'])assert(same(previousRows(n),rows(owned+'/'+n+'.jsonl')));
 const refs=json(owned+'/unactivated-references.json');assert(!refs.activation&&!refs.applied&&!refs.semanticAcceptance&&[refs.mapChanges,refs.aliasChanges,refs.newEntities,refs.references,refs.deferredKeys].every(a=>a.length===0)&&same(refs.boundedMissingKeys,selected.map(t=>t.sourceKey)));
 const gaps=rows(owned+'/input-gaps.jsonl');assert(same(gaps.map(t=>t.row??t.targetId),[23,7,31,33,1311]));assert.equal(selected[22].sourceBookLabels.length,0);
 const out=repoRoot()+'/data-tools/out/issue-583',audit:any={};
 const records=(b:Buffer)=>{assert.equal(b[b.length-1],0);const a:Buffer[]=[];let last=0;for(let i=0;i<b.length;i++)if(b[i]===0){a.push(b.subarray(last,i+1));last=i+1;}return a;};
 for(const [label,args] of [['index',['ls-files','--stage','-z']],['status',['status','--porcelain=v1','-z','--untracked-files=all']],['untracked',['ls-files','--others','--exclude-standard','-z']]] as const){const filter=(b:Buffer)=>records(b).filter(v=>{const s=v.toString('utf8');assert(label!=='status'||(!s.startsWith('R')&&!s.startsWith('C')));const p=label==='index'?s.slice(s.indexOf('\t')+1,-1):label==='status'?s.slice(3,-1):s.slice(0,-1);return !p.startsWith(rel+'/');});const before=readFileSync(out+'/'+label+'-before.nul'),after=git(...args);const retainedAfter=readFileSync(out+'/'+label+'-after.nul');assert(Buffer.concat(filter(before)).equals(Buffer.concat(filter(retainedAfter))),'retained nonowned raw NUL drift '+label);assert(Buffer.concat(filter(before)).equals(Buffer.concat(filter(after))),'nonowned raw NUL drift '+label);audit[label]=filter(before).length;if(label==='status')assert.equal(records(before).filter(t=>t.toString('utf8').startsWith('D ')).length,39);}
 assert.equal(audit.untracked,1441);
-const protection=json(owned+'/private-state-protection.json');assert(protection.priorAuditBytesEqual&&protection.priorAuditFiles.length===21);for(const f of protection.priorAuditFiles){assert.equal(statSync(repoRoot()+'/'+f.path).size,f.size);assert.equal(statSync(repoRoot()+'/'+f.path,{bigint:true}).mtimeNs.toString(),f.mtimeNs);assert.equal(statSync(repoRoot()+'/'+f.path).mtimeMs,f.mtimeMs);}
+const protection=json(owned+'/private-state-protection.json');assert(protection.priorAuditBytesEqual&&protection.reviewCorrectionAuditBytesEqual&&protection.priorAuditFiles.length===27);for(const f of protection.priorAuditFiles){assert.equal(statSync(repoRoot()+'/'+f.path).size,f.size);assert.equal(statSync(repoRoot()+'/'+f.path,{bigint:true}).mtimeNs.toString(),f.mtimeNs);assert.equal(statSync(repoRoot()+'/'+f.path).mtimeMs,f.mtimeMs);}
 assert(readFileSync(repoRoot()+'/.env').equals(readFileSync(repoRoot()+'/data-tools/out/issue-577/env-before.bin')));
 const runtime=lstatSync(repoRoot()+'/node_modules');assert(same({size:runtime.size,mtimeMs:runtime.mtimeMs,isLink:runtime.isSymbolicLink()},json(repoRoot()+'/data-tools/out/issue-577/runtime-before.json')));
 rules.close();content.close();assert(same(stats(),m.readonly.databases));
 const publicRoot=repoRoot()+'/data-tools/reports/dice-qa/ownership/issue-583',summary=json(owned+'/review-summary.json'),publicSummary=json(publicRoot+'/summary.json');assert(same(summary,publicSummary.results));if(process.argv[2])assert.equal(publicSummary.privateEvidenceRevision,process.argv[2]);
 assert(same(readFileSync(publicRoot+'/dispositions.csv','utf8').trim().split(/\r?\n/).slice(1),ds.map(d=>[d.row,d.ordinal,d.startLine,d.endLine,d.status,d.reasonCode,d.intendedVersion?.targetId??'',d.intendedVersion?.rulebookId??'',false,0,false].join(','))));
-const inspection=rows(owned+'/html-inspection.jsonl');for(const h of inspection){const d=inputs.find(t=>t.targetId===h.targetId),$=cheerio.load(d.englishHtml??'');assert.equal(h.tableCount,$('table').length);assert.equal(h.imageCount,$('img').length);assert.equal(h.imageCount,0);assert.equal(h.tableCount,0);assert.equal(h.tableRows,$('tr').length);assert.equal(h.text,$('body').text());}assert.equal(inspection.length,40);
+const inspection=rows(owned+'/html-inspection.jsonl');for(const h of inspection){const d=inputs.find(t=>t.targetId===h.targetId),$=cheerio.load(d.englishHtml??'');assert.equal(h.tableCount,$('table').length);assert.equal(h.imageCount,$('img').length);assert.equal(h.imageCount,0);assert.equal(h.tableCount,0);assert.equal(h.tableRows,$('tr').length);assert.equal(h.text,$('body').text());}assert.equal(inspection.length,44);assert(same(previousRows('html-inspection'),inspection.slice(0,40)));
 const bytes=(p:string):number=>readdirSync(p,{withFileTypes:true}).reduce((n,f)=>n+(f.isDirectory()?bytes(p+'/'+f.name):statSync(p+'/'+f.name).size),0);
 assert(bytes(owned)<3*1024*1024&&bytes(out)<3*1024*1024&&process.resourceUsage().maxRSS<512*1024&&performance.now()-started<60000);
-console.log(JSON.stringify({status:'PASS',selected:36,boundedMissing:36,dbHomonyms:4,supported:0,reviewedDeferrals:0,relatedTargets:40,outsidePeers:47,scAcceptedEnvelopes:9,parentUnseenCurrent:2007,parentUnseenAfterAcceptance:1971,nativeAttached:0,newAcceptedFields:0,queryOnly:[1,1],privateStatePreserved:true,audit,privateBytes:bytes(owned),temporaryBytes:bytes(out),seconds:(performance.now()-started)/1000,maxRssKiB:process.resourceUsage().maxRSS}));
+console.log(JSON.stringify({status:'PASS',selected:36,boundedMissing:36,dbHomonyms:4,supported:0,reviewedDeferrals:0,relatedTargets:44,outsidePeers:51,scAcceptedEnvelopes:9,correctedRows:[21,29,32,33],unchangedEvidencePreserved:true,parentUnseenCurrent:2007,parentUnseenAfterAcceptance:1971,nativeAttached:0,newAcceptedFields:0,queryOnly:[1,1],privateStatePreserved:true,audit,privateBytes:bytes(owned),temporaryBytes:bytes(out),seconds:(performance.now()-started)/1000,maxRssKiB:process.resourceUsage().maxRSS}));
