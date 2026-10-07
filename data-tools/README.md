@@ -177,3 +177,9 @@ uses `dice:final:write -- ... --accepted-source-pairs --upgrade-source-pairs`
 with the existing accepted English-title/summary flags and exact full predecessor.
 It authenticates the fixed source decision and changes only its paired fields;
 operator migration and display selection retain their owning acceptance gates.
+
+Use `dice:closeout:write` for the authenticated non-SC accepted field handoff,
+readonly by default and `--apply` only under the owning local write authorization.
+It preserves SC and existing CHM, composes honest fallback and coordinates atomic
+overlay plus maintained FTS recovery. See [accepted non-SC closeout](../docs/operations/import-workflow.md#accepted-non-sc-dice-closeout).
+Run `dice:closeout:write:test` for synthetic transaction, recovery and path checks.

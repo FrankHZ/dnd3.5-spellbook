@@ -130,7 +130,9 @@ accepted book merely because another book is restarting.
    commit; they do not assert that missing Git history was recovered. The
    selective writer must rerun this authenticator and compare exact target
    state, rather than treating generated JSONL or historical global exports as
-   write authority. See the [closeout handoff](./import-workflow.md#closed-dice-qa-handoff).
+   write authority. See the [closeout handoff](./import-workflow.md#closed-dice-qa-handoff)
+   and its [selective local writer](./import-workflow.md#accepted-non-sc-dice-closeout),
+   which reuses the pilot's transaction, protection and maintained search stages.
 6. **Keep only useful durable evidence.** Private source/review records and
    acceptance references belong in the data repo; PRs contain source-free
    results, exact revisions and reproducible commands. Reuse accepted evidence

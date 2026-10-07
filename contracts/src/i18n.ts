@@ -37,6 +37,8 @@ export type SpellFieldProvenance = {
     originalEntryReviewed: true; sourceQuestionIds: string[] } | {
       kind: "DB-English"; disposition: "DB-English-reviewed"; acceptedRevision: string;
       composition?: "Chinese" | "mixed";
+      authority?: "native-db-english" | "recovered-db-english" | "independent-db-english";
+      unresolved?: {ownerIssues: number[]};
       residual?: {kind: "retained-DB-English"; clauses: 1; ownerIssue: 160};
     };
   /** Current reviewed body authority; origin below is the original field owner. */

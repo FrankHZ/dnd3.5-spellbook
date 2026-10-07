@@ -668,6 +668,20 @@
       "requiresLocalData": false,
       "requiresSqlite": false,
       "writeCapable": false
+    },
+    "dice:closeout:write": {
+      "module": "zh-parser",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "dice:closeout:write:test": {
+      "module": "zh-parser",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": false
     }
   }
 }

@@ -1405,3 +1405,55 @@ explicit resumption scope should read the retained
 and [console operation boundary](../../review-console/README.md).
 Existing fingerprints, source-authority rules, and terminal gates remain
 required. Old residuals and unmerged PR #113 outputs are not accepted inputs.
+
+
+## Accepted Non-SC Dice Closeout
+
+The closed QA round is consolidated by `dice:closeout:check`. The selective
+writer directly calls that maintained authenticator on every transaction
+snapshot; serialized inspection JSON is not write authority. It accepts only
+fixed independently accepted name/body fields. Recovered historical evidence
+retains its recovery identity and does not claim restored Git continuity.
+SC book 86 and every existing SC target ID are excluded, including a source
+record that incorrectly labels an SC target as another book.
+
+From the intended checkout, use the same command for check, local application
+and exact-after recovery (all paths below are absolute placeholders):
+
+```powershell
+npm run -w data-tools dice:closeout:write -- --data-root <private-data-root> --rules-db <rules.sqlite> --content-db <content.sqlite> --report-dir <private-data-root>/dice-handoffs/issue-587/check
+```
+
+Check is read-only for both databases. Each invocation requires a fresh report
+directory. After accepting its exact inputs and target/field counts, add
+`--apply` and choose a fresh report directory. Local operator application belongs
+to main-gate after PR acceptance; production activation still needs its separate
+authorization. The implementation task applies only synthetic fixtures.
+
+This path inserts previously absent Chinese `effective` rows and preserves all
+preexisting localized rows. An unaccepted name/body is composed from its actual
+CHM field, or canonical English when Chinese is absent, with fallback provenance
+and no accepted-review label. Accepted fields keep native, independent or
+recovered DB-English authority separate. Mixed accepted bodies retain their
+literal English and unresolved issue owners. Canonical English, mechanics,
+summaries, relationships, publication metadata and all SC evidence stay unchanged.
+
+Overlay rows and the additional build annotation commit atomically after source
+reauthentication and exact protected-state comparison. Full normalized generation
+and existing SC annotations retain their original values. The maintained search
+step then commits derived FTS separately and checks actual documents and storage
+integrity. Reports distinguish these two stages. If overlay validation fails,
+its transaction rolls back. If search fails after the overlay commits, rerun the
+same command against the same accepted inputs: only an exact authenticated after
+state can resume search. Partial, foreign or changed effective rows fail closed.
+A complete repeat changes neither overlays/timestamps nor a current search index.
+Do not delete effective rows, rerun CHM import, regenerate normalized content,
+or pass an edited report to recover a failed stage.
+
+The bounded run needs no full operator database copy. Portable tests cover
+transaction rollback, changed sources/predecessors, SC protection, interrupted
+FTS and no-op repeat. HTTP tests cover default/effective/CHM/English detail,
+browse and search, safe field metadata and unchanged SC responses. Keep real
+source-bearing input and operator verification results inside the private data
+root. Missing-English and unreviewed material remains deferred to its owning
+issues; this writer does not reopen QA or add entities.
