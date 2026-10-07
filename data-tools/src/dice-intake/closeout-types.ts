@@ -57,5 +57,7 @@ export type DiceCloseout = {
     peakRssKiB: number;
     operatorWrites: false;
     historicalContinuityAuthenticated: false;
+    referenceSnapshotsChecked: number;
+    historicalComparisonsBound: number;
   };
 };

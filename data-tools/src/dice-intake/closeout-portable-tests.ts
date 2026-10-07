@@ -7,6 +7,8 @@ import { checkCloseoutArguments } from "./closeout-cli";
 import type { CloseoutField, CloseoutTargetInput } from "./closeout-types";
 import type { EnglishRecord, Review } from "./qa";
 import type { Candidate } from "./reconcile";
+import { assertCloseoutReference, closeoutReferenceFiles, validateCloseoutReferences } from "./closeout-references";
+import type Database from "better-sqlite3";
 
 const en: EnglishRecord = { name: "Fixture Ward", description: "The ward lasts one round.", rulebookId: 7, editionId: 5,
   mechanics: { school: "Abjuration", subschool: null, descriptors: [], components: { verbal: 1, somatic: 1,
@@ -14,6 +16,16 @@ const en: EnglishRecord = { name: "Fixture Ward", description: "The ward lasts o
   castingTime: "1 action", range: "Touch", target: null, effect: null, area: null, duration: "1 round",
   savingThrow: "None", spellResistance: "No", classLevels: [], domainLevels: [] } };
 const chm = { spellId: 1, variant: "chm", name: "旧防护", descriptionText: "旧文", descriptionHtml: "<p>旧文</p>" };
+assert(closeoutReferenceFiles.includes("inherited-inputs.jsonl"));
+assertCloseoutReference(en, en, 20);
+assert.throws(() => assertCloseoutReference(en, { ...en, description: "Inherited duration changed." }, 20), /reference English drift/);
+assert.throws(() => assertCloseoutReference(en, { ...en, mechanics: { ...en.mechanics, duration: "2 rounds" } }, 20), /reference English drift/);
+const inheritedFixture = { book: 94, path: "fixture", files: ["inherited-evidence.jsonl"],
+  read: () => [{ targetIds: [1], reference: { id: 20, ...en } }],
+  english: new Map([[20, en]]), rules: {} as Database.Database };
+assert.equal(validateCloseoutReferences(inheritedFixture).checked, 1);
+assert.throws(() => validateCloseoutReferences({ ...inheritedFixture,
+  english: new Map([[20, { ...en, description: "Inherited source changed." }]]) }), /reference English drift/);
 const target: CloseoutTargetInput = { targetId: 1, english: en, englishHtml: "<p>The ward lasts one round.</p>", chinese: [chm] };
 const input = { targetId: 1, english: en, englishHtml: target.englishHtml, baselineName: chm.name,
   baselineBody: chm.descriptionText, baselineHtml: chm.descriptionHtml, chinese: [chm] };

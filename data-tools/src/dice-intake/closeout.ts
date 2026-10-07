@@ -6,6 +6,7 @@ import { isDeepStrictEqual as equal } from "node:util";
 import type Database from "better-sqlite3";
 import acceptance from "./closeout-acceptance.json";
 import { bindCommittedInputs } from "./db-english-handoff";
+import { closeoutReferenceFiles, validateCloseoutReferences } from "./closeout-references";
 import { parseDiceFile } from "./parse";
 import { noAlias } from "./paths";
 import { reconcile, type Candidate, type Rulebook } from "./reconcile";
@@ -36,7 +37,7 @@ const evidenceFiles = [...nativeFiles, "target-inputs.jsonl", "current-target-in
   "referenced-inputs.jsonl", "semantic-review.json", "semantic-findings.json", "clause-review.jsonl",
   "reviews.jsonl", "numeric-checks.jsonl", "reference-name-qa.json", "unresolved.jsonl",
   "residuals.jsonl", "proposals.jsonl", "unactivated-proposals.jsonl", "unactivated-references.jsonl",
-  "scope.json", "target-dispositions.jsonl", "input-manifest.json"];
+  "scope.json", "target-dispositions.jsonl", "input-manifest.json", ...closeoutReferenceFiles];
 
 const json = <T = EvidenceRow>(path: string): T => JSON.parse(readFileSync(path, "utf8"));
 const rows = <T = EvidenceRow>(path: string): T[] => readFileSync(path, "utf8").trim()
@@ -167,6 +168,7 @@ export function authenticateDiceCloseout(options: {
   const currentLocators = new Map(current.map(row => [locator(row.sourceKey), row]));
   const output = new Map<string, CloseoutField>(), retained: CloseoutRetained[] = [];
   const affected = new Set<number>();
+  let referenceSnapshotsChecked = 0, historicalComparisonsBound = 0;
 
   function checkInput(row: EvidenceRow) {
     const id = row.targetId, en = english.get(id);
@@ -187,7 +189,12 @@ export function authenticateDiceCloseout(options: {
     for (const row of inputRows) checkInput(row);
     // Referenced input records are complete immutable snapshots too, including
     // SC references. Reading them gives no SC write authority.
-    for (const row of readRows("referenced-inputs.jsonl")) if (row.english) checkInput(row);
+    for (const file of ["referenced-inputs.jsonl", "inherited-inputs.jsonl"])
+      for (const row of readRows(file)) if (row.english) { checkInput(row); referenceSnapshotsChecked++; }
+    const references = validateCloseoutReferences({ book: owner.book, path: owner.path, files: ownedFiles,
+      read: file => file.endsWith(".jsonl") ? readRows(file) : json(join(directory, file)), english, rules });
+    referenceSnapshotsChecked += references.checked;
+    historicalComparisonsBound += references.historicalComparisons;
     const residualFiles = ["unresolved.jsonl", "residuals.jsonl"].filter(file => ownedFiles.includes(file));
     const residualRows = residualFiles.flatMap(file => readRows(file).map((row, index) => ({ row, file, index })));
     const residuals = (id: number): CloseoutResidual[] => residualRows.filter(x => x.row.targetId === id || x.row.targetIds?.includes(id))
@@ -300,5 +307,6 @@ export function authenticateDiceCloseout(options: {
     protectedRulebookIds: [...protectedCloseoutBooks], sourceFiles: sourceFiles.length,
     candidateOccurrences: current.length, existingTargets: english.size, fields: outputFields.length,
     targets: outputTargets.length, byAuthority, retained: retained.length, elapsedMs: performance.now() - started,
-    peakRssKiB: process.resourceUsage().maxRSS, operatorWrites: false, historicalContinuityAuthenticated: false } };
+    peakRssKiB: process.resourceUsage().maxRSS, operatorWrites: false, historicalContinuityAuthenticated: false,
+    referenceSnapshotsChecked, historicalComparisonsBound } };
 }

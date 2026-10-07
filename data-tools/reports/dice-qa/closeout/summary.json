@@ -16,8 +16,8 @@
     "independent-db-english": 703
   },
   "retained": 275,
-  "elapsedMs": 13985.7763,
-  "peakRssKiB": 470592,
+  "elapsedMs": 17998.6741,
+  "peakRssKiB": 488792,
   "operatorWrites": false,
   "historicalContinuityAuthenticated": false,
   "privateRevision": "d58c677ea541592c2fb8c19cfc046b4546764855",
@@ -377,5 +377,24 @@
   "scope": "Accepted non-SC Chinese fields only; no new QA or operator writes",
   "futureResidualOwner": 201,
   "originalBookVerification": false,
-  "temporaryOutputs": "Retained; not cleaned"
+  "temporaryOutputs": "Retained; not cleaned",
+  "referenceSnapshotsChecked": 592,
+  "historicalComparisonsBound": 11,
+  "referenceValidation": {
+    "acceptedProjectionUnchanged": true,
+    "contextClassification": "data-tools/src/dice-intake/closeout-reference-context.json",
+    "currentEqualityRequiredForHistoricalComparisons": false,
+    "boundBroadQueryFiles": [
+      "inherited-all.json"
+    ],
+    "boundPriorInputFiles": [
+      "input-evidence.jsonl",
+      "input-a.jsonl",
+      "input-b.jsonl",
+      "input-c.jsonl",
+      "input-owner.jsonl"
+    ],
+    "currentDependencyDrift": 0,
+    "privateHandoffRevisionUnchanged": true
+  }
 }

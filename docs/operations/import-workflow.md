@@ -760,6 +760,14 @@ the current intake, and validates complete current English and reviewed afters.
 It preserves both revisions and explicitly reports that historical Git
 continuity is not authenticated. No SC recovery exception is reused.
 
+Inherited and reference evidence files are bound to the same accepted commits;
+their English snapshots are checked against current inputs. Prior-review inputs
+and broad reference query results remain bound historical context. Explicitly
+rejected later-version comparisons are identified by original decision locators
+in `closeout-reference-context.json`: their historical bytes remain required,
+but later SC changes do not invalidate a translation that preserved its original
+version. This does not give any referenced SC target write authority.
+
 ```powershell
 npm run -w data-tools dice:closeout:check -- --data-root <private-data-root> --rules-db <readonly-rules-clean.sqlite> --content-db <readonly-content.sqlite> --report-dir <private-data-root>/dice-handoffs/issue-586/<fresh-directory>
 ```

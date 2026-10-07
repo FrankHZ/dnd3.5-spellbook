@@ -1,0 +1,262 @@
+[
+  {
+    "book": 8,
+    "path": "dice-qa/books/8/reference-evidence.json",
+    "row": 8,
+    "id": 4633,
+    "kind": "rawSpell",
+    "changed": [
+      "material_component",
+      "arcane_focus_component"
+    ],
+    "classification": "original-version-comparison-only",
+    "acceptedReasonLocators": [
+      {
+        "path": "dice-qa/books/8/decisions.jsonl",
+        "row": 6,
+        "targetId": 4905,
+        "bodyStatus": "deferred",
+        "actualDependencyIds": []
+      }
+    ],
+    "currentEqualityRequired": false
+  },
+  {
+    "book": 10,
+    "path": "dice-qa/books/10/reference-evidence.json",
+    "row": 8,
+    "id": 4493,
+    "childIds": null,
+    "kind": "normalizedEnglish",
+    "changed": [
+      "description"
+    ],
+    "classification": "original-version-comparison-only",
+    "acceptedReasonLocators": [
+      {
+        "path": "dice-qa/books/10/decisions.jsonl",
+        "row": 7,
+        "targetId": 4808,
+        "bodyStatus": "deferred",
+        "actualDependencyIds": []
+      }
+    ],
+    "currentEqualityRequired": false
+  },
+  {
+    "book": 33,
+    "path": "dice-qa/books/33/reference-evidence.jsonl",
+    "row": 4,
+    "id": 3861,
+    "childIds": null,
+    "kind": "normalizedEnglish",
+    "changed": [
+      "mechanics"
+    ],
+    "classification": "original-version-comparison-only",
+    "acceptedReasonLocators": [
+      {
+        "path": "dice-qa/books/33/decisions.jsonl",
+        "row": 7,
+        "targetId": 3460,
+        "bodyStatus": "accepted",
+        "actualDependencyIds": []
+      }
+    ],
+    "currentEqualityRequired": false
+  },
+  {
+    "book": 33,
+    "path": "dice-qa/books/33/reference-evidence.jsonl",
+    "row": 11,
+    "id": 4485,
+    "childIds": null,
+    "kind": "normalizedEnglish",
+    "changed": [
+      "description"
+    ],
+    "classification": "original-version-comparison-only",
+    "acceptedReasonLocators": [
+      {
+        "path": "dice-qa/books/33/decisions.jsonl",
+        "row": 19,
+        "targetId": 3473,
+        "bodyStatus": "accepted",
+        "actualDependencyIds": []
+      }
+    ],
+    "currentEqualityRequired": false
+  },
+  {
+    "book": 34,
+    "path": "dice-qa/books/34/reference-evidence.jsonl",
+    "row": 37,
+    "id": 3820,
+    "childIds": null,
+    "kind": "normalizedEnglish",
+    "changed": [
+      "mechanics"
+    ],
+    "classification": "original-version-comparison-only",
+    "acceptedReasonLocators": [
+      {
+        "path": "dice-qa/books/34/decisions.jsonl",
+        "row": 25,
+        "targetId": 3502,
+        "bodyStatus": "accepted",
+        "actualDependencyIds": []
+      }
+    ],
+    "currentEqualityRequired": false
+  },
+  {
+    "book": 34,
+    "path": "dice-qa/books/34/reference-evidence.jsonl",
+    "row": 41,
+    "id": 4045,
+    "childIds": null,
+    "kind": "normalizedEnglish",
+    "changed": [
+      "mechanics"
+    ],
+    "classification": "original-version-comparison-only",
+    "acceptedReasonLocators": [
+      {
+        "path": "dice-qa/books/34/decisions.jsonl",
+        "row": 8,
+        "targetId": 3484,
+        "bodyStatus": "accepted",
+        "actualDependencyIds": [
+          2393,
+          2374
+        ]
+      }
+    ],
+    "currentEqualityRequired": false
+  },
+  {
+    "book": 34,
+    "path": "dice-qa/books/34/reference-evidence.jsonl",
+    "row": 44,
+    "id": 4323,
+    "childIds": null,
+    "kind": "normalizedEnglish",
+    "changed": [
+      "description"
+    ],
+    "classification": "original-version-comparison-only",
+    "acceptedReasonLocators": [
+      {
+        "path": "dice-qa/books/34/decisions.jsonl",
+        "row": 15,
+        "targetId": 3491,
+        "bodyStatus": "accepted",
+        "actualDependencyIds": []
+      }
+    ],
+    "currentEqualityRequired": false
+  },
+  {
+    "book": 34,
+    "path": "dice-qa/books/34/reference-evidence.jsonl",
+    "row": 45,
+    "id": 4340,
+    "childIds": null,
+    "kind": "normalizedEnglish",
+    "changed": [
+      "mechanics"
+    ],
+    "classification": "original-version-comparison-only",
+    "acceptedReasonLocators": [
+      {
+        "path": "dice-qa/books/34/decisions.jsonl",
+        "row": 31,
+        "targetId": 3508,
+        "bodyStatus": "accepted",
+        "actualDependencyIds": [
+          2799
+        ]
+      }
+    ],
+    "currentEqualityRequired": false
+  },
+  {
+    "book": 34,
+    "path": "dice-qa/books/34/reference-evidence.jsonl",
+    "row": 46,
+    "id": 4353,
+    "childIds": null,
+    "kind": "normalizedEnglish",
+    "changed": [
+      "description",
+      "mechanics"
+    ],
+    "classification": "original-version-comparison-only",
+    "acceptedReasonLocators": [
+      {
+        "path": "dice-qa/books/34/decisions.jsonl",
+        "row": 32,
+        "targetId": 3509,
+        "bodyStatus": "deferred",
+        "actualDependencyIds": []
+      }
+    ],
+    "currentEqualityRequired": false
+  },
+  {
+    "book": 34,
+    "path": "dice-qa/books/34/reference-evidence.jsonl",
+    "row": 47,
+    "id": 4422,
+    "childIds": null,
+    "kind": "normalizedEnglish",
+    "changed": [
+      "description"
+    ],
+    "classification": "original-version-comparison-only",
+    "acceptedReasonLocators": [
+      {
+        "path": "dice-qa/books/34/decisions.jsonl",
+        "row": 9,
+        "targetId": 3485,
+        "bodyStatus": "accepted",
+        "actualDependencyIds": []
+      },
+      {
+        "path": "dice-qa/books/34/decisions.jsonl",
+        "row": 10,
+        "targetId": 3486,
+        "bodyStatus": "accepted",
+        "actualDependencyIds": [
+          3485
+        ]
+      }
+    ],
+    "currentEqualityRequired": false
+  },
+  {
+    "book": 95,
+    "path": "dice-qa/books/95/inherited-all.json",
+    "row": 11,
+    "id": 3956,
+    "childIds": null,
+    "kind": "normalizedEnglish",
+    "changed": [
+      "description",
+      "mechanics"
+    ],
+    "classification": "unused-query-alternative",
+    "acceptedReasonLocators": [
+      {
+        "path": "dice-qa/books/95/decisions.jsonl",
+        "row": 5,
+        "targetId": 1515,
+        "bodyStatus": "accepted",
+        "actualDependencyIds": [
+          1199
+        ]
+      }
+    ],
+    "currentEqualityRequired": false
+  }
+]
