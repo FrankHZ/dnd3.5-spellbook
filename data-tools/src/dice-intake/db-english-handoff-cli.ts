@@ -3,16 +3,12 @@ import { existsSync, mkdirSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import Database from "better-sqlite3";
 import { dicePaths, isolatedOutputs, noAlias, pathArg, within } from "./paths";
-import { validateQaInputs } from "./qa";
+import {authenticateCityscapeInputs} from "./db-english-authentication";
 import {
-  bindCommittedInputs,
   cityscapeAcceptance as a,
-  handoffFiles,
   planDbEnglishHandoff,
   requireHandoffDbRoles,
   requireMissingEffectiveTargets,
-  validateHandoffEvidence,
-  type HandoffEvidence,
 } from "./db-english-handoff";
 
 export function checkHandoffArguments(argv: string[]) {
@@ -48,7 +44,6 @@ export function runDbEnglishHandoff(argv: string[]) {
   checkHandoffArguments(argv);
   const { dataRoot } = dicePaths(argv);
   const baselineDir = join(dataRoot, "dice-baselines/issue-520");
-  const book = join(dataRoot, a.directory);
   const rulesPath = pathArg("rules-db", argv),
     contentPath = pathArg("content-db", argv);
   const reportDir = pathArg("report-dir", argv),
@@ -104,73 +99,7 @@ export function runDbEnglishHandoff(argv: string[]) {
     content.pragma("query_only=ON");
     requireHandoffDbRoles(rules, content);
     requireMissingEffectiveTargets(content);
-    const evidencePaths = handoffFiles.map((file) => join(book, file));
-    const acceptedBuffers = bindCommittedInputs(
-      dataRoot,
-      a.revision,
-      evidencePaths,
-    );
-    bindCommittedInputs(dataRoot, a.preparedRevision, [
-      join(book, "target-inputs.jsonl"),
-      join(baselineDir, "intake/candidates.jsonl"),
-      join(baselineDir, "intake/source-inventory.jsonl"),
-    ]);
-    const rows = <T>(file: string): T[] =>
-      acceptedBuffers
-        .get(join(book, file))!
-        .toString("utf8")
-        .trim()
-        .split(/\r?\n/)
-        .filter(Boolean)
-        .map((line) => JSON.parse(line) as T);
-    const evidence: HandoffEvidence = {
-      accepted: rows("out/accepted.jsonl"),
-      fallback: rows("out/fallback.jsonl"),
-      targetInputs: rows("target-inputs.jsonl"),
-      clauses: rows("clause-review.jsonl"),
-      unresolved: rows("unresolved.jsonl"),
-      semantic: JSON.parse(
-        acceptedBuffers
-          .get(join(book, "semantic-review.json"))!
-          .toString("utf8"),
-      ),
-    };
-    const qa = validateQaInputs([
-      "--data-root",
-      dataRoot,
-      "--baseline-dir",
-      baselineDir,
-      "--rules-db",
-      rulesPath,
-      "--content-db",
-      contentPath,
-      "--rulebook-id",
-      "53",
-    ]);
-    bindCommittedInputs(
-      dataRoot,
-      a.revision,
-      qa.inputPaths.filter(
-        (path) => path !== rulesPath && path !== contentPath,
-      ),
-    );
-    assert.equal(
-      qa.result.summary.sourceRevision,
-      a.sourceRevision,
-      "source revision drift",
-    );
-    assert.equal(
-      qa.result.summary.mappingRevision,
-      a.sourceRevision,
-      "map revision drift",
-    );
-    const coverage = validateHandoffEvidence(qa, evidence);
-    assert.equal(coverage.segments, 64, "accepted clause count drift");
-    assert.equal(
-      coverage.physicalLines,
-      67,
-      "accepted English line count drift",
-    );
+    const {evidence, qa, coverage} = authenticateCityscapeInputs(dataRoot, rulesPath, contentPath);
     const proposal = planDbEnglishHandoff(content, evidence);
     assert.deepEqual(
       [stamp(rulesPath), stamp(contentPath)],

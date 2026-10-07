@@ -774,26 +774,66 @@ exact field before/after values, the absent effective predecessor and CHM snapsh
 locked English/mechanics, accepted row and clause locators, and the retained
 residual. This fixed acceptance establishes eight absent effective rows only:
 any existing target `zh/effective` row fails before proposal output, even when
-its CHM/English baseline remains unchanged. Already-applied/recovery states belong
-to the next writer contract. `report.json` contains source-free
+its CHM/English baseline remains unchanged. Already-applied/recovery states use
+the [selective Cityscape overlay](#selective-cityscape-overlay) entry instead.
+`report.json` contains source-free
 counts, evidence revisions, protection boundaries and measured resources.
 The entry changes no DB, builds no search index and grants no activation authority.
 
-The next selective writer must recheck these inputs and actual before/after rows
-transactionally, preserve SC and non-target overlays, summaries, relationships
-and full normalized build provenance, and coordinate FTS through the existing
-search builder. `content:sequence` remains normalized → summaries → search;
-its annotated-predecessor rejection remains required. Full normalized/CHM
-reimport is inappropriate for this Chinese-only handoff.
+### Selective Cityscape overlay
 
-Generic/native field provenance already carries target, field, source key,
-accepted revision and input/evidence locators. `spells.provenance.ts` accepts
-that envelope but emits only native origin and revision; it has no DB-English
-review or mixed-body residual representation. Its SC final review branch
-requires the fixed SC revision and cannot receive this handoff. A subsequent
-consumer contract must expose the accurate review basis and bounded residual,
-with default/explicit variant and FTS validation, before activation. This
-preflight does not construct persisted provenance or change API/DTO contracts.
+`dice:overlay` re-authenticates the same fixed Cityscape acceptance directly from
+committed inputs and complete whole-book QA. It does not accept the inspection
+proposal, an arbitrary revision, another book or caller-provided acceptance.
+Its default check opens rules/content read-only and query-only. Use `--apply`
+only for the explicitly authorized content target after checking the report:
+
+```powershell
+npm run -w data-tools dice:overlay -- --data-root <absolute-data-repo> --rules-db <absolute-rules-clean.sqlite> --content-db <absolute-content.sqlite> --report-dir <absolute-data-repo>/dice-handoffs/issue-529/<fresh-directory>
+npm run -w data-tools dice:overlay -- --data-root <absolute-data-repo> --rules-db <absolute-rules-clean.sqlite> --content-db <absolute-content.sqlite> --report-dir <absolute-data-repo>/dice-handoffs/issue-529/<another-fresh-directory> --apply
+npm run -w data-tools dice:overlay:test
+```
+
+Paths have the same cwd-relative semantics as the handoff command; use absolute
+paths across root/package/other checkouts. Each invocation requires a fresh
+private report directory under `dice-handoffs/issue-529/`. Aliases, hard-linked
+targets, wrong DB roles, input/output collisions and incomplete/drifted schema
+fail before writing. Required migrations and FTS support must already exist;
+this command does not migrate schemas or reconstruct normalized content.
+
+The only first-write state is eight absent `zh/effective` targets. The only
+recovery state is all eight exact accepted rows, including ID, language, source,
+text and field envelopes, plus the exact Cityscape build annotation. Partial,
+foreign, extra or drifted target rows/annotations fail. The command verifies the
+normalized target English, retains complete generation/importer provenance,
+and adds only `overlays.cityscapeDbEnglish` to the existing build. All SC 86
+text, summaries, provenance and metadata, non-target rows, normalized English,
+mechanics, relationships and publication metadata remain unchanged.
+
+One immediate overlay transaction rechecks accepted inputs and the target
+snapshot, materializes the eight rows through the existing writer, and verifies
+protected state. A later independent `contentSearchStep` transaction verifies
+the accepted after state under its own lock and updates FTS. There is no
+cross-stage global transaction. Failure reports distinguish committed overlay
+from failed/unattempted search; resume with the same entry and a fresh report
+directory. It authenticates the inputs and actual database again, then completes
+search without rewriting accepted rows. A successful repeat preserves overlay
+and search timestamps, while still checking FTS documents and internal integrity.
+Reports never authorize skipping checks. An incomplete check reports
+`complete=false`; apply requires a complete final after/current result.
+
+The API field envelope distinguishes `review.kind=DB-English` from SC's existing
+fixed source-bound review. Body metadata declares `composition=Chinese` or, for
+361, `composition=mixed` and one retained DB-English clause owned by #160.
+Private paths, clause audits and original evidence remain internal. Default
+Chinese and explicit `effective` select the overlay; explicit `chm` and English
+retain their existing fallback behavior and summaries. HTTP detail, browse,
+batch and search consumption is covered by synthetic API tests.
+
+`content:sequence` and the normalized importer retain their annotated-predecessor
+rejection. Do not run CHM or full normalized reimport after this Chinese-only
+handoff. This bounded tool does not certify other books or activate production;
+operator apply belongs to the owning authorized integration workflow.
 
 ### Rulebook QA proposals
 

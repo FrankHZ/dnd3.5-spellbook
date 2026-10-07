@@ -1,0 +1,64 @@
+{
+  "schema": "cityscape-overlay-validation.v1",
+  "issue": 529,
+  "scope": {
+    "rulebookId": 53,
+    "targets": [
+      355,
+      356,
+      357,
+      358,
+      359,
+      360,
+      361,
+      362
+    ],
+    "names": 8,
+    "fullyChineseBodies": 7,
+    "mixedBodies": 1,
+    "residualOwnerIssue": 160,
+    "SC86": "protected; unchanged"
+  },
+  "acceptedRevision": "b8d0dc3f85015533c3e57a293f7a96d5de2d7cb7",
+  "preparedRevision": "6d28f9391273979a35a6bcc86971f0aac5b9f2c8",
+  "sourceRevision": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+  "sourceAuthority": "DB-English QA; no original-book verification",
+  "checks": {
+    "wholeBookHandoff": "passed",
+    "overlayRollbackRecoveryRepeat": "passed",
+    "searchStep": "passed",
+    "portableManifestHarness": "passed",
+    "HTTPConsumersAndSCContract": "44 tests passed",
+    "contractsBuild": "passed",
+    "serverBuild": "passed",
+    "dataToolsTypecheck": "passed",
+    "webTypecheck": "not run: shared runtime lacks react-router CLI; remote ci:portable remains required"
+  },
+  "syntheticResources": {
+    "elapsedMs": 11327,
+    "peakRssMiB": 166.7421875,
+    "contentDbBytes": 614400
+  },
+  "readonlyPreflights": {
+    "root": {
+      "elapsedMs": 8651,
+      "peakRssMiB": 429.57421875
+    },
+    "package": {
+      "elapsedMs": 4487,
+      "peakRssMiB": 413.2109375
+    },
+    "otherCheckoutCwd": {
+      "elapsedMs": 4469,
+      "peakRssMiB": 412.625
+    }
+  },
+  "operatorState": {
+    "targets": "eight absent effective rows",
+    "search": "current",
+    "DBFileMetadataUnchanged": true,
+    "operatorWrites": false,
+    "activation": false
+  },
+  "localRuntime": "Shared runtime; local consumer contracts links; standard Node conditions/preserve-symlinks flags and absolute tsx --import for Windows Vitest 4.1.9. No private loader or donor mutation."
+}

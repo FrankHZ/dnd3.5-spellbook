@@ -34,7 +34,11 @@ export type SpellFieldProvenance = {
   /** Review is independent of the original field owner, including retained CHM. */
   review?: { disposition: "source-reviewed-retention" | "accepted-native-source-bound" |
     "accepted" | "accepted-with-source-issues"; acceptedRevision: string;
-    originalEntryReviewed: true; sourceQuestionIds: string[] };
+    originalEntryReviewed: true; sourceQuestionIds: string[] } | {
+      kind: "DB-English"; disposition: "DB-English-reviewed"; acceptedRevision: string;
+      composition?: "Chinese" | "mixed";
+      residual?: {kind: "retained-DB-English"; clauses: 1; ownerIssue: 160};
+    };
   /** Current reviewed body authority; origin below is the original field owner. */
   amendment?: { kind: "accepted-body-amendment"; acceptedRevision: string;
     priorAcceptedRevision: string; status: "accepted" | "accepted-with-source-issues";
