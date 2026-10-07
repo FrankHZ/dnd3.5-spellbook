@@ -36,7 +36,8 @@ These documents describe durable current behavior and operating constraints.
 
 The [v1.4 content acceptance snapshot](releases/v1.4/ACCEPTANCE.md) records the
 delivered SC HTML and database scope, production evidence, and known exclusions.
-It does not certify complete corpus QA or a numbered GitHub release.
+It does not certify complete corpus QA. Published tags and release notes live in
+[GitHub Releases](https://github.com/FrankHZ/dnd3.5-spellbook/releases).
 
 The [private review console](../review-console/README.md) and its
 [module boundary](modules/review-console.md) concern the suspended PHB workflow.

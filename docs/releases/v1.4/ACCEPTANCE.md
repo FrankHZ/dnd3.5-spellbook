@@ -70,9 +70,16 @@ Receipts establish the accepted artifact; they do not authorize a new write.
 
 ## Release Metadata Boundary
 
-At this snapshot, the root package and production backend still report
-`v1.3.0`; remote Git tags contain no `v1.4.0`, and no GitHub release is published.
-Content activation is complete, but a numbered v1.4 release is not recorded.
-[#123](https://github.com/FrankHZ/dnd3.5-spellbook/issues/123) owns reconciling root
-metadata, deployed frontend/backend evidence and the intended release/tag.
-Do not tag old v1.3 code or claim a v1.4 label based on content counts alone.
+Root release metadata is `1.4.0`; workspace packages are not independently
+versioned. [#123](https://github.com/FrankHZ/dnd3.5-spellbook/issues/123) owns the
+verified frontend/backend label, ref and commit, while
+[GitHub Releases](https://github.com/FrankHZ/dnd3.5-spellbook/releases) owns the
+published tag and final release notes. The earlier production receipt above
+proves content activation, not the subsequent version-label deployment.
+
+The release also includes the bounded
+[#593 proxy-addr fix](https://github.com/FrankHZ/dnd3.5-spellbook/issues/593).
+Release activation changes code and metadata without reimporting the accepted
+database. Tag only the accepted merged commit after verifying both production
+surfaces and the installed backend dependency; a package bump is not deployment
+proof or a claim that all dependency security alerts are resolved.
