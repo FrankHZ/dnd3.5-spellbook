@@ -1,0 +1,381 @@
+{
+  "issue": 586,
+  "protectedRulebookIds": [
+    6,
+    86,
+    106
+  ],
+  "sourceFiles": 105,
+  "candidateOccurrences": 5606,
+  "existingTargets": 5097,
+  "fields": 4152,
+  "targets": 2747,
+  "byAuthority": {
+    "recovered-db-english": 2816,
+    "native-db-english": 633,
+    "independent-db-english": 703
+  },
+  "retained": 275,
+  "elapsedMs": 13985.7763,
+  "peakRssKiB": 470592,
+  "operatorWrites": false,
+  "historicalContinuityAuthenticated": false,
+  "privateRevision": "d58c677ea541592c2fb8c19cfc046b4546764855",
+  "evidencePath": "dice-handoffs/issue-586/accepted",
+  "counts": {
+    "name": 1700,
+    "body": 2452,
+    "mixedBodies": 6,
+    "uniqueTargets": 2747
+  },
+  "byBook": {
+    "52": {
+      "name": 35,
+      "descriptionHtml": 89
+    },
+    "37": {
+      "name": 141,
+      "descriptionHtml": 131
+    },
+    "27": {
+      "name": 26,
+      "descriptionHtml": 19
+    },
+    "28": {
+      "name": 31,
+      "descriptionHtml": 20
+    },
+    "16": {
+      "name": 23,
+      "descriptionHtml": 14
+    },
+    "53": {
+      "name": 8,
+      "descriptionHtml": 8
+    },
+    "54": {
+      "name": 1,
+      "descriptionHtml": 70
+    },
+    "55": {
+      "name": 12,
+      "descriptionHtml": 114
+    },
+    "57": {
+      "name": 0,
+      "descriptionHtml": 38
+    },
+    "56": {
+      "name": 4,
+      "descriptionHtml": 111
+    },
+    "58": {
+      "name": 1,
+      "descriptionHtml": 120
+    },
+    "60": {
+      "name": 0,
+      "descriptionHtml": 23
+    },
+    "61": {
+      "name": 0,
+      "descriptionHtml": 1
+    },
+    "38": {
+      "name": 51,
+      "descriptionHtml": 51
+    },
+    "39": {
+      "name": 13,
+      "descriptionHtml": 12
+    },
+    "92": {
+      "name": 41,
+      "descriptionHtml": 54
+    },
+    "62": {
+      "name": 0,
+      "descriptionHtml": 38
+    },
+    "26": {
+      "name": 24,
+      "descriptionHtml": 20
+    },
+    "93": {
+      "name": 0,
+      "descriptionHtml": 14
+    },
+    "65": {
+      "name": 8,
+      "descriptionHtml": 7
+    },
+    "66": {
+      "name": 0,
+      "descriptionHtml": 12
+    },
+    "67": {
+      "name": 0,
+      "descriptionHtml": 20
+    },
+    "19": {
+      "name": 34,
+      "descriptionHtml": 33
+    },
+    "68": {
+      "name": 2,
+      "descriptionHtml": 80
+    },
+    "94": {
+      "name": 65,
+      "descriptionHtml": 60
+    },
+    "69": {
+      "name": 0,
+      "descriptionHtml": 21
+    },
+    "70": {
+      "name": 30,
+      "descriptionHtml": 23
+    },
+    "71": {
+      "name": 14,
+      "descriptionHtml": 42
+    },
+    "95": {
+      "name": 8,
+      "descriptionHtml": 7
+    },
+    "72": {
+      "name": 3,
+      "descriptionHtml": 9
+    },
+    "30": {
+      "name": 22,
+      "descriptionHtml": 16
+    },
+    "20": {
+      "name": 222,
+      "descriptionHtml": 166
+    },
+    "74": {
+      "name": 36,
+      "descriptionHtml": 36
+    },
+    "43": {
+      "name": 28,
+      "descriptionHtml": 27
+    },
+    "44": {
+      "name": 64,
+      "descriptionHtml": 64
+    },
+    "75": {
+      "name": 39,
+      "descriptionHtml": 32
+    },
+    "96": {
+      "name": 117,
+      "descriptionHtml": 102
+    },
+    "79": {
+      "name": 75,
+      "descriptionHtml": 73
+    },
+    "22": {
+      "name": 89,
+      "descriptionHtml": 29
+    },
+    "80": {
+      "name": 7,
+      "descriptionHtml": 115
+    },
+    "81": {
+      "name": 0,
+      "descriptionHtml": 22
+    },
+    "23": {
+      "name": 12,
+      "descriptionHtml": 9
+    },
+    "82": {
+      "name": 7,
+      "descriptionHtml": 7
+    },
+    "83": {
+      "name": 0,
+      "descriptionHtml": 30
+    },
+    "84": {
+      "name": 0,
+      "descriptionHtml": 8
+    },
+    "85": {
+      "name": 0,
+      "descriptionHtml": 47
+    },
+    "47": {
+      "name": 59,
+      "descriptionHtml": 59
+    },
+    "24": {
+      "name": 14,
+      "descriptionHtml": 12
+    },
+    "25": {
+      "name": 29,
+      "descriptionHtml": 22
+    },
+    "48": {
+      "name": 34,
+      "descriptionHtml": 34
+    },
+    "87": {
+      "name": 0,
+      "descriptionHtml": 35
+    },
+    "49": {
+      "name": 2,
+      "descriptionHtml": 2
+    },
+    "51": {
+      "name": 56,
+      "descriptionHtml": 56
+    },
+    "89": {
+      "name": 23,
+      "descriptionHtml": 20
+    },
+    "33": {
+      "name": 22,
+      "descriptionHtml": 19
+    },
+    "34": {
+      "name": 41,
+      "descriptionHtml": 27
+    },
+    "105": {
+      "name": 0,
+      "descriptionHtml": 14
+    },
+    "12": {
+      "name": 0,
+      "descriptionHtml": 11
+    },
+    "9": {
+      "name": 31,
+      "descriptionHtml": 18
+    },
+    "14": {
+      "name": 11,
+      "descriptionHtml": 10
+    },
+    "10": {
+      "name": 24,
+      "descriptionHtml": 22
+    },
+    "7": {
+      "name": 22,
+      "descriptionHtml": 20
+    },
+    "8": {
+      "name": 8,
+      "descriptionHtml": 4
+    },
+    "110": {
+      "name": 10,
+      "descriptionHtml": 9
+    },
+    "98": {
+      "name": 15,
+      "descriptionHtml": 9
+    },
+    "101": {
+      "name": 2,
+      "descriptionHtml": 2
+    },
+    "112": {
+      "name": 1,
+      "descriptionHtml": 1
+    },
+    "153": {
+      "name": 3,
+      "descriptionHtml": 2
+    }
+  },
+  "unacceptedBodyTargetIds": [
+    989,
+    1861,
+    2163,
+    2164,
+    699,
+    703,
+    748,
+    752,
+    634,
+    639,
+    652,
+    653,
+    656,
+    717,
+    722,
+    740,
+    746,
+    750,
+    759,
+    657,
+    719,
+    529,
+    530,
+    578,
+    457,
+    508,
+    4961
+  ],
+  "checks": [
+    "dice:closeout:test PASS",
+    "dice:qa:test PASS",
+    "harness portable20 PASS",
+    "typecheck:data-tools PASS",
+    "read-only root authentication PASS",
+    "explicit latest-withheld Arcane bodies absent; names retained PASS",
+    "package-cwd complete authentication and exact field/target/retained parity PASS"
+  ],
+  "privateProtection": {
+    "index": {
+      "unchanged": true,
+      "records": 9595
+    },
+    "status": {
+      "unchanged": true,
+      "records": 1487
+    },
+    "untracked": {
+      "unchanged": true,
+      "records": 1448
+    }
+  },
+  "authorizedConcurrentOwner": {
+    "issue": 529,
+    "commits": [
+      "6770e3c",
+      "209d925",
+      "d932550cf8e3ced36353541b5558a5d932a1aecf"
+    ],
+    "addedPaths": [
+      "dice-handoffs/issue-529/preservation-final.json",
+      "dice-handoffs/issue-529/resume-index.nul",
+      "dice-handoffs/issue-529/resume-package/report.json",
+      "dice-handoffs/issue-529/resume-root/report.json",
+      "dice-handoffs/issue-529/resume-sibling/report.json",
+      "dice-handoffs/issue-529/resume-status.nul",
+      "dice-handoffs/issue-529/resume-untracked.nul",
+      "dice-handoffs/issue-529/validation-summary.json",
+      "dice-handoffs/issue-529/remote-ci.json"
+    ],
+    "mainGateConfirmed": true
+  },
+  "scope": "Accepted non-SC Chinese fields only; no new QA or operator writes",
+  "futureResidualOwner": 201,
+  "originalBookVerification": false,
+  "temporaryOutputs": "Retained; not cleaned"
+}

@@ -744,6 +744,49 @@ and source-free `reconciledSlices` locators/revisions. Semantic main-gate accept
 and write authorization remain separate. Run `dice:qa:test` for synthetic slice,
 stale/foreign evidence, duplicate and overlap/gap checks.
 
+### Closed dice QA handoff
+
+The closed round uses a fixed, reviewed acceptance list in
+`data-tools/src/dice-intake/closeout-acceptance.json`, not a scan of files named
+`accepted.jsonl`. `authenticateDiceCloseout` replays existing native review,
+correction, duplicate, boundary and complete-body audit checks, and authenticates
+independent after/input evidence at the exact accepted revisions. It loads the
+current corpus, English and Chinese snapshots once. It never changes SQLite.
+
+Historical private source/map objects lost during repository recovery remain
+historical references. The authenticator binds surviving original ledgers to
+their actual recovery commit, compares their raw occurrence and CHM inputs to
+the current intake, and validates complete current English and reviewed afters.
+It preserves both revisions and explicitly reports that historical Git
+continuity is not authenticated. No SC recovery exception is reused.
+
+```powershell
+npm run -w data-tools dice:closeout:check -- --data-root <private-data-root> --rules-db <readonly-rules-clean.sqlite> --content-db <readonly-content.sqlite> --report-dir <private-data-root>/dice-handoffs/issue-586/<fresh-directory>
+```
+
+Explicit paths are caller-directory relative; use absolute paths for operator
+runs. The output is `fields.jsonl`, `targets.jsonl`, `retained.jsonl` and a
+source-free `report.json`. A field records exact Chinese before/after, language,
+native/recovered/independent authority, original evidence locator and residual
+ownership. `before` remains the original CHM field or null. Target snapshots
+contain the complete current English/HTML and stored Chinese rows, allowing the
+selective writer to distinguish first apply, exact repeat and foreign drift.
+Retained Chinese is not relabeled as a new acceptance. Partial or unaccepted
+bodies remain fallback; complete accepted bodies with bounded residuals retain
+their actual text, including mixed language where explicitly reviewed.
+
+All rulebook 86 fields and suspended PHB targets are rejected from the write
+set, including dice identity references to existing SC spells. Canonical English,
+mechanics, summaries, relations, publication data and new entities are excluded.
+Unreviewed entries and missing-English work remain future-version scope.
+
+Generated files are inspection artifacts, not standalone write authorization.
+A writer calls the maintained authenticator again, including inside its write
+transaction, and locks exact target state. Only its explicit selective workflow
+may materialize accepted fields and update FTS. Do not invoke the destructive
+CHM importer or full normalized sequence for this handoff. Production remains
+separately authorized. Run `dice:closeout:test` for portable boundary checks.
+
 ### Accepted DB-English handoff preflight
 
 The maintained `dice:handoff:check` entry checks the exact main-gate accepted
