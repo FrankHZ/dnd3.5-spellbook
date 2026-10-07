@@ -9,8 +9,8 @@ function readRepoFile(path) {
 }
 
 test("release label derives from the root package version", () => {
-  assert.equal(getReleaseVersion(), "1.3.0");
-  assert.equal(getReleaseLabel(), "v1.3.0");
+  assert.equal(getReleaseVersion(), "1.4.0");
+  assert.equal(getReleaseLabel(), "v1.4.0");
 });
 
 test("the pinned backend helper derives the release label", () => {
