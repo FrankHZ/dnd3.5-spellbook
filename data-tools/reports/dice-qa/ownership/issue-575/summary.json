@@ -1,0 +1,25 @@
+{
+  "issue": 575,
+  "privateEvidenceRevision": "b0b6a6e7102c41609c89692ccb1ab6d9c16e4ceb",
+  "results": {
+    "selectedTargets": 28,
+    "nameRetain": 23,
+    "nameCorrect": 1,
+    "nameTranslateMissing": 4,
+    "fullBodyProposals": 28,
+    "bodyTranslateMissing": 4,
+    "bodyWithoutMaterialResidual": 26,
+    "bodyWithMaterialResidual": 2,
+    "residualRecords": 3,
+    "additionalParentsRead": 4,
+    "selectedParentsReused": 2,
+    "rawCharacters": 9672,
+    "englishBodyCharacters": 20056,
+    "additionalParentEnglishCharacters": 4910,
+    "nativeAttached": 0,
+    "nativeAcceptedFields": 0,
+    "activated": 0,
+    "newUnseenOccurrencesReviewed": 0,
+    "parentUnseenRemaining": 2101
+  }
+}
