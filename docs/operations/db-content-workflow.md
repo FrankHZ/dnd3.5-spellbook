@@ -173,6 +173,12 @@ summaries do not certify those relationships. Its validation needs durable final
 not removable rehearsal DB snapshots; operator writes still require the owning
 migration's authorization and acceptance.
 
+The accepted eight-target Cityscape DB-English handoff uses the
+[selective overlay step](./import-workflow.md#selective-cityscape-overlay) for
+read-only check, authorized apply and exact recovery through derived search.
+It preserves the complete SC 86 text/summary/provenance and normalized build,
+requires its fixed original acceptance, and is not a writer for arbitrary books.
+
 ## Standard Handoff Flow
 
 1. Refresh context.

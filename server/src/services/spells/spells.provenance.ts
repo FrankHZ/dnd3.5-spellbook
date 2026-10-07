@@ -126,7 +126,7 @@ function mapFinalProvenance(v: Record<string, any>, field: "name" | "body",
       || !r.sourceQuestionIds.every(questionId) || new Set(r.sourceQuestionIds).size !== r.sourceQuestionIds.length
       || (r.disposition === "accepted-with-source-issues") !== (r.sourceQuestionIds.length > 0))) return fail();
   }
-  let review: NonNullable<SpellFieldProvenance["review"]> = {disposition: r.disposition,
+  let review: Extract<NonNullable<SpellFieldProvenance["review"]>, {originalEntryReviewed: true}> = {disposition: r.disposition,
     acceptedRevision: r.revision, originalEntryReviewed: true, sourceQuestionIds: r.sourceQuestionIds ?? []};
   if ("sourceCorrection" in v) {
     const correction = v.sourceCorrection, prior = correction?.prior;
@@ -201,6 +201,29 @@ function mapFinalProvenance(v: Record<string, any>, field: "name" | "body",
     review, ...(amendment ? { amendment } : {}) };
 }
 
+/** Bounded accepted Cityscape DB-English envelope. No PDF/source-bound authority. */
+function mapDbEnglishProvenance(v: Record<string, any>, field: "name" | "body",
+  target: {id: number; rulebookId: number}, descriptionText: string | null | undefined,
+  fail: () => never): SpellFieldProvenance {
+  const acceptedRevision = "b8d0dc3f85015533c3e57a293f7a96d5de2d7cb7";
+  const directory = "dice-baselines/issue-520/qa/books/53";
+  const mixed = field === "body" && target.id === 361;
+  const review = {kind: "DB-English" as const, disposition: "DB-English-reviewed" as const, acceptedRevision,
+    ...(field === "body" ? {composition: mixed ? "mixed" as const : "Chinese" as const,
+      ...(mixed ? {residual: {kind: "retained-DB-English" as const, clauses: 1 as const, ownerIssue: 160 as const}} : {})} : {})};
+  if (v.acceptedRevision !== acceptedRevision || target.rulebookId !== 53 || target.id < 355 || target.id > 362
+    || v.language !== "zh" || !sourceKey(v.origin.sourceKey)
+    || !isDeepStrictEqual(Object.keys(v).sort(), ["schemaVersion", "acceptedRevision", "targetId", "field", "language", "origin", "input", "evidence", "review"].sort())
+    || !isDeepStrictEqual(v.origin, {kind: "native", sourceKey: v.origin.sourceKey})
+    || !isDeepStrictEqual(v.input, {revision: acceptedRevision, path: `${directory}/out/accepted.jsonl`, targetId: target.id,
+      field: field === "name" ? "name" : "descriptionHtml", sourceKey: v.origin.sourceKey})
+    || !isDeepStrictEqual(v.evidence, {revision: acceptedRevision, path: `${directory}/semantic-review.json`, targetId: target.id,
+      ...(mixed ? {residualPath: `${directory}/unresolved.jsonl:1`} : {})})
+    || !isDeepStrictEqual(v.review, review)
+    || (mixed && !text(descriptionText))) return fail();
+  return {schemaVersion: 1, language: "zh", acceptedRevision, origin: {kind: "native", sourceKey: v.origin.sourceKey}, review};
+}
+
 /** Validate the stored writer envelope, never re-adjudicate source quality or expose locators. */
 export function mapFieldProvenance(raw: string | null, field: "name" | "body",
   row: { spellId: number; rulebookId: number; lang: string; name: string | null;
@@ -216,6 +239,7 @@ export function mapFieldProvenance(raw: string | null, field: "name" | "body",
     || !revision(v.acceptedRevision)
     || !record(v.origin) || !record(v.input) || !record(v.evidence)) return fail();
   if ("sourceCorrection" in v && v.acceptedRevision !== finalRevision) return fail();
+  if (record(v.review) && v.review.kind === "DB-English") return mapDbEnglishProvenance(v, field, target, row.descriptionText, fail);
   if (v.acceptedRevision === finalRevision || "review" in v) return mapFinalProvenance(v, field, target, row.descriptionText, fail);
   const o = v.origin;
   let input = v.input, evidence = v.evidence;

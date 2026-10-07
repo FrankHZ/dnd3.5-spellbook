@@ -143,10 +143,14 @@ export type ContentSearchStepResult = {
 };
 
 /** Derived search state only. Source QA/accepted handoff is the caller's prerequisite. */
-export function contentSearchStep(db: Database.Database, mode: "check" | "apply" = "check"): ContentSearchStepResult {
+export function contentSearchStep(db: Database.Database, mode: "check" | "apply" = "check",
+  requireSource: () => void = () => {}): ContentSearchStepResult {
   assert(mode === "check" || mode === "apply", "Unknown search step mode");
   if (mode === "apply") assert(!db.inTransaction, "Search step owns its content transaction");
   const inspect = () => {
+    // A bounded caller can revalidate its accepted source on this transaction's
+    // snapshot, including under the rebuild's immediate write lock.
+    requireSource();
     requireSearchStepSchema(db);
     const documents = expectedDocuments(db);
     // Always check internal FTS integrity, even when rows/state already differ.

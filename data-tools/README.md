@@ -74,6 +74,11 @@ DB-English revision against full QA and current read-only DBs, then writes an
 inspection-only selective overlay proposal to a fresh private directory.
 Run `dice:handoff:test` for synthetic binding, residual and DB protection checks;
 see the [accepted DB-English handoff](../docs/operations/import-workflow.md#accepted-db-english-handoff-preflight).
+For the same eight accepted targets, `dice:overlay` checks or explicitly applies
+selective name/body rows, resumes committed-overlay/search failures, and verifies
+zero-write repeats. It preserves SC and full normalized build provenance; see
+[selective Cityscape overlay](../docs/operations/import-workflow.md#selective-cityscape-overlay).
+Run `dice:overlay:test` for its synthetic transaction and recovery checks.
 `dice:effective` composes SC's exact accepted native/independent handoff with
 complete current CHM/English after the unchanged formal QA and fresh PDF verifier.
 The source entry derives original bindings and printing/errata authority from

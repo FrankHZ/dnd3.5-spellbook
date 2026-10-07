@@ -103,7 +103,7 @@ describe("final source review contract", () => {
     for (const field of ["name", "body"] as const) {
       const mapped = map(envelope(field, kind));
       expect(mapped.origin.kind).toBe(kind);
-      expect(mapped.review?.originalEntryReviewed).toBe(true);
+      expect(mapped.review).toMatchObject({originalEntryReviewed: true});
       expect(mapped.review?.disposition).toBe(kind === "chm" ? "source-reviewed-retention" : kind === "native" ? "accepted-native-source-bound" : "accepted");
       for (const secret of ["dice-qa/", "sourcePages", "rowRef", "originalAcceptedPdfBinding", "evidence"]) expect(JSON.stringify(mapped)).not.toContain(secret);
     }
@@ -152,7 +152,7 @@ describe("final source review contract", () => {
     const v = envelope("body", "independent");
     v.review.disposition = v.origin.status = "accepted-with-source-issues";
     v.review.sourceQuestionIds = ["synthetic-source-question"];
-    expect(map(v).review?.sourceQuestionIds).toEqual(["synthetic-source-question"]);
+    expect(map(v).review).toMatchObject({sourceQuestionIds: ["synthetic-source-question"]});
   });
   it.each([
     ["arbitrary revision", (v: any): void => { v.acceptedRevision = "f".repeat(40); }],

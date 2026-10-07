@@ -640,6 +640,20 @@
       "requiresSqlite": true,
       "module": "zh-parser",
       "writeCapable": false
+    },
+    "dice:overlay": {
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "module": "zh-parser",
+      "writeCapable": true
+    },
+    "dice:overlay:test": {
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "module": "zh-parser",
+      "writeCapable": false
     }
   }
 }
