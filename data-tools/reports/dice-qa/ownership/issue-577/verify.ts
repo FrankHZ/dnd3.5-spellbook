@@ -152,6 +152,12 @@ for(const [i,p] of proposals.entries()) {
   assert(!/TODO|TBD|\ufffd|\x00|空白占位|待翻译|SC-BLOCK|SC-TABLE-ROWS/.test(text));
   assert(/[\p{Script=Han}]/u.test(n.proposedText));
   const $=cheerio.load(hx);assert.equal($("table").length,p.targetId===508?1:0);assert.equal($("script,img,iframe").length,0);
+  let excludedEnd=0;
+  for(const s of b.excludedSegments) {
+    assert(Number.isInteger(s.startOffset)&&Number.isInteger(s.endOffset));
+    assert(s.startOffset>=excludedEnd&&s.startOffset<s.endOffset&&s.endOffset<=c.rawBody.length,"unsorted, overlapping or out-of-range exclusion: "+p.targetId);
+    excludedEnd=s.endOffset;
+  }
   const lineProjection=b.sourceLineProjection;assert.equal(lineProjection.map((l:any)=>l.originalText).join(""),c.rawBody);
   let offset=0;
   for(const [j,l] of lineProjection.entries()) {
@@ -163,6 +169,17 @@ for(const [i,p] of proposals.entries()) {
     assert.equal(l.action,!l.originalText.trim()?"format-only":cuts.length&&!retained.trim()?"exclude-other-version":cuts.length?"split-versions-and-review":"compare-and-retain-or-correct");
   }
   for(const s of b.excludedSegments) {assert.equal(s.originalText,c.rawBody.slice(s.startOffset,s.endOffset));assert.equal(s.action,"exclude-other-version");}
+  if(p.targetId===446) {
+    const label=c.sourceBookLabels[1]+"：",inlineStart=c.rawBody.indexOf("（"+label),inlineEnd=c.rawBody.indexOf("\n",inlineStart);
+    const blockStart=c.rawBody.indexOf("\n"+label)+1;
+    assert(inlineStart>=0&&inlineEnd>inlineStart&&blockStart>inlineEnd);
+    assert(same(b.excludedSegments.map((s:any)=>[s.startOffset,s.endOffset]),[[inlineStart,inlineEnd],[blockStart,c.rawBody.length]]));
+    const retained=lineProjection.map((l:any)=>l.projectedCandidateText).join("");
+    assert.equal(retained,c.rawBody.slice(0,inlineStart)+c.rawBody.slice(inlineEnd,blockStart));
+    assert(retained.includes(c.rawBody.slice(inlineEnd,blockStart)),"same-book headers/body/material excluded");
+    for(const l of lineProjection.filter((l:any)=>l.startOffset>=blockStart)) assert.equal(l.action,"exclude-other-version");
+    assert(!retained.includes(c.rawBody.slice(blockStart)),"foreign standalone block retained");
+  }
   assert(same(b.residualCodes,residuals.filter(r=>r.targetId===p.targetId).map(r=>r.code)));
   assert.equal(b.status,b.residualCodes.length?"reference-draft-with-material-residual":"reviewed-usable-proposal");
   assert(same(d,{row:i+1,targetId:p.targetId,sourceKey:p.sourceKey,identityStatus:"deferred",identityReasonCode:refs[i].identityDisposition.reasonCode,nameOutcome:n.outcome,nameStatus:"reviewed-usable-proposal",bodyOutcome:b.outcome,bodyStatus:b.status,reasonCode:b.reasonCode,parentTargetIds:b.parentTargetIds,residualCodes:b.residualCodes,completeRawAndDbEnglishRead:true,semanticQaPass:b.residualCodes.length===0,nativeAccepted:false,activation:false,applied:false}));
