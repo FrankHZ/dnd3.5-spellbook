@@ -60,18 +60,20 @@ docs. It should not own local DB files or source-bearing data.
 
 ## Preparing A Rulebook QA Batch
 
-The resumed dice milestone uses **High** rigor: multi-publication identity,
-historical evidence reuse and destructive importer ordering can silently lose
-content. The current deliverable is reviewed, unactivated Chinese name/body
-evidence against current DB-English, with complete coverage dispositions and
-explicit unresolved input gaps. Fixed slices may execute with Light ceremony
-within this agreement; reassess rigor at QA and integration boundaries.
+The dice integration milestone uses **High** rigor: historical acceptance
+recovery, multiple publication versions and selective writes can silently lose
+content. The current QA round is closed. Its unreviewed entries and missing or
+ambiguous English remain future-version work under #201; do not reopen semantic
+QA or translate new fields while consolidating accepted results.
 
-QA completes before unified local writer, FTS, API or consumer rehearsal. Release
-requires separately accepted integration, preservation of prior SC content,
-fallback and provenance, a concrete recovery plan, and explicit operator and
-production authorization. Main-gate owns scope/priority changes and staged
-acceptance. Owning issues record exact batches, dependencies and residuals;
+The current authorized outcome is an authenticated non-SC Chinese name/body
+handoff and a local database update through the selective writer, FTS and actual
+consumer checks. Preserve the entire accepted SC rulebook, fallback, provenance
+and all untargeted data. Main-gate applies only after tool/input acceptance and
+an explicit recovery procedure; production activation still requires separate
+authorization. Fixed slices may use Light ceremony within this agreement.
+Main-gate owns scope changes, staged acceptance and reassessment at integration
+boundaries. Owning issues record exact batches, dependencies and residuals;
 #120, #197, #121 and #420 own QA, identity, activation and engineering integration.
 PHB/PDF work, new entities, summaries, relations, HTML expansion and canonical
 corrections remain excluded unless separately authorized. The Scope and Source
@@ -122,6 +124,13 @@ accepted book merely because another book is restarting.
    fallback and provenance. Use one integration writer and the same maintained
    execution path for rehearsal and operator apply, with a concrete recovery
    plan and explicit authorization for operator/production changes.
+   For this closed dice round, use `dice:closeout:check` to authenticate the fixed
+   accepted non-SC input set. Its historical recovery checks preserve original
+   acceptance revisions and bind surviving evidence to its actual recovery
+   commit; they do not assert that missing Git history was recovered. The
+   selective writer must rerun this authenticator and compare exact target
+   state, rather than treating generated JSONL or historical global exports as
+   write authority. See the [closeout handoff](./import-workflow.md#closed-dice-qa-handoff).
 6. **Keep only useful durable evidence.** Private source/review records and
    acceptance references belong in the data repo; PRs contain source-free
    results, exact revisions and reproducible commands. Reuse accepted evidence

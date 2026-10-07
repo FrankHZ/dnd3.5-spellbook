@@ -79,6 +79,11 @@ selective name/body rows, resumes committed-overlay/search failures, and verifie
 zero-write repeats. It preserves SC and full normalized build provenance; see
 [selective Cityscape overlay](../docs/operations/import-workflow.md#selective-cityscape-overlay).
 Run `dice:overlay:test` for its synthetic transaction and recovery checks.
+`dice:closeout:check` authenticates the closed round's fixed non-SC native,
+recovered and independent Chinese field handoffs, loading current sources and
+DBs once. It writes only fresh private inspection artifacts; `dice:closeout:test`
+checks source/input drift, ownership, residual and SC exclusion boundaries.
+See the [closed QA handoff](../docs/operations/import-workflow.md#closed-dice-qa-handoff).
 `dice:effective` composes SC's exact accepted native/independent handoff with
 complete current CHM/English after the unchanged formal QA and fresh PDF verifier.
 The source entry derives original bindings and printing/errata authority from
