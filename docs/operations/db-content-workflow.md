@@ -60,21 +60,23 @@ docs. It should not own local DB files or source-bearing data.
 
 ## Preparing A Rulebook QA Batch
 
-The dice integration milestone uses **High** rigor: historical acceptance
+Accepted data activation uses **High** rigor: historical acceptance
 recovery, multiple publication versions and selective writes can silently lose
-content. The current QA round is closed. Its unreviewed entries and missing or
-ambiguous English remain future-version work under #201; do not reopen semantic
-QA or translate new fields while consolidating accepted results.
+content. The closed dice round's accepted fields are active locally and in
+production; see the [v1.4 acceptance](../releases/v1.4/ACCEPTANCE.md). Unreviewed
+entries and missing or ambiguous English remain future-version work under #201.
+Do not reopen semantic QA or translate new fields during maintenance replay.
 
-The current authorized outcome is an authenticated non-SC Chinese name/body
-handoff and a local database update through the selective writer, FTS and actual
-consumer checks. Preserve the entire accepted SC rulebook, fallback, provenance
-and all untargeted data. Main-gate applies only after tool/input acceptance and
-an explicit recovery procedure; production activation still requires separate
-authorization. Fixed slices may use Light ceremony within this agreement.
+The accepted outcome combines an authenticated non-SC Chinese name/body handoff,
+selective content writes, FTS and actual consumer checks. Preserve the entire
+accepted SC rulebook, fallback, provenance and all untargeted data. Any subsequent
+write requires its own accepted inputs, scope authorization and recovery
+procedure; prior activation is not blanket authorization to write or redeploy.
+Fixed slices may use Light ceremony within this agreement.
 Main-gate owns scope changes, staged acceptance and reassessment at integration
-boundaries. Owning issues record exact batches, dependencies and residuals;
-#120, #197, #121 and #420 own QA, identity, activation and engineering integration.
+boundaries. Owning issues record exact batches, dependencies and residuals.
+Future canonical rules-to-content handoff work belongs to #420 and is not a
+prerequisite for consuming the already accepted Chinese overlays.
 PHB/PDF work, new entities, summaries, relations, HTML expansion and canonical
 corrections remain excluded unless separately authorized. The Scope and Source
 Of Truth sections above retain authority.

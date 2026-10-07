@@ -34,6 +34,10 @@ These documents describe durable current behavior and operating constraints.
 
 ## Task-Specific References
 
+The [v1.4 content acceptance snapshot](releases/v1.4/ACCEPTANCE.md) records the
+delivered SC HTML and database scope, production evidence, and known exclusions.
+It does not certify complete corpus QA or a numbered GitHub release.
+
 The [private review console](../review-console/README.md) and its
 [module boundary](modules/review-console.md) concern the suspended PHB workflow.
 Its [resumption safeguards](releases/v1.4/phb-source-and-errata-plan.md#paused-workflow-execution-safeguards)
