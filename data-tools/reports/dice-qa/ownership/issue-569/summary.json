@@ -1,0 +1,36 @@
+{
+  "issue": 569,
+  "publicBase": "64c93b9c9a7051dcbaac041590bea0d2bc40e9a0",
+  "priorPrivate": "58d7e6424f16b31492d495a972506455f7d1a823",
+  "preparedPrivate": "6d28f9391273979a35a6bcc86971f0aac5b9f2c8",
+  "sourceMapPrivate": "47a23f9b36b4b827ebf14d7d05f3e564465c6fd5",
+  "results": {
+    "selected": 11,
+    "relatedTargetsRead": 12,
+    "rawCharacters": 3260,
+    "englishBodyCharacters": 7726,
+    "supportedReferenceNames": 10,
+    "supportedReferenceBodies": 10,
+    "paragraphsReviewed": 29,
+    "existingVersionReferenceFields": 4,
+    "unresolvedVersionBindings": 1,
+    "unresolvedPublicationOccurrences": 11,
+    "selectedExactPeerPayloads": 8,
+    "selectedDifferentPeerPayloads": 2,
+    "residualRecords": 3,
+    "nativeAttached": 0,
+    "nativeAcceptedFields": 0,
+    "totalCandidates": 5606,
+    "totalTargets": 5097,
+    "newUnseenReviewed": 0,
+    "parentUnseenRemaining": 2179,
+    "activated": 0,
+    "queryOnly": [
+      1,
+      1
+    ],
+    "dbMetadataUnchanged": true,
+    "privateStatePreserved": true
+  },
+  "privateRevision": "1d792841f6dafdc9da3d802964b12c27ea12cfbe"
+}
