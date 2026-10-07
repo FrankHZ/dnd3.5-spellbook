@@ -1,5 +1,6 @@
 import { isDeepStrictEqual } from "node:util";
 import type { SpellFieldProvenance } from "@dnd/contracts";
+import {mapCloseoutProvenance} from "#server/services/spells/spells.closeout-provenance";
 import { ApiError } from "#server/utils/errors";
 
 const record = (v: unknown): v is Record<string, any> =>
@@ -128,6 +129,7 @@ function mapFinalProvenance(v: Record<string, any>, field: "name" | "body",
   }
   let review: Extract<NonNullable<SpellFieldProvenance["review"]>, {originalEntryReviewed: true}> = {disposition: r.disposition,
     acceptedRevision: r.revision, originalEntryReviewed: true, sourceQuestionIds: r.sourceQuestionIds ?? []};
+  if ("closeout" in v) return mapCloseoutProvenance(v, field, target, fail);
   if ("sourceCorrection" in v) {
     const correction = v.sourceCorrection, prior = correction?.prior;
     const clarification = [3901,4465,4564].includes(target.id);
@@ -238,6 +240,7 @@ export function mapFieldProvenance(raw: string | null, field: "name" | "body",
     || row.spellId !== target.id || row.rulebookId !== target.rulebookId || row.lang !== "zh"
     || !revision(v.acceptedRevision)
     || !record(v.origin) || !record(v.input) || !record(v.evidence)) return fail();
+  if ("closeout" in v) return mapCloseoutProvenance(v, field, target, fail);
   if ("sourceCorrection" in v && v.acceptedRevision !== finalRevision) return fail();
   if (record(v.review) && v.review.kind === "DB-English") return mapDbEnglishProvenance(v, field, target, row.descriptionText, fail);
   if (v.acceptedRevision === finalRevision || "review" in v) return mapFinalProvenance(v, field, target, row.descriptionText, fail);

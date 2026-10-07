@@ -1,0 +1,79 @@
+{
+  "schema": "dice-closeout-activation-validation.v1",
+  "issue": 587,
+  "publicBase": "868d07723c2e9762d60af7da02b2e97deef476df",
+  "acceptedInputRevision": "d58c677ea541592c2fb8c19cfc046b4546764855",
+  "dependencies": [
+    529,
+    586
+  ],
+  "scope": {
+    "targets": 2747,
+    "acceptedNames": 1700,
+    "acceptedBodies": 2452,
+    "acceptedFields": 4152,
+    "materializedFields": 5494,
+    "recoveredDbEnglish": 2816,
+    "nativeDbEnglish": 633,
+    "independentDbEnglish": 703,
+    "retainedChm": 1081,
+    "retainedEnglish": 261,
+    "mixedAcceptedBodies": 6,
+    "scTargetsInWriteSet": 0
+  },
+  "validation": {
+    "typecheck": "passed",
+    "contractsBuild": "passed",
+    "serverBuild": "passed",
+    "closeoutPortable": {
+      "passed": true,
+      "targets": 5,
+      "fields": 7,
+      "elapsedMs": 7825,
+      "peakRssMiB": 129.05078125
+    },
+    "cityscapePortable": {
+      "passed": true,
+      "targets": 8,
+      "elapsedMs": 11117,
+      "peakRssMiB": 147.765625
+    },
+    "actualHttp": {
+      "files": 3,
+      "tests": 46,
+      "passed": true
+    },
+    "portableHarness": {
+      "tests": 20,
+      "passed": true
+    },
+    "actualReadOnlyPreflight": {
+      "state": "before",
+      "documents": 13061,
+      "elapsedMs": 16870,
+      "peakRssMiB": 482.99609375
+    },
+    "actualServerProvenanceMapper": {
+      "fields": 5494,
+      "passed": true,
+      "elapsedMs": 15107,
+      "peakRssMiB": 476.12109375
+    },
+    "privateProtection": {
+      "indexUnchanged": true,
+      "statusOutsideOwnedReportsUnchanged": true,
+      "untrackedOutsideOwnedReportsUnchanged": true,
+      "stagedDeletionsPreserved": 39
+    }
+  },
+  "boundaries": {
+    "operatorWrites": false,
+    "operatorAppStateAccess": false,
+    "productionActivation": false,
+    "fullDatabaseCopies": false,
+    "privatePush": false,
+    "sourceQaReopened": false
+  },
+  "recovery": "Overlay failure rolls back; committed exact-after overlay resumes maintained FTS; complete repeat performs no overlay/search changes.",
+  "operatorAcceptance": "Main-gate applies only after merged code and independent acceptance; actual operator apply resources and consumers remain its responsibility."
+}
