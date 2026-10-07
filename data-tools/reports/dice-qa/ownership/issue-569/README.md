@@ -1,0 +1,26 @@
+# Eleven cross-publication DB-English references
+
+Issue [569](https://github.com/FrankHZ/dnd3.5-spellbook/issues/569) follows the eleven already-disposed cross-publication/version occurrences in [545](https://github.com/FrankHZ/dnd3.5-spellbook/issues/545). All eleven complete raw entries and twelve related current DB English descriptions, HTML, mechanics, editions and Chinese fields were read. Actual volumes remain3260 raw header/body characters and7726 English body characters.
+
+Ten existing book110 identities support ten reviewed Chinese name/body reference proposals, with29 complete English paragraphs bound to actual Chinese text/HTML. They repair demonstrated omissions, logical reversals, action wording and rule distinctions against current DB English. Header differences are recorded against unchanged structured mechanics; historical printed class subsets are not substituted for normalized class inventories. These are unactivated semantic references, not natively accepted fields or authenticated publication bindings.
+
+Book64 and book110 remain distinct. [195/PR234](https://github.com/FrankHZ/dnd3.5-spellbook/pull/234) accepted the historical disposition with zero Chinese replacements and twenty English fallback fields. Its ten unapplied drafts were rechecked against actual current English and preserved. The historical private object `c3aca139eed3938f9cdab475c5014293b27cecc3` no longer resolves locally; surviving evidence is pinned at recovery revision `47a23f9b36b4b827ebf14d7d05f3e564465c6fd5`. This report does not claim exact replay of that missing historical object or overwrite its field ownership. The selected ten peer payloads include eight complete matches and two action differences. The historical eleven-group comparison's ninth match is the Ring of Fire excluded here and owned by565. Text matches and a legacy abbreviation collision do not authorize canonical publication changes.
+
+The Ravenloft occurrence remains unresolved. Both177/book37/edition7 and1536/book72/edition5 were completely checked, including their different resistance rules and the candidate's area/timing discrepancies. Four existing version-specific Chinese reference fields are retained under their original539/175 owners. No version is chosen from a name or edition label, no hybrid is produced, and no book102 entity is manufactured. Deferral/reference is not a QA pass.
+
+Three private residual records remain under545: the ten publication-attribution conflicts,4961's unresolved English enhancement-subtraction interpretation, and the Ravenloft same-publication/version baseline gap. The supplied4961 statement and example are translated without deriving a correction or formula. Publication/canonical-metadata uncertainty and missing admission inputs remain separate boundaries. The ten missing-entry candidates prepared under565 are outside this delivery. These eleven were already reviewed under545, so197's2179 unseen count is unchanged.
+
+Private local-only evidence lives solely in `dice-baselines/issue-520/ownership/issue-569/`. Exact private revision: `1d792841f6dafdc9da3d802964b12c27ea12cfbe`. Shared source/map/aliases/intake and all existing decisions remain frozen. All5606 candidates and5097 target dispositions, including every fallback, reproduce exactly through maintained parser/source-coverage/reconcile helpers. All eleven selected candidates remain natively unmatched; no remap is applied or simulated and zero native accepted fields are reported. This reference-only handoff needs no map simulation. Rules/content use readonly/query_only; app-state is never opened. No writer/FTS/API/consumer rehearsal, new environment, new entities, PDF acquisition, private push or deployment occurs.529 and PHB remain paused.
+
+From the configured checkout root, run:
+
+```powershell
+& node --expose-gc --max-old-space-size=256 --import tsx ./data-tools/reports/dice-qa/ownership/issue-569/verify.ts 1d792841f6dafdc9da3d802964b12c27ea12cfbe
+git diff --check
+```
+
+From `data-tools`, use `./reports/dice-qa/ownership/issue-569/verify.ts` with the same flags and revision. The verifier writes nothing. It compares exact committed bound and owned files (normalizing only Git checkout CRLF/LF), current DB snapshots, full source replay, complete after-paragraph/HTML bindings, existing version decisions and raw unrelated private index/status. The9469 original index entries,39 staged deletions and1441 untracked files are retained. Private exact-head evidence is committed using owned-only paths and is not pushed.
+
+The observed replay takes about3s and294MiB peak RSS, within the<60s/<512MiB budget. The existing22.3MB candidate ledger and5.55MB source corpus are read without full copies. New private evidence is about1.6MB; temporary owned scripts/output are below0.1MB. One process, retained dependencies, no paid external API or DB copies. Actual `gpt-6.1-sol/high` was independently verified from the local rollout `turn_context`.
+
+Full remote `ci:portable` on the final PR head is the merge gate; its actual run belongs in the PR. Any failure/cancellation/timeout stops without retry. Main-gate owns independent acceptance, merge and issue closeout; this task holds the checkout until main-gate explicitly releases it.
