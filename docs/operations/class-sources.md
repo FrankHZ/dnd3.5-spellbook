@@ -100,8 +100,11 @@ expanding its book/page selection; no parallel workers or paid APIs are required
 
 ## Review Contract And Meaning
 
-Supply `--proposals <reviewed-json-array>` to rerun the same source scan and
-validate one proposal for every candidate key. Each input row contains exactly:
+Supply `--proposals <reviewed-json>` to rerun the same source scan and validate
+one proposal for every candidate key. The envelope requires `schemaVersion: 1`,
+`sourceRevision` equal to the actual CHM Git revision, and a `rows` array. A stale
+revision is rejected, so old ordinal references cannot silently bind new source
+content. Each row contains exactly:
 
 ```json
 {

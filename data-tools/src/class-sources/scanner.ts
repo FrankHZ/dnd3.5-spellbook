@@ -141,11 +141,12 @@ export function matchEvidence(identities: Identity[], evidence: Evidence[]) {
   return evidence.map(e => ({ evidenceId: e.id, classIds: e.id.endsWith(":lead") ? [] : [...new Set(nameKeys(e.label).flatMap(k => [...(index.get(k) ?? [])]))] }));
 }
 
-export function validateProposals(input: unknown, candidates: Candidate[], evidence: Evidence[]): Proposal[] {
-  requireValue(Array.isArray(input), "Proposals must be an array");
+export function validateProposals(input: unknown, candidates: Candidate[], evidence: Evidence[], revision: string): Proposal[] {
+  requireValue(record(input) && input.schemaVersion === 1 && input.sourceRevision === revision && Array.isArray(input.rows), "Proposal source revision must match the current CHM revision");
+  const rows: unknown[] = input.rows;
   const byKey = new Map(candidates.map(c => [c.key, c])), byEvidence = new Map(evidence.map(e => [e.id, e]));
   const seen = new Set<string>();
-  for (const p of input) {
+  for (const p of rows) {
     requireValue(record(p) && nonempty(p.key) && byKey.has(p.key) && !seen.has(p.key), "Unknown or duplicate proposal key");
     requireValue(Object.keys(p).every(k => ["key", "disposition", "relation", "evidenceIds", "rationale"].includes(k)), "Unknown proposal field");
     seen.add(p.key);
@@ -160,7 +161,7 @@ export function validateProposals(input: unknown, candidates: Candidate[], evide
     }
   }
   requireValue(seen.size === candidates.length, "Proposals must cover the entire declared candidate scope");
-  return input as Proposal[];
+  return rows as Proposal[];
 }
 
 export function scan(options: { chmRoot: string; rulesDb: string; contentDb: string; scope: string; out: string; proposals?: string }) {
@@ -253,7 +254,7 @@ export function scan(options: { chmRoot: string; rulesDb: string; contentDb: str
     const hits = (evidenceByClass.get(c.id) ?? []).filter(e => e.targetPublicationId === t.publicationId || e.contextPublicationId === t.publicationId);
     return { ...t, key: `${t.publicationId}:${t.classId}:${t.variantId ?? "probe"}`, name: c.name, aliases: c.aliases, evidenceIds: hits.map(e => e.id), proposedDisposition: hits.length ? "ambiguous" : "absent" };
   });
-  const proposals = options.proposals ? validateProposals(JSON.parse(fs.readFileSync(resolve(options.proposals), "utf8")), candidates, evidence) : null;
+  const proposals = options.proposals ? validateProposals(JSON.parse(fs.readFileSync(resolve(options.proposals), "utf8")), candidates, evidence, revision) : null;
   requireValue(git("rev-parse", "HEAD") === revision && git("status", "--porcelain", "--untracked-files=all") === sourceStatus, "CHM changed during scan");
   fs.mkdirSync(out);
   const write = (name: string, value: unknown) => fs.writeFileSync(path.join(out, name), JSON.stringify(value, null, 2) + "\n", { flag: "wx" });
