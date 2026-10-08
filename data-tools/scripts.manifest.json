@@ -682,6 +682,20 @@
       "requiresLocalData": false,
       "requiresSqlite": true,
       "writeCapable": false
+    },
+    "class-sources:scan": {
+      "module": "rules",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "class-sources:test": {
+      "module": "rules",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": true
     }
   }
 }
