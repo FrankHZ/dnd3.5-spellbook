@@ -31,6 +31,15 @@ alternatives and a cost supplied by a maneuver's initiation header. No confirmed
 sampled miss was observed; with no demonstrated held-out errors, recall cannot
 be estimated. Lexical findings never become semantic acceptance automatically.
 
+Separate clarity-only proposals align the three ambiguous entries' specific
+roles with complete DB English: two free-action roles and one standard casting
+header. Historical mechanical-error unknowns and the above denominators stay
+unchanged. Two proposals target current effective rows with existing DB-English
+authority; one is a future effective insert from a retained CHM reference, guarded
+by effective-row absence. It does not modify CHM or resume suspended PHB
+PDF/MinerU/SRD queues. All three are non-SC, unaccepted, and preserve complete
+predecessors plus every unrelated substring. Frequency alone is not their basis.
+
 Three known pilot follow-ups are additional, not part of these denominators.
 Current #84 has four separately reviewable private clause proposals: creation
 basis, force property, free-action terminology and an upper bound of three.
@@ -94,8 +103,8 @@ fallback. Targeted action QA tests and data-tools typecheck pass. Remote
 `ci:portable` remains the merge gate; exact-head evidence belongs in the PR.
 
 Existing closeout machinery authenticates revision-bound accepted fields against
-CHM predecessors and projects inserts. It does not authorize replacing the
-current #84 effective row. A future accepted application needs separately scoped
-effective-row replacement with complete predecessor/identity/provenance guards,
+CHM predecessors and projects inserts. It does not authorize these proposals.
+A future accepted application needs separately scoped effective-row replacement
+or guarded insertion with complete predecessor/identity/provenance guards,
 preserved source evidence and search refresh through existing mechanisms.
 This delivery adds no writer or activation authority.
