@@ -151,3 +151,12 @@ Unknown follow-up should stay specific: compare an identified DB variant's
 requirements or replacement abilities, inspect a named missing section, or look
 up a targeted official index. Do not broaden a pilot into full PDF collection,
 translation, or an unbounded full-corpus review.
+
+Source location and identity granularity are separate questions. A DB row that
+aggregates independently selectable alternatives can have a confirmed source
+while remaining ambiguous as a class mapping. Record that distinction and the
+individual options in private review notes; do not treat the existing `variant`
+relation as a decision to publish or count a family as one class. A supplemental
+external index likewise does not fill a missing CHM entry by itself. See the
+[bounded residual handoff](../reports/class-source-residuals-612.md) for the
+evidence and reproduction example.
