@@ -1,0 +1,62 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import Database from "better-sqlite3";
+import { englishActions, inspectActions, kinds } from "./actions";
+import { scan, selectChinese, selectSample, outputDirectory, type TextRow } from "./cli";
+
+const check = (en: string, zh: string, header: string | null = null) => inspectActions(en, header, zh);
+assert.equal(check("You activate this as an immediate action.", "你激活此效果。")[0]!.status, "candidate");
+for (const synonym of ["直觉", "即时", "瞬间"]) {
+  assert.equal(check("You activate this as an immediate action.", `你以${synonym}动作激活此效果。`)[0]!.reason, "lexical-support-context-unverified");
+}
+assert.equal(check("You activate this as an immediate action.", "你以迅捷动作激活此效果。")[0]!.status, "candidate");
+assert.equal(check("You end this as a swift action.", "施法时间：迅捷动作\n你结束此效果。")[0]!.status, "candidate");
+const unrelated = check("You activate this as a swift action.\nYou end it as a swift action.", "你以迅捷动作激活。\n你结束效果。");
+assert(unrelated.every(row => row.status === "candidate" && row.reason === "action-count-deficit"));
+assert.equal(check("You end this as a swift action.", "你结束效果。\n另一个能力以迅捷动作激活。")[0]!.status, "unknown");
+assert.equal(check("You maintain this as a move action.", "你以移动动作维持。")[0]!.role, "sustain");
+assert.equal(check("You end this as a free action.", "你以自由动作结束。")[0]!.role, "end");
+assert.deepEqual(englishActions("No action is required. A move-equivalent action, two full round actions, a standard action, a swift action, an immediate action and a free action." ).map(r=>r.kind).sort(), [...kinds].sort());
+assert.equal(check("This does not require an action.", "这不需要动作。")[0]!.chineseOccurrences, 1);
+assert.equal(check("You use a standard action.", "")[0]!.reason, "missing-selected-Chinese");
+assert.equal(check("No mechanical action phrase.", "普通文本。").length, 0);
+assert.equal(check("You activate this as an immediate action.", "你以直觉动作激活。", "1 standard action")[0]!.field, "casting-time");
+assert.deepEqual(englishActions("Actions other than free, swift, or immediate actions trigger damage.").map(r=>r.kind), ["free", "swift", "immediate"]);
+assert(check("Actions other than free, swift, or immediate actions trigger damage.", "除了自由，直觉，迅捷以外的动作触发伤害。").every(r=>r.status === "unknown"));
+assert.equal(check("Activate as a swift action.", "This activates as a swift action.")[0]!.status, "candidate");
+assert.equal(check("Activate as a swift action.", "Activate as a swift action.")[0]!.reason, "selected-English-fallback");
+assert.equal(check("Activate as a swift action.", "以迅捷动作激活。", "standard action")[0]!.reason, "Chinese-casting-header-unavailable");
+const emptyEffective: TextRow = { variant: "effective", rulebookId: 1, name: null, descriptionText: null, sourceKey: null, nameProvenanceJson: null, bodyProvenanceJson: null };
+const chm = { ...emptyEffective, variant: "chm", descriptionText: "迅捷动作" };
+assert.equal(selectChinese([chm, emptyEffective]), emptyEffective);
+assert.equal(selectChinese([chm]), chm);
+assert.equal(selectChinese([emptyEffective, chm], "chm"), chm);
+assert.throws(() => outputDirectory(path.join(os.tmpdir(), "public-action-qa")), /private|Output/);
+const dir = fs.mkdtempSync(path.join(os.tmpdir(), "action-qa-"));
+try {
+  const file = path.join(dir, "content.sqlite"); const db = new Database(file);
+  db.exec(`CREATE TABLE SpellContent (legacySpellId INTEGER, sourceRulebookId INTEGER, canonicalName TEXT, descriptionText TEXT, castingTimeRaw TEXT);
+    CREATE TABLE I18nSpellText (spellId INTEGER,rulebookId INTEGER,lang TEXT,variant TEXT,name TEXT,descriptionText TEXT,sourceKey TEXT,nameProvenanceJson TEXT,bodyProvenanceJson TEXT);
+    INSERT INTO SpellContent VALUES (876,58,'Synthetic anchor','Activate as an immediate action.','1 standard action');
+    INSERT INTO I18nSpellText VALUES (876,58,'zh','chm','旧','施法时间：标准动作\n激活效果。','legacy',NULL,NULL);
+    INSERT INTO I18nSpellText VALUES (876,58,'zh','effective','当前','施法时间：标准动作\n以直觉动作激活。',NULL,'{}','{"origin":"synthetic"}');`);
+  db.close(); const before = fs.readFileSync(file); const result = scan(file, [876]);
+  assert.equal(result[0]!.selected!.variant, "effective");
+  assert.equal(result[0]!.selected!.bodyProvenanceJson, '{"origin":"synthetic"}');
+  assert.equal(result[0]!.findings.find(f=>f.field === "body")!.status, "unknown");
+  assert.equal(result[0]!.chmContrast!.findings.find(f=>f.field === "body")!.status, "candidate");
+  assert.deepEqual(fs.readFileSync(file), before);
+  assert.throws(() => scan(file, [999]), /Unknown stable ID/);
+  const update = new Database(file);
+  update.prepare("UPDATE I18nSpellText SET rulebookId = 99 WHERE variant = 'effective'").run();
+  update.close();
+  assert(scan(file,[876])[0]!.findings.every(f=>f.reason === "selected-book-mismatch" && f.status === "unknown"));
+  const fallback = new Database(file);
+  fallback.prepare("UPDATE I18nSpellText SET rulebookId=58, bodyProvenanceJson=? WHERE variant='effective'").run(JSON.stringify({targetId:876,field:"body",language:"en"}));
+  fallback.close();
+  assert(scan(file,[876])[0]!.findings.every(f=>f.reason === "provenance-English-fallback" && f.status === "unknown"));
+  assert.deepEqual(selectSample([{spellId:876,book:58,name:"anchor",english:"",castingTime:null}],100), [876]);
+} finally { fs.rmSync(dir, { recursive: true, force: true }); }
+console.log("Action QA portable regressions passed (omission, scope/count, synonyms, uncertainty, variant, provenance, readonly DB)");
