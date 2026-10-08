@@ -5,7 +5,7 @@ import path from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 import Database from "better-sqlite3";
 import iconv from "iconv-lite";
-import { decodeHtml, parseDirectory, parseScope, matchEvidence, nameKeys, validateProposals, type Candidate, type Evidence } from "./scanner";
+import { decodeHtml, parseDirectory, parseScope, matchEvidence, nameKeys, validateProposals, verifyContentsBinding, type Candidate, type Evidence } from "./scanner";
 import { repoRoot } from "../shared/env";
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), "class-source-test-"));
@@ -67,6 +67,36 @@ try {
   assert.equal(candidates.length, 4); assert.ok(candidates.some(c => c.variantId === 10)); assert.ok(candidates.some(c => c.variantId === 11));
   const cross = evidence.find(e => e.label === "跨书参照")!;
   assert.equal(cross.contextPublicationId, 2); assert.equal(cross.targetPublicationId, 1);
+  const book = scope.books[0]!;
+  const parent = evidence.find(e => e.source === "Contents.hhc" && e.label === book.contentsLabel)!;
+  const child = evidence.find(e => e.source === "Contents.hhc" && e.local === "甲/class.htm")!;
+  const noLocal = { ...parent, local: null, targetExists: false, targetPublicationId: null };
+  const filler = { ...parent, local: "填充页面.htm", targetExists: true, targetPublicationId: null };
+  assert.ok(verifyContentsBinding(book, [parent]));
+  for (const node of [noLocal, filler]) {
+    assert.ok(verifyContentsBinding(book, [node, child]));
+    assert.ok(!verifyContentsBinding(book, [node]));
+    assert.ok(!verifyContentsBinding(book, [node, { ...child, source: "Index.hhk" }]));
+    assert.ok(!verifyContentsBinding(book, [{ ...node, source: "Index.hhk" }, child]));
+    assert.ok(!verifyContentsBinding(book, [node, { ...child, ancestors: ["[B] 乙"] }]));
+    assert.ok(!verifyContentsBinding(book, [node, { ...child, ancestors: [] }]));
+    assert.ok(!verifyContentsBinding(book, [node, { ...child, targetExists: false }]));
+    assert.ok(!verifyContentsBinding(book, [node, { ...child, local: "乙/class.htm", targetPublicationId: 2 }]));
+    assert.ok(!verifyContentsBinding(book, [node, { ...child, contextPublicationId: 2 }]));
+  }
+  assert.ok(!verifyContentsBinding(book, [{ ...parent, source: "Index.hhk" }]));
+  assert.ok(!verifyContentsBinding(book, [{ ...parent, targetExists: false }]));
+  assert.ok(!verifyContentsBinding({ ...book, contentsLabel: "龙杂志" }, [
+    { ...noLocal, label: "龙杂志" }, { ...child, ancestors: ["龙杂志"] },
+  ]));
+  // Exercise parsing, filesystem existence and context assignment together.
+  for (const [name, parentLocal] of [["no-local", ""], ["filler", "乙/cover.htm"]] as const) {
+    fs.writeFileSync(path.join(chm, "Contents.hhc"), iconv.encode(text.replace(object("[A] 甲", "甲/cover.htm"), object("[A] 甲", parentLocal)), "gbk"));
+    git("add", "Contents.hhc"); git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.test", "commit", "-m", name);
+    assert.equal(run(repoRoot(), path.join(output, `binding-${name}`)).status, 0);
+  }
+  fs.writeFileSync(path.join(chm, "Contents.hhc"), iconv.encode(text, "gbk"));
+  git("add", "Contents.hhc"); git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.test", "commit", "-m", "restore direct binding");
   const proposals = candidates.map(c => ({ key: c.key, disposition: "ambiguous", relation: "unknown", evidenceIds: [evidence.find(e => e.targetPublicationId === c.publicationId)!.id], rationale: "Synthetic identity requires review." }));
   const revision = git("rev-parse", "HEAD").toString().trim();
   const envelope = (rows: unknown) => ({ schemaVersion: 1, sourceRevision: revision, rows });

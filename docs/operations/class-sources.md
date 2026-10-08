@@ -52,7 +52,14 @@ an abbreviation or spell-class index. For example (synthetic identities):
 ```
 
 `prefix` is a slash-separated CHM-root-relative directory. `contentsLabel` is
-the exact decoded publication node label and must point into that prefix.
+the exact decoded publication node label in `Contents.hhc`. A binding requires
+an existing local file inside that prefix, either on the publication node itself
+or on a descendant beneath the same publication heading. The descendant route
+requires a bracketed publication code in the heading (for example `[Und]`),
+matching publication context and preserved ancestry. This supports book headings
+without `Local`, or whose own page is a filler outside the book directory.
+Index-only entries, sibling paths, missing files and cross-book links cannot
+establish the binding; a generic grouping such as `龙杂志` is insufficient.
 Bindings may not overlap. `pages` lists explicit CHM-root-relative HTML/HTM
 files inside the selected books to inspect after directory review. Start empty;
 add only pages needed to resolve directory gaps. `probes` adds explicit class/book
