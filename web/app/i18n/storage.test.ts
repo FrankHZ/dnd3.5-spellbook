@@ -34,19 +34,21 @@ describe("i18n storage", () => {
     expect(loadState).not.toHaveBeenCalled();
   });
 
-  it("returns zh language and variant from stored preferences", () => {
+  it("normalizes a stored Chinese variant to effective", () => {
     vi.stubGlobal("window", {});
     mockedLoadState.mockReturnValue({
       ...DEFAULT_STATE,
       uiPrefs: { lang: "zh", zhVariant: "chm" },
     });
 
-    expect(getI18nFromStorage()).toEqual({ lang: "zh", variant: "chm" });
+    expect(getI18nFromStorage()).toEqual({ lang: "zh", variant: "effective" });
   });
 
   it("preserves the existing explicit effective preference", () => {
     vi.stubGlobal("window", {});
-    mockedLoadState.mockReturnValue({ uiPrefs: { lang: "zh", zhVariant: "effective" } } as any);
+    mockedLoadState.mockReturnValue({
+      uiPrefs: { lang: "zh", zhVariant: "effective" },
+    } as any);
     expect(getI18nFromStorage()).toEqual({ lang: "zh", variant: "effective" });
   });
 
@@ -68,5 +70,14 @@ describe("i18n storage", () => {
 
     expect(getI18nFromStorage()).toEqual({ lang: "en" });
     expect(mockedDetectPreferredLang).toHaveBeenCalled();
+  });
+
+  it("uses effective when storage fails in a Chinese browser", () => {
+    vi.stubGlobal("window", {});
+    mockedLoadState.mockImplementation(() => {
+      throw new Error("storage unavailable");
+    });
+    mockedDetectPreferredLang.mockReturnValue("zh");
+    expect(getI18nFromStorage()).toEqual({ lang: "zh", variant: "effective" });
   });
 });

@@ -6,12 +6,12 @@ import { installMemoryStorage } from "~/storage/storage-test-utils";
 installMemoryStorage();
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 describe("Chinese default and persisted variant requests", () => {
-  it.each([undefined, "chm", "effective", "other-variant"])("propagates %s without rewriting stored preferences", async variant => {
+  it.each([undefined, "chm", "effective", "other-variant", "", 42])("uses effective with saved variant %s without rewriting storage", async variant => {
     vi.stubGlobal("window", { location: { origin: "http://test" } });
     vi.stubGlobal("navigator", { language: "zh-CN", languages: ["zh-CN"] });
     if (variant !== undefined) localStorage.setItem(LS_KEY_PREFS, JSON.stringify({ storageVersion: 1, uiPrefs: { lang: "zh", zhVariant: variant } }));
     const before = localStorage.getItem(LS_KEY_PREFS);
-    expect(getI18nFromStorage()).toEqual({ lang: "zh", variant: variant ?? "effective" });
+    expect(getI18nFromStorage()).toEqual({ lang: "zh", variant: "effective" });
     const fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, text: async () => "{}" });
     vi.stubGlobal("fetch", fetch);
     await apiGet("/api/spells/100");
@@ -22,7 +22,7 @@ describe("Chinese default and persisted variant requests", () => {
     for (const [url] of fetch.mock.calls) {
       const params = new URL(url, "http://test").searchParams;
       expect(params.get("lang")).toBe("zh");
-      expect(params.get("variant")).toBe(variant ?? "effective");
+      expect(params.get("variant")).toBe("effective");
     }
     expect(localStorage.getItem(LS_KEY_PREFS)).toBe(before);
   });

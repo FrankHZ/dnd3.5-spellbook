@@ -1,10 +1,9 @@
 import { Link, useParams } from "react-router";
-import { useQuery } from "@tanstack/react-query";
 
 import { ApiError, getApiErrorDisplayMessage } from "~/api/http";
 import { SpellActionButtons } from "~/components/SpellActionButtons";
 import { StatusCard } from "~/components/StatusCard";
-import { getSpellDetail } from "~/api/spells";
+import { useSpellDetail } from "./useSpellDetail";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -106,11 +105,7 @@ function SpellOverviewSection({
           {schoolText}
         </SpellMetaBadge>
         {descriptors.map((descriptor) => (
-          <SpellMetaBadge
-            key={descriptor.key}
-            kind="descriptor"
-            size="regular"
-          >
+          <SpellMetaBadge key={descriptor.key} kind="descriptor" size="regular">
             {descriptor.label}
           </SpellMetaBadge>
         ))}
@@ -121,19 +116,11 @@ function SpellOverviewSection({
 
 export default function SpellDetailPage() {
   const { id } = useParams();
-  const { queryKey } = useAppI18n();
   const { lang, spellName } = useAppI18n();
   const { t } = useTranslation(["spell-detail", "collections"]);
   const { metaName } = useMetaNames();
   const { rulebookDisplay } = useRulebookDisplay();
-  const idNum = Number(id);
-  const isValidId = Number.isInteger(idNum) && idNum > 0;
-
-  const query = useQuery({
-    queryKey: ["spellDetail", { idNum, ...queryKey }],
-    enabled: isValidId,
-    queryFn: ({ signal }) => getSpellDetail(idNum, signal),
-  });
+  const { idNum, isValidId, query } = useSpellDetail(id);
 
   // 400/404 handling
   const status = query.error instanceof ApiError ? query.error.status : null;

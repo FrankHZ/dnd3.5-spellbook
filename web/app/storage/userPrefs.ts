@@ -122,10 +122,7 @@ function mergeState(parsed: StoredRecord): UserPrefsState {
     lang: isStringChoice(uiPrefs.lang, SUPPORTED_LANGS)
       ? uiPrefs.lang
       : defaults.uiPrefs.lang,
-    zhVariant:
-      typeof uiPrefs.zhVariant === "string"
-        ? uiPrefs.zhVariant
-        : defaults.uiPrefs.zhVariant,
+    zhVariant: DEFAULT_ZH_VARIANT,
   };
   if (isStringChoice(uiPrefs.theme, ["light", "dark"] as const)) {
     nextUiPrefs.theme = uiPrefs.theme;

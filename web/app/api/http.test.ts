@@ -37,7 +37,9 @@ describe("api http helpers", () => {
     vi.restoreAllMocks();
     vi.unstubAllEnvs();
     mockedGetI18nFromStorage.mockReturnValue({ lang: "en" });
-    globalThis.fetch = vi.fn().mockResolvedValue(mockFetchResponse({ body: { ok: true } }));
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValue(mockFetchResponse({ body: { ok: true } }));
   });
 
   it("adds lang to relative GET requests without replacing existing query params", async () => {
@@ -54,7 +56,7 @@ describe("api http helpers", () => {
 
     await apiGet("/api/spells/search?q=fire&lang=en");
 
-    expect(fetch).toHaveBeenCalledWith("/api/spells/search?q=fire&lang=en&variant=chm", {
+    expect(fetch).toHaveBeenCalledWith("/api/spells/search?q=fire&lang=en", {
       method: "GET",
       signal: undefined,
     });
@@ -66,39 +68,93 @@ describe("api http helpers", () => {
     await apiGet("/api/spells/1");
     await apiGet("/api/meta/i18n");
 
-    expect(fetch).toHaveBeenNthCalledWith(1, "/api/spells/1?lang=zh&variant=chm", {
-      method: "GET",
-      signal: undefined,
-    });
+    expect(fetch).toHaveBeenNthCalledWith(
+      1,
+      "/api/spells/1?lang=zh&variant=effective",
+      {
+        method: "GET",
+        signal: undefined,
+      },
+    );
     expect(fetch).toHaveBeenNthCalledWith(2, "/api/meta/i18n?lang=zh", {
       method: "GET",
       signal: undefined,
     });
   });
-  it("propagates explicit effective preferences through detail, list, search and resolve", async () => {
-    mockedGetI18nFromStorage.mockReturnValue({ lang: "zh", variant: "effective" });
-    for (const endpoint of ["/api/spells/1", "/api/spells/by-level?classIds=1", "/api/spells/search?q=synthetic"])
-      await apiGet(endpoint);
-    await apiPost("/api/spells/batch", { ids: [1] });
-    await apiPost("/api/spells/resolve", { names: ["Synthetic"] });
-    for (const [url] of vi.mocked(fetch).mock.calls) {
-      const params = new URL(String(url), "http://localhost").searchParams;
-      expect(params.get("lang")).toBe("zh");
-      expect(params.get("variant")).toBe("effective");
-    }
-  });
+  it.each(["chm", "effective", "unknown", "", undefined])(
+    "uses effective for every spell consumer with saved variant %s",
+    async (variant) => {
+      mockedGetI18nFromStorage.mockReturnValue({ lang: "zh", variant });
+      for (const endpoint of [
+        "/api/spells/1",
+        "/api/spells/by-level?classIds=1",
+        "/api/spells/search?q=synthetic",
+      ])
+        await apiGet(endpoint);
+      await apiPost("/api/spells/batch", { ids: [1] });
+      await apiPost("/api/spells/resolve", { names: ["Synthetic"] });
+      for (const [url] of vi.mocked(fetch).mock.calls) {
+        const params = new URL(String(url), "http://localhost").searchParams;
+        expect(params.get("lang")).toBe("zh");
+        expect(params.get("variant")).toBe("effective");
+      }
+    },
+  );
 
   it("sends JSON bodies for POST requests", async () => {
     mockedGetI18nFromStorage.mockReturnValue({ lang: "zh", variant: "chm" });
 
     await apiPost("/api/spells/resolve", { names: ["Magic Missile"] });
 
-    expect(fetch).toHaveBeenCalledWith("/api/spells/resolve?lang=zh&variant=chm", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ names: ["Magic Missile"] }),
-      signal: undefined,
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/spells/resolve?lang=zh&variant=effective",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ names: ["Magic Missile"] }),
+        signal: undefined,
+      },
+    );
+  });
+
+  it("overrides stale explicit variants using the request language", async () => {
+    mockedGetI18nFromStorage.mockReturnValue({ lang: "en" });
+    await apiGet("/api/spells/876?lang=zh&variant=chm&variant=bad");
+    await apiPost("/api/spells/resolve?lang=zh&variant=unknown", {
+      names: ["Heart of Air"],
     });
+    for (const [url] of vi.mocked(fetch).mock.calls) {
+      const params = new URL(String(url), "http://localhost").searchParams;
+      expect(params.getAll("variant")).toEqual(["effective"]);
+    }
+  });
+
+  it("preserves explicit English and entity variant semantics", async () => {
+    mockedGetI18nFromStorage.mockReturnValue({ lang: "zh", variant: "chm" });
+    for (const path of [
+      "/api/spells/876?lang=en&variant=chm",
+      "/api/meta/i18n?variant=chm",
+      "/api/rulebooks?variant=other",
+      "/api/spells-metadata?variant=chm",
+    ]) {
+      await apiGet(path);
+      const url = String(vi.mocked(fetch).mock.calls.at(-1)?.[0]);
+      expect(new URL(url, "http://localhost").searchParams.get("variant")).toBe(
+        new URL(path, "http://localhost").searchParams.get("variant"),
+      );
+    }
+  });
+
+  it("returns fallback provenance unchanged despite requesting effective", async () => {
+    mockedGetI18nFromStorage.mockReturnValue({ lang: "zh", variant: "chm" });
+    const fallback = {
+      id: 876,
+      i18n: { lang: "zh", variant: "chm", description: "Fallback" },
+    };
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValue(mockFetchResponse({ body: fallback }));
+    expect(await apiGet("/api/spells/876")).toEqual(fallback);
   });
 
   it("prepends the configured API base URL for relative API requests", async () => {
@@ -147,8 +203,9 @@ describe("api http helpers", () => {
 
     expect(hasApiErrorCode(error, "FULL_TEXT_SEARCH_UNAVAILABLE")).toBe(true);
     expect(hasApiErrorCode(error, "OTHER_ERROR")).toBe(false);
-    expect(hasApiErrorCode(new Error("nope"), "FULL_TEXT_SEARCH_UNAVAILABLE"))
-      .toBe(false);
+    expect(
+      hasApiErrorCode(new Error("nope"), "FULL_TEXT_SEARCH_UNAVAILABLE"),
+    ).toBe(false);
   });
 
   it("uses localized display copy instead of unknown server messages", () => {

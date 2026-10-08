@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { LS_KEY_PREFS } from "./keys";
+import { LS_KEY_COLLECTIONS, LS_KEY_PREFS } from "./keys";
 import {
   DEFAULT_STATE,
   detectPreferredLang,
@@ -61,7 +61,11 @@ describe("user preferences storage", () => {
   it("rejects unsupported storage versions", () => {
     localStorage.setItem(
       LS_KEY_PREFS,
-      JSON.stringify({ ...DEFAULT_STATE, storageVersion: 999, includePrestige: true }),
+      JSON.stringify({
+        ...DEFAULT_STATE,
+        storageVersion: 999,
+        includePrestige: true,
+      }),
     );
 
     expect(loadState()).toEqual({
@@ -173,7 +177,7 @@ describe("user preferences storage", () => {
       ...DEFAULT_STATE,
       selectedRulebookIds: [1, 2],
       displayPrefs: DEFAULT_STATE.displayPrefs,
-      uiPrefs: { lang: "zh", zhVariant: "chm" },
+      uiPrefs: { lang: "zh", zhVariant: "effective" },
     });
   });
 
@@ -193,6 +197,39 @@ describe("user preferences storage", () => {
       zhDisplay: DEFAULT_STATE.displayPrefs.zhDisplay,
     });
   });
+
+  it.each(["chm", "custom", "", undefined, 42])(
+    "normalizes only the variant for saved value %s",
+    (zhVariant) => {
+      const prefs = {
+        ...DEFAULT_STATE,
+        includePrestige: true,
+        selectedRulebookIds: [49, 86],
+        browseQuery: { classIds: [1], domainIds: [2], level: 4 },
+        browsePrefs: { cardView: "all", groupMode: "flat" },
+        displayPrefs: {
+          ...DEFAULT_STATE.displayPrefs,
+          spellCardDetails: "full",
+        },
+        uiPrefs: { lang: "zh", theme: "dark", zhVariant },
+      };
+      const collectionJson = JSON.stringify({
+        favorites: [876],
+        prepared: [{ spellId: 876, notes: "Keep me" }],
+      });
+      localStorage.setItem(LS_KEY_PREFS, JSON.stringify(prefs));
+      localStorage.setItem(LS_KEY_COLLECTIONS, collectionJson);
+      const next = loadState();
+      expect(next).toEqual({
+        ...prefs,
+        uiPrefs: { ...prefs.uiPrefs, zhVariant: "effective" },
+      });
+      // Reading does not mutate storage; subsequent normal saves preserve all siblings.
+      expect(localStorage.getItem(LS_KEY_PREFS)).toBe(JSON.stringify(prefs));
+      saveState(next);
+      expect(localStorage.getItem(LS_KEY_COLLECTIONS)).toBe(collectionJson);
+    },
+  );
 
   it("merges partial Chinese display preferences", () => {
     localStorage.setItem(

@@ -1,5 +1,6 @@
 import type { ApiErrorResponse } from "@dnd/contracts";
 import { getI18nFromStorage } from "~/i18n/storage";
+import { DEFAULT_ZH_VARIANT } from "~/i18n/config";
 
 export type ApiErrorPayload = Partial<Omit<ApiErrorResponse, "error">> & {
   error?: unknown;
@@ -35,7 +36,7 @@ export function getApiErrorDisplayMessage(
 
 function shouldSendVariant(pathname: string) {
   // v2 rule: variant only for spell endpoints
-  return pathname.startsWith("/api/spells");
+  return pathname === "/api/spells" || pathname.startsWith("/api/spells/");
 }
 
 export function getConfiguredApiBaseUrl() {
@@ -53,13 +54,15 @@ function withI18nParams(urlStr: string): string {
     typeof window !== "undefined" ? window.location.origin : "http://localhost";
   const url = new URL(urlStr, base);
 
-  const { lang, variant } = getI18nFromStorage();
+  const { lang } = getI18nFromStorage();
 
   if (!url.searchParams.has("lang")) url.searchParams.set("lang", lang);
 
-  if (lang === "zh" && variant && shouldSendVariant(url.pathname)) {
-    if (!url.searchParams.has("variant"))
-      url.searchParams.set("variant", variant);
+  if (
+    url.searchParams.get("lang") === "zh" &&
+    shouldSendVariant(url.pathname)
+  ) {
+    url.searchParams.set("variant", DEFAULT_ZH_VARIANT);
   }
 
   // return relative if input was relative
