@@ -4,7 +4,8 @@ import os from "node:os";
 import path from "node:path";
 import Database from "better-sqlite3";
 import { englishActions, inspectActions, kinds } from "./actions";
-import { scan, selectChinese, selectSample, outputDirectory, type TextRow } from "./cli";
+import { scan, frequency, selectChinese, selectSample, outputDirectory, type TextRow } from "./cli";
+import { actionFrequency } from "./frequency";
 
 const check = (en: string, zh: string, header: string | null = null) => inspectActions(en, header, zh);
 assert.equal(check("You activate this as an immediate action.", "你激活此效果。")[0]!.status, "candidate");
@@ -13,6 +14,15 @@ for (const synonym of ["直觉", "即时", "瞬间"]) {
 }
 assert.equal(check("You activate this as an immediate action.", "你以迅捷动作激活此效果。")[0]!.status, "candidate");
 assert.equal(check("You end this as a swift action.", "施法时间：迅捷动作\n你结束此效果。")[0]!.status, "candidate");
+const martial = check("Activate as an immediate action.", "发动时间：直觉动作\n激活此效果。", "1 immediate action");
+assert.equal(martial[0]!.chineseOccurrences, 1);
+assert.equal(martial[1]!.status, "candidate");
+const counts = actionFrequency([1,2,3].map(spellId => ({spellId, english: "A free action. A free action.", castingTime: "1 free action", chinese: "发动时间：自由动作\n一个自由动作和一个自由动作。特殊动作。"})));
+assert.equal(counts.english.find(r=>r.phrase === "body:free")!.documentFrequency, 3);
+assert.equal(counts.english.find(r=>r.phrase === "body:free")!.occurrences, 6);
+assert.equal(counts.english.find(r=>r.phrase === "body:free")!.concordance.length, 2);
+assert.equal(counts.chineseLabels.find(r=>r.phrase === "casting-time:自由动作")!.documentFrequency, 3);
+assert.deepEqual(counts.chineseSuffixCandidates.map(r=>r.phrase), ["body:特殊动作"]);
 const unrelated = check("You activate this as a swift action.\nYou end it as a swift action.", "你以迅捷动作激活。\n你结束效果。");
 assert(unrelated.every(row => row.status === "candidate" && row.reason === "action-count-deficit"));
 assert.equal(check("You end this as a swift action.", "你结束效果。\n另一个能力以迅捷动作激活。")[0]!.status, "unknown");
@@ -35,7 +45,16 @@ assert.equal(selectChinese([chm]), chm);
 assert.equal(selectChinese([emptyEffective, chm], "chm"), chm);
 assert.throws(() => outputDirectory(path.join(os.tmpdir(), "public-action-qa")), /private|Output/);
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), "action-qa-"));
+const dataRootBefore = process.env.DATA_REPO_PATH;
 try {
+  process.env.DATA_REPO_PATH = dir;
+  const termRoot = path.join(dir, "term-qa");
+  const fresh = path.join(termRoot, "issue-999", "fresh");
+  assert.equal(outputDirectory(fresh), fresh);
+  assert.throws(() => outputDirectory(termRoot), /new child/);
+  assert.throws(() => outputDirectory(path.join(termRoot, "..", "outside")), /new child/);
+  fs.mkdirSync(fresh, { recursive: true });
+  assert.throws(() => outputDirectory(fresh), /already exists/);
   const file = path.join(dir, "content.sqlite"); const db = new Database(file);
   db.exec(`CREATE TABLE SpellContent (legacySpellId INTEGER, sourceRulebookId INTEGER, canonicalName TEXT, descriptionText TEXT, castingTimeRaw TEXT);
     CREATE TABLE I18nSpellText (spellId INTEGER,rulebookId INTEGER,lang TEXT,variant TEXT,name TEXT,descriptionText TEXT,sourceKey TEXT,nameProvenanceJson TEXT,bodyProvenanceJson TEXT);
@@ -48,6 +67,7 @@ try {
   assert.equal(result[0]!.findings.find(f=>f.field === "body")!.status, "unknown");
   assert.equal(result[0]!.chmContrast!.findings.find(f=>f.field === "body")!.status, "candidate");
   assert.deepEqual(fs.readFileSync(file), before);
+  assert.equal(frequency(file).chineseLabels.some(row=>row.phrase === "body:直觉动作"), true);
   assert.throws(() => scan(file, [999]), /Unknown stable ID/);
   const update = new Database(file);
   update.prepare("UPDATE I18nSpellText SET rulebookId = 99 WHERE variant = 'effective'").run();
@@ -57,6 +77,14 @@ try {
   fallback.prepare("UPDATE I18nSpellText SET rulebookId=58, bodyProvenanceJson=? WHERE variant='effective'").run(JSON.stringify({targetId:876,field:"body",language:"en"}));
   fallback.close();
   assert(scan(file,[876])[0]!.findings.every(f=>f.reason === "provenance-English-fallback" && f.status === "unknown"));
+  const empty = new Database(file);
+  empty.prepare("UPDATE I18nSpellText SET descriptionText=NULL WHERE variant='effective'").run();
+  empty.close();
+  assert.equal(frequency(file).chineseLabels.length, 0);
   assert.deepEqual(selectSample([{spellId:876,book:58,name:"anchor",english:"",castingTime:null}],100), [876]);
-} finally { fs.rmSync(dir, { recursive: true, force: true }); }
+} finally {
+  if (dataRootBefore === undefined) delete process.env.DATA_REPO_PATH;
+  else process.env.DATA_REPO_PATH = dataRootBefore;
+  fs.rmSync(dir, { recursive: true, force: true });
+}
 console.log("Action QA portable regressions passed (omission, scope/count, synonyms, uncertainty, variant, provenance, readonly DB)");
