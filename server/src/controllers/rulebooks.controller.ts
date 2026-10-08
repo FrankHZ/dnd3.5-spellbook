@@ -1,6 +1,25 @@
 import { type Request, type Response, type NextFunction } from "express";
 import { rulebooksService } from "#server/services/rulebooks.service";
 import type { EditionListResponse, RulebookListResponse } from "@dnd/contracts";
+import type { PublicationStatsResponse } from "@dnd/contracts";
+import { listPublicationStats } from "#server/services/publication-stats.service";
+import { getI18nContext } from "#server/utils/i18n";
+
+export async function publicationStats(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    res
+      .status(200)
+      .json({
+        items: await listPublicationStats(getI18nContext(req)),
+      } satisfies PublicationStatsResponse);
+  } catch (error) {
+    next(error);
+  }
+}
 
 export async function listRulebooks(
   req: Request,
