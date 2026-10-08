@@ -39,8 +39,9 @@ export function englishActions(text: string): Occurrence[] {
 }
 export function chineseParts(text: string) {
   const lines = text.split(/\r?\n/u).map(line => line.trim()).filter(Boolean);
-  return { header: lines.filter(line => /^(?:施法时间|施展时间|施法动作)\s*[：:]/u.test(line)),
-    body: lines.filter(line => !isMechanismLine(line)) };
+  const actionHeader = /^(?:施法时间|施展时间|施法动作|发动时间|發動時間)\s*[：:]/u;
+  return { header: lines.filter(line => actionHeader.test(line)),
+    body: lines.filter(line => !actionHeader.test(line) && !isMechanismLine(line)) };
 }
 function matches(lines: string[], kind: Kind) {
   const direct = lines.flatMap((context, line) => [...context.replace(/動作/gu, "动作").replace(/\s+/gu, "").matchAll(chinese[kind])]

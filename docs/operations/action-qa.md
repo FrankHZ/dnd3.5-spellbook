@@ -4,7 +4,7 @@
 reads canonical `SpellContent` English/mechanics and selected Chinese text from
 `I18nSpellText`. Relative arguments resolve from the current checkout root, even
 when invoked in `data-tools/`. The caller supplies the DB path; no DB is copied.
-Output must be a fresh child of configured `DATA_REPO_PATH/term-qa/issue-622/`.
+Output must be a fresh child of configured `DATA_REPO_PATH/term-qa/`.
 Existing evidence is never overwritten. `--ids 1,2` selects explicit stable IDs;
 `--variant chm` selects the legacy row explicitly. Sample/ID limits are 1–1,000.
 
@@ -20,7 +20,8 @@ The fixed seeds cover standard, move/move-equivalent, swift, immediate, free,
 full-round/fullround and no-action phrases, plural forms and coordinated lists.
 Accepted lexical aliases include immediate 直觉/即时/瞬间 and swift 迅捷/快捷/快速;
 these are distinct families. Chinese mechanism/header lines use the existing
-parser classification and are excluded from body matching. English casting time
+parser classification, with maneuver 发动时间/發動時間 headers also excluded
+from body matching. English casting time
 is inspected separately from body occurrences. Every occurrence retains its
 line, offset, complete line context, count and heuristic activation/end/sustain
 role. Roles are retrieval hints, not validated semantic alignment. No-action
@@ -33,10 +34,27 @@ differ. Evidence preserves full bodies for that review. Paragraphs are not paire
 by ordinal position; translated paragraphs often merge or split. This tool does
 not estimate recall, accept content, normalize terminology or apply corrections.
 
+Add `--frequency` for a readonly inventory stream of English action-family and
+Chinese literal action-label document frequencies, split into body/casting scopes.
+Frequency selection always uses effective-row presence then CHM, independently
+of an explicit `--variant chm` context scan; `frequency.json` records this choice.
+Each phrase counts a spell once per scope; raw occurrence counts are separate.
+Concordance retains at most two earliest-ID examples per phrase, truncated to
+600 characters, in private output. Chinese literal labels are capped at Top 40.
+Suffix discovery examines only 2–4 Chinese characters immediately before 动作,
+requires document frequency at least two and caps output at Top 20. Known labels
+and common boilerplate are filtered; remaining fragments still require review.
+This bounded retrieval is not a terminology dictionary, semantic validation or
+full-corpus context review. Labels sharing a final action noun may be undercounted.
+The combined context/frequency output budget is 50 MiB; estimate input/resources
+before a large scan. Report elapsed scan time separately from semantic-review cost.
+
 Run `npm run -w data-tools action:qa:test` for synthetic omission, wrong-action,
 header/body scope, repeated/unrelated paragraph, coordinated-list, synonym,
 fallback, provenance and readonly SQLite regressions. It is included in the
-portable data-tools gate. The real bounded evaluation is recorded in the
-[source-free pilot report](../reports/action-qa-pilot.md). Review decisions and
+portable data-tools gate. Bounded evaluations are recorded in the
+[pilot report](../reports/action-qa-pilot.md) and
+[held-out context/frequency report](../reports/action-qa-context-review.md).
+Review decisions and
 source excerpts belong in the private output directory; the public repo contains
 only tool code, synthetic fixtures and aggregate reports.

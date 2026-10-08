@@ -4,6 +4,7 @@ import Database from "better-sqlite3";
 import { localDataDir, repoRoot } from "../shared/env";
 import { noAlias, within } from "../dice-intake/paths";
 import { englishActions, inspectActions, kinds } from "./actions";
+import { actionFrequency, type FrequencyRow } from "./frequency";
 
 export type SpellRow = { spellId: number; book: number; name: string; english: string; castingTime: string | null };
 export type TextRow = { variant: string; rulebookId: number; name: string | null; descriptionText: string | null;
@@ -72,20 +73,33 @@ export function inventory(contentDb: string) {
       descriptionText AS english,castingTimeRaw AS castingTime FROM SpellContent ORDER BY legacySpellId`).all() as SpellRow[];
   } finally { db.close(); }
 }
+export function frequency(contentDb: string) {
+  const db = new Database(contentDb, { readonly: true, fileMustExist: true });
+  try {
+    const rows = db.prepare(`SELECT s.legacySpellId AS spellId, s.descriptionText AS english,
+      s.castingTimeRaw AS castingTime, i.descriptionText AS chinese FROM SpellContent s
+      LEFT JOIN I18nSpellText i ON i.spellId=s.legacySpellId AND i.lang='zh' AND i.variant=CASE WHEN EXISTS
+        (SELECT 1 FROM I18nSpellText chosen WHERE chosen.spellId=s.legacySpellId AND chosen.lang='zh' AND chosen.variant='effective')
+        THEN 'effective' ELSE 'chm' END ORDER BY s.legacySpellId`).iterate() as Iterable<FrequencyRow>;
+    return actionFrequency(rows);
+  } finally { db.close(); }
+}
 export function outputDirectory(out: string) {
-  const root = path.join(localDataDir(), "term-qa", "issue-622");
+  const root = path.join(localDataDir(), "term-qa");
   noAlias(root); noAlias(out);
-  if (!within(root, out) || path.resolve(out) === path.resolve(root)) throw new Error("Output must be a new child of DATA_REPO_PATH/term-qa/issue-622");
+  if (!within(root, out) || path.resolve(out) === path.resolve(root)) throw new Error("Output must be a new child of DATA_REPO_PATH/term-qa");
   if (fs.existsSync(out)) throw new Error("Output already exists; preserve previous evidence");
   return out;
 }
 export function main(args: string[]) {
   if (args.length === 1 && args[0] === "--help") {
-    console.log("action:qa --content-db <file> --out <new-private-directory> [--sample 100 | --ids 1,2] [--variant effective|chm]\nRelative paths resolve from the checkout root. Default/effective selection uses row presence then CHM fallback. Every lexical match remains context-unverified. Readonly DB; private evidence only; no acceptance or writer."); return;
+    console.log("action:qa --content-db <file> --out <new-private-directory> [--sample 100 | --ids 1,2] [--variant effective|chm] [--frequency]\nRelative paths resolve from the checkout root. Default/effective selection uses row presence then CHM fallback. Every lexical match remains context-unverified. Readonly DB; private evidence only; no acceptance or writer."); return;
   }
   const flags = new Map<string, string>();
-  for (let i = 0; i < args.length; i += 2) {
-    const key = args[i]!; const value = args[i + 1];
+  for (let i = 0; i < args.length;) {
+    const key = args[i++]!;
+    if (key === "--frequency" && !flags.has(key)) { flags.set(key, "true"); continue; }
+    const value = args[i++];
     if (!["--content-db", "--out", "--sample", "--ids", "--variant"].includes(key) || !value || value.startsWith("--") || flags.has(key)) throw new Error("Use --help; invalid/duplicate arguments");
     flags.set(key, value);
   }
@@ -99,8 +113,10 @@ export function main(args: string[]) {
   const ids = flags.has("--ids") ? flags.get("--ids")!.split(",").map(Number) : selectSample(rows, Number(flags.get("--sample") ?? 100));
   if (!ids.length || ids.length > 1000 || new Set(ids).size !== ids.length || ids.some(id => !Number.isSafeInteger(id) || id <= 0)) throw new Error("ids must be unique positive integers, at most 1000");
   const evidence = scan(contentDb, ids, variant);
+  const frequencies = flags.has("--frequency") ? frequency(contentDb) : null;
+  const frequencyJson = frequencies ? JSON.stringify(frequencies, null, 2) + "\n" : "";
   const serialized = evidence.map(row => JSON.stringify(row)).join("\n") + "\n";
-  if (Buffer.byteLength(serialized) > 50 * 1024 * 1024) throw new Error("Evidence exceeds 50 MiB pilot budget");
+  if (Buffer.byteLength(serialized) + Buffer.byteLength(frequencyJson) > 50 * 1024 * 1024) throw new Error("Evidence exceeds 50 MiB pilot budget");
   const after = fs.statSync(contentDb);
   if (before.size !== after.size || before.mtimeMs !== after.mtimeMs) throw new Error("DB metadata changed during scan; rerun against a stable readonly input");
   const report = { schemaVersion: 1, comparisonBaseline: "canonical DB English; no original-book verification", requestedVariant: variant,
@@ -111,11 +127,12 @@ export function main(args: string[]) {
     candidates: evidence.reduce((n, row) => n + row.findings.filter(f => f.status === "candidate").length, 0),
     unknown: evidence.reduce((n, row) => n + row.findings.filter(f => f.status === "unknown").length, 0),
     elapsedMs: performance.now() - started, peakRssBytes: process.resourceUsage().maxRSS * 1024,
-    evidenceBytes: Buffer.byteLength(serialized), dbMetadataUnchanged: true, modelApiCalls: 0,
+    evidenceBytes: Buffer.byteLength(serialized), frequencyBytes: Buffer.byteLength(frequencyJson), dbMetadataUnchanged: true, modelApiCalls: 0,
     review: "Unperformed; separate private decisions required. Unknown is never a pass." };
   fs.mkdirSync(out, { recursive: true });
   fs.writeFileSync(path.join(out, "evidence.jsonl"), serialized, { encoding: "utf8", flag: "wx" });
   fs.writeFileSync(path.join(out, "report.json"), JSON.stringify(report, null, 2) + "\n", { encoding: "utf8", flag: "wx" });
+  if (frequencies) fs.writeFileSync(path.join(out, "frequency.json"), frequencyJson, { encoding: "utf8", flag: "wx" });
   console.log(JSON.stringify(report, null, 2));
 }
 if (require.main === module) main(process.argv.slice(2));
