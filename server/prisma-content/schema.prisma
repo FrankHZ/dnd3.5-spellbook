@@ -260,6 +260,30 @@ model SpellContent {
     @@index([sourceRulebookId])
 }
 
+/// Accepted bounded class-source handoff, independent of canonical spell builds.
+model ClassSourceImport {
+    id              Int @id
+    handoffRevision String
+    sourceRevision  String
+    scope           String
+}
+
+/// All investigated dispositions are retained; only supported rows are positive.
+model ClassSourceMapping {
+    variantId       Int @id
+    classId         Int
+    rulebookId      Int
+    name            String
+    slug            String
+    prestige        Boolean
+    listKind        String
+    disposition     String
+    relation        String?
+    evidenceJson    String
+
+    @@index([rulebookId, disposition])
+}
+
 model SpellAppearance {
     id               String  @id
     spellId          String

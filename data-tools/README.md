@@ -47,6 +47,7 @@ owning workflow's explicit authorization.
 - [Readonly action semantics QA and bounded pilot](../docs/operations/action-qa.md)
 - [CHM parsing and Chinese imports](../docs/operations/import-workflow.md#chm-and-entity-translations)
 - [Read-only CHM class-source directory scanning and proposals](../docs/operations/class-sources.md)
+- [Accepted bounded class-source mapping check/import](../docs/operations/class-sources.md#accepted-mapping-import)
 - [Rules patches and source candidates](../docs/operations/import-workflow.md#rules-patches)
 - [Atomic spell step and exact repeat checks](../docs/operations/rules-db-notes.md#atomic-spell-maintenance-step)
 - [Normalized content and search index](../docs/operations/import-workflow.md#normalized-content-and-search)

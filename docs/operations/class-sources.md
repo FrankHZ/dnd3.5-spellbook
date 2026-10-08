@@ -175,3 +175,39 @@ relation as a decision to publish or count a family as one class. A supplemental
 external index likewise does not fill a missing CHM entry by itself. See the
 [bounded residual handoff](../reports/class-source-residuals-612.md) for the
 evidence and reproduction example.
+
+## Accepted Mapping Import
+
+`npm run -w data-tools class-sources:import -- --rules-db <file> --content-db <file>`
+checks the fixed main-gate accepted #619 handoff at private Git revision
+`efe2083c0f5049aabce561517f3f02b9901ba07b`. It reads the committed final handoff,
+classes and three disposition files, checks their working text (allowing Git
+CRLF conversion), and validates all stable version/class/book IDs, names, pages,
+edition system and the complete frozen version-key set against readonly rules.
+No CHM corpus, original books or source QA rerun is needed.
+
+The default check opens both DBs readonly. An unactivated content DB reports
+`before` / `wouldChange`; it does not install a migration. After applying the
+maintained content migration under separate write authorization, `--apply`
+inserts all 84 dispositions and the accepted revision in one content-only
+transaction. Exact repetition writes nothing. A different existing handoff,
+unbound rows, partial schema or altered persisted mapping is rejected rather
+than silently replaced. A future accepted upgrade needs a separately reviewed
+transition. The CLI rejects rules/content path aliasing and app-state targets;
+`--apply` remains an explicit write operation, never permission by itself.
+
+`ClassSourceMapping` / `ClassSourceImport` are additive content overlays, outside
+the generated spell table set. Canonical spell builds, Chinese overlays,
+summaries, search, rules and app-state are untouched. Preserve these tables in
+normal normalized-content import; rebuilding a fresh database requires the
+accepted mapping step again. Relative DB paths resolve from this code checkout
+root; `DATA_REPO_PATH` selects the private Git inputs outside worktrees.
+
+Only the 64 supported relationships publish positively. Eleven exclusions and
+nine uncertainties retain their exact original evidence/provenance in storage.
+Coverage describes 69 website candidates and 84 version leads, never all classes
+in a publication. No imported book is certified complete, and an empty supported
+array cannot prove that a book contains no classes.
+
+Run `npm run -w data-tools class-sources:import:test` for disposable synthetic
+transaction, protected-content, repeat, acceptance and stale-state checks.

@@ -88,6 +88,31 @@ reports sanitized file role state, the active spell read source, the latest
 `RulesContentBuild`, and normalized content table counts without exposing raw
 source data or full filesystem paths.
 
+`GET /api/rulebooks/publication-stats` returns one aggregate `items` array for
+all DnD 3.5 rulebook identities, including books with no local canonical spells.
+`siteSpellCount` counts distinct `SpellContent.id` grouped by canonical
+`sourceRulebookId`, independently of the legacy read rollback setting. It is
+the site's canonical content count, not the original book's spell total or QA
+coverage. Translation variants, appearances and spell-list relations do not
+increase it; different publication spell entities are not collapsed by name.
+
+`classSources.supported` contains only accepted positive class/version sources,
+with stable class and variant IDs, name/slug/prestige, optional existing class
+name overlay (`lang`/`variant`), list kind (`spells`, `maneuvers`, `infusions`)
+and relation. `coverage` is `bounded-candidates` for books with investigated
+rows and `unknown` otherwise (also before mapping activation). Separate excluded
+and uncertain candidate counts describe the bounded investigation, not whole-book
+totals. `inventoryComplete` is always false. Missing/unknown sources cannot be
+presented as a certified zero. The accepted revision is explicit; private source
+text/evidence is never returned by this endpoint or read at runtime.
+
+This aggregate uses a fixed number of queries and has no new cache. It does not
+change `/api/classes`: that endpoint continues to derive available filters from
+spell-class relationships in the selected publications. Formal class sources
+and spell availability differ, for example in Spell Compendium, which provides
+spells for classes introduced elsewhere. Search/Browse and prepared-book class
+choices must continue using their existing availability semantics.
+
 Public UI surfaces should use the redacted content summary in
 `GET /api/status/app` instead of depending on `/api/status/db`.
 

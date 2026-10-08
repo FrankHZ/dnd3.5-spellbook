@@ -710,6 +710,20 @@
       "requiresLocalData": false,
       "requiresSqlite": true,
       "writeCapable": true
+    },
+    "class-sources:import": {
+      "module": "rules",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "writeCapable": true,
+      "requiresSqlite": true
+    },
+    "class-sources:import:test": {
+      "module": "rules",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "writeCapable": true,
+      "requiresSqlite": true
     }
   }
 }

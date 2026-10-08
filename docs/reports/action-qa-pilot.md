@@ -78,8 +78,13 @@ review decisions. Resolve historical action-label synonyms and implicit costs
 before expanding that batch. Improved context retrieval should be evaluated with
 new held-out negatives, rather than relabeling lexical matches as passed QA.
 Other terminology families, NLP infrastructure, correction writers and production
-activation remain outside this slice. Human review cost must be measured in the
-next accepted review batch before estimating a wider workload.
+activation remain outside this slice. Measure reviewer time and unresolved-case cost in the next accepted bounded
+batch before estimating a wider workload. Independently reviewed agent work may
+provide that evidence under the existing authorization; human review is not a gate.
+
+Frozen private evidence revision: `cf9d49c2eac4731fb684e7961ea2cc804d038899`.
+That commit contains exactly the five pilot-final evidence/review files and
+preserves unrelated staged changes and reviewer outputs.
 
 Private evidence: configured `term-qa/issue-622/pilot-final/` contains complete
 contexts, raw field provenance, exact selection and provisional review decisions.
