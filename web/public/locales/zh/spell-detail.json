@@ -1,5 +1,7 @@
 {
   "actions.back-to-browse": "返回浏览",
+  "actions.report": "报错",
+  "actions.report-hint": "在新标签页打开 GitHub 草稿；需要 GitHub 账号",
   "components.full.arcane-focus": "器材",
   "components.full.corrupt": "堕落",
   "components.full.divine-focus": "法器",
