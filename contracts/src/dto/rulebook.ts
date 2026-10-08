@@ -58,3 +58,32 @@ export type EditionListResponse = {
 export type RulebookListResponse = {
   items: Rulebook[];
 };
+
+/** Positive source relationships within an explicitly bounded candidate set. */
+export type PublicationClassSource = {
+  classId: number;
+  variantId: number;
+  name: string;
+  slug: string;
+  prestige: boolean;
+  i18n?: I18nNameOverlay | undefined;
+  listKind: "spells" | "maneuvers" | "infusions";
+  relation: "class-entry" | "variant";
+};
+
+export type PublicationStats = {
+  rulebookId: number;
+  /** Canonical distinct SpellContent.id count; no list/translation duplicates. */
+  siteSpellCount: number;
+  classSources: {
+    coverage: "bounded-candidates" | "unknown";
+    /** Never a certified complete inventory of the original book. */
+    inventoryComplete: false;
+    handoffRevision: string | null;
+    supported: PublicationClassSource[];
+    excludedCandidateCount: number;
+    uncertainCandidateCount: number;
+  };
+};
+
+export type PublicationStatsResponse = { items: PublicationStats[] };
