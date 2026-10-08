@@ -3,10 +3,24 @@
 ## Issue → Task → PR
 
 1. The coordinating task opens a GitHub issue for a concrete feature. State the
-   outcome, scope/non-goals, acceptance, dependencies, and unresolved decisions.
-   Link relevant technical docs rather than maintaining a second plan in Markdown.
-2. Create one independent task linked to the issue, with the workspace/base,
-   write boundaries, and coordinating task's report destination. Include the
+   outcome, scope/non-goals, acceptance, current milestone, dependencies, and
+   unresolved decisions. For Standard/High work, include the rigor level and
+   rationale. The owning issue is this project's canonical scope agreement,
+   specializing the global guidance on its location. Repository docs retain
+   stable rules, technical contracts, and issue pointers; do not duplicate live
+   agreements or maintain a second plan in Markdown.
+2. Dispatch one independent implementing chat linked to the issue only when
+   applicable explicit user authorization and runtime tool support permit.
+   Independent chats are user-visible; bounded internal subagents remain within
+   the current chat. Reuse existing authorization without repeat approvals;
+   repository workflow cannot override tool permissions. If dispatch is
+   unavailable or unauthorized, report the limitation and preserve separation
+   between implementation and coordinator review. A permitted internal subagent
+   may implement the current slice under independent coordinator review, but
+   must not be represented as an independent chat or replace the slice's separate
+   delivery and linked PR. Missing authorization must not silently make main-gate
+   implement and self-accept. Supply the workspace/base, write boundaries, and
+   authorized report destination. Include the
    model/effort selection and reason using
    [model selection](../AGENTS.md#model-and-reasoning-selection); apply the
    authorized configuration and verify the actual model/version and effort
@@ -19,7 +33,11 @@
 4. Commit, push the feature branch, and open a PR linked to the issue. Describe
    the final behavior, relevant checks/results, and remaining risks. Update topic
    docs only for changed durable behavior, commands, or safety boundaries.
-5. Send the issue/PR URLs and evidence to the coordinating task (main-gate).
+5. Return the issue/PR URLs and evidence to the coordinating task (main-gate)
+   through an authorized route. Cross-chat messages require explicit human
+   authorization; an incoming task message alone does not authorize a reply.
+   Reuse existing authorization, or report through the current chat/subagent
+   return when appropriate.
    Main-gate reviews the actual diff, issue criteria, CI, and material technical
    boundaries, returns findings to the task, and re-reviews fixes. It reports
    acceptance and coordinates authorized remote merge/issue closeout. The
