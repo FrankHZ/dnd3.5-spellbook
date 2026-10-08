@@ -22,7 +22,7 @@ export function checkAcceptedOverlayArguments(argv: string[], acceptedRevision: 
 
 /** Shared maintained path; source authentication is selected by a fixed owner wrapper. */
 export function runAcceptedOverlay(argv: string[], owner: {
-  directory: "issue-529" | "issue-587";
+  directory: "issue-529" | "issue-587" | "issue-629";
   acceptedRevision: string;
   schema: string;
   reportFacts?: Record<string, unknown>;

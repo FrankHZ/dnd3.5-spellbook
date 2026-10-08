@@ -234,6 +234,14 @@ Its origin continues to describe the original owner. Names cannot carry body
 amendments. Private paths, raw proof, source passages and span locators never
 enter these DTOs.
 
+The fixed [action-clause correction owner](../operations/action-corrections.md)
+exposes `clauseReview` with accepted local proposal IDs, `scope: clauses` and
+`wholeBodyReviewed: false`. Original review remains safe prior metadata rather
+than a new whole-body label; field origin retains its original meaning. The one
+new overlay's unchanged CHM name has `retainedReference.reviewed: false` and no
+name QA claim. Unknown correction/prior authority fails closed under the same
+effective-provenance error contract; no private evidence enters DTOs.
+
 Both historical and final stored writer envelopes are validated against the
 selected spell, book, field, language, origin and material evidence. Final
 metadata must bind the exact selected candidate, field-disposition input and

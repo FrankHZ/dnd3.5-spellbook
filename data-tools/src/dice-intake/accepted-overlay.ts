@@ -17,6 +17,9 @@ export type AcceptedOverlayInput = {
   verifyTargets: (db: Database.Database) => void;
   /** A whole-book owner may reject additional effective rows outside its targets. */
   verifyScope?: (db: Database.Database) => void;
+  /** The fixed clause owner alone supports exact present predecessors. */
+  correction?: { before: (Record<string, unknown> | null)[];
+    verifyPriorAnnotations: (db: Database.Database, meta: Record<string, unknown>) => void };
 };
 
 type Row = Record<string, any>;
@@ -28,12 +31,14 @@ function inspectOverlay(db: Database.Database, input: AcceptedOverlayInput) {
   const {rows, noteKey, note: acceptedNote} = input;
   assert(rows.length > 0, "empty accepted overlay");
   assert.equal(new Set(rows.map(r => r.spellId)).size, rows.length, "duplicate accepted target");
-  assert(["cityscapeDbEnglish", "diceDbEnglishCloseout"].includes(noteKey), "unsupported annotation owner");
+  assert(["cityscapeDbEnglish", "diceDbEnglishCloseout", "actionClauseCorrections"].includes(noteKey), "unsupported annotation owner");
+  assert.equal(Boolean(input.correction), noteKey === "actionClauseCorrections", "correction requires its fixed owner");
+  if (input.correction) assert.equal(input.correction.before.length, rows.length, "predecessor scope differs");
   const scIds = new Set((db.prepare(`SELECT legacySpellId AS id FROM SpellContent WHERE sourceRulebookId=86
     UNION SELECT spellId AS id FROM I18nSpellText WHERE rulebookId=86`).all() as {id: number}[]).map(r => r.id));
-  for (const row of rows) {
+  for (const [index,row] of rows.entries()) {
     assert(row.rulebookId !== 86 && !scIds.has(row.spellId), "SC is outside the accepted write set");
-    assert.equal(row.action, "insert", "only absent effective predecessors supported");
+    assert.equal(row.action, input.correction?.before[index] ? "update" : "insert", "unsupported predecessor operation");
     const spell = db.prepare("SELECT sourceRulebookId FROM SpellContent WHERE legacySpellId=?").get(row.spellId) as Row;
     assert(spell && spell.sourceRulebookId === row.rulebookId, "normalized target book differs");
   }
@@ -75,8 +80,17 @@ function inspectOverlay(db: Database.Database, input: AcceptedOverlayInput) {
     delete prior.overlays[noteKey];
     if (!Object.keys(prior.overlays).length) delete prior.overlays;
   }
-  requireKnownAnnotations(db, prior); // SC fixed revisions remain under their existing guard.
-  const state: "before" | "after" = actual.length === 0 && note === undefined ? "before" : "after";
+  if (input.correction) input.correction.verifyPriorAnnotations(db, prior);
+  else requireKnownAnnotations(db, prior); // Existing owners retain their original refusal semantics.
+  const state: "before" | "after" = input.correction ? note === undefined ? "before" : "after"
+    : actual.length === 0 && note === undefined ? "before" : "after";
+  if (state === "before" && input.correction) {
+    assert.equal(actual.length, input.correction.before.filter(Boolean).length, "partial/foreign predecessor set");
+    rows.forEach((row, index) => {
+      const old = actual.find(r => r.spellId === row.spellId);
+      assert.deepEqual(old ?? null, input.correction!.before[index], "complete effective predecessor differs");
+    });
+  }
   if (state === "after") {
     assert.deepEqual(note, acceptedNote, "missing accepted build note");
     assert.equal(actual.length, rows.length, "partial/extra effective target set");
@@ -86,6 +100,11 @@ function inspectOverlay(db: Database.Database, input: AcceptedOverlayInput) {
       assert.equal(old.lang, "zh"); assert.equal(old.variant, "effective");
       for (const key of ["spellId", ...overlayColumns] as const) assert.equal(old[key], row[key], `overlay drift: ${key}`);
       for (const key of ["createdAt", "updatedAt"]) assert(typeof old[key] === "string" && Number.isFinite(Date.parse(old[key])), "invalid overlay timestamp");
+      const predecessor = input.correction?.before[i];
+      if (predecessor) for (const key of Object.keys(predecessor)) {
+        if (!["descriptionText", "descriptionHtml", "bodyProvenanceJson", "updatedAt"].includes(key))
+          assert.deepEqual(old[key], predecessor[key], `changed protected predecessor field: ${key}`);
+      }
     });
   }
   return {state, buildId: build.id as string, meta, nextMeta: {...meta,
@@ -123,7 +142,7 @@ export type AcceptedOverlayResult = {
   overlay: "not-attempted" | "committed" | "no-op" | "failed";
   search: "not-attempted" | "committed" | "no-op" | "failed";
   searchCheck?: ContentSearchStepResult;
-  scope?: {targets: number; rulebookIds: number[]; acceptedNames: number; acceptedBodies: number};
+  scope?: {targets: number; rulebookIds: number[]; acceptedNames: number; acceptedBodies: number; acceptedClauses?: number};
 };
 export class AcceptedOverlayError extends Error {
   constructor(public readonly stage: "preflight" | "overlay" | "search" | "final-check" | "report",
@@ -161,8 +180,9 @@ export function acceptedOverlay(db: Database.Database, authenticate: () => Accep
     report.state = initial.plan.state;
     report.scope = {targets: initial.rows.length,
       rulebookIds: [...new Set(initial.rows.map(r => r.rulebookId))].sort((a,b) => a-b),
-      acceptedNames: initial.rows.filter(r => JSON.parse(r.nameProvenanceJson).review?.kind === "DB-English").length,
-      acceptedBodies: initial.rows.filter(r => JSON.parse(r.bodyProvenanceJson).review?.kind === "DB-English").length};
+      acceptedNames: initial.input.correction ? 0 : initial.rows.filter(r => r.nameProvenanceJson && JSON.parse(r.nameProvenanceJson).review?.kind === "DB-English").length,
+      acceptedBodies: initial.rows.filter(r => JSON.parse(r.bodyProvenanceJson).review?.kind === "DB-English").length,
+      ...(initial.input.correction ? {acceptedClauses:initial.rows.reduce((n,r)=>n+JSON.parse(r.bodyProvenanceJson).evidence.proposalIds.length,0)} : {})};
     report.searchCheck = initial.search;
     if (mode === "check") {
       report.complete = initial.plan.state === "after" && initial.search.state === "current";

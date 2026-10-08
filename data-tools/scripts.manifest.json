@@ -724,6 +724,20 @@
       "requiresLocalData": false,
       "writeCapable": true,
       "requiresSqlite": true
+    },
+    "action:corrections": {
+      "module": "rules-content",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "action:corrections:test": {
+      "module": "harness",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": true
     }
   }
 }

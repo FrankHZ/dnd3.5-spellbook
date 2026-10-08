@@ -13,7 +13,7 @@ export const overlayColumns = ["rulebookId", "name", "descriptionText", "descrip
 const columns = overlayColumns;
 
 export type OverlayRow = { spellId: number; rulebookId: number; name: string; descriptionText: string;
-  descriptionHtml: string | null; sourceKey: string | null; nameProvenanceJson: string; bodyProvenanceJson: string;
+  descriptionHtml: string | null; sourceKey: string | null; nameProvenanceJson: string | null; bodyProvenanceJson: string;
   action: string };
 
 /** Shared SQL materialization; callers own source authentication/build policy. */

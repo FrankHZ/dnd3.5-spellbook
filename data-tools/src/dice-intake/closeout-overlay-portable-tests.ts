@@ -25,7 +25,7 @@ try {
   assert.equal(JSON.parse(byId.get(356)!.bodyProvenanceJson).origin.kind, "chm");
   assert(!JSON.parse(byId.get(356)!.bodyProvenanceJson).review);
   assert.equal(JSON.parse(byId.get(357)!.bodyProvenanceJson).origin.kind, "english");
-  assert.equal(JSON.parse(byId.get(358)!.nameProvenanceJson).origin.kind, "english");
+  assert.equal(JSON.parse(byId.get(358)!.nameProvenanceJson!).origin.kind, "english");
   assert.equal(JSON.parse(byId.get(358)!.bodyProvenanceJson).review.composition, "mixed");
   for (const mutate of [
     (e: ReturnType<typeof authenticate>) => e.fields.push({...e.fields[0]!, after: "conflict"}),

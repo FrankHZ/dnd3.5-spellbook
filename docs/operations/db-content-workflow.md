@@ -192,6 +192,13 @@ read-only check, authorized apply and exact recovery through derived search.
 It preserves the complete SC 86 text/summary/provenance and normalized build,
 requires its fixed original acceptance, and is not a writer for arbitrary books.
 
+The [accepted local action-clause owner](./action-corrections.md) binds its seven
+specific clauses and complete before-state separately. It supports three exact
+effective replacements and one absence-guarded overlay, preserving original
+ownership and truthful clause-only API metadata. It reuses the staged search
+recovery path without weakening the older insert-only owners or authorizing
+operator writes.
+
 ## Standard Handoff Flow
 
 1. Refresh context.
