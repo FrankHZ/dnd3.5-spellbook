@@ -1,7 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Links,
-  Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
@@ -12,6 +11,7 @@ import { useBootstrap } from "~/bootstrap/useBootstrap";
 import { useTranslation } from "react-i18next";
 import { UserPrefsProvider, useUserPrefs } from "~/state/user-prefs-state";
 import TopBar from "./layout/TopBar";
+import PageTitle from "./layout/PageTitle";
 import { CollectionsProvider } from "./state/collections-state";
 import "~/i18n/init";
 import { I18nSync } from "./i18n/sync";
@@ -54,9 +54,7 @@ function BootstrapBanner() {
 export default function App() {
   return (
     <html lang="en">
-      <title>D&D 3.5 Spellbook</title>
       <head>
-        <Meta />
         <Links />
       </head>
       <body className="bg-background text-foreground">
@@ -64,6 +62,7 @@ export default function App() {
           <QueryClientProvider client={queryClient}>
             <UserPrefsProvider>
               <CollectionsProvider>
+                <PageTitle />
                 <I18nSync />
                 <div className="flex flex-col min-h-screen">
                   <TopBar />
