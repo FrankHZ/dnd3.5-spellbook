@@ -44,6 +44,7 @@ owning workflow's explicit authorization.
 
 ## Choose The Relevant Operation
 
+- [Readonly action semantics QA and bounded pilot](../docs/operations/action-qa.md)
 - [CHM parsing and Chinese imports](../docs/operations/import-workflow.md#chm-and-entity-translations)
 - [Read-only CHM class-source directory scanning and proposals](../docs/operations/class-sources.md)
 - [Accepted bounded class-source mapping check/import](../docs/operations/class-sources.md#accepted-mapping-import)
