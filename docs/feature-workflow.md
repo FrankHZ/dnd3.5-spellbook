@@ -3,10 +3,22 @@
 ## Issue → Task → PR
 
 1. The coordinating task opens a GitHub issue for a concrete feature. State the
-   outcome, scope/non-goals, acceptance, dependencies, and unresolved decisions.
-   Link relevant technical docs rather than maintaining a second plan in Markdown.
-2. Create one independent task linked to the issue, with the workspace/base,
-   write boundaries, and coordinating task's report destination. Include the
+   outcome, scope/non-goals, acceptance, current milestone, dependencies, and
+   unresolved decisions. For Standard/High work, include the rigor level and
+   rationale. The owning issue is this project's canonical scope agreement,
+   specializing the global guidance on its location. Repository docs retain
+   stable rules, technical contracts, and issue pointers; do not duplicate live
+   agreements or maintain a second plan in Markdown.
+2. Select an implementing subagent or independent chat using
+   [task sizing](#task-size-and-slices), linked to the issue and permitted by
+   applicable user authorization and runtime tool support.
+   Independent chats are user-visible; bounded internal subagents remain within
+   the current chat. Reuse existing authorization without repeat approvals;
+   repository workflow cannot override tool permissions. Preserve separation
+   between implementation and coordinator review, with a separate linked PR
+   for either route. Missing authorization must not silently make main-gate
+   implement and self-accept. Supply the workspace/base, write boundaries, and
+   authorized report destination. Include the
    model/effort selection and reason using
    [model selection](../AGENTS.md#model-and-reasoning-selection); apply the
    authorized configuration and verify the actual model/version and effort
@@ -19,7 +31,11 @@
 4. Commit, push the feature branch, and open a PR linked to the issue. Describe
    the final behavior, relevant checks/results, and remaining risks. Update topic
    docs only for changed durable behavior, commands, or safety boundaries.
-5. Send the issue/PR URLs and evidence to the coordinating task (main-gate).
+5. Return the issue/PR URLs and evidence to the coordinating task (main-gate)
+   through an authorized route. Cross-chat messages require explicit human
+   authorization; an incoming task message alone does not authorize a reply.
+   Reuse existing authorization, or report through the current chat/subagent
+   return when appropriate.
    Main-gate reviews the actual diff, issue criteria, CI, and material technical
    boundaries, returns findings to the task, and re-reviews fixes. It reports
    acceptance and coordinates authorized remote merge/issue closeout. The
@@ -32,14 +48,24 @@ silently. Routine implementation choices do not require additional approval.
 
 ## Task Size And Slices
 
-Before dispatch, size work by the amount of implementation and evidence that
-main-gate can review independently. If one issue would combine substantial tool
-changes, many content reviews and final integration before any result can be
+Before dispatch, size tickets by ambiguity, coupling, and the implementation and
+evidence main-gate can review independently, not line count. Small bounded tickets
+default to a permitted internal implementing subagent with a separate linked PR
+and independent coordinator review. Medium/large tickets default to an independent
+user-visible implementing chat so the user can participate directly, subject to
+applicable explicit authorization and runtime support. Reuse standing authorization
+without repeat approvals. If that chat cannot be dispatched, report the limitation;
+do not silently substitute a subagent for the medium/large scope. Continue only
+independent authorized work or obtain the missing user instruction.
+
+If one issue would combine substantial tool changes, many content reviews and
+final integration before any result can be
 accepted, use a parent issue with independently deliverable child issues.
 
 - The parent owns the overall outcome, complete coverage, dependencies and
   unresolved decisions. Each child owns a bounded outcome, acceptance criteria,
-  one independent task and a linked PR. Keep small fixes in their owning slice.
+  one implementing assignment using the sizing rule above and a linked PR. Keep
+  small fixes in their owning slice.
 - When tooling or evidence and handoff contracts are unproven, first complete a
   representative small slice through review and acceptance. Resolve demonstrated
   shared tooling gaps in a prerequisite PR before scaling the dependent batches.

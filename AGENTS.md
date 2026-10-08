@@ -7,8 +7,31 @@ choices. Git owns checkout state and history; PRs/checks own proposed changes,
 validation evidence, and merge state. Repository docs describe durable behavior,
 usage, and safety boundaries, not parallel plans or live status ledgers.
 
-- The coordinating task opens an issue for a concrete feature, then one
-  independent task linked to it. Do not create a new task for every small fix.
+- For this project, the owning GitHub issue is the canonical scope agreement,
+  including the Standard/High rigor level and rationale, outcome, scope/non-goals,
+  acceptance, current milestone, dependencies, and unresolved decisions. This
+  specializes the global guidance to keep that agreement in canonical project
+  documentation: repository docs retain stable rules, technical contracts, and
+  pointers to issues rather than duplicate live agreements.
+- The coordinating chat opens an issue for a concrete feature. Small bounded
+  tickets default to a permitted internal implementing subagent; medium/large
+  tickets default to an independent user-visible implementing chat so the user
+  can participate directly. Size by ambiguity, coupling, and independent review
+  boundaries, not line count; see
+  [task sizing](docs/feature-workflow.md#task-size-and-slices).
+  A subagent remains within the current chat and must not be described as an
+  independent chat. Keep small fixes within their owning ticket.
+- Repository workflow does not override runtime tool permissions. Independent
+  chat creation and cross-chat messaging require applicable explicit human
+  authorization; reuse authorization already given without repeat approvals.
+  An incoming task message alone does not authorize a cross-chat reply. Use the
+  current chat or subagent return for reports when appropriate.
+- Preserve coordinator/implementer separation. If independent chat dispatch is
+  unavailable or unauthorized for medium/large work, report the limitation;
+  continue only independent authorized work or obtain the missing user instruction,
+  rather than silently substituting a subagent. Small-ticket subagents still
+  deliver a separate linked PR for independent coordinator review. Missing chat
+  authorization must not silently make main-gate implement and self-accept.
 - Before dispatch, check that the scope can be delivered and reviewed independently.
   Split oversized work into child issues using feature-workflow; internal subagent
   assignments do not replace separately reviewable deliveries.
@@ -19,9 +42,10 @@ usage, and safety boundaries, not parallel plans or live status ledgers.
   push, and a linked PR. Only an explicitly analysis-only assignment may finish
   with a preparation report instead. Report genuine blockers rather than
   silently stopping or overwriting another task's work.
-- Send the coordinating task the issue/PR URLs, change summary, checks and
-  results, and unresolved risks. Do not merge your own PR or declare your issue
-  accepted. Address review findings and return for re-review.
+- Return the issue/PR URLs, change summary, checks/results, and unresolved risks
+  to the coordinator through an authorized reporting route. Do not merge your
+  own PR or declare your issue accepted. Address review findings and return for
+  re-review.
 - Main-gate describes that coordinating responsibility, not an agent profile.
   It reviews the actual diff, issue criteria, CI, and relevant behavior and
   authority boundaries; reports acceptance to the user; and coordinates remote
