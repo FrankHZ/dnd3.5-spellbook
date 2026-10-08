@@ -338,19 +338,22 @@ spell-index row vocabulary.
 
 Publications is a scope-management index. Keep it denser than a marketing or
 catalog page: compact controls first, then grouped publication families with
-rulebook rows. Grouping should reflect API-provided publication metadata rather
-than visual parsing of abbreviations or edition names.
+compact rulebook cards. Grouping should reflect API-provided publication
+metadata rather than visual parsing of abbreviations or edition names.
 
-Each row should keep the reader-facing title as the primary scan target. Put the
-curated display abbreviation in a stable source column, use the same quiet source
-badge treatment as other spell surfaces, and fall back to the source
-abbreviation only when needed. The abbreviation should not overpower family or
-category headings. Publication dates and source links can be supporting text;
+Each card should keep the reader-facing title as the primary scan target. Put the
+curated display abbreviation above the title in a quiet source label, and fall
+back to the source abbreviation only when needed. It should not overpower
+family or category headings. Publication dates and source links can be supporting text;
 source kind and review status are data-workflow metadata and should not compete
 with the reader-facing scope choice. Avoid a stack of metadata badges in these
-rows.
+cards. Use accepted cover metadata only, with a normal book placeholder when
+missing or unavailable. Keep the site canonical entry count separate from the
+partial confirmed class-source list; missing class sources do not mean zero.
+Preview three class identities and expand the rest with an independent button.
+Titles/checkboxes select scope; expand and source-link actions do not select it.
 
-Sorting controls may reorder rows within a publication family by date or display
+Sorting controls may reorder cards within a publication family by date or display
 abbreviation, but should not change the category/family hierarchy. Treat missing
 dates as unknown and place them after dated rows rather than presenting fallback
 display order as chronology.
