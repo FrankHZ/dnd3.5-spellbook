@@ -58,6 +58,14 @@ files inside the selected books to inspect after directory review. Start empty;
 add only pages needed to resolve directory gaps. `probes` adds explicit class/book
 negative or unknown cases that have no existing DB variant for that pair.
 
+For a bounded review of particular existing variants, add optional `variantIds`,
+a nonempty array of unique positive DB variant IDs. Every ID must exist and belong
+to a scoped book. Omit the field to retain the default of all variants in those
+books. Directory evidence and book inventory remain book-wide, but candidates and
+proposal coverage include only selected variants plus probes. Off-target entries
+are unreviewed, rather than implicitly absent. Probes cannot duplicate an existing
+DB class/book variant, even when that variant is outside the selected IDs.
+
 The scanner reads `Contents.hhc` and `Index.hhk` first. It honors supported HTML
 charset declarations (UTF-8, GBK/GB2312/GB18030), defaults legacy files to GBK,
 decodes HTML entities, and rejects replacement-character decoding. UL ancestry

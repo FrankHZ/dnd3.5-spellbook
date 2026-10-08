@@ -14,6 +14,7 @@ export type Scope = {
   books: BookScope[];
   pages: string[];
   probes: { classId: number; publicationId: number }[];
+  variantIds?: number[];
 };
 export type Evidence = {
   id: string;
@@ -75,6 +76,10 @@ export function parseScope(value: unknown): Scope {
   }
   for (const p of value.pages) requireValue(nonempty(p) && relativeLocator(p) === p && /\.html?$/i.test(p) && books.some(b => p.startsWith(b.prefix + "/")), "Page outside scoped books");
   requireValue(new Set(value.pages).size === value.pages.length, "Duplicate page");
+  if (value.variantIds !== undefined) {
+    requireValue(Array.isArray(value.variantIds) && value.variantIds.length > 0 && value.variantIds.every(positive), "Invalid variant selection");
+    requireValue(new Set(value.variantIds).size === value.variantIds.length, "Duplicate variant selection");
+  }
   const probes = new Set<string>();
   for (const p of value.probes) {
     requireValue(record(p) && positive(p.classId) && positive(p.publicationId) && ids.has(p.publicationId), "Invalid probe");
@@ -194,6 +199,11 @@ export function scan(options: { chmRoot: string; rulesDb: string; contentDb: str
       requireValue(db && pub && db.name === pub.name && db.abbr === pub.abbr, `Publication identity mismatch: ${b.publicationId}`);
     }
     for (const p of scope.probes) requireValue(identityMap.has(p.classId), "Unknown probe class ID");
+    for (const id of scope.variantIds ?? []) {
+      const variant = variants.find(v => v.id === id);
+      requireValue(variant, `Unknown selected variant ID: ${id}`);
+      requireValue(scope.books.some(b => b.publicationId === variant.publicationId), `Selected variant outside scoped books: ${id}`);
+    }
   } finally { rules.close(); content.close(); }
   let htmlFiles = 0, htmlBytes = 0;
   const inventory = (dir: string) => {
@@ -244,9 +254,10 @@ export function scan(options: { chmRoot: string; rulesDb: string; contentDb: str
     evidenceByClass.get(id)!.push(evidenceById.get(match.evidenceId)!);
   }
   const selected = new Set(scope.books.map(b => b.publicationId)), identityMap = new Map(identities.map(c => [c.id, c]));
-  const targets = variants.filter(v => selected.has(v.publicationId)).map(v => ({ classId: v.classId, publicationId: v.publicationId, variantId: v.id as number | null, page: v.page }));
+  const variantSelection = scope.variantIds ? new Set(scope.variantIds) : null;
+  const targets = variants.filter(v => selected.has(v.publicationId) && (!variantSelection || variantSelection.has(v.id))).map(v => ({ classId: v.classId, publicationId: v.publicationId, variantId: v.id as number | null, page: v.page }));
   for (const p of scope.probes) {
-    requireValue(!targets.some(t => t.classId === p.classId && t.publicationId === p.publicationId), "Probe duplicates a DB variant");
+    requireValue(!variants.some(v => v.classId === p.classId && v.publicationId === p.publicationId), "Probe duplicates a DB variant");
     targets.push({ ...p, variantId: null, page: null });
   }
   const candidates: Candidate[] = targets.map(t => {

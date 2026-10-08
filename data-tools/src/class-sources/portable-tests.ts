@@ -34,6 +34,7 @@ try {
   for (const prefix of ["../escape", "/absolute", "C:/absolute", "a/../../escape"]) assert.throws(() => parseScope({ ...scope, books: [{ ...scope.books[0], prefix }] }), /Unsafe/);
   assert.throws(() => parseScope({ ...scope, books: [scope.books[0], scope.books[0]] }), /Duplicate/);
   assert.throws(() => parseScope({ ...scope, pages: ["outside/page.htm"] }), /outside/);
+  for (const variantIds of [[], [0], ["10"], [10, 10]]) assert.throws(() => parseScope({ ...scope, variantIds }), /variant selection/);
   fs.writeFileSync(path.join(chm, "Contents.hhc"), iconv.encode(text, "gbk"));
   fs.writeFileSync(path.join(chm, "Index.hhk"), iconv.encode(`<UL>${object("先知 (Seer)", "甲/class.htm")}</UL>`, "gbk"));
   for (const file of ["甲/cover.htm", "甲/class.htm", "甲/spells.htm", "乙/cover.htm", "乙/class.htm", "乙/variant.htm"]) {
@@ -83,6 +84,33 @@ try {
   const valid = replace({ disposition: "accepted", relation: "class-entry", evidenceIds: [evidence.find(e => e.local === "甲/class.htm" && e.role === "class-entry")!.id] });
   const proposalsPath = path.join(root, "proposals.json"); fs.writeFileSync(proposalsPath, JSON.stringify(envelope(valid)));
   assert.equal(run(repoRoot(), path.join(output, "review"), ["--proposals", proposalsPath]).status, 0);
+  const selectedScope = { ...scope, probes: [], variantIds: [11] };
+  fs.writeFileSync(scopePath, JSON.stringify(selectedScope));
+  for (const [index, cwd] of [repoRoot(), path.join(repoRoot(), "data-tools")].entries()) {
+    const result = run(cwd, path.join(output, `selected-${index}`));
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(JSON.parse(result.stdout).scope.variantTargets, 1);
+  }
+  const selectedCandidates = fs.readFileSync(path.join(output, "selected-0/candidates.jsonl"), "utf8").trim().split("\n").map(x => JSON.parse(x) as Candidate);
+  assert.deepEqual(selectedCandidates.map(c => c.key), ["2:1:11"]);
+  for (const name of ["scope.json", "identities.json", "evidence.jsonl", "matches.jsonl", "candidates.jsonl"]) assert.equal(fs.readFileSync(path.join(output, "selected-0", name), "utf8"), fs.readFileSync(path.join(output, "selected-1", name), "utf8"));
+  const selectedProposals = proposals.filter(p => p.key === "2:1:11");
+  validateProposals(envelope(selectedProposals), selectedCandidates, evidence, revision);
+  assert.throws(() => validateProposals(envelope([]), selectedCandidates, evidence, revision), /entire/);
+  assert.throws(() => validateProposals(envelope(proposals), selectedCandidates, evidence, revision), /Unknown/);
+  fs.writeFileSync(proposalsPath, JSON.stringify(envelope(selectedProposals)));
+  assert.equal(run(repoRoot(), path.join(output, "selected-review"), ["--proposals", proposalsPath]).status, 0);
+  for (const [name, badScope, message] of [
+    ["unknown", { ...selectedScope, variantIds: [999] }, /Unknown selected variant/],
+    ["wrong-book", { ...selectedScope, books: [scope.books[0]], variantIds: [11] }, /outside scoped books/],
+    ["probe-variant", { ...selectedScope, probes: [{ classId: 1, publicationId: 1 }] }, /Probe duplicates/],
+  ] as const) {
+    fs.writeFileSync(scopePath, JSON.stringify(badScope));
+    const rejected = run(repoRoot(), path.join(output, name));
+    assert.equal(rejected.status, 1); assert.match(rejected.stderr, message);
+    assert.ok(!fs.existsSync(path.join(output, name)));
+  }
+  fs.writeFileSync(scopePath, JSON.stringify(scope));
   assert.equal(run(repoRoot(), path.join(output, "run-0")).status, 1);
   assert.equal(run(repoRoot(), path.join(root, "outside")).status, 1);
   for (const [i, p] of [rulesPath, contentPath].entries()) assert.deepEqual(fs.readFileSync(p), before[i]);
