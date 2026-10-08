@@ -14,11 +14,11 @@ export default function DescriptionSection({
 
   const content = description.html ? (
     <div
-      className="prose prose-sm max-w-none leading-6 prose-p:my-3 prose-ul:my-3 prose-li:my-1 [&_pre]:whitespace-pre-wrap [&_pre]:break-words"
+      className="prose prose-sm max-w-none leading-6 prose-p:my-3 prose-ul:my-3 prose-li:my-1 [&_pre]:whitespace-pre-wrap [&_pre]:break-words [&_pre]:[font-family:inherit]"
       dangerouslySetInnerHTML={{ __html: safeHtml }}
     />
   ) : (
-    <pre className="whitespace-pre-wrap text-sm leading-6">
+    <pre className="whitespace-pre-wrap text-sm leading-6 [font-family:inherit]">
       {description.text ?? "—"}
     </pre>
   );
