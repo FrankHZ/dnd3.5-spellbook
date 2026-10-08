@@ -31,6 +31,11 @@ export type SpellFieldProvenance = {
   schemaVersion: 1;
   language: Lang;
   acceptedRevision: string;
+  retainedReference?: {kind: "CHM"; reviewed: false};
+  /** Accepted local changes, independent of the original body's ownership/review. */
+  clauseReview?: { kind: "DB-English"; scope: "clauses"; acceptedRevision: string;
+    proposalIds: string[]; wholeBodyReviewed: false;
+    prior?: {acceptedRevision: string; review?: SpellFieldProvenance["review"]} };
   /** Review is independent of the original field owner, including retained CHM. */
   review?: { disposition: "source-reviewed-retention" | "accepted-native-source-bound" |
     "accepted" | "accepted-with-source-issues"; acceptedRevision: string;
