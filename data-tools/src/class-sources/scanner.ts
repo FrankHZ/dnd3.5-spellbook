@@ -29,6 +29,16 @@ export type Evidence = {
   role: "spell-list-reference" | "variant" | "class-entry" | "other";
 };
 export type Identity = { id: number; name: string; slug: string; prestige: number; aliases: string[] };
+export function verifyContentsBinding(book: BookScope, evidence: Evidence[]): boolean {
+  const nodes = evidence.filter(e => e.source === "Contents.hhc" && e.label === book.contentsLabel);
+  const localTarget = (e: Evidence) => e.targetExists && e.targetPublicationId === book.publicationId && e.local?.startsWith(book.prefix + "/");
+  if (nodes.some(localTarget)) return true;
+  // Publication headings use bracketed book codes. A generic grouping such as
+  // "龙杂志" cannot establish book identity through one of its descendants.
+  if (!nodes.length || !/\[[A-Za-z][A-Za-z0-9]*\]/.test(book.contentsLabel)) return false;
+  return evidence.some(e => e.source === "Contents.hhc" && localTarget(e)
+    && e.contextPublicationId === book.publicationId && e.ancestors.includes(book.contentsLabel));
+}
 export type Candidate = {
   key: string;
   classId: number;
@@ -233,7 +243,7 @@ export function scan(options: { chmRoot: string; rulesDb: string; contentDb: str
       evidence.push(e);
     }
   }
-  for (const book of scope.books) requireValue(evidence.some(e => e.label === book.contentsLabel && e.targetPublicationId === book.publicationId), `Unverified Contents binding: ${book.publicationId}`);
+  for (const book of scope.books) requireValue(verifyContentsBinding(book, evidence), `Unverified Contents binding: ${book.publicationId}`);
   for (const local of scope.pages) {
     const bytes = fs.readFileSync(sourceFile(chmRoot, local)); bytesRead += bytes.length;
     const $ = cheerio.load(decodeHtml(bytes)); $("script,style").remove();
