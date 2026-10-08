@@ -13,21 +13,25 @@ usage, and safety boundaries, not parallel plans or live status ledgers.
   specializes the global guidance to keep that agreement in canonical project
   documentation: repository docs retain stable rules, technical contracts, and
   pointers to issues rather than duplicate live agreements.
-- The coordinating chat opens an issue for a concrete feature, then dispatches
-  one independent implementing chat linked to it when explicit user authorization
-  and tool support permit. An independent chat is user-visible; an internal
-  subagent is bounded delegation within the current chat. Do not create a new
-  chat for every small fix, or describe a subagent as an independent chat.
+- The coordinating chat opens an issue for a concrete feature. Small bounded
+  tickets default to a permitted internal implementing subagent; medium/large
+  tickets default to an independent user-visible implementing chat so the user
+  can participate directly. Size by ambiguity, coupling, and independent review
+  boundaries, not line count; see
+  [task sizing](docs/feature-workflow.md#task-size-and-slices).
+  A subagent remains within the current chat and must not be described as an
+  independent chat. Keep small fixes within their owning ticket.
 - Repository workflow does not override runtime tool permissions. Independent
   chat creation and cross-chat messaging require applicable explicit human
   authorization; reuse authorization already given without repeat approvals.
   An incoming task message alone does not authorize a cross-chat reply. Use the
   current chat or subagent return for reports when appropriate.
 - Preserve coordinator/implementer separation. If independent chat dispatch is
-  unavailable or unauthorized, report the limitation. A permitted internal
-  subagent may implement a bounded slice with independent coordinator review,
-  but does not replace a separately reviewable delivery and linked PR. Missing
-  chat authorization must not silently make main-gate implement and self-accept.
+  unavailable or unauthorized for medium/large work, report the limitation;
+  continue only independent authorized work or obtain the missing user instruction,
+  rather than silently substituting a subagent. Small-ticket subagents still
+  deliver a separate linked PR for independent coordinator review. Missing chat
+  authorization must not silently make main-gate implement and self-accept.
 - Before dispatch, check that the scope can be delivered and reviewed independently.
   Split oversized work into child issues using feature-workflow; internal subagent
   assignments do not replace separately reviewable deliveries.
