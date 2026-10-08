@@ -32,15 +32,16 @@ sampled miss was observed; with no demonstrated held-out errors, recall cannot
 be estimated. Lexical findings never become semantic acceptance automatically.
 
 Three known pilot follow-ups are additional, not part of these denominators.
-Current #84 has a demonstrated creation-rate discrepancy and two separately
-reviewable private clause proposals: creation basis and an additional force
-property discrepancy found during coordinator review. Range wording and a
-historical action label remain explicit unknowns. Current #101 already preserves the correct frequency; current
+Current #84 has four separately reviewable private clause proposals: creation
+basis, force property, free-action terminology and an upper bound of three.
+Coordinator review resolved the latter two against the complete DB English;
+historical label origins do not require fresh source research for this bounded
+normalization. Current #101 already preserves the correct frequency; current
 #378 explicitly preserves the free-action meaning, while its existing unresolved
 owner record remains untouched. Historical CHM rows are unchanged. The #84
 proposals preserve every unrelated substring in text and HTML, full predecessor
 and provenance, complete matched English and mechanics. They are unaccepted and
-unactivated; no DB writes occurred. Both proposals share one original predecessor;
+unactivated; no DB writes occurred. All four proposals share one original predecessor;
 a future accepted handoff must compose accepted clause replacements explicitly,
 not sequentially overwrite full bodies. Neither grants whole-body acceptance.
 
