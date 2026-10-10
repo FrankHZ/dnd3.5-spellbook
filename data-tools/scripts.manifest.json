@@ -7,6 +7,20 @@
     "dormant-local": "Source-consumed local workflow kept for reruns when source data or parser logic changes; not part of active acceptance."
   },
   "commands": {
+    "save:qa": {
+      "module": "rules-content",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "save:qa:test": {
+      "module": "harness",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
     "action:qa": {
       "module": "rules-content",
       "lifecycle": "maintained-local",
