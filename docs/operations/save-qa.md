@@ -42,6 +42,10 @@ mechanical validation. Unnamed later saves are `unspecified`/unknown; they may
 refer to another spell or retry, so never inherit the canonical family.
 `None` is retained as raw mechanics, not invented as a typed body occurrence.
 Body role hints use local words and can confuse unrelated repetition language.
+Actor quantifiers such as "each creature", retry prohibitions, save bonuses and
+immunity references can mention a family without requiring another attempt.
+An empty/no-save initial field can coexist with secondary body saves. Review
+the actor, trigger, result and stopping condition separately in complete context.
 
 A supported family is **unverified**, never a pass. Absent family support in
 an available scope is a **candidate**, never a confirmed error. Missing Chinese
@@ -56,7 +60,9 @@ predecessor, canonical/rules/mechanic context, raw ownership, exact separate
 text/HTML clauses and composed after-bodies. Preserve actions and unrelated
 content. This command has no writer, acceptance, global replacement, source
 book verification or production application. The [pilot](../reports/save-qa-pilot.md)
-records the bounded evaluation and unresolved scope.
+records the initial bounded evaluation; the
+[conditional batch](../reports/save-qa-conditional.md) records mixed/repeated
+role review and its independent proposal boundary.
 
 Run `npm run -w data-tools save:qa:test` for synthetic scope/role, multiple-save,
 conditional/repeated/anonymous, inline-header, missing-language, row-presence,
