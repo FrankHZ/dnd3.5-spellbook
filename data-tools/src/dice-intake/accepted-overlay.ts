@@ -53,8 +53,8 @@ function inspectOverlay(db: Database.Database, input: AcceptedOverlayInput) {
   const {rows, noteKey, note: acceptedNote} = input;
   assert(rows.length > 0, "empty accepted overlay");
   assert.equal(new Set(rows.map(r => r.spellId)).size, rows.length, "duplicate accepted target");
-  assert(["cityscapeDbEnglish", "diceDbEnglishCloseout", "actionClauseCorrections", "actionClauseRollout"].includes(noteKey), "unsupported annotation owner");
-  assert.equal(Boolean(input.correction), ["actionClauseCorrections", "actionClauseRollout"].includes(noteKey), "correction requires its fixed owner");
+  assert(["cityscapeDbEnglish", "diceDbEnglishCloseout", "actionClauseCorrections", "actionClauseRollout", "saveClauseCorrections"].includes(noteKey), "unsupported annotation owner");
+  assert.equal(Boolean(input.correction), ["actionClauseCorrections", "actionClauseRollout", "saveClauseCorrections"].includes(noteKey), "correction requires its fixed owner");
   if (input.correction) assert.equal(input.correction.before.length, rows.length, "predecessor scope differs");
   const scIds = new Set((db.prepare(`SELECT legacySpellId AS id FROM SpellContent WHERE sourceRulebookId=86
     UNION SELECT spellId AS id FROM I18nSpellText WHERE rulebookId=86`).all() as {id: number}[]).map(r => r.id));

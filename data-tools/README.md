@@ -189,3 +189,8 @@ readonly by default and `--apply` only under the owning local write authorizatio
 It preserves SC and existing CHM, composes honest fallback and coordinates atomic
 overlay plus maintained FTS recovery. See [accepted non-SC closeout](../docs/operations/import-workflow.md#accepted-non-sc-dice-closeout).
 Run `dice:closeout:write:test` for synthetic transaction, recovery and path checks.
+
+Use `save:corrections` for the fixed accepted #641/#643 saving clauses, after
+completed #629 and #637. It defaults to readonly preflight; operator writes need
+explicit authorization. See [operation and recovery](../docs/operations/save-corrections.md)
+and run `save:corrections:test` for synthetic ordering, transaction and FTS checks.
