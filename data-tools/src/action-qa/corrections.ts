@@ -12,7 +12,8 @@ import type {OverlayRow} from "../dice-intake/effective-writer";
 
 type Row = Record<string, any>;
 export type ClauseProposal = Row & {proposalId: string; targetId: number; rulebookId: number;
-  english: string; castingTime: string; fields: {field: string; before: string; after: string}[];
+  english: string; castingTime: string; fields: {field: string; before: string; after: string;
+    exactReplacement?: {before: string; after: string; count: number}}[];
   exactReplacement: {before: string; after: string; count: number}};
 export type ActionHandoff = {schema: "action-clause-handoff.v1"; acceptedRevision: string;
   priorBuildMeta: Row; targets: {id: number; book: number; canonical: Row; englishRules: Row;
@@ -33,7 +34,7 @@ export function acceptedActionProposals(root: string): ClauseProposal[] {
 export function composeActionClauses(original: string, proposals: ClauseProposal[], field: string) {
   const spans: {at: number; before: string; after: string}[] = [];
   for (const p of proposals) {
-    const f = p.fields.find(f=>f.field === field), edit = p.exactReplacement;
+    const f = p.fields.find(f=>f.field === field), edit = f?.exactReplacement ?? p.exactReplacement;
     assert(f && p.fields.length === 2 && new Set(p.fields.map(f=>f.field)).size === 2, "text/HTML proposal fields differ");
     assert.equal(f.before, original, "proposal does not share complete predecessor");
     assert.equal(edit.count, 1); assert(edit.before.length && edit.after.length && edit.before !== edit.after);

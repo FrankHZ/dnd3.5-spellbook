@@ -8,7 +8,7 @@ import {contentSearchStep} from "../db/content-search-step";
 import {prepareActionHandoff,actionCorrectionInput,type ClauseProposal,type ActionHandoff} from "./corrections";
 const {ACTION_CORRECTION_TARGETS:targets,DICE_CLOSEOUT_REVISION:revision}=require('@dnd/contracts') as typeof import('@dnd/contracts',{with:{'resolution-mode':'import'}});
 
-function priorEnvelope(id:number,field:'name'|'body',kind:'chm'|'native'|'independent') {
+export function priorEnvelope(id:number,field:'name'|'body',kind:'chm'|'native'|'independent') {
   const sourceKey=kind==='independent'?null:`synthetic:${id}`;
   const common={schemaVersion:1,acceptedRevision:revision,targetId:id,field,language:'zh',origin:{kind,sourceKey},closeout:{issue:586,revision}};
   if(kind==='chm') return JSON.stringify({...common,input:{targetId:id,field:`chinese.${field==='name'?'name':'descriptionText'}`},

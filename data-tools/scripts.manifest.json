@@ -738,6 +738,20 @@
       "requiresLocalData": false,
       "requiresSqlite": true,
       "writeCapable": true
+    },
+    "action:rollout": {
+      "module": "rules-content",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "action:rollout:test": {
+      "module": "harness",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": true
     }
   }
 }

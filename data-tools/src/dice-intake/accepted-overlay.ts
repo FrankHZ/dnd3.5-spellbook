@@ -23,6 +23,28 @@ export type AcceptedOverlayInput = {
 };
 
 type Row = Record<string, any>;
+/** Exact body/retained-field guard reused by the fixed successor's prerequisite.
+ * Annotation and search authentication remain the source owner's responsibility. */
+export function requireAcceptedOverlayAfterRows(db: Database.Database, input: AcceptedOverlayInput) {
+  const rows = input.rows;
+  const actual = (db.prepare("SELECT * FROM I18nSpellText ORDER BY spellId").all() as Row[])
+    .filter(r => (r.lang==='zh' && r.variant==='effective' && rows.some(row=>row.spellId===r.spellId))
+      || rows.some(row=>r.id===`dice-effective:${row.rulebookId}:${row.spellId}`));
+  assert.equal(actual.length, rows.length, "partial/extra effective target set");
+  for (const [i,row] of rows.entries()) {
+    const old = actual.find(r=>r.spellId===row.spellId)!;
+    assert(old, "missing prerequisite target");
+    assert.equal(old.id, `dice-effective:${row.rulebookId}:${row.spellId}`, "foreign overlay ID");
+    assert.equal(old.lang, "zh"); assert.equal(old.variant, "effective");
+    for (const key of ["spellId", ...overlayColumns] as const) assert.equal(old[key], row[key], `overlay drift: ${key}`);
+    for (const key of ["createdAt", "updatedAt"]) assert(typeof old[key]==="string" && Number.isFinite(Date.parse(old[key])), "invalid overlay timestamp");
+    const predecessor = input.correction?.before[i];
+    if (predecessor) for (const key of Object.keys(predecessor)) {
+      if (!["descriptionText", "descriptionHtml", "bodyProvenanceJson", "updatedAt"].includes(key))
+        assert.deepEqual(old[key], predecessor[key], `changed protected predecessor field: ${key}`);
+    }
+  }
+}
 function keys(value: Row, expected: string[]) {
   assert.deepEqual(Object.keys(value).sort(), [...expected].sort(), "unexpected build fields");
 }
@@ -31,8 +53,8 @@ function inspectOverlay(db: Database.Database, input: AcceptedOverlayInput) {
   const {rows, noteKey, note: acceptedNote} = input;
   assert(rows.length > 0, "empty accepted overlay");
   assert.equal(new Set(rows.map(r => r.spellId)).size, rows.length, "duplicate accepted target");
-  assert(["cityscapeDbEnglish", "diceDbEnglishCloseout", "actionClauseCorrections"].includes(noteKey), "unsupported annotation owner");
-  assert.equal(Boolean(input.correction), noteKey === "actionClauseCorrections", "correction requires its fixed owner");
+  assert(["cityscapeDbEnglish", "diceDbEnglishCloseout", "actionClauseCorrections", "actionClauseRollout"].includes(noteKey), "unsupported annotation owner");
+  assert.equal(Boolean(input.correction), ["actionClauseCorrections", "actionClauseRollout"].includes(noteKey), "correction requires its fixed owner");
   if (input.correction) assert.equal(input.correction.before.length, rows.length, "predecessor scope differs");
   const scIds = new Set((db.prepare(`SELECT legacySpellId AS id FROM SpellContent WHERE sourceRulebookId=86
     UNION SELECT spellId AS id FROM I18nSpellText WHERE rulebookId=86`).all() as {id: number}[]).map(r => r.id));
@@ -93,19 +115,7 @@ function inspectOverlay(db: Database.Database, input: AcceptedOverlayInput) {
   }
   if (state === "after") {
     assert.deepEqual(note, acceptedNote, "missing accepted build note");
-    assert.equal(actual.length, rows.length, "partial/extra effective target set");
-    actual.forEach((old, i) => {
-      const row = rows[i]!;
-      assert.equal(old.id, `dice-effective:${row.rulebookId}:${row.spellId}`, "foreign overlay ID");
-      assert.equal(old.lang, "zh"); assert.equal(old.variant, "effective");
-      for (const key of ["spellId", ...overlayColumns] as const) assert.equal(old[key], row[key], `overlay drift: ${key}`);
-      for (const key of ["createdAt", "updatedAt"]) assert(typeof old[key] === "string" && Number.isFinite(Date.parse(old[key])), "invalid overlay timestamp");
-      const predecessor = input.correction?.before[i];
-      if (predecessor) for (const key of Object.keys(predecessor)) {
-        if (!["descriptionText", "descriptionHtml", "bodyProvenanceJson", "updatedAt"].includes(key))
-          assert.deepEqual(old[key], predecessor[key], `changed protected predecessor field: ${key}`);
-      }
-    });
+    requireAcceptedOverlayAfterRows(db, input);
   }
   return {state, buildId: build.id as string, meta, nextMeta: {...meta,
     overlays: {...meta.overlays, [noteKey]: acceptedNote}}};

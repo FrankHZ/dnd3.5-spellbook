@@ -66,6 +66,9 @@ exact-after inputs to rebuild search without rewriting bodies. Exact-after plus
 current FTS is a zero-content-write, zero-search-write retry. Old accepted owners
 retain their absent-predecessor/annotation rules and reject the newly annotated
 state instead of overwriting corrections with old bodies.
+The [fixed rollout successor](action-rollout.md) requires completed #629 first.
+After that successor, retry its own recovery route; #629 deliberately rejects
+the later annotation and must not be rerun to downgrade it.
 
 ## API metadata and evidence
 
