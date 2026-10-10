@@ -16,6 +16,32 @@ Identity-bound raw metadata is not authenticated acceptance. English fallback,
 missing Chinese, unavailable Chinese casting headers and book mismatch remain
 unknown. An explicit CHM selection does not grant source authority.
 
+Use `--inventory` instead of a sample/ID selection for full current retrieval.
+It refuses `--sample`, `--ids` and `--variant` overrides, checks unique canonical
+identities, and retrieves context in chunks of 100. Private `inventory.jsonl`
+contains one compact record per identity, selected variant, language/identity
+status and seeded field/family/role/count findings. Complete bodies and raw
+provenance are omitted from this inventory; retrieve only the separately frozen
+review IDs with `--ids`. `--frequency` can accompany either mode. Both modes
+retain the 50 MiB output and readonly metadata checks.
+
+Before reviewing a rollout batch, reconcile actual historical entry decisions
+against unchanged input pairs. Prior sample membership alone is not review.
+Keep accepted-but-unactivated targets in an `accepted-pending` partition and
+exclude duplicate proposals. Record counts by book, action family and current
+variant, then freeze the deterministic selection before reading semantics.
+Keep newly reviewed and revisited IDs separate. An empty effective row never
+uses its CHM body to fill the gap. English fallbacks remain missing language,
+and SC observations retain their existing source-bound authority.
+
+Local proposals retain the complete canonical mechanics and selected/effective
+predecessor, raw prior ownership, separate exact text/HTML edits and a composed
+after-body for multiple clauses sharing one original. HTML header markup can
+make its exact edit differ from the text edit. Declare guarded insert/update
+and dependencies on unactivated corrections. Proposal review/acceptance and a
+separately scoped fixed writer are coordinator-owned follow-ups; retrieval does
+not authorize application or expand an existing writer's target set.
+
 The fixed seeds cover standard, move/move-equivalent, swift, immediate, free,
 full-round/fullround and no-action phrases, plural forms and coordinated lists.
 Accepted lexical aliases include immediate 直觉/即时/瞬间 and swift 迅捷/快捷/快速;
@@ -55,6 +81,8 @@ fallback, provenance and readonly SQLite regressions. It is included in the
 portable data-tools gate. Bounded evaluations are recorded in the
 [pilot report](../reports/action-qa-pilot.md) and
 [held-out context/frequency report](../reports/action-qa-context-review.md).
+The [first rollout report](../reports/action-qa-rollout.md) separates complete
+retrieval from its finite contextual reviews and remaining queue.
 Review decisions and
 source excerpts belong in the private output directory; the public repo contains
 only tool code, synthetic fixtures and aggregate reports.
