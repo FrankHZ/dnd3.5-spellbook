@@ -46,6 +46,7 @@ owning workflow's explicit authorization.
 
 - [Readonly action context QA and bounded terminology frequencies](../docs/operations/action-qa.md)
 - [Fixed accepted action-clause corrections and search recovery](../docs/operations/action-corrections.md)
+- [Fixed rollout successor and ordered action-patch recovery](../docs/operations/action-rollout.md)
 - [CHM parsing and Chinese imports](../docs/operations/import-workflow.md#chm-and-entity-translations)
 - [Read-only CHM class-source directory scanning and proposals](../docs/operations/class-sources.md)
 - [Accepted bounded class-source mapping check/import](../docs/operations/class-sources.md#accepted-mapping-import)

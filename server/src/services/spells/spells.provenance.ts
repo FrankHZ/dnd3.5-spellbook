@@ -1,7 +1,7 @@
 import { isDeepStrictEqual } from "node:util";
 import type { SpellFieldProvenance } from "@dnd/contracts";
 import {mapCloseoutProvenance} from "#server/services/spells/spells.closeout-provenance";
-import {mapActionCorrectionProvenance,mapActionNameRetention} from "#server/services/spells/spells.action-correction-provenance";
+import {mapActionCorrectionProvenance,mapActionNameRetention,mapActionRolloutProvenance} from "#server/services/spells/spells.action-correction-provenance";
 import { ApiError } from "#server/utils/errors";
 
 const record = (v: unknown): v is Record<string, any> =>
@@ -241,6 +241,8 @@ export function mapFieldProvenance(raw: string | null, field: "name" | "body",
     || row.spellId !== target.id || row.rulebookId !== target.rulebookId || row.lang !== "zh"
     || !revision(v.acceptedRevision)
     || !record(v.origin) || !record(v.input) || !record(v.evidence)) return fail();
+  if ("actionClauseRollout" in v || "actionRolloutNameRetention" in v) return mapActionRolloutProvenance(v,field,target,fail,
+    raw=>mapFieldProvenance(raw,field,row,target));
   if ("actionClauseCorrection" in v) return mapActionCorrectionProvenance(v,field,target,fail,
     raw=>mapFieldProvenance(raw,field,row,target));
   if ("actionClauseNameRetention" in v) return mapActionNameRetention(v,field,target,fail);

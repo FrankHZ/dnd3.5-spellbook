@@ -10,3 +10,4 @@ export * from "./dto/db-status.js";
 export * from "./dto/app-status.js";
 export * from "./dice-closeout.js";
 export * from "./action-corrections.js";
+export * from "./action-rollout.js";
