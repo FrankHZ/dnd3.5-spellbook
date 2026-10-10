@@ -1,7 +1,7 @@
 import {isDeepStrictEqual as equal} from "node:util";
 import {ACTION_CORRECTION_REVISION as revision,ACTION_CORRECTION_TARGETS as targets,
   ACTION_CORRECTION_ACCEPTANCE as acceptance,DICE_CLOSEOUT_REVISION,
-  ACTION_ROLLOUT_TARGETS,ACTION_ROLLOUT_INPUTS,type SpellFieldProvenance} from "@dnd/contracts";
+  ACTION_ROLLOUT_TARGETS,ACTION_ROLLOUT_INPUTS,SAVE_CORRECTION_TARGETS,SAVE_CORRECTION_INPUTS,type SpellFieldProvenance} from "@dnd/contracts";
 
 const record=(v:unknown):v is Record<string,any>=>typeof v==='object' && v!==null && !Array.isArray(v);
 const keys=(v:Record<string,unknown>,expected:string[])=>equal(Object.keys(v).sort(),expected.sort());
@@ -31,6 +31,39 @@ export function mapActionRolloutProvenance(v:Record<string,any>,field:'name'|'bo
   if(!keys(v,[...common,'actionClauseRollout','prior'])
     || !equal(v.input,{revision:s.revision,path:s.path,targetId:t.id,field:'body'})
     || !equal(v.actionClauseRollout,{scope:'clauses',wholeBodyReviewed:false})
+    || !record(v.prior) || !keys(v.prior,['variant','provenance','sourceKey'])
+    || !(v.prior.sourceKey===null || (t.operation==='insert'?chmKey(v.prior.sourceKey):sourceKey(v.prior.sourceKey)))) return fail();
+  let prior:NonNullable<SpellFieldProvenance['clauseReview']>['prior'];
+  if(t.operation==='update') {
+    const old=v.prior.provenance;
+    if(v.prior.variant!=='effective' || !record(old) || old.acceptedRevision!==DICE_CLOSEOUT_REVISION
+      || old.origin?.kind!==t.origin || !equal(old.origin,v.origin) || old.review?.authority!==t.authority) return fail();
+    const safe=mapPrior(JSON.stringify(old));
+    prior={acceptedRevision:safe.acceptedRevision,...(safe.review?{review:safe.review}:{})};
+  } else if(v.prior.variant!=='chm' || v.prior.provenance!==null || !chmKey(v.prior.sourceKey)
+    || !equal(v.origin,{kind:'chm',sourceKey:v.prior.sourceKey})) return fail();
+  return {schemaVersion:1,acceptedRevision:s.revision,language:'zh',origin:t.operation==='insert'?retainedOrigin:v.origin,
+    clauseReview:{kind:'DB-English',scope:'clauses',acceptedRevision:s.revision,
+      proposalIds:[...t.proposals],wholeBodyReviewed:false,...(prior?{prior}:{})}};
+}
+export function mapSaveCorrectionProvenance(v:Record<string,any>,field:'name'|'body',
+  target:{id:number;rulebookId:number},fail:()=>never,mapPrior:(raw:string)=>SpellFieldProvenance):SpellFieldProvenance {
+  const t=SAVE_CORRECTION_TARGETS.find(t=>t.id===target.id && t.book===target.rulebookId);
+  const s=t && SAVE_CORRECTION_INPUTS.find(s=>s.issue===t.issue);
+  if(!t || !s || v.acceptedRevision!==s.revision || v.language!=='zh'
+    || !equal(v.evidence,{issue:s.issue,comment:s.comment,proposalIds:[...t.proposals]})) return fail();
+  const common=['schemaVersion','acceptedRevision','targetId','field','language','origin','input','evidence'];
+  const retainedOrigin={kind:'chm' as const,sourceKey:`chm-reference:${t.id}`};
+  if(field==='name') {
+    if(t.operation!=='insert' || !keys(v,[...common,'saveCorrectionNameRetention'])
+      || !keys(v.origin,['kind','sourceKey']) || v.origin.kind!=='chm' || !chmKey(v.origin.sourceKey)
+      || !equal(v.input,{revision:s.revision,path:s.path,targetId:t.id,field:'retained-name'})
+      || !equal(v.saveCorrectionNameRetention,{reviewed:false,priorVariant:'chm'})) return fail();
+    return {schemaVersion:1,acceptedRevision:s.revision,language:'zh',origin:retainedOrigin,retainedReference:{kind:'CHM',reviewed:false}};
+  }
+  if(!keys(v,[...common,'saveClauseCorrection','prior'])
+    || !equal(v.input,{revision:s.revision,path:s.path,targetId:t.id,field:'body'})
+    || !equal(v.saveClauseCorrection,{scope:'clauses',wholeBodyReviewed:false})
     || !record(v.prior) || !keys(v.prior,['variant','provenance','sourceKey'])
     || !(v.prior.sourceKey===null || (t.operation==='insert'?chmKey(v.prior.sourceKey):sourceKey(v.prior.sourceKey)))) return fail();
   let prior:NonNullable<SpellFieldProvenance['clauseReview']>['prior'];

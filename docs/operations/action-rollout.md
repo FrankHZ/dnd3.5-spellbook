@@ -19,7 +19,8 @@ and seven clauses; neither owner accepts caller-selected files or targets.
 
 ## Fixed order and readonly check
 
-The only activation order is completed #629, then this successor. Before the
+This owner requires completed #629. The later fixed
+[saving owner](save-corrections.md) requires this owner to complete too. Before the
 successor opens a writer, it authenticates #629's exact corrected rows, retained
 fields, fixed build annotation and current search. Its own prior build must
 equal the authenticated expected #629-after build. Foreign, partial, stale or
@@ -60,8 +61,9 @@ English/mechanics, summaries, relationships, all other rows and build fields.
 | Successor-after with source, body, retained field or note drift | Reject; do not rebuild or overwrite |
 
 After the successor commits, retry only its own exact-after recovery route.
-#629 and earlier owners reject the later annotated state rather than overwrite
-it. Do not strip annotations, downgrade bodies or add bidirectional migration.
+#629 and earlier owners reject this annotated state. After the saving
+owner commits, this action owner also rejects its later annotation. Do not strip
+annotations, downgrade bodies or add bidirectional migration.
 The earlier #629 note and corrected rows remain exact through successor apply
 and recovery. Report a failed FTS stage as committed body state; reports do not
 authorize resume or operator writes.

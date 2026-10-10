@@ -22,6 +22,10 @@ It does not cover:
 - broad rules/content schema redesign
 - raw/source data publication in the parent repo
 
+The fixed [saving clause operation](save-corrections.md) consumes independently
+accepted #641/#643 clauses after completed #629 and #637. Its readonly preflight,
+authority boundaries and recovery contract remain with that owner.
+
 ## Source Of Truth
 
 For resumed dice Chinese QA, the matched database English name/body and mechanics
