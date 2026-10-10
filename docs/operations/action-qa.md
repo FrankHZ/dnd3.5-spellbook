@@ -83,6 +83,8 @@ portable data-tools gate. Bounded evaluations are recorded in the
 [held-out context/frequency report](../reports/action-qa-context-review.md).
 The [first rollout report](../reports/action-qa-rollout.md) separates complete
 retrieval from its finite contextual reviews and remaining queue.
+The [finite remainder report](../reports/action-qa-remainder.md) records the
+next nine candidates, bounded controls, unresolved fields and seed gaps.
 Review decisions and
 source excerpts belong in the private output directory; the public repo contains
 only tool code, synthetic fixtures and aggregate reports.
