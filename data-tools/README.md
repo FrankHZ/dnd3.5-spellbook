@@ -194,3 +194,7 @@ Use `save:corrections` for the fixed accepted #641/#643 saving clauses, after
 completed #629 and #637. It defaults to readonly preflight; operator writes need
 explicit authorization. See [operation and recovery](../docs/operations/save-corrections.md)
 and run `save:corrections:test` for synthetic ordering, transaction and FTS checks.
+
+Use `bonus:qa` for compact readonly bonus-type candidates/frequencies. Freeze a
+bounded review selection before reading full contexts; literal seeds are not
+semantic passes. See [bonus QA](../docs/operations/bonus-qa.md) and run `bonus:qa:test`.

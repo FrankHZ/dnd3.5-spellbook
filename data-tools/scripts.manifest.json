@@ -780,6 +780,20 @@
       "requiresLocalData": false,
       "requiresSqlite": true,
       "writeCapable": true
+    },
+    "bonus:qa": {
+      "module": "rules-content",
+      "lifecycle": "maintained-local",
+      "requiresLocalData": true,
+      "requiresSqlite": true,
+      "writeCapable": true
+    },
+    "bonus:qa:test": {
+      "module": "harness",
+      "lifecycle": "portable",
+      "requiresLocalData": false,
+      "requiresSqlite": true,
+      "writeCapable": true
     }
   }
 }
