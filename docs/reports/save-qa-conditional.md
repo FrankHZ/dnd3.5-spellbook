@@ -28,8 +28,11 @@ All 43 accepted-pending action/saving targets, all 30 prior pilot identities and
 existing residuals are excluded. The pending patches remain unactivated. ID
 3289 is a previously action-reviewed identity, now reviewed in a different
 dimension. No selected identity repeats the prior saving review. SC is excluded
-and PHB extraction remains suspended. Completed private evidence revision:
-`e3e6d96f7bdef91c7accdfb6392aff329f715393`, under `term-qa/issue-643/`.
+and PHB extraction remains suspended. Current private evidence revision:
+`c66684fdb3b87d92e92081a0974e88c81f25a5e1`, with proposals/reviews/residuals
+under `term-qa/issue-643/revision-02/`. Original completed evidence
+`e3e6d96f7bdef91c7accdfb6392aff329f715393`, frozen selection and initial
+main-gate verification outputs remain unchanged.
 
 ## Local decisions
 
@@ -37,10 +40,10 @@ and PHB extraction remains suspended. Completed private evidence revision:
 | --- | ---: |
 | No local saving discrepancy established | 23 / 0 |
 | Clarity-only suggestions | 6 / 9 |
-| Confirmed local saving-condition discrepancy | 1 / 2 |
+| Mixed clarity and confirmed saving conditions | 1 / 3 |
 | New source/version or language unknown | 0 / 0 |
 
-The clarity targets are 3465/2717/3250/3484/3289/2985. Their local phrases
+The six clarity-only targets are 3465/2717/3250/3484/3289/2985. Their local phrases
 distinguish saving throws from ordinary checks; initial versus secondary,
 per-round versus daily, and recipient versus beneficiary roles remain intact.
 They are not confirmed mechanic errors.
@@ -51,9 +54,14 @@ counts successes rather than attempts. The proposed threshold renders current
 negative hit-point total as its magnitude, an explicit local interpretation
 retained for independent review. Two exact clauses correct that basis and the
 attempt count, while preserving stance activation, actions and other wording.
+One additional clause makes the inclusive zero boundary explicit. The existing
+Chinese boundary wording can already include equality, so this is clarity-only,
+not a third confirmed error. This target has mixed classification: two confirmed
+conditions and one clarity clause.
 Canonical English/mechanics remain unchanged; no original-book claim follows.
 
-The seven targets have eleven private clauses: five guarded effective updates
+The seven targets have twelve private clauses (ten clarity, two confirmed):
+five guarded effective updates
 and two guarded effective inserts (2717/3606), with effective absence proved.
 Complete selected/effective predecessors, canonical/rules/mechanic context and
 raw prior name/body ownership are retained. Missing ownership is not invented.
@@ -62,9 +70,11 @@ all unrelated bytes and preserve action wording. CHM rows remain unchanged.
 All proposals are **unaccepted and unactivated** pending independent main-gate
 review; no writer target set was expanded.
 
-One out-of-dimension observation, ID 906's HD treatment, is retained as a
-separately owned residual without correction or broader HD QA. This entry's
-saving roles agree locally; it is not a whole-body pass. Prior source/version
+Out-of-dimension observations are retained as separately owned residuals:
+ID 906's HD treatment and ID 3606's adjacent incapacitation and
+coup-de-grace/helplessness wording. They remain unaccepted and unrevised; the
+three local edits do not imply that the rest of 3606's paragraph is reliable.
+906's saving roles agree locally, without a whole-body pass. Prior source/version
 conflict 1972 and language gaps 3291/5101 were excluded, not re-adjudicated.
 
 ## Retrieval value and boundaries
@@ -101,17 +111,19 @@ Measured inventory: 98 ms, 108 MiB peak, 1,219,810 bytes. English body-hint scan
 46 ms, 96 MiB peak, 3,812,237 bytes scanned. Context enrichment: 62 ms, 116 MiB
 peak, 897,248 bytes. Root/package retrieval: 17–20 ms, 69–72 MiB peak and
 440,279 bytes each, with equal records. Final private validation: 69 ms and
-110 MiB peak. The complete private deliverable is approximately 6 MB. Timings
+110 MiB peak. Additive revision validation also measured 69–71 ms and 109–110
+MiB peak. The complete private deliverable is approximately 7.3 MB. Timings
 exclude process startup and unmetered interactive review.
 
 Existing `save:qa:test` passes. Independent readonly verification checks every
 current canonical/rules/selected/effective/facet/component context, 43 exclusions,
-frozen order, absent effective predecessors, exact clauses/composition, action
+frozen order, absent effective predecessors, twelve exact clauses/composition,
+per-clause classification, explicit inclusive boundary and adjacent residuals, action
 windows and root/package equality. Both operator databases retain size/mtime;
 zero writes/copies/imports/deployment or application. Changed documentation
 links and diff checks pass; exact-head remote `ci:portable` is the merge gate.
 
-The useful stopping point is independent review of these eleven clauses and
+The useful stopping point is independent review of these twelve clauses and
 their residual ownership. Two finite batches are not grounds for an automatic
 all-corpus queue. Resolve the existing pending proposals and separately scoped
 source/language questions before considering another saving batch; any further
