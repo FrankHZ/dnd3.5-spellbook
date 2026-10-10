@@ -198,3 +198,7 @@ and run `save:corrections:test` for synthetic ordering, transaction and FTS chec
 Use `bonus:qa` for compact readonly bonus-type candidates/frequencies. Freeze a
 bounded review selection before reading full contexts; literal seeds are not
 semantic passes. See [bonus QA](../docs/operations/bonus-qa.md) and run `bonus:qa:test`.
+
+Use `units:qa` for compact readonly unit/duration field, header and body candidates.
+Freeze a bounded selection before semantic reading; no conversion or semantic pass
+is inferred. See [units QA](../docs/operations/units-qa.md) and run `units:qa:test`.
