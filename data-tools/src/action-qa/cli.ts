@@ -84,6 +84,23 @@ export function frequency(contentDb: string) {
     return actionFrequency(rows);
   } finally { db.close(); }
 }
+/** Bounded context retrieval; compact records cover every canonical identity exactly once. */
+export function actionInventory(contentDb: string) {
+  const rows = inventory(contentDb);
+  if (new Set(rows.map(row => row.spellId)).size !== rows.length) throw new Error("Duplicate canonical identity");
+  return rows.flatMap((_, index) => index % 100 ? [] : scan(contentDb, rows.slice(index, index + 100).map(row => row.spellId)).map(row => {
+    let language: string | null = null;
+    try { language = JSON.parse(row.selected?.bodyProvenanceJson ?? "null")?.language ?? null; } catch { /* raw status retained */ }
+    const missing = !row.selected?.descriptionText?.trim();
+    const fallback = language === "en" || row.selected?.descriptionText?.trim() === row.english.trim();
+    return { spellId: row.spellId, book: row.book, selectedVariant: row.selected?.variant ?? null,
+      identityStatus: row.identityStatus, provenanceStatus: row.provenanceStatus,
+      languageStatus: missing ? "missing-Chinese" : fallback ? "English-fallback" : "Chinese-present-unverified",
+      scReadonly: row.book === 86,
+      findings: row.findings.map(({kind, field, role, line, offset, status, reason, expectedOccurrences, chineseOccurrences}) =>
+        ({kind, field, role, line, offset, status, reason, expectedOccurrences, chineseOccurrences})) };
+  }));
+}
 export function outputDirectory(out: string) {
   const root = path.join(localDataDir(), "term-qa");
   noAlias(root); noAlias(out);
@@ -93,23 +110,46 @@ export function outputDirectory(out: string) {
 }
 export function main(args: string[]) {
   if (args.length === 1 && args[0] === "--help") {
-    console.log("action:qa --content-db <file> --out <new-private-directory> [--sample 100 | --ids 1,2] [--variant effective|chm] [--frequency]\nRelative paths resolve from the checkout root. Default/effective selection uses row presence then CHM fallback. Every lexical match remains context-unverified. Readonly DB; private evidence only; no acceptance or writer."); return;
+    console.log("action:qa --content-db <file> --out <new-private-directory> [--inventory | --sample 100 | --ids 1,2] [--variant effective|chm] [--frequency]\nInventory covers all current identities in bounded chunks and refuses sample/ids/variant overrides. Relative paths resolve from the checkout root. Default/effective selection uses row presence then CHM fallback. Every lexical match remains context-unverified. Readonly DB; private evidence only; no acceptance or writer."); return;
   }
   const flags = new Map<string, string>();
   for (let i = 0; i < args.length;) {
     const key = args[i++]!;
-    if (key === "--frequency" && !flags.has(key)) { flags.set(key, "true"); continue; }
+    if (["--frequency", "--inventory"].includes(key) && !flags.has(key)) { flags.set(key, "true"); continue; }
     const value = args[i++];
     if (!["--content-db", "--out", "--sample", "--ids", "--variant"].includes(key) || !value || value.startsWith("--") || flags.has(key)) throw new Error("Use --help; invalid/duplicate arguments");
     flags.set(key, value);
   }
   if (!flags.has("--content-db") || !flags.has("--out") || (flags.has("--sample") && flags.has("--ids"))) throw new Error("Use --help; missing or conflicting flags");
+  if (flags.has("--inventory") && ["--sample", "--ids", "--variant"].some(key => flags.has(key))) throw new Error("inventory always covers all current identities; no sample/ids/variant overrides");
   const contentDb = path.resolve(repoRoot(), flags.get("--content-db")!);
   const out = outputDirectory(path.resolve(repoRoot(), flags.get("--out")!));
   const variant = flags.get("--variant") ?? "effective";
   if (!["effective", "chm"].includes(variant)) throw new Error("variant must be effective or chm");
   const before = fs.statSync(contentDb); const started = performance.now();
   const rows = inventory(contentDb);
+  if (flags.has("--inventory")) {
+    const records = actionInventory(contentDb);
+    const frequencies = flags.has("--frequency") ? frequency(contentDb) : null;
+    const serialized = records.map(row => JSON.stringify(row)).join("\n") + "\n";
+    const frequencyJson = frequencies ? JSON.stringify(frequencies, null, 2) + "\n" : "";
+    if (Buffer.byteLength(serialized) + Buffer.byteLength(frequencyJson) > 50 * 1024 * 1024) throw new Error("Inventory exceeds 50 MiB budget");
+    const after = fs.statSync(contentDb);
+    if (before.size !== after.size || before.mtimeMs !== after.mtimeMs) throw new Error("DB metadata changed during inventory");
+    const report = {schemaVersion: 1, selection: "all canonical identities, ascending stable ID, chunks of 100",
+      comparisonBaseline: "canonical DB English; retrieval only, no semantic acceptance", inventoryEntries: records.length,
+      inventoryEnglishBytes: rows.reduce((n, row) => n + Buffer.byteLength(row.english), 0),
+      candidateEntries: records.filter(row => row.findings.some(f => f.status === "candidate")).length,
+      candidateOccurrences: records.reduce((n, row) => n + row.findings.filter(f => f.status === "candidate").length, 0),
+      noSeededActionEntries: records.filter(row => !row.findings.length).length,
+      elapsedMs: performance.now() - started, peakRssBytes: process.resourceUsage().maxRSS * 1024,
+      evidenceBytes: Buffer.byteLength(serialized), frequencyBytes: Buffer.byteLength(frequencyJson), dbMetadataUnchanged: true, modelApiCalls: 0};
+    fs.mkdirSync(out, {recursive: true});
+    fs.writeFileSync(path.join(out, "inventory.jsonl"), serialized, {encoding: "utf8", flag: "wx"});
+    fs.writeFileSync(path.join(out, "report.json"), JSON.stringify(report, null, 2) + "\n", {encoding: "utf8", flag: "wx"});
+    if (frequencies) fs.writeFileSync(path.join(out, "frequency.json"), frequencyJson, {encoding: "utf8", flag: "wx"});
+    console.log(JSON.stringify(report, null, 2)); return;
+  }
   const ids = flags.has("--ids") ? flags.get("--ids")!.split(",").map(Number) : selectSample(rows, Number(flags.get("--sample") ?? 100));
   if (!ids.length || ids.length > 1000 || new Set(ids).size !== ids.length || ids.some(id => !Number.isSafeInteger(id) || id <= 0)) throw new Error("ids must be unique positive integers, at most 1000");
   const evidence = scan(contentDb, ids, variant);
@@ -121,7 +161,8 @@ export function main(args: string[]) {
   if (before.size !== after.size || before.mtimeMs !== after.mtimeMs) throw new Error("DB metadata changed during scan; rerun against a stable readonly input");
   const report = { schemaVersion: 1, comparisonBaseline: "canonical DB English; no original-book verification", requestedVariant: variant,
     selection: flags.has("--ids") ? "explicit stable IDs" : "anchor plus sorted-ID round-robin body-action strata and no-body-action controls",
-    selectionBias: "Rare actions oversampled; early IDs favored; no corpus precision/recall estimate", entries: ids.length,
+    selectionBias: flags.has("--ids") ? "Caller-defined stable IDs; consult the separately frozen selection; no corpus precision/recall estimate"
+      : "Rare actions oversampled; early IDs favored; no corpus precision/recall estimate", entries: ids.length,
     inventoryEntries: rows.length, inventoryEnglishBytes: rows.reduce((n, row) => n + Buffer.byteLength(row.english), 0),
     findings: evidence.reduce((n, row) => n + row.findings.length, 0),
     candidates: evidence.reduce((n, row) => n + row.findings.filter(f => f.status === "candidate").length, 0),
