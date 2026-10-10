@@ -7,7 +7,7 @@ import { englishActions, inspectActions, kinds } from "./actions";
 import { scan, frequency, actionInventory, main, selectChinese, selectSample, outputDirectory, type TextRow } from "./cli";
 import { actionFrequency } from "./frequency";
 
-const check = (en: string, zh: string, header: string | null = null) => inspectActions(en, header, zh);
+const check = (en: string, zh: string | null, header: string | null = null) => inspectActions(en, header, zh);
 assert.equal(check("You activate this as an immediate action.", "你激活此效果。")[0]!.status, "candidate");
 for (const synonym of ["直觉", "即时", "瞬间"]) {
   assert.equal(check("You activate this as an immediate action.", `你以${synonym}动作激活此效果。`)[0]!.reason, "lexical-support-context-unverified");
@@ -30,6 +30,53 @@ assert.equal(check("You maintain this as a move action.", "你以移动动作维
 assert.equal(check("You end this as a free action.", "你以自由动作结束。")[0]!.role, "end");
 assert.deepEqual(englishActions("No action is required. A move-equivalent action, two full round actions, a standard action, a swift action, an immediate action and a free action." ).map(r=>r.kind).sort(), [...kinds].sort());
 assert.equal(check("This does not require an action.", "这不需要动作。")[0]!.chineseOccurrences, 1);
+for (const phrase of ["no action", "no actions", "no other action", "no other actions"]) {
+  const en = `At dawn, the guard can take ${phrase} until sunset.`;
+  const [finding] = check(en, "守卫静止不动。");
+  assert.equal(finding!.kind, "no-action");
+  assert.equal(finding!.offset, en.indexOf(phrase));
+  assert.equal(finding!.context, en);
+  assert.equal(finding!.role, "other");
+  assert.equal(finding!.status, "unknown");
+  assert.equal(finding!.reason, "action-prohibition-context-unverified");
+}
+for (const negative of ["cannot", "can't", "can’t", "can not"]) {
+  const en = `First line.\r\nAfter arriving, you ${negative} take any other actions this round.`;
+  const [finding] = check(en, "抵达后你无法进行其他行动。");
+  assert.equal(finding!.line, 1);
+  assert.equal(finding!.offset, en.split("\r\n")[1]!.indexOf(negative));
+  assert.equal(finding!.status, "unknown");
+  assert.equal(finding!.expectedOccurrences, 1);
+}
+assert.equal(englishActions("You take actions. You take other actions. An action is available.").length, 0);
+assert.equal(check("No actions are required to end the glow.", "结束光芒无需动作。")[0]!.role, "end");
+for (const raw of ["1 action", "One action", "  ONE action  "]) {
+  const findings = check("Use a move action to sustain the glow.", "施法时间：标准动作\n以移动动作维持光芒。", raw);
+  const header = findings[0]!;
+  assert.equal(header.kind, "unknown");
+  assert.equal(header.field, "casting-time");
+  assert.equal(header.context, raw);
+  assert.equal(header.offset, raw.search(/\S/u));
+  assert.equal(header.status, "unknown");
+  assert.equal(header.reason, "English-action-family-unresolved");
+  assert.equal(header.expectedOccurrences, 1);
+  assert.equal(header.chineseOccurrences, 0);
+  assert.deepEqual(header.chineseEvidence, []);
+  assert.equal(findings[1]!.kind, "move");
+  assert.equal(findings[1]!.field, "body");
+  assert.equal(findings[1]!.role, "sustain");
+  assert.equal(englishActions(raw).length, 0);
+}
+for (const raw of ["2 actions", "One action to activate", "Some action", "1 action/round"]) {
+  assert.equal(check("", "施法时间：标准动作", raw).length, 0);
+}
+for (const kind of kinds.filter(kind => kind !== "no-action")) {
+  assert.equal(check("", "", `1 ${kind} action`)[0]!.kind, kind);
+}
+assert.equal(check("", "普通文本。", "1 action")[0]!.reason, "English-action-family-unresolved");
+assert.equal(check("", null, "One action")[0]!.reason, "missing-selected-Chinese");
+const genericFrequency = actionFrequency([{spellId: 1, english: "One action", castingTime: "1 action", chinese: "施法时间：标准动作"}]);
+assert.deepEqual(genericFrequency.english.map(row => row.phrase), ["casting-time:unknown"]);
 assert.equal(check("You use a standard action.", "")[0]!.reason, "missing-selected-Chinese");
 assert.equal(check("No mechanical action phrase.", "普通文本。").length, 0);
 assert.equal(check("You activate this as an immediate action.", "你以直觉动作激活。", "1 standard action")[0]!.field, "casting-time");
@@ -67,6 +114,22 @@ try {
   assert.equal(result[0]!.findings.find(f=>f.field === "body")!.status, "unknown");
   assert.equal(result[0]!.chmContrast!.findings.find(f=>f.field === "body")!.status, "candidate");
   assert.deepEqual(fs.readFileSync(file), before);
+  const genericSeed = new Database(file);
+  genericSeed.exec("INSERT INTO SpellContent VALUES (877,86,'Synthetic generic header','Ordinary text.','One action')");
+  genericSeed.exec("INSERT INTO I18nSpellText VALUES (877,86,'zh','chm','Old','施法时间：标准动作',NULL,NULL,NULL)");
+  genericSeed.exec("INSERT INTO I18nSpellText VALUES (877,86,'zh','effective','Empty',NULL,NULL,NULL,NULL)");
+  genericSeed.close();
+  const genericBefore = fs.readFileSync(file), genericInventory = actionInventory(file).find(row => row.spellId === 877)!;
+  assert.equal(genericInventory.selectedVariant, "effective");
+  assert.equal(genericInventory.languageStatus, "missing-Chinese");
+  assert.equal(genericInventory.scReadonly, true);
+  assert.equal(genericInventory.findings[0]!.kind, "unknown");
+  assert.equal(genericInventory.findings[0]!.status, "unknown");
+  assert.equal(genericInventory.findings[0]!.reason, "missing-selected-Chinese");
+  assert.deepEqual(fs.readFileSync(file), genericBefore);
+  const removeGeneric = new Database(file);
+  removeGeneric.exec("DELETE FROM SpellContent WHERE legacySpellId=877; DELETE FROM I18nSpellText WHERE spellId=877");
+  removeGeneric.close();
   assert.equal(frequency(file).chineseLabels.some(row=>row.phrase === "body:直觉动作"), true);
   const seed = new Database(file);
   const insert = seed.prepare("INSERT INTO SpellContent VALUES (?,1,'Synthetic chunk','Use a move action to sustain.','1 standard action')");

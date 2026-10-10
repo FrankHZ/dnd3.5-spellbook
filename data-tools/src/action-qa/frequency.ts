@@ -20,8 +20,8 @@ export function actionFrequency(rows: Iterable<FrequencyRow>) {
   for (const row of rows) {
     entries++; textBytes += Buffer.byteLength(row.english) + Buffer.byteLength(row.chinese ?? "") + Buffer.byteLength(row.castingTime ?? "");
     const enSeen = new Set<string>(); const zhSeen = new Set<string>(); const suffixSeen = new Set<string>();
-    for (const [scope, text] of [["body",row.english],["casting-time",row.castingTime ?? ""]]) {
-      for (const action of englishActions(text!)) add(english, `${scope}:${action.kind}`, row, scope!, action.context, enSeen);
+    for (const [scope, text] of [["body",row.english],["casting-time",row.castingTime ?? ""]] as const) {
+      for (const action of englishActions(text, scope)) add(english, `${scope}:${action.kind}`, row, scope, action.context, enSeen);
     }
     const parts = chineseParts(row.chinese ?? "");
     for (const [scope, lines] of [["body",parts.body],["casting-time",parts.header]] as const) {
