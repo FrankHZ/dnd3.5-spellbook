@@ -79,21 +79,26 @@ export function SpellCard({
       )}
     >
       <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
-          <SpellMetaBadge kind="source">{source.abbr}</SpellMetaBadge>
-          <Link
-            to={`/spells/${spell.id}`}
-            className="min-w-0 font-medium leading-5 text-foreground underline-offset-3 hover:underline"
-          >
-            {displayName}
-          </Link>
-          {componentMarkers.map((marker) => (
-            <SpellComponentBadge key={marker}>{marker}</SpellComponentBadge>
-          ))}
-          {shortDescription && (
-            <span className="basis-full text-sm leading-5 text-muted-foreground sm:basis-auto sm:min-w-[14rem] sm:flex-1">
-              {shortDescription}
-            </span>
+        <div className="flex items-start gap-2">
+          <div className="min-w-0 flex-1 flex flex-wrap items-center gap-x-2 gap-y-1.5">
+            <SpellMetaBadge kind="source">{source.abbr}</SpellMetaBadge>
+            <Link
+              to={`/spells/${spell.id}`}
+              className="min-w-0 font-medium leading-5 text-foreground underline-offset-3 hover:underline"
+            >
+              {displayName}
+            </Link>
+            {componentMarkers.map((marker) => (
+              <SpellComponentBadge key={marker}>{marker}</SpellComponentBadge>
+            ))}
+            {shortDescription && (
+              <span className="basis-full text-sm leading-5 text-muted-foreground sm:basis-auto sm:min-w-[14rem] sm:flex-1">
+                {shortDescription}
+              </span>
+            )}
+          </div>
+          {!(showFullDetails && showActions) && (
+            <SpellActionButtons spell={spell} showCollectionActions={false} />
           )}
         </div>
 
@@ -101,9 +106,7 @@ export function SpellCard({
           <div className="app-spell-card-details mt-3 grid gap-3 border-l pl-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
             <div className="min-w-0 space-y-2 text-xs leading-5 text-muted-foreground">
               <div className="flex flex-wrap items-center gap-1.5">
-                <SpellMetaBadge kind="taxonomy">
-                  {schoolText}
-                </SpellMetaBadge>
+                <SpellMetaBadge kind="taxonomy">{schoolText}</SpellMetaBadge>
                 {spell.descriptors?.map((d) => (
                   <SpellMetaBadge
                     key={d.id ?? d.key ?? d.slug}
@@ -129,7 +132,7 @@ export function SpellCard({
 
             {showActions && (
               <SpellActionButtons
-                spellId={spell.id}
+                spell={spell}
                 orientation="horizontal"
                 className="sm:justify-end"
               />

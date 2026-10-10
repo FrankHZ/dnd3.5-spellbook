@@ -21,6 +21,7 @@ import { useMetaNames } from "~/i18n/hooks/useMetaNames";
 import { useRulebookDisplay } from "~/i18n/hooks/useRulebookDisplay";
 import { useTranslation } from "react-i18next";
 import { SpellMetaBadge } from "./SpellMetaBadge";
+import type { SpellDetailView } from "@dnd/contracts";
 
 function SpellDetailSkeleton() {
   return (
@@ -55,11 +56,11 @@ function SpellDetailSkeleton() {
 function SpellHeader({
   title,
   shortDescription,
-  spellId,
+  spell,
 }: {
   title: string;
   shortDescription?: string;
-  spellId: number;
+  spell: SpellDetailView;
 }) {
   return (
     <div className="space-y-3">
@@ -75,7 +76,7 @@ function SpellHeader({
           ) : null}
         </div>
         <SpellActionButtons
-          spellId={spellId}
+          spell={spell}
           className="app-action-rail self-start sm:justify-end"
         />
       </div>
@@ -198,7 +199,7 @@ export default function SpellDetailPage() {
           <SpellHeader
             title={spellName(spell)}
             shortDescription={shortDescription}
-            spellId={spell.id}
+            spell={spell}
           />
         </div>
 
