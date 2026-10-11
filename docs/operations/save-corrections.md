@@ -43,9 +43,10 @@ and earlier stage inputs are independently bound. Caller-selected files, targets
 and acceptance flags are unsupported. Any stale/foreign/partial input fails
 readonly preflight before opening a writer.
 
-Actual operator data remain before #629. This command currently rejects the
-unmet prerequisite and reports no body/search attempt. No DB copy or operator
-rehearsal is needed. Code acceptance and CI do not authorize operator writes.
+On a database before either prerequisite, this command rejects the unmet order
+and reports no body/search attempt. Code acceptance and CI do not authorize
+operator writes or copies. Explicit local application authority can separately
+permit the ordered chain and its necessary consistent recovery backup.
 
 ## Authorized apply and recovery
 
