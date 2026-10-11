@@ -36,11 +36,11 @@ executes in `data-tools/`. The shared path/role/alias/hard-link/app-state guards
 apply. Optional `--accepted-revision` must equal the fixed #633 revision above;
 the #635 input and handoff are always independently bound too.
 
-Current operator data are still #629-before. Readonly preparation can derive the
-expected completed predecessor from authenticated evidence, but this does not
-apply #629 or satisfy the prerequisite. The maintained successor command fails
-preflight honestly in that state; its error reports no body/search attempt.
-No operator DB copy or rehearsal is required or authorized.
+On a database still before #629, readonly preparation can derive the expected
+completed predecessor from authenticated evidence but cannot apply it or satisfy
+the prerequisite. The successor fails preflight in that state and reports no
+body/search attempt. Only explicit local application authority permits the
+ordered writes and necessary recovery backup; preparation alone grants neither.
 
 ## Apply, recovery and older-owner refusal
 
