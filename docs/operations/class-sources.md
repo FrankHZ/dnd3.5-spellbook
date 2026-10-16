@@ -205,6 +205,8 @@ root; `DATA_REPO_PATH` selects the private Git inputs outside worktrees.
 
 Only the 64 supported relationships publish positively. Eleven exclusions and
 nine uncertainties retain their exact original evidence/provenance in storage.
+The [bounded nine-gap follow-up](../reports/class-source-gaps-632.md) records
+separately proposed external evidence; it does not upgrade this fixed import.
 Coverage describes 69 website candidates and 84 version leads, never all classes
 in a publication. No imported book is certified complete, and an empty supported
 array cannot prove that a book contains no classes.
