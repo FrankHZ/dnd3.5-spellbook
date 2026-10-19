@@ -179,37 +179,77 @@ evidence and reproduction example.
 ## Accepted Mapping Import
 
 `npm run -w data-tools class-sources:import -- --rules-db <file> --content-db <file>`
-checks the fixed main-gate accepted #619 handoff at private Git revision
-`efe2083c0f5049aabce561517f3f02b9901ba07b`. It reads the committed final handoff,
-classes and three disposition files, checks their working text (allowing Git
-CRLF conversion), and validates all stable version/class/book IDs, names, pages,
-edition system and the complete frozen version-key set against readonly rules.
-No CHM corpus, original books or source QA rerun is needed.
+authenticates the fixed accepted #619 base at private Git revision
+`efe2083c0f5049aabce561517f3f02b9901ba07b`, then composes only the five
+[#632 accepted relationships](https://github.com/FrankHZ/dnd3.5-spellbook/issues/632#issuecomment-6217702823)
+from `c9d87c0395db76b9596fba9648566fd79a4eacf3`, with publisher evidence catalog
+at `3df7edb72b19a57fb9e4a7c897ebf4745bd03465`. Historical input files are
+unchanged. Proposal labels in those immutable files are not acceptance: the
+fixed main-gate receipt and exact five-key selection authorize this combination.
+No caller-selected revision or arbitrary proposal input is supported.
 
-The default check opens both DBs readonly. An unactivated content DB reports
-`before` / `wouldChange`; it does not install a migration. After applying the
-maintained content migration under separate write authorization, `--apply`
-inserts all 84 dispositions and the accepted revision in one content-only
-transaction. Exact repetition writes nothing. A different existing handoff,
-unbound rows, partial schema or altered persisted mapping is rejected rather
-than silently replaced. A future accepted upgrade needs a separately reviewed
-transition. The CLI rejects rules/content path aliasing and app-state targets;
-`--apply` remains an explicit write operation, never permission by itself.
+The loader reads committed old handoff/classes/dispositions and new
+nine-disposition/five-delta/catalog files, compares working text (allowing Git
+CRLF conversion), and validates stable version/class/book IDs, names, page leads,
+edition and the complete frozen version-key set against readonly rules. It
+returns an immutable authenticated in-memory handoff. No composed private file,
+CHM corpus, original books or source QA rerun is needed.
 
-`ClassSourceMapping` / `ClassSourceImport` are additive content overlays, outside
-the generated spell table set. Canonical spell builds, Chinese overlays,
-summaries, search, rules and app-state are untouched. Preserve these tables in
-normal normalized-content import; rebuilding a fresh database requires the
-accepted mapping step again. Relative DB paths resolve from this code checkout
-root; `DATA_REPO_PATH` selects the private Git inputs outside worktrees.
+The default check opens both DBs readonly and performs no implicit migration.
+`state: before` / `wouldChange: true` reports either an empty mapping (including
+missing schema) or the exact accepted predecessor; `predecessor` distinguishes
+`empty`, `previous` and `after`. Apply requires the maintained content migration
+and separate operator write authorization:
 
-Only the 64 supported relationships publish positively. Eleven exclusions and
-nine uncertainties retain their exact original evidence/provenance in storage.
-The [bounded nine-gap follow-up](../reports/class-source-gaps-632.md) records
-separately proposed external evidence; it does not upgrade this fixed import.
-Coverage describes 69 website candidates and 84 version leads, never all classes
-in a publication. No imported book is certified complete, and an empty supported
-array cannot prove that a book contains no classes.
+- Empty migrated mapping: insert all 84 dispositions and new acceptance metadata.
+- Exact old mapping: update only variant IDs **76, 79, 974, 977, 979**, plus
+  `ClassSourceImport` revision/source authority metadata. The other 79 rows,
+  including evidence JSON, remain exact.
+- Exact new mapping: repeat writes nothing, including metadata.
 
-Run `npm run -w data-tools class-sources:import:test` for disposable synthetic
-transaction, protected-content, repeat, acceptance and stale-state checks.
+Before either write path, the importer validates every predecessor row and its
+metadata again inside its immediate transaction. It verifies the complete
+result before commit. A statement or postcondition failure rolls the whole
+transaction back, leaving the exact predecessor available for retry after the
+failure is resolved. Partial schema, unbound rows, foreign metadata/revisions,
+partial or tampered old/new rows and stale inputs are rejected. The old handoff
+cannot downgrade a new mapping; reverting code is not a mapping recovery step.
+A future transition or recovery requires its own reviewed boundary.
+
+The two MH versions retain `reprint` relations. The other three additions use
+publisher TOC, official errata and edition context as permitted in the accepted
+[source investigation](../reports/class-source-gaps-632.md), not full class-text
+QA. New row evidence records the external authority, acceptance receipt, fixed
+revisions, locators, limitations and the previous source record. It does not
+label external evidence as CHM-derived. Import-level `sourceRevision` records
+both the original CHM authority and external publisher evidence/acceptance;
+the old predecessor retains its original CHM-only metadata.
+
+`ClassSourceMapping` / `ClassSourceImport` remain additive content overlays,
+outside generated spell tables. Canonical spell builds, Chinese overlays,
+summaries, relationships, search, rules and app-state are untouched. Preserve
+these tables in normal normalized-content import; a fresh content DB requires
+the mapping step again. No FTS rebuild is needed for this metadata overlay.
+Relative DB paths resolve from this checkout root, from either root or
+`data-tools` cwd; `DATA_REPO_PATH` selects the independent private Git inputs.
+The CLI preserves rules/content alias, app-state filename and content-role guards.
+`--apply` remains an explicit operation, never permission by itself.
+
+The accepted result has **69 supported relationships / 65 supported classes**,
+11 exclusions and four uncertainties, within **69 candidate classes / 84 version
+leads**. Previously activated DBs continue exposing the old 64/11/9 state until
+an independently authorized apply. Publication stats exposes only positive
+relationships and aggregate coverage/counts, including explicit `reprint` DTO
+relations and localized names with canonical fallback; private evidence stays
+internal. Coverage never certifies all classes in a book and
+`inventoryComplete` remains false. Existing `/api/classes` spell-availability
+filtering, browse/search and selected class behavior are independent of this
+source mapping.
+
+Run `npm run -w data-tools class-sources:import:test` for fixed-input synthetic
+identity/acceptance, empty/old/new state, transaction recheck/rollback, exact
+79-row preservation, no-op, stale state, downgrade and CLI root/package guards.
+`npm run -w server test -- --run tests/publication-stats-upgrade.test.ts tests/publication-stats.test.ts tests/classes.test.ts`
+checks actual imported HTTP output and unchanged spell/class consumers. Build
+contracts before consumer validation after DTO changes. These checks use only
+isolated synthetic databases; operator application and deployment remain separate.

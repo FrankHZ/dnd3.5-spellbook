@@ -7,7 +7,7 @@ import { importClassSources, loadAcceptedClassSources } from "./import";
 const args = process.argv.slice(2);
 if (args.includes("--help")) {
   console.log(
-    "class-sources:import --rules-db <file> --content-db <file> [--apply]\nDefault: readonly exact accepted handoff check. Relative DB paths resolve from checkout root; DATA_REPO_PATH selects private Git inputs. --apply requires migrated content schema and separate operator write authorization.",
+    "class-sources:import --rules-db <file> --content-db <file> [--apply]\nDefault: readonly fixed #619 + accepted #632 check. --apply installs into empty migrated mappings or upgrades the exact old state; exact new state writes nothing. Relative DB paths resolve from checkout root; DATA_REPO_PATH selects private Git inputs. --apply requires separate operator write authorization.",
   );
 } else {
   let rules: Database.Database | undefined,

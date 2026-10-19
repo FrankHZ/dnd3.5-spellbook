@@ -95,16 +95,31 @@ export async function listPublicationStats(
         handoffRevision: imported?.handoffRevision ?? null,
         supported: group
           .filter((row) => row.disposition === "supported")
-          .map((row) => ({
-            classId: row.classId,
-            variantId: row.variantId,
-            name: row.name,
-            slug: row.slug,
-            prestige: row.prestige,
-            listKind: row.listKind as PublicationClassSource["listKind"],
-            i18n: names.get(row.classId),
-            relation: row.relation as PublicationClassSource["relation"],
-          })),
+          .map((row): PublicationClassSource => {
+            const { listKind, relation } = row;
+            if (
+              listKind !== "spells" &&
+              listKind !== "maneuvers" &&
+              listKind !== "infusions"
+            )
+              throw new Error("Invalid persisted class-source list kind");
+            if (
+              relation !== "class-entry" &&
+              relation !== "variant" &&
+              relation !== "reprint"
+            )
+              throw new Error("Invalid persisted class-source relation");
+            return {
+              classId: row.classId,
+              variantId: row.variantId,
+              name: row.name,
+              slug: row.slug,
+              prestige: row.prestige,
+              listKind,
+              i18n: names.get(row.classId),
+              relation,
+            };
+          }),
         excludedCandidateCount: group.filter(
           (row) => row.disposition === "excluded",
         ).length,
