@@ -68,7 +68,7 @@ export type PublicationClassSource = {
   prestige: boolean;
   i18n?: I18nNameOverlay | undefined;
   listKind: "spells" | "maneuvers" | "infusions";
-  relation: "class-entry" | "variant";
+  relation: "class-entry" | "variant" | "reprint";
 };
 
 export type PublicationStats = {

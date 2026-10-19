@@ -4,8 +4,22 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import type Database from "better-sqlite3";
 
-export const acceptedClassSourceRevision =
+export const previousClassSourceRevision =
   "efe2083c0f5049aabce561517f3f02b9901ba07b";
+export const acceptedClassSourceRevision =
+  "c9d87c0395db76b9596fba9648566fd79a4eacf3";
+export const classSourceEvidenceRevision =
+  "3df7edb72b19a57fb9e4a7c897ebf4745bd03465";
+const chmRevision = "7aed6890d88a6472f5fe9a857050a3823bdbf8ca";
+const acceptance =
+  "https://github.com/FrankHZ/dnd3.5-spellbook/issues/632#issuecomment-6217702823";
+const promotions = new Map([
+  ["109:860:974", "class-entry"],
+  ["109:863:977", "class-entry"],
+  ["109:865:979", "class-entry"],
+  ["75:18:76", "reprint"],
+  ["75:16:79", "reprint"],
+]);
 export const classSourceScope =
   "website-eligible-dnd35-69-classes-84-version-leads";
 export type ClassSourceRow = {
@@ -20,11 +34,17 @@ export type ClassSourceRow = {
   relation: string | null;
   evidenceJson: string;
 };
-export type ClassSourceHandoff = {
-  revision: string;
-  sourceRevision: string;
-  rows: ClassSourceRow[];
+type StoredHandoff = {
+  readonly revision: string;
+  readonly sourceRevision: string;
+  readonly rows: readonly Readonly<ClassSourceRow>[];
 };
+export type ClassSourceHandoff = StoredHandoff & {
+  readonly previous: StoredHandoff;
+};
+// A revision label alone cannot authorize arbitrary caller-supplied rows. Only
+// this loader can mint an immutable handoff after fixed Git/identity validation.
+const authenticated = new WeakSet<ClassSourceHandoff>();
 type SourceRow = {
   id: number;
   character_class_id: number;
@@ -57,13 +77,12 @@ export function loadAcceptedClassSources(
     rules.readonly,
     "Accepted handoff validation requires readonly rules access",
   );
-  const read = <T>(name: string): T => {
-    const file = `class-sources/issue-619/${name}.json`;
+  const read = <T>(file: string, revision = previousClassSourceRevision): T => {
     const committed = execFileSync("git", [
       "-C",
       dataRoot,
       "show",
-      `${acceptedClassSourceRevision}:${file}`,
+      `${revision}:${file}`,
     ]);
     // Git's Windows checkout may use CRLF; acceptance still binds the Git text.
     assert.equal(
@@ -76,8 +95,9 @@ export function loadAcceptedClassSources(
   const meta = read<{
     sourceRevision: string;
     counts: { classesInvestigated: number; versionsInvestigated: number };
-  }>("final-handoff");
-  const classes = read<SourceClass[]>("final-classes");
+  }>("class-sources/issue-619/final-handoff.json");
+  const classes = read<SourceClass[]>("class-sources/issue-619/final-classes.json");
+  assert.equal(meta.sourceRevision, chmRevision);
   assert.equal(classes.length, 69);
   assert.equal(meta.counts.classesInvestigated, 69);
   assert.equal(meta.counts.versionsInvestigated, 84);
@@ -96,7 +116,7 @@ export function loadAcceptedClassSources(
     JOIN dnd_characterclass c ON c.id=v.character_class_id
     JOIN dnd_rulebook b ON b.id=v.rulebook_id JOIN dnd_dndedition e ON e.id=b.dnd_edition_id WHERE v.id=?`);
   for (const [disposition, file, count, classKeys] of groups) {
-    const sources = read<SourceRow[]>(file);
+    const sources = read<SourceRow[]>(`class-sources/issue-619/${file}.json`);
     assert.equal(sources.length, count);
     for (const source of sources) {
       const owner = byClass.get(source.character_class_id);
@@ -170,98 +190,199 @@ export function loadAcceptedClassSources(
     [...seen].sort(),
     "Frozen candidate versions changed",
   );
-  return {
-    revision: acceptedClassSourceRevision,
+  const previous: StoredHandoff = Object.freeze({
+    revision: previousClassSourceRevision,
     sourceRevision: meta.sourceRevision,
-    rows: rows.sort((a, b) => a.variantId - b.variantId),
+    rows: Object.freeze(
+      rows.sort((a, b) => a.variantId - b.variantId).map((row) => Object.freeze(row)),
+    ),
+  });
+  type Decision = Omit<SourceRow, "sourceRevision"> & {
+    proposedStatus: string;
+    relation: string;
+    evidenceLocators: string[];
+    priorAuthoritativeEvidence: unknown;
+    editionSourceId?: string;
   };
+  type Delta = {
+    baselineCommit: string;
+    evidenceCommit: string;
+    priorChmRevision: string;
+    rows: Decision[];
+  };
+  const decisions = read<Delta>(
+    "class-sources/issue-632/proposed-dispositions.json",
+    acceptedClassSourceRevision,
+  );
+  const delta = read<Delta>(
+    "class-sources/issue-632/proposed-support-delta.json",
+    acceptedClassSourceRevision,
+  );
+  for (const input of [decisions, delta]) {
+    assert.equal(input.baselineCommit, previousClassSourceRevision);
+    assert.equal(input.evidenceCommit, classSourceEvidenceRevision);
+    assert.equal(input.priorChmRevision, chmRevision);
+  }
+  const uncertain = previous.rows.filter(
+    (row) => row.disposition === "source-uncertain",
+  );
+  assert.deepEqual(
+    decisions.rows.map((row) => row.key).sort(),
+    uncertain.map((row) => `${row.rulebookId}:${row.classId}:${row.variantId}`).sort(),
+  );
+  assert.deepEqual(
+    delta.rows,
+    decisions.rows.filter((row) => row.proposedStatus === "supported"),
+  );
+  assert.deepEqual(
+    delta.rows.map((row) => row.key).sort(),
+    [...promotions.keys()].sort(),
+  );
+  type CatalogSource = { id: string; locators?: { id: string }[] };
+  const sources = read<CatalogSource[]>(
+    "class-sources/issue-632/sources.json",
+    classSourceEvidenceRevision,
+  );
+  const upgraded = new Map<number, ClassSourceRow>();
+  for (const decision of decisions.rows) {
+    const prior = uncertain.find((row) => row.variantId === decision.id);
+    assert(prior, "Delta version not in previous uncertainty set");
+    const old = JSON.parse(prior.evidenceJson) as SourceRow & {
+      authoritativeEvidence: unknown;
+    };
+    for (const field of [
+      "key", "id", "character_class_id", "rulebook_id", "page", "className", "edition",
+    ] as const)
+      assert.deepEqual(
+        decision[field], old[field], `Delta identity changed: ${field}`,
+      );
+    assert.deepEqual(
+      decision.priorAuthoritativeEvidence, old.authoritativeEvidence,
+    );
+    if (!promotions.has(decision.key)) {
+      assert.equal(decision.proposedStatus, "unknown");
+      continue;
+    }
+    assert.equal(decision.proposedStatus, "supported");
+    assert.equal(decision.relation, promotions.get(decision.key));
+    assert(decision.evidenceLocators.length > 0);
+    for (const locator of decision.evidenceLocators)
+      assert(
+        sources.some((source) => source.locators?.some((entry) => entry.id === locator)),
+        "Unknown external locator",
+      );
+    const selectedSources = sources.filter(
+      (source) => source.id === decision.editionSourceId ||
+        source.locators?.some((entry) => decision.evidenceLocators.includes(entry.id)),
+    );
+    upgraded.set(prior.variantId, {
+      ...prior,
+      disposition: "supported",
+      relation: decision.relation,
+      evidenceJson: JSON.stringify({
+        authority: "accepted-external-publisher-evidence",
+        acceptance,
+        decisionRevision: acceptedClassSourceRevision,
+        evidenceRevision: classSourceEvidenceRevision,
+        previous: old,
+        decision,
+        sources: selectedSources,
+      }),
+    });
+  }
+  const nextRows = previous.rows.map((row) => upgraded.get(row.variantId) ?? row);
+  assert.equal(nextRows.filter((row) => row.disposition === "supported").length, 69);
+  assert.equal(
+    new Set(nextRows.filter((row) => row.disposition === "supported").map((row) => row.classId)).size,
+    65,
+  );
+  const handoff: ClassSourceHandoff = Object.freeze({
+    revision: acceptedClassSourceRevision,
+    // Import metadata names both authorities. External evidence is never labeled CHM.
+    sourceRevision: JSON.stringify({
+      chm: chmRevision, externalPublisher: classSourceEvidenceRevision, acceptance,
+    }),
+    previous,
+    rows: Object.freeze(nextRows.map((row) => Object.freeze(row))),
+  });
+  authenticated.add(handoff);
+  return handoff;
 }
 
-/** Additive overlay; owns only these two tables. Never rewrites canonical builds/spells. */
+/** Owns only the fixed mapping overlay and its acceptance metadata. */
 export function importClassSources(
   db: Database.Database,
   handoff: ClassSourceHandoff,
   apply = false,
 ) {
   assert.equal(
-    handoff.revision,
-    acceptedClassSourceRevision,
-    "Unaccepted handoff revision",
+    handoff.revision, acceptedClassSourceRevision,
+    "Unaccepted handoff revision; downgrade forbidden",
   );
-  const inspect = () => {
-    const tables = db
-      .prepare(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('ClassSourceImport','ClassSourceMapping')",
-      )
-      .all();
-    assert(
-      tables.length === 0 || tables.length === 2,
-      "Partial class-source schema",
-    );
+  assert(
+    authenticated.has(handoff), "Require the authenticated immutable handoff loader",
+  );
+  const inspect = (): "empty" | "previous" | "after" => {
+    const tables = db.prepare(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('ClassSourceImport','ClassSourceMapping')",
+    ).all();
+    assert(tables.length === 0 || tables.length === 2, "Partial class-source schema");
     if (!tables.length) {
       assert(!apply, "Apply requires the maintained content migration first");
-      return false;
+      return "empty";
     }
     const imports = db.prepare("SELECT * FROM ClassSourceImport").all();
-    const rows = db
-      .prepare("SELECT * FROM ClassSourceMapping ORDER BY variantId")
-      .all();
+    const rows = db.prepare("SELECT * FROM ClassSourceMapping ORDER BY variantId").all();
     if (!imports.length) {
       assert.equal(rows.length, 0, "Unbound source rows");
-      return false;
+      return "empty";
     }
-    assert.deepEqual(
-      imports,
-      [
-        {
-          id: 1,
-          handoffRevision: handoff.revision,
-          sourceRevision: handoff.sourceRevision,
-          scope: classSourceScope,
-        },
-      ],
-      "Existing handoff differs; explicit reviewed upgrade required",
-    );
-    assert.deepEqual(
-      rows,
-      handoff.rows,
-      "Persisted class-source state differs",
-    );
-    return true;
+    const revision = (imports[0] as { handoffRevision: string }).handoffRevision;
+    const expected = revision === handoff.revision ? handoff : handoff.previous;
+    assert.deepEqual(imports, [{
+      id: 1, handoffRevision: expected.revision,
+      sourceRevision: expected.sourceRevision, scope: classSourceScope,
+    }], "Existing handoff metadata differs");
+    assert.deepEqual(rows, expected.rows, "Persisted class-source state differs");
+    return expected === handoff ? "after" : "previous";
   };
-  let after = inspect();
-  if (apply && !after) {
+  const before = inspect();
+  if (apply && before !== "after") {
     assert(!db.inTransaction, "Importer owns its transaction");
     db.transaction(() => {
-      assert(!inspect(), "Source state changed before write");
-      const columns =
-        "variantId classId rulebookId name slug prestige listKind disposition relation evidenceJson".split(
-          " ",
+      assert.equal(inspect(), before, "Source state changed before write");
+      if (before === "previous") {
+        const update = db.prepare(
+          "UPDATE ClassSourceMapping SET disposition=?, relation=?, evidenceJson=? WHERE variantId=?",
         );
-      const insert = db.prepare(
-        `INSERT INTO ClassSourceMapping (${columns.join(",")}) VALUES (${columns.map(() => "?").join(",")})`,
-      );
-      for (const row of handoff.rows)
-        insert.run(...columns.map((key) => row[key as keyof ClassSourceRow]));
-      db.prepare("INSERT INTO ClassSourceImport VALUES (1,?,?,?)").run(
-        handoff.revision,
-        handoff.sourceRevision,
-        classSourceScope,
-      );
-      assert(inspect());
+        for (const row of handoff.rows) {
+          if (promotions.has(`${row.rulebookId}:${row.classId}:${row.variantId}`))
+            assert.equal(
+              update.run(row.disposition, row.relation, row.evidenceJson, row.variantId).changes,
+              1,
+            );
+        }
+        db.prepare(
+          "UPDATE ClassSourceImport SET handoffRevision=?, sourceRevision=? WHERE id=1",
+        ).run(handoff.revision, handoff.sourceRevision);
+      } else {
+        const columns =
+          "variantId classId rulebookId name slug prestige listKind disposition relation evidenceJson".split(" ");
+        const insert = db.prepare(
+          `INSERT INTO ClassSourceMapping (${columns.join(",")}) VALUES (${columns.map(() => "?").join(",")})`,
+        );
+        for (const row of handoff.rows)
+          insert.run(...columns.map((key) => row[key as keyof ClassSourceRow]));
+        db.prepare("INSERT INTO ClassSourceImport VALUES (1,?,?,?)").run(
+          handoff.revision, handoff.sourceRevision, classSourceScope,
+        );
+      }
+      assert.equal(inspect(), "after");
     }).immediate();
-    after = true;
-    return {
-      state: "after",
-      changed: true,
-      wouldChange: false,
-      rows: handoff.rows.length,
-    };
+    return { state: "after", changed: true, wouldChange: false, rows: handoff.rows.length };
   }
   return {
-    state: after ? "after" : "before",
-    changed: false,
-    wouldChange: !after,
-    rows: handoff.rows.length,
+    state: before === "after" ? "after" : "before", predecessor: before,
+    changed: false, wouldChange: before !== "after", rows: handoff.rows.length,
   };
 }
