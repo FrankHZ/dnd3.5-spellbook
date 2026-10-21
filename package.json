@@ -32,5 +32,8 @@
     "test:deployment-scripts": "node --test scripts/deployment-scripts.test.mjs",
     "test:release-metadata": "node --test scripts/release-metadata.test.mjs",
     "verify": "npm run test:release-metadata && npm run test:deployment-scripts && npm run build:contracts && npm run check:contracts && npm run typecheck:data-tools && npm run test:data-tools && npm run build:data-tools && npm run check:data-tools-review && npm run typecheck:review-console && npm run test:review-console && npm run build:review-console && npm run test:server && npm run test:web && npm run typecheck:web"
+  },
+  "engines": {
+    "node": "^24.22.1"
   }
 }

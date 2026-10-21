@@ -152,7 +152,7 @@ Configure Workers Builds through Git integration with:
 - deploy command: `npx wrangler deploy`
 - static asset config: root `wrangler.jsonc`
 - environment variables:
-  - `NODE_VERSION=24`
+  - `NODE_VERSION=24.22.1` (or a newer reviewed 24.x security release)
   - `VITE_API_BASE_URL=https://api.d20spellcodex.com`
 
 The deploy workflow does not depend on the persistent `~/deploy-backend.sh`
@@ -272,6 +272,26 @@ deployment target. Local helper scripts should read the actual alias from
 ignored `.env` instead of hardcoding it in docs or tracked scripts.
 
 ## Infrastructure Overview
+
+Use Node.js 24.22.1 or a newer security patch in the 24.x line for builds and
+the backend service. The root `engines.node` and GitHub Actions version range
+declare this minimum; they do not upgrade an already running host or an external
+Cloudflare Workers Builds setting. Verify the executable of the actual service
+process after a separately authorized runtime update. The legacy `web/Dockerfile`
+uses the same patched Node line; normal frontend delivery uses Workers Static
+Assets, not this container.
+
+Node's bundled TLS roots and Debian's system CA bundle are separate trust
+stores. Check `NODE_EXTRA_CA_CERTS`, `NODE_USE_SYSTEM_CA`, `SSL_CERT_FILE`,
+`SSL_CERT_DIR`, runtime CA flags, and application-provided `ca` options when
+assessing outbound trust. A valid public edge/origin certificate does not prove
+that every client trust store has received a CA distrust update. Runtime and
+system CA changes need their own reviewed operation, restart/health checks,
+and recovery plan; merging repository dependencies does not apply them.
+
+See [#656](https://github.com/FrankHZ/dnd3.5-spellbook/issues/656) for the security
+audit evidence and outstanding production actions. Production updates remain
+separately authorized operator work.
 
 Current deployment target:
 
