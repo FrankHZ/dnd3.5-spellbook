@@ -30,7 +30,7 @@ jobs:
         # actions/setup-node v6
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
-          node-version: 24.x
+          node-version: '>=24.22.1 <25'
           cache: npm
 
       - name: Install dependencies
@@ -78,7 +78,7 @@ jobs:
         # actions/setup-node v6
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
-          node-version: 24.x
+          node-version: '>=24.22.1 <25'
 
       - name: Configure AWS credentials
         # aws-actions/configure-aws-credentials v6

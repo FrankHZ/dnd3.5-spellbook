@@ -9,7 +9,8 @@ and local data tooling.
 
 ## Quick Start
 
-Install dependencies and build shared contracts from the repository root:
+Use Node.js 24.22.1 or a newer security patch in the 24.x line. Install
+dependencies and build shared contracts from the repository root:
 
 ```bash
 npm install
