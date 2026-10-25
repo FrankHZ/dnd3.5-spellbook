@@ -45,11 +45,23 @@ Shared filter components:
 - page entry: `web/app/features/spells/SpellDetailPage.tsx`
 - mechanics display: `web/app/features/spells/MechanicSection.tsx`
 - related spell references: `web/app/features/spells/RelatedSpellsSection.tsx`
+- report draft URL: `web/app/features/spells/spell-report.ts`
 
 Purpose:
 
 - render the detailed spell view, sidebar metadata overview, and related
   reference context
+
+Shared cards (including summary mode and related spells) and spell details use
+`SpellActionButtons` to open an editable GitHub issue draft in a new tab. A GitHub
+account is required to submit it; the website does not create issues or fetch
+additional spell data for reporting. The draft includes only loaded spell names,
+ID, rulebook, the public detail URL, UI language, field variants and frontend
+version/commit metadata. Name, summary and body sources are reported separately;
+cards explicitly mark the body as not loaded. Effective field provenance retains
+its language and original owner without claiming every field is accepted.
+Variable fields and the encoded URL are bounded (4,000 characters); full spell
+text and browser account, collection, prepared or session state are excluded.
 
 ### Publications
 
