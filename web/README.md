@@ -18,6 +18,12 @@ local API access. Run workspace commands from the repository root;
 | Generate route types and typecheck | `npm run typecheck:web` |
 | Run frontend tests once | `npm run test:web` |
 
+For the built Node preview, set `NODE_ENV=production` before starting Node
+(PowerShell: `$env:NODE_ENV = "production"`). This ensures React and the server
+renderer load in the same mode. Bind local checks to `HOST=127.0.0.1`. Production
+frontend hosting publishes `web/build/client` as static assets; it does not use
+`react-router-serve`.
+
 For UI copy, use the [i18n workflow](../docs/i18n.md#changing-ui-copy), including
 its root `i18n:sync` and `i18n:check` commands. Behavior or layout changes need
 the affected tests/build and a browser smoke of the affected page.
