@@ -1,5 +1,7 @@
 {
   "actions.back-to-browse": "Back to Browse",
+  "actions.report": "Report an issue",
+  "actions.report-hint": "Opens a draft on GitHub in a new tab; GitHub account required",
   "components.full.arcane-focus": "Arcane focus",
   "components.full.corrupt": "Corrupt",
   "components.full.divine-focus": "Divine focus",
