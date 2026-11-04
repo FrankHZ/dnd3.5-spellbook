@@ -54,6 +54,8 @@ Purpose:
 ### Publications
 
 - page entry: `web/app/features/publications/PublicationScopePage.tsx`
+- individual card: `web/app/features/publications/PublicationCard.tsx`
+- aggregate statistics API: `web/app/api/publications.ts`
 - grouping helper: `web/app/features/publications/publication-groups.ts`
 
 Purpose:
