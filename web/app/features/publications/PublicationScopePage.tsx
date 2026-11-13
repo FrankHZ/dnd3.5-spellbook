@@ -1,5 +1,9 @@
-import type { PublicationCategory, Rulebook } from "@dnd/contracts";
-import { ArrowUpDown, ExternalLink } from "lucide-react";
+import type {
+  PublicationCategory,
+  PublicationStats,
+  Rulebook,
+} from "@dnd/contracts";
+import { ArrowUpDown } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -17,7 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { SpellMetaBadge } from "~/features/spells/SpellMetaBadge";
+import { useQuery } from "@tanstack/react-query";
+import { getPublicationStats } from "~/api/publications";
+import { PublicationCard } from "./PublicationCard";
+import { useDisplayPrefs } from "~/features/display/useDisplayPrefs";
 import { getRulebookDisplay } from "~/i18n/display/rulebook";
 import { useAppI18n } from "~/i18n/hooks/useAppI18n";
 import { useMetaI18n } from "~/i18n/hooks/useMetaI18n";
@@ -26,7 +33,6 @@ import { DEFAULT_STATE } from "~/storage/userPrefs";
 import { useUserPrefs } from "~/state/user-prefs-state";
 
 import {
-  getPublicationAbbr,
   groupRulebooksByPublication,
   type PublicationCategoryGroup,
   type PublicationSort,
@@ -70,10 +76,6 @@ function matchesRulebookQuery(
     .some((value) => value.toLowerCase().includes(needle));
 }
 
-function getPublicationYearLabel(rulebook: Rulebook) {
-  return rulebook.publicationDate ?? rulebook.publicationYear;
-}
-
 function usePublicationRulebooks() {
   const { lang } = useAppI18n();
   const meta = useMetaI18n();
@@ -109,73 +111,40 @@ function CategoryLabel({ category }: { category: PublicationCategory }) {
   }
 }
 
-function PublicationRulebookRow({
-  groupKey,
+type PublicationCardStats = {
+  byBook: Map<number, PublicationStats>;
+  pending: boolean;
+  error: boolean;
+};
+
+function PublicationRulebookCard({
   rulebook,
   selected,
   onCheckedChange,
+  stats,
 }: {
-  groupKey: string;
   rulebook: Rulebook;
   selected: boolean;
   onCheckedChange: (id: number, checked: boolean) => void;
+  stats: PublicationCardStats;
 }) {
   const { lang } = useAppI18n();
+  const displayPrefs = useDisplayPrefs();
   const meta = useMetaI18n();
-  const { t } = useTranslation("publications");
-  const display = getRulebookDisplay(meta, rulebook, lang);
-  const checkboxId = `publication-rulebook-${groupKey}-${rulebook.id}`;
-  const yearLabel = getPublicationYearLabel(rulebook);
-
   return (
-    <Field
-      orientation="horizontal"
-      className="app-publication-row min-h-11 min-w-0 items-center border-t border-border/60 py-2"
-    >
-      <Checkbox
-        id={checkboxId}
-        checked={selected}
-        onCheckedChange={(value) =>
-          onCheckedChange(rulebook.id, Boolean(value))
-        }
-      />
-      <div className="grid min-w-0 flex-1 grid-cols-[6.5rem_minmax(0,1fr)] items-center gap-x-3">
-        <FieldLabel htmlFor={checkboxId} className="min-w-0 select-text">
-          <SpellMetaBadge
-            kind="source"
-            size="regular"
-            className="max-w-full font-mono"
-          >
-            {getPublicationAbbr(rulebook)}
-          </SpellMetaBadge>
-        </FieldLabel>
-        <div className="min-w-0">
-          <FieldLabel
-            htmlFor={checkboxId}
-            className="min-w-0 max-w-full select-text text-[0.9375rem] font-normal leading-5 text-foreground"
-          >
-            {display.name}
-          </FieldLabel>
-          {yearLabel || rulebook.publicationUrl ? (
-            <span className="flex min-w-0 flex-wrap items-center gap-1 text-sm tabular-nums text-muted-foreground">
-              {yearLabel ? <time dateTime={yearLabel}>{yearLabel}</time> : null}
-              {rulebook.publicationUrl ? (
-                <a
-                  aria-label={t("actions.source")}
-                  className="inline-flex size-6 items-center justify-center rounded-sm text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-                  href={rulebook.publicationUrl}
-                  rel="noreferrer"
-                  target="_blank"
-                  title={t("actions.source")}
-                >
-                  <ExternalLink className="size-3.5" aria-hidden="true" />
-                </a>
-              ) : null}
-            </span>
-          ) : null}
-        </div>
-      </div>
-    </Field>
+    <PublicationCard
+      rulebook={rulebook}
+      displayName={getRulebookDisplay(meta, rulebook, lang).name}
+      lang={lang}
+      classNamesWithEnglish={
+        displayPrefs.zhDisplay.classDomainLabelsWithEnglish
+      }
+      selected={selected}
+      onCheckedChange={onCheckedChange}
+      stats={stats.byBook.get(rulebook.id)}
+      statsPending={stats.pending}
+      statsError={stats.error}
+    />
   );
 }
 
@@ -185,12 +154,14 @@ function PublicationFamilyCard({
   selectedRulebookSet,
   onGroupCheckedChange,
   onRulebookCheckedChange,
+  stats,
 }: {
   category: PublicationCategory;
   family: PublicationCategoryGroup["families"][number];
   selectedRulebookSet: Set<number>;
   onGroupCheckedChange: (rulebooks: Rulebook[], checked: boolean) => void;
   onRulebookCheckedChange: (id: number, checked: boolean) => void;
+  stats: PublicationCardStats;
 }) {
   const st = getCheckState(family.rulebooks, selectedRulebookSet);
   const checkboxId = `publication-family-${category}-${family.key}`;
@@ -218,15 +189,15 @@ function PublicationFamilyCard({
         </span>
       </div>
 
-      <div className="px-4">
-        <FieldGroup className="grid gap-x-8 gap-y-0 sm:grid-cols-2">
+      <div className="p-3 sm:p-4">
+        <FieldGroup className="grid items-start gap-3 sm:grid-cols-2">
           {family.rulebooks.map((rulebook) => (
-            <PublicationRulebookRow
+            <PublicationRulebookCard
               key={rulebook.id}
-              groupKey={family.key}
               rulebook={rulebook}
               selected={selectedRulebookSet.has(rulebook.id)}
               onCheckedChange={onRulebookCheckedChange}
+              stats={stats}
             />
           ))}
         </FieldGroup>
@@ -240,11 +211,13 @@ function PublicationCategorySection({
   selectedRulebookSet,
   onGroupCheckedChange,
   onRulebookCheckedChange,
+  stats,
 }: {
   group: PublicationCategoryGroup;
   selectedRulebookSet: Set<number>;
   onGroupCheckedChange: (rulebooks: Rulebook[], checked: boolean) => void;
   onRulebookCheckedChange: (id: number, checked: boolean) => void;
+  stats: PublicationCardStats;
 }) {
   const st = getCheckState(group.rulebooks, selectedRulebookSet);
   const checkboxId = `publication-category-${group.key}`;
@@ -283,19 +256,20 @@ function PublicationCategorySection({
               selectedRulebookSet={selectedRulebookSet}
               onGroupCheckedChange={onGroupCheckedChange}
               onRulebookCheckedChange={onRulebookCheckedChange}
+              stats={stats}
             />
           ))}
         </div>
       ) : (
-        <div className="px-4">
-          <FieldGroup className="grid gap-x-8 gap-y-0 sm:grid-cols-2">
+        <div className="p-3 sm:p-4">
+          <FieldGroup className="grid items-start gap-3 sm:grid-cols-2">
             {group.rulebooks.map((rulebook) => (
-              <PublicationRulebookRow
+              <PublicationRulebookCard
                 key={rulebook.id}
-                groupKey={group.key}
                 rulebook={rulebook}
                 selected={selectedRulebookSet.has(rulebook.id)}
                 onCheckedChange={onRulebookCheckedChange}
+                stats={stats}
               />
             ))}
           </FieldGroup>
@@ -309,6 +283,21 @@ export default function PublicationScopePage() {
   const { t } = useTranslation("publications");
   const { state, setState } = useUserPrefs();
   const { boot, rulebooks, displayRulebook } = usePublicationRulebooks();
+  const { queryKey } = useAppI18n();
+  const statsQuery = useQuery({
+    queryKey: ["publicationStats", queryKey],
+    queryFn: ({ signal }) => getPublicationStats(signal),
+  });
+  const stats = useMemo<PublicationCardStats>(
+    () => ({
+      byBook: new Map(
+        (statsQuery.data?.items ?? []).map((row) => [row.rulebookId, row]),
+      ),
+      pending: statsQuery.isPending,
+      error: statsQuery.isError,
+    }),
+    [statsQuery.data, statsQuery.isPending, statsQuery.isError],
+  );
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<PublicationSort>("date");
   const selectedRulebookSet = useMemo(
@@ -447,6 +436,10 @@ export default function PublicationScopePage() {
           </div>
         </section>
 
+        <p className="text-xs leading-5 text-muted-foreground">
+          {t("summary.entries-description")}
+        </p>
+
         {isLoading ? (
           <StatusCard
             title={t("status.loading-title")}
@@ -483,6 +476,7 @@ export default function PublicationScopePage() {
                 selectedRulebookSet={selectedRulebookSet}
                 onGroupCheckedChange={setRulebookGroup}
                 onRulebookCheckedChange={setOneRulebook}
+                stats={stats}
               />
             ))}
           </div>

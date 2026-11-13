@@ -257,12 +257,20 @@ Current behavior:
 - `/publications` groups rulebooks by API-provided `publicationCategory` and
   `publicationFamily` metadata rather than frontend abbreviation or edition
   heuristics
-- publication rows show localized rulebook titles with curated display
+- publication cards show localized rulebook titles with curated display
   abbreviations, falling back to source abbreviations when no display override
   exists; publication year/date or source URL appears when the API exposes it,
   while review-oriented metadata stays out of the reader-facing index
+- a single publication statistics aggregate supplies canonical site entry counts
+  and partial confirmed class/version sources, including prestige, maneuvers and
+  infusions; empty/missing sources stay unknown, and unavailable counts are never
+  rendered as zero
+- counts include spells, maneuvers, infusions and other canonical site records,
+  counted once per record rather than by translated variant or spell-list row
+- long class lists preview three identities and expand independently of scope
+  selection; accepted cover metadata has a normal missing/failed-image fallback
 - users can search publications by title, abbreviation, family, or year
-- users can sort rows within each existing category/family by publication date
+- users can sort cards within each existing category/family by publication date
   or display abbreviation; category and family ordering stays stable
 - users can select or clear visible results, toggle a family, toggle one
   rulebook, or reset to the browser-local default rulebook scope
@@ -273,10 +281,14 @@ Current behavior:
 - page loading and error states follow the rulebook data consumed by this page;
   failures in unrelated bootstrap metadata do not hide loaded publications
 - English and Chinese UI modes preserve the same page behavior
+- class-source display does not replace Browse/Search's spell-availability
+  class filters or introduce source-permission enforcement
 
 Key code:
 
 - `web/app/features/publications/PublicationScopePage.tsx`
+- `web/app/features/publications/PublicationCard.tsx`
+- `web/app/api/publications.ts`
 - `web/app/features/publications/publication-groups.ts`
 - `web/app/routes/publications.tsx`
 - `web/app/api/bootstrap.ts`

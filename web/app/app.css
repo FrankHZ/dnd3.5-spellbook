@@ -526,13 +526,24 @@
   background: color-mix(in oklch, var(--muted) 62%, var(--card));
 }
 
-.app-publication-row {
-  transition: background-color 150ms ease;
+.app-publication-card {
+  border-color: var(--app-rule);
+  transition: border-color 150ms ease;
 }
 
-.app-publication-row:hover,
-.app-publication-row:focus-within {
-  background: color-mix(in oklch, var(--app-binding-soft) 32%, transparent);
+.app-publication-card:hover,
+.app-publication-card:focus-within,
+.app-publication-card-selected {
+  border-color: var(--app-binding);
+}
+
+.app-publication-card-selected {
+  box-shadow: inset 2px 0 var(--app-binding);
+}
+
+.app-publication-cover {
+  border-color: var(--app-rule);
+  background: var(--muted);
 }
 
 .app-side-card {
