@@ -1,8 +1,11 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "dnd-spellbook",
+  "main": "web/worker.mjs",
   "compatibility_date": "2026-07-07",
   "assets": {
+    "binding": "ASSETS",
+    "run_worker_first": ["/locales/*"],
     "directory": "./web/build/client",
     "not_found_handling": "single-page-application"
   }

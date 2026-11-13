@@ -13,6 +13,34 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
+import frontendWorker from "../web/worker.mjs";
+
+test("locale routing rejects SPA fallback and preserves asset responses", async () => {
+  const config = JSON.parse(readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8"));
+  assert.equal(config.main, "web/worker.mjs");
+  assert.equal(config.assets.binding, "ASSETS");
+  assert.deepEqual(config.assets.run_worker_first, ["/locales/*"]);
+  assert.equal(config.assets.not_found_handling, "single-page-application");
+  for (const method of ["GET", "HEAD"]) {
+    for (const path of ["/locales/en-US/about.json", "/locales/en/missing.json"]) {
+      const request = new Request(`https://example.test${path}`, { method });
+      const result = await frontendWorker.fetch(request, {
+        ASSETS: { fetch: async () => new Response("<html>app</html>", {
+          headers: { "content-type": "text/html; charset=utf-8" },
+        }) },
+      });
+      assert.equal(result.status, 404);
+      assert.equal(await result.text(), method === "HEAD" ? "" : "Not Found");
+    }
+  }
+  for (const path of ["/locales/en/about.json", "/locales/zh/about.json", "/about"]) {
+    const response = new Response("{}", { headers: { "content-type": "application/json" } });
+    const request = new Request(`https://example.test${path}`);
+    assert.equal(await frontendWorker.fetch(request, {
+      ASSETS: { fetch: async (actual) => { assert.equal(actual, request); return response; } },
+    }), response);
+  }
+});
 import { fileURLToPath } from "node:url";
 import {
   assertNoUnrestrictedSsh,
