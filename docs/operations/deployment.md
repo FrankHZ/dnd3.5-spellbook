@@ -513,15 +513,15 @@ npx wrangler deploy
 
 Root `wrangler.jsonc` publishes:
 
+```text
+web/build/client
+```
+
 The `/locales/*` routes invoke `web/worker.mjs` before Static Assets. The worker
 passes through existing resources and converts the asset binding's HTML SPA
 fallback to a plain-text 404. All other paths retain Static Assets SPA routing.
 The worker file must be included in Cloudflare build watch paths via `web/*`.
 See [asset routing](https://developers.cloudflare.com/workers/static-assets/routing/worker-script/).
-
-```text
-web/build/client
-```
 
 Production Workers Builds environment variables:
 

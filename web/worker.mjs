@@ -5,6 +5,7 @@ export default {
     // requests must expose a missing file instead of returning the app shell.
     if (
       new URL(request.url).pathname.startsWith("/locales/") &&
+      response.status === 200 &&
       response.headers.get("content-type")?.split(";")[0].trim() === "text/html"
     ) {
       return new Response(request.method === "HEAD" ? null : "Not Found", {

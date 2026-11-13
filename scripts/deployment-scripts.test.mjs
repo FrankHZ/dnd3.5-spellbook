@@ -14,6 +14,16 @@ import { dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
 import frontendWorker from "../web/worker.mjs";
+import { fileURLToPath } from "node:url";
+import {
+  assertNoUnrestrictedSsh,
+  assertPortInfosMatch,
+  assertRunnerAuthorized,
+  buildAuthorizePayload,
+  buildRestorePayload,
+} from "./lightsail-firewall.mjs";
+
+
 
 test("locale routing rejects SPA fallback and preserves asset responses", async () => {
   const config = JSON.parse(readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8"));
@@ -40,16 +50,16 @@ test("locale routing rejects SPA fallback and preserves asset responses", async 
       ASSETS: { fetch: async (actual) => { assert.equal(actual, request); return response; } },
     }), response);
   }
+  for (const [path, status] of [["/locales/en/about.json", 500], ["/about", 200]]) {
+    const response = new Response("<html>response</html>", {
+      status,
+      headers: { "content-type": "text/html" },
+    });
+    assert.equal(await frontendWorker.fetch(new Request(`https://example.test${path}`), {
+      ASSETS: { fetch: async () => response },
+    }), response);
+  }
 });
-import { fileURLToPath } from "node:url";
-import {
-  assertNoUnrestrictedSsh,
-  assertPortInfosMatch,
-  assertRunnerAuthorized,
-  buildAuthorizePayload,
-  buildRestorePayload,
-} from "./lightsail-firewall.mjs";
-
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
 
 function toBashPath(path) {
